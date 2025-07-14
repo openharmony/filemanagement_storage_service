@@ -33,7 +33,7 @@ VolumeStorageStatusService::~VolumeStorageStatusService() {}
 std::string VolumeStorageStatusService::GetVolumePath(std::string volumeUuid)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    auto volumePtr = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(volumeUuid);
+    auto volumePtr = VolumeManagerService::GetInstance().GetVolumeByUuid(volumeUuid);
     if (volumePtr == nullptr) {
         LOGE("VolumeStorageStatusService::GetVolumePath fail.");
         return "";

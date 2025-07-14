@@ -16,15 +16,18 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 
-#include <singleton.h>
 #include "volume_external.h"
 #include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
-class VolumeManagerService : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(VolumeManagerService);
+class VolumeManagerService {
 public:
+    static VolumeManagerService &GetInstance(void)
+    {
+        static VolumeManagerService instance;
+        return instance;
+    }
     int32_t Mount(std::string volumeId);
     int32_t Unmount(std::string volumeId);
     int32_t MountUsbFuse(std::string volumeId, int &fuseFd);
@@ -48,6 +51,12 @@ public:
     void NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
 
 private:
+    VolumeManagerService();
+    ~VolumeManagerService();
+    VolumeManagerService(const VolumeManagerService &) = delete;
+    VolumeManagerService &operator=(const VolumeManagerService &) = delete;
+    VolumeManagerService(const VolumeManagerService &&) = delete;
+    VolumeManagerService &operator=(const VolumeManagerService &&) = delete;
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
     void VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);

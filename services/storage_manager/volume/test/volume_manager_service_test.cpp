@@ -65,18 +65,15 @@ public:
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-1";
     int32_t fsType = 1;
     std::string diskId = "disk-1-1";
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        vmService->OnVolumeCreated(vc);
-        result = vmService->Mount(volumeId);
-        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
-    }
+    vmService.OnVolumeCreated(vc);
+    result = vmService.Mount(volumeId);
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0000";
 }
@@ -93,16 +90,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-2";
     int32_t fsType = 1;
     std::string diskId = "disk-1-2";
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        result = vmService->Mount(volumeId);
-    }
+    result = vmService.Mount(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0001";
 }
@@ -119,16 +113,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0002";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
     int32_t result;
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
-    result = vmService->Mount(volumeId);
-    vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    vmService.OnVolumeCreated(vc);
+    result = vmService.Mount(volumeId);
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0002";
 }
@@ -145,17 +137,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     int32_t fsType = 1;
     std::string diskId = "disk-1-3";
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        vc.SetState(VolumeState::MOUNTED);
-        result = vmService->Unmount(volumeId);
-    }
+    vc.SetState(VolumeState::MOUNTED);
+    result = vmService.Unmount(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0000";
 }
@@ -172,16 +161,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0000, testing:
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_TryToFix_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-2";
     int32_t fsType = 1;
     std::string diskId = "disk-1-2";
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        result = vmService->TryToFix(volumeId);
-    }
+    result = vmService.TryToFix(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_TryToFix_0001";
 }
@@ -198,8 +184,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0001, testing
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_TryToFix_0002";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -208,12 +193,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0002, testing
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
     int32_t result;
-    if (vmService != nullptr) {
-        result = vmService->TryToFix(volumeId);
-    }
+    result = vmService.TryToFix(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_TryToFix_0002";
 }
@@ -230,16 +212,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0002, testing
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_TryToFix_0003";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-8";
     std::string diskId = "disk-1-8";
     VolumeCore vc(volumeId, FsType::MTP, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        vmService->OnVolumeCreated(vc);
-        result = vmService->TryToFix(volumeId);
-    }
+    vmService.OnVolumeCreated(vc);
+    result = vmService.TryToFix(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_TryToFix_0003";
 }
@@ -256,19 +235,16 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0003, testing
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-4";
     int32_t fsType = 1;
     std::string diskId = "disk-1-4";
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
-    if (vmService != nullptr) {
-        vc.SetState(VolumeState::MOUNTED);
-        vmService->OnVolumeCreated(vc);
-        result = vmService->Unmount(volumeId);
-        vmService->OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
-    }
+    vc.SetState(VolumeState::MOUNTED);
+    vmService.OnVolumeCreated(vc);
+    result = vmService.Unmount(volumeId);
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0001";
 }
@@ -285,19 +261,16 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0001, testing:
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeCreated_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeCreated_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-5";
     int type = 1;
     std::string diskId = "disk-1-5";
     VolumeCore vc(volumeId, type, diskId);
-    if (vmService != nullptr) {
-        vmService->OnVolumeCreated(vc);
-        VolumeExternal ve;
-        int32_t res = vmService->GetVolumeById(volumeId, ve);
-        EXPECT_EQ(res, E_OK);
-        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
-    }
+    vmService.OnVolumeCreated(vc);
+    VolumeExternal ve;
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_OK);
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeCreated_0000";
 }
 
@@ -313,19 +286,16 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeCreated_0000, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeMounted_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-5";
     std::string fsTypeStr = "ntfs";
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
-    if (vmService != nullptr) {
-        vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
-        VolumeExternal ve;
-        int32_t res = vmService->GetVolumeById(volumeId, ve);
-        EXPECT_EQ(res, E_NON_EXIST);
-    }
+    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeMounted_0000";
 }
 
@@ -341,19 +311,16 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-5";
     std::string fsTypeStr = "ntfs";
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
-    if (vmService != nullptr) {
-        vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
-        VolumeExternal ve;
-        int32_t res = vmService->GetVolumeById(volumeId, ve);
-        EXPECT_EQ(res, E_NON_EXIST);
-    }
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0000";
 }
 
@@ -369,8 +336,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0000, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::shared_ptr<DiskManagerService> dmService =
         DelayedSingleton<DiskManagerService>::GetInstance();
     std::string volumeId = "vol-1-6";
@@ -386,19 +352,18 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     int32_t flag = 1;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
     ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
     dmService->diskMap_.Insert(diskId, diskPtr);
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
-    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService->volumeMap_.Clear();
+    vmService.volumeMap_.Clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0001";
 }
 
@@ -414,8 +379,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0002";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::shared_ptr<DiskManagerService> dmService =
         DelayedSingleton<DiskManagerService>::GetInstance();
     std::string volumeId = "vol-1-6";
@@ -431,19 +395,18 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     int32_t flag = 2;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
     ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
     dmService->diskMap_.Insert(diskId, diskPtr);
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
-    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService->volumeMap_.Clear();
+    vmService.volumeMap_.Clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0002";
 }
 
@@ -459,8 +422,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0003";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::shared_ptr<DiskManagerService> dmService =
         DelayedSingleton<DiskManagerService>::GetInstance();
     std::string volumeId = "vol-1-6";
@@ -476,19 +438,18 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     int32_t flag = 3;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
     ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
     dmService->diskMap_.Insert(diskId, diskPtr);
-    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
-    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService->volumeMap_.Clear();
+    vmService.volumeMap_.Clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0003";
 }
 
@@ -504,15 +465,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestroyed_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDestroyed_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-        DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-5";
-    if (vmService != nullptr) {
-        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
-        VolumeExternal ve;
-        int32_t res = vmService->GetVolumeById(volumeId, ve);
-        EXPECT_EQ(res, E_NON_EXIST);
-    }
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    VolumeExternal ve;
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDestroyed_0000";
 }
 
@@ -528,10 +486,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestroyed_0000
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetAllVolumes_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
-    ASSERT_NE(vmService, nullptr);
-    std::vector<VolumeExternal> result = vmService->GetAllVolumes();
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::vector<VolumeExternal> result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 0);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0000";
 }
@@ -548,8 +504,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0000, tes
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -558,10 +513,9 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
-    vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
-    std::shared_ptr<VolumeExternal> result = vmService->GetVolumeByUuid(fsUuid);
+    vmService.OnVolumeCreated(vc);
+    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid(fsUuid);
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0000";
 }
@@ -578,8 +532,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -588,11 +541,10 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, t
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
-    vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeCreated(vc);
+    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
-    int32_t ret = vmService->GetVolumeByUuid(fsUuid, ve);
+    int32_t ret = vmService.GetVolumeByUuid(fsUuid, ve);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0001";
 }
@@ -609,12 +561,10 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, t
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0002";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string fsUuid = "uuid-2";
     VolumeExternal ve;
-    ASSERT_NE(vmService, nullptr);
-    int32_t ret = vmService->GetVolumeByUuid(fsUuid, ve);
+    int32_t ret = vmService.GetVolumeByUuid(fsUuid, ve);
     EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0002";
 }
@@ -631,16 +581,14 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0002, t
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0003";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-8";
     int32_t fsType = 5;
     std::string fsUuid = "uuid-8";
     std::string diskId = "disk-1-8";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> result = vmService->GetVolumeByUuid("uuid-9");
+    vmService.OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid("uuid-9");
     EXPECT_EQ(result, nullptr);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0003";
 }
@@ -657,16 +605,14 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0003, t
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeById_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-8";
     int32_t fsType = 1;
     std::string diskId = "disk-1-8";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
+    vmService.OnVolumeCreated(vc);
     VolumeExternal ve;
-    int32_t result = vmService->GetVolumeById(volumeId, ve);
+    int32_t result = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeById_0000";
 }
@@ -683,12 +629,10 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0000, tes
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeById_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-9";
     VolumeExternal ve;
-    ASSERT_NE(vmService, nullptr);
-    int32_t result = vmService->GetVolumeById(volumeId, ve);
+    int32_t result = vmService.GetVolumeById(volumeId, ve);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeById_0001";
 }
@@ -705,17 +649,15 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0001, tes
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_SetVolumeDescription_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-10";
     int32_t fsType = 1;
     std::string diskId = "disk-1-10";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
+    vmService.OnVolumeCreated(vc);
     std::string fsUuid = "uuid-2";
     std::string description = "description-1";
-    int32_t result = vmService->SetVolumeDescription(fsUuid, description);
+    int32_t result = vmService.SetVolumeDescription(fsUuid, description);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_SetVolumeDescription_0000";
 }
@@ -732,20 +674,18 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_SetVolumeDescription_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-11";
     int32_t fsType = 1;
     std::string diskId = "disk-1-11";
     VolumeCore vc(volumeId, fsType, diskId, VolumeState::UNMOUNTED);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
+    vmService.OnVolumeCreated(vc);
     std::string fsUuid = "uuid-2";
     std::string description = "description-2";
-    ASSERT_NE(vmService->volumeMap_.Contains(volumeId), false);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(vmService.volumeMap_.Contains(volumeId), false);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetFsUuid(fsUuid);
-    int32_t result = vmService->SetVolumeDescription(fsUuid, description);
+    int32_t result = vmService.SetVolumeDescription(fsUuid, description);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_SetVolumeDescription_0001";
 }
@@ -762,16 +702,14 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_Format_0000";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-11";
     int fsType = 1;
     std::string diskId = "disk-1-11";
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
+    vmService.OnVolumeCreated(vc);
     string fsTypes = "fs-1";
-    int32_t result = vmService->Format(volumeId, fsTypes);
+    int32_t result = vmService.Format(volumeId, fsTypes);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_Format_0000";
 }
@@ -788,19 +726,17 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_Format_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-12";
     int fsType = 1;
     std::string fsUuid = "uuid-3";
     std::string diskId = "disk-1-12";
     VolumeCore vc(volumeId, fsType, diskId, VolumeState::MOUNTED);
-    ASSERT_NE(vmService, nullptr);
-    vmService->OnVolumeCreated(vc);
+    vmService.OnVolumeCreated(vc);
     VolumeExternal ve;
-    vmService->GetVolumeById(volumeId, ve);
+    vmService.GetVolumeById(volumeId, ve);
     string fsTypes = "fs-1";
-    int32_t result = vmService->Format(volumeId, fsTypes);
+    int32_t result = vmService.Format(volumeId, fsTypes);
     EXPECT_EQ(result, E_VOL_STATE);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_Format_0001";
 }
@@ -817,15 +753,13 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::e
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0001";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string id = "vol-1-6";
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    ASSERT_NE(vmService, nullptr);
     g_cnt = 0;
-    vmService->NotifyMtpMounted(id, path, desc, uuid);
+    vmService.NotifyMtpMounted(id, path, desc, uuid);
     g_cnt = 0;
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0001";
 }
@@ -842,15 +776,13 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0001, testin
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0002";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string id = "vol-1-6";
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    ASSERT_NE(vmService, nullptr);
     g_cnt = 1;
-    vmService->NotifyMtpMounted(id, path, desc, uuid);
+    vmService.NotifyMtpMounted(id, path, desc, uuid);
     g_cnt = 0;
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0002";
 }
@@ -867,15 +799,13 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0002, testin
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0003";
-    std::shared_ptr<VolumeManagerService> vmService =
-            DelayedSingleton<VolumeManagerService>::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string id = "vol-1-6";
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    ASSERT_NE(vmService, nullptr);
     g_cnt = 2;
-    vmService->NotifyMtpMounted(id, path, desc, uuid);
+    vmService.NotifyMtpMounted(id, path, desc, uuid);
     g_cnt = 0;
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0003";
 }

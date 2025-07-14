@@ -53,15 +53,13 @@ public:
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareAddUser_0000";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 121;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        result = service->PrepareAddUser(userId, flag);
-    }
+    result = service.PrepareAddUser(userId, flag);
     EXPECT_EQ(result, E_OK);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0000";
 }
 
@@ -77,15 +75,13 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, 
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareAddUser_0001";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = -1;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        result = service->PrepareAddUser(userId, flag);
-    }
+    result = service.PrepareAddUser(userId, flag);
     EXPECT_EQ(result, E_USERID_RANGE);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0001";
 }
 
@@ -101,15 +97,13 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, 
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareAddUser_0002";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 19999;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        result = service->PrepareAddUser(userId, flag);
-    }
+    result = service.PrepareAddUser(userId, flag);
     EXPECT_EQ(result, E_USERID_RANGE);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0002";
 }
 
@@ -125,16 +119,14 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareAddUser_0003";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 102;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->PrepareAddUser(userId, flag);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.PrepareAddUser(userId, flag);
     EXPECT_EQ(result, E_OK);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
 
@@ -150,14 +142,12 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_RemoveUser_0000";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 103;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->RemoveUser(userId, flag);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.RemoveUser(userId, flag);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0000";
 }
@@ -174,13 +164,11 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_RemoveUser_0001";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 104;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        result = service->RemoveUser(userId, flag);
-    }
+    result = service.RemoveUser(userId, flag);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
@@ -197,14 +185,12 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_RemoveUser_0002";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = -2;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->RemoveUser(userId, flag);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.RemoveUser(userId, flag);
     EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0002";
 }
@@ -221,17 +207,15 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0002, test
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareStartUser_0000";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 105;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->PrepareStartUser(userId);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.PrepareStartUser(userId);
     EXPECT_EQ(result, E_OK);
-    service->StopUser(userId);
-    service->RemoveUser(userId, flag);
+    service.StopUser(userId);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0000";
 }
 
@@ -247,12 +231,10 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0000
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareStartUser_0001";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 106;
     int32_t result;
-    if (service != nullptr) {
-        result = service->PrepareStartUser(userId);
-    }
+    result = service.PrepareStartUser(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0001";
 }
@@ -269,14 +251,12 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0001
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareStartUser_0002";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = -4;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->PrepareStartUser(userId);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.PrepareStartUser(userId);
     EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0002";
 }
@@ -293,17 +273,16 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_StopUser_0000";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 108;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        service->PrepareStartUser(userId);
-        result = service->StopUser(userId);
-    }
+    service.PrepareAddUser(userId, flag);
+    service.PrepareStartUser(userId);
+    result = service.StopUser(userId);
+
     EXPECT_EQ(result, E_OK);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0000";
 }
 
@@ -319,12 +298,10 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testin
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_StopUser_0001";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 109;
     int32_t result;
-    if (service != nullptr) {
-        result = service->StopUser(userId);
-    }
+    result = service.StopUser(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0001";
 }
@@ -341,15 +318,13 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0001, testin
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_StopUser_0002";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = -6;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        service->PrepareStartUser(userId);
-        result = service->StopUser(userId);
-    }
+    service.PrepareAddUser(userId, flag);
+    service.PrepareStartUser(userId);
+    result = service.StopUser(userId);
     EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0002";
 }
@@ -366,16 +341,14 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0002, testin
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_StopUser_0003";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = 110;
     uint32_t flag = 3;
     int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        result = service->StopUser(userId);
-    }
+    service.PrepareAddUser(userId, flag);
+    result = service.StopUser(userId);
     EXPECT_EQ(result, E_OK);
-    service->RemoveUser(userId, flag);
+    service.RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0003";
 }
 
@@ -391,18 +364,14 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testin
 HWTEST_F(MultiUserManagerServiceTest, User_manager_service_CompleteAddUser_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_CompleteAddUser_0000";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    auto &service = MultiUserManagerService::GetInstance();
     int32_t userId = -1;
     int32_t result;
-    if (service != nullptr) {
-        result = service->CompleteAddUser(userId);
-    }
+    result = service.CompleteAddUser(userId);
     EXPECT_EQ(result, E_USERID_RANGE);
 
     userId = 100;
-    if (service != nullptr) {
-        result = service->CompleteAddUser(userId);
-    }
+    result = service.CompleteAddUser(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_CompleteAddUser_0000";
 }
