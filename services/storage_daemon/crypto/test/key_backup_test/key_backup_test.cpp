@@ -578,16 +578,16 @@ HWTEST_F(KeyBackupTest, KeyBackup_AddBackupFileToList_001, TestSize.Level1)
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, filePath));
     KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
-    EXPECT_EQ(fileList.size(), 2);
+    ASSERT_EQ(fileList.size(), 2);
     EXPECT_EQ(fileList[1].isSame, false);
 
     KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
-    EXPECT_EQ(fileList.size(), 2);
+    ASSERT_EQ(fileList.size(), 2);
     EXPECT_EQ(fileList[1].isSame, false);
 
     fileList[1].origFile = filePath;
     KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
-    EXPECT_EQ(fileList.size(), 2);
+    ASSERT_EQ(fileList.size(), 2);
     EXPECT_EQ(fileList[1].isSame, true);
     unlink(filePath.c_str());
     GTEST_LOG_(INFO) << "KeyBackup_AddBackupFileToList_001 end";

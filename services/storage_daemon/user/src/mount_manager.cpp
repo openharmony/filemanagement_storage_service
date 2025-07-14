@@ -1015,7 +1015,7 @@ static void ClearRedundantResources(int32_t userId)
 int32_t MountManager::MountByUser(int32_t userId)
 {
     bool isCeEncrypt = false;
-    int ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isCeEncrypt);
+    int ret = KeyManager::GetInstance().GetFileEncryptStatus(userId, isCeEncrypt);
     if (ret != E_OK || isCeEncrypt) {
         LOGE("User %{public}d de has not decrypt.", userId);
         return E_KEY_NOT_ACTIVED;

@@ -148,7 +148,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     (void) OHOS::LoadStringFromFile(elNeedRestorePath, SINGLE_RESTORE_VERSION);
     LOGI("start restore User %{public}u el%{public}u, restore version = %{public}s", userId, type,
         SINGLE_RESTORE_VERSION.c_str());
-    ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
+    ret = KeyManager::GetInstance().RestoreUserKey(userId, type);
     if (ret != E_OK) {
         if (type != EL1_KEY) {
             LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
@@ -210,7 +210,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     flags = flags | IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4 |
             IStorageDaemonEnum::CRYPTO_FLAG_EL5;
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    int32_t ret = KeyManager::GetInstance().GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (ret == -EEXIST) {
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
@@ -267,7 +267,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
     }
 
 #ifdef USER_CRYPTO_MANAGER
-    destroyUserRet = KeyManager::GetInstance()->DeleteUserKeys(userId);
+    destroyUserRet = KeyManager::GetInstance().DeleteUserKeys(userId);
     if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
         LOGW("DeleteUserKeys failed, please check");
@@ -310,7 +310,7 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 int32_t StorageDaemon::InitGlobalKey(void)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
+    int ret = KeyManager::GetInstance().InitGlobalDeviceKey();
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
@@ -357,7 +357,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     }
 #endif
 
-    int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
+    int ret = KeyManager::GetInstance().InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
@@ -385,7 +385,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    int32_t ret = KeyManager::GetInstance().GenerateUserKeys(userId, flags);
     if (ret != E_OK) {
         LOGE("GenerateUserKeys failed, please check");
         RadarParameter parameterRes = {
@@ -410,7 +410,7 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
+    int32_t ret = KeyManager::GetInstance().DeleteUserKeys(userId);
     if (ret != E_OK) {
         LOGE("DeleteUserKeys failed, please check");
         RadarParameter parameterRes = {
@@ -446,7 +446,7 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
+    int32_t ret = KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
         RadarParameter parameterRes = {
@@ -476,7 +476,7 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
 {
     LOGI("begin to UpdateUseAuthWithRecoveryKey");
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    return KeyManager::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
 #else
     return E_OK;
 #endif
@@ -485,7 +485,7 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
 #ifdef USER_CRYPTO_MIGRATE_KEY
 std::string StorageDaemon::GetNeedRestoreVersion(uint32_t userId, KeyType type)
 {
-    std::string need_restore_path = KeyManager::GetInstance()->GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    std::string need_restore_path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     std::string need_restore_version;
     OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
     return need_restore_version;
@@ -521,7 +521,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
         return ret;
     }
 
-    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, {'!'});
+    ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, {'!'});
     if (ret != E_OK) {
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
@@ -533,7 +533,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     }
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret,
                                         .secureUid = secureUid };
-    ret = KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
+    ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
     if (ret != E_OK) {
         std::string isOldEmy = userTokenSecret.oldSecret.empty() ? "true" : "false";
         std::string isNewEmy = userTokenSecret.newSecret.empty() ? "true" : "false";
@@ -543,7 +543,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
         return ret;
     }
 
-    ret = KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type);
+    ret = KeyManager::GetInstance().UpdateCeEceSeceKeyContext(userId, type);
     if (ret != E_OK) {
         StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::UpdateCeEceSeceKeyContext",
             userId, ret, std::to_string(type), "");
@@ -575,7 +575,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     if (ret != E_OK) {
         return ret;
     }
-    std::string need_restore_path = KeyManager::GetInstance()->GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    std::string need_restore_path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     uint32_t new_need_restore = static_cast<uint32_t>(std::atoi(needRestoreVersion.c_str()) + 1);
     std::string errMsg = "";
     if (new_need_restore == UpdateVersion::UPDATE_V4 &&
@@ -585,14 +585,14 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
             userId, E_SAVE_STRING_TO_FILE_ERR, std::to_string(type), errMsg);
     }
     LOGW("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
-    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
+    ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, secret);
     if (ret != E_OK) {
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
 
     std::error_code errCode;
-    std::string newVersion = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type) + FSCRYPT_VERSION_DIR;
+    std::string newVersion = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type) + FSCRYPT_VERSION_DIR;
     if (std::filesystem::exists(newVersion, errCode)) {
         ClearNatoRestoreKey(userId, type, true);
         return E_OK;
@@ -616,13 +616,13 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
 {
     LOGW("Prepare dirs and update auth for nato secen for userId=%{public}d, keyType=%{public}u", userId, type);
     std::error_code errCode;
-    std::string natoRestore = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type) + RESTORE_DIR;
+    std::string natoRestore = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type) + RESTORE_DIR;
     if (!std::filesystem::exists(natoRestore, errCode)) {
         LOGE("Nato restore file=%{public}s is not exist.", natoRestore.c_str());
         return E_KEY_TYPE_INVALID;
     }
 
-    int32_t ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type, token);
+    int32_t ret = KeyManager::GetInstance().ActiveElxUserKey4Nato(userId, type, token);
     if (ret != E_OK) {
         LOGE("Active user=%{public}d el=%{public}u key fot nato secen failed, ret=%{public}d.", userId, type, ret);
         return ret;
@@ -682,7 +682,7 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId,
     uint32_t flags = 0;
 
     LOGI("enter:");
-    ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, type, token, secret);
+    ret = KeyManager::GetInstance().GenerateUserKeyByType(userId, type, token, secret);
     if (ret != E_OK) {
         LOGE("upgrade scene:generate user key fail, userId %{public}u, KeyType %{public}u, sec empty %{public}d",
              userId, type, secret.empty());
@@ -723,7 +723,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGW("ActiveUserKey with type %{public}u enter", type);
-    int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
+    int ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, secret);
     if (ret != E_OK && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         std::error_code errCode;
@@ -812,7 +812,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     int32_t ret = E_OK;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
-    std::string natoRestore = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, EL2_KEY) + RESTORE_DIR;
+    std::string natoRestore = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, EL2_KEY) + RESTORE_DIR;
     if (std::filesystem::exists(natoRestore, errCode)) {
         LOGW("Nato need_restore file=%{public}s is exist, invoke ActiveUserKey4Nato.", natoRestore.c_str());
         return ActiveUserKey4Nato(userId, token, secret);
@@ -853,7 +853,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     (void)SetPriority();  // set tid priority to 40
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
+    ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKey failed, userId=%{public}u, type=%{public}u, tok empty %{public}d sec empty %{public}d",
             userId, EL2_KEY, token.empty(), secret.empty());
@@ -870,13 +870,13 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepareElX failed, userId %{public}u.", userId);
-        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+        KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
-    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
         LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
@@ -957,12 +957,12 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
-        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+        KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for update secen for userId=%{public}d success.", userId);
 
-    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
         LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::UnlockUserAppKeys", userId, ueceRet, "EL5");
@@ -974,7 +974,7 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
 
 void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll)
 {
-    std::string natoKey = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type);
+    std::string natoKey = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type);
     if (!isClearAll) {
         RmDirRecurse(natoKey + PATH_LATEST);
         return;
@@ -1035,7 +1035,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority();  // set tid priority to 40
-    int32_t ret = KeyManager::GetInstance()->InActiveUserKey(userId);
+    int32_t ret = KeyManager::GetInstance().InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
         RadarParameter parameterRes = {
@@ -1066,7 +1066,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 int32_t StorageDaemon::LockUserScreen(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->LockUserScreen(userId);
+    int32_t ret = KeyManager::GetInstance().LockUserScreen(userId);
     if (ret != E_OK) {
         LOGE("LockUserScreen failed, please check");
         RadarParameter parameterRes = {
@@ -1100,7 +1100,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority();  // set tid priority to 40
-    int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
+    int32_t ret = KeyManager::GetInstance().UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d.", userId, ret);
         RadarParameter parameterRes = {
@@ -1131,7 +1131,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
+    return KeyManager::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
 #else
     return E_OK;
 #endif
@@ -1140,7 +1140,7 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret = KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId, needReSet);
+    int ret = KeyManager::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("GenerateAppKey", userId, ret, EL5,
             "not support uece / EL5key is nullptr or ENONET");
@@ -1154,7 +1154,7 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::str
 int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret = ret = KeyManager::GetInstance()->DeleteAppkey(userId, keyId);
+    int ret = ret = KeyManager::GetInstance().DeleteAppkey(userId, keyId);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("DeleteAppKey", userId, ret, EL5,
             "EL5key is nullptr / Failed to delete AppKey2");
@@ -1172,7 +1172,7 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 {
     LOGI("begin to CreateRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
+    return KeyManager::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
 #endif
@@ -1182,7 +1182,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("begin to SetRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->SetRecoverKey(key);
+    return KeyManager::GetInstance().SetRecoverKey(key);
 #else
     return E_OK;
 #endif
@@ -1192,7 +1192,7 @@ int32_t StorageDaemon::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkTy
 {
     LOGI("begin to ResetSecretWithRecoveryKey");
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 #else
     return E_OK;
 #endif
@@ -1202,7 +1202,7 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority();  // set tid priority to 40
-    int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
+    int32_t ret = KeyManager::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
         RadarParameter parameterRes = {
@@ -1231,7 +1231,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 {
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority();  // set tid priority to 40
-    int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    int32_t ret = KeyManager::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (ret != E_OK) {
         LOGE("GetFileEncryptStatus failed, please check");
         RadarParameter parameterRes = {
@@ -1280,7 +1280,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
             !isOsAccountExists && !std::filesystem::exists(el4NeedRestorePath, errCode)) {
             ret = UserManager::GetInstance().DestroyUserDirs(failedUserId, flags);
             LOGW("Destroy user %{public}d dirs, ret is: %{public}d", failedUserId, ret);
-            ret = KeyManager::GetInstance()->DeleteUserKeys(failedUserId);
+            ret = KeyManager::GetInstance().DeleteUserKeys(failedUserId);
             LOGW("Delete user %{public}d keys, ret is: %{public}d", failedUserId, ret);
         }
 #endif

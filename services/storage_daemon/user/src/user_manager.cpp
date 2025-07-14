@@ -292,7 +292,7 @@ int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &le
         LOGE("el type error");
         return E_SET_POLICY;
     }
-    if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL_DIR_MAP[level], list)) {
+    if (KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL_DIR_MAP[level], list)) {
         LOGE("Set user dir el1 policy error");
         return E_SET_POLICY;
     }
