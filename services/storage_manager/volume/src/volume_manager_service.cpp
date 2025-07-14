@@ -27,6 +27,7 @@
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #include "utils/file_utils.h"
+#include "utils/string_utils.h"
 #include "volume/notification.h"
 
 using namespace std;
@@ -188,6 +189,7 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
 {
     LOGI("VolumeManagerService::MountUsbFuse in");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -378,7 +380,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     }
 
     if (StorageDaemon::IsFuse()) {
-        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(volumeId);
+        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUMount(volumeId);
     }
     return result;
 }
