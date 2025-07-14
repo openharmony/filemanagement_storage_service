@@ -191,7 +191,7 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
-        return E_COMMUNICATION_IS_NULLPTR
+        return E_COMMUNICATION_IS_NULLPTR;
     }
 
     std::string fsUuid;
@@ -199,6 +199,9 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
     int32_t result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (result == E_OK) {
         result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
+        if (result != E_OK) {
+            volumePtr->SetState(VolumeState::UNMOUNTED);
+        }
     }
     LOGI("VolumeManagerService::MountUsbFuse out");
     return result;
@@ -367,7 +370,6 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
-        volumePtr->SetState(VolumeState::UNMOUNTED);
         return E_COMMUNICATION_IS_NULLPTR;
     }
     int32_t result = sdCommunication->Format(volumeId, fsType);
