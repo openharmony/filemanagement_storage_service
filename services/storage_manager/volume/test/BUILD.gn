@@ -62,13 +62,17 @@ ohos_unittest("volume_manager_service_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
@@ -78,9 +82,10 @@ ohos_unittest("volume_manager_service_test") {
   ]
 
   include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/mock",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
-    "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_path}/utils/include",
