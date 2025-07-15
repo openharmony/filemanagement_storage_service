@@ -360,7 +360,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
- }
+}
 
  /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_005
