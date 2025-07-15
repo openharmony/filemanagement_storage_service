@@ -110,6 +110,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0001";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-2";
@@ -137,7 +139,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::e
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0002";
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -165,7 +167,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0003";
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -174,6 +176,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
     int32_t result;
     ASSERT_NE(vmService, nullptr);
     vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
     result = vmService->Mount(volumeId);
     vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -191,9 +196,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
  */
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0002";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0004";
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -202,11 +207,77 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
     int32_t result;
     ASSERT_NE(vmService, nullptr);
     vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
     result = vmService->Mount(volumeId);
     vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0002";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0004";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Mount_0005
+ * @tc.name: Volume_manager_service_Mount_0005
+ * @tc.desc: Test function of Mount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0005";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
+    int32_t result;
+    ASSERT_NE(vmService, nullptr);
+    vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
+    result = vmService->Mount(volumeId);
+    vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0005";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Mount_0006
+ * @tc.name: Volume_manager_service_Mount_0006
+ * @tc.desc: Test function of Mount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0006";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
+    int32_t result;
+    ASSERT_NE(vmService, nullptr);
+    vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
+    result = vmService->Mount(volumeId);
+    vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0006";
+}
+
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0000
  * @tc.name: Volume_manager_service_Unmount_0000
@@ -858,7 +929,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::e
 
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_Format_0001
- * @tc.name: Volume_manager_service_Format_0000
+ * @tc.name: Volume_manager_service_Format_0001
  * @tc.desc: Test function of Format interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
@@ -991,25 +1062,25 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0003, testin
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Format_0002
- * @tc.name: Volume_manager_service_Format_0002
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Format_0003
+ * @tc.name: Volume_manager_service_Format_0003
  * @tc.desc: Test function of Format interface for E_NOT_SUPPORT.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0002, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0003, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Format_0002";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Format_0003";
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
     std::shared_ptr<VolumeManagerService> vmService =
             DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-11";
     string fsTypes = "fs-1";
     int32_t result = vmService->Format(volumeId, fsTypes);
-    EXPECT_EQ(result, E_NOT_SUPPORT);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Format_0002";
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Format_0003";
 }
 
 /**
@@ -1029,12 +1100,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0001, tes
     std::string volumeId = "vol-fuse-3";
     int32_t fsType = 1;
     std::string diskId = "disk-fuse-3";
-    int fuseFd = -1;
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::MOUNTED);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    int32_t result = vmService->MountUsbFuse(volumeId, fuseFd);
-    EXPECT_EQ(result, E_VOL_MOUNT_ERR);
+    int32_t result = vmService->MountUsbFuse(volumeId);
+    EXPECT_EQ(result, E_NON_EXIST);
     vmService->volumeMap_.Erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0001";
 }
@@ -1056,11 +1126,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0002, tes
     std::string volumeId = "vol-fuse-4";
     int32_t fsType = 1;
     std::string diskId = "disk-fuse-4";
-    int fuseFd = -1;
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::UNMOUNTED);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    int32_t result = vmService->MountUsbFuse(volumeId, fuseFd);
+    int32_t result = vmService->MountUsbFuse(volumeId);
     // Check method will fail because volume is not properly setup
     EXPECT_NE(result, E_OK);
     vmService->volumeMap_.Erase(volumeId);
@@ -1084,11 +1153,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0003, tes
     std::string volumeId = "vol-fuse-5";
     int32_t fsType = 1;
     std::string diskId = "disk-fuse-5";
-    int fuseFd = -1;
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::UNMOUNTED);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    int32_t result = vmService->MountUsbFuse(volumeId, fuseFd);
+    int32_t result = vmService->MountUsbFuse(volumeId);
     // The communication will fail due to lack of proper setup
     EXPECT_NE(result, E_OK);
     vmService->volumeMap_.Erase(volumeId);
