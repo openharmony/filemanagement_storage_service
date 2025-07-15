@@ -707,14 +707,13 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
             (void)fclose(f);
             return 0;
         }
-        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         (void)fclose(f);
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsEV1 ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
-                    .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize,
-                    .authTokenSize = authToken.size };
+                    .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                    .status = status, .length = bufferSize, .authTokenSize = authToken.size };
     if (MemcpyFbeOptsEV1(ops, authToken, eBuffer.data.get(), eBuffer.size) != EOK) {
         (void)fclose(f);
         return 0;
