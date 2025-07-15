@@ -483,9 +483,7 @@ int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->GenerateUserKeys(userId, flags);
-    return err;
+    return FileSystemCrypto::GetInstance().GenerateUserKeys(userId, flags);
 #else
     return E_OK;
 #endif
@@ -507,9 +505,7 @@ int32_t StorageManager::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->DeleteUserKeys(userId);
-    return err;
+    return FileSystemCrypto::GetInstance().DeleteUserKeys(userId);
 #else
     return E_OK;
 #endif
@@ -522,9 +518,7 @@ int32_t StorageManager::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 #else
     return E_OK;
 #endif
@@ -538,9 +532,8 @@ int32_t StorageManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> 
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
+        plainText);
 #else
     return E_OK;
 #endif
@@ -552,8 +545,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
+    auto err = FileSystemCrypto::GetInstance().ActiveUserKey(userId, token, secret);
     if (err == E_OK) {
         int32_t ret = -1;
         {
@@ -573,8 +565,7 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->InactiveUserKey(userId);
+    auto err = FileSystemCrypto::GetInstance().InactiveUserKey(userId);
     int32_t ret = -1;
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -592,8 +583,7 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->LockUserScreen(userId);
+    return FileSystemCrypto::GetInstance().LockUserScreen(userId);
 #else
     return E_OK;
 #endif
@@ -603,8 +593,7 @@ int32_t StorageManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    return FileSystemCrypto::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 #else
     return E_OK;
 #endif
@@ -614,8 +603,7 @@ int32_t StorageManager::GetUserNeedActiveStatus(uint32_t userId, bool &needActiv
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetUserNeedActiveStatus(userId, needActive);
+    return FileSystemCrypto::GetInstance().GetUserNeedActiveStatus(userId, needActive);
 #else
     return E_OK;
 #endif
@@ -627,8 +615,7 @@ int32_t StorageManager::UnlockUserScreen(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->UnlockUserScreen(userId, token, secret);
+    return FileSystemCrypto::GetInstance().UnlockUserScreen(userId, token, secret);
 #else
     return E_OK;
 #endif
@@ -638,8 +625,7 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetLockScreenStatus(userId, lockScreenStatus);
+    return FileSystemCrypto::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
 #else
     return E_OK;
 #endif
@@ -649,8 +635,7 @@ int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::st
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("hashId: %{public}u", hashId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GenerateAppkey(hashId, userId, keyId, needReSet);
+    return FileSystemCrypto::GetInstance().GenerateAppkey(hashId, userId, keyId, needReSet);
 #else
     return E_OK;
 #endif
@@ -661,8 +646,7 @@ int32_t StorageManager::DeleteAppkey(const std::string &keyId)
 #ifdef USER_CRYPTO_MANAGER
     LOGI("DeleteAppkey enter");
     LOGI("keyId :  %{public}s", keyId.c_str());
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->DeleteAppkey(keyId);
+    return FileSystemCrypto::GetInstance().DeleteAppkey(keyId);
 #else
     return E_OK;
 #endif
@@ -676,8 +660,7 @@ int32_t StorageManager::CreateRecoverKey(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     LOGI("CreateRecoverKey enter");
     LOGI("UserId :  %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->CreateRecoverKey(userId, userType, token, secret);
+    return FileSystemCrypto::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
 #endif
@@ -687,8 +670,7 @@ int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("SetRecoverKey enter");
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->SetRecoverKey(key);
+    return FileSystemCrypto::GetInstance().SetRecoverKey(key);
 #else
     return E_OK;
 #endif
@@ -698,9 +680,7 @@ int32_t StorageManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkT
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("ResetSecretWithRecoveryKey UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->ResetSecretWithRecoveryKey(userId, rkType, key);
-    return err;
+    return FileSystemCrypto::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 #else
     return E_OK;
 #endif
@@ -710,9 +690,7 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateKeyContext(userId, needRemoveTmpKey);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
 #else
     return E_OK;
 #endif
@@ -882,8 +860,7 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t ret = fsCrypto->InactiveUserPublicDirKey(userId);
+    auto ret = FileSystemCrypto::GetInstance().InactiveUserPublicDirKey(userId);
     LOGI("inactive user public dir key, userId: %{public}d, ret: %{public}d", userId, ret);
     return ret;
 #else
@@ -893,16 +870,12 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 
 int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->RegisterUeceActivationCallback(ueceCallback);
-    return err;
+    return FileSystemCrypto::GetInstance().RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageManager::UnregisterUeceActivationCallback()
 {
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UnregisterUeceActivationCallback();
-    return err;
+    return FileSystemCrypto::GetInstance().UnregisterUeceActivationCallback();
 }
 }
 }
