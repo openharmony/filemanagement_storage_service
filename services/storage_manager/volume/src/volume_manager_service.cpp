@@ -192,7 +192,8 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
-        return E_COMMUNICATION_IS_NULLPTR;
+        LOGE("sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
     }
 
     std::string fsUuid;
@@ -368,7 +369,8 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
-        return E_COMMUNICATION_IS_NULLPTR;
+        LOGE("sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
     }
     int32_t result = sdCommunication->Format(volumeId, fsType);
     if (result != E_OK) {
