@@ -173,13 +173,14 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
     std::string mountUsbFusePath = StorageDaemon::StringPrintf("/mnt/data/external/%s", volumePtr->GetUuid().c_str());
     if (StorageDaemon::IsFuse() && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
         result = MountUsbFuse(volumeId);
-    }
-    if (result == E_OK) {
-        result = sdCommunication->Mount(volumeId, 0);
         if (result != E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
+            return result;
         }
-    } else {
+    }
+    
+    result = sdCommunication->Mount(volumeId, 0);
+    if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
     }
     return result;
@@ -189,10 +190,8 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
 {
     LOGI("VolumeManagerService::MountUsbFuse in");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
-        volumePtr->SetState(VolumeState::UNMOUNTED);
         return E_COMMUNICATION_IS_NULLPTR;
     }
 
@@ -201,9 +200,6 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
     int32_t result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (result == E_OK) {
         result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
-        if (result != E_OK) {
-            volumePtr->SetState(VolumeState::UNMOUNTED);
-        }
     }
     LOGI("VolumeManagerService::MountUsbFuse out");
     return result;
