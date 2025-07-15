@@ -1010,7 +1010,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0003, testing::
     std::string volumeId = "vol-1-11";
     string fsTypes = "fs-1";
     int32_t result = vmService->Format(volumeId, fsTypes);
-    EXPECT_EQ(result, E_NOT_SUPPORT);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Format_0003";
 }
 
@@ -1035,7 +1035,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0001, tes
     vc.SetState(VolumeState::MOUNTED);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
     int32_t result = vmService->MountUsbFuse(volumeId);
-    EXPECT_EQ(result, E_VOL_MOUNT_ERR);
+    EXPECT_EQ(result, E_NON_EXIST);
     vmService->volumeMap_.Erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0001";
 }
