@@ -176,6 +176,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
     int32_t result;
     ASSERT_NE(vmService, nullptr);
     vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
     result = vmService->Mount(volumeId);
     vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -204,11 +207,77 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
     int32_t result;
     ASSERT_NE(vmService, nullptr);
     vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
     result = vmService->Mount(volumeId);
     vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0004";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Mount_0005
+ * @tc.name: Volume_manager_service_Mount_0005
+ * @tc.desc: Test function of Mount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0005";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
+    int32_t result;
+    ASSERT_NE(vmService, nullptr);
+    vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
+    result = vmService->Mount(volumeId);
+    vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0005";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Mount_0006
+ * @tc.name: Volume_manager_service_Mount_0006
+ * @tc.desc: Test function of Mount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0006";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
+    int32_t result;
+    ASSERT_NE(vmService, nullptr);
+    vmService->OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService->volumeMap_.ReadVal(volumeId);
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetFsType(FsType::MTP);
+    result = vmService->Mount(volumeId);
+    vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0006";
+}
+
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0000
  * @tc.name: Volume_manager_service_Unmount_0000
@@ -860,7 +929,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::e
 
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_Format_0001
- * @tc.name: Volume_manager_service_Format_0000
+ * @tc.name: Volume_manager_service_Format_0001
  * @tc.desc: Test function of Format interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
