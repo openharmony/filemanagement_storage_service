@@ -42,10 +42,10 @@ HWTEST_F(MtpDeviceMonitorTest, HasMounted_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HasMounted_001 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     MtpDeviceInfo device;
     device.id = 1;
-    int32_t result = monitor->HasMounted(device);
+    int32_t result = monitor.HasMounted(device);
     EXPECT_FALSE(result);
 
     GTEST_LOG_(INFO) << "HasMounted_001 end";
@@ -60,13 +60,13 @@ HWTEST_F(MtpDeviceMonitorTest, HasMounted_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HasMounted_002 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     MtpDeviceInfo device;
     device.id = "1";
-    monitor->lastestMtpDevList_.push_back(device);
-    int32_t result = monitor->HasMounted(device);
+    monitor.lastestMtpDevList_.push_back(device);
+    int32_t result = monitor.HasMounted(device);
     EXPECT_TRUE(result);
-    monitor->lastestMtpDevList_.clear();
+    monitor.lastestMtpDevList_.clear();
 
     GTEST_LOG_(INFO) << "HasMounted_002 end";
 }
@@ -80,14 +80,14 @@ HWTEST_F(MtpDeviceMonitorTest, MountTest_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountTest_001 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::string id = "test_id";
     MtpDeviceInfo device;
     device.id = id;
-    monitor->lastestMtpDevList_.push_back(device);
-    int32_t result = monitor->Mount(id);
+    monitor.lastestMtpDevList_.push_back(device);
+    int32_t result = monitor.Mount(id);
     EXPECT_EQ(result, E_MTP_PREPARE_DIR_ERR);
-    monitor->lastestMtpDevList_.clear();
+    monitor.lastestMtpDevList_.clear();
 
     GTEST_LOG_(INFO) << "MountTest_001 end";
 }
@@ -101,11 +101,11 @@ HWTEST_F(MtpDeviceMonitorTest, MountTest_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountTest_002 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::string id = "test_id";
     MtpDeviceInfo device;
     device.id = id;
-    int32_t result = monitor->Mount(id);
+    int32_t result = monitor.Mount(id);
     EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "MountTest_002 end";
@@ -120,14 +120,14 @@ HWTEST_F(MtpDeviceMonitorTest, UmountTest_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "UmountTest_001 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::string id = "test_id";
     MtpDeviceInfo device;
     device.id = id;
-    monitor->lastestMtpDevList_.push_back(device);
-    int32_t result = monitor->Umount(id);
+    monitor.lastestMtpDevList_.push_back(device);
+    int32_t result = monitor.Umount(id);
     EXPECT_EQ(result, E_MTP_UMOUNT_FAILED);
-    monitor->lastestMtpDevList_.clear();
+    monitor.lastestMtpDevList_.clear();
 
     GTEST_LOG_(INFO) << "UmountTest_001 end";
 }
@@ -141,11 +141,11 @@ HWTEST_F(MtpDeviceMonitorTest, UmountTest_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "UmountTest_002 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::string id = "test_id";
     MtpDeviceInfo device;
     device.id = id;
-    int32_t result = monitor->Umount(id);
+    int32_t result = monitor.Umount(id);
     EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "UmountTest_002 end";
@@ -160,16 +160,16 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_001 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::vector<MtpDeviceInfo> devices;
     MtpDeviceInfo device;
     device.id = "123";
     devices.push_back(device);
-    monitor->lastestMtpDevList_.push_back(device);
-    monitor->MountMtpDevice(devices);
-    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    monitor.lastestMtpDevList_.push_back(device);
+    monitor.MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor.lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 1);
-    monitor->lastestMtpDevList_.clear();
+    monitor.lastestMtpDevList_.clear();
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_001 end";
 }
@@ -183,13 +183,13 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_002 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::vector<MtpDeviceInfo> devices;
     MtpDeviceInfo device;
     device.id = "123";
     devices.push_back(device);
-    monitor->MountMtpDevice(devices);
-    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    monitor.MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor.lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 0);
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_002 end";
@@ -204,13 +204,13 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_003 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::vector<MtpDeviceInfo> devices;
     MtpDeviceInfo device;
     device.id = "123";
     devices.push_back(device);
-    monitor->MountMtpDevice(devices);
-    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    monitor.MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor.lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 0);
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_003 end";
@@ -225,7 +225,7 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_004, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_004 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     std::vector<MtpDeviceInfo> devices;
     MtpDeviceInfo device1;
     device1.id = "123";
@@ -233,9 +233,9 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_004, TestSize.Level1)
     device2.id = "456";
     devices.push_back(device1);
     devices.push_back(device2);
-    monitor->lastestMtpDevList_.push_back(device1);
-    monitor->MountMtpDevice(devices);
-    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    monitor.lastestMtpDevList_.push_back(device1);
+    monitor.MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor.lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 1);
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_004 end";
@@ -250,8 +250,8 @@ HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtp_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 start";
 
-    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
-    bool result = monitor->IsNeedDisableMtp();
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    bool result = monitor.IsNeedDisableMtp();
     EXPECT_FALSE(result);
 
     GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 end";

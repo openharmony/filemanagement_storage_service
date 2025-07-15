@@ -56,8 +56,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetattr_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetattr_001 start";
 
     struct stat buf;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetAttr("/", &buf);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int result = mtpFileSystem.GetAttr("/", &buf);
     EXPECT_EQ(result, 0);
     EXPECT_EQ(buf.st_mode, S_IFDIR | PERMISSION_ONE);
     EXPECT_EQ(buf.st_nlink, ST_NLINK_TWO);
@@ -77,8 +77,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkNod_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     mode_t mode = S_IFDIR;
     dev_t dev = 1;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->MkNod(path, mode, dev);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.MkNod(path, mode, dev);
     EXPECT_EQ(ret, -EINVAL);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_001 end";
@@ -96,8 +96,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChMod_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     mode_t mode = 0755;
     struct fuse_file_info fi;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->ChMods(path, mode, &fi);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.ChMods(path, mode, &fi);
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChMod_001 end";
@@ -116,8 +116,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChown_001, TestSize.Level1)
     uid_t uid = 1000;
     gid_t gid = 1000;
     struct fuse_file_info fi;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->Chown(path, uid, gid, &fi);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.Chown(path, uid, gid, &fi);
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChown_001 end";
@@ -137,8 +137,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapWrite_001, TestSize.Level1)
     size_t size = strlen(buf);
     off_t offset = 0;
     struct fuse_file_info fileInfo;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->Write(path, buf, size, offset, &fileInfo);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.Write(path, buf, size, offset, &fileInfo);
     EXPECT_NE(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapWrite_001 end";
@@ -155,8 +155,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapFlush_001, TestSize.Level1)
 
     const char *path = "/mnt/data/external";
     struct fuse_file_info fileInfo;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->Flush(path, &fileInfo);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.Flush(path, &fileInfo);
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapFlush_001 end";
@@ -174,8 +174,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapFSync_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     int datasync = 1;
     struct fuse_file_info fileInfo;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->FSync(path, datasync, &fileInfo);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.FSync(path, datasync, &fileInfo);
     EXPECT_NE(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapFSync_001 end";
@@ -192,8 +192,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReleaseDir_001, TestSize.Level1)
 
     const char *path = "/mnt/data/external";
     struct fuse_file_info fileInfo;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->ReleaseDir(path, &fileInfo);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.ReleaseDir(path, &fileInfo);
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReleaseDir_001 end";
@@ -211,8 +211,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapFSyncDir_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     struct fuse_file_info fileInfo;
     int datasync = 1;
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->FSyncDir(path, datasync, &fileInfo);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.FSyncDir(path, datasync, &fileInfo);
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapFSyncDir_001 end";
@@ -296,17 +296,17 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_SetXAttr_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsFuseTest_SetXAttr_001 start";
 
     const char *path = "/mnt/data/external";
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->SetXAttr(NULL, NULL);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.SetXAttr(NULL, NULL, NULL);
     EXPECT_EQ(ret, -ENOENT);
 
-    ret = mtpFileSystem->SetXAttr(path, "user.uploadCompleted");
+    ret = mtpFileSystem.SetXAttr(path, "user.uploadCompleted", NULL);
     EXPECT_EQ(ret, -ENOENT);
 
-    ret = mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
+    ret = mtpFileSystem.SetXAttr(path, "user.isUploadCompleted", NULL);
     EXPECT_EQ(ret, 0);
 
-    mtpFileSystem->device_.RemoveUploadRecord(path);
+    mtpFileSystem.device_.RemoveUploadRecord(path);
     GTEST_LOG_(INFO) << "MtpfsFuseTest_SetXAttr_001 end";
 }
 
@@ -322,25 +322,25 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     char out[UPLOAD_RECORD_SUCCESS_SENDING_LEN + 1] = { 0 };
 
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->GetXAttr(NULL, NULL, NULL, 0);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int ret = mtpFileSystem.GetXAttr(NULL, NULL, NULL, 0);
     EXPECT_EQ(ret, 0);
 
-    ret = mtpFileSystem->GetXAttr(path, "user.uploadCompleted", NULL, 0);
+    ret = mtpFileSystem.GetXAttr(path, "user.uploadCompleted", NULL, 0);
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
-    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", NULL, 0);
+    ret = mtpFileSystem.GetXAttr(path, "user.isUploadCompleted", NULL, 0);
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
-    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    ret = mtpFileSystem.GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, 0);
 
-    mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
-    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    mtpFileSystem.SetXAttr(path, "user.isUploadCompleted", NULL);
+    ret = mtpFileSystem.GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
-    mtpFileSystem->device_.SetUploadRecord(path, "success");
-    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    mtpFileSystem.device_.SetUploadRecord(path, "success");
+    ret = mtpFileSystem.GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 end";
@@ -355,10 +355,10 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_InitCurrentUidAndCacheMap_001, TestSize.Le
 {
     GTEST_LOG_(INFO) << "MtpfsFuseTest_InitCurrentUidAndCacheMap_001 start";
 
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    mtpFileSystem->InitCurrentUidAndCacheMap();
-    EXPECT_TRUE(mtpFileSystem->mtpClientWriteMap_.size() > 0);
-    mtpFileSystem->mtpClientWriteMap_.clear();
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    mtpFileSystem.InitCurrentUidAndCacheMap();
+    EXPECT_TRUE(mtpFileSystem.mtpClientWriteMap_.size() > 0);
+    mtpFileSystem.mtpClientWriteMap_.clear();
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_InitCurrentUidAndCacheMap_001 end";
 }
@@ -372,8 +372,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsCurrentUserReadOnly_001, TestSize.Level1
 {
     GTEST_LOG_(INFO) << "MtpfsFuseTest_IsCurrentUserReadOnly_001 start";
 
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    bool result = mtpFileSystem->IsCurrentUserReadOnly();
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    bool result = mtpFileSystem.IsCurrentUserReadOnly();
     EXPECT_FALSE(result);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_IsCurrentUserReadOnly_001 end";
@@ -388,7 +388,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
 {
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 start";
 
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
     std::set<OHOS::AccountSA::OsAccountState> states = { OHOS::AccountSA::OsAccountState::SWITCHED };
     bool withHandShake = true;
     OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(states, withHandShake);
@@ -402,8 +402,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
     osAccountStateData.fromId = FROM_ID;
     osAccountStateData.toId = TO_ID;
     accountSubscriber.OnStateChanged(osAccountStateData);
-    EXPECT_EQ(mtpFileSystem->currentUid, TO_ID);
-    mtpFileSystem->currentUid = 0;
+    EXPECT_EQ(mtpFileSystem.currentUid, TO_ID);
+    mtpFileSystem.currentUid = 0;
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 end";
 }
@@ -416,8 +416,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
 {
     char out[1024];
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int result = mtpFileSystem.GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -429,8 +429,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
 {
     char out[1024];
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetXAttr("/path/to/file", nullptr, out, sizeof(out));
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int result = mtpFileSystem.GetXAttr("/path/to/file", nullptr, out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -441,8 +441,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
  */
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
 {
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int result = mtpFileSystem.GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
     EXPECT_EQ(result, UPLOAD_RECORD_SUCCESS_LEN);
 }
 
@@ -454,8 +454,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_004, TestSize.Level1)
 {
     char out[1024];
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
+    int result = mtpFileSystem.GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -468,7 +468,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintCh
 {
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001 start";
 
-    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
     const std::set<std::string> constraintSet = { "constraint.mtp.client.write" };
     AccountConstraintSubscriber accountConstraintSubscriber(constraintSet);
 
@@ -477,11 +477,11 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintCh
     osAccountConstraintStateData.localId = 100;
     osAccountConstraintStateData.constraint = "constraint.mtp.client.write";
     accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
-    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 1);
+    EXPECT_EQ(mtpFileSystem.mtpClientWriteMap_[100], 1);
 
     osAccountConstraintStateData.isEnabled = false;
     accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
-    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 0);
+    EXPECT_EQ(mtpFileSystem.mtpClientWriteMap_[100], 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001 end";
 }

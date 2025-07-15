@@ -195,7 +195,7 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
             LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
             return E_MTP_MOUNT_FAILED;
         }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
+        int32_t ret = MtpDeviceManager::GetInstance().MountDevice(device);
         if (ret == E_OK) {
             lastestMtpDevList_.push_back(device);
         } else if (ret == E_MTP_IS_MOUNTING) {
@@ -222,7 +222,7 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
 {
     std::lock_guard<std::mutex> lock(listMutex_);
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, false);
+        int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, false);
         if (ret != E_OK) {
             LOGE("UmountAllMtpDevice: umount mtp device failed, path=%{public}s", (iter->path).c_str());
         }
@@ -237,7 +237,7 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, true);
+        int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
         } else {
@@ -255,7 +255,7 @@ int32_t MtpDeviceMonitor::Mount(const std::string &id)
         if (iter->id != id) {
             continue;
         }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(*iter);
+        int32_t ret = MtpDeviceManager::GetInstance().MountDevice(*iter);
         if (ret != E_OK) {
             LOGE("MountMtpDevice: mtp device mount failed.");
         }
@@ -273,7 +273,7 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         if (iter->id != id) {
             continue;
         }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, false);
+        int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, false);
         if (ret == E_OK) {
             lastestMtpDevList_.erase(iter);
         } else {
@@ -326,6 +326,10 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance == nullptr) {
+        LOGE("Converted context is null");
+        return;
+    }
     if (instance->IsNeedDisableMtp()) {
         LOGI("MTP disable parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
@@ -344,6 +348,10 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance == nullptr) {
+        LOGE("Converted context is null");
+        return;
+    }
     if (instance->IsNeedDisableMtp()) {
         LOGI("Enterprise device parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
