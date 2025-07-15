@@ -89,6 +89,7 @@ private:
     int32_t HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
     std::mutex mutex_;
+    std::mutex mutexStats_;
 
     void StorageRadarThd(void);
 private:

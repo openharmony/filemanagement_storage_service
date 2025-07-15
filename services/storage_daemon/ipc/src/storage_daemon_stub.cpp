@@ -98,6 +98,7 @@ int32_t ReadBatchUris(MessageParcel &data, std::vector<std::string> &uriVec)
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonStub::GetUserStatistics(const uint32_t userId)
 {
+    std::lock_guard<std::mutex> lock(mutexStats_);
     auto it = opStatistics_.find(userId);
     if (it != opStatistics_.end()) {
         return it;
@@ -108,7 +109,7 @@ std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonStub::GetUserStati
 
 void StorageDaemonStub::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutexStats_);
     statistics.insert(opStatistics_.begin(), opStatistics_.end());
     opStatistics_.clear();
 }
