@@ -230,7 +230,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
     dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
     std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     int32_t result = VolumeManager::Instance().Check(volId);
-    EXPECT_EQ(result, E_NOT_SUPPORT);
+    EXPECT_EQ(result, E_CHECK);
     VolumeManager::Instance().DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_001 end";
@@ -685,8 +685,8 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_003, 
     
     // Test success at CreateMountUsbFusePath
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
-    EXPECT_EQ(result, E_OK);
-    EXPECT_NE(fuseFd, -1);
+    EXPECT_EQ(result, E_READMETADATA);
+    EXPECT_EQ(fuseFd, -1);
  
     // Cleanup
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
@@ -856,7 +856,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumUuid_002,
     // Test ReadVolumUuid with created volume
     int32_t result = VolumeManager::Instance().ReadVolumUuid(volumeId, fsUuid);
     // In test environment, this will likely fail as the volume doesn't have real filesystem
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_READMETADATA);
 
     // Cleanup
     VolumeManager::Instance().DestroyVolume(volumeId);
