@@ -351,8 +351,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
- HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_004, TestSize.Level1)
- {
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_004, TestSize.Level1)
+{
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_004 start";
 
     ExternalVolumeInfo vol;
@@ -368,8 +368,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
- HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_005, TestSize.Level1)
- {
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_005, TestSize.Level1)
+{
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_005 start";
 
     ExternalVolumeInfo vol;
@@ -377,7 +377,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
- }
+}
 
  /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_006
@@ -385,8 +385,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
- HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_006, TestSize.Level1)
- {
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_006, TestSize.Level1)
+{
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_006 start";
 
     ExternalVolumeInfo vol;
@@ -394,7 +394,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
- }
+}
 
   /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_007
@@ -402,8 +402,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
- HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_007, TestSize.Level1)
- {
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_007, TestSize.Level1)
+{
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_007 start";
 
     ExternalVolumeInfo vol;
@@ -411,7 +411,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
- }
+}
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001
