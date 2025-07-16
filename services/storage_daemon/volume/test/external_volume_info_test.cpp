@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include "external_volume_info_mock.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "mock/file_utils_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -26,13 +27,28 @@ using namespace testing::ext;
 
 class ExternalVolumeInfoTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase(void) {};
+    static void SetUpTestCase(void);
+    static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
 
     ExternalVolumeInfo* externalVolumeInfo_;
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
+
+void ExternalVolumeInfoTest::SetUpTestCase(void)
+{
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoTest SetUpTestCase";
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void ExternalVolumeInfoTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoTest TearDownTestCase";
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+}
 
 void ExternalVolumeInfoTest::SetUp()
 {
@@ -327,6 +343,74 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_004
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_004 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
+    auto ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+}
+
+ /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_005
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_005 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
+    auto ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+}
+
+ /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_006
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_006 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
+    auto ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+}
+
+  /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_007
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_007 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
+    auto ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_WEXITSTATUS);
 }
 
 /**
