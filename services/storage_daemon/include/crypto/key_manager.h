@@ -44,10 +44,10 @@ constexpr const char *MAINTAIN_USER_EL5_DIR = "/mnt/data_old/service/el1/public/
 
 class KeyManager {
 public:
-    static KeyManager *GetInstance(void)
+    static KeyManager &GetInstance(void)
     {
         static KeyManager instance;
-        return &instance;
+        return instance;
     }
     int InitGlobalDeviceKey(void);
     int InitGlobalUserKeys(void);
@@ -129,6 +129,10 @@ private:
         getLockStatusTime_[1] = 0;
     }
     ~KeyManager() {}
+    KeyManager(const KeyManager &) = delete;
+    KeyManager& operator= (const KeyManager &) = delete;
+    KeyManager(KeyManager &&) = delete;
+    KeyManager& operator= (KeyManager &&) = delete;
     int GenerateAndInstallDeviceKey(const std::string &dir);
     int RestoreDeviceKey(const std::string &dir);
     int GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);

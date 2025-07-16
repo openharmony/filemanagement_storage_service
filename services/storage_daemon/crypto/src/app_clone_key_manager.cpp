@@ -37,21 +37,21 @@ int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
             LOGD("restore path do not exist, errCode %{public}d", errCode.value());
             continue;
         }
-        int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {});
+        int ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {});
         if (ret != E_OK) {
             failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el2 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL2");
             return ret;
         }
-        ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {});
+        ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {});
         if (ret != E_OK) {
             failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el3 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL3");
             return ret;
         }
-        ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {});
+        ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {});
         if (ret != E_OK) {
             failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el4 failed, ret=%{public}d.", userId, ret);

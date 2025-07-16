@@ -30,12 +30,11 @@ struct UserTokenSecret {
 };
 class StorageDaemon {
 public:
-    StorageDaemon() = default;
-    ~StorageDaemon() = default;
-    static StorageDaemon *GetInstance(void)
+
+    static StorageDaemon &GetInstance(void)
     {
         static StorageDaemon instance;
-        return &instance;
+        return instance;
     }
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
@@ -91,6 +90,12 @@ public:
     int32_t UnregisterUeceActivationCallback();
 
 private:
+    StorageDaemon() = default;
+    ~StorageDaemon() = default;
+    StorageDaemon(const StorageDaemon &) = delete;
+    StorageDaemon& operator=(const StorageDaemon &) = delete;
+    StorageDaemon(StorageDaemon &&) = delete;
+    StorageDaemon& operator=(StorageDaemon &&) = delete;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
     std::string GetNeedRestoreFilePathByType(int32_t userId, KeyType type);

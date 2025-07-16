@@ -116,11 +116,11 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_GenerateUserKeys_001, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_KEY_EMPTY_ERROR);
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->SaveUserElKey(userId, EL1_KEY, tmpKey);
+    KeyManager::GetInstance().SaveUserElKey(userId, EL1_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_KEY_EMPTY_ERROR);
 
-    KeyManager::GetInstance()->SaveUserElKey(userId, EL2_KEY, tmpKey);
+    KeyManager::GetInstance().SaveUserElKey(userId, EL2_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_KEY_EMPTY_ERROR);
@@ -222,11 +222,11 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_ActiveUserKey_001, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_OK);
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
+    KeyManager::GetInstance().SaveUserElKey(user, EL1_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_KEY_EMPTY_ERROR);
 
-    KeyManager::GetInstance()->SaveUserElKey(user, EL2_KEY, tmpKey);
+    KeyManager::GetInstance().SaveUserElKey(user, EL2_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_KEY_EMPTY_ERROR);
