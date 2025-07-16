@@ -46,7 +46,7 @@ private:
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
     int32_t CreateMountUsbFusePath(std::string fsUuid);
-    int32_t ReadVolumUuid(std::string volumeId, std::string &fsUuid);
+    int32_t ReadVolumeUuid(std::string volumeId, std::string &fsUuid);
     std::string mountUsbFusePath_;
 };
 } // STORAGE_DAEMON

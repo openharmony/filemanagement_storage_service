@@ -59,9 +59,9 @@ std::string GetAnonyString(const std::string &value)
     return IDiskUtilMoc::diskUtilMoc->GetAnonyString(value);
 }
 
-int32_t ReadVolumUuid(const std::string &devPath, std::string &uuid)
+int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid)
 {
-    return IDiskUtilMoc::diskUtilMoc->ReadVolumUuid(devPath, uuid);
+    return IDiskUtilMoc::diskUtilMoc->ReadVolumeUuid(devPath, uuid);
 }
 }
 }

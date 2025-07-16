@@ -107,9 +107,9 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseMo
     int32_t num = 0;
     vmServiceExt->handler_ = (void *)&num;
     int fuseFd = 0;
-    std::string volumeid = {};
+    std::string volumeId = {};
     std::string fsUuid = {};
-    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeid, fsUuid);
+    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseMount_0000";
 }
@@ -130,56 +130,56 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseMo
     std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
         DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
     int fuseFd = 0;
-    std::string volumeid = {};
+    std::string volumeId = {};
     std::string fsUuid = {};
     vmServiceExt->handler_ = nullptr;
-    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeid, fsUuid);
+    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseMount_0001";
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_ext_NotifyUsbFuseUMount_0000
- * @tc.name: Volume_manager_service_ext_NotifyUsbFuseUMount_0000
- * @tc.desc: Test function of NNotifyUsbFuseUMount for UNSUCCESS.
+ * @tc.number: SUB_STORAGE_Volume_manager_service_ext_NotifyUsbFuseUmount_0000
+ * @tc.name: Volume_manager_service_ext_NotifyUsbFuseUmount_0000
+ * @tc.desc: Test function of NNotifyUsbFuseUmount for UNSUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUMount_0000,
+HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUmount_0000,
     testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUMount_0000";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUmount_0000";
     std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
         DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
     int32_t num = 0;
     vmServiceExt->handler_ = (void *)&num;
-    std::string volumeid = {};
-    int32_t result = vmServiceExt->NotifyUsbFuseUMount(volumeid);
+    std::string volumeId = {};
+    int32_t result = vmServiceExt->NotifyUsbFuseUmount(volumeId);
     EXPECT_NE(result, E_OK);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUMount_0000";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUmount_0000";
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_ext_NotifyUsbFuseUMount_0001
- * @tc.name: Volume_manager_service_ext_NotifyUsbFuseUMount_0001
- * @tc.desc: Test function of NotifyUsbFuseUMount for UNSUCCESS.
+ * @tc.number: SUB_STORAGE_Volume_manager_service_ext_NotifyUsbFuseUmount_0001
+ * @tc.name: Volume_manager_service_ext_NotifyUsbFuseUmount_0001
+ * @tc.desc: Test function of NotifyUsbFuseUmount for UNSUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUMount_0001,
+HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUmount_0001,
     testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUMount_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUmount_0001";
     std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
         DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
-    std::string volumeid = {};
+    std::string volumeId = {};
     vmServiceExt->handler_ = nullptr;
-    int32_t result = vmServiceExt->NotifyUsbFuseUMount(volumeid);
+    int32_t result = vmServiceExt->NotifyUsbFuseUmount(volumeId);
     EXPECT_NE(result, E_OK);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUMount_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUmount_0001";
 }
 } // namespace

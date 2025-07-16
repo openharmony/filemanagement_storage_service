@@ -26,8 +26,8 @@ namespace StorageManager {
 class FuseExtInterface {
 public:
     virtual ~FuseExtInterface() = default;
-    virtual bool NotifyExternalVolumeFuseMount(int fd, std::string volumeid, std::string fsUuid) = 0;
-    virtual bool NotifyExternalVolumeFuseUMount(std::string volumeid) = 0;
+    virtual bool NotifyExternalVolumeFuseMount(int fd, std::string volumeId, std::string fsUuid) = 0;
+    virtual bool NotifyExternalVolumeFuseUMount(std::string volumeId) = 0;
 };
  
 class VolumeManagerServiceExt {
@@ -38,8 +38,8 @@ public:
         return &instance;
     }
  
-    int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeid, const std::string &fsUuid);
-    int32_t NotifyUsbFuseUMount(const std::string &volumeid);
+    int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeId, const std::string &fsUuid);
+    int32_t NotifyUsbFuseUmount(const std::string &volumeId);
  
 private:
     VolumeManagerServiceExt();

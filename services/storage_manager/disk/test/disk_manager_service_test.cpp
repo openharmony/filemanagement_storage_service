@@ -307,7 +307,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0001";
-    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     std::shared_ptr<DiskManagerService> dmService =
         DelayedSingleton<DiskManagerService>::GetInstance();
     std::string diskId = "diskId-1-9";
@@ -348,7 +348,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::e
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
-        EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+        EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
         result = dmService->Partition(diskId, type);
     }
     EXPECT_EQ(result, E_NOT_SUPPORT);

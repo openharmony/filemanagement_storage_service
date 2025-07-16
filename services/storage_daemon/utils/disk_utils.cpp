@@ -104,7 +104,7 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
     return E_OK;
 }
 
-int32_t ReadVolumUuid(const std::string &devPath, std::string &uuid)
+int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid)
 {
     uuid = GetBlkidData(devPath, "UUID");
     LOGI("ReadMetadata, fsUuid=%{public}s", GetAnonyString(uuid).c_str());

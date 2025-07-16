@@ -356,7 +356,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_004 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -373,7 +373,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_005 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -390,7 +390,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_006 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -407,7 +407,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_007 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_WEXITSTATUS);

@@ -55,9 +55,9 @@ void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
 void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState state)
 {
     if (state == VolumeState::FUSE_REMOVED) {
-        int32_t result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUMount(volumeId);
+        int32_t result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUmount(volumeId);
         if (result != E_OK) {
-            LOGE("VolumeManagerServiceExt NotifyUsbFuseUMount failed, error = %{public}d", result);
+            LOGE("VolumeManagerServiceExt NotifyUsbFuseUmount failed, error = %{public}d", result);
         }
         return;
     }
@@ -171,7 +171,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         return result;
     }
     std::string mountUsbFusePath = StorageDaemon::StringPrintf("/mnt/data/external/%s", volumePtr->GetUuid().c_str());
-    if (StorageDaemon::IsFuse() && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
+    if (StorageDaemon::IsUsbFuse() && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
         result = MountUsbFuse(volumeId);
         if (result != E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -377,8 +377,8 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
         return result;
     }
 
-    if (StorageDaemon::IsFuse()) {
-        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUMount(volumeId);
+    if (StorageDaemon::IsUsbFuse()) {
+        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUmount(volumeId);
     }
     return result;
 }
