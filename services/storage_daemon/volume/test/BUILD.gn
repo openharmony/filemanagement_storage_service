@@ -170,6 +170,7 @@ ohos_unittest("volume_manager_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "private=public",
+    "protected=public",
   ]
 
   include_dirs = [

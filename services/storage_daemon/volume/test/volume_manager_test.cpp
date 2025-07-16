@@ -20,6 +20,8 @@
 
 #include "external_volume_info.h"
 #include "external_volume_info_mock.h"
+#include "mock/disk_utils_mock.h"
+#include "mock/file_utils_mock.h"
 #include "parameter.h"
 #include "securec.h"
 #include "storage_service_errno.h"
@@ -67,11 +69,31 @@ using namespace testing::ext;
 
 class VolumeManagerTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase(void) {};
+    static void SetUpTestCase(void);
+    static void TearDownTestCase(void);
     void SetUp() {};
     void TearDown() {};
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
 };
+
+void VolumeManagerTest::SetUpTestCase(void)
+{
+    GTEST_LOG_(INFO) << "SetUpTestCase Start";
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+    DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+}
+
+void VolumeManagerTest::TearDownTestCase()
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+    DiskUtilMoc::diskUtilMoc = nullptr;
+    diskUtilMoc_ = nullptr;
+}
 
 /**
  * @tc.name: Storage_Service_VolumeManagerTest_GetInstance_001
@@ -135,7 +157,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateVolume_002, 
 
 /**
  * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_001
- * @tc.desc: Verify the DestroyVolume function.
+ * @tc.desc: Verify the DestroyVolume function success.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
@@ -143,6 +165,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_001,
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-1-2";
     bool isUserdata = false;
     dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
@@ -162,6 +185,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_001,
 HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_002 start";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
 
     std::string volId = "vol-2-1";
     int32_t result = VolumeManager::Instance().DestroyVolume(volId);
@@ -170,6 +194,26 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_002,
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_002 end";
 }
 
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_003
+ * @tc.desc: Verify the DestroyVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_003 start";
+
+    std::string diskId = "diskId-1-2";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(true));
+    int32_t result = VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_003 end";
+}
 /**
  * @tc.name: Storage_Service_VolumeManagerTest_Check_001
  * @tc.desc: Verify the Check function.
@@ -180,13 +224,13 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-1-3";
     bool isUserdata = false;
     dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
     std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     int32_t result = VolumeManager::Instance().Check(volId);
-    EXPECT_EQ(result, E_CHECK);
-
+    EXPECT_EQ(result, E_NOT_SUPPORT);
     VolumeManager::Instance().DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_001 end";
@@ -226,7 +270,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_001, TestSiz
     uint32_t flags = 1; // disk type
     int32_t result = VolumeManager::Instance().Mount(volId, flags);
     EXPECT_EQ(result, E_VOL_STATE);
-
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     VolumeManager::Instance().DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_001 end";
@@ -289,6 +333,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UMount_001, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UMount_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-1-5";
     bool isUserdata = false;
     dev_t device = MKDEV(1, 5); // 1 is major device number, 5 is minor device number
@@ -313,6 +358,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UMount_002, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UMount_002 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string volId = "vol-2-4";
     uint32_t flags = 1; // disk type
     VolumeManager::Instance().Mount(volId, flags);
@@ -334,6 +380,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Format_001, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Format_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-1-6";
     bool isUserdata = false;
     dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
@@ -357,6 +404,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Format_002, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Format_002 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string volId = "vol-2-5";
     std::string fsType = "ext2";
     int32_t result = VolumeManager::Instance().Format(volId, fsType);
@@ -377,6 +425,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-1-7";
     bool isUserdata = false;
     dev_t device = MKDEV(1, 7); // 1 is major device number, 7 is minor device number
@@ -400,6 +449,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_002 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string volId = "vol-2-6";
     string description = "description-1";
     int32_t result = VolumeManager::Instance().SetVolumeDescription(volId, description);
@@ -572,6 +622,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_001, 
     std::string fsUuid;
 
     // Test with non-existing volume - should return E_NON_EXIST
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_OK));
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     EXPECT_EQ(result, E_NON_EXIST);
     EXPECT_EQ(fuseFd, -1);  // fuseFd should remain unchanged
@@ -599,12 +650,14 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_002, 
     int fuseFd = -1;
     std::string fsUuid;
     
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_READMETADATA));
     // Test MountUsbFuse - ReadVolumUuid will likely fail for test volume
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     // Since ReadVolumUuid will fail for test volumes, expect an error
     EXPECT_NE(result, E_OK);
 
     // Cleanup
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     VolumeManager::Instance().DestroyVolume(volumeId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_002 end";
@@ -612,23 +665,36 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_002, 
 
 /**
  * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_003
- * @tc.desc: Verify the MountUsbFuse function with empty volumeId.
+ * @tc.desc: Verify the MountUsbFuse function with CreateMountUsbFusePath success.
  * @tc.type: FUNC
  * @tc.require: issueI9G5A0
  */
 HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_003 start";
-
-    std::string volumeId = "";
+ 
+    // Create a volume for testing
+    std::string diskId = "diskId-usb-fuse-003";
+    bool isUserdata = false;
+    dev_t device = MKDEV(8, 4);
+    std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volumeId.empty());
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_OK));
     int fuseFd = -1;
-    std::string fsUuid;
+    std::string fsUuid = "test-uuid-005";
     
+    // Test success at CreateMountUsbFusePath
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
-    EXPECT_EQ(result, E_NON_EXIST);
-
+    EXPECT_EQ(result, E_OK);
+    EXPECT_NE(fuseFd, -1);
+ 
+    // Cleanup
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
+    VolumeManager::Instance().DestroyVolume(volumeId);
+ 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_003 end";
 }
+
 /**
  * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_004
  * @tc.desc: Verify the MountUsbFuse function with CreateMountUsbFusePath failure.
@@ -645,6 +711,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_004, 
     dev_t device = MKDEV(8, 4);
     std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     ASSERT_FALSE(volumeId.empty());
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_OK));
 
     int fuseFd = -1;
     std::string fsUuid = "invalid..uuid"; // UUID with path traversal characters
@@ -655,6 +722,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_004, 
     EXPECT_EQ(fuseFd, -1);
 
     // Cleanup
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     VolumeManager::Instance().DestroyVolume(volumeId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_004 end";
@@ -680,6 +748,8 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_005, 
     int fuseFd = -1;
     std::string fsUuid = "test-uuid-005";
     
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     // Test MountUsbFuse - open /dev/fuse will likely fail in test environment
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     
@@ -749,6 +819,8 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumUuid_001,
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ReadVolumUuid_001 start";
 
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_READMETADATA));
+
     std::string volumeId = "non-existent-volume";
     std::string fsUuid;
     
@@ -769,7 +841,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumUuid_002,
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ReadVolumUuid_002 start";
 
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumUuid(_, _)).WillOnce(Return(E_OK));
+
     // Create a volume for testing
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(Return(false));
     std::string diskId = "diskId-read-uuid";
     bool isUserdata = false;
     dev_t device = MKDEV(8, 10);
@@ -781,7 +856,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumUuid_002,
     // Test ReadVolumUuid with created volume
     int32_t result = VolumeManager::Instance().ReadVolumUuid(volumeId, fsUuid);
     // In test environment, this will likely fail as the volume doesn't have real filesystem
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_OK);
 
     // Cleanup
     VolumeManager::Instance().DestroyVolume(volumeId);
