@@ -1138,7 +1138,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0002, tes
 
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_MountUsbFuse_0003
- * @tc.name: Volume_manager_service_MountUsbFuse_0004
+ * @tc.name: Volume_manager_service_MountUsbFuse_0003
  * @tc.desc: Test function of MountUsbFuse interface for MountUsbFuse communication fails.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
