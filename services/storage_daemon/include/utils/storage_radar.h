@@ -130,7 +130,7 @@ public:
         const std::string &extraData);
     static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
     static void ReportHuksResult(const std::string &funcName, int ret);
-    static void ReportMtpfsResult(const std::string &funcName, int ret, const std::string &extraData);
+    static void ReportMtpfsResult(const std::string &funcName, int ret);
     static void ReportStorageUsage(enum BizStage stage, const std::string &extraData);
     static void ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId);
