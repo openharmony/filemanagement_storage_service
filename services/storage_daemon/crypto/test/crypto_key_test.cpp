@@ -229,7 +229,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 #endif
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_FSCRYPT_VER));
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf));
-    EXPECT_EQ(1U, buf.length());
+    ASSERT_EQ(1U, buf.length());
     EXPECT_EQ('1', buf[0]);
 
     FscryptKeyV1 g_testKeyV1BadDir {TEST_KEYPATH_BAD};
@@ -265,7 +265,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
 
     std::string buf {};
     OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
-    EXPECT_EQ(1U, buf.length());
+    ASSERT_EQ(1U, buf.length());
     EXPECT_EQ('2', buf[0]);
 }
 
@@ -289,7 +289,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SECDISC));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ENCRYPTED));
     OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
-    EXPECT_EQ(1U, buf.length());
+    ASSERT_EQ(1U, buf.length());
     EXPECT_EQ('2', buf[0]);
 }
 
@@ -900,30 +900,30 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Leve
     MkDirRecurse(USER_EL1_DIR, S_IRWXU);
     MkDirRecurse(USER_EL2_DIR, S_IRWXU);
 
-    KeyManager::GetInstance()->InitGlobalDeviceKey();
-    KeyManager::GetInstance()->InitGlobalUserKeys();
+    KeyManager::GetInstance().InitGlobalDeviceKey();
+    KeyManager::GetInstance().InitGlobalUserKeys();
     UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'}, .oldSecret = {},
                                        .newSecret = {'s', 'e', 'c', 'r', 'e', 't'}, .secureUid = 0};
     UserTokenSecret userTokenSecretNull = {.token = {}, .oldSecret = {}, .newSecret = {}, .secureUid = 0};
 #ifndef CRYPTO_TEST
-    KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
-    KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
+    KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret);
+    KeyManager::GetInstance().InActiveUserKey(userId);                      // may fail on some platforms
 #else
-    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(userId, 0));
-    EXPECT_EQ(-EEXIST, KeyManager::GetInstance()->GenerateUserKeys(userId, 0)); // key existed
-    EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
-    EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
-    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
-    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateKeyContext(userId));
-    KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
-    EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->UpdateKeyContext(userId)); // no need to update keycontext
-    KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
-    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
+    EXPECT_EQ(0, KeyManager::GetInstance().GenerateUserKeys(userId, 0));
+    EXPECT_EQ(-EEXIST, KeyManager::GetInstance().GenerateUserKeys(userId, 0)); // key existed
+    EXPECT_EQ(0, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
+    EXPECT_EQ(0, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
+    EXPECT_EQ(0, KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecretNull));
+    EXPECT_EQ(0, KeyManager::GetInstance().UpdateKeyContext(userId));
+    KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret);
+    EXPECT_EQ(-EFAULT, KeyManager::GetInstance().UpdateKeyContext(userId)); // no need to update keycontext
+    KeyManager::GetInstance().InActiveUserKey(userId);                      // may fail on some platforms
+    EXPECT_EQ(0, KeyManager::GetInstance().DeleteUserKeys(userId));
 #endif
 
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
-    KeyManager::GetInstance()->InitGlobalDeviceKey();
-    KeyManager::GetInstance()->InitGlobalUserKeys();
+    KeyManager::GetInstance().InitGlobalDeviceKey();
+    KeyManager::GetInstance().InitGlobalUserKeys();
 }
 
 /**
@@ -944,24 +944,24 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     MkDirRecurse(USER_EL1_DIR, S_IRWXU);
     MkDirRecurse(USER_EL2_DIR, S_IRWXU);
 
-    KeyManager::GetInstance()->InitGlobalDeviceKey();
-    KeyManager::GetInstance()->InitGlobalUserKeys();
+    KeyManager::GetInstance().InitGlobalDeviceKey();
+    KeyManager::GetInstance().InitGlobalUserKeys();
     UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'}, .oldSecret = {},
                                        .newSecret = {'s', 'e', 'c', 'r', 'e', 't'}, .secureUid = 0};
     UserTokenSecret userTokenSecretNull = {.token = {}, .oldSecret = {}, .newSecret = {}, .secureUid = 0};
 
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
-    KeyManager::GetInstance()->InitGlobalDeviceKey();
-    KeyManager::GetInstance()->InitGlobalUserKeys();
+    KeyManager::GetInstance().InitGlobalDeviceKey();
+    KeyManager::GetInstance().InitGlobalUserKeys();
     uint32_t userId = 801; // bad userId, not generated
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
-    EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
+    EXPECT_EQ(-ENOENT, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
+    EXPECT_EQ(-ENOENT, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
+    EXPECT_EQ(0, KeyManager::GetInstance().SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
                                                                  {{userId, USER_EL2_DIR}})); // bad keytype
-    EXPECT_EQ(E_EL5_DELETE_CLASS_ERROR, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
-    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->UpdateKeyContext(userId));
-    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->InActiveUserKey(userId));
-    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
+    EXPECT_EQ(E_EL5_DELETE_CLASS_ERROR, KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecretNull));
+    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance().UpdateKeyContext(userId));
+    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance().InActiveUserKey(userId));
+    EXPECT_EQ(0, KeyManager::GetInstance().DeleteUserKeys(userId));
 }
 
 /**

@@ -166,11 +166,11 @@ int KeyManagerExt::InActiveUserKey(uint32_t userId)
 
 int KeyManagerExt::GetHashKey(uint32_t userId, KeyType type, KeyBlob& hashKey)
 {
-    if (!KeyManager::GetInstance()->HasElkey(userId, type)) {
+    if (!KeyManager::GetInstance().HasElkey(userId, type)) {
         LOGE("user el%{public}u key is not existed", type);
         return E_KEY_EMPTY_ERROR;
     }
-    std::shared_ptr<BaseKey> elKey = KeyManager::GetInstance()->GetUserElKey(userId, type);
+    std::shared_ptr<BaseKey> elKey = KeyManager::GetInstance().GetUserElKey(userId, type);
     if (elKey == nullptr) {
         LOGE("Have not found user %{public}u, type el%{public}u", userId, type);
         return E_KEY_EMPTY_ERROR;

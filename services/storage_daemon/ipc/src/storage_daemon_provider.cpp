@@ -313,7 +313,7 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    (void)StorageDaemon::GetInstance()->SetPriority();  // set tid priority to 40
+    (void)StorageDaemon::GetInstance().SetPriority();  // set tid priority to 40
     int32_t ret = UserManager::GetInstance().StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
@@ -359,7 +359,7 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int32_t err = StorageDaemon::GetInstance()->PrepareUserDirs(userId, flags);
+    int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
     if (err != E_OK) {
         it->second.userAddFailCount++;
     } else {
@@ -373,7 +373,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int err = StorageDaemon::GetInstance()->DestroyUserDirs(userId, flags);
+    int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
     if (err != E_OK) {
         it->second.userRemoveFailCount++;
     } else {
@@ -384,7 +384,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
-    int32_t err = StorageDaemon::GetInstance()->CompleteAddUser(userId);
+    int32_t err = StorageDaemon::GetInstance().CompleteAddUser(userId);
     return err;
 }
 
@@ -393,7 +393,7 @@ int32_t StorageDaemonProvider::InitGlobalKey()
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER0ID);
     isNeedUpdateRadarFile_ = true;
-    int err = StorageDaemon::GetInstance()->InitGlobalKey();
+    int err = StorageDaemon::GetInstance().InitGlobalKey();
     if (err != E_OK) {
         it->second.keyLoadFailCount++;
     } else {
@@ -408,7 +408,7 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
-    int32_t err = StorageDaemon::GetInstance()->InitGlobalUserKeys();
+    int32_t err = StorageDaemon::GetInstance().InitGlobalUserKeys();
     if (err != E_OK) {
         it->second.keyLoadFailCount++;
     } else {
@@ -420,7 +420,7 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
-    int err = StorageDaemon::GetInstance()->GenerateUserKeys(userId, flags);
+    int err = StorageDaemon::GetInstance().GenerateUserKeys(userId, flags);
     StorageXCollie::CancelTimer(timerId);
     return err;
 }
@@ -428,7 +428,7 @@ int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
 {
     int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
-    int err = StorageDaemon::GetInstance()->DeleteUserKeys(userId);
+    int err = StorageDaemon::GetInstance().DeleteUserKeys(userId);
     StorageXCollie::CancelTimer(timerId);
     return err;
 }
@@ -441,7 +441,7 @@ int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
 {
     int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int err =  StorageDaemon::GetInstance()->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    int err =  StorageDaemon::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     StorageXCollie::CancelTimer(timerId);
     return err;
 }
@@ -452,8 +452,8 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             uint32_t userId,
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
-    return StorageDaemon::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
-                                                                      plainText);
+    return StorageDaemon::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
+                                                                     plainText);
 }
 
 int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
@@ -465,7 +465,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int32_t err = StorageDaemon::GetInstance()->ActiveUserKey(userId, token, secret);
+    int32_t err = StorageDaemon::GetInstance().ActiveUserKey(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
     if ((err == E_OK) || ((err == E_ACTIVE_EL2_FAILED) && token.empty() && secret.empty())) {
         it->second.keyLoadSuccCount++;
@@ -484,7 +484,7 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int32_t ret = StorageDaemon::GetInstance()->InactiveUserKey(userId);
+    int32_t ret = StorageDaemon::GetInstance().InactiveUserKey(userId);
     StorageXCollie::CancelTimer(timerId);
     if (ret != E_OK) {
         it->second.keyUnloadFailCount++;
@@ -498,7 +498,7 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
 {
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
+    int32_t ret = StorageDaemon::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -524,7 +524,7 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int ret = StorageDaemon::GetInstance()->LockUserScreen(userId);
+    int ret = StorageDaemon::GetInstance().LockUserScreen(userId);
     StorageXCollie::CancelTimer(timerId);
     if (ret != E_OK) {
         it->second.keyUnloadFailCount++;
@@ -542,7 +542,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     std::unique_lock<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int ret = StorageDaemon::GetInstance()->UnlockUserScreen(userId, token, secret);
+    int ret = StorageDaemon::GetInstance().UnlockUserScreen(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
     if (ret != E_OK) {
         it->second.keyLoadFailCount++;
@@ -552,7 +552,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     lock.unlock();
 
 #ifdef USER_CRYPTO_MANAGER
-    int cbRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, false);
+    int cbRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, false);
     if (ret != E_OK) { //unlock EL3-5 failed
         return ret;
     }
@@ -569,7 +569,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     lockScreenStatus = false;
     int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
+    int32_t ret = StorageDaemon::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -577,7 +577,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
 int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
-    int32_t ret = StorageDaemon::GetInstance()->GenerateAppkey(userId, hashId, keyId, needReSet);
+    int32_t ret = StorageDaemon::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -586,7 +586,7 @@ int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &
 {
     int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance()->DeleteAppkey(userId, keyId);
+    int32_t ret = StorageDaemon::GetInstance().DeleteAppkey(userId, keyId);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -596,12 +596,12 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
-    return StorageDaemon::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
+    return StorageDaemon::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 }
 
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
-    return StorageDaemon::GetInstance()->SetRecoverKey(key);
+    return StorageDaemon::GetInstance().SetRecoverKey(key);
 }
 
 int32_t StorageDaemonProvider::RawDataToStringVec(const StorageFileRawData &rawData,
@@ -712,7 +712,7 @@ int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEnc
     isEncrypted = true;
     int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    int32_t ret = StorageDaemon::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -722,7 +722,7 @@ int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &ne
     needActive = false;
     int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance()->GetUserNeedActiveStatus(userId, needActive);
+    int32_t ret = StorageDaemon::GetInstance().GetUserNeedActiveStatus(userId, needActive);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -765,14 +765,14 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               bool &isOccupy)
 {
     isOccupy = false;
-    return StorageDaemon::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
+    return StorageDaemon::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
 int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
                                                           uint32_t rkType,
                                                           const std::vector<uint8_t> &key)
 {
-    return StorageDaemon::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return StorageDaemon::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
 void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
@@ -811,7 +811,7 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    return StorageDaemon::GetInstance()->InactiveUserPublicDirKey(userId);
+    return StorageDaemon::GetInstance().InactiveUserPublicDirKey(userId);
 }
 
 int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
@@ -832,12 +832,12 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
 int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
     const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
-    return StorageDaemon::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+    return StorageDaemon::GetInstance().RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
-    return StorageDaemon::GetInstance()->UnregisterUeceActivationCallback();
+    return StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
 }
 } // namespace StorageDaemon
 } // namespace OHOS

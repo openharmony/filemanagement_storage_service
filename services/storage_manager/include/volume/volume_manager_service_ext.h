@@ -38,8 +38,8 @@ public:
         return &instance;
     }
  
-    int32_t NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid);
-    int32_t NotifyUsbFuseUMount(std::string volumeid);
+    int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeid, const std::string &fsUuid);
+    int32_t NotifyUsbFuseUMount(const std::string &volumeid);
  
 private:
     VolumeManagerServiceExt();
@@ -48,7 +48,6 @@ private:
     void Init();
     void UnInit();
     void *handler_ = nullptr;
-    std::mutex mutex_;
 };
 } // StorageManager
 } // OHOS

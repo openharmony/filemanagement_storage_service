@@ -181,6 +181,41 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
 }
 
 /**
+ * @tc.name: Storage_Service_DiskManagerTest_DestroyDisk_002
+ * @tc.desc: Verify the DestroyDisk function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_001 start";
+
+    DiskManager diskManager;
+
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    unsigned int minor = 13;
+    unsigned int major = 34;
+    std::string sysPath = "/";
+    std::string devPath = "/";
+    dev_t device = makedev(minor, major);
+    std::shared_ptr<DiskInfo> disk2 = std::make_shared<DiskInfo>(sysPath, devPath, device, 1);
+
+    minor = 10;
+    major = 20;
+    dev_t device2 = makedev(minor, major);
+    std::shared_ptr<DiskInfo> disk3 = std::make_shared<DiskInfo>(sysPath, devPath, device2, 1);
+    diskManager.disk_.clear();
+    diskManager.disk_.push_back(disk);
+    diskManager.disk_.push_back(disk2);
+    diskManager.disk_.push_back(disk3);
+    diskManager.DestroyDisk(device2);
+    EXPECT_EQ(2, diskManager.disk_.size());
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_DiskManagerTest_ChangeDisk_001
  * @tc.desc: Verify the ChangeDisk function.
  * @tc.type: FUNC

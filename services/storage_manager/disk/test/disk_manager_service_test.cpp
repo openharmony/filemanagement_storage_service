@@ -19,17 +19,35 @@
 #include "disk/disk_manager_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "mock/file_utils_mock.h"
+
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
+using namespace StorageDaemon;
 class DiskManagerServiceTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase() {};
+    static void SetUpTestCase(void);
+    static void TearDownTestCase();
     void SetUp() {};
     void TearDown() {};
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
+
+void DiskManagerServiceTest::SetUpTestCase(void)
+{
+    GTEST_LOG_(INFO) << "SetUpTestCase Start";
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void DiskManagerServiceTest::TearDownTestCase()
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+}
 
 /**
  * @tc.number: SUB_STORAGE_Disk_manager_service_OnDiskCreated_0000
@@ -265,6 +283,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0001";
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
     DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-9";
     int64_t sizeBytes = 1024;
@@ -277,6 +296,33 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::e
     result = dmService.Partition(diskId, type);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_Partition_0002
+ * @tc.name: Disk_manager_service_Partition_0002
+ * @tc.desc: Test function of Partition interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0002";
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+    std::string diskId = "diskId-1-9";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "vendor-9";
+    int32_t flag = 1;
+    int32_t type = 1;
+    int32_t result = E_OK;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
+    result = dmService.Partition(diskId, type);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0002";
 }
 
 /**
