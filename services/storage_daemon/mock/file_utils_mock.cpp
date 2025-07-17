@@ -149,7 +149,7 @@ bool IsPathMounted(std::string &path)
     return IFileUtilMoc::fileUtilMoc->IsPathMounted(path);
 }
 
-bool IsUsbFuse
+bool IsUsbFuse()
 {
     return IFileUtilMoc::fileUtilMoc->IsUsbFuse();
 }
