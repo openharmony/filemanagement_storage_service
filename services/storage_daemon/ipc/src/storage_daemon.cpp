@@ -241,7 +241,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     MountManager::GetInstance().PrepareAppdataDir(userId);
 #ifdef USER_CRYPTO_MANAGER
     if (prepareRet == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags);
+        int32_t result = KeyManagerExt::GetInstance().GenerateUserKeys(userId, flags);
         if (result != E_OK) {
             LOGE("KeyManagerExt GenerateUserKeys failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -277,7 +277,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (destroyUserRet == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->DeleteUserKeys(userId);
+        int32_t result = KeyManagerExt::GetInstance().DeleteUserKeys(userId);
         if (result != E_OK) {
             LOGE("KeyManagerExt DeleteUserKeys failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -427,7 +427,7 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->DeleteUserKeys(userId);
+        int32_t result = KeyManagerExt::GetInstance().DeleteUserKeys(userId);
         if (result != E_OK) {
             LOGE("KeyManagerExt DeleteUserKeys failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -836,7 +836,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     std::thread([this, userId]() { UserManager::GetInstance().CheckDirsFromVec(userId); }).detach();
 
 #ifdef USER_CRYPTO_MANAGER
-    int32_t result = KeyManagerExt::GetInstance()->ActiveUserKey(userId, token, secret);
+    int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);
     if (result != E_OK) {
         LOGE("KeyManagerExt ActiveUserKey failed, error = %{public}d, userId %{public}u", result, userId);
     }
@@ -1052,7 +1052,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->InActiveUserKey(userId);
+        int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
         if (result != E_OK) {
             LOGE("KeyManagerExt InActiveUserKey failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -1083,7 +1083,7 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->InActiveUserKey(userId);
+        int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
         if (result != E_OK) {
             LOGE("KeyManagerExt InActiveUserKey failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -1117,7 +1117,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance()->ActiveUserKey(userId, token, secret);
+        int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);
         if (result != E_OK) {
             LOGE("KeyManagerExt ActiveUserKey failed, error = %{public}d, userId %{public}u", result, userId);
         }
@@ -1266,7 +1266,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
 {
 #ifdef USER_CRYPTO_MANAGER
     unsigned int failedUserId = 0;
-    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey(failedUserId);
+    auto ret = AppCloneKeyManager::GetInstance().ActiveAppCloneUserKey(failedUserId);
     if ((ret != E_OK) && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -1307,7 +1307,7 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
 {
     int32_t ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    ret = KeyManagerExt::GetInstance()->InActiveUserKey(userId);
+    ret = KeyManagerExt::GetInstance().InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InactiveUserPublicDirKey failed, error = %{public}d, userId %{public}u", ret, userId);
     }

@@ -259,7 +259,7 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskId, int32_t type
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Partition");
-    int32_t ret = DiskManager::Instance()->HandlePartition(diskId);
+    int32_t ret = DiskManager::Instance().HandlePartition(diskId);
     if (ret != E_OK) {
         LOGW("HandlePartition failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Partition", ret);
@@ -781,7 +781,7 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbilit
     LOGI("SystemAbilityId:%{public}d", systemAbilityId);
 #ifdef EXTERNAL_STORAGE_MANAGER
     if (systemAbilityId == ACCESS_TOKEN_MANAGER_SERVICE_ID) {
-        DiskManager::Instance()->ReplayUevent();
+        DiskManager::Instance().ReplayUevent();
     }
 #endif
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {

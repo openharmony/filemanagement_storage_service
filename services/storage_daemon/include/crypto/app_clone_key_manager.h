@@ -19,10 +19,10 @@ namespace OHOS {
 namespace StorageDaemon {
 class AppCloneKeyManager {
 public:
-    static AppCloneKeyManager *GetInstance(void)
+    static AppCloneKeyManager &GetInstance(void)
     {
         static AppCloneKeyManager instance;
-        return &instance;
+        return instance;
     }
     int ActiveAppCloneUserKey(unsigned int &failedUserId);
 };

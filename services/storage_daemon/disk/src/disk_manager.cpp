@@ -25,16 +25,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-DiskManager* DiskManager::instance_ = nullptr;
-
-DiskManager* DiskManager::Instance()
-{
-    if (instance_ == nullptr) {
-        instance_ = new DiskManager();
-    }
-
-    return instance_;
-}
 
 DiskManager::~DiskManager()
 {

@@ -16,6 +16,7 @@
 #include "fscrypt_control_mock.h"
 
 #include "fscrypt_control.h"
+#include "storage_service_errno.h"
 
 using namespace std;
 
@@ -40,7 +41,7 @@ bool KeyCtrlHasFscryptSyspara(void)
 int LoadAndSetPolicy(const char *keyDir, const char *dir)
 {
     if (IFscryptControlMoc::fscryptControlMoc == nullptr) {
-        return false;
+        return OHOS::E_ERR;
     }
     return IFscryptControlMoc::fscryptControlMoc->LoadAndSetPolicy(keyDir, dir);
 }
@@ -48,7 +49,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
 int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
 {
     if (IFscryptControlMoc::fscryptControlMoc == nullptr) {
-        return false;
+        return OHOS::E_ERR;
     }
     return IFscryptControlMoc::fscryptControlMoc->LoadAndSetEceAndSecePolicy(keyDir, dir, type);
 }
