@@ -90,6 +90,9 @@ ohos_unittest("volume_storage_status_service_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
+    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_service.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",

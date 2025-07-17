@@ -23,25 +23,21 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size == 0)) {
         return false;
     }
-    std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
     int64_t totalSize;
     int64_t systemSize;
     int64_t freeSize;
-    if (service == nullptr) {
-        LOGE("service is nullptr");
-        return false;
-    }
-    int32_t result = service->GetTotalSize(totalSize);
+    int32_t result = service.GetTotalSize(totalSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
         return false;
     }
-    result = service->GetSystemSize(systemSize);
+    result = service.GetSystemSize(systemSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetSystemSize failed!");
         return false;
     }
-    result = service->GetFreeSize(freeSize);
+    result = service.GetFreeSize(freeSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetFreeSize failed!");
         return false;

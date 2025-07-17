@@ -121,7 +121,7 @@ void StorageManagerProvider::OnStart()
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
     (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
-    DelayedSingleton<StorageMonitorService>::GetInstance()->StartStorageMonitorTask();
+    StorageMonitorService::GetInstance().StartStorageMonitorTask();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
@@ -481,7 +481,7 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
 {
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return E_SERVICE_IS_NULLPTR;
@@ -693,7 +693,7 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
     // Only for medialibrary to mount fuse.
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return E_SERVICE_IS_NULLPTR;
@@ -721,7 +721,7 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
     // Only for medialibrary to mount fuse.
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return E_SERVICE_IS_NULLPTR;
