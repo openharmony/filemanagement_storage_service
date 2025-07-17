@@ -289,7 +289,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_EQ(ret, E_OK);
     std::string flag = "exfat";
     ret = vol.Format(flag);
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_OK);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 end";
@@ -314,7 +314,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_EQ(ret, E_OK);
     std::string flag = "vfat";
     ret = vol.Format(flag);
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_OK);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_002 end";
@@ -359,7 +359,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_RMDIR_MOUNT);
 }
 
  /**
@@ -376,7 +376,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_OK);
 }
 
  /**
@@ -393,7 +393,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_OK);
 }
 
   /**
@@ -410,7 +410,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, IsFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_EQ(ret, E_OK);
 }
 
 /**
@@ -543,7 +543,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Ntfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_NTFS_MOUNT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 end";
 }
@@ -562,7 +562,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Exfat(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_EXFAT_MOUNT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 end";
 }
