@@ -50,12 +50,8 @@ using CloudListener = StorageDaemon::StorageDaemonProvider::SystemAbilityStatusC
 const int CONFIG_PARAM_NUM = 6;
 static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
 
-static bool ParasConfig(StorageDaemon::DiskManager *dm)
+static bool ParasConfig(StorageDaemon::DiskManager &dm)
 {
-    if (dm == nullptr) {
-        LOGE("Unable to get DiskManger");
-        return false;
-    }
     std::ifstream infile;
     infile.open(CONFIG_PTAH);
     if (!infile) {
@@ -99,7 +95,7 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
         it++;
         int flag = std::atoi((*it).c_str());
         auto diskConfig =  std::make_shared<StorageDaemon::DiskConfig>(sysPattern, label, flag);
-        dm->AddDiskConfig(diskConfig);
+        dm.AddDiskConfig(diskConfig);
     }
 
     infile.close();
@@ -144,8 +140,8 @@ int main()
     if (StorageDaemon::NetlinkManager::Instance().Start() != E_OK) {
         LOGE("Unable to create or start NetlinkManager");
     };
-    StorageDaemon::DiskManager *dm = StorageDaemon::DiskManager::Instance();
-    if ((dm == nullptr) || !ParasConfig(dm)) {
+    StorageDaemon::DiskManager &dm = StorageDaemon::DiskManager::Instance();
+    if (!ParasConfig(dm)) {
         LOGE("Unable to create DiskManger or parse config failed.");
     };
 #endif

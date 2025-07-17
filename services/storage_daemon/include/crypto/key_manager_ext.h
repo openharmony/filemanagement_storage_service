@@ -39,10 +39,10 @@ public:
 
 class KeyManagerExt {
 public:
-    static KeyManagerExt *GetInstance(void)
+    static KeyManagerExt &GetInstance(void)
     {
         static KeyManagerExt instance;
-        return &instance;
+        return instance;
     }
 
     int GenerateUserKeys(uint32_t userId, uint32_t flags);
