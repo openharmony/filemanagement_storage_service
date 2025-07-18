@@ -446,12 +446,8 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
     // Test the IsUsbFuse function basic functionality
     bool result = IsUsbFuse();
     
-    // The function should return a boolean value
-    EXPECT_TRUE(result || !result);
+    EXPECT_FALSE(result);
     
-    // Log the result for debugging purposes
-    GTEST_LOG_(INFO) << "IsUsbFuse result: " << (result ? "true" : "false");
-
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
 }
 

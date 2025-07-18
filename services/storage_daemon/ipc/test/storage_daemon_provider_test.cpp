@@ -1176,7 +1176,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountUsbFuse_001, 
     int fuseFd = -1;
     std::string fsUuid;
     int32_t result = storageDaemonProviderTest_->MountUsbFuse(volumeId, fsUuid, fuseFd);
-    EXPECT_NE(result, E_ERR);
+    EXPECT_NE(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountUsbFuse_001 end";
 }
 
