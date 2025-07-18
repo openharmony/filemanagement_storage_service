@@ -319,10 +319,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
-        result = dmService.Partition(diskId, type);
-    }
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
+    result = dmService.Partition(diskId, type);
     EXPECT_EQ(result, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0002";
 }
