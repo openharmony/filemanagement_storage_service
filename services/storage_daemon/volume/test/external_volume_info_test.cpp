@@ -288,8 +288,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     std::string flag = "exfat";
-    ret = vol.Format(flag);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
+    ret = vol.Format(flag);
     EXPECT_EQ(ret, E_WEXITSTATUS);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
