@@ -21,8 +21,12 @@
 namespace OHOS {
 namespace StorageManager {
 class FileSystemCrypto final : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(FileSystemCrypto);
 public:
+    static FileSystemCrypto &GetInstance(void)
+    {
+        static FileSystemCrypto instance;
+        return instance;
+    }
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     int32_t DeleteUserKeys(uint32_t userId);
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -59,6 +63,8 @@ public:
     int32_t UnregisterUeceActivationCallback();
 private:
     int32_t CheckUserIdRange(int32_t userId);
+    FileSystemCrypto();
+    ~FileSystemCrypto();
 };
 } // StorageManager
 } // OHOS

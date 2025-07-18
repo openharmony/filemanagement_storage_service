@@ -133,7 +133,7 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Mount(volId);
+        return OHOS::StorageDaemon::MtpDeviceMonitor::GetInstance().Mount(volId);
 #else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
@@ -281,7 +281,7 @@ int32_t VolumeManager::UMount(const std::string volId)
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Umount(volId);
+        return OHOS::StorageDaemon::MtpDeviceMonitor::GetInstance().Umount(volId);
 #else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;

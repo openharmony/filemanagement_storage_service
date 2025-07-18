@@ -21,12 +21,17 @@
 namespace OHOS {
 namespace StorageManager {
 class VolumeStorageStatusService : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(VolumeStorageStatusService);
-
 public:
+    static VolumeStorageStatusService &GetInstance()
+    {
+        static VolumeStorageStatusService instance;
+        return instance;
+    }
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize);
     int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize);
 private:
+    VolumeStorageStatusService();
+    ~VolumeStorageStatusService();
     std::string GetVolumePath(std::string volumeUuid);
 };
 } // StorageManager

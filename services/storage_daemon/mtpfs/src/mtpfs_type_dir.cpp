@@ -51,6 +51,9 @@ LIBMTP_folder_t *MtpFsTypeDir::ToLIBMTPFolder() const
     f->parent_id = parentId_;
     f->storage_id = storageId_;
     f->name = strdup(name_.c_str());
+    if (f->name == nullptr) {
+        return nullptr;
+    }
     f->sibling = nullptr;
     f->child = nullptr;
     return f;

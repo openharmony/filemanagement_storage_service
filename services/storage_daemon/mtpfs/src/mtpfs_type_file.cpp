@@ -42,6 +42,9 @@ LIBMTP_file_t *MtpFsTypeFile::ToLIBMTPFile() const
     f->parent_id = parentId_;
     f->storage_id = storageId_;
     f->filename = strdup(name_.c_str());
+    if (f->filename == nullptr) {
+        return nullptr;
+    }
     f->filesize = size_;
     f->modificationdate = modifyDate_;
     f->filetype = LIBMTP_FILETYPE_UNKNOWN;

@@ -25,16 +25,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-DiskManager* DiskManager::instance_ = nullptr;
-
-DiskManager* DiskManager::Instance()
-{
-    if (instance_ == nullptr) {
-        instance_ = new DiskManager();
-    }
-
-    return instance_;
-}
 
 DiskManager::~DiskManager()
 {
@@ -152,7 +142,7 @@ void DiskManager::DestroyDisk(dev_t device)
     int ret;
 
     for (auto i = disk_.begin(); i != disk_.end();) {
-        if ((*i)->GetDevice() == device) {
+        if (*i != nullptr && (*i)->GetDevice() == device) {
             ret = (*i)->Destroy();
             if (ret != E_OK) {
                 LOGE("Destroy DiskInfo failed");

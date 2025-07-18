@@ -22,13 +22,19 @@
 namespace OHOS {
 namespace StorageManager {
 class BundleMgrConnector : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(BundleMgrConnector);
-
 public:
+    static BundleMgrConnector &GetInstance()
+    {
+        static BundleMgrConnector instance;
+        return instance;
+    }
     sptr<AppExecFwk::IBundleMgr> GetBundleMgrProxy();
     int32_t ResetBundleMgrProxy();
 
 private:
+    BundleMgrConnector();
+    ~BundleMgrConnector();
+    
     std::mutex mutex_;
     sptr<AppExecFwk::IBundleMgr> bundleMgr_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

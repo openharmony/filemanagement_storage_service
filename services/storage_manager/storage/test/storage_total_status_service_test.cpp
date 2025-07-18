@@ -110,9 +110,9 @@ public:
 HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetSystemSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetSystemSize_0000";
-    std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
     int64_t systemSize;
-    int32_t result = service->GetSystemSize(systemSize);
+    int32_t result = service.GetSystemSize(systemSize);
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetSystemSize_0000";
 }
@@ -129,9 +129,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetSystemSize_0000,
 HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetTotalSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetTotalSize_0000";
-    std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
     int64_t totalSize;
-    int32_t result = service->GetTotalSize(totalSize);
+    int32_t result = service.GetTotalSize(totalSize);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetTotalSize_0000";
 }
@@ -148,9 +148,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetTotalSize_0000, 
 HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetFreeSize_0000";
-    std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
     int64_t freeSize;
-    int32_t result = service->GetFreeSize(freeSize);
+    int32_t result = service.GetFreeSize(freeSize);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetFreeSize_0000";
 }
@@ -167,7 +167,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_0000, t
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0000";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     StorageStats storageStats;
     int32_t userId = 100;
     string basePath = "/data/app/el2/" + to_string(userId);
@@ -179,7 +179,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000,
         GTEST_LOG_(INFO) << "path is " << path;
         EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
     }
-    int32_t result = service->GetUserStorageStats(storageStats);
+    int32_t result = service.GetUserStorageStats(storageStats);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0000";
 }
@@ -196,10 +196,10 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000,
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     int32_t userId = 100;
     StorageStats storageStats;
-    int32_t result = service->GetUserStorageStats(userId, storageStats);
+    int32_t result = service.GetUserStorageStats(userId, storageStats);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0001";
 }
@@ -216,10 +216,10 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0001,
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetBundleStats_0000";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     string pkgName = "com.test";
     BundleStats bundleStats;
-    int32_t result = service->GetBundleStats(pkgName, bundleStats, 0, 0);
+    int32_t result = service.GetBundleStats(pkgName, bundleStats, 0, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0000";
 }
@@ -236,11 +236,11 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, test
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetBundleStats_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     int userId = 100;
     string pkgName = "com.test";
     BundleStats bundleStats;
-    int32_t result = service->GetBundleStats(pkgName, userId, bundleStats, 0, 0);
+    int32_t result = service.GetBundleStats(pkgName, userId, bundleStats, 0, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0001";
 }
@@ -257,9 +257,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, test
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetCurrentBundleStats_0000";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     BundleStats bundleStats;
-    int32_t result = service->GetCurrentBundleStats(bundleStats, 0);
+    int32_t result = service.GetCurrentBundleStats(bundleStats, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetCurrentBundleStats_0000";
 }
@@ -276,8 +276,8 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
 HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_ResetBundleMgrProxy_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_ResetBundleMgrProxy_0000";
-    std::shared_ptr<BundleMgrConnector> service = DelayedSingleton<BundleMgrConnector>::GetInstance();
-    int64_t result = service->ResetBundleMgrProxy();
+    BundleMgrConnector& service = BundleMgrConnector::GetInstance();
+    int64_t result = service.ResetBundleMgrProxy();
     EXPECT_GE(result, 0);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_ResetBundleMgrProxy_0000";
 }
@@ -293,11 +293,11 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_ResetBundleMgrProxy
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStatsByType_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStatsByType_0000";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    StorageStatusService& service = StorageStatusService::GetInstance();
     int32_t userId = 100;
     std::string type = "media";
     StorageStats storageStats;
-    int32_t result = service->GetUserStorageStatsByType(userId, storageStats, type);
+    int32_t result = service.GetUserStorageStatsByType(userId, storageStats, type);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStatsByType_0000";
 }
@@ -313,9 +313,8 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStatsByType
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_StartStorageMonitorTask_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_StartStorageMonitorTask_0000";
-    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
-    ASSERT_TRUE(service != nullptr);
-    service->StartStorageMonitorTask();
+    StorageMonitorService& service = StorageMonitorService::GetInstance();
+    service.StartStorageMonitorTask();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_StartStorageMonitorTask_0000";
 }
 
@@ -330,9 +329,8 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_StartStorageMonitorTask_0
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_Execute_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_Execute_0000";
-    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
-    ASSERT_TRUE(service != nullptr);
-    service->Execute();
+    StorageMonitorService& service = StorageMonitorService::GetInstance();
+    service.Execute();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_Execute_0000";
 }
 
@@ -347,9 +345,8 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_Execute_0000, testing::ex
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_MonitorAndManageStorage_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_MonitorAndManageStorage_0000";
-    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
-    ASSERT_TRUE(service != nullptr);
-    service->MonitorAndManageStorage();
+    StorageMonitorService& service = StorageMonitorService::GetInstance();
+    service.MonitorAndManageStorage();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_MonitorAndManageStorage_0000";
 }
 } // namespace

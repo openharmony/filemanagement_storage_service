@@ -19,12 +19,19 @@
 
 #include "key_control_mock.h"
 #include "storage_service_errno.h"
+#include "securec.h"
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 #include "tee_client_api.h"
 namespace {
     TEEC_Result g_initializeContext;
     TEEC_Result g_invokeCommand;
+    int g_memcpyRet;
+}
+
+int memcpy_s(void *dest, size_t destMax, const void *src, size_t count)
+{
+    return g_memcpyRet;
 }
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
@@ -144,7 +151,7 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_ResetSecretWithRecoveryKey_001, Te
     g_invokeCommand = TEEC_SUCCESS;
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).Times(6).WillOnce(Return(0));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).Times(12).WillOnce(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).Times(15).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).Times(6).WillOnce(Return(0));
     ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
     EXPECT_EQ(ret, E_OK);
@@ -152,7 +159,7 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_ResetSecretWithRecoveryKey_001, Te
     RecoveryManager::GetInstance().isSessionOpened = true;
     g_invokeCommand = TEEC_SUCCESS;
 
-    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
 
     ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
@@ -173,8 +180,10 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallDeCe_001, TestSize.Level1)
     std::vector<uint8_t> keyDescVct(3, 2);
     KeyBlob key2BlobErr;
     KeyBlob keyDesc(keyDescVct);
+    g_memcpyRet = -1;
     int ret = RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc);
     EXPECT_NE(0, ret);
+    g_memcpyRet = 0;
 
     std::vector<uint8_t> key2BlobVct(5, 1);
     KeyBlob key2Blob(key2BlobVct);
@@ -314,5 +323,75 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_GenerateKeyDesc_001, TestSize.Leve
     ret = RecoveryManager::GetInstance().GenerateKeyDesc(ivBlob, keyDesc);
     EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_GenerateKeyDesc_001 end";
+}
+
+/**
+ * @tc.name: RecoveryManager_CreateRecoverKey_001
+ * @tc.desc: Verify the CreateRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(RecoveryManagerTest, RecoveryManager_CreateRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RecoveryManager_CreateRecoverKey_001 start";
+
+    g_initializeContext = static_cast<TEEC_ReturnCode>(1);
+    auto ret = RecoveryManager::GetInstance().CreateRecoverKey(10, 1, {}, {}, {});
+    EXPECT_EQ(ret, E_RECOVERY_KEY_OPEN_SESSION_ERR);
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_memcpyRet = -1;
+    std::vector<KeyBlob> originIvs(5, {'1'});
+    std::vector<uint8_t> token(2, 0);
+    ret = RecoveryManager::GetInstance().CreateRecoverKey(10, 1, token, {}, originIvs);
+    EXPECT_EQ(ret, E_MEMORY_OPERATION_ERR);
+
+    g_memcpyRet = 0;
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = static_cast<TEEC_ReturnCode>(1);
+    ret = RecoveryManager::GetInstance().CreateRecoverKey(10, 1, {}, {}, originIvs);
+    EXPECT_EQ(ret, E_TEEC_GEN_RECOVERY_KEY_ERR);
+
+    g_memcpyRet = -1;
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = static_cast<TEEC_ReturnCode>(1);
+    ret = RecoveryManager::GetInstance().CreateRecoverKey(10, 1, {}, {}, originIvs);
+    EXPECT_EQ(ret, E_MEMORY_OPERATION_ERR);
+
+    g_memcpyRet = 0;
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = TEEC_SUCCESS;
+    ret = RecoveryManager::GetInstance().CreateRecoverKey(10, 1, {'!'}, {'!'}, originIvs);
+    EXPECT_EQ(ret, TEEC_SUCCESS);
+
+    GTEST_LOG_(INFO) << "RecoveryManager_CreateRecoverKey_001 end";
+}
+
+/**
+ * @tc.name: RecoveryManager_SetRecoverKeyToTee_001
+ * @tc.desc: Verify the SetRecoverKeyToTee function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(RecoveryManagerTest, RecoveryManager_SetRecoverKeyToTee_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RecoveryManager_SetRecoverKeyToTee_001 start";
+    std::vector<uint8_t> key(5, {'1'});
+    SetRecoverKeyStr keyStr;
+    g_initializeContext = static_cast<TEEC_ReturnCode>(1);
+    auto ret = RecoveryManager::GetInstance().SetRecoverKeyToTee(key, keyStr);
+    EXPECT_EQ(ret, E_RECOVERY_KEY_OPEN_SESSION_ERR);
+
+    g_invokeCommand = static_cast<TEEC_ReturnCode>(1);
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    ret = RecoveryManager::GetInstance().SetRecoverKeyToTee(key, keyStr);
+    EXPECT_EQ(ret, E_TEEC_DECRYPT_CLASS_KEY_ERR);
+    
+    g_invokeCommand = TEEC_SUCCESS;
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    ret = RecoveryManager::GetInstance().SetRecoverKeyToTee(key, keyStr);
+    EXPECT_EQ(ret, TEEC_SUCCESS);
+
+    GTEST_LOG_(INFO) << "RecoveryManager_SetRecoverKeyToTee_001 end";
 }
 } // OHOS::StorageDaemon

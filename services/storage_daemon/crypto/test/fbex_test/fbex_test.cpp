@@ -117,7 +117,7 @@ HWTEST_F(FbexTest, InstallKeyToKernel, TestSize.Level1)
     GTEST_LOG_(INFO) << "fbex_InstallKeyToKernel start";
     FBEX fbex;
     uint32_t userId = PARAMS_1;
-    uint32_t type = PARAMS_1;
+    uint32_t type = 5;
     KeyBlob iv;
     uint8_t flag = 1;
     int ret = fbex.InstallKeyToKernel(userId, type, iv, flag, {});

@@ -31,8 +31,7 @@ T TypeCast(const uint8_t *data, int *pos = nullptr)
     return *(reinterpret_cast<const T*>(data));
 }
 
-std::shared_ptr<FileSystemCrypto> fileSystem =
-        DelayedSingleton<FileSystemCrypto>::GetInstance();
+auto &fileSystem = FileSystemCrypto::GetInstance();
 
 bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
@@ -43,11 +42,8 @@ bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
     uint32_t flags = TypeCast<uint32_t>(data + pos);
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->GenerateUserKeys(userId, flags);
+
+    int32_t result = fileSystem.GenerateUserKeys(userId, flags);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::GenerateUserKeysTest failed!");
         return false;
@@ -64,11 +60,7 @@ bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->DeleteUserKeys(userId);
+    int32_t result = fileSystem.DeleteUserKeys(userId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::DeleteUserKeys failed!");
         return false;
@@ -93,11 +85,7 @@ bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
     oldSecret.push_back(*data);
     newSecret.push_back(*data);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    int32_t result = fileSystem.UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::UpdateUserAuth failed!");
         return false;
@@ -119,11 +107,7 @@ bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     token.push_back(*data);
     secret.push_back(*data);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->ActiveUserKey(userId, token, secret);
+    int32_t result = fileSystem.ActiveUserKey(userId, token, secret);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::ActiveUserKey failed!");
         return false;
@@ -140,11 +124,7 @@ bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->InactiveUserKey(userId);
+    int32_t result = fileSystem.InactiveUserKey(userId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::InactiveUserKey failed!");
         return false;
@@ -161,11 +141,7 @@ bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->UpdateKeyContext(userId);
+    int32_t result = fileSystem.UpdateKeyContext(userId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::UpdateKeyContext failed!");
         return false;
@@ -182,11 +158,7 @@ bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->LockUserScreen(userId);
+    int32_t result = fileSystem.LockUserScreen(userId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::LockUserScreen failed!");
         return false;
@@ -203,11 +175,7 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->UnlockUserScreen(userId, {}, {});
+    int32_t result = fileSystem.UnlockUserScreen(userId, {}, {});
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::UnlockUserScreen failed!");
         return false;
@@ -225,11 +193,7 @@ bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
     bool lockScreenStatus = TypeCast<bool>(data + pos);
 
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->GetLockScreenStatus(userId, lockScreenStatus);
+    int32_t result = fileSystem.GetLockScreenStatus(userId, lockScreenStatus);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::GetLockScreenStatus failed!");
         return false;
@@ -247,11 +211,7 @@ bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
     uint32_t hashId = TypeCast<uint32_t>(data, &pos);
     uint32_t userId = TypeCast<uint32_t>(data + pos);
     std::string keyId;
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->GenerateAppkey(hashId, userId, keyId);
+    int32_t result = fileSystem.GenerateAppkey(hashId, userId, keyId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::GenerateAppkey failed!");
         return false;
@@ -265,11 +225,7 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     const std::string keyId(reinterpret_cast<const char *>(data), size);
-    if (fileSystem == nullptr) {
-        LOGE("fileSystem is nullptr");
-        return false;
-    }
-    int32_t result = fileSystem->DeleteAppkey(keyId);
+    int32_t result = fileSystem.DeleteAppkey(keyId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::DeleteAppkey failed!");
         return false;

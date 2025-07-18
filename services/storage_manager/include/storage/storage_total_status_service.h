@@ -31,13 +31,18 @@ enum SizeType {
     USED
 };
 class StorageTotalStatusService : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageTotalStatusService);
-
 public:
+    static StorageTotalStatusService &GetInstance()
+    {
+        static StorageTotalStatusService instance;
+        return instance;
+    }
     int32_t GetSystemSize(int64_t &systemSize);
     int32_t GetTotalSize(int64_t &totalSize);
     int32_t GetFreeSize(int64_t &freeSize);
 private:
+    StorageTotalStatusService();
+    ~StorageTotalStatusService();
     int32_t GetSizeOfPath(const char *path, int32_t type, int64_t &size);
     const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
         "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",

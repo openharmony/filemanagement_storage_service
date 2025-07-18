@@ -106,9 +106,9 @@ int32_t StorageManager::GetFreeSizeOfVolume(const std::string &volumeUuid, int64
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
-        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
-    int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    VolumeStorageStatusService& volumeStatsManager =
+        VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetFreeSizeOfVolume(volumeUuid, freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetFreeSizeOfVolume", DEFAULT_USERID, err,
             "setting");
@@ -124,9 +124,9 @@ int32_t StorageManager::GetTotalSizeOfVolume(const std::string &volumeUuid, int6
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
-        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
-    int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    VolumeStorageStatusService& volumeStatsManager =
+        VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetTotalSizeOfVolume(volumeUuid, totalSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetTotalSizeOfVolume", DEFAULT_USERID, err,
             "setting");
@@ -141,7 +141,7 @@ int32_t StorageManager::GetBundleStats(const std::string &pkgName, BundleStats &
                                        int32_t appIndex, uint32_t statFlag)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats,
+    int32_t err = StorageStatusService::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStats", DEFAULT_USERID, err,
@@ -157,7 +157,7 @@ int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getSystemSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetSystemSize", DEFAULT_USERID, err,
             "setting");
@@ -172,7 +172,7 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getTotalSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalSize", DEFAULT_USERID, err,
             "setting");
@@ -187,7 +187,7 @@ int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getFreeSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
             "setting");
@@ -202,7 +202,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(storageStats);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -217,7 +217,7 @@ int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storag
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(userId, storageStats);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -232,7 +232,7 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetCurrentBundleStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats, statFlag);
+    int32_t err = StorageStatusService::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetCurrentBundleStats", DEFAULT_USERID, err,
             "setting");
@@ -364,8 +364,8 @@ int32_t StorageManager::NotifyDiskCreated(const Disk& disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    diskManager->OnDiskCreated(disk);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskCreated(disk);
 #endif
 
     return E_OK;
@@ -375,8 +375,8 @@ int32_t StorageManager::NotifyDiskDestroyed(const std::string &diskId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    diskManager->OnDiskDestroyed(diskId);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskDestroyed(diskId);
 #endif
 
     return E_OK;
@@ -386,8 +386,8 @@ int32_t StorageManager::Partition(const std::string &diskId, int32_t type)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    int32_t err = diskManager->Partition(diskId, type);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    int32_t err = diskManager.Partition(diskId, type);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
     }
@@ -401,7 +401,7 @@ int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetAllDisks start");
-    vecOfDisk = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
+    vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
 #endif
 
     return E_OK;
@@ -469,7 +469,7 @@ int32_t StorageManager::GetDiskById(const std::string &diskId, Disk &disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
-    int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
+    int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
     }
@@ -483,9 +483,7 @@ int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->GenerateUserKeys(userId, flags);
-    return err;
+    return FileSystemCrypto::GetInstance().GenerateUserKeys(userId, flags);
 #else
     return E_OK;
 #endif
@@ -507,9 +505,7 @@ int32_t StorageManager::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->DeleteUserKeys(userId);
-    return err;
+    return FileSystemCrypto::GetInstance().DeleteUserKeys(userId);
 #else
     return E_OK;
 #endif
@@ -522,9 +518,7 @@ int32_t StorageManager::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 #else
     return E_OK;
 #endif
@@ -538,9 +532,8 @@ int32_t StorageManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> 
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
+        plainText);
 #else
     return E_OK;
 #endif
@@ -552,8 +545,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
+    auto err = FileSystemCrypto::GetInstance().ActiveUserKey(userId, token, secret);
     if (err == E_OK) {
         int32_t ret = -1;
         {
@@ -573,8 +565,7 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->InactiveUserKey(userId);
+    auto err = FileSystemCrypto::GetInstance().InactiveUserKey(userId);
     int32_t ret = -1;
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -592,8 +583,7 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->LockUserScreen(userId);
+    return FileSystemCrypto::GetInstance().LockUserScreen(userId);
 #else
     return E_OK;
 #endif
@@ -603,8 +593,7 @@ int32_t StorageManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    return FileSystemCrypto::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 #else
     return E_OK;
 #endif
@@ -614,8 +603,7 @@ int32_t StorageManager::GetUserNeedActiveStatus(uint32_t userId, bool &needActiv
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetUserNeedActiveStatus(userId, needActive);
+    return FileSystemCrypto::GetInstance().GetUserNeedActiveStatus(userId, needActive);
 #else
     return E_OK;
 #endif
@@ -627,8 +615,7 @@ int32_t StorageManager::UnlockUserScreen(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->UnlockUserScreen(userId, token, secret);
+    return FileSystemCrypto::GetInstance().UnlockUserScreen(userId, token, secret);
 #else
     return E_OK;
 #endif
@@ -638,8 +625,7 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GetLockScreenStatus(userId, lockScreenStatus);
+    return FileSystemCrypto::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
 #else
     return E_OK;
 #endif
@@ -649,8 +635,7 @@ int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::st
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("hashId: %{public}u", hashId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GenerateAppkey(hashId, userId, keyId, needReSet);
+    return FileSystemCrypto::GetInstance().GenerateAppkey(hashId, userId, keyId, needReSet);
 #else
     return E_OK;
 #endif
@@ -661,8 +646,7 @@ int32_t StorageManager::DeleteAppkey(const std::string &keyId)
 #ifdef USER_CRYPTO_MANAGER
     LOGI("DeleteAppkey enter");
     LOGI("keyId :  %{public}s", keyId.c_str());
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->DeleteAppkey(keyId);
+    return FileSystemCrypto::GetInstance().DeleteAppkey(keyId);
 #else
     return E_OK;
 #endif
@@ -676,8 +660,7 @@ int32_t StorageManager::CreateRecoverKey(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     LOGI("CreateRecoverKey enter");
     LOGI("UserId :  %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->CreateRecoverKey(userId, userType, token, secret);
+    return FileSystemCrypto::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
 #endif
@@ -687,8 +670,7 @@ int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("SetRecoverKey enter");
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->SetRecoverKey(key);
+    return FileSystemCrypto::GetInstance().SetRecoverKey(key);
 #else
     return E_OK;
 #endif
@@ -698,9 +680,7 @@ int32_t StorageManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkT
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("ResetSecretWithRecoveryKey UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->ResetSecretWithRecoveryKey(userId, rkType, key);
-    return err;
+    return FileSystemCrypto::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 #else
     return E_OK;
 #endif
@@ -710,9 +690,7 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateKeyContext(userId, needRemoveTmpKey);
-    return err;
+    return FileSystemCrypto::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
 #else
     return E_OK;
 #endif
@@ -745,7 +723,7 @@ int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStatsByType start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStatsByType(userId,
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStatsByType(userId,
         storageStats, type);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStatsByType", DEFAULT_USERID, err,
@@ -882,8 +860,7 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t ret = fsCrypto->InactiveUserPublicDirKey(userId);
+    auto ret = FileSystemCrypto::GetInstance().InactiveUserPublicDirKey(userId);
     LOGI("inactive user public dir key, userId: %{public}d, ret: %{public}d", userId, ret);
     return ret;
 #else
@@ -893,16 +870,12 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 
 int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->RegisterUeceActivationCallback(ueceCallback);
-    return err;
+    return FileSystemCrypto::GetInstance().RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageManager::UnregisterUeceActivationCallback()
 {
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UnregisterUeceActivationCallback();
-    return err;
+    return FileSystemCrypto::GetInstance().UnregisterUeceActivationCallback();
 }
 }
 }

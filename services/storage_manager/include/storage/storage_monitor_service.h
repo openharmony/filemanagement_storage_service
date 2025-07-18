@@ -26,12 +26,17 @@ namespace StorageManager {
 const int SMART_EVENT_INTERVAL = 24; // 24h
 const int SMART_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 class StorageMonitorService : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(StorageMonitorService);
-
 public:
+    static StorageMonitorService &GetInstance()
+    {
+        static StorageMonitorService instance;
+        return instance;
+    }
     void StartStorageMonitorTask();
 
 private:
+    StorageMonitorService();
+    ~StorageMonitorService();
     void StartEventHandler();
     void Execute();
     void MonitorAndManageStorage();

@@ -43,7 +43,6 @@ public:
 };
 
 class MtpFileSystem {
-    DECLARE_DELAYED_SINGLETON(MtpFileSystem);
 private:
     struct MtpFileSystemOptions {
     public:
@@ -70,6 +69,11 @@ private:
     };
 
 public:
+    static MtpFileSystem &GetInstance()
+    {
+        static MtpFileSystem instance;
+        return instance;
+    }
     bool ParseOptions(int argc, char **argv);
     bool Exec();
     bool IsGood() const
@@ -112,6 +116,8 @@ public:
     void SetMtpClientWriteMap(uid_t first, bool second);
 
 private:
+    MtpFileSystem();
+    ~MtpFileSystem();
     bool HasGetPartialSupport();
     bool HasSendPartialSupport();
     bool ParseOptionsInner();
