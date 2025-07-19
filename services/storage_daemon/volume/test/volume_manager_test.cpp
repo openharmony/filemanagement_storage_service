@@ -215,6 +215,70 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_003,
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_003 end";
 }
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_004
+ * @tc.desc: Verify the DestroyVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_004 start";
+
+    std::string diskId = "diskId-1-2";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(true));
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DestroyUsbFuse()).WillOnce(Return(0));
+    int32_t result = VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_004 end";
+}
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_005
+ * @tc.desc: Verify the DestroyVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_005 start";
+
+    std::string diskId = "diskId-1-2";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(true));
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DestroyUsbFuse()).WillOnce(Return(1));
+    int32_t result = VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_005 end";
+}
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_006
+ * @tc.desc: Verify the DestroyVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_006 start";
+
+    std::string diskId = "diskId-1-2";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(false));
+    int32_t result = VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_004 end";
+}
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_Check_001
  * @tc.desc: Verify the Check function.
  * @tc.type: FUNC
