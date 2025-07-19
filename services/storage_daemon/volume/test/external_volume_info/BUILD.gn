@@ -142,7 +142,7 @@ ohos_unittest("external_volume_info_other3_test") {
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/test/external_volume_info/external_volume_info_test1.cpp",
+    "$ROOT_DIR/storage_daemon/volume/test/external_volume_info/external_volume_info_test_sub.cpp",
     "${storage_daemon_path}/mock/file_utils_mock.cpp",
   ]
 

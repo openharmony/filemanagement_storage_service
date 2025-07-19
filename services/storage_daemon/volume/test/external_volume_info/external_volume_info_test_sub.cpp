@@ -35,7 +35,7 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
 
-class ExternalVolumeInfoTest1 : public testing::Test {
+class ExternalVolumeInfoTestSub : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
@@ -46,26 +46,26 @@ public:
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
-void ExternalVolumeInfoTest1::SetUpTestCase(void)
+void ExternalVolumeInfoTestSub::SetUpTestCase(void)
 {
-    GTEST_LOG_(INFO) << "ExternalVolumeInfoTest1 SetUpTestCase";
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub SetUpTestCase";
     fileUtilMoc_ = std::make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
-void ExternalVolumeInfoTest1::TearDownTestCase(void)
+void ExternalVolumeInfoTestSub::TearDownTestCase(void)
 {
-    GTEST_LOG_(INFO) << "ExternalVolumeInfoTest1 TearDownTestCase";
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub TearDownTestCase";
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
 }
 
-void ExternalVolumeInfoTest1::SetUp()
+void ExternalVolumeInfoTestSub::SetUp()
 {
     externalVolumeInfo_ = new ExternalVolumeInfo();
 }
 
-void ExternalVolumeInfoTest1::TearDown(void)
+void ExternalVolumeInfoTestSub::TearDown(void)
 {
     if (externalVolumeInfo_ != nullptr) {
         delete externalVolumeInfo_;
@@ -79,7 +79,7 @@ void ExternalVolumeInfoTest1::TearDown(void)
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMount_001, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMount_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 start";
 
@@ -88,8 +88,12 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     g_readMetadata = 0;
     vol.fsType_ = "f2fs";
+    vol.fsUuid_ = "A001";
+    std::string mountUsbFusePath = "/mnt/data/external_fuse/A001";
+    mkdir(mountUsbFusePath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     auto ret = vol.DoMount(mountFlags);
     EXPECT_EQ(ret, E_MKDIR_MOUNT);
+    remove(mountUsbFusePath.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 end";
 }
 
@@ -99,7 +103,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMount_002, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMount_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 start";
 
@@ -108,8 +112,12 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     g_readMetadata = 0;
     vol.fsType_ = "f2fs";
+    vol.fsUuid_ = "A001";
+    std::string mountUsbFusePath = "/mnt/data/external/A001";
+    mkdir(mountUsbFusePath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     auto ret = vol.DoMount(mountFlags);
-    EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
+    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+    remove(mountUsbFusePath.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 end";
 }
 
@@ -119,7 +127,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMount_001, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_001 start";
 
@@ -137,7 +145,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMou
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMount_002, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_002 start";
 
@@ -155,7 +163,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMou
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMount_003, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_003 start";
 
