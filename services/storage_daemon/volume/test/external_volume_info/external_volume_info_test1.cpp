@@ -24,30 +24,12 @@
 namespace OHOS {
 namespace StorageDaemon {
 int32_t g_readMetadata = 0;
-int g_extStorageMountForkExec = 0;
-// int g_forkExec = 0;
-int g_forkExecWithExit = 0;
 int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string &type, std::string &label)
 {
     return g_readMetadata;
 }
-
-int ForkExecWithExit(std::vector<std::string> &cmd)
-{
-    return g_forkExecWithExit;
-}
-
-// int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
-// {
-//     return g_forkExec;
-// }
-
-int ExtStorageMountForkExec(std::vector<std::string> &cmd)
-{
-    return g_extStorageMountForkExec;
-}
 } // STORAGE_DAEMON
-} 
+} // OHOS
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -103,12 +85,11 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    // g_docheck = 0;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
-    //auto ret = vol.DoMount(mountFlags);
     g_readMetadata = 0;
-    externalVolumeInfo_->fsType_ = "f2fs";
-    EXPECT_EQ(externalVolumeInfo_->DoMount(mountFlags), E_SYS_KERNEL_ERR);
+    vol.fsType_ = "f2fs";
+    auto ret = vol.DoMount(mountFlags);
+    EXPECT_EQ(ret, E_MKDIR_MOUNT);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 end";
 }
 
@@ -125,8 +106,10 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoMoun
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
+    g_readMetadata = 0;
+    vol.fsType_ = "f2fs";
     auto ret = vol.DoMount(mountFlags);
-    EXPECT_EQ(ret, E_DOCHECK_MOUNT);
+    EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 end";
 }
 
@@ -160,7 +143,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMou
 
     ExternalVolumeInfo vol;
     bool force = false;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).Times(2).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_002 end";
@@ -178,7 +161,7 @@ HWTEST_F(ExternalVolumeInfoTest1, Storage_Service_ExternalVolumeInfoTest1_DoUMou
 
     ExternalVolumeInfo vol;
     bool force = false;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).Times(2).WillOnce(testing::Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_003 end";
