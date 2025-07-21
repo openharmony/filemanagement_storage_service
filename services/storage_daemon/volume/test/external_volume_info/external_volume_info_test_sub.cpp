@@ -74,14 +74,14 @@ void ExternalVolumeInfoTestSub::TearDown(void)
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest1_DoMount_001
+ * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoMount_001
  * @tc.desc: Verify the DoMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMount_001, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_DoMount_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoMount_001 start";
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
@@ -94,18 +94,18 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMo
     auto ret = vol.DoMount(mountFlags);
     EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
     remove(mountUsbFusePath.c_str());
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoMount_001 end";
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest1_DoMount_002
+ * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoMount_002
  * @tc.desc: Verify the DoMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMount_002, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_DoMount_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoMount_002 start";
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
@@ -118,61 +118,61 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMo
     auto ret = vol.DoMount(mountFlags);
     EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
     remove(mountUsbFusePath.c_str());
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoMount_002 end";
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest1_DoUMount_001
+ * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001
  * @tc.desc: Verify the DoMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_001, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_001 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001 start";
 
     ExternalVolumeInfo vol;
     bool force = true;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).Times(2).WillOnce(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_001 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001 end";
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest1_DoUMount_002
+ * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002
  * @tc.desc: Verify the DoMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_002, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_002 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002 start";
 
     ExternalVolumeInfo vol;
     bool force = false;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_002 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002 end";
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest1_DoUMount_003
+ * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003
  * @tc.desc: Verify the DoMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoUMount_003, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_003 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003 start";
 
     ExternalVolumeInfo vol;
     bool force = false;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoUMount_003 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
