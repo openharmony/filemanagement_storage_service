@@ -435,7 +435,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_001, TestSize.Level1)
 
 /**
  * @tc.name: FileUtilsTest_IsFuse_001
- * @tc.desc: Verify the IsFuse function basic functionality.
+ * @tc.desc: Verify the IsUsbFuse function basic functionality.
  * @tc.type: FUNC
  * @tc.require: AR000GK4HB
  */
@@ -443,15 +443,11 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 start";
 
-    // Test the IsFuse function basic functionality
-    bool result = IsFuse();
+    // Test the IsUsbFuse function basic functionality
+    bool result = IsUsbFuse();
     
-    // The function should return a boolean value
-    EXPECT_TRUE(result || !result);
+    EXPECT_FALSE(result);
     
-    // Log the result for debugging purposes
-    GTEST_LOG_(INFO) << "IsFuse result: " << (result ? "true" : "false");
-
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
 }
 

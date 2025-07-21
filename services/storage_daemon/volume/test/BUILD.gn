@@ -173,6 +173,7 @@ ohos_unittest("volume_manager_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "private=public",
+    "protected=public",
   ]
 
   include_dirs = [
@@ -180,6 +181,7 @@ ohos_unittest("volume_manager_test") {
     "$ROOT_DIR/storage_daemon/include/volume",
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_manager/include",
+    "${storage_daemon_path}/include/mock",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
@@ -191,6 +193,7 @@ ohos_unittest("volume_manager_test") {
     "$ROOT_DIR/storage_daemon/volume/src/volume_manager.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/volume_manager_test.cpp",
     "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
   ]
 
   deps = [

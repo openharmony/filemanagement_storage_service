@@ -112,10 +112,64 @@ ohos_unittest("external_volume_info_other2_test") {
   ]
 }
 
+ohos_unittest("external_volume_info_other3_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private=public",
+    "protected=public",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/storage_daemon/include",
+    "$ROOT_DIR/common/include",
+    "$ROOT_DIR/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/include/mock",
+  ]
+
+  sources = [
+    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
+    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
+    "$ROOT_DIR/storage_daemon/volume/test/external_volume_info/external_volume_info_test_sub.cpp",
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+  ]
+}
+
 group("external_volume_info_other_test") {
   testonly = true
   deps = [
     ":external_volume_info_other1_test",
     ":external_volume_info_other2_test",
+    ":external_volume_info_other3_test",
   ]
 }

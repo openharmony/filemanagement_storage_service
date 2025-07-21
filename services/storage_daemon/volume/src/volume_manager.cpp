@@ -99,7 +99,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     if (ret) {
         return ret;
     }
-    if (IsFuse()) {
+    if (IsUsbFuse()) {
         ret = destroyNode->DestroyUsbFuse();
         if (ret) {
             return ret;
@@ -167,7 +167,7 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
         LOGE("the volume %{public}s does not exist.", volumeId.c_str());
         return E_NON_EXIST;
     }
-    int32_t result = ReadVolumUuid(volumeId, fsUuid);
+    int32_t result = ReadVolumeUuid(volumeId, fsUuid);
     if (result != E_OK) {
         return result;
     }
@@ -201,10 +201,10 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
     return E_OK;
 }
  
-int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
+int32_t VolumeManager::ReadVolumeUuid(std::string volumeId, std::string &fsUuid)
 {
     std::string devPath = StringPrintf("/dev/block/%s", (volumeId).c_str());
-    int32_t ret = OHOS::StorageDaemon::ReadVolumUuid(devPath, fsUuid);
+    int32_t ret = OHOS::StorageDaemon::ReadVolumeUuid(devPath, fsUuid);
     return ret;
 }
  

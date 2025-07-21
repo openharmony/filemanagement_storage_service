@@ -129,7 +129,7 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    if (!StorageDaemon::IsFuse()) {
+    if (!StorageDaemon::IsUsbFuse()) {
         std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
         int handle = static_cast<int>(FindParameter(key.c_str()));
         if (handle != -1) {

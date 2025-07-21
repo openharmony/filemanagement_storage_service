@@ -35,7 +35,7 @@ public:
     virtual std::string GetBlkidData(const std::string &devPath, const std::string &type) = 0;
     virtual std::string GetBlkidDataByCmd(std::vector<std::string> &cmd) = 0;
     virtual std::string GetAnonyString(const std::string &value) = 0;
-    virtual int32_t ReadVolumUuid(const std::string &devPath, std::string &uuid) = 0;
+    virtual int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid) = 0;
 public:
     static inline std::shared_ptr<IDiskUtilMoc> diskUtilMoc = nullptr;
 };
@@ -51,7 +51,7 @@ public:
     MOCK_METHOD2(GetBlkidData, std::string(const std::string &devPath, const std::string &type));
     MOCK_METHOD1(GetBlkidDataByCmd, std::string(std::vector<std::string> &cmd));
     MOCK_METHOD1(GetAnonyString, std::string(const std::string &value));
-    MOCK_METHOD2(ReadVolumUuid, int32_t(const std::string &devPath, std::string &uuid));
+    MOCK_METHOD2(ReadVolumeUuid, int32_t(const std::string &devPath, std::string &uuid));
 };
 }
 }
