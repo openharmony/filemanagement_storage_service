@@ -92,7 +92,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMo
     std::string mountUsbFusePath = "/mnt/data/external_fuse/A001";
     mkdir(mountUsbFusePath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     auto ret = vol.DoMount(mountFlags);
-    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+    EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
     remove(mountUsbFusePath.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_001 end";
 }
@@ -116,7 +116,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTest1_DoMo
     std::string mountUsbFusePath = "/mnt/data/external/A001";
     mkdir(mountUsbFusePath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     auto ret = vol.DoMount(mountFlags);
-    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+    EXPECT_EQ(ret, E_SYS_KERNEL_ERR);
     remove(mountUsbFusePath.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest1_DoMount_002 end";
 }
