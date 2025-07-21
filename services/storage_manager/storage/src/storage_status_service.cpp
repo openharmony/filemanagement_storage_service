@@ -44,6 +44,7 @@ const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
 constexpr const char *SETTING_BUNDLE_NAME = "com.huawei.hmos.settings";
+const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -351,6 +352,9 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
     }
 
     for (uint i = 0; i < bundleStats.size(); i++) {
+        if (bundleStats[i] > 0 && appSize > MAX_INT64 - bundleStats[i]) {
+            return E_CALCULATE_OVERFLOW_UP;
+        }
         appSize += bundleStats[i];
     }
     LOGD("StorageStatusService::GetAppSize end");
