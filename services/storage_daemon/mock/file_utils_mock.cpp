@@ -149,6 +149,11 @@ bool IsPathMounted(std::string &path)
     return IFileUtilMoc::fileUtilMoc->IsPathMounted(path);
 }
 
+bool IsUsbFuse()
+{
+    return IFileUtilMoc::fileUtilMoc->IsUsbFuse();
+}
+
 bool CreateFolder(const std::string &path)
 {
     return IFileUtilMoc::fileUtilMoc->CreateFolder(path);

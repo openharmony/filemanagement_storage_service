@@ -295,7 +295,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    if (IsFuse()) {
+    if (IsUsbFuse()) {
         ret = CreateFuseMountPath();
     } else {
         ret = CreateMountPath();
@@ -357,7 +357,7 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
-    if (force && !IsFuse()) {
+    if (force && !IsUsbFuse()) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
         ps.UpdatePidByPath();
@@ -367,7 +367,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGI("External volume force to unmount success.");
         return E_OK;
     }
-    if (IsFuse()) {
+    if (IsUsbFuse()) {
         mountPath_ = mountUsbFusePath_;
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
@@ -414,7 +414,7 @@ int32_t ExternalVolumeInfo::DoUMountUsbFuse()
     int err = rmdir(mountPath_.c_str());
     if (err) {
         LOGE("External volume DoUMountUsbFuse error: rmdir failed, errno %{public}d", errno);
-        return E_VOL_UMOUNT_ERR;
+        return E_RMDIR_MOUNT;
     }
     LOGI("DoUMountUsbFuse success.");
     return E_OK;
@@ -513,6 +513,13 @@ int32_t ExternalVolumeInfo::DoCheck()
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     int32_t err = 0;
+    if (IsUsbFuse() && IsPathMounted(mountPath_)) {
+        err = DoUMountUsbFuse();
+    }
+    if (err != E_OK) {
+        return err;
+    }
+    
     std::map<std::string, std::string>::iterator iter = supportFormatType_.find(type);
     if (iter == supportFormatType_.end()) {
         LOGE("External volume format not support.");

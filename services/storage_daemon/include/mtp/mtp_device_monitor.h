@@ -22,8 +22,13 @@
 namespace OHOS {
 namespace StorageDaemon {
 class MtpDeviceMonitor : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
 public:
+    static MtpDeviceMonitor &GetInstance()
+    {
+        static MtpDeviceMonitor instance;
+        return instance;
+    }
+
     void StartMonitor();
     void UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc);
     int32_t Mount(const std::string &id);
@@ -35,6 +40,8 @@ public:
     static void OnMtpDisableParamChange(const char *key, const  char *value, void *context);
     static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
 private:
+    MtpDeviceMonitor();
+    ~MtpDeviceMonitor();
     void MonitorDevice();
     void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);

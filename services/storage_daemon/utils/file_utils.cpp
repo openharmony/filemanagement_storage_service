@@ -123,10 +123,10 @@ bool IsFile(const std::string &path)
     return S_ISREG(buf.st_mode);
 }
 
-bool IsFuse()
+bool IsUsbFuse()
 {
     bool ret = system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
-    LOGI("IsFuse result: %{public}s.", ret ? "true" : "false");
+    LOGI("IsUsbFuse result: %{public}s.", ret ? "true" : "false");
     return ret;
 }
 

@@ -106,7 +106,10 @@ int32_t VolumeInfo::DestroyUsbFuse()
 {
     LOGI("DestroyUsbFuse in");
     StorageManagerClient client;
-    UMountUsbFuse();
+    int32_t ret = UMountUsbFuse();
+    if (ret != E_OK) {
+        return ret;
+    }
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::FUSE_REMOVED) != E_OK) {
         LOGE("Volume Notify Removed failed");
     }
@@ -126,7 +129,7 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    if (!StorageDaemon::IsFuse()) {
+    if (!StorageDaemon::IsUsbFuse()) {
         std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
         int handle = static_cast<int>(FindParameter(key.c_str()));
         if (handle != -1) {
@@ -185,10 +188,6 @@ int32_t VolumeInfo::UMount(bool force)
     if (!force && err) {
         mountState_ = MOUNTED;
         return err;
-    }
-
-    if (IsFuse()) {
-        DestroyUsbFuse();
     }
 
     mountState_ = UNMOUNTED;

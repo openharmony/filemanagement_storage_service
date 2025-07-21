@@ -122,6 +122,12 @@ char *Acl::Serialize(size_t &bufSize)
         buf = nullptr;
     }
 
+    if (entries.size() > ENTRIES_MAX_NUM) {
+        bufSize = 0;
+        errno = EINVAL;
+        return nullptr;
+    }
+
     bufSize = sizeof(AclXattrHeader) + sizeof(AclXattrEntry) * entries.size();
     if (bufSize > BUF_MAX_SIZE) {
         bufSize = 0;

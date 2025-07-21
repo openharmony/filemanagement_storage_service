@@ -30,6 +30,10 @@ namespace StorageDaemon {
 namespace {
 int AclEntryParseTag(const std::string &tagTxt, AclXattrEntry &entry)
 {
+    if (tagTxt.empty()) {
+        errno = EINVAL;
+        return -1;
+    }
     switch (tagTxt[0]) {
         case 'u':
             entry.tag = ACL_TAG::USER;
@@ -224,8 +228,7 @@ Acl AclFromFile(const std::string &file)
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
     if (strcmp(aclAttrName, ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
-        LOGE("Failed to confirm %{private}s is a directory: %{public}s",
-            targetFile.c_str(),
+        LOGE("Failed to confirm is a directory: %{public}s",
             errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
         return -1;
     }

@@ -145,6 +145,9 @@ HWTEST_F(SetAclTest, SetAclTest_002, TestSize.Level1)
     rc = AclSetDefault(PATH_TEST, "g::v--");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
+    rc = AclSetDefault(PATH_TEST, "::");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
     GTEST_LOG_(INFO) << "SetAclTest_002 ends";
 }
 

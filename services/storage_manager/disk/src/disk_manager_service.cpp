@@ -55,7 +55,7 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
 
 int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 {
-    if (StorageDaemon::IsFuse()) {
+    if (StorageDaemon::IsUsbFuse()) {
         LOGE("DiskManagerService::The disk %{public}s is fuse, not support", GetAnonyString(diskId).c_str());
         return E_NOT_SUPPORT;
     }

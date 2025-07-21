@@ -113,14 +113,14 @@ void StorageMonitorService::Execute()
 void StorageMonitorService::MonitorAndManageStorage()
 {
     int64_t totalSize;
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
     if ((err != E_OK) || (totalSize <= 0)) {
         LOGE("Get device total size failed.");
         return;
     }
 
     int64_t freeSize;
-    err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
+    err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     if ((err != E_OK) || (freeSize < 0)) {
         LOGE("Get device free size failed.");
         return;
@@ -271,7 +271,7 @@ void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStag
 
 void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
 {
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return;

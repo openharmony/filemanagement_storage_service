@@ -19,17 +19,35 @@
 #include "disk/disk_manager_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "mock/file_utils_mock.h"
+
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
+using namespace StorageDaemon;
 class DiskManagerServiceTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase() {};
+    static void SetUpTestCase(void);
+    static void TearDownTestCase();
     void SetUp() {};
     void TearDown() {};
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
+
+void DiskManagerServiceTest::SetUpTestCase(void)
+{
+    GTEST_LOG_(INFO) << "SetUpTestCase Start";
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void DiskManagerServiceTest::TearDownTestCase()
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+}
 
 /**
  * @tc.number: SUB_STORAGE_Disk_manager_service_OnDiskCreated_0000
@@ -43,8 +61,7 @@ public:
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_OnDiskCreated_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-1";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -52,11 +69,9 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0000, testin
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        result = dmService->GetDiskById(diskId);
-        dmService->OnDiskDestroyed(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    result = dmService.GetDiskById(diskId);
+    dmService.OnDiskDestroyed(diskId);
 
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_OnDiskCreated_0000";
@@ -74,8 +89,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0000, testin
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_OnDiskCreated_0001";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-2";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -83,12 +97,10 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0001, testin
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        dmService->OnDiskCreated(disk);
-        result = dmService->GetDiskById(diskId);
-        dmService->OnDiskDestroyed(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    dmService.OnDiskCreated(disk);
+    result = dmService.GetDiskById(diskId);
+    dmService.OnDiskDestroyed(diskId);
 
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_OnDiskCreated_0001";
@@ -106,8 +118,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskCreated_0001, testin
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_OnDiskDestroyed_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-3";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -115,13 +126,11 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0000, test
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        result = dmService->GetDiskById(diskId);
-        EXPECT_NE(result, nullptr);
-        dmService->OnDiskDestroyed(diskId);
-        result = dmService->GetDiskById(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    result = dmService.GetDiskById(diskId);
+    EXPECT_NE(result, nullptr);
+    dmService.OnDiskDestroyed(diskId);
+    result = dmService.GetDiskById(diskId);
 
     EXPECT_EQ(result, nullptr);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_OnDiskDestroyed_0000";
@@ -139,8 +148,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0000, test
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_OnDiskDestroyed_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-4";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -148,10 +156,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0001, test
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskDestroyed(diskId);
-        result = dmService->GetDiskById(diskId);
-    }
+    dmService.OnDiskDestroyed(diskId);
+    result = dmService.GetDiskById(diskId);
 
     EXPECT_EQ(result, nullptr);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_OnDiskDestroyed_0000";
@@ -169,8 +175,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0001, test
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-5";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -178,11 +183,9 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0000, testing:
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        result = dmService->GetDiskById(diskId);
-        dmService->OnDiskDestroyed(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    result = dmService.GetDiskById(diskId);
+    dmService.OnDiskDestroyed(diskId);
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0000";
 }
@@ -199,8 +202,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0000, testing:
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0001";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-6";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -208,11 +210,9 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0001, testing:
     int32_t flag = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        result = dmService->GetDiskById(diskId, disk);
-        dmService->OnDiskDestroyed(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    result = dmService.GetDiskById(diskId, disk);
+    dmService.OnDiskDestroyed(diskId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0001";
 }
@@ -229,8 +229,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0001, testing:
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0002";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-7";
     std::string diskId_1 = "diskId-1-11";
     int64_t sizeBytes = 1024;
@@ -239,9 +238,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0002, testing:
     int32_t flag = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        result = dmService->GetDiskById(diskId_1, disk);
-    }
+    result = dmService.GetDiskById(diskId_1, disk);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0002";
 }
@@ -258,8 +255,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0002, testing:
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-8";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -268,11 +264,9 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        dmService->OnDiskCreated(disk);
-        result = dmService->Partition(diskId, type);
-        dmService->OnDiskDestroyed(diskId);
-    }
+    dmService.OnDiskCreated(disk);
+    result = dmService.Partition(diskId, type);
+    dmService.OnDiskDestroyed(diskId);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0000";
 }
@@ -289,8 +283,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0001";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-9";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
@@ -299,11 +293,36 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    if (dmService != nullptr) {
-        result = dmService->Partition(diskId, type);
-    }
+    result = dmService.Partition(diskId, type);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_Partition_0002
+ * @tc.name: Disk_manager_service_Partition_0002
+ * @tc.desc: Test function of Partition interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_Partition_0002";
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+    std::string diskId = "diskId-1-9";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "vendor-9";
+    int32_t flag = 1;
+    int32_t type = 1;
+    int32_t result = E_OK;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
+    result = dmService.Partition(diskId, type);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0002";
 }
 
 /**
@@ -318,16 +337,15 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::e
 HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetAllDisks_0000";
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string diskId = "diskId-1-10";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
     std::string vendor = "vendor-10";
     int32_t flag = 1;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-    dmService->OnDiskCreated(disk);
-    vector<Disk> result = dmService->GetAllDisks();
+    dmService.OnDiskCreated(disk);
+    vector<Disk> result = dmService.GetAllDisks();
     if (result.size() > 0)
     {
         GTEST_LOG_(INFO) << result[0].GetSizeBytes();
@@ -337,7 +355,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
         GTEST_LOG_(INFO) << result[0].GetFlag();
     }
     EXPECT_GE(result.size(), 0);
-    dmService->OnDiskDestroyed(diskId);
+    dmService.OnDiskDestroyed(diskId);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service__0000";
 }
 } // namespace

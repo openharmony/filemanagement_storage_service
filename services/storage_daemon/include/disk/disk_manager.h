@@ -27,7 +27,11 @@ namespace OHOS {
 namespace StorageDaemon {
 class DiskManager final {
 public:
-    static DiskManager* Instance(void);
+    static DiskManager &Instance(void)
+    {
+        static DiskManager instance;
+        return instance;
+    }
 
     virtual ~DiskManager();
     void CreateDisk(std::shared_ptr<DiskInfo> &diskInfo);
@@ -46,7 +50,6 @@ private:
     std::mutex lock_;
     std::list<std::shared_ptr<DiskInfo>> disk_;
     std::list<std::shared_ptr<DiskConfig>> diskConfig_;
-    static DiskManager* instance_;
 
     DISALLOW_COPY_AND_MOVE(DiskManager);
 

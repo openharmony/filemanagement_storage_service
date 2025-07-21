@@ -50,9 +50,9 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountDeviceTest_001 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = true;
-    int32_t result = manager->MountDevice(deviceInfo);
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
+    manager.isMounting = true;
+    int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_MTP_IS_MOUNTING);
 
     GTEST_LOG_(INFO) << "MountDeviceTest_001 end";
@@ -67,9 +67,9 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountDeviceTest_002 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = false;
-    int32_t result = manager->MountDevice(deviceInfo);
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
+    manager.isMounting = false;
+    int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_MTP_PREPARE_DIR_ERR);
 
     GTEST_LOG_(INFO) << "MountDeviceTest_002 end";
@@ -84,10 +84,10 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountDeviceTest_003 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = false;
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
+    manager.isMounting = false;
     deviceInfo.path = "/mnt/data/external";
-    int32_t result = manager->MountDevice(deviceInfo);
+    int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_MTP_MOUNT_FAILED);
 
     GTEST_LOG_(INFO) << "MountDeviceTest_003 end";
@@ -102,9 +102,9 @@ HWTEST_F(MtpDeviceManagerTest, UmountDeviceTest_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "UmountDeviceTest_001 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
     deviceInfo.path = "/test/path";
-    EXPECT_EQ(manager->UmountDevice(deviceInfo, false, false), E_MTP_UMOUNT_FAILED);
+    EXPECT_EQ(manager.UmountDevice(deviceInfo, false, false), E_MTP_UMOUNT_FAILED);
 
     GTEST_LOG_(INFO) << "UmountDeviceTest_001 end";
 }
@@ -118,9 +118,9 @@ HWTEST_F(MtpDeviceManagerTest, UmountDeviceTest_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "UmountDeviceTest_002 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
     deviceInfo.path = "/test/path";
-    EXPECT_EQ(manager->UmountDevice(deviceInfo, true, false), E_MTP_UMOUNT_FAILED);
+    EXPECT_EQ(manager.UmountDevice(deviceInfo, true, false), E_MTP_UMOUNT_FAILED);
 
     GTEST_LOG_(INFO) << "UmountDeviceTest_002 end";
 }

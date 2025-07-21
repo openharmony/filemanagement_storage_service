@@ -70,39 +70,40 @@ void VolumeManagerServiceExt::UnInit()
     }
 }
  
-int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid)
+int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, const std::string &volumeId, const std::string &fsUuid)
 {
+    LOGI("NotifyUsbFuseMount in");
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
-        return E_MOUNT_CLOUD_FUSE;
+        return E_NOTIFY_FAILED;
     }
     FuncMount funcMount = (FuncMount)dlsym(handler_, "NotifyExternalVolumeFuseMount");
     if (funcMount == nullptr) {
         LOGE("Failed to get function pointer for NotifyExternalVolumeFuseMount");
-        return E_MOUNT_CLOUD_FUSE;
+        return E_NOTIFY_FAILED;
     }
-    if (funcMount(fuseFd, volumeid, fsUuid) != E_OK) {
+    if (funcMount(fuseFd, volumeId, fsUuid) != E_OK) {
         LOGE("NotifyUsbFuseMount fail");
-        return E_MOUNT_CLOUD_FUSE;
+        return E_NOTIFY_FAILED;
     }
     return E_OK;
 }
  
-int32_t VolumeManagerServiceExt::NotifyUsbFuseUMount(std::string volumeid)
+int32_t VolumeManagerServiceExt::NotifyUsbFuseUmount(const std::string &volumeId)
 {
-    LOGI("NotifyUsbFuseUMount in");
+    LOGI("NotifyUsbFuseUmount in");
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
-        return E_MOUNT_CLOUD_FUSE;
+        return E_NOTIFY_FAILED;
     }
     FuncUMount funcUMount = (FuncUMount)dlsym(handler_, "NotifyExternalVolumeFuseUmount");
     if (funcUMount == nullptr) {
         LOGE("Failed to get function pointer for NotifyExternalVolumeFuseUmount");
-        return E_MOUNT_CLOUD_FUSE;
+        return E_NOTIFY_FAILED;
     }
-    if (funcUMount(volumeid) != E_OK) {
-        LOGE("NotifyUsbFuseUMount fail");
-        return E_MOUNT_CLOUD_FUSE;
+    if (funcUMount(volumeId) != E_OK) {
+        LOGE("NotifyUsbFuseUmount fail");
+        return E_NOTIFY_FAILED;
     }
     return E_OK;
 }

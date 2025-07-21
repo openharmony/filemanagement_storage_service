@@ -99,7 +99,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     if (ret) {
         return ret;
     }
-    if (IsFuse()) {
+    if (IsUsbFuse()) {
         ret = destroyNode->DestroyUsbFuse();
         if (ret) {
             return ret;
@@ -133,7 +133,7 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Mount(volId);
+        return OHOS::StorageDaemon::MtpDeviceMonitor::GetInstance().Mount(volId);
 #else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
@@ -167,7 +167,7 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
         LOGE("the volume %{public}s does not exist.", volumeId.c_str());
         return E_NON_EXIST;
     }
-    int32_t result = ReadVolumUuid(volumeId, fsUuid);
+    int32_t result = ReadVolumeUuid(volumeId, fsUuid);
     if (result != E_OK) {
         return result;
     }
@@ -201,10 +201,10 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
     return E_OK;
 }
  
-int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
+int32_t VolumeManager::ReadVolumeUuid(std::string volumeId, std::string &fsUuid)
 {
     std::string devPath = StringPrintf("/dev/block/%s", (volumeId).c_str());
-    int32_t ret = OHOS::StorageDaemon::ReadVolumUuid(devPath, fsUuid);
+    int32_t ret = OHOS::StorageDaemon::ReadVolumeUuid(devPath, fsUuid);
     return ret;
 }
  
@@ -217,10 +217,6 @@ int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
         return E_PARAMS_INVALID;
     }
     struct stat statbuf;
-    if (fsUuid.find("..") != std::string::npos) {
-        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", GetAnonyString(fsUuid).c_str());
-        return E_PARAMS_INVALID;
-    }
     mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
@@ -285,7 +281,7 @@ int32_t VolumeManager::UMount(const std::string volId)
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Umount(volId);
+        return OHOS::StorageDaemon::MtpDeviceMonitor::GetInstance().Umount(volId);
 #else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;

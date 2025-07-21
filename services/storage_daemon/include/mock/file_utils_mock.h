@@ -46,6 +46,7 @@ public:
     virtual bool DeleteFile(const std::string &path) = 0;
     virtual std::vector<std::string> Split(std::string str, const std::string &pattern) = 0;
     virtual bool IsPathMounted(std::string &path) = 0;
+    virtual bool IsUsbFuse() = 0;
     virtual bool CreateFolder(const std::string &path) = 0;
     virtual bool DelFolder(const std::string &path) = 0;
     virtual std::string ProcessToString(std::vector<ProcessInfo> &processList) = 0;
@@ -76,6 +77,7 @@ public:
     MOCK_METHOD1(DeleteFile, bool(const std::string &path));
     MOCK_METHOD2(Split, std::vector<std::string>(std::string str, const std::string &pattern));
     MOCK_METHOD1(IsPathMounted, bool(std::string &path));
+    MOCK_METHOD0(IsUsbFuse, bool());
     MOCK_METHOD1(CreateFolder, bool(const std::string &path));
     MOCK_METHOD1(DelFolder, bool(const std::string &path));
     MOCK_METHOD1(ProcessToString, std::string(std::vector<ProcessInfo> &processList));

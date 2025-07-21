@@ -25,8 +25,8 @@ namespace StorageManager {
 class FuseExtInterface {
 public:
     virtual ~FuseExtInterface() = default;
-    virtual bool NotifyExternalVolumeFuseMount(int fd, std::string volumeid, std::string fsUuid) = 0;
-    virtual bool NotifyExternalVolumeFuseUMount(std::string volumeid) = 0;
+    virtual bool NotifyExternalVolumeFuseMount(int fd, std::string volumeId, std::string fsUuid) = 0;
+    virtual bool NotifyExternalVolumeFuseUMount(std::string volumeId) = 0;
 };
  
 class VolumeManagerServiceExt {
@@ -36,8 +36,9 @@ public:
         static VolumeManagerServiceExt instance;
         return instance;
     }
-    int32_t NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid);
-    int32_t NotifyUsbFuseUMount(std::string volumeid);
+ 
+    int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeId, const std::string &fsUuid);
+    int32_t NotifyUsbFuseUmount(const std::string &volumeId);
  
 private:
     VolumeManagerServiceExt();
@@ -50,7 +51,6 @@ private:
     void Init();
     void UnInit();
     void *handler_ = nullptr;
-    std::mutex mutex_;
 };
 } // StorageManager
 } // OHOS

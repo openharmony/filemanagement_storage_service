@@ -23,8 +23,12 @@
 namespace OHOS {
 namespace StorageManager {
 class StorageStatusService : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(StorageStatusService);
 public:
+    static StorageStatusService &GetInstance()
+    {
+        static StorageStatusService instance;
+        return instance;
+    }
     int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
@@ -34,12 +38,13 @@ public:
         int32_t appIndex, uint32_t statFlag);
 
 private:
+    StorageStatusService();
+    ~StorageStatusService();
     int32_t QueryOccupiedSpaceForSa();
     int GetCurrentUserId();
     std::string GetCallingPkgName();
     int32_t GetAppSize(int32_t userId, int64_t &size);
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
-    const int DEFAULT_USER_ID = 100;
     const int DEFAULT_APP_INDEX = 0;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};

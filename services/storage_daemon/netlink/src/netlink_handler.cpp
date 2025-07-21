@@ -40,7 +40,7 @@ void NetlinkHandler::OnEvent(char *msg)
         LOGI("OnEvent GetSyspath: %{public}s, GetDevpath: %{public}s, GetSubsystem: %{public}s, GetAction: %{public}d",
             nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
             nlData->GetSubsystem().c_str(), nlData->GetAction());
-        DiskManager::Instance()->HandleDiskEvent(nlData.get());
+        DiskManager::Instance().HandleDiskEvent(nlData.get());
     }
 }
 } // StorageDaemon

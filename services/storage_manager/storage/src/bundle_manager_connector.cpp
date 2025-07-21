@@ -72,7 +72,7 @@ int32_t BundleMgrConnector::ResetBundleMgrProxy()
 
 void BundleMgrDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
-    DelayedSingleton<BundleMgrConnector>::GetInstance()->ResetBundleMgrProxy();
+    BundleMgrConnector::GetInstance().ResetBundleMgrProxy();
 }
 } // StorageManager
 } // OHOS

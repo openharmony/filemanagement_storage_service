@@ -44,6 +44,7 @@ const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
 constexpr const char *SETTING_BUNDLE_NAME = "com.huawei.hmos.settings";
+const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -192,7 +193,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     // totalSize
     int64_t totalSize = 0;
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, err, GetCallingPkgName());
@@ -253,7 +254,7 @@ int32_t StorageStatusService::QueryOccupiedSpaceForSa()
 {
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return E_SERVICE_IS_NULLPTR;
@@ -289,7 +290,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     BundleStats &pkgStats, int32_t appIndex, uint32_t statFlag)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetBundleStats connect bundlemgr failed");
         return E_SERVICE_IS_NULLPTR;
@@ -333,7 +334,7 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     LOGD("StorageStatusService::GetAppSize start");
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
         return E_SERVICE_IS_NULLPTR;
@@ -351,6 +352,9 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
     }
 
     for (uint i = 0; i < bundleStats.size(); i++) {
+        if (bundleStats[i] > 0 && appSize > MAX_INT64 - bundleStats[i]) {
+            return E_CALCULATE_OVERFLOW_UP;
+        }
         appSize += bundleStats[i];
     }
     LOGD("StorageStatusService::GetAppSize end");
