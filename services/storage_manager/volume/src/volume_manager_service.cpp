@@ -40,9 +40,7 @@ VolumeManagerService::~VolumeManagerService() {}
 
 void VolumeManagerService::VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume)
 {
-    if (DelayedSingleton<Notification>::GetInstance() != nullptr) {
-        DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volume);
-    }
+    Notification::GetInstance().NotifyVolumeChange(state, volume);
 }
 
 void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
@@ -55,7 +53,7 @@ void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
 void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState state)
 {
     if (state == VolumeState::FUSE_REMOVED) {
-        int32_t result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUmount(volumeId);
+        int32_t result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseUmount(volumeId);
         if (result != E_OK) {
             LOGE("VolumeManagerServiceExt NotifyUsbFuseUmount failed, error = %{public}d", result);
         }
@@ -194,7 +192,7 @@ int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
     int32_t fuseFd;
     int32_t result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (result == E_OK) {
-        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
+        result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     }
     LOGI("VolumeManagerService::MountUsbFuse out");
     return result;
@@ -372,7 +370,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     }
 
     if (StorageDaemon::IsUsbFuse()) {
-        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUmount(volumeId);
+        result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseUmount(volumeId);
     }
     return result;
 }

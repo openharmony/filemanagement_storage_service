@@ -16,13 +16,17 @@
 #ifndef OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
 
-#include <singleton.h>
+#include <cstdint>
 
 namespace OHOS {
 namespace StorageManager {
-class MultiUserManagerService final : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(MultiUserManagerService);
+class MultiUserManagerService {
 public:
+    static MultiUserManagerService &GetInstance()
+    {
+        static MultiUserManagerService instance;
+        return instance;
+    }
     int32_t PrepareAddUser(int32_t userId, uint32_t flags);
     int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
@@ -30,6 +34,12 @@ public:
     int32_t CompleteAddUser(int32_t userId);
 
 private:
+    MultiUserManagerService();
+    ~MultiUserManagerService();
+    MultiUserManagerService(const MultiUserManagerService &) = delete;
+    MultiUserManagerService &operator=(const MultiUserManagerService &) = delete;
+    MultiUserManagerService(const MultiUserManagerService &&) = delete;
+    MultiUserManagerService &operator=(const MultiUserManagerService &&) = delete;
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // StorageManager

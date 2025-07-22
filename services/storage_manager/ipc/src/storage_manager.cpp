@@ -61,32 +61,25 @@ void StorageManager::ResetUserEventRecord(int32_t userId)
 int32_t StorageManager::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManager::PrepareAddUser start, userId: %{public}d", userId);
-    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->PrepareAddUser(userId, flags);
-    return err;
+    return MultiUserManagerService::GetInstance().PrepareAddUser(userId, flags);
 }
 
 int32_t StorageManager::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManger::RemoveUser start, userId: %{public}d", userId);
-    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->RemoveUser(userId, flags);
-    return err;
+    return MultiUserManagerService::GetInstance().RemoveUser(userId, flags);
 }
 
 int32_t StorageManager::PrepareStartUser(int32_t userId)
 {
     LOGI("StorageManger::PrepareStartUser start, userId: %{public}d", userId);
-    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->PrepareStartUser(userId);
-    return err;
+    return MultiUserManagerService::GetInstance().PrepareStartUser(userId);
 }
 
 int32_t StorageManager::StopUser(int32_t userId)
 {
     LOGI("StorageManger::StopUser start, userId: %{public}d", userId);
-    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->StopUser(userId);
+    int32_t err = MultiUserManagerService::GetInstance().StopUser(userId);
     if (err != E_USERID_RANGE) {
         ResetUserEventRecord(userId);
     }
@@ -96,9 +89,7 @@ int32_t StorageManager::StopUser(int32_t userId)
 int32_t StorageManager::CompleteAddUser(int32_t userId)
 {
     LOGI("StorageManger::CompleteAddUser start, userId: %{public}d", userId);
-    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->CompleteAddUser(userId);
-    return err;
+    return MultiUserManagerService::GetInstance().CompleteAddUser(userId);
 }
 
 int32_t StorageManager::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
@@ -247,7 +238,7 @@ int32_t StorageManager::NotifyVolumeCreated(const VolumeCore& vc)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeCreated(vc);
+    VolumeManagerService::GetInstance().OnVolumeCreated(vc);
 #endif
 
     return E_OK;
@@ -258,7 +249,7 @@ int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const s
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeMounted start, fsType is %{public}s.", fsTypeStr.c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
+    VolumeManagerService::GetInstance().OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
         description);
 #endif
     return E_OK;
@@ -269,8 +260,7 @@ int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const s
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.", fsTypeStr.c_str(), fsUuid.c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
-                                                                           description);
+    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 #endif
     return E_OK;
 }
@@ -302,7 +292,7 @@ int32_t StorageManager::NotifyVolumeStateChanged(const std::string& volumeId, ui
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeStateChanged start");
     OHOS::StorageManager::VolumeState stateService = UintToState(state);
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeStateChanged(volumeId, stateService);
+    VolumeManagerService::GetInstance().OnVolumeStateChanged(volumeId, stateService);
 #endif
 
     return E_OK;
@@ -312,7 +302,7 @@ int32_t StorageManager::Mount(const std::string &volumeId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Mount start");
-    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Mount(volumeId);
+    int result = VolumeManagerService::GetInstance().Mount(volumeId);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Mount", result);
     }
@@ -326,7 +316,7 @@ int32_t StorageManager::Unmount(const std::string &volumeId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Unmount start");
-    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
+    int result = VolumeManagerService::GetInstance().Unmount(volumeId);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
     }
@@ -340,7 +330,7 @@ int32_t StorageManager::TryToFix(const std::string &volumeId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::TryToFix start");
-    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->TryToFix(volumeId);
+    int result = VolumeManagerService::GetInstance().TryToFix(volumeId);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
     }
@@ -354,7 +344,7 @@ int32_t StorageManager::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetAllVolumes start");
-    vecOfVol = DelayedSingleton<VolumeManagerService>::GetInstance()->GetAllVolumes();
+    vecOfVol = VolumeManagerService::GetInstance().GetAllVolumes();
 #endif
 
     return E_OK;
@@ -412,7 +402,7 @@ int32_t StorageManager::GetVolumeByUuid(const std::string &fsUuid, VolumeExterna
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
-    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
+    int32_t err = VolumeManagerService::GetInstance().GetVolumeByUuid(fsUuid, vc);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeByUuid", err);
     }
@@ -426,7 +416,7 @@ int32_t StorageManager::GetVolumeById(const std::string &volumeId, VolumeExterna
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
-    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeById(volumeId, vc);
+    int32_t err = VolumeManagerService::GetInstance().GetVolumeById(volumeId, vc);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeById", err);
     }
@@ -441,7 +431,7 @@ int32_t StorageManager::SetVolumeDescription(const std::string &fsUuid, const st
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
-    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
+    int32_t err = VolumeManagerService::GetInstance().SetVolumeDescription(fsUuid, description);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::SetVolumeDescription", err);
     }
@@ -455,7 +445,7 @@ int32_t StorageManager::Format(const std::string &volumeId, const std::string &f
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
-    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->Format(volumeId, fsType);
+    int32_t err = VolumeManagerService::GetInstance().Format(volumeId, fsType);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Format", err);
     }
@@ -766,7 +756,7 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s", id.c_str(),
          path.c_str(), GetAnonyString(uuid).c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpMounted(id, path, desc, uuid);
+    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
 #endif
     return E_OK;
 }
@@ -775,7 +765,7 @@ int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::str
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(), path.c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpUnmounted(id, path, isBadRemove);
+    VolumeManagerService::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
 #endif
     return E_OK;
 }

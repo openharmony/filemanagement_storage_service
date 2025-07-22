@@ -16,15 +16,25 @@
 #ifndef OHOS_STORAGE_MANAGER_NOTIFICATION_H
 #define OHOS_STORAGE_MANAGER_NOTIFICATION_H
 
-#include <singleton.h>
 #include "volume_external.h"
 
 namespace OHOS {
 namespace StorageManager {
-class Notification final : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(Notification);
+class Notification {
 public:
+    static Notification &GetInstance()
+    {
+        static Notification instance;
+        return instance;
+    }
     void NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume);
+private:
+    Notification();
+    ~Notification();
+    Notification(const Notification &) = delete;
+    Notification &operator=(const Notification &) = delete;
+    Notification(const Notification &&) = delete;
+    Notification &operator=(const Notification &&) = delete;
 };
 } // StorageManager
 } // OHOS

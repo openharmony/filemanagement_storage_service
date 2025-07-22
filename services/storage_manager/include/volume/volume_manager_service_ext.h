@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_EXT_H
  
 #include <mutex>
-#include <singleton.h>
 #include "volume_external.h"
 
 namespace OHOS {
@@ -32,10 +31,10 @@ public:
  
 class VolumeManagerServiceExt {
 public:
-    static VolumeManagerServiceExt *GetInstance(void)
+    static VolumeManagerServiceExt &GetInstance(void)
     {
         static VolumeManagerServiceExt instance;
-        return &instance;
+        return instance;
     }
  
     int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeId, const std::string &fsUuid);
@@ -44,6 +43,10 @@ public:
 private:
     VolumeManagerServiceExt();
     ~VolumeManagerServiceExt();
+    VolumeManagerServiceExt(const VolumeManagerServiceExt &) = delete;
+    VolumeManagerServiceExt &operator=(const VolumeManagerServiceExt &) = delete;
+    VolumeManagerServiceExt(const VolumeManagerServiceExt &&) = delete;
+    VolumeManagerServiceExt &operator=(const VolumeManagerServiceExt &&) = delete;
  
     void Init();
     void UnInit();

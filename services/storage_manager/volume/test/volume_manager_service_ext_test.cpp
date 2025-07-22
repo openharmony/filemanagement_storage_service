@@ -45,9 +45,8 @@ public:
 HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_Init_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_Init_0000";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
-    vmServiceExt->Init();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
+    vmServiceExt.Init();
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_Init_0000";
 }
 
@@ -63,11 +62,10 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_Init_0000, test
 HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_UnInit_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_UnInit_0000";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
     int32_t num = 0;
-    vmServiceExt->handler_ = (void *)&num;
-    vmServiceExt->UnInit();
+    vmServiceExt.handler_ = (void *)&num;
+    vmServiceExt.UnInit();
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_UnInit_0000";
 }
 
@@ -83,9 +81,8 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_UnInit_0000, te
 HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_UnInit_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_UnInit_0001";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
-    vmServiceExt->UnInit();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
+    vmServiceExt.UnInit();
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_UnInit_0001";
 }
 
@@ -102,14 +99,13 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseMo
     testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseMount_0000";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
     int32_t num = 0;
-    vmServiceExt->handler_ = (void *)&num;
+    vmServiceExt.handler_ = (void *)&num;
     int fuseFd = 0;
     std::string volumeId = {};
     std::string fsUuid = {};
-    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
+    int32_t result = vmServiceExt.NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseMount_0000";
 }
@@ -127,13 +123,12 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseMo
     testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseMount_0001";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
     int fuseFd = 0;
     std::string volumeId = {};
     std::string fsUuid = {};
-    vmServiceExt->handler_ = nullptr;
-    int32_t result = vmServiceExt->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
+    vmServiceExt.handler_ = nullptr;
+    int32_t result = vmServiceExt.NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseMount_0001";
 }
@@ -151,12 +146,11 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUm
     testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUmount_0000";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
     int32_t num = 0;
-    vmServiceExt->handler_ = (void *)&num;
+    vmServiceExt.handler_ = (void *)&num;
     std::string volumeId = {};
-    int32_t result = vmServiceExt->NotifyUsbFuseUmount(volumeId);
+    int32_t result = vmServiceExt.NotifyUsbFuseUmount(volumeId);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUmount_0000";
 }
@@ -174,11 +168,10 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUm
     testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_NotifyUsbFuseUmount_0001";
-    std::shared_ptr<VolumeManagerServiceExt> vmServiceExt =
-        DelayedSingleton<VolumeManagerServiceExt>::GetInstance();
+    auto &vmServiceExt =VolumeManagerServiceExt::GetInstance();
     std::string volumeId = {};
-    vmServiceExt->handler_ = nullptr;
-    int32_t result = vmServiceExt->NotifyUsbFuseUmount(volumeId);
+    vmServiceExt.handler_ = nullptr;
+    int32_t result = vmServiceExt.NotifyUsbFuseUmount(volumeId);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUmount_0001";
 }
