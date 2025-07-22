@@ -488,7 +488,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     int32_t flag = 1;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
@@ -530,7 +529,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     int32_t flag = 2;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
@@ -572,7 +570,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     int32_t flag = 3;
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
-    ASSERT_TRUE(vmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
