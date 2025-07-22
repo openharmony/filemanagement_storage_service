@@ -260,8 +260,7 @@ int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const s
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.", fsTypeStr.c_str(), fsUuid.c_str());
-    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
-                                                                           description);
+    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 #endif
     return E_OK;
 }
