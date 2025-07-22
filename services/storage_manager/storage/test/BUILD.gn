@@ -109,6 +109,7 @@ ohos_unittest("volume_storage_status_service_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
+    "private = public",
   ]
 
   if (storage_service_external_storage_manager) {
