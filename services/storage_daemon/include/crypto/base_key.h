@@ -74,6 +74,7 @@ public:
     std::string GetKeyDir();
     bool GetHashKey(KeyBlob &hashKey);
     bool GenerateHashKey();
+    void ClearKeyInfo();
 
     KeyInfo keyInfo_;
     std::string GetDir() const
