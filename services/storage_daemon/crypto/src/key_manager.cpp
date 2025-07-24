@@ -963,13 +963,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return E_PARAMS_NULLPTR_ERR;
     }
     if (tokenSecret.newSecret.empty()) {
-        auto ret = el5Key->DeleteClassEPinCode(user);
-        if (ret != E_OK) {
-            LOGE("user %{public}u DeleteClassE fail, error=%{public}d", user, ret);
-            return E_EL5_DELETE_CLASS_ERROR;
-        }
-        saveESecretStatus[user] = false;
-        return 0;
+        return DoChangerPinCodeClassE(user, el5Key);
     }
     if (!tokenSecret.newSecret.empty() && !tokenSecret.oldSecret.empty()) {
         saveESecretStatus[user] = true;
@@ -989,7 +983,19 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         LOGE("user %{public}u EncryptClassE fail", user);
         return E_EL5_ENCRYPT_CLASS_ERROR;
     }
+    el5Key->ClearKeyInfo();
     LOGW("saveESecretStatus is %{public}u", saveESecretStatus[user]);
+    return 0;
+}
+
+int KeyManager::DoChangerPinCodeClassE(unsigned int user, std::shared_ptr<BaseKey> &el5Key)
+{
+    auto ret = el5Key->DeleteClassEPinCode(user);
+    if (ret != E_OK) {
+        LOGE("user %{public}u DeleteClassE fail, error=%{public}d", user, ret);
+        return E_EL5_DELETE_CLASS_ERROR;
+    }
+    saveESecretStatus[user] = false;
     return 0;
 }
 
@@ -1048,6 +1054,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
 
     // Generate hashkey for encrypt public directory
     item->GenerateHashKey();
+    item->ClearKeyInfo();
     userPinProtect[user] = !userTokenSecret.newSecret.empty();
     return 0;
 }

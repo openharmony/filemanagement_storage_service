@@ -154,6 +154,12 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     return true;
 }
 
+void BaseKey::ClearKeyInfo()
+{
+    LOGI("begin clear key info.");
+    keyInfo_.key.Clear();
+}
+
 int BaseKey::GetCandidateVersion() const
 {
     std::string prefix(PATH_KEY_VERSION + 1); // skip the first slash

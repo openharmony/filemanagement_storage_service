@@ -131,6 +131,11 @@ void BaseKey::WipingActionDir(std::string &path)
     return;
 }
 
+void BaseKey::ClearKeyInfo()
+{
+    return;
+}
+
 bool BaseKey::GetOriginKey(KeyBlob &originKey)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {

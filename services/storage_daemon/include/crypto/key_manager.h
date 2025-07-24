@@ -173,6 +173,7 @@ private:
     bool IsWorkDirExist(std::string type, int32_t userId);
     int GenerateIntegrityDirs(int32_t userId, KeyType type);
     int CheckAndFixUserKeyDirectory(unsigned int user);
+    int DoChangerPinCodeClassE(unsigned int user, std::shared_ptr<BaseKey> &el5Key);
     bool HashElxActived(unsigned int user, KeyType type);
     bool IsAppCloneUser(unsigned int user);
     int CheckNeedRestoreVersion(unsigned int user, KeyType type);
