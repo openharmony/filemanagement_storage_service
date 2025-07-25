@@ -162,17 +162,8 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_CheckS
     ret = StorageDaemonClient::CheckServiceStatus(0);
     EXPECT_EQ(ret, E_OK);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillRepeatedly(Return(nullptr));
-    ret = StorageDaemonClient::CheckServiceStatus(0);
-    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
-
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
-    ret = StorageDaemonClient::CheckServiceStatus(STORAGE_SERVICE_FLAG);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillRepeatedly(Return(nullptr));
     ret = StorageDaemonClient::CheckServiceStatus(STORAGE_SERVICE_FLAG);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
 

@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "iam_client.h"
 #include "storage_service_errno.h"
@@ -59,126 +60,218 @@ void IamClientTest::TearDown(void)
     GTEST_LOG_(INFO) << "TearDown";
 }
 
+#ifdef USER_AUTH_FRAMEWORK
 /**
- * @tc.name: iam_client_GetSecureUid
+ * @tc.name: iam_client_GetSecureUid_001
  * @tc.desc: Verify the iam_client GetSecureUid.
  * @tc.type: FUNC
  * @tc.require: IAVEX9
  */
-HWTEST_F(IamClientTest, iam_client_GetSecureUid, TestSize.Level1)
+HWTEST_F(IamClientTest, iam_client_GetSecureUid_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
-    uint32_t userId = 100;
     uint64_t secureUid = 1;
-    #ifdef USER_AUTH_FRAMEWORK
+
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
         .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
-    #endif
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_TRUE(client.GetSecureUid(userId, secureUid));
+
+    EXPECT_TRUE(IamClient::GetInstance().GetSecureUid(1, secureUid));
     EXPECT_EQ(secureUid, 0);
     GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
 }
 
 /**
- * @tc.name: iam_client_GetSecUserInfo
+ * @tc.name: iam_client_GetSecureUid_002
  * @tc.desc: Verify the iam_client GetSecureUid.
  * @tc.type: FUNC
  * @tc.require: IAVEX9
  */
-HWTEST_F(IamClientTest, iam_client_GetSecUserInfo, TestSize.Level1)
+HWTEST_F(IamClientTest, iam_client_GetSecureUid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    
+    std::vector<UserIam::UserAuth::ResultCode> retCodes {
+        UserIam::UserAuth::ResultCode::SUCCESS,
+        UserIam::UserAuth::ResultCode::NOT_ENROLLED,
+        UserIam::UserAuth::ResultCode::GENERAL_ERROR
+    };
+
+    for (auto retCode : retCodes) {
+        uint64_t secureUid = 1;
+
+        EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(retCode));
+
+        std::thread([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            IamClient::GetInstance().secureUidStatus_ = SUCCESS;
+            IamClient::GetInstance().iamCon_.notify_one();
+        }).detach();
+        EXPECT_TRUE(IamClient::GetInstance().GetSecureUid(1, secureUid));
+        EXPECT_EQ(secureUid, 0);
+    }
+
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecureUid_003
+ * @tc.desc: Verify the iam_client GetSecureUid.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecureUid_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+
+    std::vector<UserIam::UserAuth::ResultCode> retCodes {
+        UserIam::UserAuth::ResultCode::SUCCESS,
+        UserIam::UserAuth::ResultCode::NOT_ENROLLED,
+        UserIam::UserAuth::ResultCode::GENERAL_ERROR
+    };
+
+    for (auto retCode : retCodes) {
+        uint64_t secureUid = 1;
+
+        EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+            .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+            .WillOnce(Return(retCode));
+
+        std::thread([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            IamClient::GetInstance().secureUidStatus_ = SUCCESS;
+            IamClient::GetInstance().iamCon_.notify_one();
+        }).detach();
+        EXPECT_TRUE(IamClient::GetInstance().GetSecureUid(1, secureUid));
+        EXPECT_EQ(secureUid, 0);
+    }
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecureUid_004
+ * @tc.desc: Verify the iam_client GetSecureUid.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecureUid_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    uint64_t secureUid = 1;
+
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT));
+
+    EXPECT_FALSE(IamClient::GetInstance().GetSecureUid(1, secureUid));
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecUserInfo_001
+ * @tc.desc: Verify the iam_client GetSecUserInfo.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
-    uint32_t userId = 100;
     UserIam::UserAuth::SecUserInfo info;
-    #ifdef USER_AUTH_FRAMEWORK
+
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
         .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
-    #endif
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_TRUE(client.GetSecUserInfo(userId, info));
+
+    EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
     GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
 }
 
-#ifdef USER_AUTH_FRAMEWORK
 /**
- * @tc.name: iam_client_GetSecureUid
- * @tc.desc: Verify the iam_client GetSecureUid.
- * @tc.type: FUNC
- * @tc.require: IAVEX9
- */
-HWTEST_F(IamClientTest, iam_client_GetSecureUid_failed, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed start";
-    uint32_t userId = 100;
-    uint64_t secureUid = 1;
-
-    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_FALSE(client.GetSecureUid(userId, secureUid));
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
-}
-
-/**
- * @tc.name: iam_client_GetSecureUid
- * @tc.desc: Verify the iam_client GetSecureUid.
- * @tc.type: FUNC
- * @tc.require: IAVEX9
- */
-HWTEST_F(IamClientTest, iam_client_GetSecureUid_succ, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed start";
-    uint32_t userId = 100;
-    uint64_t secureUid = 1;
-
-    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_TRUE(client.GetSecureUid(userId, secureUid));
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
-}
-
-/**
- * @tc.name: iam_client_GetSecUserInfo
+ * @tc.name: iam_client_GetSecUserInfo_002
  * @tc.desc: Verify the iam_client GetSecUserInfo.
  * @tc.type: FUNC
  * @tc.require: IAVEX9
  */
-HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_failed, TestSize.Level1)
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_failed start";
-    uint32_t userId = 100;
-    UserIam::UserAuth::SecUserInfo info;
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    
+    std::vector<UserIam::UserAuth::ResultCode> retCodes {
+        UserIam::UserAuth::ResultCode::SUCCESS,
+        UserIam::UserAuth::ResultCode::NOT_ENROLLED,
+        UserIam::UserAuth::ResultCode::GENERAL_ERROR
+    };
 
-    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_FALSE(client.GetSecUserInfo(userId, info));
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+    for (auto retCode : retCodes) {
+        UserIam::UserAuth::SecUserInfo info;
+
+        EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(retCode));
+
+        std::thread([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            IamClient::GetInstance().secUserInfoState_ = SEC_USER_INFO_SUCCESS;
+            IamClient::GetInstance().iamCon_.notify_one();
+        }).detach();
+        EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
+    }
+
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
 }
 
 /**
- * @tc.name: iam_client_GetSecUserInfo
+ * @tc.name: iam_client_GetSecUserInfo_003
  * @tc.desc: Verify the iam_client GetSecUserInfo.
  * @tc.type: FUNC
  * @tc.require: IAVEX9
  */
-HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_succ, TestSize.Level1)
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_failed start";
-    uint32_t userId = 100;
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+
+    std::vector<UserIam::UserAuth::ResultCode> retCodes {
+        UserIam::UserAuth::ResultCode::SUCCESS,
+        UserIam::UserAuth::ResultCode::NOT_ENROLLED,
+        UserIam::UserAuth::ResultCode::GENERAL_ERROR
+    };
+
+    for (auto retCode : retCodes) {
+        UserIam::UserAuth::SecUserInfo info;
+
+        EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+            .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+            .WillOnce(Return(retCode));
+
+        std::thread([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            IamClient::GetInstance().secUserInfoState_ = SEC_USER_INFO_SUCCESS;
+            IamClient::GetInstance().iamCon_.notify_one();
+        }).detach();
+        EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
+    }
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecUserInfo_004
+ * @tc.desc: Verify the iam_client GetSecUserInfo.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
     UserIam::UserAuth::SecUserInfo info;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
-    IamClient &client = IamClient::GetInstance();
-    EXPECT_TRUE(client.GetSecUserInfo(userId, info));
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT));
+
+    EXPECT_FALSE(IamClient::GetInstance().GetSecUserInfo(1, info));
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
 }
 
 /**
@@ -210,6 +303,11 @@ HWTEST_F(IamClientTest, iam_client_HasPinProtect_002, TestSize.Level1)
     uint32_t userId = 100;
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
         .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    std::thread([]() {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        IamClient::GetInstance().secUserInfoState_ = SEC_USER_INFO_SUCCESS;
+        IamClient::GetInstance().iamCon_.notify_one();
+    }).detach();
     EXPECT_EQ(IamClient::GetInstance().HasPinProtect(userId), false);
     GTEST_LOG_(INFO) << "iam_client_HasPinProtect_002 end";
 }
@@ -245,6 +343,11 @@ HWTEST_F(IamClientTest, iam_client_HasFaceFinger_002, TestSize.Level1)
     bool isExist;
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
         .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    std::thread([]() {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        IamClient::GetInstance().secUserInfoState_ = SEC_USER_INFO_SUCCESS;
+        IamClient::GetInstance().iamCon_.notify_one();
+    }).detach();
     EXPECT_EQ(IamClient::GetInstance().HasFaceFinger(userId, isExist), 0);
     GTEST_LOG_(INFO) << "iam_client_HasFaceFinger_002 end";
 }

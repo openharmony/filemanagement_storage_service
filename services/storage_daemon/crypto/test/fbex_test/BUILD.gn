@@ -40,6 +40,7 @@ ohos_unittest("FbexTest") {
 
   sources = [
     "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/mock/common_utils_mock.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "fbex_test.cpp",
   ]
