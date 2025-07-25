@@ -69,7 +69,7 @@ void IamClientTest::TearDown(void)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_001 start";
     uint64_t secureUid = 1;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
@@ -77,7 +77,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_001, TestSize.Level1)
 
     EXPECT_TRUE(IamClient::GetInstance().GetSecureUid(1, secureUid));
     EXPECT_EQ(secureUid, 0);
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_001 end";
 }
 
 /**
@@ -88,7 +88,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_001, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_002 start";
     
     std::vector<UserIam::UserAuth::ResultCode> retCodes {
         UserIam::UserAuth::ResultCode::SUCCESS,
@@ -111,7 +111,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_002, TestSize.Level1)
         EXPECT_EQ(secureUid, 0);
     }
 
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_002 end";
 }
 
 /**
@@ -122,7 +122,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_002, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_003 start";
 
     std::vector<UserIam::UserAuth::ResultCode> retCodes {
         UserIam::UserAuth::ResultCode::SUCCESS,
@@ -145,7 +145,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_003, TestSize.Level1)
         EXPECT_TRUE(IamClient::GetInstance().GetSecureUid(1, secureUid));
         EXPECT_EQ(secureUid, 0);
     }
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_003 end";
 }
 
 /**
@@ -156,7 +156,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_003, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid_004, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_004 start";
     uint64_t secureUid = 1;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
@@ -166,7 +166,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_004, TestSize.Level1)
         .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT));
 
     EXPECT_FALSE(IamClient::GetInstance().GetSecureUid(1, secureUid));
-    GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_004 end";
 }
 
 /**
@@ -177,14 +177,14 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_004, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_001 start";
     UserIam::UserAuth::SecUserInfo info;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
         .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
 
     EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_001 end";
 }
 
 /**
@@ -195,7 +195,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_001, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_002 start";
     
     std::vector<UserIam::UserAuth::ResultCode> retCodes {
         UserIam::UserAuth::ResultCode::SUCCESS,
@@ -217,7 +217,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_002, TestSize.Level1)
         EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
     }
 
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_002 end";
 }
 
 /**
@@ -228,7 +228,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_002, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_003 start";
 
     std::vector<UserIam::UserAuth::ResultCode> retCodes {
         UserIam::UserAuth::ResultCode::SUCCESS,
@@ -250,7 +250,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_003, TestSize.Level1)
         }).detach();
         EXPECT_TRUE(IamClient::GetInstance().GetSecUserInfo(1, info));
     }
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_003 end";
 }
 
 /**
@@ -261,7 +261,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_003, TestSize.Level1)
  */
 HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_004, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_004 start";
     UserIam::UserAuth::SecUserInfo info;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
@@ -271,7 +271,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_004, TestSize.Level1)
         .WillOnce(Return(UserIam::UserAuth::ResultCode::TIMEOUT));
 
     EXPECT_FALSE(IamClient::GetInstance().GetSecUserInfo(1, info));
-    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_004 end";
 }
 
 /**

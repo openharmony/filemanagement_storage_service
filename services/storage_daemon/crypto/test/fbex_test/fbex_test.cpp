@@ -237,41 +237,13 @@ HWTEST_F(FbexTest, Fbex_IsFBEXSupported_001, TestSize.Level1)
     EXPECT_FALSE(FBEX::IsFBEXSupported());
 }
 
-// /**
-//  * @tc.name: Fbex_IsFBEXSupported_002
-//  * @tc.desc: Should returns true when path.length() > PATH_MAX.
-//  * @tc.type: FUNC
-//  * @tc.require: AR000GK0BP
-//  */
-// HWTEST_F(FbexTest, Fbex_IsFBEXSupported_002, TestSize.Level1)
-// {
-//     std::string str(PATH_MAX + 1, '0');
-//     EXPECT_CALL(*commonUtilsMock_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>(str), Return(true)));
-
-//     EXPECT_TRUE(FBEX::IsFBEXSupported());
-// }
-
-// /**
-//  * @tc.name: Fbex_IsFBEXSupported_003
-//  * @tc.desc: Should returns true when realpath failed.
-//  * @tc.type: FUNC
-//  * @tc.require: AR000GK0BP
-//  */
-// HWTEST_F(FbexTest, Fbex_IsFBEXSupported_003, TestSize.Level1)
-// {
-//     EXPECT_CALL(*commonUtilsMock_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>(""), Return(true)));
-//     EXPECT_CALL(*funcMock_, realpath(_, _)).WillOnce(Return(nullptr));
-
-//     EXPECT_TRUE(FBEX::IsFBEXSupported());
-// }
-
 /**
- * @tc.name: Fbex_IsFBEXSupported_004
+ * @tc.name: Fbex_IsFBEXSupported_002
  * @tc.desc: Should returns false when rpath not find FBEX_UFS_INLINE_SUPPORT_PREFIX.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_IsFBEXSupported_004, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_IsFBEXSupported_002, TestSize.Level1)
 {
     char testPath[] = "testpath";
     EXPECT_CALL(*commonUtilsMock_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>(""), Return(true)));
@@ -284,12 +256,12 @@ HWTEST_F(FbexTest, Fbex_IsFBEXSupported_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_IsFBEXSupported_005
+ * @tc.name: Fbex_IsFBEXSupported_003
  * @tc.desc: Should returns false when the second LoadStringFromFile failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_IsFBEXSupported_005, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_IsFBEXSupported_003, TestSize.Level1)
 {
     char testPath[] = "testpath";
     EXPECT_CALL(*commonUtilsMock_, LoadStringFromFile(_, _))
@@ -303,12 +275,12 @@ HWTEST_F(FbexTest, Fbex_IsFBEXSupported_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_IsFBEXSupported_006
+ * @tc.name: Fbex_IsFBEXSupported_004
  * @tc.desc: Should returns true when all operations succeed
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_IsFBEXSupported_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_IsFBEXSupported_004, TestSize.Level1)
 {
     char testPath[] = "testpath";
     EXPECT_CALL(*commonUtilsMock_, LoadStringFromFile(_, _))
@@ -323,12 +295,12 @@ HWTEST_F(FbexTest, Fbex_IsFBEXSupported_006, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_002
+ * @tc.name: Fbex_InstallEL5KeyToKernel_001
  * @tc.desc: Should returns -errno and closes the file when fopen failed with an error other than ENOENT.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_002, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_001, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
@@ -341,12 +313,12 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_003
+ * @tc.name: Fbex_InstallEL5KeyToKernel_002
  * @tc.desc: Should returns 0 and sets isSupport to false when fileno failed with ENOENT.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_003, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_002, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
@@ -360,12 +332,12 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_004
+ * @tc.name: Fbex_InstallEL5KeyToKernel_003
  * @tc.desc: Should returns -errno and closes the file when fileno failed with an error other than ENOENT.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_004, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_003, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
@@ -379,12 +351,12 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_005
+ * @tc.name: Fbex_InstallEL5KeyToKernel_004
  * @tc.desc: Should returns 0 and sets isNeedEncryptClassE to false when ioctl returns ERROR_UECE_ALREADY_CREATED.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_004, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
@@ -397,12 +369,12 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_006
+ * @tc.name: Fbex_InstallEL5KeyToKernel_005
  * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
@@ -416,12 +388,12 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_006, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_007
+ * @tc.name: Fbex_InstallEL5KeyToKernel_006
  * @tc.desc: Should returns -errno when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_007, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_006, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
