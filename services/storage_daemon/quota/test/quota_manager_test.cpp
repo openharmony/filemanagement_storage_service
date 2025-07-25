@@ -228,7 +228,8 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUidStorageStats_0
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 start";
 
     int before = E_OK;
-    QuotaManager::GetInstance().GetUidStorageStats();
+    std::string str = "";
+    QuotaManager::GetInstance().GetUidStorageStats(str);
     EXPECT_FALSE(before);
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 end";
 }

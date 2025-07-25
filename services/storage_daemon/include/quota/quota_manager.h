@@ -53,7 +53,7 @@ public:
         const std::string &bundleDataDirPath, int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
-    void GetUidStorageStats();
+    void GetUidStorageStats(const std::string &storageStatus);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);

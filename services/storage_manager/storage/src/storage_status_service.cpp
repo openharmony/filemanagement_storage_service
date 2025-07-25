@@ -43,7 +43,10 @@ const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
-constexpr const char *SETTING_BUNDLE_NAME = "com.huawei.hmos.settings";
+constexpr const char *SETTING_BUNDLE_NAME = "hmos.settings";
+static std::atomic<bool> checkDirSizeFlag = false;
+constexpr int DECIMAL_PLACE = 2;
+constexpr double TO_MB = 1024.0 * 1024.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
@@ -241,16 +244,23 @@ int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, Storag
             GetCallingPkgName());
         return err;
     }
-    auto errNo = QueryOccupiedSpaceForSa();
-    if (errNo != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats QueryOccupiedSpaceForSa failed, err: %{public}d", errNo);
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::QueryOccupiedSpaceForSa", userId, errNo,
+    auto ret = QueryOccupiedSpaceForSa(storageStats);
+    if (ret != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats QueryOccupiedSpaceForSa failed, err: %{public}d", ret);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::QueryOccupiedSpaceForSa", userId, ret,
             GetCallingPkgName());
     }
     return err;
 }
 
-int32_t StorageStatusService::QueryOccupiedSpaceForSa()
+std::string StorageStatusService::ConvertBytesToMB(int64_t bytes)
+{
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(DECIMAL_PLACE) << static_cast<double>(bytes) / TO_MB << "MB";
+    return oss.str();
+}
+
+int32_t StorageStatusService::QueryOccupiedSpaceForSa(StorageStats &storageStats)
 {
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
@@ -263,14 +273,37 @@ int32_t StorageStatusService::QueryOccupiedSpaceForSa()
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
         return E_BUNDLEMGR_ERROR;
     }
-    if (bundleName != SETTING_BUNDLE_NAME) {
+    const char* c_str = bundleName.c_str();
+    if (strstr(c_str, SETTING_BUNDLE_NAME) == nullptr) {
         LOGE("permissionCheck error");
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    auto ret = sdCommunication->QueryOccupiedSpaceForSa();
-    return ret;
+    if (checkDirSizeFlag.load()) {
+        LOGI("The task to query SA space usage is running, ignore");
+        return E_OK;
+    }
+    std::thread([this, storageStats]() {
+        checkDirSizeFlag.store(true);
+        int64_t freeSize = 0;
+        auto errNo = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
+        if (errNo != E_OK) {
+            LOGE("StorageStatusService::GetUserStorageStats getFreeSize failed");
+        }
+        std::string storageStatusResult = "{App size is:" + ConvertBytesToMB(storageStats.app_) +
+                                          ",audio size is:" + ConvertBytesToMB(storageStats.audio_) +
+                                          ",image size is:" + ConvertBytesToMB(storageStats.image_) +
+                                          ",video size is:" + ConvertBytesToMB(storageStats.video_) +
+                                          ",file size is:" + ConvertBytesToMB(storageStats.file_) +
+                                          ",free size is:" + ConvertBytesToMB(freeSize) + "}";
+        auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+        if (sdCommunication == nullptr) {
+            LOGE("get sdCommunication error");
+            return;
+        }
+        sdCommunication->QueryOccupiedSpaceForSa(storageStatusResult);
+        checkDirSizeFlag.store(false);
+    }).detach();
+    return E_OK;
 }
 
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)

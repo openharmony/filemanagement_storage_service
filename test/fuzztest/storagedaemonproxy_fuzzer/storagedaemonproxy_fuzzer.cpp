@@ -25,6 +25,7 @@
 
 namespace OHOS {
 using namespace std;
+constexpr int PARAM_COUNT = 5;
 template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
@@ -56,7 +57,16 @@ bool ShutdownFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t 
     (void)data;
     proxy->Shutdown();
     proxy->InitGlobalKey();
-    proxy->QueryOccupiedSpaceForSa();
+    return true;
+}
+
+bool QueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size < sizeof(int64_t) * PARAM_COUNT) {
+        return true;
+    }
+    string storageStats(reinterpret_cast<const char *>(data), size);
+    proxy->QueryOccupiedSpaceForSa(storageStats);
     return true;
 }
 
@@ -585,6 +595,7 @@ void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, cons
     MountDisShareFileFuzzTest(proxy, data, size);
     TryToFixFuzzTest(proxy, data, size);
     InactiveUserPublicDirKeyFuzzTest(proxy, data, size);
+    QueryOccupiedSpaceForSaFuzzTest(proxy, data, size);
 }
 } // namespace OHOS
 

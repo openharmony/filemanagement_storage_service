@@ -17,6 +17,9 @@
 #define OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 
 #include <singleton.h>
+#include <iostream>
+#include <sstream>
+#include <thread>
 #include "bundle_stats.h"
 #include "storage_stats.h"
 
@@ -40,7 +43,8 @@ public:
 private:
     StorageStatusService();
     ~StorageStatusService();
-    int32_t QueryOccupiedSpaceForSa();
+    int32_t QueryOccupiedSpaceForSa(StorageStats &storageStats);
+    std::string ConvertBytesToMB(int64_t bytes);
     int GetCurrentUserId();
     std::string GetCallingPkgName();
     int32_t GetAppSize(int32_t userId, int64_t &size);
