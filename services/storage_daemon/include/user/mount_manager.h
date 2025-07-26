@@ -158,6 +158,7 @@ constexpr uid_t OID_PASTEBOARD = 3816;
 constexpr uid_t OID_PRINT = 3823;
 constexpr uid_t OID_FINDNETWORK = 7518;
 // Proprietary service, not for open-source use.
+constexpr uid_t OID_GLASSES_COLLABORATION_SERVICE = 7140;
 constexpr uid_t OID_TRUSTED_RING = 65936;
 
 class MountManager final {

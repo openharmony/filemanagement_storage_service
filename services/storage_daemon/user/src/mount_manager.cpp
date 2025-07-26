@@ -144,7 +144,9 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el4/%d/findnetwork", MODE_0711, OID_FINDNETWORK, OID_FINDNETWORK},
             {"/data/service/el2/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
             {"/data/service/el2/%d/backup/backup_sa", MODE_0711, OID_BACKUP, OID_BACKUP},
-            {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP}};
+            {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
+            {"/data/service/el2/%d/glasses_collaboration_service",
+                    MODE_0711, OID_GLASSES_COLLABORATION_SERVICE, OID_GLASSES_COLLABORATION_SERVICE}};
 }
 
 std::vector<DirInfo> MountManager::InitFileManagerDir()
