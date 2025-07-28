@@ -82,9 +82,11 @@ void FreeStringVector(char **vector, int count)
         for (int i = 0; i < count; i++) {
             if (vector[i] != NULL) {
                 free(vector[i]);
+                vector[i] = NULL;
             }
         }
         free(vector);
+        vector = NULL;
     }
 }
 
@@ -121,6 +123,7 @@ char **SplitStringExt(char *buffer, const char *del, int *returnCount, int maxIt
                 LOGD("Too many items,expand size");
                 return NULL;
             }
+            free(items);
             items = expand;
         }
         size_t len = strlen(p);

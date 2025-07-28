@@ -15,5 +15,8 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 group("lib_fscrypt_test") {
   testonly = true
-  deps = [ "sysparam_static_test:sys_param_static_test" ]
+  deps = [
+    "sysparam_static_test:sys_param_static_test",
+    "storage_radar_test:storage_radar_test",
+  ]
 }
