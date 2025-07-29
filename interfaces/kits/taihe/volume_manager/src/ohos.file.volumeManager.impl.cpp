@@ -45,7 +45,7 @@ ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid)
     return MakeVolume(volumeInfo->GetDescription(), volumeInfo->GetUuid());
 }
 
-taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync()
+taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 {
     auto volumeInfo = std::make_shared<std::vector<OHOS::StorageManager::VolumeExternal>>();
 

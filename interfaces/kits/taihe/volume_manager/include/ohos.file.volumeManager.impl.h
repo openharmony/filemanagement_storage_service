@@ -24,6 +24,6 @@
 namespace ANI::VolumeManager {
 ohos::file::volumeManager::Volume MakeVolume(taihe::string_view description, taihe::string_view uuid);
 ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid);
-taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync();
+taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync();
 } // namespace ANI::VolumeManager
 #endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H
