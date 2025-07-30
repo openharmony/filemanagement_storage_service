@@ -123,7 +123,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     return E_OK;
 }
 
-void QuotaManager::GetUidStorageStats()
+void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
 {
     LOGI("GetUidStorageStats begin!");
     std::vector<UidSaInfo> vec;
@@ -142,6 +142,7 @@ void QuotaManager::GetUidStorageStats()
     return a.size > b.size;
     });
     std::ostringstream extraData;
+    extraData << storageStatus <<std::endl;
     for (const auto& info : vec) {
         if (info.size < FIVE_HUNDRED_M_BIT) {
             continue;

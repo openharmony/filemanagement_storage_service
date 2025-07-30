@@ -58,7 +58,6 @@ constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
-static std::atomic<bool> checkDirSizeFlag = false;
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
@@ -814,18 +813,10 @@ int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
     return StorageDaemon::GetInstance().InactiveUserPublicDirKey(userId);
 }
 
-int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
+int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storageStatus)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (checkDirSizeFlag.load()) {
-        LOGI("The task to query SA space usage is running, ignore");
-        return E_OK;
-    }
-    std::thread([]() {
-        checkDirSizeFlag.store(true);
-        QuotaManager::GetInstance().GetUidStorageStats();
-        checkDirSizeFlag.store(false);
-    }).detach();
+    QuotaManager::GetInstance().GetUidStorageStats(storageStatus);
     return E_OK;
 }
 
