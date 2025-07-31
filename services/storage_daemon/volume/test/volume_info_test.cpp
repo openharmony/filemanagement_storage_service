@@ -18,21 +18,37 @@
 #include <linux/kdev_t.h>
 
 #include "help_utils.h"
+#include "mock/storage_manager_client_mock.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "volume_info_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace testing;
 using namespace testing::ext;
 using namespace StorageTest;
 class VolumeInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
+
+    static inline std::shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
 };
+
+void VolumeInfoTest::SetUp(void)
+{
+    storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
+    StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
+}
+
+void VolumeInfoTest::TearDown(void)
+{
+    StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
+    storageManagerClientMock_ = nullptr;
+}
 
 /**
  * @tc.name: Storage_Service_VolumeInfoTest_Create_001
@@ -83,6 +99,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_001, TestSize.Le
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -109,6 +126,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_002, TestSize.Le
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_ERR);
 
@@ -146,8 +164,11 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_003, TestSize.Le
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
+
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -284,6 +305,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_001, Test
 
     VolumeInfoMock mock;
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     auto ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -324,6 +346,8 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_OK);
 
@@ -395,6 +419,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_004, Test
     ret = mock.Mount(force);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_ERR);
 
@@ -414,6 +439,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Check_001, TestS
 
     VolumeInfoMock mock;
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     auto ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
