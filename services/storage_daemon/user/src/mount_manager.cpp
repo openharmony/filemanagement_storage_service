@@ -644,6 +644,7 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
         LOGE("invalid params, srcPaths total %{public}d, dstPaths total %{public}d", srcCnt, dstCnt);
         return;
     }
+    LOGI("MountSandboxPath, bundleName: %{public}s, userID: %{public}s", bundleName.c_str(), userId.c_str());
     for (int i = 0; i < dstCnt; i++) {
         std::string dstPath = SANDBOX_ROOT_PATH;
         dstPath = dstPath.append(userId).append("/").append(bundleName).append(dstPaths[i]);
@@ -657,11 +658,10 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
             LOGE("srcPath is not a dir: %{public}s", srcPath.c_str());
             continue;
         }
-        LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
         int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
         if (ret != E_OK && errno == EBUSY) {
             ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-            LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
+            LOGI("mount again ret is %{public}d.", ret);
         }
         if (ret != 0) {
             LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
@@ -670,14 +670,14 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
             StorageRadar::ReportUserManager("MountSandboxPath", atoi(userId.c_str()), E_MOUNT_SANDBOX, extraData);
             continue;
         }
-        LOGI("bind mount path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
+        LOGI("bind mount success, num:%{public}d", i);
         ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
         if (ret != 0) {
             LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                  srcPath.c_str(), dstPath.c_str(), errno);
             continue;
         }
-        LOGI("shared mount success, dstPath is %{public}s", dstPath.c_str());
+        LOGI("shared mount success, num:%{public}d", i);
     }
 }
 
