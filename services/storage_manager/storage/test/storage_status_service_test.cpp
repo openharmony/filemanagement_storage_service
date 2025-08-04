@@ -29,7 +29,7 @@ using namespace OHOS::StorageManager;
 const std::vector<int64_t> bundleStatsInfo = {0, 1, std::numeric_limits<int64_t>::max() - 8, 10, 0};
 int g_flag = true;
 } // namespace
-std::string str = "hmos.settings";
+std::string str = "settings";
 namespace OHOS::AppExecFwk {
 bool BundleMgrProxy::GetAllBundleStats(int32_t userId, std::vector<int64_t> &bundleStats)
 {
