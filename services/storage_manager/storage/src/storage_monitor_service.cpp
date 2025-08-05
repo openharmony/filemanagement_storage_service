@@ -42,7 +42,6 @@ constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 constexpr int32_t MEMORY_PARAMS_PATH_LEN = 128;
 constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
-const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
 const std::string TIMESTAMP_DAY = "persist.storage_manager.timestamp.day";
 const std::string TIMESTAMP_WEEK = "persist.storage_manager.timestamp.week";
@@ -325,7 +324,6 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     publishInfo.SetSubscriberPermissions(permissions);
     publishInfo.SetOrdered(false);
     publishInfo.SetSticky(false);
-    publishInfo.SetBundleName(SMART_BUNDLE_NAME);
 
     AAFwk::Want want;
     want.SetAction(SMART_ACTION);
@@ -360,7 +358,6 @@ void StorageMonitorService::EventNotifyFreqHandlerForLow()
             (currentTime - lastNotificationTimeHighFreq_).count());
     LOGW("StorageMonitorService left Storage Size < Low, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL_HIGH_FREQ) {
-        SendSmartNotificationEvent(FAULT_ID_THREE, FAULT_SUGGEST_THREE, true);
         lastNotificationTimeHighFreq_ = currentTime;
         lastNotificationTime_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
@@ -378,7 +375,6 @@ void StorageMonitorService::EventNotifyFreqHandlerForMedium()
             (currentTime - lastNotificationTimeMedium_).count());
     LOGW("StorageMonitorService left Storage Size < Medium, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
-        SendSmartNotificationEvent(FAULT_ID_TWO, FAULT_ID_TWO, false);
         lastNotificationTimeMedium_ = currentTime;
         lastNotificationTime_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
@@ -396,7 +392,6 @@ void StorageMonitorService::EventNotifyFreqHandlerForHigh()
             (currentTime - lastNotificationTime_).count());
     LOGW("StorageMonitorService left Storage Size < High, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
-        SendSmartNotificationEvent(FAULT_ID_ONE, FAULT_ID_ONE, false);
         lastNotificationTime_ = currentTime;
         lastNotificationTimeMedium_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
