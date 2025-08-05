@@ -42,6 +42,11 @@ int KeyManagerExt::InActiveUserKey(uint32_t user)
     return E_OK;
 }
 
+int KeyManagerExt::SetRecoverKey(uint32_t user, uint32_t keyType, const KeyBlob& ivBlob)
+{
+    return E_OK;
+}
+
 KeyManagerExt::KeyManagerExt() {}
 
 KeyManagerExt::~KeyManagerExt() {}

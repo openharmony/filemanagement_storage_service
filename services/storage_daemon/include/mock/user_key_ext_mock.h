@@ -31,6 +31,7 @@ public:
     MOCK_METHOD1(InactiveUserKey, int32_t(int32_t userId));
     MOCK_METHOD1(DeleteUserKey, int32_t(int32_t userId));
     MOCK_METHOD1(SetFilePathPolicy, int32_t(int32_t userId));
+    MOCK_METHOD2(SetRecoverKey, int32_t(int32_t userId, const std::vector<uint8_t>& keyInfo));
 };
 }
 }

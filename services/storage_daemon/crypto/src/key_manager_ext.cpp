@@ -32,6 +32,9 @@ namespace {
 typedef UserkeyExtInterface* (*GetExtInstance)(void);
 }
 
+constexpr uint32_t TYPE_EL2 = 1;
+const std::vector<uint8_t> DEFAULT_KEY = { 'D', 'o', 'c', 's' };
+
 KeyManagerExt::KeyManagerExt()
 {
     Init();
@@ -161,6 +164,34 @@ int KeyManagerExt::InActiveUserKey(uint32_t userId)
         return ret;
     }
     LOGI("Inactive user %{public}u key success", userId);
+    return E_OK;
+}
+
+int KeyManagerExt::SetRecoverKey(uint32_t userId, uint32_t keyType, const KeyBlob& ivBlob)
+{
+    LOGI("start, user:%{public}u, keyType:%{public}u", userId, keyType);
+    if (!IsServiceExtSoLoaded()) {
+        LOGI("user key ext policy is disabled");
+        return E_OK;
+    }
+    if (!KeyCtrlHasFscryptSyspara()) {
+        return E_OK;
+    }
+    if (keyType != TYPE_EL2) {
+        return E_OK;
+    }
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    KeyBlob preKey(DEFAULT_KEY);
+    KeyBlob hashKey = OpensslCrypto::HashWithPrefix(preKey, ivBlob, AES_256_HASH_RANDOM_SIZE);
+    std::vector<uint8_t> keyVec(hashKey.data.get(), hashKey.data.get() + hashKey.size);
+    int ret = service_->SetRecoverKey(userId, std::move(keyVec));
+    if (ret != E_OK) {
+        LOGE("set recover key error, ret: %{public}d", ret);
+        return ret;
+    }
+
+    hashKey.Clear();
+    LOGI("set recover key success");
     return E_OK;
 }
 

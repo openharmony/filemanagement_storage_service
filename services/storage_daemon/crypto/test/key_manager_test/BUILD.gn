@@ -375,6 +375,7 @@ ohos_unittest("KeyManagerExtTest") {
     "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/crypto/src/key_manager_ext.cpp",
+    "${storage_daemon_path}/crypto/src/openssl_crypto.cpp",
     "${storage_daemon_path}/crypto/src/recover_manager.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",

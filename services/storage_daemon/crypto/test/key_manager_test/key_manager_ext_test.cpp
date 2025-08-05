@@ -294,4 +294,66 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_InActiveUserKey_003, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance().InActiveUserKey(user), E_OK);
     GTEST_LOG_(INFO) << "KeyManagerExt_InActiveUserKey_003 end";
 }
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_001
+ * @tc.desc: Verify the SetRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_001 Start";
+    uint32_t userId = 300;
+    uint32_t keyType = 0;
+    std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+    KeyManagerExt::GetInstance().SetMockService(nullptr);
+    EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_OK);
+
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_OK);
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_001 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_002
+ * @tc.desc: Verify the SetRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_002 Start";
+    uint32_t userId = 300;
+    uint32_t keyType = 1;
+    std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_002 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_003
+ * @tc.desc: Verify the SetRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_003 Start";
+    uint32_t userId = 300;
+    uint32_t keyType = 1;
+    std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_003 end";
+}
 }
