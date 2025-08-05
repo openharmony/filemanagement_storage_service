@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "storagedaemonstub_fuzzer.h"
-#include <iostream>
 
 #include "ipc/storage_daemon_provider.h"
 #include "system_ability_definition.h"
@@ -50,7 +49,6 @@ bool StorageDaemonOnRemoteRequestFuzzTest(sptr<StorageDaemon::StorageDaemonProvi
         datas.RewindRead(0);
 
         daemon->OnRemoteRequest(code, datas, reply, option);
-        std::cout << "[xxx denig] fuzztest code: " << code << std::endl;
     }
     return true;
 }
