@@ -55,6 +55,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/crypto/test/fscrypt_v1_test/fscrypt_key_v1_test.cpp",
     "${storage_daemon_path}/crypto/test/mock/fscrypt_key_v1_ext_mock.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
   ]
 
   if (storage_service_crypto_test) {

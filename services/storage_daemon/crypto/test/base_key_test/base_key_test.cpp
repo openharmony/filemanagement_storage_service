@@ -1061,4 +1061,30 @@ HWTEST_F(BaseKeyTest, BaseKey_GenerateHashKey_001, TestSize.Level1)
     EXPECT_EQ(elKey->BaseKey::GenerateHashKey(), true);
     GTEST_LOG_(INFO) << "BaseKey_GenerateHashKey_001 end";
 }
+
+/**
+ * @tc.name: BaseKey_RestoreKey_001
+ * @tc.desc: Verify the RestoreKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(BaseKeyTest, BaseKey_RestoreKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_RestoreKey_001 start";
+    std::vector<std::string> fileNames = {
+        "latest",
+        "version_1000",
+        "version_1001",
+        "invalidPath1",
+        "invalidPath2",
+    };
+
+    UserAuth auth;
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillRepeatedly(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(SetArgReferee<1>(fileNames))
+        .WillOnce(SetArgReferee<1>(fileNames));
+    EXPECT_EQ(elKey->BaseKey::RestoreKey(auth), E_VERSION_ERROR);
+    GTEST_LOG_(INFO) << "BaseKey_RestoreKey_001 end";
+}
 } // OHOS::StorageDaemon
