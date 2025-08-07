@@ -28,6 +28,7 @@
 #include "fscrypt_key_v1_ext_mock.h"
 #include "key_blob.h"
 #include "storage_service_errno.h"
+#include "file_utils_mock.h"
 
 using namespace testing::ext;
 using namespace testing;
@@ -47,6 +48,7 @@ public:
     UserAuth emptyUserAuth {};
     static inline std::shared_ptr<FscryptKeyV1ExtMock> fscryptKeyExtMock_ = nullptr;
     static inline std::shared_ptr<BaseKeyMoc> baseKeyMock_ = nullptr;
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void FscryptKeyV1Test::SetUpTestCase(void)
@@ -67,10 +69,14 @@ void FscryptKeyV1Test::TearDownTestCase(void)
 
 void FscryptKeyV1Test::SetUp(void)
 {
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void FscryptKeyV1Test::TearDown(void)
 {
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
 }
 
 /**
@@ -413,5 +419,44 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_EncryptClassE, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _)).WillOnce(Return(1));
     EXPECT_NE(g_testKeyV1->EncryptClassE(emptyUserAuth, isSupport, user, status), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_EncryptClassE end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v1_DoDecryptClassE_001
+ * @tc.desc: Verify the fscrypt V1 DoDecryptClassE.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DoDecryptClassE_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_DoDecryptClassE_001 start";
+    auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
+    UserAuth auth;
+    KeyBlob eSecretFBE;
+    KeyBlob decryptedKey;
+    std::vector<std::string> fileNames = {
+        "latest",
+        "version_1000",
+        "version_1001",
+        "invalidPath1",
+        "invalidPath2",
+    };
+
+    EXPECT_CALL(*baseKeyMock_, GetCandidateDir()).WillOnce(Return("test"));
+    EXPECT_CALL(*baseKeyMock_, DecryptKeyBlob(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_, _)).WillOnce(Return(0));
+    EXPECT_EQ(g_testKeyV1->DoDecryptClassE(auth, eSecretFBE, decryptedKey), E_OK);
+
+    EXPECT_CALL(*baseKeyMock_, GetCandidateDir()).WillOnce(Return("test"));
+    EXPECT_CALL(*baseKeyMock_, DecryptKeyBlob(_, _, _, _)).WillRepeatedly(Return(E_KEY_SIZE_ERROR));
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(SetArgReferee<1>(fileNames));
+    EXPECT_EQ(g_testKeyV1->DoDecryptClassE(auth, eSecretFBE, decryptedKey), E_KEY_SIZE_ERROR);
+
+    EXPECT_CALL(*baseKeyMock_, GetCandidateDir()).WillOnce(Return("test"));
+    EXPECT_CALL(*baseKeyMock_, DecryptKeyBlob(_, _, _, _)).WillOnce(Return(E_KEY_SIZE_ERROR)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(SetArgReferee<1>(fileNames));
+    EXPECT_EQ(g_testKeyV1->DoDecryptClassE(auth, eSecretFBE, decryptedKey), E_OK);
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_DoDecryptClassE_001 end";
 }
 } // OHOS::StorageDaemon
