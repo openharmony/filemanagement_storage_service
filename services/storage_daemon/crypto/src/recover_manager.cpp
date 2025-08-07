@@ -18,6 +18,7 @@
 #include <bitset>
 #include <openssl/sha.h>
 #include <unistd.h>
+#include "key_manager_ext.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
@@ -34,6 +35,7 @@ constexpr static uint32_t TEE_PARAM_INDEX_2 = 2;
 constexpr static int SESSION_START_DEFAULT = 1;
 constexpr int MAX_RETRY_COUNT = 3;
 constexpr int RETRY_INTERVAL = 100 * 1000; // 100ms
+constexpr static uint32_t RECOVERY_USER_ID = 300;
 #endif
 
 RecoveryManager::RecoveryManager()
@@ -149,7 +151,6 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
         LOGE("Set recover key to tee failed !");
         return ret;
     }
-
     if (sizeof(setRecoverKeyStr.key2FromTee) != sizeof(setRecoverKeyStr.rndFromTee)) {
         LOGE("key2 size dose not match iv size !");
         return E_PARAMS_INVALID;
@@ -183,6 +184,7 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
             LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
             return ret;
         }
+        (void)KeyManagerExt::GetInstance().SetRecoverKey(RECOVERY_USER_ID, ELX_TYPE_ARR[i], ivBlob);
         auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING", startTime);
         LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());
         ivBlob.Clear();
@@ -190,7 +192,6 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
         key2Blob.Clear();
     }
 #endif
-    LOGI("succeed");
     return 0;
 }
 
@@ -275,6 +276,7 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rk
             LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
             return ret;
         }
+        (void)KeyManagerExt::GetInstance().SetRecoverKey(userId, ELX_TYPE_ARR[i], ivBlob);
         auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING",
             startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
         LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());

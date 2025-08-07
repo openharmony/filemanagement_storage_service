@@ -41,6 +41,7 @@ ohos_unittest("RecoveryManagerTest") {
 
   sources = [
     "${storage_daemon_path}/crypto/src/recover_manager.cpp",
+    "${storage_daemon_path}/crypto/test/key_manager_ext_mock.cpp",
     "${storage_daemon_path}/mock/key_control_mock.cpp",
     "recover_manager_test.cpp",
   ]
