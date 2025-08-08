@@ -41,6 +41,7 @@ constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
 constexpr const char *SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 constexpr const char *BLOCK_PATH = "/dev/block";
+constexpr const char *DISK_PREFIX = "DISK ";
 
 enum DiskStatus:int {
     S_INITAL = 0,
@@ -231,16 +232,12 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> lines;
     std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
     int res = ForkExec(cmd, &output);
-    if (output.empty() || res != E_OK) {
+    FilterOutput(lines, output);
+    if (res != E_OK || lines.empty()) {
         int destroyRes = Destroy();
         sgdiskLines_.clear();
         LOGE("get partition failed, destroy error is %{public}d", destroyRes);
         return res;
-    }
-    std::string bufToken = "\n";
-    for (auto &buf : output) {
-        auto split = SplitLine(buf, bufToken);
-        lines.insert(lines.end(), split.begin(), split.end());
     }
     isUserdata = false;
     if (lines.size() > MIN_LINES) {
@@ -265,6 +262,15 @@ int DiskInfo::ReadPartition()
         return E_OK;
     }
     return ReadDiskLines(sgdiskLines_, maxVolumes, isUserdata);
+}
+
+void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
+{
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+        lines.insert(lines.end(), split.begin(), split.end());
+    }
 }
 
 void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata)
