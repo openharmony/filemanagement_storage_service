@@ -232,12 +232,16 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> lines;
     std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
     int res = ForkExec(cmd, &output);
-    FilterOutput(lines, output);
-    if (res != E_OK || lines.empty()) {
+    if (output.empty() || res != E_OK) {
         int destroyRes = Destroy();
         sgdiskLines_.clear();
         LOGE("get partition failed, destroy error is %{public}d", destroyRes);
         return res;
+    }
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+        lines.insert(lines.end(), split.begin(), split.end());
     }
     isUserdata = false;
     if (lines.size() > MIN_LINES) {
@@ -262,29 +266,6 @@ int DiskInfo::ReadPartition()
         return E_OK;
     }
     return ReadDiskLines(sgdiskLines_, maxVolumes, isUserdata);
-}
-
-void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
-{
-    int32_t index = -1;
-    int32_t count = static_cast<int32_t>(output.size());
-    for (int32_t i = 0; i < count; i++) {
-        std::string buf = output[i];
-        if (buf.find(DISK_PREFIX) == 0) {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1) {
-        LOGE("disk info not found");
-        return;
-    }
-    std::string bufToken = "\n";
-    for (int32_t i = index; i < count; i++) {
-        std::string buf = output[i];
-        auto split = SplitLine(buf, bufToken);
-        lines.insert(lines.end(), split.begin(), split.end());
-    }
 }
 
 void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata)

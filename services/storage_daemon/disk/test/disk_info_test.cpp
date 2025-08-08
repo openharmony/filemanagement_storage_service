@@ -1045,32 +1045,5 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_003 end";
 }
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_FilterOutput_001
- * @tc.desc: Verify the FilterOutput function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FilterOutput_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 start";
-    std::string sysPath = "/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0";
-    std::string devPath = "/devices/platform/fe2b0000.dwmmc/*";
-    unsigned int major = 13;
-    unsigned int minor = 14;
-    dev_t device = makedev(major, minor);
-    int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    ASSERT_TRUE(diskInfo != nullptr);
-    std::vector<std::string> lines;
-    std::vector<std::string> output = {"test"};
-    diskInfo->FilterOutput(lines, output);
-    EXPECT_TRUE(lines.empty());
-    output = {"DISK test1", "test2"};
-    diskInfo->FilterOutput(lines, output);
-    EXPECT_TRUE(!lines.empty());
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 end";
-}
 }
 }

@@ -77,7 +77,6 @@ private:
     void UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
     void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
     bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
-    void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
 };
 } // STORAGE_DAEMON
 } // OHOS
