@@ -41,7 +41,6 @@ constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
 constexpr const char *SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 constexpr const char *BLOCK_PATH = "/dev/block";
-constexpr const char *DISK_PREFIX = "DISK ";
 
 enum DiskStatus:int {
     S_INITAL = 0,
@@ -266,22 +265,8 @@ int DiskInfo::ReadPartition()
 
 void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
 {
-    int32_t index = -1;
-    int32_t count = static_cast<int32_t>(output.size());
-    for (int32_t i = 0; i < count; i++) {
-        std::string buf = output[i];
-        if (buf.find(DISK_PREFIX) == 0) {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1) {
-        LOGE("disk info not found");
-        return;
-    }
     std::string bufToken = "\n";
-    for (int32_t i = index; i < count; i++) {
-        std::string buf = output[i];
+    for (auto &buf : output) {
         auto split = SplitLine(buf, bufToken);
         lines.insert(lines.end(), split.begin(), split.end());
     }
