@@ -41,7 +41,6 @@ constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
 constexpr const char *SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 constexpr const char *BLOCK_PATH = "/dev/block";
-constexpr const char *DISK_PREFIX = "DISK ";
 
 enum DiskStatus:int {
     S_INITAL = 0,
