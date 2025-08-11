@@ -1334,5 +1334,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceAc
     EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallback_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_UpdateUserPublicDirPolicy_002
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserPublicDirPolicy_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    auto ret = storageManagerProviderTest_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 end";
+}
 }
 }

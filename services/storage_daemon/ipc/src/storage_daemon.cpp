@@ -1315,6 +1315,18 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
     return ret;
 }
 
+int32_t StorageDaemon::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    int32_t ret = E_OK;
+#ifdef USER_CRYPTO_MANAGER
+    ret = KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(userId);
+    if (ret != E_OK) {
+        LOGE("UpdateUserPublicDirPolicy failed, error = %{public}d, userId %{public}u", ret, userId);
+    }
+#endif
+    return ret;
+}
+
 int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
 #ifdef EL5_FILEKEY_MANAGER

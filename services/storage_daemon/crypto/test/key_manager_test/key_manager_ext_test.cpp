@@ -356,4 +356,57 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_003, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, vecIn), E_OK);
     GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_003 end";
 }
+
+/**
+ * @tc.name: KeyManagerExt_UpdateUserPublicDirPolicy_001
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_UpdateUserPublicDirPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_001 Start";
+    unsigned int user = 800;
+    KeyManagerExt::GetInstance().SetMockService(nullptr);
+    EXPECT_EQ(KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(user), E_OK);
+
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    EXPECT_EQ(KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(user), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_001 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_UpdateUserPublicDirPolicy_002
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_UpdateUserPublicDirPolicy_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_002 Start";
+    unsigned int user = 800;
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*userkeyExtMocMock_, UpdateUserPublicDirPolicy(_)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(user), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_002 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_UpdateUserPublicDirPolicy_003
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_UpdateUserPublicDirPolicy_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_003 Start";
+    unsigned int user = 800;
+    KeyManagerExt::GetInstance().SetMockService(userkeyExtMocMock_.get());
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*userkeyExtMocMock_, UpdateUserPublicDirPolicy(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(user), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_003 end";
+}
 }

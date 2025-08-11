@@ -47,6 +47,11 @@ int KeyManagerExt::SetRecoverKey(uint32_t user, uint32_t keyType, const KeyBlob&
     return E_OK;
 }
 
+int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t user)
+{
+    return E_OK;
+}
+
 KeyManagerExt::KeyManagerExt() {}
 
 KeyManagerExt::~KeyManagerExt() {}

@@ -858,6 +858,18 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    auto ret = FileSystemCrypto::GetInstance().UpdateUserPublicDirPolicy(userId);
+    LOGI("Upgrade policy userId: %{public}u, ret: %{public}d", userId, ret);
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
     return FileSystemCrypto::GetInstance().RegisterUeceActivationCallback(ueceCallback);

@@ -598,5 +598,22 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_InactiveUserPublic
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001 start";
+
+    uint32_t userId = 105;
+    auto ret = storageDaemon_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

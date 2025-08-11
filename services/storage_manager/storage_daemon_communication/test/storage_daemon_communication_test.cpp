@@ -965,6 +965,30 @@ HWTEST_F(StorageDaemonCommunicationTest,
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserPublicDirKey_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UpdateUserPublicDirPolicy_0000
+ * @tc.name: Daemon_communication_UpdateUserPublicDirPolicy_0000
+ * @tc.desc: Test function of UpdateUserPublicDirPolicy interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageDaemonCommunicationTest,
+         Daemon_communication_UpdateUserPublicDirPolicy_0000,
+         testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO)
+        << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserPublicDirPolicy_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    uint32_t userId = 100;
+    int32_t result = sdCommunication->UpdateUserPublicDirPolicy(userId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO)
+        << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserPublicDirPolicy_0000 SUCCESS";
+}
 #endif
 
 /**

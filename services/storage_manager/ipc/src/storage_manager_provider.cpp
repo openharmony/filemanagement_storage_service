@@ -807,6 +807,14 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
     return StorageManager::GetInstance().InactiveUserPublicDirKey(userId);
 }
 
+int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().UpdateUserPublicDirPolicy(userId);
+}
+
 int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {

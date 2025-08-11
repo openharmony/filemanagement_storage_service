@@ -108,5 +108,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 69] void InactiveUserPublicDirKey([in] unsigned int userId);
     [ipccode 72] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
     [ipccode 73] void UnregisterUeceActivationCallback();
+    [ipccode 74] void UpdateUserPublicDirPolicy([in] unsigned int userId);
 }
 
