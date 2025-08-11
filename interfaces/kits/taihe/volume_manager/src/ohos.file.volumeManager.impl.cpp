@@ -66,7 +66,7 @@ taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
     std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(),
                    [](auto &vol) { return MakeVolume(vol.GetDescription(), vol.GetUuid()); });
 
-    return result;
+    return taihe::array<ohos::file::volumeManager::Volume>(taihe::copy_data_t{}, result.data(), result.size());
 }
 } // namespace ANI::VolumeManager
 
