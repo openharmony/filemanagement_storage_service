@@ -41,16 +41,30 @@ constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
+constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t FIVE_HUNDRED_M_BIT = 1024 * 1024 * 500;
+constexpr int32_t FIVE_HUNDRED_M_BIT = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
-constexpr int32_t ONE_MS = 1000;
 constexpr int32_t ACCURACY_NUM = 2;
 static std::map<std::string, std::string> mQuotaReverseMounts;
+#define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
+
+struct NextDqBlk {
+    uint64_t dqb_bhardlimit;
+    uint64_t dqb_bsoftlimit;
+    uint64_t dqb_curspace;
+    uint64_t dqb_ihardlimit;
+    uint64_t dqb_isoftlimit;
+    uint64_t dqb_curinodes;
+    uint64_t dqb_btime;
+    uint64_t dqb_itime;
+    uint32_t dqb_valid;
+    uint32_t dqb_id;
+};
 
 QuotaManager &QuotaManager::GetInstance()
 {
@@ -250,28 +264,42 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
 int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec)
 {
     LOGE("GetOccupiedSpaceForUidList begin!");
- 
-    if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
-        return E_SYS_KERNEL_ERR;
-    }
- 
-    std::string device = "";
-    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
-    if (device.empty()) {
-        LOGE("skip when device no quotas present");
-        return E_OK;
-    }
- 
-    for (struct UidSaInfo &info : vec) {
-        struct dqblk dq;
-        usleep(ONE_MS);
-        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), info.uid, reinterpret_cast<char*>(&dq)) != 0) {
-            LOGE("Failed to get quotactl, errno : %{public}d", errno);
-            continue;
+    uid_t curUid = 0;
+    std::map<int32_t, int64_t> userAppSizeMap;
+    while (1) {
+        struct NextDqBlk dq;
+        if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
+            LOGI("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
+            break;
         }
-        info.size = static_cast<int64_t>(dq.dqb_curspace);
+        for (struct UidSaInfo &info : vec) {
+            if (info.uid == curUid) {
+                info.size = dq.dqb_curspace;
+                break;
+            }
+        }
+        if (curUid >= APP_UID) {
+            int32_t userId = curUid / USER_ID_BASE;
+            if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
+                userAppSizeMap[userId] += dq.dqb_curspace;
+            } else {
+                userAppSizeMap[userId] = dq.dqb_curspace;
+            }
+        }
+        if (curUid >= ZERO_USER_MIN_UID && curUid <= ZERO_USER_MAX_UID) {
+            if (userAppSizeMap.find(ZERO_USER) != userAppSizeMap.end()) {
+                userAppSizeMap[ZERO_USER] += dq.dqb_curspace;
+            } else {
+                userAppSizeMap[ZERO_USER] = dq.dqb_curspace;
+            }
+        }
+        curUid = dq.dqb_id + 1;
     }
+    for (const auto &pair : userAppSizeMap) {
+        UidSaInfo info = {pair.first, "", pair.second};
+        vec.push_back(info);
+    }
+    LOGE("GetOccupiedSpaceForUidList end!");
     return E_OK;
 }
 
