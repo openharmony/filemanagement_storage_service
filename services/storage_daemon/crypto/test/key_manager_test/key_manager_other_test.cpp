@@ -39,6 +39,7 @@ using namespace testing;
 
 namespace {
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
+constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
 }
 
 namespace OHOS::StorageDaemon {
@@ -570,6 +571,11 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateESecret_001, TestSize.Level1)
     EXPECT_EQ(ret, E_EL5_ENCRYPT_CLASS_ERROR);
 
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    ret = KeyManager::GetInstance().UpdateESecret(userId, newTokenSecret);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     ret = KeyManager::GetInstance().UpdateESecret(userId, newTokenSecret);
     EXPECT_EQ(ret, E_OK);

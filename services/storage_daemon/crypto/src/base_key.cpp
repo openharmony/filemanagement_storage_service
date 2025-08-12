@@ -521,7 +521,8 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
 
 int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
-    LOGD("BaseKey::RestoreKey enter");
+    LOGD("BaseKey::RestoreKey enter, auth token %{public}d, auth secret %{public}d",
+        auth.token.IsEmpty(), auth.secret.IsEmpty());
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
