@@ -265,14 +265,14 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
  
 int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec)
 {
-    LOGE("GetOccupiedSpaceForUidList begin!");
+    LOGI("GetOccupiedSpaceForUidList begin!");
     int32_t curUid = 0;
     int32_t count = 0;
     std::map<int32_t, int64_t> userAppSizeMap;
     while (count < MAX_UID_COUNT) {
         struct NextDqBlk dq;
         if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
-            LOGI("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
+            LOGE("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
             break;
         }
         int32_t dqUid = static_cast<int32_t>(dq.dqbId);
@@ -309,7 +309,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
         UidSaInfo info = {pair.first, "", pair.second};
         vec.push_back(info);
     }
-    LOGE("GetOccupiedSpaceForUidList end!");
+    LOGI("GetOccupiedSpaceForUidList end!");
     return E_OK;
 }
 
