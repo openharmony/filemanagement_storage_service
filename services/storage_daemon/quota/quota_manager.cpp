@@ -54,16 +54,16 @@ static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
 struct NextDqBlk {
-    uint64_t dqb_bhardlimit;
-    uint64_t dqb_bsoftlimit;
-    uint64_t dqb_curspace;
-    uint64_t dqb_ihardlimit;
-    uint64_t dqb_isoftlimit;
-    uint64_t dqb_curinodes;
-    uint64_t dqb_btime;
-    uint64_t dqb_itime;
-    uint32_t dqb_valid;
-    uint32_t dqb_id;
+    uint64_t dqbHardLimit;
+    uint64_t dqbBSoftLimit;
+    uint64_t dqbCurSpace;
+    uint64_t dqbIHardLimit;
+    uint64_t dqbISoftLimit;
+    uint64_t dqbCurInodes;
+    uint64_t dqbBTime;
+    uint64_t dqbITime;
+    uint32_t dqbValid;
+    uint32_t dqbId;
 };
 
 QuotaManager &QuotaManager::GetInstance()
@@ -272,27 +272,27 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             LOGI("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
             break;
         }
-        int32_t dqUid = static_cast<int32_t>(dq.dqb_id);
+        int32_t dqUid = static_cast<int32_t>(dq.dqbId);
         for (struct UidSaInfo &info : vec) {
             if (info.uid == dqUid) {
-                info.size = dq.dqb_curspace;
+                info.size = dq.dqbCurSpace;
                 break;
             }
         }
         if (dqUid >= StorageService::APP_UID) {
             int32_t userId = dqUid / StorageService::USER_ID_BASE;
             if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
-                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqb_curspace);
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
             } else {
-                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqb_curspace);
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
         }
         if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
             int32_t userId = StorageService::ZERO_USER;
             if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
-                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqb_curspace);
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
             } else {
-                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqb_curspace);
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
         }
         curUid = dqUid + 1;
