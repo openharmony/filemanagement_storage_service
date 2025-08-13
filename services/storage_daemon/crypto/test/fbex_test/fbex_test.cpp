@@ -24,7 +24,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
-#include <cstdlib>
 
 #include "openssl_crypto.h"
 #include "common_utils_mock.h"

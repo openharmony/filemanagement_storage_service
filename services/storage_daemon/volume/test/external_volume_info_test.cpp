@@ -20,10 +20,12 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "mock/file_utils_mock.h"
+#include "mock/storage_manager_client_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
+using namespace testing;
 
 class ExternalVolumeInfoTest : public testing::Test {
 public:
@@ -34,6 +36,7 @@ public:
 
     ExternalVolumeInfo* externalVolumeInfo_;
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
 };
 
 void ExternalVolumeInfoTest::SetUpTestCase(void)
@@ -53,6 +56,8 @@ void ExternalVolumeInfoTest::TearDownTestCase(void)
 void ExternalVolumeInfoTest::SetUp()
 {
     externalVolumeInfo_ = new ExternalVolumeInfo();
+    storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
+    StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
 }
 
 void ExternalVolumeInfoTest::TearDown(void)
@@ -61,6 +66,8 @@ void ExternalVolumeInfoTest::TearDown(void)
         delete externalVolumeInfo_;
         externalVolumeInfo_ = nullptr;
     }
+    StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
+    storageManagerClientMock_ = nullptr;
 }
 
 /**
@@ -80,6 +87,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
     bool isUserdata = false;
     int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCreate_001 end";
@@ -102,6 +110,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
     bool isUserdata = false;
     int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
 
@@ -218,6 +227,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToF
     EXPECT_EQ(ret, E_OK);
     ret = vol.Check();
     EXPECT_EQ(ret, E_CHECK);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
 
@@ -265,6 +275,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
     EXPECT_EQ(ret, E_OK);
     ret = vol.Check();
     EXPECT_EQ(ret, E_CHECK);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_001 end";
@@ -291,6 +302,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     ret = vol.Format(flag);
     EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 end";
@@ -317,6 +329,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     ret = vol.Format(flag);
     EXPECT_EQ(ret, E_WEXITSTATUS);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_002 end";
@@ -342,6 +355,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     std::string flag = "ntfs";
     ret = vol.Format(flag);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_003 end";
@@ -438,6 +452,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
     std::string des = "label1";
     ret = vol.SetVolumeDescription(des);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 end";

@@ -633,7 +633,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContext Start";
     uint32_t userId = 1;
- 
+    EXPECT_TRUE(OHOS::RemoveFile(UECE_PATH));
     KeyManager::GetInstance().DeleteElKey(userId, EL2_KEY);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance().UpdateKeyContext(userId), E_PARAMS_INVALID);
@@ -651,6 +651,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext, TestSize.Level1)
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(3).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance().UpdateKeyContext(userId), 0);
+    std::ofstream file(UECE_PATH);
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContextt end";
 }
  
@@ -663,14 +664,14 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext, TestSize.Level1)
 HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContext_001 Start";
- 
+    EXPECT_TRUE(OHOS::RemoveFile(UECE_PATH));
     uint32_t userId = 100;
     KeyManager::GetInstance().saveESecretStatus[userId] = false;
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(3).WillOnce(Return(false))\
            .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_FALSE(KeyManager::GetInstance().IsUeceSupport());
     EXPECT_EQ(KeyManager::GetInstance().UpdateKeyContext(userId), 0); //uece support failed at fileOpen
- 
+    std::ofstream file(UECE_PATH);
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContext_001 End";
 }
  

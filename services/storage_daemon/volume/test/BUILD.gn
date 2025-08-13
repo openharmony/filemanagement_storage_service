@@ -43,7 +43,7 @@ ohos_unittest("external_volume_info_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
@@ -134,7 +134,7 @@ ohos_unittest("volume_info_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
     "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/volume_info_test.cpp",
@@ -186,7 +186,7 @@ ohos_unittest("volume_manager_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
