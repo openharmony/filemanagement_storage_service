@@ -63,6 +63,8 @@ constexpr uint8_t USER_LOGOUT = 0x0;
 constexpr uint32_t USER_ADD_AUTH = 0x0;
 constexpr uint32_t USER_CHANGE_AUTH = 0x1;
 
+constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
+
 #ifdef EL5_FILEKEY_MANAGER
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 500;
 #endif
@@ -979,7 +981,9 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid };
     saveESecretStatus[user] = true;
     auto ret = el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status);
-    if (ret != E_OK) {
+    if (static_cast<uint32_t>(ret) == FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG) {
+        LOGE("user= %{public}d, error=FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG, no need to add again", user);
+    } else if (ret != E_OK) {
         LOGE("user %{public}u EncryptClassE fail", user);
         return E_EL5_ENCRYPT_CLASS_ERROR;
     }
@@ -1021,7 +1025,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     }
 
     UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
-    UserAuth auth_newSec = { {}, userTokenSecret.newSecret, userTokenSecret.secureUid };
+    UserAuth auth_newSec = { userTokenSecret.token, userTokenSecret.newSecret, userTokenSecret.secureUid };
     LOGW("param status token:%{public}d, oldSec:%{public}d, newSec:%{public}d", userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
     if (!userTokenSecret.oldSecret.empty()) {
