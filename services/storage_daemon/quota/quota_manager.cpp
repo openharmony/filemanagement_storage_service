@@ -48,6 +48,7 @@ constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
+constexpr int32_t ONE_MS = 1000;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
 static std::map<std::string, std::string> mQuotaReverseMounts;
@@ -302,6 +303,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
         if (curUid == 0) {
             break;
         }
+        usleep(ONE_MS);
     }
     for (const auto &pair : userAppSizeMap) {
         UidSaInfo info = {pair.first, "", pair.second};
