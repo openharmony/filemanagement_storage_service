@@ -44,7 +44,7 @@ constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t FIVE_HUNDRED_M_BIT = 1024 * 1024 * 100;
+constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -158,7 +158,7 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
     std::ostringstream extraData;
     extraData << storageStatus <<std::endl;
     for (const auto& info : vec) {
-        if (info.size < FIVE_HUNDRED_M_BIT) {
+        if (info.size < ONE_HUNDRED_M_BIT) {
             continue;
         }
         extraData << "{uid:" << info.uid
