@@ -272,28 +272,33 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             LOGI("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
             break;
         }
+        int32_t dqUid = static_cast<int32_t>(dq.dqb_id);
         for (struct UidSaInfo &info : vec) {
-            if (info.uid == curUid) {
+            if (info.uid == dqUid) {
                 info.size = dq.dqb_curspace;
                 break;
             }
         }
-        if (curUid >= APP_UID) {
-            int32_t userId = curUid / USER_ID_BASE;
+        if (dqUid >= StorageService::APP_UID) {
+            int32_t userId = dqUid / StorageService::USER_ID_BASE;
             if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
-                userAppSizeMap[userId] += dq.dqb_curspace;
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqb_curspace);
             } else {
-                userAppSizeMap[userId] = dq.dqb_curspace;
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqb_curspace);
             }
         }
-        if (curUid >= ZERO_USER_MIN_UID && curUid <= ZERO_USER_MAX_UID) {
-            if (userAppSizeMap.find(ZERO_USER) != userAppSizeMap.end()) {
-                userAppSizeMap[ZERO_USER] += dq.dqb_curspace;
+        if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
+            int32_t userId = StorageService::ZERO_USER;
+            if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqb_curspace);
             } else {
-                userAppSizeMap[ZERO_USER] = dq.dqb_curspace;
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqb_curspace);
             }
         }
-        curUid = dq.dqb_id + 1;
+        curUid = dqUid + 1;
+        if (curUid == 0) {
+            break;
+        }
     }
     for (const auto &pair : userAppSizeMap) {
         UidSaInfo info = {pair.first, "", pair.second};
