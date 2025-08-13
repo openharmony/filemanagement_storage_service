@@ -49,6 +49,7 @@ constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ACCURACY_NUM = 2;
+constexpr int32_t MAX_UID_COUNT = 100000;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 #define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
@@ -266,7 +267,8 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
     LOGE("GetOccupiedSpaceForUidList begin!");
     uid_t curUid = 0;
     std::map<int32_t, int64_t> userAppSizeMap;
-    while (1) {
+    int32_t count = 0;
+    while (count < MAX_UID_COUNT) {
         struct NextDqBlk dq;
         if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
             LOGI("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
@@ -295,6 +297,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
                 userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
         }
+        count++;
         curUid = dqUid + 1;
         if (curUid == 0) {
             break;
