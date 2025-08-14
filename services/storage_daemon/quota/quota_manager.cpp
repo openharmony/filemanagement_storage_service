@@ -116,24 +116,11 @@ static std::string GetQuotaSrcMountPath(const std::string &target)
 static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
     LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
-    if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
-        return E_INIT_QUOTA_MOUNTS_FAILED;
-    }
-
-    std::string device = "";
-    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
-    if (device.empty()) {
-        LOGE("skip when device no quotas present");
-        return E_OK;
-    }
-
     struct dqblk dq;
-    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
+    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get quotactl, errno : %{public}d", errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     }
-
     size = static_cast<int64_t>(dq.dqb_curspace);
     LOGE("GetOccupiedSpaceForUid size:%{public}s", std::to_string(size).c_str());
     return E_OK;
