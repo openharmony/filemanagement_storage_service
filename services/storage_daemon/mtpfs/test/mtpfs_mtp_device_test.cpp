@@ -32,6 +32,11 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
     }
 }
 
+const MtpFsTypeDir *ReadDirFetchContent(std::string path)
+{
+    return nullptr;
+}
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
@@ -393,6 +398,22 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_GetThumbnailTest_001, TestSize.Level1)
 
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     int result = mtpfsdevice->GetThumbnail(path, buf);
+    EXPECT_EQ(result, -ENOENT);
+}
+
+/**
+ * @tc.name: FileMove_001
+ * @tc.desc: 测试当旧目录的父节点为空时,FileMove 函数应返回 -ENOENT
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FileMove_001, TestSize.Level1)
+{
+    MtpFsDevice device;
+    device.device_ = nullptr;
+    std::string oldPath = "/old/path/file";
+    std::string newPath = "/new/path/file";
+
+    int result = device.FileMove(oldPath, newPath);
     EXPECT_EQ(result, -ENOENT);
 }
 }

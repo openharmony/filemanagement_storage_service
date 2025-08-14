@@ -58,6 +58,10 @@ void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRa
 
 bool StorageDaemonProviderCreateShareFileFuzzTest(const uint8_t *data, size_t size)
 {
+    /* Run your code on data and size */
+    if (data == nullptr || size < sizeof(int32_t)) {
+        return false;
+    }
     uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_CREATE_SHARE_FILE);
     FuzzedDataProvider fdp(data, size);
     std::string str = fdp.ConsumeRandomLengthString(10);

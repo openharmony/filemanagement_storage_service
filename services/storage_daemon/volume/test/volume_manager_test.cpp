@@ -31,8 +31,8 @@
 #include "volume_info_mock.h"
 #include "utils/string_utils.h"
 
-constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
-constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
+constexpr int UPLOAD_RECORD_TRUE_LEN = 5;
+constexpr int UPLOAD_RECORD_FALSE_LEN = 6;
 
 namespace {
 uint32_t g_FindParameter = 0;
@@ -43,7 +43,6 @@ uint32_t FindParameter(const char *key)
     return g_FindParameter;
 }
 
-using namespace OHOS::StorageDaemon;
 ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
 {
     if (strcmp(name, "user.queryMtpIsInUse") != 0) {
@@ -524,6 +523,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_00
     bool isInUse = true;
     int32_t result = VolumeManager::Instance().QueryUsbIsInUse(diskPath, isInUse);
     EXPECT_EQ(result, E_PARAMS_NULLPTR_ERR);
+    EXPECT_TRUE(isInUse);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001 end";
 }

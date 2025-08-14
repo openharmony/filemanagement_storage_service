@@ -273,8 +273,7 @@ int32_t StorageStatusService::QueryOccupiedSpaceForSa(StorageStats &storageStats
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
         return E_BUNDLEMGR_ERROR;
     }
-    const char* c_str = bundleName.c_str();
-    if (strstr(c_str, SETTING_BUNDLE_NAME) == nullptr) {
+    if (bundleName != SETTING_BUNDLE_NAME) {
         LOGE("permissionCheck error");
         return E_PERMISSION_DENIED;
     }

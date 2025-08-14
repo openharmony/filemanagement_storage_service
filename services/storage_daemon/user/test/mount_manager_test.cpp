@@ -855,69 +855,31 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EPERM;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EBUSY;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EEXIST;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_004 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_IsReadOnlyMount_001
- * @tc.desc: Verify the IsReadOnlyMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsReadOnlyMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 start";
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    bool isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
-    ASSERT_TRUE(isReadOnlyMount);
-
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(1)));
-    isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
-    ASSERT_TRUE(!isReadOnlyMount);
-
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
-    isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
-    ASSERT_TRUE(!isReadOnlyMount);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 end";
 }
 
 /**

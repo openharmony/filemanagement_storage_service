@@ -93,9 +93,10 @@ bool g_storageManagerProviderFTest(std::unique_ptr<char[]> data, size_t size)
 
     return true;
 }
+
 bool PrepareAddUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_PREPARE_ADD_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PREPARE_ADD_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -106,9 +107,10 @@ bool PrepareAddUserFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool RemoveUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_REMOVE_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_REMOVE_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -119,9 +121,10 @@ bool RemoveUserFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool PrepareStartUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_PREPARE_START_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PREPARE_START_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -132,9 +135,10 @@ bool PrepareStartUserFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool StopUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_STOP_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_STOP_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -145,9 +149,10 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetCurrentBundleStatsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_CURRENT_BUNDLE_STATS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_CURRENT_BUNDLE_STATS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -158,9 +163,10 @@ bool GetCurrentBundleStatsFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool MountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_MOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -171,9 +177,10 @@ bool MountFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UnmountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UNMOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UNMOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -184,9 +191,10 @@ bool UnmountFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool PartitionFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_PARTITION);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PARTITION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -197,9 +205,10 @@ bool PartitionFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool FormatFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_FORMAT);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_FORMAT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -210,9 +219,10 @@ bool FormatFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_USER_KEYS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_USER_KEYS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -223,9 +233,10 @@ bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_DELETE_USER_KEYS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_DELETE_USER_KEYS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -236,9 +247,10 @@ bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_USER_AUTH);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_USER_AUTH);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -249,9 +261,10 @@ bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_ACTIVE_USER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_ACTIVE_USER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -262,9 +275,10 @@ bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_INACTIVE_USER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_INACTIVE_USER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -275,9 +289,10 @@ bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_LOCK_USER_SCREEN);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_LOCK_USER_SCREEN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -288,9 +303,10 @@ bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UNLOCK_USER_SCREEN);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UNLOCK_USER_SCREEN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -301,9 +317,10 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_KEY_CONTEXT);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_KEY_CONTEXT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -314,9 +331,10 @@ bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool CreateShareFileFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_CREATE_SHARE_FILE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_CREATE_SHARE_FILE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -327,9 +345,10 @@ bool CreateShareFileFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool DeleteShareFileFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_DELETE_SHARE_FILE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_DELETE_SHARE_FILE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -340,9 +359,10 @@ bool DeleteShareFileFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool SetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_SET_BUNDLE_QUOTA);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_SET_BUNDLE_QUOTA);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -353,9 +373,10 @@ bool SetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_MEMORY_PARA);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_MEMORY_PARA);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -366,9 +387,10 @@ bool UpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_DELETE_APPKEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_DELETE_APPKEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -379,9 +401,10 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool CompleteAddUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_COMPLETE_ADD_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_COMPLETE_ADD_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -392,9 +415,10 @@ bool CompleteAddUserFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetTotalSizeOfVolumeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_TOTAL_SIZE_OF_VOLUME);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_TOTAL_SIZE_OF_VOLUME);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -405,9 +429,10 @@ bool GetTotalSizeOfVolumeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetFreeSizeOfVolumeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_FREE_SIZE_OF_VOLUME);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_FREE_SIZE_OF_VOLUME);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -418,9 +443,10 @@ bool GetFreeSizeOfVolumeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetBundleStatsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_BUNDLE_STATS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_BUNDLE_STATS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -431,9 +457,10 @@ bool GetBundleStatsFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetSystemSizeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_SYSTEM_SIZE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_SYSTEM_SIZE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -444,9 +471,10 @@ bool GetSystemSizeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetTotalSizeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_TOTAL_SIZE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_TOTAL_SIZE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -457,9 +485,10 @@ bool GetTotalSizeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetFreeSizeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_FREE_SIZE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_FREE_SIZE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -470,9 +499,10 @@ bool GetFreeSizeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetUserStorageStatsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_USER_STORAGE_STATS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_USER_STORAGE_STATS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -483,6 +513,7 @@ bool GetUserStorageStatsFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetUserStorageStatsIpcFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code =
@@ -497,9 +528,10 @@ bool GetUserStorageStatsIpcFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetAllVolumesFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_ALL_VOLUMES);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_ALL_VOLUMES);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -510,9 +542,10 @@ bool GetAllVolumesFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_CREATED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_CREATED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -523,9 +556,10 @@ bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyVolumeMountedFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_MOUNTED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_MOUNTED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -536,9 +570,10 @@ bool NotifyVolumeMountedFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyVolumeStateChangedFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_STATE_CHANGED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_STATE_CHANGED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -549,9 +584,10 @@ bool NotifyVolumeStateChangedFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyDiskCreatedFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_CREATED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_CREATED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -562,9 +598,10 @@ bool NotifyDiskCreatedFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetAllDisksFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_ALL_DISKS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_ALL_DISKS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -575,9 +612,10 @@ bool GetAllDisksFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetVolumeByUuidFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_UUID);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_UUID);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -588,9 +626,10 @@ bool GetVolumeByUuidFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetVolumeByIdFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_ID);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_ID);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -601,9 +640,10 @@ bool GetVolumeByIdFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool SetVolumeDescriptionFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -614,9 +654,10 @@ bool SetVolumeDescriptionFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -627,9 +668,10 @@ bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetDiskByIdFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_DISK_BY_ID);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_DISK_BY_ID);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -640,9 +682,10 @@ bool GetDiskByIdFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UpdateUseAuthWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_USE_AUTH_WITH_RECOVERY_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_USE_AUTH_WITH_RECOVERY_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -653,9 +696,10 @@ bool UpdateUseAuthWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetFileEncryptStatusFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_FILE_ENCRYPT_STATUS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_FILE_ENCRYPT_STATUS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -666,9 +710,10 @@ bool GetFileEncryptStatusFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_LOCK_SCREEN_STATUS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_LOCK_SCREEN_STATUS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -679,9 +724,10 @@ bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_APPKEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_APPKEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -692,9 +738,10 @@ bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_CREATE_RECOVER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_CREATE_RECOVER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -705,9 +752,10 @@ bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_SET_RECOVER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_SET_RECOVER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -718,9 +766,10 @@ bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool ResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_RESET_SECRET_WITH_RECOVERY_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_RESET_SECRET_WITH_RECOVERY_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -731,9 +780,10 @@ bool ResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool GetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_GET_USER_STORAGE_STATS_BY_TYPE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_USER_STORAGE_STATS_BY_TYPE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -744,9 +794,10 @@ bool GetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool MountDfsDocsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_DFS_DOCS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_DFS_DOCS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -757,9 +808,10 @@ bool MountDfsDocsFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UMountDfsDocsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_DFS_DOCS);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_DFS_DOCS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -770,9 +822,10 @@ bool UMountDfsDocsFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyMtpMountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_MOUNTED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_MOUNTED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -783,9 +836,10 @@ bool NotifyMtpMountFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyMtpUnmountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_UNMOUNTED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_UNMOUNTED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -796,9 +850,10 @@ bool NotifyMtpUnmountFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool NotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_DESTROYED);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_DESTROYED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -809,9 +864,10 @@ bool NotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -822,9 +878,10 @@ bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
     storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 bool UMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);

@@ -86,6 +86,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareAddUser_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_RemoveUser_001
  * @tc.desc: Verify the RemoveUser function.
@@ -102,6 +103,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_001, 
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_RemoveUser_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_PrepareStartUser_001
  * @tc.desc: Verify the PrepareStartUser function.
@@ -116,6 +118,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareStartUser_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_StopUser_001
  * @tc.desc: Verify the StopUser function.
@@ -130,6 +133,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_001, Te
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_StopUser_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_CompleteAddUser_001
  * @tc.desc: Verify the CompleteAddUser function.
@@ -144,6 +148,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CompleteAddUser_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetFreeSizeOfVolume_001
  * @tc.desc: Verify the GetFreeSizeOfVolume function.
@@ -160,6 +165,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSizeOfVol
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeSizeOfVolume_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetTotalSizeOfVolume_001
  * @tc.desc: Verify the GetTotalSizeOfVolume function.
@@ -176,6 +182,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVo
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetBundleStats_001
  * @tc.desc: Verify the GetBundleStats function.
@@ -194,6 +201,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetBundleStats_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetBundleStats_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetSystemSize_001
  * @tc.desc: Verify the GetSystemSize function.
@@ -209,6 +217,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemSize_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemSize_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetTotalSize_001
  * @tc.desc: Verify the GetTotalSize function.
@@ -224,6 +233,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSize_001
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSize_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetFreeSize_001
  * @tc.desc: Verify the GetFreeSize function.
@@ -239,6 +249,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSize_001,
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeSize_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetUserStorageStats_001
  * @tc.desc: Verify the GetUserStorageStats function.
@@ -254,6 +265,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStats_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetUserStorageStatsIpc_001
  * @tc.desc: Verify the GetUserStorageStatsIpc function.
@@ -270,6 +282,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStatsIpc_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetCurrentBundleStats_001
  * @tc.desc: Verify the GetCurrentBundleStats function.
@@ -286,6 +299,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundle
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCurrentBundleStats_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyVolumeCreated_001
  * @tc.desc: Verify the NotifyVolumeCreated function.
@@ -301,6 +315,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCrea
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_001
  * @tc.desc: Verify the NotifyVolumeMounted function.
@@ -320,6 +335,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMoun
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_001
  * @tc.desc: Verify the NotifyVolumeStateChanged function.
@@ -336,6 +352,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStat
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_Mount_001
  * @tc.desc: Verify the Mount function.
@@ -351,6 +368,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_001, TestS
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_Unmount_001
  * @tc.desc: Verify the Unmount function.
@@ -366,6 +384,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_001, Tes
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetAllVolumes_001
  * @tc.desc: Verify the GetAllVolumes function.
@@ -381,6 +400,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllVolumes_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllVolumes_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyDiskCreated_001
  * @tc.desc: Verify the NotifyDiskCreated function.
@@ -396,6 +416,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskCreate
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskCreated_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyDiskDestroyed_001
  * @tc.desc: Verify the NotifyDiskDestroyed function.
@@ -411,6 +432,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskDestro
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskDestroyed_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_Partition_001
  * @tc.desc: Verify the Partition function.
@@ -427,6 +449,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Partition_001, T
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Partition_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetAllDisks_001
  * @tc.desc: Verify the GetAllDisks function.
@@ -442,6 +465,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_001,
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllDisks_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetVolumeByUuid_001
  * @tc.desc: Verify the GetVolumeByUuid function.
@@ -458,6 +482,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeByUuid_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeByUuid_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetVolumeById_001
  * @tc.desc: Verify the GetVolumeById function.
@@ -474,6 +499,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeById_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeById_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_SetVolumeDescription_001
  * @tc.desc: Verify the SetVolumeDescription function.
@@ -490,6 +516,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescrip
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetVolumeDescription_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_Format_001
  * @tc.desc: Verify the SetVolumeDescription function.
@@ -506,6 +533,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Format_001, Test
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Format_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetDiskById_001
  * @tc.desc: Verify the GetDiskById function.
@@ -522,6 +550,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_001,
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetDiskById_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GenerateUserKeys_001
  * @tc.desc: Verify the GenerateUserKeys function.
@@ -538,6 +567,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateUserKeys
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateUserKeys_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_QueryUsbIsInUse_001
  * @tc.desc: Verify the QueryUsbIsInUse function.
@@ -554,6 +584,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryUsbIsInUse_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_QueryUsbIsInUse_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_DeleteUserKeys_001
  * @tc.desc: Verify the DeleteUserKeys function.
@@ -569,6 +600,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
@@ -588,6 +620,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserAuth_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_001
  * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
@@ -608,6 +641,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWit
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_ActiveUserKey_001
  * @tc.desc: Verify the ActiveUserKey function.
@@ -625,6 +659,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ActiveUserKey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_InactiveUserKey_001
  * @tc.desc: Verify the InactiveUserKey function.
@@ -640,6 +675,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserKey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_LockUserScreen_001
  * @tc.desc: Verify the LockUserScreen function.
@@ -655,6 +691,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_LockUserScreen_0
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_LockUserScreen_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetFileEncryptStatus_001
  * @tc.desc: Verify the GetFileEncryptStatus function.
@@ -672,6 +709,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptSt
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFileEncryptStatus_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetUserNeedActiveStatus_001
  * @tc.desc: Verify the GetUserNeedActiveStatus function.
@@ -688,6 +726,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiv
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserNeedActiveStatus_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UnlockUserScreen_001
  * @tc.desc: Verify the UnlockUserScreen function.
@@ -705,6 +744,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnlockUserScreen_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetLockScreenStatus_001
  * @tc.desc: Verify the GetLockScreenStatus function.
@@ -721,6 +761,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenSta
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetLockScreenStatus_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GenerateAppkey_001
  * @tc.desc: Verify the GenerateAppkey function.
@@ -739,6 +780,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateAppkey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey function.
@@ -754,6 +796,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteAppkey_001
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteAppkey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_CreateRecoverKey_001
  * @tc.desc: Verify the CreateRecoverKey function.
@@ -772,6 +815,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateRecoverKey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_SetRecoverKey_001
  * @tc.desc: Verify the SetRecoverKey function.
@@ -787,6 +831,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetRecoverKey_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetRecoverKey_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
@@ -803,6 +848,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateKeyContext_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_CreateShareFile_001
  * @tc.desc: Verify the CreateShareFile function.
@@ -827,6 +873,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateShareFile_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_DeleteShareFile_001
  * @tc.desc: Verify the DeleteShareFile function.
@@ -849,6 +896,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteShareFile_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_SetBundleQuota_001
  * @tc.desc: Verify the SetBundleQuota function.
@@ -867,6 +915,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_GetUserStorageStatsByType_001
  * @tc.desc: Verify the GetUserStorageStatsByType function.
@@ -884,6 +933,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStatsByType_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UpdateMemoryPara_001
  * @tc.desc: Verify the UpdateMemoryPara function.
@@ -901,6 +951,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateMemoryPara
     EXPECT_EQ(oldSize, 0);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateMemoryPara_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_MountDfsDocs_001
  * @tc.desc: Verify the MountDfsDocs function.
@@ -919,6 +970,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UMountDfsDocs_001
  * @tc.desc: Verify the UMountDfsDocs function.
@@ -937,6 +989,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyMtpMounted_001
  * @tc.desc: Verify the NotifyMtpMounted function.
@@ -955,6 +1008,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_NotifyMtpUnmounted_001
  * @tc.desc: Verify the NotifyMtpUnmounted function.
@@ -972,6 +1026,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmount
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
@@ -988,6 +1043,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UMountMediaFuse_001
  * @tc.desc: Verify the UMountMediaFuse function.
@@ -1003,6 +1059,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_001
  * @tc.desc: Verify the MountFileMgrFuse function.
@@ -1021,6 +1078,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_001
  * @tc.desc: Verify the UMountFileMgrFuse function.
@@ -1037,6 +1095,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
@@ -1055,6 +1114,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsFileOccupied_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsFileOccupied_001 end";
 }
+
 /**
  * @tc.name: StorageManagerProviderTest_ResetSecretWithRecoveryKey_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.

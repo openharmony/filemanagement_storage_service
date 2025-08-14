@@ -22,7 +22,6 @@
 #include "message_parcel.h"
 #include "securec.h"
 #include "storage_daemon.h"
-#include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
 #include "user_manager.h"
 

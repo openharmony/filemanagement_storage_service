@@ -64,19 +64,6 @@ void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::st
     }
 }
 
-bool MountManager::IsReadOnlyRemount()
-{
-    const char *syncType = "1";
-    char paramOutBuf[REMOUNT_VALUE_LEN] = {0};
-    int ret = GetParameter(DETERMINE_DEVICE_TYPE_KEY, "", paramOutBuf, REMOUNT_VALUE_LEN);
-    LOGD("paramOutBuf: %{public}s, ret: %{public}d", paramOutBuf, ret);
-    if (ret > 0 && strncmp(paramOutBuf, syncType, strlen(syncType)) == 0) {
-        LOGI("Need readonly remount.");
-        return true;
-    }
-    return false;
-}
-
 int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
     LOGI("mount share file start.");

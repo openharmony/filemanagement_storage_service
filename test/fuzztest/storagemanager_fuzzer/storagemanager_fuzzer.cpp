@@ -89,6 +89,8 @@ bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
     MessageOption option;
     if (storageManagerPtr != nullptr) {
         storageManagerPtr->OnRemoteRequest(code % MAX_CALL_TRANSACTION, datas, reply, option);
+    } else {
+        return false;
     }
 
     return true;

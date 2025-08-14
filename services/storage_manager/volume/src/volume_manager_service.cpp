@@ -170,7 +170,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
             return result;
         }
     }
-    
+
     result = sdCommunication->Mount(volumeId, 0);
     if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -215,11 +215,11 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    volumePtr->SetState(VolumeState::EJECTING);
     if (sdCommunication == nullptr) {
         LOGE("sdCommunication is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
+    volumePtr->SetState(VolumeState::EJECTING);
     int32_t result = sdCommunication->Unmount(volumeId);
     if (result == E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);

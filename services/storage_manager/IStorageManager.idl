@@ -100,8 +100,8 @@ interface OHOS.StorageManager.IStorageManager {
                                      [out] String[] outputList, [out] boolean isOccupy);
     [ipccode 63] void ResetSecretWithRecoveryKey([in] unsigned int userId, [in] unsigned int rkType,
                                                  [in] unsigned char[] key);
-    [ipccode 64] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
-    [ipccode 65] void UMountDisShareFile([in] int userId, [in] String networkId);
+    [ipccode 65] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
+    [ipccode 66] void UMountDisShareFile([in] int userId, [in] String networkId);
     [ipccode 67] void NotifyVolumeDamaged([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
                                           [in] String path, [in] String description);
     [ipccode 68] void TryToFix([in] String volumeId);
@@ -109,4 +109,3 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 72] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
     [ipccode 73] void UnregisterUeceActivationCallback();
 }
-

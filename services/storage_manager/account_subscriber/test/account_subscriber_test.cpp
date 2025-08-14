@@ -61,7 +61,7 @@ void AccountSubscriberTest::TearDown()
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_Subscriber_0000
 * @tc.name: Account_Subscriber_Subscriber_0000
-* @tc.desc: Test function of Subscriber interface for SUCCESS.
+* @tc.desc: Test function of Subscriber
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -70,9 +70,7 @@ void AccountSubscriberTest::TearDown()
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000-begin";
-    //accountSubscriber_ == nullptr
     AccountSubscriber::Subscriber();
-    //accountSubscriber_ != nullptr
     AccountSubscriber::Subscriber();
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000 end";
@@ -81,7 +79,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_test_0000, TestSiz
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_ResetUserEventRecord_0000
 * @tc.name: Account_Subscriber_ResetUserEventRecord_0000
-* @tc.desc: Test function of ResetUserEventRecord interface for SUCCESS.
+* @tc.desc: Test function of ResetUserEventRecord
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -91,12 +89,14 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_ResetUserEventRecord_test_000
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_ResetUserEventRecord_0000-begin";
 
-    int32_t userId = 99;
-    AccountSubscriber::ResetUserEventRecord(userId);
-    userId = 10737;
-    AccountSubscriber::ResetUserEventRecord(userId);
-    userId = 100;
-    AccountSubscriber::ResetUserEventRecord(userId);
+    int32_t userId = -1;
+    accountSubscriberPtr_->ResetUserEventRecord(userId);
+
+    userId = StorageService::MAX_USER_ID + 1;
+    accountSubscriberPtr_->ResetUserEventRecord(userId);
+
+    userId = 1;
+    accountSubscriberPtr_->ResetUserEventRecord(userId);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_ResetUserEventRecord_0000 end";
 }
@@ -104,7 +104,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_ResetUserEventRecord_test_000
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_OnReceiveEvent_test_0000
 * @tc.name: Account_Subscriber_OnReceiveEvent_0000
-* @tc.desc: Test function of OnReceiveEvent interface for SUCCESS.
+* @tc.desc: Test function of OnReceiveEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -134,7 +134,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnReceiveEvent_test_0000, Tes
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_GetUserStatus_test_0000
 * @tc.name: Account_Subscriber_GetUserStatus_0000
-* @tc.desc: Test function of GetUserStatus interface for SUCCESS.
+* @tc.desc: Test function of GetUserStatus
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -143,16 +143,21 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnReceiveEvent_test_0000, Tes
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_GetUserStatus_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_GetUserStatus_0000-begin";
+
     int32_t userId = 102;
     uint32_t ret = accountSubscriberPtr_->GetUserStatus(userId);
     EXPECT_TRUE(ret == 0);
+
+    accountSubscriberPtr_->userRecord_[userId] = 1;
+    ret = accountSubscriberPtr_->GetUserStatus(userId);
+    EXPECT_TRUE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_GetUserStatus_0000 end";
 }
 
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_HandleUserUnlockEvent_test_0000
 * @tc.name: Account_Subscriber_HandleUserUnlockEvent_0000
-* @tc.desc: Test function of HandleUserUnlockEvent interface for SUCCESS.
+* @tc.desc: Test function of HandleUserUnlockEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -170,7 +175,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_HandleUserUnlockEvent_test_0001
 * @tc.name: Account_Subscriber_HandleUserUnlockEvent_0001
-* @tc.desc: Test function of HandleUserUnlockEvent interface for SUCCESS.
+* @tc.desc: Test function of HandleUserUnlockEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -188,7 +193,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_HandleUserUnlockEvent_test_0002
 * @tc.name: Account_Subscriber_HandleUserUnlockEvent_0002
-* @tc.desc: Test function of HandleUserUnlockEvent interface for SUCCESS.
+* @tc.desc: Test function of HandleUserUnlockEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -206,7 +211,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_HandleUserSwitchedEvent_test_0000
 * @tc.name: Account_Subscriber_HandleUserSwitchedEvent_test_0000
-* @tc.desc: Test function of HandleUserSwitchedEvent interface for SUCCESS.
+* @tc.desc: Test function of HandleUserSwitchedEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -224,7 +229,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_HandleUserSwitchedEvent_test_0001
 * @tc.name: Account_Subscriber_HandleUserSwitchedEvent_test_0001
-* @tc.desc: Test function of HandleUserSwitchedEvent interface for SUCCESS.
+* @tc.desc: Test function of HandleUserSwitchedEvent
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -242,7 +247,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_GetSystemAbility_test_0000
 * @tc.name: Account_Subscriber_GetSystemAbility_test_0000
-* @tc.desc: Test function of GetSystemAbility interface for SUCCESS.
+* @tc.desc: Test function of GetSystemAbility
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -255,6 +260,5 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_GetSystemAbility_test_0000, T
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_GetSystemAbility_test_0000 end";
 }
-
 }
 }
