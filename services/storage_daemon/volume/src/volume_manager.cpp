@@ -186,8 +186,8 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
         "default_permissions,"
         "allow_other,"
         "user_id=0,group_id=0,"
-        "context=\"u:object_r:hmdfs:s0\","
-        "fscontext=u:object_r:hmdfs:s0",
+        "context=\"u:object_r:mnt_external_file:s0\","
+        "fscontext=u:object_r:mnt_external_file:s0",
         fuseFd);
  
     int ret = StorageDaemon::Mount("/dev/fuse", mountUsbFusePath_.c_str(),
