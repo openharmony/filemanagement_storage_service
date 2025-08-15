@@ -421,6 +421,10 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
+
+    if (IsFilePathInvalid(diskPath)) {
+        return E_PARAMS_INVALID;
+    }
     isInUse = true;
     return StorageManager::GetInstance().QueryUsbIsInUse(diskPath, isInUse);
 }
@@ -504,6 +508,23 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     return StorageManager::GetInstance().LockUserScreen(userId);
 }
 
+bool StorageManagerProvider::IsFilePathInvalid(const std::string &filePath)
+{
+    size_t pos = filePath.find(PATH_INVALID_FLAG1);
+    while (pos != std::string::npos) {
+        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
+            LOGE("Relative path is not allowed, path contain ../");
+            return true;
+        }
+        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    }
+    pos = filePath.rfind(PATH_INVALID_FLAG2);
+    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
+        LOGE("Relative path is not allowed, path tail is /..");
+        return true;
+    }
+    return false;
+}
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -745,6 +766,10 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
+
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
     fuseFd = -1;
     return StorageManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
 }
@@ -753,6 +778,10 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
+    }
+
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
     }
     return StorageManager::GetInstance().UMountFileMgrFuse(userId, path);
 }
@@ -764,6 +793,10 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
+    }
+
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
     }
     isOccupy = false;
     return StorageManager::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
