@@ -824,7 +824,7 @@ int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &
 
 bool MountManager::IsSysMountPoint(int32_t userId, std::string &path)
 {
-    int count = static_cast<int>(SYS_PATH.size());
+    auto count = static_cast<int32_t>(SYS_PATH.size());
     for (int i = 0; i < count; i++) {
         std::string tempPath = SYS_PATH[i];
         ParseSandboxPath(tempPath, to_string(userId), "");
@@ -922,9 +922,9 @@ int32_t MountManager::CloudUMount(int32_t userId)
 {
 #ifdef DFS_SERVICE
     int32_t err = E_OK;
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string cloudFusePath = cloudMntArgs.GetFullCloud();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     err = UMount2(cloudFusePath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud fuse umount failed, errno is %{public}d.", errno);
@@ -1112,9 +1112,9 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
 int32_t MountManager::LocalUMount(int32_t userId)
 {
     int res = E_OK;
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
     std::string path = LocalMntArgs.GetCommFullPath() + "local/";
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
@@ -1417,21 +1417,12 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-            GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
+        LOGE("MountDfsDocs mount bind failed, errno is %{public}d", errno);
         return E_USER_MOUNT_ERR;
     }
     auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: MOUNT: MOUNT_DFS_DOCS, delayTime = %{public}s", delay.c_str());
-    if (IsReadOnlyRemount()) {
-        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_BIND | MS_REMOUNT | MS_RDONLY, nullptr);
-        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-            LOGE("MountDfsDocs readonly mount failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-                GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
-            return E_USER_MOUNT_ERR;
-        }
-    }
     return E_OK;
 }
 
@@ -1446,7 +1437,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
         return E_PARAMS_INVALID;
     }
 
-    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, GetAnonyString(deviceId).c_str());
+    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
     sync();
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = UMount2(dstPath, MNT_FORCE);
@@ -1865,9 +1856,9 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     int32_t err = E_OK;
     LOGI("start umount media fuse");
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = mediaMntArgs.GetFullMediaFuse();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("media fuse umount failed, errno %{public}d", errno);

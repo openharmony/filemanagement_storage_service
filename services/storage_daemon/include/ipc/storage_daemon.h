@@ -88,7 +88,6 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
-
 private:
     StorageDaemon() = default;
     ~StorageDaemon() = default;

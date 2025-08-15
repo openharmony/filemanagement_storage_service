@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include "iuece_activation_callback.h"
+
 namespace OHOS {
 namespace StorageManager {
 class FileSystemCrypto final : public NoCopyable {

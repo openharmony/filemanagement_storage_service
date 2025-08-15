@@ -297,7 +297,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
     uint32_t tokenId = 100;
     uint32_t flag = 3;
     StorageFileRawData uriList;
-    uriList.ownedData= "testcreatefile";
+    uriList.ownedData = "testcreatefile";
     uriList.size = uriList.ownedData.size();
     uriList.data = uriList.ownedData.data();
     std::vector<int32_t> result = sdCommunication->CreateShareFile(uriList, tokenId, flag);
@@ -323,7 +323,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
     ASSERT_TRUE(sdCommunication != nullptr);
 
     StorageFileRawData uriList;
-    uriList.ownedData= "testcreatefile";
+    uriList.ownedData = "testcreatefile";
     uriList.size = uriList.ownedData.size();
     uriList.data = uriList.ownedData.data();
     uint32_t tokenId = 100;

@@ -57,7 +57,7 @@ public:
     int32_t Unmount(const std::string &volumeId);
 
     int32_t TryToFix(const std::string &volumeId);
- 
+
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol);
 
     int32_t NotifyDiskCreated(const Disk& disk);

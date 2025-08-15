@@ -465,7 +465,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_001, TestSize.Level1)
             "/dev/block/",
     };
     std::vector<std::string> output;
-    EXPECT_EQ(ForkExec(cmd, &output), 0);
+    EXPECT_EQ(ForkExec(cmd, &output), E_OK);
     GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_001 end";
 }
 
@@ -488,7 +488,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RedirectStdToPipe_001, TestSize.Level1)
     res = RedirectStdToPipe(logpipe, len);
     EXPECT_EQ(res, E_ERR);
 
-    len = 2;
+    len = sizeof(logpipe);
     res = RedirectStdToPipe(logpipe, len);
     EXPECT_EQ(res, E_ERR);
     GTEST_LOG_(INFO) << "FileUtilsTest_RedirectStdToPipe_001 end";

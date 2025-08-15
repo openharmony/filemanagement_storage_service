@@ -289,8 +289,7 @@ public:
         return E_OK;
     }
 
-    std::vector<int32_t> CreateShareFile(const StorageFileRawData &uriList,
-        uint32_t tokenId, uint32_t flag) override
+    std::vector<int32_t> CreateShareFile(const StorageFileRawData &uriList, uint32_t tokenId, uint32_t flag) override
     {
         return std::vector<int32_t>{E_OK};
     }
@@ -309,10 +308,12 @@ public:
     {
         return E_OK;
     }
+
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override
     {
         return E_OK;
     }
+
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override
     {
