@@ -205,18 +205,6 @@ bool HandleSetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool HandleGenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageDaemon->HandleGenerateUserKeys(datas, reply);
-    return true;
-}
-
 bool HandleDeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -444,7 +432,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleQueryUsbIsInUseFuzzTest(data, size);
     OHOS::HandleFormatFuzzTest(data, size);
     OHOS::HandleSetBundleQuotaFuzzTest(data, size);
-    OHOS::HandleGenerateUserKeysFuzzTest(data, size);
     OHOS::HandleDeleteUserKeysFuzzTest(data, size);
     OHOS::HandleUpdateUserAuthFuzzTest(data, size);
     OHOS::HandleActiveUserKeyFuzzTest(data, size);

@@ -256,24 +256,6 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
     return client->InitGlobalUserKeys();
 }
 
-int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    LOGI("StorageDaemonClient::GenerateUserKeys, userId: %{public}u, flags:%{public}u", userId, flags);
-    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
-    if (status != E_OK) {
-        LOGE("service check failed");
-        return status;
-    }
-
-    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
-    if (client == nullptr) {
-        LOGE("get storage daemon service failed");
-        return E_SA_IS_NULLPTR;
-    }
-
-    return client->GenerateUserKeys(userId, flags);
-}
-
 int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
 {
     LOGI("StorageDaemonClient::DeleteUserKeys, userId: %{public}u", userId);

@@ -469,16 +469,6 @@ int32_t StorageManager::GetDiskById(const std::string &diskId, Disk &disk)
 #endif
 }
 
-int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-#ifdef USER_CRYPTO_MANAGER
-    LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
-    return FileSystemCrypto::GetInstance().GenerateUserKeys(userId, flags);
-#else
-    return E_OK;
-#endif
-}
-
 int32_t StorageManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER

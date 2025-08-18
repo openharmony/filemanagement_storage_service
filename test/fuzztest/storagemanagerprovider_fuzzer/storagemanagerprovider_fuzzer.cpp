@@ -220,20 +220,6 @@ bool FormatFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_USER_KEYS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_DELETE_USER_KEYS);
@@ -905,7 +891,6 @@ void FuzzerTest1(const uint8_t *data, size_t size)
     OHOS::StorageManager::UnmountFuzzTest(data, size);
     OHOS::StorageManager::PartitionFuzzTest(data, size);
     OHOS::StorageManager::FormatFuzzTest(data, size);
-    OHOS::StorageManager::GenerateUserKeysFuzzTest(data, size);
     OHOS::StorageManager::DeleteUserKeysFuzzTest(data, size);
     OHOS::StorageManager::UpdateUserAuthFuzzTest(data, size);
     OHOS::StorageManager::ActiveUserKeyFuzzTest(data, size);

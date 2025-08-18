@@ -585,6 +585,20 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateESecret_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: KeyManager_UpdateClassEBackUpFix_001
+ * @tc.desc: Verify the KeyManager UpdateClassEBackUpFix function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateClassEBackUpFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateClassEBackUpFix_0100 start";
+    uint32_t userId = 100;
+    EXPECT_EQ(KeyManager::GetInstance().UpdateClassEBackUpFix(userId), E_NON_EXIST);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateClassEBackUpFix_0100 end";
+}
+
+/**
  * @tc.name: KeyManager_UpdateClassEBackUp_001
  * @tc.desc: Verify the KeyManager UpdateClassEBackUp function.
  * @tc.type: FUNC
@@ -729,7 +743,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext_002, TestSize.Level1)
 HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContext_003 Start";
- 
+
     std::ofstream file(UECE_PATH);
     EXPECT_TRUE(KeyManager::GetInstance().IsUeceSupport());
 

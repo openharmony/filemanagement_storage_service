@@ -44,7 +44,6 @@ public:
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
     // fscrypt api
-    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     int32_t DeleteUserKeys(uint32_t userId);
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,

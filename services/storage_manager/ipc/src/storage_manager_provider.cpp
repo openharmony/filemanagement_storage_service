@@ -408,14 +408,6 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     return StorageManager::GetInstance().GetDiskById(diskId, disk);
 }
 
-int32_t StorageManagerProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-    return StorageManager::GetInstance().GenerateUserKeys(userId, flags);
-}
-
 int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {

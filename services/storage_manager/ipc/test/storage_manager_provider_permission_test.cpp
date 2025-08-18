@@ -584,23 +584,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_002,
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_GenerateUserKeys_002
- * @tc.desc: Verify the GenerateUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateUserKeys_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateUserKeys_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = 1012;
-    uint32_t flags = 0x01;
-    auto ret = storageManagerProviderTest_->GenerateUserKeys(userId, flags);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateUserKeys_002 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_QueryUsbIsInUse_002
  * @tc.desc: Verify the QueryUsbIsInUse function.
  * @tc.type: FUNC
