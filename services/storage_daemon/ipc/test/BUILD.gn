@@ -93,7 +93,6 @@ ohos_unittest("storage_daemon_test") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "dfs_service:cloud_daemon_kit_inner",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -108,6 +107,11 @@ ohos_unittest("storage_daemon_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+
+  if (storage_service_cloud_fuse) {
+    defines += [ "DFS_SERVICE" ]
+    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
 
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
@@ -249,7 +253,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "dfs_service:cloud_daemon_kit_inner",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -264,6 +267,12 @@ ohos_unittest("storage_daemon_provider_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy"
   ]
+
+  if (storage_service_cloud_fuse) {
+    defines += [ "DFS_SERVICE" ]
+    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
+
   cflags_cc = [ "--coverage" ]
   ldflags = [ "--coverage" ]
 
