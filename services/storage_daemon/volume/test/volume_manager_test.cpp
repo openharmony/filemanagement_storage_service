@@ -580,6 +580,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_00
     bool isInUse = false;
     int32_t result = VolumeManager::Instance().QueryUsbIsInUse(diskPath, isInUse);
     EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_TRUE(isInUse);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002 end";
 }

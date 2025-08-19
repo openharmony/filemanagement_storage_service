@@ -200,20 +200,6 @@ bool SetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_GENERATE_USER_KEYS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_USER_KEYS);
@@ -458,7 +444,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::QueryUsbIsInUseFuzzTest(data, size);
     OHOS::FormatFuzzTest(data, size);
     OHOS::SetBundleQuotaFuzzTest(data, size);
-    OHOS::GenerateUserKeysFuzzTest(data, size);
     OHOS::DeleteUserKeysFuzzTest(data, size);
     OHOS::UpdateUserAuthFuzzTest(data, size);
     OHOS::ActiveUserKeyFuzzTest(data, size);

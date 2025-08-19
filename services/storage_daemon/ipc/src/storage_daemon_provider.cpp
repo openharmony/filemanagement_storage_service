@@ -416,14 +416,6 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
     return err;
 }
 
-int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
-    int err = StorageDaemon::GetInstance().GenerateUserKeys(userId, flags);
-    StorageXCollie::CancelTimer(timerId);
-    return err;
-}
-
 int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
 {
     int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);

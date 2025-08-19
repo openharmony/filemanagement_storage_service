@@ -1424,6 +1424,7 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 bool MtpFileSystem::IsCurrentUserReadOnly()
 {
     LOGI("IsCurrentUserReadOnly start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
     auto item = mtpClientWriteMap_.find(currentUid);
     if (item != mtpClientWriteMap_.end()) {
         if (item->second) {

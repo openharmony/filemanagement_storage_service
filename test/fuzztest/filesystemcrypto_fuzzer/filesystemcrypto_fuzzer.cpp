@@ -33,24 +33,6 @@ T TypeCast(const uint8_t *data, int *pos = nullptr)
 
 auto &fileSystem = FileSystemCrypto::GetInstance();
 
-bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size <= sizeof(uint32_t) + sizeof(uint32_t)) {
-        return false;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint32_t flags = TypeCast<uint32_t>(data + pos);
-
-    int32_t result = fileSystem.GenerateUserKeys(userId, flags);
-    if (result != E_OK) {
-        LOGI("file system crypto fuzz test of interface FileSystemCrypto::GenerateUserKeysTest failed!");
-        return false;
-    }
-    return true;
-}
-
 bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
     if (data == nullptr || size <= sizeof(uint32_t)) {
@@ -239,7 +221,6 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::StorageManager::GenerateUserKeysFuzzTest(data, size);
     OHOS::StorageManager::DeleteUserKeysFuzzTest(data, size);
     OHOS::StorageManager::UpdateUserAuthFuzzTest(data, size);
     OHOS::StorageManager::ActiveUserKeyFuzzTest(data, size);

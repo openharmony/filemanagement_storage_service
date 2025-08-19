@@ -153,16 +153,13 @@ bool CompleteAddUserFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const u
     return true;
 }
 
-bool GenerateUserKeysFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool DeleteUserKeysFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t)) {
+    if (data == nullptr || size < sizeof(uint32_t)) {
         return true;
     }
 
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint32_t flags = TypeCast<uint32_t>(data + pos, &pos);
-    proxy->GenerateUserKeys(userId, flags);
+    uint32_t userId = TypeCast<uint32_t>(data, nullptr);
     proxy->DeleteUserKeys(userId);
     return true;
 }
@@ -572,7 +569,7 @@ void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, cons
     StartUserFuzzTest(proxy, data, size);
     PrepareUserDirsFuzzTest(proxy, data, size);
     CompleteAddUserFuzzTest(proxy, data, size);
-    GenerateUserKeysFuzzTest(proxy, data, size);
+    DeleteUserKeysFuzzTest(proxy, data, size);
     UpdateUserAuthFuzzTest(proxy, data, size);
     UpdateUseAuthWithRecoveryKeyFuzzTest(proxy, data, size);
     ActiveUserKeyFuzzTest(proxy, data, size);

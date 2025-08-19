@@ -484,22 +484,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InitGlobalUserKeys
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_GenerateUserKeys_001
- * @tc.desc: Verify the GenerateUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateUserKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateUserKeys_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    uint32_t flags = 0x01;
-    int32_t ret = storageDaemonProviderTest_->GenerateUserKeys(StorageTest::USER_ID1, flags);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateUserKeys_001 end";
-}
-
-/**
  * @tc.name: StorageDaemonProviderTest_DeleteUserKeys_001
  * @tc.desc: Verify the DeleteUserKeys function.
  * @tc.type: FUNC

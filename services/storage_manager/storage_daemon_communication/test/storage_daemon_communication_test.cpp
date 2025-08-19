@@ -687,10 +687,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
     int32_t result = -1;
     int32_t userId = 107;
     if (sdCommunication != nullptr) {
-        int32_t flags = 3;
-        sdCommunication->DeleteUserKeys(userId);
-        result = sdCommunication->GenerateUserKeys(userId, flags);
-        EXPECT_EQ(result, E_OK);
         result = sdCommunication->DeleteUserKeys(userId);
     }
     EXPECT_EQ(result, E_OK);

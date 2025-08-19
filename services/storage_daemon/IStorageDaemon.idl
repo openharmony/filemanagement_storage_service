@@ -30,7 +30,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      // fscrypt api
      [ipccode 13] void InitGlobalKey();
      [ipccode 14] void InitGlobalUserKeys();
-     [ipccode 16] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
      [ipccode 17] void DeleteUserKeys([in] unsigned int userId);
      [ipccode 18] void UpdateUserAuth([in] unsigned int userId, [in] unsigned long secureUid,
           [in] unsigned char[] token,[in] unsigned char[] oldSecret,[in] unsigned char[] newSecret);
