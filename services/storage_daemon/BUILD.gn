@@ -156,6 +156,10 @@ ohos_executable("storage_daemon") {
     defines += [ "EXTERNAL_STORAGE_QOS_TRANS" ]
   }
 
+  if (is_emulator) {
+    defines += [ "ENABLE_EMULATOR" ]
+  }
+
   configs = [ ":storage_daemon_config" ]
 
   deps = [
