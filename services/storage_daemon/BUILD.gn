@@ -156,7 +156,7 @@ ohos_executable("storage_daemon") {
     defines += [ "EXTERNAL_STORAGE_QOS_TRANS" ]
   }
 
-  if (enable_emulator) {
+  if (is_emulator) {
     defines += [ "ENABLE_EMULATOR" ]
   }
 
