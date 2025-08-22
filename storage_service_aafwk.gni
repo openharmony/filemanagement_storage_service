@@ -41,6 +41,7 @@ declare_args() {
 
   enable_tee_client = !is_emulator
   enable_huks_hdi = !is_emulator
+  enable_emulator = is_emulator
 }
 
 storage_manager_path =
