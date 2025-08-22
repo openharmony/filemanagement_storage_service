@@ -117,7 +117,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
     LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
     struct dqblk dq;
-#indef ENABLE_EMULATOR
+#ifdef ENABLE_EMULATOR
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_INIT_QUOTA_MOUNTS_FAILED;
