@@ -133,13 +133,15 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
         LOGE("get size for emulator by quota success, size is %{public}s", std::to_string(size).c_str());
         return E_OK;
     }
+    LOGE("get size for emulator by quota failed, errno is %{public}d", errno);
+    return E_QUOTA_CTL_KERNEL_ERR;
 #endif
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) == 0) {
         size = static_cast<int64_t>(dq.dqb_curspace);
         LOGE("get size by quota success, size is %{public}s", std::to_string(size).c_str());
         return E_OK;
     }
-    LOGE("Failed to get quotactl, errno : %{public}d", errno);
+    LOGE("get size by quota failed, errno is %{public}d", errno);
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
