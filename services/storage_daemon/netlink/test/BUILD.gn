@@ -66,7 +66,11 @@ ohos_unittest("netlink_handler_test") {
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
-  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
+  defines = [ 
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+    "protected = public",
+  ]
 
   include_dirs = [
     "$ROOT_DIR/common/include",

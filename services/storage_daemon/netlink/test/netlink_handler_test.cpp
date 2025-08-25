@@ -25,6 +25,17 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
+namespace {
+    std::string g_getParameter;
+}
+
+namespace OHOS::system {
+std::string GetParameter(const std::string& key, const std::string& def)
+{
+    return g_getParameter;
+}
+} // OHOS::system
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
@@ -86,6 +97,31 @@ HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_Start_Stop_001, TestSize.Level1)
     (void)close(socket);
 
     GTEST_LOG_(INFO) << "NetlinkHandlerTest_Start_Stop_001 end";
+}
+
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_Handler_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Handler_001 begin";
+
+    int32_t socket = 0;
+    std::shared_ptr<NetlinkHandler> netlinkHandler = std::make_shared<NetlinkHandler>(socket);
+    char msg[] = "ACTION=offline\0SUBSYSTEM=block\0SYSNAME=sda\0DEVNAME=/dev/sda1\0\0";
+    g_getParameter = "true";
+
+    netlinkHandler->OnEvent(msg);
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Handler_001 end";
+}
+
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_Handler_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Handler_002 begin";
+    int32_t socket = 0;
+    std::shared_ptr<NetlinkHandler> netlinkHandler = std::make_shared<NetlinkHandler>(socket);
+    char msg[] = "ACTION=offline\0SUBSYSTEM=block\0SYSNAME=sda\0DEVNAME=/dev/sda1\0\0";
+    g_getParameter = "false";
+
+    netlinkHandler->OnEvent(msg);
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Handler_002 end";
 }
 
 int32_t StartSocket(int32_t& socketFd)
