@@ -116,11 +116,13 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
     mode_t mode = 0777;
     const char *fsType = "hmfs";
     auto mountData = StringPrintf("context=u:object_r:mnt_external_file:s0");
-    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountData.c_str());
     if (!ret) {
+        LOGE("mount hmfs failed, mount flag is %{public}d.", mountFlags);
         TravelChmod(mountPath_, mode);
         StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
     }
+
     return ret;
 }
 

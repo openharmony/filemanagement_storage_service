@@ -41,7 +41,9 @@ constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
+#ifndef ENABLE_EMULATOR
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
+#endif
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
@@ -134,14 +136,14 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
         return E_OK;
     }
     LOGE("get size for emulator by quota failed, errno is %{public}d", errno);
-    return E_QUOTA_CTL_KERNEL_ERR;
-#endif
+#else
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) == 0) {
         size = static_cast<int64_t>(dq.dqb_curspace);
         LOGE("get size by quota success, size is %{public}s", std::to_string(size).c_str());
         return E_OK;
     }
     LOGE("get size by quota failed, errno is %{public}d", errno);
+#endif
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
