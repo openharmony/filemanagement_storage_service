@@ -46,6 +46,7 @@ using namespace OHOS::FileManagement::CloudFile;
 using namespace OHOS::StorageService;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
+constexpr int32_t ERROR_FILE_NOT_FOUND = 22;
 
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
     systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
@@ -1440,8 +1441,8 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
     sync();
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int32_t ret = UMount2(dstPath, MNT_FORCE);
-    if (ret != E_OK) {
+    int32_t ret = UMount2(dstPath, MNT_DETACH);
+    if (ret != E_OK && errno != ERROR_FILE_NOT_FOUND) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
         return E_USER_UMOUNT_ERR;

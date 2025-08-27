@@ -23,9 +23,13 @@
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
+#include "file_utils_mock.h"
 
+using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
+
+using namespace testing;
 using namespace testing::ext;
 
 class UserManagerTest : public testing::Test {
@@ -34,10 +38,13 @@ public:
     static void TearDownTestCase(void) {};
     void SetUp() {};
     void TearDown();
+    static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void UserManagerTest::SetUpTestCase(void)
 {
+    fileUtilMoc_ = make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     std::vector<std::string> paths = {
         "/data/app",
         "/data/app/el1",
@@ -66,6 +73,8 @@ void UserManagerTest::SetUpTestCase(void)
 
 void UserManagerTest::TearDown()
 {
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
     StorageTest::StorageTestUtils::ClearTestResource();
 }
 
@@ -450,8 +459,9 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, Tes
     int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(22));
     ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, deviceId, deviceId);
-    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
+    EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
 }
 

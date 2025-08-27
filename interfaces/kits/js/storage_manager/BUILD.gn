@@ -118,6 +118,14 @@ ohos_shared_library("volumemanager") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+  if (storage_service_dfs_filemanager) {
+    defines += [ "HMDFS_FILE_MANAGER" ]
+    sources += [
+      "${storage_service_path}/services/storage_manager/kits_impl/src/napi_module_dfs_listener.cpp",
+      "${storage_service_path}/services/storage_manager/kits_impl/src/napi_module_dfs_service.cpp",
+    ]
+    external_deps += [ "dfs_service:distributed_file_daemon_kit_inner" ]
+  }
 }
 
 ohos_shared_library("keymanager") {
