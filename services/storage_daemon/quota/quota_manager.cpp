@@ -41,12 +41,10 @@ constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
-#ifndef ENABLE_EMULATOR
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
-#endif
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
+constexpr int32_t ONE_HUNDRED_M_BYTE = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -58,15 +56,25 @@ static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
 struct NextDqBlk {
+    /* Absolute limit on disk quota blocks alloc */
     uint64_t dqbHardLimit;
+    /* Preferred limit on disk quota blocks */
     uint64_t dqbBSoftLimit;
+    /* Current occupied space(in bytes) */
     uint64_t dqbCurSpace;
+    /* Maximum number of allocated inodes */
     uint64_t dqbIHardLimit;
+    /* Preferred inode limit */
     uint64_t dqbISoftLimit;
+    /* Current number of allocated inodes */
     uint64_t dqbCurInodes;
+    /* Time limit for excessive disk use */
     uint64_t dqbBTime;
+    /* Time limit for excessive files */
     uint64_t dqbITime;
+    /* Bit mask of QIF_* constants */
     uint32_t dqbValid;
+    /* the  next  ID  greater than or equal to id that has a quota set */
     uint32_t dqbId;
 };
 
@@ -168,7 +176,7 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
     std::ostringstream extraData;
     extraData << storageStatus <<std::endl;
     for (const auto& info : vec) {
-        if (info.size < ONE_HUNDRED_M_BIT) {
+        if (info.size < ONE_HUNDRED_M_BYTE) {
             continue;
         }
         extraData << "{uid:" << info.uid
@@ -314,7 +322,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
         usleep(ONE_MS);
     }
     for (const auto &pair : userAppSizeMap) {
-        UidSaInfo info = {pair.first, "", pair.second};
+        UidSaInfo info = {pair.first, "userId", pair.second};
         vec.push_back(info);
     }
     LOGI("GetOccupiedSpaceForUidList end!");
