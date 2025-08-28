@@ -151,10 +151,10 @@ std::string StorageMonitorService::GetMemoryAlertCleanupParams()
     char tmpBuffer[MEMORY_PARAMS_PATH_LEN] = {0};
     uint32_t tmpLen = MEMORY_PARAMS_PATH_LEN;
     
-    if (SystemGetParameter("memory.alert.cleanup", tmpBuffer, &tmpLen) == 0) {
+    if (SystemGetParameter("const.storageservice.memory.alert.cleanup", tmpBuffer, &tmpLen) == 0) {
         memoryParams = tmpBuffer;
     } else {
-        LOGE("Failed to read memory.alert.cleanup, using default");
+        LOGE("Failed to read const.storageservice.memory.alert.cleanup, using default");
         memoryParams = DEFAULT_PARAMS;
     }
     
