@@ -17,6 +17,8 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fstream>
+#include <filesystem>
 
 #include "gtest/gtest.h"
 #include "common/help_utils.h"
@@ -185,6 +187,65 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
     EXPECT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR) == false);
 
     GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_PrepareDirSimple_001
+ * @tc.desc: Verify the PrepareDirSimple function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDirSimple_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDirSimple_001 start";
+
+    std::string path = "/data/testDir";
+    mode_t mode = 0771;
+    uid_t uid = 0;
+    gid_t gid = 0;
+
+    int32_t ret = PrepareDirSimple(path + "/testDir", mode, uid, gid);
+    EXPECT_NE(ret, E_OK);
+
+    ret = PrepareDirSimple(path, mode, uid, gid);
+    EXPECT_EQ(ret, E_OK);
+    bool isPathEmpty = true;
+    DestroyDir(path, isPathEmpty);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDirSimple_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DestroyDir_001
+ * @tc.desc: Verify the DestroyDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DestroyDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DestroyDir_001 start";
+    bool isPathEmpty = true;
+    std::string path = "/data/testDir";
+    mode_t mode = 0771;
+
+    int32_t ret = DestroyDir(path + "/testDir", isPathEmpty);
+    EXPECT_EQ(ret, E_OK);
+
+    std::ofstream file("/data/testFile.txt");
+    file.close();
+    
+    ret = DestroyDir("/data/testFile.txt", isPathEmpty);
+    EXPECT_EQ(ret, E_OPENDIR_ERROR);
+    std::filesystem::remove("/data/testFile.txt");
+
+    PrepareDirSimple(path, mode, 0, 0);
+    PrepareDirSimple(path + "/testDir", mode, 0, 0);
+    std::ofstream file2(path + "/testDir/testFile.txt");
+    file2.close();
+    ret = DestroyDir(path, isPathEmpty);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_DestroyDir_001 end";
 }
 
 /**

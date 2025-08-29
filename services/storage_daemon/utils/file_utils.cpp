@@ -44,6 +44,10 @@ constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+const std::string PATH_INVALID_FLAG1 = "../";
+const std::string PATH_INVALID_FLAG2 = "/..";
+const uint32_t PATH_INVALID_FLAG_LEN = 3;
+const char FILE_SEPARATOR_CHAR = '/';
 
 int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
@@ -148,6 +152,79 @@ bool MkDirRecurse(const std::string& path, mode_t mode)
     } while (index != std::string::npos);
 
     return TEMP_FAILURE_RETRY(access(path.c_str(), F_OK)) == 0;
+}
+
+int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
+{
+    LOGD("rm dir %{public}s", path.c_str());
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        if (errno == ENOENT) {
+            return E_OK;
+        }
+
+        LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return E_OPENDIR_ERROR;
+    }
+
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if (ent->d_type == DT_DIR) {
+            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+                continue;
+            }
+            isPathEmpty = false;
+
+            bool inVailed = true;
+            auto ret = DestroyDir(path + "/" + ent->d_name, inVailed);
+            if (ret != E_OK) {
+                LOGE("failed to RmDirRecurse %{public}s, errno %{public}d", path.c_str(), errno);
+                (void)closedir(dir);
+                return ret;
+            }
+        } else {
+            isPathEmpty = false;
+            if (unlink((path + "/" + ent->d_name).c_str())) {
+                LOGE("failed to unlink file %{public}s, errno %{public}d", ent->d_name, errno);
+                (void)closedir(dir);
+                return E_UNLINK_ERROR;
+            }
+        }
+        
+    }
+
+    (void)closedir(dir);
+    if (rmdir(path.c_str())) {
+        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return E_RMDIR_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    LOGI("prepare for %{public}s", path.c_str());
+    if (MkDir(path, mode)) {
+        LOGE("failed to mkdir, errno %{public}d", errno);
+        return E_MKDIR_ERROR;
+    }
+    if (ChMod(path, mode)) {
+        LOGE("failed to chmod, errno %{public}d", errno);
+        return E_CHMOD_ERROR;
+    }
+    
+    if (ChOwn(path, uid, gid)) {
+        LOGE("failed to chown, errno %{public}d", errno);
+        return E_CHOWN_ERROR;
+    }
+
+#ifdef USE_LIBRESTORECON
+    auto ret = Restorecon(path.c_str());
+    if (ret != E_OK) {
+        LOGE("failed to RestoreconDir, errno %{public}d", errno); 
+    }
+    return ret;
+#endif
+    return E_OK;
 }
 
 // On success, true is returned.  On error, false is returned, and errno is set appropriately.
