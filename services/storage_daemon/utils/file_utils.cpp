@@ -185,7 +185,6 @@ int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
                 return E_UNLINK_ERROR;
             }
         }
-        
     }
 
     (void)closedir(dir);
@@ -216,7 +215,7 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
 #ifdef USE_LIBRESTORECON
     auto ret = Restorecon(path.c_str());
     if (ret != E_OK) {
-        LOGE("failed to RestoreconDir, errno %{public}d", errno); 
+        LOGE("failed to RestoreconDir, errno %{public}d", errno);
     }
     return ret;
 #endif

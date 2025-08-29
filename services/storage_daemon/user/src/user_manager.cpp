@@ -260,7 +260,7 @@ int32_t UserManager::CreateUserDir(const std::string &path, mode_t mode, uid_t u
     }
     std::string extraData = "path=" + path + ", mode=" + std::to_string(mode) +
         ", uid=" + std::to_string(uid) + ", gid=" + std::to_string(gid);
-    StorageRadar::ReportUserManager("CreateUserDir", 100, ret, extraData);
+    StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
     return ret;
 }
 
@@ -288,7 +288,7 @@ int32_t UserManager::DeleteUserDir(const std::string &path)
 
     std::string extraData = "path=" + path + ", isPathEmpty=" + std::to_string(isPathEmpty);
     LOGE("DeleteUserDir end, ret=%{public}d, %{public}s", ret, extraData.c_str());
-    StorageRadar::ReportUserManager("DeleteUserDir", 100, ret, extraData);
+    StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
     return ret;
 }
 

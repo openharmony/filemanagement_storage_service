@@ -873,7 +873,7 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("CreateUserDir", 100, ret, extraData);
+    StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
     return ret;
 }
 
@@ -900,7 +900,7 @@ int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
     LOGE("DeleteUserDir end, path: %{public}s, uid: %{public}d, ret: %{public}d", path.c_str(), callingUid, ret);
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("DeleteUserDir", 100, ret, extraData);
+    StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
     return ret;
 }
 } // namespace StorageManager
