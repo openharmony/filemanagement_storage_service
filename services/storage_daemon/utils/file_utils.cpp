@@ -44,10 +44,6 @@ constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
-const std::string PATH_INVALID_FLAG1 = "../";
-const std::string PATH_INVALID_FLAG2 = "/..";
-const uint32_t PATH_INVALID_FLAG_LEN = 3;
-const char FILE_SEPARATOR_CHAR = '/';
 
 int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
