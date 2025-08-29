@@ -156,7 +156,7 @@ int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
     DIR *dir = opendir(path.c_str());
     if (!dir) {
         if (errno == ENOENT) {
-            return E_OK;
+            return E_DELETE_USER_DIR_NOEXIST;
         }
 
         LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
@@ -199,6 +199,10 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
 {
     LOGI("prepare for %{public}s", path.c_str());
     if (MkDir(path, mode)) {
+        if (errno == EEXIST) {
+            LOGE("The path: %{public}s already exists.", path.c_str());
+            return E_CREATE_USER_DIR_EXIST;
+        }
         LOGE("failed to mkdir, errno %{public}d", errno);
         return E_MKDIR_ERROR;
     }

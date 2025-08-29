@@ -16,6 +16,8 @@
 #include "user/user_manager.h"
 #include "bundle_mgr_client.h"
 
+#include <sys/stat.h>
+
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -243,13 +245,8 @@ int32_t UserManager::CreateUserDir(const std::string &path, mode_t mode, uid_t u
     LOGI("CreateUserDir path: %{public}s, %{public}d, %{public}d, %{public}d", path.c_str(), mode, uid, gid);
     std::string prefix = "/data/virt_service/rgm_hmos/anco_hmos_data/";
     if (path.compare(0, prefix.size(), prefix) != 0) {
-        LOGE("the path: %{public}s is invaild", path.c_str());
+        LOGE("the path: %{public}s is invalid", path.c_str());
         return E_PARAMS_INVALID;
-    }
-
-    if (access(path.c_str(), F_OK) == 0) {
-        LOGE("The path: %{public}s already exists.", path.c_str());
-        return E_CREATE_USER_DIR_EXIST;
     }
 
     auto ret = PrepareDirSimple(path, mode, uid, gid);
@@ -269,17 +266,18 @@ int32_t UserManager::DeleteUserDir(const std::string &path)
     LOGE("DeleteUserDir path: %{public}s", path.c_str());
     std::string prefix = "/data/virt_service/rgm_hmos/anco_hmos_data/";
     if (path.compare(0, prefix.size(), prefix) != 0) {
-        LOGE("the path: %{public}s is invaild", path.c_str());
+        LOGE("the path: %{public}s is invalid", path.c_str());
         return E_PARAMS_INVALID;
     }
 
-    if (access(path.c_str(), F_OK) != 0) {
-        LOGE("The path: %{public}s is not exists.", path.c_str());
+    struct stat pathStat;
+    if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &pathStat)) != 0) {
+        LOGE("The path: %{public}s is not exists or cannot be accessed.", path.c_str());
         return E_DELETE_USER_DIR_NOEXIST;
     }
 
-    if (!IsDir(path)) {
-        LOGE("The path: %{public}s is not dir.", path.c_str());
+    if (!S_ISDIR(pathStat.st_mode)) {
+        LOGE("The path: %{public}s is not a directory.", path.c_str());
         return E_DELETE_USER_DIR_NOTDIR;
     }
 

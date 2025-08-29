@@ -548,15 +548,19 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateUserDir_001, Te
     int32_t ret = UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
-    path = "/data/virt_service/rgm_hmos/anco_hmos_data/testDir";
-    ret = UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+    path = "/data/virt_service/rgm_hmos/anco_hmos_data";
+    std::error_code errCode;
+    if (!std::filesystem::exists(path, errCode)) {
+        std::filesystem::create_directories(path, errCode);
+    }
+    
+    ret = UserManager::GetInstance().CreateUserDir(path + "/testDir", mode, uid, gid);
     EXPECT_EQ(ret, E_OK);
-    ret = UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+    ret = UserManager::GetInstance().CreateUserDir(path  + "/testDir", mode, uid, gid);
     EXPECT_EQ(ret, E_CREATE_USER_DIR_EXIST);
-    UserManager::GetInstance().DeleteUserDir(path);
+    UserManager::GetInstance().DeleteUserDir(path + "/testDir");
 
-    path = "/data/virt_service/rgm_hmos/anco_hmos_data/testDir/testDir/testDir";
-    ret = UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+    ret = UserManager::GetInstance().CreateUserDir(path + "/testDir/testDir/testDir", mode, uid, gid);
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateUserDir_001 end";
 }
