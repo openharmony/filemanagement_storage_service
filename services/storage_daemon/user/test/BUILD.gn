@@ -141,6 +141,7 @@ ohos_unittest("mount_manager_test") {
     "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
+    "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
 
