@@ -17,7 +17,6 @@
 
 #include "disk/disk_manager.h"
 #include "storage_service_log.h"
-#include "parameters.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -41,10 +40,6 @@ void NetlinkHandler::OnEvent(char *msg)
         LOGI("OnEvent GetSyspath: %{public}s, GetDevpath: %{public}s, GetSubsystem: %{public}s, GetAction: %{public}d",
             nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
             nlData->GetSubsystem().c_str(), nlData->GetAction());
-        if (system::GetParameter("persist.edm.external_storage_card_disable", "") == "true") {
-            LOGW("External Storage is prohibited!");
-            return;
-        }
         DiskManager::Instance().HandleDiskEvent(nlData.get());
     }
 }
