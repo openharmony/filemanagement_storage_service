@@ -126,6 +126,9 @@ public:
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus) override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
+    virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    virtual int32_t DeleteUserDir(const std::string &path) override;
+
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

@@ -57,6 +57,7 @@ constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
+constexpr pid_t AOCO_UID = 7558;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -848,6 +849,59 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance().UnregisterUeceActivationCallback();
+}
+
+int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+
+    auto callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != AOCO_UID) {
+        LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+
+    if (IsFilePathInvalid(path)) {
+        LOGE("The path: %{public}s is not invalid.", path.c_str());
+        return E_PARAMS_INVALID;
+    }
+
+    auto ret = MultiUserManagerService::GetInstance().CreateUserDir(path, mode, uid, gid);
+    LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
+
+    std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
+    StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
+    return ret;
+}
+
+int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+
+    auto callingUid = IPCSkeleton::GetCallingUid();
+    LOGE("DeleteUserDir begin, path: %{public}s, uid: %{public}d", path.c_str(), callingUid);
+    if (callingUid != AOCO_UID) {
+        LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+
+    if (IsFilePathInvalid(path)) {
+        LOGE("The path: %{public}s is not invalid.", path.c_str());
+        return E_PARAMS_INVALID;
+    }
+
+    auto ret = MultiUserManagerService::GetInstance().DeleteUserDir(path);
+    LOGE("DeleteUserDir end, path: %{public}s, uid: %{public}d, ret: %{public}d", path.c_str(), callingUid, ret);
+
+    std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
+    StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
+    return ret;
 }
 } // namespace StorageManager
 } // namespace OHOS

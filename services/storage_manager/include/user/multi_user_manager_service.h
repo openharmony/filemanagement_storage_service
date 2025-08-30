@@ -17,6 +17,8 @@
 #define OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
 
 #include <cstdint>
+#include <string>
+#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageManager {
@@ -32,6 +34,8 @@ public:
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
     int32_t CompleteAddUser(int32_t userId);
+    int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
+    int32_t DeleteUserDir(const std::string &path);
 
 private:
     MultiUserManagerService();

@@ -118,5 +118,21 @@ int32_t MultiUserManagerService::CompleteAddUser(int32_t userId)
     err = sdCommunication->CompleteAddUser(userId);
     return err;
 }
+
+int32_t MultiUserManagerService::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    LOGI("MultiUserManagerService start");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->CreateUserDir(path, mode, uid, gid);
+}
+
+int32_t MultiUserManagerService::DeleteUserDir(const std::string &path)
+{
+    LOGE("MultiUserManagerService start");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->DeleteUserDir(path);
+}
 } // StorageManager
 } // OHOS
