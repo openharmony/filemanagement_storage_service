@@ -45,7 +45,7 @@ ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid)
     return MakeVolume(volumeInfo->GetDescription(), volumeInfo->GetUuid());
 }
 
-taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync()
+taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 {
     auto volumeInfo = std::make_shared<std::vector<OHOS::StorageManager::VolumeExternal>>();
 
@@ -66,7 +66,7 @@ taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync()
     std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(),
                    [](auto &vol) { return MakeVolume(vol.GetDescription(), vol.GetUuid()); });
 
-    return result;
+    return taihe::array<ohos::file::volumeManager::Volume>(taihe::copy_data_t{}, result.data(), result.size());
 }
 } // namespace ANI::VolumeManager
 
