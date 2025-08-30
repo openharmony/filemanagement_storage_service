@@ -963,5 +963,34 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FilterNotMountedPa
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 end";
 }
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_FileBaseEncryptfsMount_001
+ * @tc.desc: Verify the HmdfsTwiceMount function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FileBaseEncryptfsMount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FileBaseEncryptfsMount_001 start";
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
+    auto ret = MountManager::GetInstance().FileBaseEncryptfsMount();
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().FileBaseEncryptfsMount();
+    EXPECT_EQ(ret, E_MOUNT_FBE);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().FileBaseEncryptfsMount();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FileBaseEncryptfsMount_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

@@ -46,6 +46,9 @@ using namespace OHOS::FileManagement::CloudFile;
 using namespace OHOS::StorageService;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
+const std::string FILE_BASE_ENCRYPT_SRC_PATH = "/mnt/data_old/service/el1/public/sec_storage_data/fbe3";
+const std::string FILE_BASE_ENCRYPT_DST_PATH = "/data/service/el1/public/sec_storage_data/fbe3";
+constexpr int32_t DEFAULT_REPAIR_USERID = 10736;
 
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
     systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
@@ -2097,6 +2100,19 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
         }
         CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
     }
+}
+
+int32_t MountManager::FileBaseEncryptfsMount() {
+    std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
+    std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
+    int32_t mountRes = BindMount(srcPath, dstPath);
+    if (mountRes!=E_OK) {
+        LOGE("failed to bind mount file based encrypt fs, err %{public}d", errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmdfsTwiceMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
+        return E_MOUNT_FBE;
+    }
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
