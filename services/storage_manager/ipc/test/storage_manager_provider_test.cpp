@@ -135,6 +135,24 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_001, Te
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    std::string dirPath = "/test";
+    uint32_t type = 2;
+    auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_CompleteAddUser_001
  * @tc.desc: Verify the CompleteAddUser function.
  * @tc.type: FUNC

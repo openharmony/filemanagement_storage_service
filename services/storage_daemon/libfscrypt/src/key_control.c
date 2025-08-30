@@ -81,12 +81,12 @@ long KeyCtrlUnlink(key_serial_t key, key_serial_t keyring)
     return syscall(__NR_keyctl, KEYCTL_UNLINK, key, keyring);
 }
 
-static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
+static int FsIoctl(const char *mnt, unsigned long cmd, void *arg)
 {
     char *realPath = realpath(mnt, NULL);
     if (realPath == NULL) {
         LOGE("realpath failed");
-        return false;
+        return FSCRYPT_INVALID_REALPATH;
     }
 
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
@@ -96,55 +96,57 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     }
     if (fd < 0) {
         LOGE("open %{public}s failed, errno:%{public}d", mnt, errno);
-        return false;
+        return FSCRYPT_INVALID_OPEN;
     }
     int ret = ioctl(fd, cmd, arg);
-    if (ret != 0 && cmd == FS_IOC_SET_ENCRYPTION_POLICY) {
-        RADAR_REPORT(mnt, "set policy failed! ", errno);
-    }
     if (ret != 0) {
-        LOGE("ioctl to %{public}s failed, errno:%{public}d", mnt, ret);
+        int errNo = errno;
+        if (cmd == FS_IOC_SET_ENCRYPTION_POLICY) {
+            RADAR_REPORT(mnt, "set policy failed! ", errno);
+        }
+        LOGE("FsIoctlWithError::ioctl to %{public}s failed, ret:%{public}d, errno:%{public}d, errNo:%{public}d",
+            mnt, ret, errno, errNo);
         (void)close(fd);
-        return false;
+        return errNo;
     }
     (void)close(fd);
     LOGI("success");
-    return true;
+    return 0;
 }
 
 #ifdef SUPPORT_FSCRYPT_V2
-bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg)
+int KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg)
 {
     LOGI("enter");
     return FsIoctl(mnt, FS_IOC_ADD_ENCRYPTION_KEY, (void *)(arg));
 }
 
-bool KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg)
+int KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg)
 {
     LOGI("enter");
     return FsIoctl(mnt, FS_IOC_REMOVE_ENCRYPTION_KEY, (void *)arg);
 }
 
-bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg)
+int KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg)
 {
     LOGI("enter");
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, (void *)(arg));
 }
 
-bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
+int KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
 {
     LOGI("enter");
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, (void *)(policy));
 }
 #endif
 
-bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy)
+int KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy)
 {
     LOGI("enter");
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, (void *)(policy));
 }
 
-bool KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy)
+int KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy)
 {
     LOGI("enter");
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, (void *)(policy));

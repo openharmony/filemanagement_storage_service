@@ -904,5 +904,20 @@ int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
     return E_OK;
 #endif
 }
+
+int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
+    const std::string &dirPath, uint32_t level)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);
+}
 } // namespace StorageManager
 } // namespace OHOS

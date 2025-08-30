@@ -107,14 +107,15 @@ long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *descriptio
 long KeyCtrlUnlink(key_serial_t key, key_serial_t keyring);
 
 #ifdef SUPPORT_FSCRYPT_V2
-bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg);
-bool KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg);
-bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg);
-bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy);
+int KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg);
+int KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg);
+int KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg);
+int KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy);
 #endif
 
-bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy);
-bool KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy);
+int KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy);
+int SetPolicyWithErrorCode(const char *path, union FscryptPolicy *policy);
+int KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy);
 
 uint8_t KeyCtrlGetFscryptVersion(const char *mnt);
 uint8_t KeyCtrlLoadVersion(const char *keyPath);

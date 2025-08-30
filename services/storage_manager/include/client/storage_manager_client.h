@@ -18,6 +18,7 @@
 
 #include "storage_manager_proxy.h"
 #include "iuece_activation_callback.h"
+#include "storage_service_constants.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -47,6 +48,8 @@ public:
     static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     static int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+    static int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+        StorageService::EncryptionLevel level);
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);

@@ -116,6 +116,7 @@ public:
     int32_t UnlockUserScreen(uint32_t userId,
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret) override;
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet = false) override;
     int32_t DeleteAppkey(const std::string &keyId) override;

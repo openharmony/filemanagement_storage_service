@@ -112,7 +112,8 @@
                   "disk.h",
                   "volume_core.h",
                   "volume_external.h",
-                  "storage_service_errno.h"
+                  "storage_service_errno.h",
+                  "storage_service_constants.h"
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
               }

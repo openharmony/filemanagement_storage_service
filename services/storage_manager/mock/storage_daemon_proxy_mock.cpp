@@ -101,6 +101,11 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;

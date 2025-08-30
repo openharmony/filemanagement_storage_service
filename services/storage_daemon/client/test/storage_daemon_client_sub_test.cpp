@@ -891,6 +891,40 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMount
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
 }
 
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001
+* @tc.desc: Verify the SetDirEncryptionPolicy function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001 start";
+    std::string dirPath = "/data/service/test";
+    uint32_t userId = 100;
+    uint32_t type = 2;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+       .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001 end";
+}
+
 /**
 * @tc.name: Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001
 * @tc.desc: Verify the GetFileEncryptStatus function.

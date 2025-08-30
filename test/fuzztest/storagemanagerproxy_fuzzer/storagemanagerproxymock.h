@@ -188,6 +188,17 @@ public:
         return E_OK;
     }
 
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+        StorageService::EncryptionLevel level) override
+    {
+        return E_OK;
+    }
+
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override
+    {
+        return E_OK;
+    }
+
     int32_t DeleteUserKeys(uint32_t userId) override
     {
         return E_OK;
