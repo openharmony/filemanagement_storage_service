@@ -46,8 +46,8 @@ using namespace OHOS::FileManagement::CloudFile;
 using namespace OHOS::StorageService;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
-const std::string FILE_BASE_ENCRYPT_SRC_PATH = "/mnt/data_old/service/el1/public/sec_storage_data/fbe3";
-const std::string FILE_BASE_ENCRYPT_DST_PATH = "/data/service/el1/public/sec_storage_data/fbe3";
+const std::string FILE_BASED_ENCRYPT_SRC_PATH = "/mnt/data_old/service/el1/public/sec_storage_data/fbe3";
+const std::string FILE_BASED_ENCRYPT_DST_PATH = "/data/service/el1/public/sec_storage_data/fbe3";
 constexpr int32_t DEFAULT_REPAIR_USERID = 10736;
 
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
