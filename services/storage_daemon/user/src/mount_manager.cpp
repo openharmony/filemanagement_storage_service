@@ -2102,7 +2102,8 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
     }
 }
 
-int32_t MountManager::FileBaseEncryptfsMount() {
+int32_t MountManager::FileBaseEncryptfsMount()
+{
     std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
     std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
     int32_t mountRes = BindMount(srcPath, dstPath);
