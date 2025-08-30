@@ -2109,7 +2109,7 @@ int32_t MountManager::FileBaseEncryptfsMount() {
     if (mountRes!=E_OK) {
         LOGE("failed to bind mount file based encrypt fs, err %{public}d", errno);
         std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
-        StorageRadar::ReportUserManager("HmdfsTwiceMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
+        StorageRadar::ReportUserManager("FileBaseEncryptfsMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
         return E_MOUNT_FBE;
     }
     return E_OK;
