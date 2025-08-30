@@ -271,11 +271,11 @@ uint64_t MtpFsDevice::StorageTotalSize() const
 
 uint64_t MtpFsDevice::StorageFreeSize() const
 {
-    uint64_t free = 0;
+    uint64_t freeSize = 0;
     for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
-        free += s->FreeSpaceInBytes;
+        freeSize += s->FreeSpaceInBytes;
     }
-    return free;
+    return freeSize;
 }
 
 bool MtpFsDevice::EnumStorages()

@@ -256,7 +256,6 @@ private:
     void FindProcForMulti(const std::string &pidPath, const std::string &path, std::set<std::string> &occupyFiles);
     bool CheckSymlinkForPath(const std::string &fdPath, const std::string &path, bool isDir);
     void CheckSymlinkForMulti(const std::string &fdPath, const std::string &path, std::set<std::string> &occupyFiles);
-    bool IsReadOnlyRemount();
     int32_t FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts);
     int32_t FilterNotMountedPath(std::map<std::string, std::string> &notMountPaths);
 

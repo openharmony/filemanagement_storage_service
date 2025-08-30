@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <directory_ex.h>
+
 #include <gtest/gtest.h>
 
 #include "istorage_daemon.h"

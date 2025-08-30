@@ -41,16 +41,32 @@ constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
+constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t FIVE_HUNDRED_M_BIT = 1024 * 1024 * 500;
+constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ONE_MS = 1000;
 constexpr int32_t ACCURACY_NUM = 2;
+constexpr int32_t MAX_UID_COUNT = 100000;
 static std::map<std::string, std::string> mQuotaReverseMounts;
+#define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
+
+struct NextDqBlk {
+    uint64_t dqbHardLimit;
+    uint64_t dqbBSoftLimit;
+    uint64_t dqbCurSpace;
+    uint64_t dqbIHardLimit;
+    uint64_t dqbISoftLimit;
+    uint64_t dqbCurInodes;
+    uint64_t dqbBTime;
+    uint64_t dqbITime;
+    uint32_t dqbValid;
+    uint32_t dqbId;
+};
 
 QuotaManager &QuotaManager::GetInstance()
 {
@@ -100,27 +116,33 @@ static std::string GetQuotaSrcMountPath(const std::string &target)
 static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
     LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
-    if (InitialiseQuotaMounts() != true) {
+    struct dqblk dq;
+#ifdef ENABLE_EMULATOR
+    if (!InitialiseQuotaMounts()) {
         LOGE("Failed to initialise quota mounts");
         return E_INIT_QUOTA_MOUNTS_FAILED;
     }
-
     std::string device = "";
     device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
         LOGE("skip when device no quotas present");
         return E_OK;
     }
-
-    struct dqblk dq;
-    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
-        LOGE("Failed to get quotactl, errno : %{public}d", errno);
-        return E_QUOTA_CTL_KERNEL_ERR;
+    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) == 0) {
+        size = static_cast<int64_t>(dq.dqb_curspace);
+        LOGE("get size for emulator by quota success, size is %{public}s", std::to_string(size).c_str());
+        return E_OK;
     }
-
-    size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForUid size:%{public}s", std::to_string(size).c_str());
-    return E_OK;
+    LOGE("get size for emulator by quota failed, errno is %{public}d", errno);
+    return E_QUOTA_CTL_KERNEL_ERR;
+#endif
+    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) == 0) {
+        size = static_cast<int64_t>(dq.dqb_curspace);
+        LOGE("get size by quota success, size is %{public}s", std::to_string(size).c_str());
+        return E_OK;
+    }
+    LOGE("get size by quota failed, errno is %{public}d", errno);
+    return E_QUOTA_CTL_KERNEL_ERR;
 }
 
 void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
@@ -144,7 +166,7 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
     std::ostringstream extraData;
     extraData << storageStatus <<std::endl;
     for (const auto& info : vec) {
-        if (info.size < FIVE_HUNDRED_M_BIT) {
+        if (info.size < ONE_HUNDRED_M_BIT) {
             continue;
         }
         extraData << "{uid:" << info.uid
@@ -249,29 +271,51 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
  
 int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec)
 {
-    LOGE("GetOccupiedSpaceForUidList begin!");
- 
-    if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
-        return E_SYS_KERNEL_ERR;
-    }
- 
-    std::string device = "";
-    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
-    if (device.empty()) {
-        LOGE("skip when device no quotas present");
-        return E_OK;
-    }
- 
-    for (struct UidSaInfo &info : vec) {
-        struct dqblk dq;
-        usleep(ONE_MS);
-        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), info.uid, reinterpret_cast<char*>(&dq)) != 0) {
-            LOGE("Failed to get quotactl, errno : %{public}d", errno);
-            continue;
+    LOGI("GetOccupiedSpaceForUidList begin!");
+    int32_t curUid = 0;
+    int32_t count = 0;
+    std::map<int32_t, int64_t> userAppSizeMap;
+    while (count < MAX_UID_COUNT) {
+        struct NextDqBlk dq;
+        if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
+            LOGE("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
+            break;
         }
-        info.size = static_cast<int64_t>(dq.dqb_curspace);
+        int32_t dqUid = static_cast<int32_t>(dq.dqbId);
+        for (struct UidSaInfo &info : vec) {
+            if (info.uid == dqUid) {
+                info.size = static_cast<int64_t>(dq.dqbCurSpace);
+                break;
+            }
+        }
+        if (dqUid >= StorageService::APP_UID) {
+            int32_t userId = dqUid / StorageService::USER_ID_BASE;
+            if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
+            } else {
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
+            }
+        }
+        if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
+            int32_t userId = StorageService::ZERO_USER;
+            if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
+                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
+            } else {
+                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
+            }
+        }
+        count++;
+        curUid = dqUid + 1;
+        if (curUid == 0) {
+            break;
+        }
+        usleep(ONE_MS);
     }
+    for (const auto &pair : userAppSizeMap) {
+        UidSaInfo info = {pair.first, "", pair.second};
+        vec.push_back(info);
+    }
+    LOGI("GetOccupiedSpaceForUidList end!");
     return E_OK;
 }
 

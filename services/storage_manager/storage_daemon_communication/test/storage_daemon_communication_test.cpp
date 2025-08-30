@@ -297,7 +297,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
     uint32_t tokenId = 100;
     uint32_t flag = 3;
     StorageFileRawData uriList;
-    uriList.ownedData= "testcreatefile";
+    uriList.ownedData = "testcreatefile";
     uriList.size = uriList.ownedData.size();
     uriList.data = uriList.ownedData.data();
     std::vector<int32_t> result = sdCommunication->CreateShareFile(uriList, tokenId, flag);
@@ -323,7 +323,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
     ASSERT_TRUE(sdCommunication != nullptr);
 
     StorageFileRawData uriList;
-    uriList.ownedData= "testcreatefile";
+    uriList.ownedData = "testcreatefile";
     uriList.size = uriList.ownedData.size();
     uriList.data = uriList.ownedData.data();
     uint32_t tokenId = 100;
@@ -687,10 +687,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
     int32_t result = -1;
     int32_t userId = 107;
     if (sdCommunication != nullptr) {
-        int32_t flags = 3;
-        sdCommunication->DeleteUserKeys(userId);
-        result = sdCommunication->GenerateUserKeys(userId, flags);
-        EXPECT_EQ(result, E_OK);
         result = sdCommunication->DeleteUserKeys(userId);
     }
     EXPECT_EQ(result, E_OK);

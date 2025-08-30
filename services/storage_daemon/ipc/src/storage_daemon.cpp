@@ -382,31 +382,6 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     return result;
 }
 
-int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-#ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance().GenerateUserKeys(userId, flags);
-    if (ret != E_OK) {
-        LOGE("GenerateUserKeys failed, please check");
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "GenerateUserKeys",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_GENERATE_USER_KEYS,
-            .keyElxLevel = "EL1",
-            .errorCode = ret
-        };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    return ret;
-#else
-    return E_OK;
-#endif
-}
-
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

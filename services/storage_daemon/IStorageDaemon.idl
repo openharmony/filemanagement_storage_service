@@ -30,7 +30,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      // fscrypt api
      [ipccode 13] void InitGlobalKey();
      [ipccode 14] void InitGlobalUserKeys();
-     [ipccode 16] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
      [ipccode 17] void DeleteUserKeys([in] unsigned int userId);
      [ipccode 18] void UpdateUserAuth([in] unsigned int userId, [in] unsigned long secureUid,
           [in] unsigned char[] token,[in] unsigned char[] oldSecret,[in] unsigned char[] newSecret);
@@ -77,8 +76,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                                   [in] unsigned char[] key);
      [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 47] void IsFileOccupied([in] String path, [in] String[] inputList,
                                       [out] String[] outputList, [out] boolean isOccupy);
-     [ipccode 48] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
-     [ipccode 49] void UMountDisShareFile([in] int userId, [in] String networkId);
+     [ipccode 49] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
+     [ipccode 50] void UMountDisShareFile([in] int userId, [in] String networkId);
      [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
      [ipccode 53] void QueryOccupiedSpaceForSa([in] String storageStatus);

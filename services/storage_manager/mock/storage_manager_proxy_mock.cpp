@@ -43,11 +43,6 @@ int32_t StorageManagerProxy::CompleteAddUser(int32_t userId)
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;

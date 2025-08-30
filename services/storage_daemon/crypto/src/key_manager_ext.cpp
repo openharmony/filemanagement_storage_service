@@ -280,7 +280,7 @@ int KeyManagerExt::DoDeleteUserKeys(uint32_t userId)
 
 int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t userId)
 {
-    LOGI("Upgrade policy, user:%{public}u", userId);
+    LOGI("Update public dir policy, user:%{public}u", userId);
     if (!IsServiceExtSoLoaded()) {
         LOGI("user key ext policy is disabled");
         return E_OK;
@@ -289,9 +289,13 @@ int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t userId)
         return E_OK;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    LOGI("Start upgrade user %{public}u policy", userId);
-    return service_->UpdateUserPublicDirPolicy(userId);
+    int ret = service_->UpdateUserPublicDirPolicy(userId);
+    if (ret != E_OK) {
+        LOGE("Update public dir policy failed, ret: %{public}d", ret);
+        return ret;
+    }
+    LOGI("Update public dir policy success");
+    return ret;
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS

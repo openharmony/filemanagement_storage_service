@@ -46,20 +46,6 @@ int32_t FileSystemCrypto::CheckUserIdRange(int32_t userId)
     return E_OK;
 }
 
-int32_t FileSystemCrypto::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("User ID out of range");
-        return err;
-    }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GenerateUserKeys(userId, flags);
-    return err;
-}
-
 int32_t FileSystemCrypto::DeleteUserKeys(uint32_t userId)
 {
     LOGI("UserId: %{public}u", userId);
@@ -321,10 +307,10 @@ int32_t FileSystemCrypto::InactiveUserPublicDirKey(uint32_t userId)
 
 int32_t FileSystemCrypto::UpdateUserPublicDirPolicy(uint32_t userId)
 {
-    LOGI("Upgrade policy userId: %{public}u", userId);
+    LOGI("Update policy userId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("Upgrade policy user ID out of range");
+        LOGE("User ID out of range");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;

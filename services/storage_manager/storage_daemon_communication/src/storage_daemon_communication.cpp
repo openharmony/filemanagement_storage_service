@@ -286,21 +286,6 @@ int32_t StorageDaemonCommunication::QueryUsbIsInUse(const std::string &diskPath,
     return storageDaemon_->QueryUsbIsInUse(diskPath, isInUse);
 }
 
-int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    LOGD("enter");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->GenerateUserKeys(userId, flags);
-}
-
 int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
 {
     LOGD("enter");

@@ -418,36 +418,6 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_InitGl
 }
 
 /**
-* @tc.name: Storage_Service_StorageDaemonClientTest_GenerateUserKeys_001
-* @tc.desc: Verify the GenerateUserKeys function.
-* @tc.type: FUNC
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GenerateUserKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateUserKeys_001 start";
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
-    auto ret = StorageDaemonClient::GenerateUserKeys(0, 0);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
-        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
-    ret = StorageDaemonClient::GenerateUserKeys(0, 0);
-    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
-        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, GenerateUserKeys(_, _)).WillOnce(Return(E_OK));
-    ret = StorageDaemonClient::GenerateUserKeys(0, 0);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateUserKeys_001 end";
-}
-
-/**
 * @tc.name: Storage_Service_StorageDaemonClientTest_DeleteUserKeys_001
 * @tc.desc: Verify the DeleteUserKeys function.
 * @tc.type: FUNC

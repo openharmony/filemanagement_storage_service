@@ -37,7 +37,6 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
         LOGE("data is nullptr");
         return;
     }
-    std::lock_guard<std::mutex> lock(lock_);
     std::string devType = data->GetParam("DEVTYPE");
     if (devType != "disk") {
         return;
@@ -81,6 +80,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
         LOGE("data is nullptr");
         return nullptr;
     }
+    std::lock_guard<std::mutex> lock(lock_);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
     unsigned int major = (unsigned int) std::atoi((data->GetParam("MAJOR")).c_str());
@@ -106,6 +106,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
+    std::lock_guard<std::mutex> lock(lock_);
     if (diskInfo == nullptr) {
         LOGE("diskInfo is nullptr");
         return;
@@ -121,11 +122,14 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 
 void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
 {
-    for (auto &diskInfo : disk_) {
-        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
-            diskInfo->ReadMetadata();
-            diskInfo->ReadPartition();
-            return;
+    {
+        std::lock_guard<std::mutex> lock(lock_);
+        for (auto &diskInfo : disk_) {
+            if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
+                diskInfo->ReadMetadata();
+                diskInfo->ReadPartition();
+                return;
+            }
         }
     }
     auto diskInfo = MatchConfig(data);
@@ -140,7 +144,7 @@ void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
 void DiskManager::DestroyDisk(dev_t device)
 {
     int ret;
-
+    std::lock_guard<std::mutex> lock(lock_);
     for (auto i = disk_.begin(); i != disk_.end();) {
         if (*i != nullptr && (*i)->GetDevice() == device) {
             ret = (*i)->Destroy();
@@ -161,18 +165,6 @@ void DiskManager::DestroyDisk(dev_t device)
     }
 }
 
-std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
-{
-    for (auto &diskInfo : disk_) {
-        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
-            return diskInfo;
-        }
-    }
-
-    LOGI("No disk found with the given device");
-    return nullptr;
-}
-
 void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)
 {
     std::lock_guard<std::mutex> lock(lock_);
@@ -189,7 +181,7 @@ void DiskManager::ReplayUevent()
 int32_t DiskManager::HandlePartition(std::string diskId)
 {
     int32_t ret = E_NON_EXIST;
-
+    std::lock_guard<std::mutex> lock(lock_);
     for (auto i = disk_.begin(); i != disk_.end(); i++) {
         if (*i == nullptr) {
             continue;

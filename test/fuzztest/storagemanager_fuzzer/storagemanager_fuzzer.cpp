@@ -89,6 +89,8 @@ bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
     MessageOption option;
     if (storageManagerPtr != nullptr) {
         storageManagerPtr->OnRemoteRequest(code % MAX_CALL_TRANSACTION, datas, reply, option);
+    } else {
+        return false;
     }
 
     return true;
@@ -214,20 +216,6 @@ bool HandleFormatFuzzTest(const uint8_t *data, size_t size)
 
     if (storageManagerPtr != nullptr) {
         storageManagerPtr->HandleFormat(datas, reply);
-    }
-    return true;
-}
-
-bool HandleGenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    if (storageManagerPtr != nullptr) {
-        storageManagerPtr->HandleGenerateUserKeys(datas, reply);
     }
     return true;
 }
@@ -901,7 +889,6 @@ void FuzzerTest1(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleUnmountFuzzTest(data, size);
     OHOS::StorageManager::HandlePartitionFuzzTest(data, size);
     OHOS::StorageManager::HandleFormatFuzzTest(data, size);
-    OHOS::StorageManager::HandleGenerateUserKeysFuzzTest(data, size);
     OHOS::StorageManager::HandleDeleteUserKeysFuzzTest(data, size);
     OHOS::StorageManager::HandleUpdateUserAuthFuzzTest(data, size);
     OHOS::StorageManager::HandleActiveUserKeyFuzzTest(data, size);

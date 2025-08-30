@@ -101,11 +101,6 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;

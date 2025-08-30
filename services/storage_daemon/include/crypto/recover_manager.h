@@ -103,7 +103,7 @@ private:
     TEEC_UUID *recoverUuid_ = &recoverTaUuid;
 #endif
 
-    bool isSessionOpened;
+    std::atomic<bool> isSessionOpened;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

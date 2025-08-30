@@ -18,21 +18,48 @@
 #include <linux/kdev_t.h>
 
 #include "help_utils.h"
+#include "mock/storage_manager_client_mock.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "volume_info_mock.h"
 
+namespace {
+    std::string g_getParameter;
+}
+
+namespace OHOS::system {
+std::string GetParameter(const std::string& key, const std::string& def)
+{
+    return g_getParameter;
+}
+} // OHOS::system
+
 namespace OHOS {
 namespace StorageDaemon {
+using namespace testing;
 using namespace testing::ext;
 using namespace StorageTest;
 class VolumeInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
+
+    static inline std::shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
 };
+
+void VolumeInfoTest::SetUp(void)
+{
+    storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
+    StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
+}
+
+void VolumeInfoTest::TearDown(void)
+{
+    StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
+    storageManagerClientMock_ = nullptr;
+}
 
 /**
  * @tc.name: Storage_Service_VolumeInfoTest_Create_001
@@ -83,6 +110,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_001, TestSize.Le
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -109,6 +137,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_002, TestSize.Le
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_ERR);
 
@@ -146,8 +175,11 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_003, TestSize.Le
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
+
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -273,6 +305,57 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_005
+ * @tc.desc: Verify the Mount function when args are normal when sdprohobit closed
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_005 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-19";
+    std::string diskId = "disk-1-19";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 19); // 1 is major device number, 19is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.Check();
+    EXPECT_TRUE(ret == E_OK);
+    g_getParameter = "false";
+    uint32_t mountFlags = 0;
+    ret = mock.Mount(mountFlags);
+    EXPECT_TRUE(ret == E_OK);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_006
+ * @tc.desc: Verify the Mount function when args are unnormal when sdprohobit open
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_006 start";
+
+    VolumeInfoMock mock;
+    uint32_t mountFlags = 0;
+    g_getParameter = "true";
+    auto ret = mock.Mount(mountFlags);
+    EXPECT_TRUE(ret == E_VOL_MOUNT_ERR);
+    g_getParameter = "false";
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_006 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_UMount_001
  * @tc.desc: Verify the UMount function when mount state is incorrect.
  * @tc.type: FUNC
@@ -284,6 +367,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_001, Test
 
     VolumeInfoMock mock;
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     auto ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
@@ -324,6 +408,8 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_OK);
 
@@ -395,6 +481,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_004, Test
     ret = mock.Mount(force);
     EXPECT_TRUE(ret == E_OK);
 
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_ERR);
 
@@ -414,6 +501,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Check_001, TestS
 
     VolumeInfoMock mock;
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     auto ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 

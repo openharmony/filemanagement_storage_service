@@ -52,7 +52,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 41] void Format([in] String volumeId, [in] String fsType);
     [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid);
     [ipccode 55] void NotifyMtpUnmounted([in] String id, [in] String path, [in] boolean isBadRemove);
-    [ipccode 28] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
     [ipccode 29] void DeleteUserKeys([in] unsigned int userId);
     [ipccode 30] void UpdateUserAuth([in] unsigned int userId,
                                      [in] unsigned long secureUid,
@@ -100,8 +99,8 @@ interface OHOS.StorageManager.IStorageManager {
                                      [out] String[] outputList, [out] boolean isOccupy);
     [ipccode 63] void ResetSecretWithRecoveryKey([in] unsigned int userId, [in] unsigned int rkType,
                                                  [in] unsigned char[] key);
-    [ipccode 64] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
-    [ipccode 65] void UMountDisShareFile([in] int userId, [in] String networkId);
+    [ipccode 65] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
+    [ipccode 66] void UMountDisShareFile([in] int userId, [in] String networkId);
     [ipccode 67] void NotifyVolumeDamaged([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
                                           [in] String path, [in] String description);
     [ipccode 68] void TryToFix([in] String volumeId);
@@ -110,4 +109,3 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 73] void UnregisterUeceActivationCallback();
     [ipccode 74] void UpdateUserPublicDirPolicy([in] unsigned int userId);
 }
-

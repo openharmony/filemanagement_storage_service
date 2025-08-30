@@ -920,9 +920,18 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
         return -ENOENT;
     }
     const MtpFsTypeDir *dir = parent->Dir(tmpBaseName);
-    if (dir == nullptr) {
-        LOGE("MtpFileSystem: UTimens dir is nullptr");
+    const MtpFsTypeFile *file = parent->File(tmpBaseName);
+    if (dir == nullptr && file == nullptr) {
+        LOGE("MtpFileSystem: UTimens dir and file is nullptr");
         return -ENOENT;
+    }
+    if (dir != nullptr && file != nullptr) {
+        LOGE("MtpFileSystem: UTimens error, invalid path");
+        return -ENOENT;
+    }
+    if (dir == nullptr) {
+        const_cast<MtpFsTypeFile *>(file)->SetModificationDate(tv[1].tv_sec);
+        return 0;
     }
     const_cast<MtpFsTypeDir *>(dir)->SetModificationDate(tv[1].tv_sec);
     return 0;
@@ -969,14 +978,9 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     } else {
         tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
         // only copy the file if needed
-        if (!HasGetPartialSupport()) {
-            int rval = device_.FilePull(stdPath, tmpPath);
-            if (rval != 0) {
-                return -rval;
-            }
-        } else {
-            int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
-            ::close(fd);
+        int rval = device_.FilePull(stdPath, tmpPath);
+        if (rval != 0) {
+            return -rval;
         }
     }
 
@@ -1011,16 +1015,10 @@ int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offs
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
-    int rval = 0;
-    if (HasGetPartialSupport()) {
-        const std::string stdPath(path);
-        rval = device_.FileRead(stdPath, buf, size, offset);
-    } else {
-        rval = ::pread(fileInfo->fh, buf, size, offset);
-        if (rval < 0) {
-            LOGE("MtpFileSystem: ReadFile error, errno=%{public}d", errno);
-            return -errno;
-        }
+    int rval = ::pread(fileInfo->fh, buf, size, offset);
+    if (rval < 0) {
+        LOGE("MtpFileSystem: ReadFile error, errno=%{public}d", errno);
+        return -errno;
     }
     LOGI("MtpFileSystem: ReadFile success rval=%{public}d", rval);
     return rval;
@@ -1426,6 +1424,7 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 bool MtpFileSystem::IsCurrentUserReadOnly()
 {
     LOGI("IsCurrentUserReadOnly start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
     auto item = mtpClientWriteMap_.find(currentUid);
     if (item != mtpClientWriteMap_.end()) {
         if (item->second) {

@@ -23,6 +23,7 @@
 #include "utils/storage_radar.h"
 #include "parameter.h"
 #include "utils/file_utils.h"
+#include "parameters.h"
 
 using namespace std;
 using namespace OHOS::StorageService;
@@ -120,6 +121,11 @@ int32_t VolumeInfo::DestroyUsbFuse()
 int32_t VolumeInfo::Mount(uint32_t flags)
 {
     int32_t err = 0;
+
+    if (system::GetParameter("persist.edm.external_storage_card_disable", "") == "true") {
+        LOGW("External Storage is prohibited!");
+        return E_VOL_MOUNT_ERR;
+    }
 
     if (mountState_ == MOUNTED) {
         return E_OK;

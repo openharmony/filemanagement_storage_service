@@ -584,23 +584,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_002,
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_GenerateUserKeys_002
- * @tc.desc: Verify the GenerateUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateUserKeys_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateUserKeys_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = 1012;
-    uint32_t flags = 0x01;
-    auto ret = storageManagerProviderTest_->GenerateUserKeys(userId, flags);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateUserKeys_002 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_QueryUsbIsInUse_002
  * @tc.desc: Verify the QueryUsbIsInUse function.
  * @tc.type: FUNC
@@ -1237,6 +1220,60 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_002
+ * @tc.desc: Verify the MountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(1009);
+    int32_t userId = -1;
+    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 100;
+    shareFiles = {{{"../", "../"}}};
+    ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_002
+ * @tc.desc: Verify the UMountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(1009);
+    int32_t userId = -1;
+    std::string networkId = "sharefile1";
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 100;
+    networkId = "../";
+    ret = storageManagerProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    networkId = "sharefile1";
+    ret = storageManagerProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_002 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
  * @tc.desc: Verify the NotifyVolumeDamaged function.
  * @tc.type: FUNC
@@ -1345,6 +1382,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserPublic
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(7014);
     uint32_t userId = 100;
     auto ret = storageManagerProviderTest_->UpdateUserPublicDirPolicy(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);

@@ -59,6 +59,7 @@ constexpr uint8_t FBEX_UECE_BACKUP = 30;
 
 constexpr uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
 constexpr uint32_t FILE_ENCRY_ERROR_NOT_FOUND_UECE = 0xFBE30033;
+constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -722,7 +723,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
     if (ret != 0) {
         HandleIoctlError(ret, errno, "FBEX_READ_CLASS_E", ops.userIdSingle, ops.userIdDouble);
         (void)fclose(f);
-        return -errno;
+        return (static_cast<uint32_t>(ret) == FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG) ? ret : -errno;
     }
     (void)fclose(f);
     if (ops.length == 0) {

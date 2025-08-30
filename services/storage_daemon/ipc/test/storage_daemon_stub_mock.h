@@ -42,7 +42,6 @@ public:
 
     MOCK_METHOD0(InitGlobalKey, int32_t(void));
     MOCK_METHOD0(InitGlobalUserKeys, int32_t(void));
-    MOCK_METHOD2(GenerateUserKeys, int32_t(uint32_t, uint32_t));
     MOCK_METHOD1(DeleteUserKeys, int32_t(uint32_t));
     MOCK_METHOD5(UpdateUserAuth,  int32_t(uint32_t, uint64_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));

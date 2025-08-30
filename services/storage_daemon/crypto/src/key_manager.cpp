@@ -63,6 +63,8 @@ constexpr uint8_t USER_LOGOUT = 0x0;
 constexpr uint32_t USER_ADD_AUTH = 0x0;
 constexpr uint32_t USER_CHANGE_AUTH = 0x1;
 
+constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
+
 #ifdef EL5_FILEKEY_MANAGER
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 500;
 #endif
@@ -300,6 +302,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
 int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type)
 {
     LOGI("enter");
+    std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(userId, type)) {
         return E_OK;
     }
@@ -484,7 +487,6 @@ int KeyManager::InitGlobalUserKeys(void)
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = InitUserElkeyStorageDir();
     if (ret) {
         LOGE("Init user el storage dir failed");
@@ -503,6 +505,7 @@ int KeyManager::InitGlobalUserKeys(void)
             return ret;
         }
     } else {
+        std::lock_guard<std::mutex> lock(keyMutex_);
         ret = GenerateAndInstallUserKey(GLOBAL_USER_ID, globalUserEl1Path, NULL_KEY_AUTH, EL1_KEY);
         if (ret != 0) {
             LOGE("Generate el1 failed");
@@ -534,6 +537,7 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
         LOGI("El storage dir is not existed");
         return -ENOENT;
     }
+    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = GenerateElxAndInstallUserKey(user);
     if (ret != E_OK) {
         LOGE("Generate ELX failed!");
@@ -553,7 +557,6 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
     if (IsDir(el1Path) || IsDir(el2Path) || IsDir(el3Path) || IsDir(el4Path) || IsDir(el5Path)) {
         return CheckAndFixUserKeyDirectory(user);
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = GenerateAndInstallUserKey(user, el1Path, NULL_KEY_AUTH, EL1_KEY);
     if (ret) {
         LOGE("user el1 create error");
@@ -674,7 +677,6 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
         return 0;
     }
 
-    std::lock_guard<std::mutex> lock(keyMutex_);
     std::string elPath = GetKeyDirByType(type);
     if (!IsDir(elPath)) {
         LOGI("El storage dir is not existed");
@@ -823,13 +825,13 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 #endif
 {
-    std::lock_guard<std::mutex> lock(keyMutex_);
     std::string secretInfo = BuildSecretStatus(userTokenSecret);
     std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
 
     LOGW("enter, param status: user=%{public}d, token=%{public}d, oldSec=%{public}d, newSec=%{public}d", user,
         userTokenSecret.token.empty(), userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
+    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = UpdateESecret(user, userTokenSecret);
     if (ret != 0) {
         LOGE("user %{public}u UpdateESecret fail", user);
@@ -979,7 +981,9 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid };
     saveESecretStatus[user] = true;
     auto ret = el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status);
-    if (ret != E_OK) {
+    if (static_cast<uint32_t>(ret) == FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG) {
+        LOGE("user= %{public}d, error=FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG, no need to add again", user);
+    } else if (ret != E_OK) {
         LOGE("user %{public}u EncryptClassE fail", user);
         return E_EL5_ENCRYPT_CLASS_ERROR;
     }
@@ -1021,7 +1025,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     }
 
     UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
-    UserAuth auth_newSec = { {}, userTokenSecret.newSecret, userTokenSecret.secureUid };
+    UserAuth auth_newSec = { userTokenSecret.token, userTokenSecret.newSecret, userTokenSecret.secureUid };
     LOGW("param status token:%{public}d, oldSec:%{public}d, newSec:%{public}d", userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
     if (!userTokenSecret.oldSecret.empty()) {
@@ -1725,6 +1729,7 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
     auto delay = StorageService::StorageRadar::ReportDuration("GET USER APP KEYS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: GET USER APP KEYS: delay time = %{public}s", delay.c_str());
+    std::lock_guard<std::mutex> lock(keyMutex_);
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = GenerateAndLoadAppKeyInfo(userId, keyInfo);
     delay = StorageService::StorageRadar::ReportDuration("GEN&LOAD APP KEY INFO",
@@ -1969,7 +1974,6 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(userId, type) == false) {
         return E_PARAMS_INVALID;
     }
@@ -1989,6 +1993,7 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UpdateKeyContext enter");
+    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = UpdateCeEceSeceKeyContext(userId, EL2_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL2 newest context failed");
@@ -2008,7 +2013,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         return ret;
     }
     if (IsUeceSupport()) {
-        ret = UpdateClassEBackUp(userId);
+        ret = UpdateClassEBackUpFix(userId);
         if (ret != 0) {
             LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
             return ret;
@@ -2050,9 +2055,25 @@ bool KeyManager::IsUeceSupport()
     return true;
 }
 
+int KeyManager::UpdateClassEBackUpFix(uint32_t userId)
+{
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    auto el5Key = GetUserElKey(userId, EL5_KEY);
+    if (el5Key == nullptr) {
+        LOGE("Have not found user %{public}u el5 Key", userId);
+        return E_NON_EXIST;
+    }
+    auto ret = el5Key->UpdateClassEBackUp(userId);
+    auto delay = StorageService::StorageRadar::ReportDuration("FBE:UpdateClassEBackUp",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: FBEX: UPDATE CLASS E BACKUP: user=%{public}u, delay=%{public}s", userId, delay.c_str());
+    return ret;
+}
+
 int KeyManager::UpdateClassEBackUp(uint32_t userId)
 {
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    std::lock_guard<std::mutex> lock(keyMutex_);
     auto el5Key = GetUserElKey(userId, EL5_KEY);
     if (el5Key == nullptr) {
         LOGE("Have not found user %{public}u el5 Key", userId);
@@ -2173,7 +2194,6 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
                                          const std::vector<uint8_t> &secret)
 {
     LOGI("enter TryToFixUserCeEceSeceKey");
-    keyMutex_.unlock();
     if (!IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has no pin code protect.", userId);
         return E_OK;
@@ -2212,7 +2232,6 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
                                 const std::vector<uint8_t> &secret)
 {
     LOGI("enter TryToFixUeceKey");
-    keyMutex_.unlock();
     if (!IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has no pin code protect.", userId);
         return E_OK;

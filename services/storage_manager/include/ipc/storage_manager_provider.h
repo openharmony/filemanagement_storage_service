@@ -27,6 +27,10 @@ namespace StorageManager {
 class StorageManagerProvider : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManagerProvider)
 public:
+    const std::string PATH_INVALID_FLAG1 = "../";
+    const std::string PATH_INVALID_FLAG2 = "/..";
+    const uint32_t PATH_INVALID_FLAG_LEN = 3;
+    const char FILE_SEPARATOR_CHAR = '/';
     StorageManagerProvider(int32_t saID, bool runOnCreate = true)
         : SystemAbility(saID, runOnCreate), manager_(StorageManager::GetInstance()) {};
     ~StorageManagerProvider() = default;
@@ -92,7 +96,6 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
 
     // fscrypt api
-    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
     int32_t DeleteUserKeys(uint32_t userId) override;
     int32_t UpdateUserAuth(uint32_t userId,
                            uint64_t secureUid,
@@ -170,6 +173,7 @@ private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
+    bool IsFilePathInvalid(const std::string &filePath);
     static sptr<StorageManagerProvider> instance_;
     std::reference_wrapper<StorageManager> manager_;
     static std::mutex instanceLock_;

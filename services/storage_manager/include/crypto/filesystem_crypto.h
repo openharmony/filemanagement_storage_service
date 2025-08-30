@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include "iuece_activation_callback.h"
+
 namespace OHOS {
 namespace StorageManager {
 class FileSystemCrypto final : public NoCopyable {
@@ -27,7 +28,6 @@ public:
         static FileSystemCrypto instance;
         return instance;
     }
-    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     int32_t DeleteUserKeys(uint32_t userId);
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,

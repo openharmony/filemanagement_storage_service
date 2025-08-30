@@ -50,23 +50,6 @@ static int32_t InitMainUser(const std::vector<std::string> &args)
 }
 
 #ifdef SDC_TEST_ENABLE
-static int32_t GenerateUserKeys(const std::vector<std::string> &args)
-{
-    if (args.size() < ARG_CNT_5) {
-        LOGE("Parameter nums is less than 5, please retry");
-        return -EINVAL;
-    }
-    uint32_t userId;
-    uint32_t flags;
-    // 3 means take the fourth argument of args, 4 means take the fifth argument of args
-    if ((OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) ||
-        (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], flags) == false)) {
-        LOGE("Parameter input error, please retry");
-        return -EINVAL;
-    }
-    return OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
-}
-
 static int32_t PrepareUserSpace(const std::vector<std::string> &args)
 {
     if (args.size() < ARG_CNT_5) {
@@ -362,7 +345,6 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"init_global_key", InitGlobalKey},
     {"init_main_user", InitMainUser},
 #ifdef SDC_TEST_ENABLE
-    {"generate_user_keys", GenerateUserKeys},
     {"prepare_user_space", PrepareUserSpace},
     {"delete_user_keys", DeleteUserKeys},
     {"destroy_user_space", DestroyUserSpace},

@@ -22,7 +22,6 @@
 #include "message_parcel.h"
 #include "securec.h"
 #include "storage_daemon.h"
-#include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
 #include "user_manager.h"
 
@@ -203,18 +202,6 @@ bool HandleSetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
     MessageParcel reply;
 
     storageDaemon->HandleSetBundleQuota(datas, reply);
-    return true;
-}
-
-bool HandleGenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageDaemon->HandleGenerateUserKeys(datas, reply);
     return true;
 }
 
@@ -445,7 +432,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleQueryUsbIsInUseFuzzTest(data, size);
     OHOS::HandleFormatFuzzTest(data, size);
     OHOS::HandleSetBundleQuotaFuzzTest(data, size);
-    OHOS::HandleGenerateUserKeysFuzzTest(data, size);
     OHOS::HandleDeleteUserKeysFuzzTest(data, size);
     OHOS::HandleUpdateUserAuthFuzzTest(data, size);
     OHOS::HandleActiveUserKeyFuzzTest(data, size);

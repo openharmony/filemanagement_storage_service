@@ -769,7 +769,7 @@ bool IsPathMounted(std::string &path)
     std::ifstream inputStream(MOUNT_POINT_INFO, std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
-        return false;
+        return true;
     }
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {

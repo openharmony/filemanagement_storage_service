@@ -34,7 +34,7 @@ StorageDaemon::UserManager &userManager = StorageDaemon::UserManager::GetInstanc
 
 bool StartUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_START_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_START_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -48,7 +48,7 @@ bool StartUserFuzzTest(const uint8_t *data, size_t size)
 
 bool StopUserFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_STOP_USER);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_STOP_USER);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -62,7 +62,7 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
 
 bool PrepareUserDirsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_PREPARE_USER_DIRS);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_PREPARE_USER_DIRS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -76,7 +76,7 @@ bool PrepareUserDirsFuzzTest(const uint8_t *data, size_t size)
 
 bool DestroyUserDirsFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DESTROY_USER_DIRS);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_DESTROY_USER_DIRS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -90,7 +90,7 @@ bool DestroyUserDirsFuzzTest(const uint8_t *data, size_t size)
 
 bool MountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -104,7 +104,7 @@ bool MountFuzzTest(const uint8_t *data, size_t size)
 
 bool UMountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -118,7 +118,7 @@ bool UMountFuzzTest(const uint8_t *data, size_t size)
 
 bool PartitionFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_PARTITION);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_PARTITION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -132,7 +132,7 @@ bool PartitionFuzzTest(const uint8_t *data, size_t size)
 
 bool CheckFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_CHECK);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CHECK);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -146,7 +146,7 @@ bool CheckFuzzTest(const uint8_t *data, size_t size)
 
 bool SetVolDescFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -160,7 +160,7 @@ bool SetVolDescFuzzTest(const uint8_t *data, size_t size)
 
 bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -174,7 +174,7 @@ bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
 
 bool FormatFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_FORMAT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_FORMAT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -188,21 +188,7 @@ bool FormatFuzzTest(const uint8_t *data, size_t size)
 
 bool SetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_SET_BUNDLE_QUOTA);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_GENERATE_USER_KEYS);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_SET_BUNDLE_QUOTA);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -216,7 +202,7 @@ bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
 
 bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_USER_KEYS);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_USER_KEYS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -230,7 +216,7 @@ bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_USER_AUTH);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_USER_AUTH);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -244,7 +230,7 @@ bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 
 bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_ACTIVE_USER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_ACTIVE_USER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -258,7 +244,7 @@ bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_INACTIVE_USER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_INACTIVE_USER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -272,7 +258,7 @@ bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_KEY_CONTEXT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_KEY_CONTEXT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -286,7 +272,7 @@ bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 
 bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_APPKEY);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_APPKEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -300,7 +286,7 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
 
 bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_GENERATE_APPKEY);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_GENERATE_APPKEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -314,7 +300,7 @@ bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 
 bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UNLOCK_USER_SCREEN);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UNLOCK_USER_SCREEN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -328,7 +314,7 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
 
 bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_LOCK_USER_SCREEN);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_LOCK_USER_SCREEN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -342,7 +328,7 @@ bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_MEMORY_PARA);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_MEMORY_PARA);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -356,7 +342,7 @@ bool UpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
 
 bool ShutdownFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_SHUTDOWN);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_SHUTDOWN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -370,7 +356,7 @@ bool ShutdownFuzzTest(const uint8_t *data, size_t size)
 
 bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -384,7 +370,7 @@ bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_RECOVER_KEY);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_RECOVER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -398,7 +384,7 @@ bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -412,7 +398,7 @@ bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 
 bool UMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -458,7 +444,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::QueryUsbIsInUseFuzzTest(data, size);
     OHOS::FormatFuzzTest(data, size);
     OHOS::SetBundleQuotaFuzzTest(data, size);
-    OHOS::GenerateUserKeysFuzzTest(data, size);
     OHOS::DeleteUserKeysFuzzTest(data, size);
     OHOS::UpdateUserAuthFuzzTest(data, size);
     OHOS::ActiveUserKeyFuzzTest(data, size);

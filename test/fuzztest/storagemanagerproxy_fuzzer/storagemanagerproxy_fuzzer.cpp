@@ -62,7 +62,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->GetDiskById(metaData, disk);
     proxy->Partition(metaData, metaData2);
     proxy->PrepareAddUser(metaData2, metaData3);
-    proxy->GenerateUserKeys(metaData2, metaData3);
     proxy->NotifyDiskDestroyed(metaData);
     proxy->ActiveUserKey(metaData2, token, secret);
     proxy->SetVolumeDescription(metaData, metaData);

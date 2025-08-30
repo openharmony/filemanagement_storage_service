@@ -123,7 +123,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001
- * @tc.desc: Verify the DoMount function.
+ * @tc.desc: Verify the DoUMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
@@ -141,7 +141,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002
- * @tc.desc: Verify the DoMount function.
+ * @tc.desc: Verify the DoUMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
@@ -159,7 +159,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003
- * @tc.desc: Verify the DoMount function.
+ * @tc.desc: Verify the DoUMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
