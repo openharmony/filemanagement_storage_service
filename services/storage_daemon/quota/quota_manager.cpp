@@ -44,7 +44,7 @@ constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t ONE_HUNDRED_M_BIT = 1024 * 1024 * 100;
+constexpr int32_t ONE_HUNDRED_M_BYTE = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -56,15 +56,25 @@ static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
 struct NextDqBlk {
+    /* Absolute limit on disk quota blocks alloc */
     uint64_t dqbHardLimit;
+    /* Preferred limit on disk quota blocks */
     uint64_t dqbBSoftLimit;
+    /* Current occupied space(in bytes) */
     uint64_t dqbCurSpace;
+    /* Maximum number of allocated inodes */
     uint64_t dqbIHardLimit;
+    /* Preferred inode limit */
     uint64_t dqbISoftLimit;
+    /* Current number of allocated inodes */
     uint64_t dqbCurInodes;
+    /* Time limit for excessive disk use */
     uint64_t dqbBTime;
+    /* Time limit for excessive files */
     uint64_t dqbITime;
+    /* Bit mask of QIF_* constants */
     uint32_t dqbValid;
+    /* the next ID greater than or equal to id that has a quota set */
     uint32_t dqbId;
 };
 
@@ -134,14 +144,14 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
         return E_OK;
     }
     LOGE("get size for emulator by quota failed, errno is %{public}d", errno);
-    return E_QUOTA_CTL_KERNEL_ERR;
-#endif
+#else
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) == 0) {
         size = static_cast<int64_t>(dq.dqb_curspace);
         LOGE("get size by quota success, size is %{public}s", std::to_string(size).c_str());
         return E_OK;
     }
     LOGE("get size by quota failed, errno is %{public}d", errno);
+#endif
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
@@ -166,7 +176,7 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
     std::ostringstream extraData;
     extraData << storageStatus <<std::endl;
     for (const auto& info : vec) {
-        if (info.size < ONE_HUNDRED_M_BIT) {
+        if (info.size < ONE_HUNDRED_M_BYTE) {
             continue;
         }
         extraData << "{uid:" << info.uid
@@ -312,7 +322,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
         usleep(ONE_MS);
     }
     for (const auto &pair : userAppSizeMap) {
-        UidSaInfo info = {pair.first, "", pair.second};
+        UidSaInfo info = {pair.first, "userId", pair.second};
         vec.push_back(info);
     }
     LOGI("GetOccupiedSpaceForUidList end!");
