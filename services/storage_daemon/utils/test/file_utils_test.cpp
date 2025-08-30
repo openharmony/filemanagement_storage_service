@@ -229,7 +229,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DestroyDir_001, TestSize.Level1)
     mode_t mode = 0771;
 
     int32_t ret = DestroyDir(path + "/testDir", isPathEmpty);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_DELETE_USER_DIR_NOEXIST);
 
     std::ofstream file("/data/testFile.txt");
     file.close();
