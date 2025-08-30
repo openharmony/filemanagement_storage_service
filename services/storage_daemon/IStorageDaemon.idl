@@ -87,4 +87,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 57] void CreateUserDir([in] String path, [in] unsigned int mode,
                                      [in] unsigned int uid, [in] unsigned int gid);
      [ipccode 58] void DeleteUserDir([in] String path);
+     [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
 }

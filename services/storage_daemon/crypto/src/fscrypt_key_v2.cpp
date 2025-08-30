@@ -41,7 +41,7 @@ int32_t FscryptKeyV2::ActiveKey(const KeyBlob &authToken, uint32_t flag, const s
         return err;
     }
 
-    if (!KeyCtrlInstallKey(mnt.c_str(), arg)) {
+    if (KeyCtrlInstallKey(mnt.c_str(), arg) != 0) {
         LOGE("InstallKey failed");
         return E_KEY_CTRL_INSTALL_ERROR;
     }
@@ -87,7 +87,7 @@ int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
         return ret;
     }
 
-    if (!KeyCtrlRemoveKey(mnt.c_str(), &arg)) {
+    if (KeyCtrlRemoveKey(mnt.c_str(), &arg) != 0) {
         return E_REMOVE_KEY_ERROR;
     }
     if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {

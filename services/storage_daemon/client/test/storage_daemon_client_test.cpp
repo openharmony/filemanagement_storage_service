@@ -73,6 +73,25 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
 }
 
 /**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+    uint32_t userId = 100;
+    std::string path = "1.txt";
+    uint32_t type = 2;
+    int32_t ret = storageDaemonClient_->SetDirEncryptionPolicy(userId, path, type);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_SetDirEncryptionPolicy_001 end";
+}
+
+/**
  * @tc.name: Storage_Service_StorageDaemonClientTest_StartUser_001
  * @tc.desc: check the StartUser function when args are normal
  * @tc.type: FUNC

@@ -49,6 +49,7 @@ public:
                                 const std::string &fsUuid,
                                 const std::string &path,
                                 const std::string &description) override;
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type) override;
     int32_t NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state) override;
     int32_t NotifyVolumeDamaged(const std::string &volumeId,
                                 const std::string &fsTypeStr,

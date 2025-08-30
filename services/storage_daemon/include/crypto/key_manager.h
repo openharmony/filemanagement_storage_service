@@ -121,6 +121,8 @@ public:
     void DeleteElKey(unsigned int user, KeyType type);
     bool HasElkey(uint32_t userId, KeyType type);
     friend class KeyManagerExt;
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, StorageService::EncryptionLevel level);
+
 private:
     KeyManager()
     {

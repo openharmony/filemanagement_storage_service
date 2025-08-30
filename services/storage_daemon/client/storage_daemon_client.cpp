@@ -98,6 +98,22 @@ int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
     return E_OK;
 }
 
+int32_t StorageDaemonClient::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+    LOGI("Enter SetDirEncryptionPolicy!");
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->SetDirEncryptionPolicy(userId, dirPath, level);
+}
+
 int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonClient::PrepareUserDirs, userId:%{public}d, flags:%{public}u", userId, flags);

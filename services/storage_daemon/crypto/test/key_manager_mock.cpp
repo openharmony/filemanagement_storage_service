@@ -42,14 +42,79 @@ int32_t KeyManager::DeleteUserKeys(unsigned int user)
 {
     return E_OK;
 }
-int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
-{
-    return E_OK;
-}
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
     const std::vector<std::vector<uint8_t>> &plainText)
+{
+    return E_OK;
+}
+
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+
+int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
+{
+    return E_OK;
+}
+
+int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
+    bool needGenerateShield)
+{
+    return E_OK;
+}
+#else
+int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
+{
+    return E_OK;
+}
+#endif
+
+std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
+{
+    return "";
+}
+
+std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
+{
+    return "";
+}
+std::string KeyManager::GetKeyDirByType(KeyType type)
+{
+    return "";
+}
+
+int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId, KeyType type,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+int KeyManager::TryToFixUeceKey(unsigned int userId,
+                                const std::vector<uint8_t> &token,
+                                const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
+{
+    return E_OK;
+}
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
+                                        struct UserTokenSecret &userTokenSecret,
+                                        KeyType type, bool needGenerateShield)
+#else
+int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
+                                        struct UserTokenSecret &userTokenSecret,
+                                        KeyType type)
+#endif
+{
+    return E_OK;
+}
+
+int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 {
     return E_OK;
 }
@@ -120,6 +185,12 @@ int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
             return -flag_num_sec;
         }
     }
+    return E_OK;
+}
+
+int32_t KeyManager::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+    StorageService::EncryptionLevel level)
+{
     return E_OK;
 }
 

@@ -226,6 +226,14 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
     return StorageManager::GetInstance().GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
 }
 
+int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+}
+
 int32_t StorageManagerProvider::GetSystemSize(int64_t &systemSize)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {

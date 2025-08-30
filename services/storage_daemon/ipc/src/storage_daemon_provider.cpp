@@ -381,6 +381,15 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     return err;
 }
 
+int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+    LOGI("SetDirEncryptionPolicy begin.");
+    int timerId = StorageXCollie::SetTimer("storage:SetDirEncryptionPolicy", LOCAL_TIME_OUT_SECONDS);
+    int32_t ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+    StorageXCollie::CancelTimer(timerId);
+    return ret;
+}
+
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
     int32_t err = StorageDaemon::GetInstance().CompleteAddUser(userId);

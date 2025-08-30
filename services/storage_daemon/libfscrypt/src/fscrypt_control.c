@@ -322,9 +322,10 @@ static int SetPolicyLegacy(const char *keyDescPath,
         LOGE("memcpy_s copy failed");
         return ret;
     }
-    if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
+    ret = KeyCtrlSetPolicy(toEncrypt, arg);
+    if (ret != 0) {
         LOGE("Set Policy v1 failed");
-        return -EFAULT;
+        return ret;
     }
     return 0;
 }
@@ -346,9 +347,10 @@ static int SetPolicyV2(const char *keyIdPath,
         LOGE("memcpy_s copy failed");
         return ret;
     }
-    if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
+    ret = KeyCtrlSetPolicy(toEncrypt, arg);
+    if (ret != 0) {
         LOGE("Set Policy v2 failed");
-        return -EFAULT;
+        return ret;
     }
     return 0;
 }

@@ -43,6 +43,11 @@ int32_t StorageManagerProxy::CompleteAddUser(int32_t userId)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;
