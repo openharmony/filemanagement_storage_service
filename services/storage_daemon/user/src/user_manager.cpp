@@ -272,8 +272,12 @@ int32_t UserManager::DeleteUserDir(const std::string &path)
 
     struct stat pathStat;
     if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &pathStat)) != 0) {
-        LOGE("The path: %{public}s is not exists or cannot be accessed.", path.c_str());
-        return E_DELETE_USER_DIR_NOEXIST;
+        if (errno == ENOENT) {
+            LOGE("The path: %{public}s does not exist.", path.c_str());
+            return E_DELETE_USER_DIR_NOEXIST;
+        }
+        LOGE("The path: %{public}s cannot be accessed. errno: %{public}d", path.c_str(), errno);
+        return E_DELETE_USER_DIR_LSTAT;
     }
 
     if (!S_ISDIR(pathStat.st_mode)) {
