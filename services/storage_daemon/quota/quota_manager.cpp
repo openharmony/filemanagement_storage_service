@@ -74,7 +74,7 @@ struct NextDqBlk {
     uint64_t dqbITime;
     /* Bit mask of QIF_* constants */
     uint32_t dqbValid;
-    /* the  next  ID  greater than or equal to id that has a quota set */
+    /* the next ID greater than or equal to id that has a quota set */
     uint32_t dqbId;
 };
 
