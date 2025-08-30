@@ -1821,4 +1821,78 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_OK);
     GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CreateUserDir_001
+ * @tc.name: Daemon_communication_CreateUserDir_001
+ * @tc.desc: Test function of CreateUserDir interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_CreateUserDir_001 begin ";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_SA_IS_NULLPTR);
+
+    // Test storageDaemon_ == nullptr branch after Connect() success
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_SERVICE_IS_NULLPTR);
+
+    // Test normal success path
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, CreateUserDir(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_OK);
+
+    GTEST_LOG_(INFO) << "Daemon_communication_CreateUserDir_001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserDir_001
+ * @tc.name: Daemon_communication_DeleteUserDir_001
+ * @tc.desc: Test function of DeleteUserDir interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 begin ";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_SA_IS_NULLPTR);
+
+    // Test storageDaemon_ == nullptr branch after Connect() success
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_SERVICE_IS_NULLPTR);
+
+    // Test normal success path
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, DeleteUserDir(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_OK);
+
+    GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 end";
+}
 }

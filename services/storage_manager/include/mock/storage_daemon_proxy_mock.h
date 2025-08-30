@@ -110,6 +110,8 @@ public:
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
     virtual int32_t UnregisterUeceActivationCallback();
+    virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    virtual int32_t DeleteUserDir(const std::string &path) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

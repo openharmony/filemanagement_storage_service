@@ -314,5 +314,15 @@ int32_t StorageDaemonProxy::UnregisterUeceActivationCallback()
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

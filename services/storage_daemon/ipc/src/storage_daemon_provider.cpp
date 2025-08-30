@@ -830,5 +830,15 @@ int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
     return StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
 }
+
+int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+}
+
+int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
+{
+    return UserManager::GetInstance().DeleteUserDir(path);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

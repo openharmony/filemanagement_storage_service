@@ -107,6 +107,8 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
     int32_t UnregisterUeceActivationCallback() override;
+    virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    virtual int32_t DeleteUserDir(const std::string &path) override;
 
     // app file share api
     int32_t CreateShareFile(const StorageFileRawData &rawData,

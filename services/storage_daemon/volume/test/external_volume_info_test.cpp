@@ -607,5 +607,23 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001
+ * @tc.desc: Verify the DoMount4Hmfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    int32_t ret = externalVolumeInfo_->DoMount4Hmfs();
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_NE(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

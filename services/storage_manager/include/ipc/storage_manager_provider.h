@@ -169,6 +169,9 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback) override;
     int32_t UnregisterUeceActivationCallback() override;
+    int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    int32_t DeleteUserDir(const std::string &path) override;
+
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

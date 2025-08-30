@@ -1251,5 +1251,33 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceAc
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreateUserDir_001
+ * @tc.desc: Verify the CreateUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
+ * @tc.desc: Verify the DeleteUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
