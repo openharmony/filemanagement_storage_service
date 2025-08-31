@@ -51,8 +51,8 @@ private:
     void EventNotifyFreqHandlerForLow();
     void EventNotifyFreqHandlerForMedium();
     void EventNotifyFreqHandlerForHigh();
-    void ParseMemoryParameters(int64_t totalSize);
-    std::string GetMemoryAlertCleanupParams();
+    void ParseStorageParameters(int64_t totalSize);
+    std::string GetStorageAlertCleanupParams();
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;

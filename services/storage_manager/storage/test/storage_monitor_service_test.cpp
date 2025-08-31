@@ -303,4 +303,27 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_GetStorageAlertCleanupParams_0000
+ * @tc.name: Storage_monitor_service_GetStorageAlertCleanupParams_0000
+ * @tc.desc: Test function of GetStorageAlertCleanupParams interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetStorageAlertCleanupParams_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetStorageAlertCleanupParams_0000 start";
+    std::string value = "notify_l500M/notify_m2G/notify_h10%";
+    int64_t totalSize = 1024;
+
+    SystemSetParameter("const.storage_service.storage_alert_policy", value.c_str());
+    service->ParseStorageParameters(totalSize);
+    std::string storageParams = service->GetStorageAlertCleanupParams();
+    EXPECT_EQ(storageParams, value);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetStorageAlertCleanupParams_0000 end";
+}
 }

@@ -21,6 +21,7 @@
 #include "cJSON.h"
 #include "common_event_manager.h"
 #include "init_param.h"
+#include "parameter.h"
 #include "parameters.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -39,7 +40,8 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
-constexpr int32_t MEMORY_PARAMS_PATH_LEN = 128;
+constexpr int32_t STORAGE_PARAMS_PATH_LEN = 128;
+constexpr const char *STORAGE_ALERT_CLEANUP_PARAMETER = "const.storage_service.storage_alert_policy";
 constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
@@ -124,7 +126,7 @@ void StorageMonitorService::MonitorAndManageStorage()
         LOGE("Get device free size failed.");
         return;
     }
-    ParseMemoryParameters(totalSize);
+    ParseStorageParameters(totalSize);
 
     LOGI("clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
          static_cast<long long>(thresholds["clean_l"]), static_cast<long long>(thresholds["clean_m"]),
@@ -145,28 +147,27 @@ void StorageMonitorService::MonitorAndManageStorage()
     }
 }
 
-std::string StorageMonitorService::GetMemoryAlertCleanupParams()
+std::string StorageMonitorService::GetStorageAlertCleanupParams()
 {
-    std::string memoryParams;
-    char tmpBuffer[MEMORY_PARAMS_PATH_LEN] = {0};
-    uint32_t tmpLen = MEMORY_PARAMS_PATH_LEN;
+    std::string storageParams;
+    char tmpBuffer[STORAGE_PARAMS_PATH_LEN] = {0};
     
-    if (SystemGetParameter("const.storageservice.memory_alert_policy", tmpBuffer, &tmpLen) == 0) {
-        memoryParams = tmpBuffer;
-    } else {
-        LOGE("Failed to read const.storageservice.memory_alert_policy, using default");
-        memoryParams = DEFAULT_PARAMS;
+    int ret = GetParameter(STORAGE_ALERT_CLEANUP_PARAMETER, DEFAULT_PARAMS, tmpBuffer, STORAGE_PARAMS_PATH_LEN);
+    if (ret <= 0) {
+        LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
+             STORAGE_ALERT_CLEANUP_PARAMETER, ret);
+        return DEFAULT_PARAMS;
     }
     
-    return memoryParams;
+    return tmpBuffer;
 }
  
-void StorageMonitorService::ParseMemoryParameters(int64_t totalSize)
+void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
 {
-    std::string memoryParams = GetMemoryAlertCleanupParams();
-    std::istringstream memoryParamsStream(memoryParams);
+    std::string storageParams = GetStorageAlertCleanupParams();
+    std::istringstream storageParamsStream(storageParams);
     std::string item;
-    while (std::getline(memoryParamsStream, item, '/')) {
+    while (std::getline(storageParamsStream, item, '/')) {
         std::string key;
         std::string value;
  
@@ -190,7 +191,7 @@ void StorageMonitorService::ParseMemoryParameters(int64_t totalSize)
         } else if (value.length() > 1 && value.substr(value.length() - 1) == "G") {
             int gigabytes = std::atoi(value.substr(0, value.length() - 1).c_str());
             if (gigabytes < 0) {
-                LOGE("Memory value cannot be negative: %{public}d G", gigabytes);
+                LOGE("Storage value cannot be negative: %{public}d G", gigabytes);
             } else {
                 int64_t size = static_cast<int64_t>(gigabytes) * ONE_GB;
                 thresholds[key] = static_cast<int64_t>(size);
@@ -198,7 +199,7 @@ void StorageMonitorService::ParseMemoryParameters(int64_t totalSize)
         } else if (value.length() > 1 && value.substr(value.length() - 1) == "M") {
             int megabytes = std::atoi(value.substr(0, value.length() - 1).c_str());
             if (megabytes < 0) {
-                LOGE("Memory value cannot be negative: %{public}d M", megabytes);
+                LOGE("Storage value cannot be negative: %{public}d M", megabytes);
             } else {
                 int64_t size = static_cast<int64_t>(megabytes) * ONE_MB;
                 thresholds[key] = static_cast<int64_t>(size);
@@ -228,7 +229,7 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     if (freeSize < lowThreshold) {
         CleanBundleCache(lowThreshold);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_LOW, storageUsage);
-        LOGI("Device running out of memory");
+        LOGI("Device running out of storage");
         return;
     }
 
