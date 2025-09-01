@@ -57,8 +57,3 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 {
     return 0;
 }
-
-int32_t MountManager::FileBasedEncryptfsMount()
-{
-    return 0;
-}

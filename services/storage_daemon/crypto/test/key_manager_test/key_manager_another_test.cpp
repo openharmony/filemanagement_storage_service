@@ -151,7 +151,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_ResetSecretWithRecoveryKey_000, TestSize.
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_EQ(KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key), E_OK);
+    EXPECT_EQ(KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key), E_MOUNT_FBE);
 
     OHOS::ForceRemoveDirectory(MAINTAIN_DEVICE_EL1_DIR);
     OHOS::ForceRemoveDirectory(globalUserEl1Path);

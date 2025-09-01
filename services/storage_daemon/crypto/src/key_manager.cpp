@@ -68,6 +68,11 @@ constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
 #ifdef EL5_FILEKEY_MANAGER
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 500;
 #endif
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+const std::string FILE_BASED_ENCRYPT_SRC_PATH = "/mnt/data_old/service/el1/public/sec_storage_data/fbe3";
+const std::string FILE_BASED_ENCRYPT_DST_PATH = "/data/service/el1/public/sec_storage_data/fbe3";
+constexpr int32_t DEFAULT_REPAIR_USERID = 10736;
+#endif
 
 static bool IsEncryption()
 {
@@ -1648,6 +1653,32 @@ int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
     }
     return E_OK;
 }
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+int32_t KeyManager::FileBasedEncryptfsMount()
+{
+    std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
+    std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
+    int32_t ret = TEMP_FAILURE_RETRY(umount(dstPath.c_str()));
+    if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("failed to unmount file based encrypt fs, err %{public}d", errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + std::to_string(errno);
+        StorageRadar::ReportUserManager("FileBasedEncryptfsMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
+        return E_MOUNT_FBE;
+    }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    ret = TEMP_FAILURE_RETRY(mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND, nullptr));
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to bind mount file based encrypt fs, err %{public}d", errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + std::to_string(errno);
+        StorageRadar::ReportUserManager("FileBasedEncryptfsMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
+        return E_MOUNT_FBE;
+    }
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: BIND MOUNT",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, DEFAULT_REPAIR_USERID);
+    LOGI("SD_DURATION: MOUNT: BIND MOUNT, delayTime = %{public}s", delay.c_str());
+    return E_OK;
+}
+#endif
 
 int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
 {
@@ -1694,7 +1725,7 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
             return E_ELX_KEY_STORE_ERROR;
         }
     }
-    ret = MountManager::GetInstance().FileBasedEncryptfsMount();
+    ret = FileBasedEncryptfsMount();
     if (ret !=0) {
         LOGE("mount file based encrypt fs failed!");
         return ret;
