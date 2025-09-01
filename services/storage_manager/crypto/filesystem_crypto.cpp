@@ -329,7 +329,7 @@ int32_t FileSystemCrypto::SetDirEncryptionPolicy(uint32_t userId, const std::str
 {
     LOGI("Enter SetDirEncryptionPolicy.");
     int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK || userId != StorageService::ZERO_USER) {
+    if (err != E_OK) {
         LOGE("User ID out of range");
         return err;
     }

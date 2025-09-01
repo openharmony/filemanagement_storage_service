@@ -706,7 +706,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_IsDirPathSupport_0
     auto ret_bool = StorageTest::StorageTestUtils::MkDir(ancoPath, mode);
     EXPECT_TRUE(ret_bool);
     auto ret = StorageDaemon::GetInstance().IsDirPathSupport(dirPathTemp);
-    EXPECT_EQ(ret, E_NOT_DIR_PATH);
+    EXPECT_EQ(ret, E_NON_ACCESS);
 
     ret_bool = StorageTest::StorageTestUtils::MkDir(dirPathTemp, modeTemp);
     EXPECT_TRUE(ret_bool);

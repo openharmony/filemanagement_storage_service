@@ -313,7 +313,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryption
     std::string dirPath = "/test";
     uint32_t type = 2;
     auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 end";
 }
 

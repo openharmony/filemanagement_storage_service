@@ -938,11 +938,11 @@ int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
 {
     int32_t err = Connect();
     if (err != E_OK) {
-        LOGE("Connect failed");
+        LOGE("StorageDaemonCommunication::SetDirEncryptionPolicy Connect failed, userId:%{public}u", userId);
         return err;
     }
     if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        LOGE("StorageDaemonCommunication::SetDirEncryptionPolicy Connect service nullptr, userId:%{public}u", userId);
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);

@@ -231,6 +231,9 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
+    if (IsFilePathInvalid(dirPath)) {
+        return E_PARAMS_INVALID;
+    }
     return StorageManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
 }
 

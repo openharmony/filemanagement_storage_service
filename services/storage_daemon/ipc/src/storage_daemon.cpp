@@ -1383,15 +1383,15 @@ StorageService::EncryptionLevel StorageDaemon::UintToKeyType(uint32_t type)
 int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
 {
     LOGI("check path is %{public}s", dirPath.c_str());
-    if (!IsDir(dirPath)) {
-        LOGE("dirPath is not dir, please create dir");
-        return E_NOT_DIR_PATH;
-    }
     if (access(dirPath.c_str(), F_OK) != 0) {
         LOGE("dirPath is not exist, please create dir");
         return E_NON_ACCESS;
     }
-    if (dirPath.find(ANCO_DIR) != 0) {
+    if (!IsDir(dirPath)) {
+        LOGE("dirPath is not dir, please create dir");
+        return E_NOT_DIR_PATH;
+    }
+    if (strncmp(dirPath.c_str(), ANCO_DIR, strlen(ANCO_DIR)) != 0) {
         LOGE("dir is not permission.");
         return E_PARAMS_INVALID;
     }
