@@ -58,6 +58,7 @@ constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
 constexpr pid_t AOCO_UID = 7558;
+constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -835,10 +836,20 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
 
 int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) ||
+		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance().InactiveUserPublicDirKey(userId);
+}
+
+int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) ||
+		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().UpdateUserPublicDirPolicy(userId);
 }
 
 int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)

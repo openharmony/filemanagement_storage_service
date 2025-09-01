@@ -1673,6 +1673,39 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserPublic
 }
 
 /**
+* @tc.number: SUB_STORAGE_Daemon_communication_UpdateUserPublicDirPolicy_0000
+* @tc.name: Daemon_communication_UpdateUserPublicDirPolicy_0000
+* @tc.desc: Test function of UpdateUserPublicDirPolicy interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserPublicDirPolicy_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserPublicDirPolicy_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UpdateUserPublicDirPolicy(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserPublicDirPolicy_0000";
+}
+
+/**
 * @tc.number: SUB_STORAGE_Daemon_communication_QueryOccupiedSpaceForSa_001
 * @tc.name: Daemon_communication_QueryOccupiedSpaceForSa_001
 * @tc.desc: Test function of QueryOccupiedSpaceForSa interface for SUCCESS.

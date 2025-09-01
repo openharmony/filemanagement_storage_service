@@ -712,7 +712,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_IsDirPathSupport_0
     EXPECT_TRUE(ret_bool);
     ret = StorageDaemon::GetInstance().IsDirPathSupport(dirPathTemp);
     EXPECT_EQ(ret, E_OK);
-    
+
     ret_bool = StorageTest::StorageTestUtils::MkDir(nonePath, mode);
     EXPECT_TRUE(ret_bool);
     ret = StorageDaemon::GetInstance().IsDirPathSupport(nonePath);
@@ -725,6 +725,23 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_IsDirPathSupport_0
     StorageTest::StorageTestUtils::RmDirRecurse(dirPathTemp);
     StorageTest::StorageTestUtils::RmDirRecurse(nonePath);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_IsDirPathSupport_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001 start";
+
+    uint32_t userId = 105;
+    auto ret = storageDaemon_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UpdateUserPublicDirPolicy_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

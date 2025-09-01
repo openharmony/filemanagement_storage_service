@@ -295,6 +295,11 @@ int32_t StorageDaemonProxy::InactiveUserPublicDirKey(uint32_t userId)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(const std::string &storageStatus)
 {
     return E_OK;

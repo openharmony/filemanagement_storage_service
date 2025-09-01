@@ -1431,5 +1431,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_00
     EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir("/test/../"), E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_UpdateUserPublicDirPolicy_002
+ * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserPublicDirPolicy_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(7014);
+    uint32_t userId = 100;
+    auto ret = storageManagerProviderTest_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 end";
+}
 }
 }

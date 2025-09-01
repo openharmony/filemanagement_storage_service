@@ -382,6 +382,11 @@ int32_t StorageManagerProxy::InactiveUserPublicDirKey(uint32_t userId)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback)
 {
     return E_OK;

@@ -814,6 +814,12 @@ int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
     return StorageDaemon::GetInstance().InactiveUserPublicDirKey(userId);
 }
 
+int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return StorageDaemon::GetInstance().UpdateUserPublicDirPolicy(userId);
+}
+
 int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storageStatus)
 {
     QuotaManager::GetInstance().GetUidStorageStats(storageStatus);

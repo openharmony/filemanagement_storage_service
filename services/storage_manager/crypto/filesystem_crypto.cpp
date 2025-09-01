@@ -305,6 +305,20 @@ int32_t FileSystemCrypto::InactiveUserPublicDirKey(uint32_t userId)
     return err;
 }
 
+int32_t FileSystemCrypto::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    LOGI("Update policy userId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateUserPublicDirPolicy(userId);
+    return err;
+}
+
 int32_t FileSystemCrypto::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
     LOGI("Enter RegisterUeceActivationCallback");

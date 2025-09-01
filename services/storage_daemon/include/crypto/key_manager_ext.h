@@ -35,6 +35,7 @@ public:
     virtual int32_t InactiveUserKey(int32_t userId) = 0;
     virtual int32_t DeleteUserKey(int32_t userId) = 0;
     virtual int32_t SetFilePathPolicy(int32_t userId) = 0;
+    virtual int32_t UpdateUserPublicDirPolicy(int32_t userId) = 0;
     virtual int32_t SetRecoverKey(int32_t userId, const std::vector<uint8_t>& keyInfo) = 0;
 };
 
@@ -51,6 +52,7 @@ public:
     int ActiveUserKey(uint32_t userId, const std::vector<uint8_t>& token,
                       const std::vector<uint8_t>& secret);
     int InActiveUserKey(uint32_t userId);
+    int UpdateUserPublicDirPolicy(uint32_t userId);
     int SetRecoverKey(uint32_t userId, uint32_t keyType, const KeyBlob& ivBlob);
 
 private:

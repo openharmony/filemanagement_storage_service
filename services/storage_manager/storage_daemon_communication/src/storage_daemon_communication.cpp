@@ -838,6 +838,20 @@ int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
     return storageDaemon_->InactiveUserPublicDirKey(userId);
 }
 
+int32_t StorageDaemonCommunication::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::UpdateUserPublicDirPolicy connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UpdateUserPublicDirPolicy(userId);
+}
+
 int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
 {
     int32_t err = Connect();

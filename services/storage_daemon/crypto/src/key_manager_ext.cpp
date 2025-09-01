@@ -278,5 +278,25 @@ int KeyManagerExt::DoDeleteUserKeys(uint32_t userId)
     return ret;
 }
 
+int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t userId)
+{
+    LOGI("Update public dir policy, user:%{public}u", userId);
+    if (!IsServiceExtSoLoaded()) {
+        LOGE("user key ext policy is disabled");
+        return E_OK;
+    }
+    if (!KeyCtrlHasFscryptSyspara()) {
+        LOGE("FscryptSyspara has not or encryption not enabled");
+        return E_OK;
+    }
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    int ret = service_->UpdateUserPublicDirPolicy(userId);
+    if (ret != E_OK) {
+        LOGE("Update public dir policy failed, ret: %{public}d", ret);
+        return ret;
+    }
+    LOGI("Update public dir policy success");
+    return ret;
+}
 } // namespace StorageDaemon
 } // namespace OHOS
