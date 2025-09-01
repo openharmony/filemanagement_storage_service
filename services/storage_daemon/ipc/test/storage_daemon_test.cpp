@@ -43,6 +43,9 @@ public:
     void TearDown();
 
     StorageDaemonProvider* storageDaemon_;
+    std::string virPath = "/data/virt_service/";
+    std::string rgmPath = "/data/virt_service/rgm_hmos";
+    std::string ancoDataPath = "/data/virt_service/rgm_hmos/anco_hmos_data/";
 };
 
 void StorageDaemonTest::SetUpTestCase(void)
@@ -74,12 +77,17 @@ void StorageDaemonTest::SetUpTestCase(void)
 
 void StorageDaemonTest::SetUp()
 {
+    mode_t mode = 0771;
+    StorageTest::StorageTestUtils::MkDir(virPath, mode);
+    StorageTest::StorageTestUtils::MkDir(rgmPath, mode);
+    StorageTest::StorageTestUtils::MkDir(ancoDataPath, mode);
     storageDaemon_ = new StorageDaemonProvider();
     StorageTest::StorageTestUtils::ClearTestResource();
 }
 
 void StorageDaemonTest::TearDown(void)
 {
+    StorageTest::StorageTestUtils::RmDirRecurse(virPath);
     StorageTest::StorageTestUtils::ClearTestResource();
     if (storageDaemon_ != nullptr) {
         delete storageDaemon_;
@@ -597,6 +605,126 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_InactiveUserPublic
     EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001 end";
+}
+
+/**
+ * @tc.number: Storage_Manager_StorageDaemonTest_SetDirEncryptionPolicy_001
+ * @tc.name: Storage_Manager_StorageDaemonTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Test function of VerifyAncoUserDirs interface for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetDirEncryptionPolicy_001 start";
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    mode_t mode = 0771;
+    std::string dirPath = "/data/virt_service/rgm_hmos/anco_hmos_data/test";
+    auto ret_bool = StorageTest::StorageTestUtils::MkDir(dirPath, mode);
+    EXPECT_TRUE(ret_bool);
+    uint32_t userId = 100;
+    uint32_t type = 6;
+    auto ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    userId = 2;
+    type = 0;
+    ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+
+    userId = 100;
+    type = 2;
+    ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_TRUE(ret == E_OK);
+
+    userId = 0;
+    type = 2;
+    ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_TRUE(ret == E_OK);
+    userId = 0;
+    type = 0;
+    ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_TRUE(ret == E_OK);
+    StorageTest::StorageTestUtils::RmDirRecurse(dirPath);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetDirEncryptionPolicy_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UintToKeyType_001
+ * @tc.desc: Verify the UintToKeyType function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UintToKeyType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UintToKeyType_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    uint32_t type = 8;
+    StorageService::EncryptionLevel key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 0);
+
+    type = 0;
+    key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 0);
+
+    type = 1;
+    key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 1);
+
+    type = 2;
+    key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 2);
+
+    type = 3;
+    key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 3);
+
+    type = 4;
+    key = StorageDaemon::GetInstance().UintToKeyType(type);
+    EXPECT_EQ(key, 4);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UintToKeyType_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_IsDirPathSupport_001
+ * @tc.desc: Verify the UintToKeyType function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_IsDirPathSupport_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_IsDirPathSupport_001 start";
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    mode_t mode = 0771;
+    mode_t modeTemp = 0000;
+    std::string dirPathTemp = "/data/virt_service/rgm_hmos/anco_hmos_data/test1";
+    std::string ancoPath = "/data/virt_service/rgm_hmos/anco_hmos_data/test";
+    std::string nonePath = "/data/virt_service/rgm_hmos/test";
+    auto ret_bool = StorageTest::StorageTestUtils::MkDir(ancoPath, mode);
+    EXPECT_TRUE(ret_bool);
+    auto ret = StorageDaemon::GetInstance().IsDirPathSupport(dirPathTemp);
+    EXPECT_EQ(ret, E_NOT_DIR_PATH);
+
+    ret_bool = StorageTest::StorageTestUtils::MkDir(dirPathTemp, modeTemp);
+    EXPECT_TRUE(ret_bool);
+    ret = StorageDaemon::GetInstance().IsDirPathSupport(dirPathTemp);
+    EXPECT_EQ(ret, E_OK);
+
+    ret_bool = StorageTest::StorageTestUtils::MkDir(nonePath, mode);
+    EXPECT_TRUE(ret_bool);
+    ret = StorageDaemon::GetInstance().IsDirPathSupport(nonePath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    ret_bool = StorageTest::StorageTestUtils::MkDir(ancoPath, mode);
+    EXPECT_TRUE(ret_bool);
+    ret = StorageDaemon::GetInstance().IsDirPathSupport(ancoPath);
+    EXPECT_EQ(ret, E_OK);
+    StorageTest::StorageTestUtils::RmDirRecurse(dirPathTemp);
+    StorageTest::StorageTestUtils::RmDirRecurse(nonePath);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_IsDirPathSupport_001 end";
 }
 
 /**

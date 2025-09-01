@@ -305,6 +305,34 @@ bool StorageDaemonIsFileCopyedFuzzTest(sptr<StorageDaemon::StorageDaemonProvider
     return true;
 }
 
+bool CreateUserDirFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
+{
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_CREATE_USER_DIR);
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+    MessageOption option;
+
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool DeleteUserDirFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
+{
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_DELETE_USER_DIR);
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+    MessageOption option;
+
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
 void StorageDaemonStubFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
 {
     StorageDaemonOnRemoteRequestFuzzTest(daemon, data, size);
@@ -316,6 +344,8 @@ void StorageDaemonStubFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemo
     StorageDaemonSetRecoveryKeyFuzzTest(daemon, data, size);
     StorageDaemonResetSecretWithRecoveryKeyFuzzTest(daemon, data, size);
     StorageDaemonIsFileCopyedFuzzTest(daemon, data, size);
+    CreateUserDirFuzzTest(daemon, data, size);
+    DeleteUserDirFuzzTest(daemon, data, size);
 }
 } // namespace OHOS
 

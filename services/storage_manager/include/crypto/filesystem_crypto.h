@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include "iuece_activation_callback.h"
+#include "storage_service_constants.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -62,6 +63,7 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
 private:
     int32_t CheckUserIdRange(int32_t userId);
     FileSystemCrypto();

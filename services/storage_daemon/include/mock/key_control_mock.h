@@ -35,13 +35,13 @@ public:
     virtual long KeyCtrlUnlink(key_serial_t, key_serial_t) = 0;
     virtual key_serial_t KeyCtrlAddAppAsdpKey(const char*, const char*, struct EncryptAsdpKey*, const key_serial_t) = 0;
 #ifdef SUPPORT_FSCRYPT_V2
-    virtual bool KeyCtrlInstallKey(const char*, struct fscrypt_add_key_arg*) = 0;
-    virtual bool KeyCtrlRemoveKey(const char*, struct fscrypt_remove_key_arg*) = 0;
-    virtual bool KeyCtrlGetKeyStatus(const char*, struct fscrypt_get_key_status_arg*) = 0;
-    virtual bool KeyCtrlGetPolicyEx(const char*, struct fscrypt_get_policy_ex_arg*) = 0;
+    virtual int KeyCtrlInstallKey(const char*, struct fscrypt_add_key_arg*) = 0;
+    virtual int KeyCtrlRemoveKey(const char*, struct fscrypt_remove_key_arg*) = 0;
+    virtual int KeyCtrlGetKeyStatus(const char*, struct fscrypt_get_key_status_arg*) = 0;
+    virtual int KeyCtrlGetPolicyEx(const char*, struct fscrypt_get_policy_ex_arg*) = 0;
 #endif
-    virtual bool KeyCtrlSetPolicy(const char*, union FscryptPolicy*) = 0;
-    virtual bool KeyCtrlGetPolicy(const char*, struct fscrypt_policy*) = 0;
+    virtual int KeyCtrlSetPolicy(const char*, union FscryptPolicy*) = 0;
+    virtual int KeyCtrlGetPolicy(const char*, struct fscrypt_policy*) = 0;
     virtual uint8_t KeyCtrlLoadVersion(const char*) = 0;
 public:
     static inline std::shared_ptr<IKeyControlMoc> keyControlMoc = nullptr;
@@ -59,13 +59,13 @@ public:
     MOCK_METHOD(key_serial_t, KeyCtrlAddAppAsdpKey, (const char*, const char*, struct EncryptAsdpKey*,
         const key_serial_t));
 #ifdef SUPPORT_FSCRYPT_V2
-    MOCK_METHOD(bool, KeyCtrlInstallKey, (const char*, struct fscrypt_add_key_arg*));
-    MOCK_METHOD(bool, KeyCtrlRemoveKey, (const char*, struct fscrypt_remove_key_arg*));
-    MOCK_METHOD(bool, KeyCtrlGetKeyStatus, (const char*, struct fscrypt_get_key_status_arg*));
-    MOCK_METHOD(bool, KeyCtrlGetPolicyEx, (const char*, struct fscrypt_get_policy_ex_arg*));
+    MOCK_METHOD(int, KeyCtrlInstallKey, (const char*, struct fscrypt_add_key_arg*));
+    MOCK_METHOD(int, KeyCtrlRemoveKey, (const char*, struct fscrypt_remove_key_arg*));
+    MOCK_METHOD(int, KeyCtrlGetKeyStatus, (const char*, struct fscrypt_get_key_status_arg*));
+    MOCK_METHOD(int, KeyCtrlGetPolicyEx, (const char*, struct fscrypt_get_policy_ex_arg*));
 #endif
-    MOCK_METHOD(bool, KeyCtrlSetPolicy, (const char*, union FscryptPolicy*));
-    MOCK_METHOD(bool, KeyCtrlGetPolicy, (const char*, struct fscrypt_policy*));
+    MOCK_METHOD(int, KeyCtrlSetPolicy, (const char*, union FscryptPolicy*));
+    MOCK_METHOD(int, KeyCtrlGetPolicy, (const char*, struct fscrypt_policy*));
     MOCK_METHOD(uint8_t, KeyCtrlLoadVersion, (const char*));
 };
 }

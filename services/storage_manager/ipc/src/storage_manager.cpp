@@ -848,6 +848,16 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("StorageManger::SetDirEncryptionPolicy start");
+    return FileSystemCrypto::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UpdateUserPublicDirPolicy(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

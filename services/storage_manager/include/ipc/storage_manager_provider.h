@@ -117,6 +117,7 @@ public:
     int32_t UnlockUserScreen(uint32_t userId,
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret) override;
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet = false) override;
     int32_t DeleteAppkey(const std::string &keyId) override;
@@ -169,6 +170,9 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback) override;
     int32_t UnregisterUeceActivationCallback() override;
+    int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    int32_t DeleteUserDir(const std::string &path) override;
+
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

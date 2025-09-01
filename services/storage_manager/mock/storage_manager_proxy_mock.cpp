@@ -43,6 +43,11 @@ int32_t StorageManagerProxy::CompleteAddUser(int32_t userId)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;
@@ -388,6 +393,16 @@ int32_t StorageManagerProxy::RegisterUeceActivationCallback(const sptr<IUeceActi
 }
 
 int32_t StorageManagerProxy::UnregisterUeceActivationCallback()
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::DeleteUserDir(const std::string &path)
 {
     return E_OK;
 }
