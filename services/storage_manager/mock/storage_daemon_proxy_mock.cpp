@@ -101,6 +101,11 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
 {
     return E_OK;
@@ -306,6 +311,16 @@ int32_t StorageDaemonProxy::RegisterUeceActivationCallback(const sptr<IUeceActiv
 }
 
 int32_t StorageDaemonProxy::UnregisterUeceActivationCallback()
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
 {
     return E_OK;
 }

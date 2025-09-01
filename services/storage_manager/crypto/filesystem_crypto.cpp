@@ -324,5 +324,19 @@ int32_t FileSystemCrypto::UnregisterUeceActivationCallback()
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->UnregisterUeceActivationCallback();
 }
+
+int32_t FileSystemCrypto::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+    LOGI("Enter SetDirEncryptionPolicy.");
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK || userId != StorageService::ZERO_USER) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level);
+}
 }
 }

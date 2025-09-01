@@ -300,6 +300,24 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemSize_00
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicyk_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    std::string dirPath = "/test";
+    uint32_t type = 2;
+    auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_GetUserStorageStats_002
  * @tc.desc: Verify the GetUserStorageStats function.
  * @tc.type: FUNC
@@ -1370,6 +1388,48 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceAc
 
     EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreateUserDir_001
+ * @tc.desc: Verify the CreateUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+
+    g_testCallingUid = 0;
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PERMISSION_DENIED);
+
+    g_testCallingUid = 7558;
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("/test/../", 0, 0, 0), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
+ * @tc.desc: Verify the DeleteUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+
+    g_testCallingUid = 0;
+    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
+
+    g_testCallingUid = 7558;
+    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir("/test/../"), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
 }
 }
 }

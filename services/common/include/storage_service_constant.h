@@ -32,6 +32,7 @@ const int32_t ZERO_USER_MIN_UID = 20000;
 const int32_t ZERO_USER_MAX_UID = 65535;
 const int MAX_APP_INDEX = 5;
 const int PRIORITY_LEVEL = -20;
+const int ANCO_SA_UID = 7558;
 }
 
 namespace StorageDaemon {
@@ -63,6 +64,9 @@ static const std::string FILE_AUTHORITY = "docs";
 static const std::string MEDIALIBRARY_NAME = "com.ohos.medialibrary.medialibrarydata";
 static const std::string MEDIA_FUSE_EL2 = "/data/storage/el2/media/";
 
+constexpr const char *ANCO_DIR = "/data/virt_service/rgm_hmos/anco_hmos_data/";
+constexpr const char *ANCO_MEDIA_PATH = "/data/virt_service/rgm_hmos/anco_hmos_data/media/0";
+constexpr const char *SERVICE_DIR_PATH = "/data/service/";
 // backup stat file version
 static const std::string VER_10_LINE1 = "version=1.0&attrNum=8";
 static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental;encodeFlag";
@@ -87,6 +91,7 @@ enum KeyType {
     EL4_KEY = 4,
     EL5_KEY = 5,
 };
+
 static std::map<std::string, KeyType> EL_DIR_MAP = {
     {EL1, EL1_KEY},
     {EL2, EL2_KEY},

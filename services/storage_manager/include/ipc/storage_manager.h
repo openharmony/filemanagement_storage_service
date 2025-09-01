@@ -139,6 +139,7 @@ public:
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
     std::mutex mutex_;
 private:
     StorageManager() = default;

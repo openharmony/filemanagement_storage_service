@@ -49,6 +49,7 @@ public:
                                 const std::string &fsUuid,
                                 const std::string &path,
                                 const std::string &description) override;
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type) override;
     int32_t NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state) override;
     int32_t NotifyVolumeDamaged(const std::string &volumeId,
                                 const std::string &fsTypeStr,
@@ -106,6 +107,8 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
     int32_t UnregisterUeceActivationCallback() override;
+    virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
+    virtual int32_t DeleteUserDir(const std::string &path) override;
 
     // app file share api
     int32_t CreateShareFile(const StorageFileRawData &rawData,

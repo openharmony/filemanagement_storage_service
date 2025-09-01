@@ -381,6 +381,15 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     return err;
 }
 
+int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+    LOGI("SetDirEncryptionPolicy begin.");
+    int timerId = StorageXCollie::SetTimer("storage:SetDirEncryptionPolicy", LOCAL_TIME_OUT_SECONDS);
+    int32_t ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+    StorageXCollie::CancelTimer(timerId);
+    return ret;
+}
+
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
     int32_t err = StorageDaemon::GetInstance().CompleteAddUser(userId);
@@ -820,6 +829,16 @@ int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
 int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
     return StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
+}
+
+int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+{
+    return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+}
+
+int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
+{
+    return UserManager::GetInstance().DeleteUserDir(path);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -72,6 +72,7 @@ public:
     // file lock
     static int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy);
+    static int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

@@ -92,6 +92,8 @@ enum class BizStage : int32_t {
     BIZ_STAGE_USER_MOUNT = 61,
 
     BIZ_STAGE_MTPFS_MTP_DEVICE = 71,
+    
+    BIZ_STAGE_NOT_PERMISSION = 81,
 };
 
 struct RadarParameter {
@@ -127,6 +129,8 @@ public:
     static void ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
         const std::string &extraData);
     static void ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
+        const std::string &extraData);
+    static void ReportCommonResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
     static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
     static void ReportHuksResult(const std::string &funcName, int ret);

@@ -135,6 +135,24 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_001, Te
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    std::string dirPath = "/test";
+    uint32_t type = 2;
+    auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_CompleteAddUser_001
  * @tc.desc: Verify the CompleteAddUser function.
  * @tc.type: FUNC
@@ -1232,6 +1250,34 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceAc
     auto ret = storageManagerProviderTest_->UnregisterUeceActivationCallback();
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreateUserDir_001
+ * @tc.desc: Verify the CreateUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
+ * @tc.desc: Verify the DeleteUserDir function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS
