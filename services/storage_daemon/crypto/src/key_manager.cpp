@@ -1694,7 +1694,7 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
             return E_ELX_KEY_STORE_ERROR;
         }
     }
-    ret = MountManager::GetInstance().FileBaseEncryptfsMount();
+    ret = MountManager::GetInstance().FileBasedEncryptfsMount();
     if (ret !=0) {
         LOGE("mount file based encrypt fs failed!");
         return ret;
