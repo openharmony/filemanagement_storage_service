@@ -1949,6 +1949,54 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     return 0;
 }
 
+int32_t KeyManager::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+    StorageService::EncryptionLevel level)
+{
+    LOGI("KeyManager::SetDirEncryptionPolicy begin!");
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+        LOGW("FscryptSyspara has not or encryption not enabled");
+        return E_NOT_SUPPORT;
+    }
+
+    bool isCeEncrypt = false;
+    auto ret = GetFileEncryptStatus(userId, isCeEncrypt);
+    if (ret != E_OK || isCeEncrypt) {
+        LOGE("User el2 has not decrypt, userId is %{public}u", userId);
+        return E_KEY_NOT_ACTIVED;
+    }
+
+    std::string keyPath;
+    ret = ((level == EL1_SYS_KEY) || (level == EL1_USER_KEY)) ? getElxKeyPath(userId, EL1_KEY, keyPath)
+        : getElxKeyPath(userId, EL2_KEY, keyPath);
+    if (ret != E_OK) {
+        LOGE("GetkeyPath fail, userId is %{public}u, level is %{public}u", userId, level);
+        return ret;
+    }
+
+    ret = LoadAndSetPolicy(keyPath.c_str(), dirPath.c_str());
+    if (ret != E_OK) {
+        LOGE("SetDirEncryptionPolicy failed, userId is %{public}u, level is %{public}u", userId, level);
+        return ret;
+    }
+
+    if (level == EL3_USER_KEY || level == EL4_USER_KEY) {
+        std::string eceSeceKeyPath;
+        KeyType tempType = level == EL3_USER_KEY ? EL3_KEY : EL4_KEY;
+        ret = getElxKeyPath(userId, tempType, eceSeceKeyPath);
+        if (ret != E_OK) {
+            LOGE("getkeyPath fail, userId is %{public}u, level is %{public}u", userId, level);
+            return ret;
+        }
+        ret = LoadAndSetEceAndSecePolicy(eceSeceKeyPath.c_str(), dirPath.c_str(), static_cast<int>(level));
+        if (ret != E_OK) {
+            LOGE("Set directory EceAndSece policy error!, userId is %{public}u, level is %{public}u", userId, level);
+            return ret;
+        }
+    }
+    LOGI("KeyManager::SetDirEncryptionPolicy success!");
+    return E_OK;
+}
+
 int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxKeyPath)
 {
     std::string natoPath = GetNatoNeedRestorePath(user, type);

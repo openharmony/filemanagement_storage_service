@@ -263,6 +263,22 @@ void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t re
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
+void StorageRadar::ReportCommonResult(const std::string &funcName, int32_t ret, unsigned int userId,
+    const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_NOT_PERMISSION,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData,
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
 void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
     const std::string &extraData)
 {

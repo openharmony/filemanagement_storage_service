@@ -1333,5 +1333,82 @@ int StorageDaemon::UnregisterUeceActivationCallback()
     return E_OK;
 #endif
 }
+int32_t StorageDaemon::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
+{
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    LOGI("Enter StorageDaemon::SetDirEncryptionPolicy!");
+    std::string extraData = "userId is:" + std::to_string(userId) + ", level is:" + std::to_string(level)
+        + ", path is:" + dirPath;
+    if (level < EL1_SYS_KEY || level > EL4_USER_KEY) {
+        StorageRadar::ReportCommonResult("SetDirEncryptionPolicy level is failed", userId, E_PARAMS_INVALID, extraData);
+        LOGE("level is wrong, level is %{public}u", level);
+        return E_PARAMS_INVALID;
+    }
+
+    if (level == EL1_SYS_KEY && userId != GLOBAL_USER_ID) {
+        StorageRadar::ReportCommonResult("SetDirEncryptionPolicy setSysPolicy failed", userId, E_PARAMS_INVALID,
+            extraData);
+        LOGE("SysPolice must be root uid, level is %{public}u", level);
+        return E_PARAMS_INVALID;
+    }
+    StorageService::EncryptionLevel keyLevel = UintToKeyType(level);
+    LOGI("user id is : %{public}u, dir path is %{public}s, level is %{public}u", userId, dirPath.c_str(), level);
+    auto ret = IsDirPathSupport(dirPath);
+    if (ret != E_OK) {
+        StorageRadar::ReportCommonResult("SetDirEncryptionPolicy IsDirPathSupport file failed", userId, ret, extraData);
+        LOGE("IsDirPathSupport file failed, errNo %{public}d", ret);
+        return ret;
+    }
+
+    ret = KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, keyLevel);
+    if (ret != E_OK) {
+        StorageRadar::ReportCommonResult("StorageDaemon::SetDirEncryptionPolicy", userId, ret, extraData);
+        LOGE("VerifyAncoUserDirs file failed, errNo %{public}d", ret);
+        return ret;
+    }
+
+    LOGI("StorageDaemon::SetDirEncryptionPolicy success.");
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+StorageService::EncryptionLevel StorageDaemon::UintToKeyType(uint32_t type)
+{
+    switch (type) {
+        case StorageService::EncryptionLevel::EL1_SYS_KEY:
+            return StorageService::EncryptionLevel::EL1_SYS_KEY;
+        case StorageService::EncryptionLevel::EL1_USER_KEY:
+            return StorageService::EncryptionLevel::EL1_USER_KEY;
+        case StorageService::EncryptionLevel::EL2_USER_KEY:
+            return StorageService::EncryptionLevel::EL2_USER_KEY;
+        case StorageService::EncryptionLevel::EL3_USER_KEY:
+            return StorageService::EncryptionLevel::EL3_USER_KEY;
+        case StorageService::EncryptionLevel::EL4_USER_KEY:
+            return StorageService::EncryptionLevel::EL4_USER_KEY;
+        default:
+            return StorageService::EncryptionLevel::EL1_SYS_KEY;
+    }
+}
+
+int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
+{
+    LOGI("check path is %{public}s", dirPath.c_str());
+    if (!IsDir(dirPath)) {
+        LOGE("dirPath is not dir, please create dir");
+        return E_NOT_DIR_PATH;
+    }
+    if (access(dirPath.c_str(), F_OK) != 0) {
+        LOGE("dirPath is not exist, please create dir");
+        return E_NON_ACCESS;
+    }
+    if (dirPath.find(ANCO_DIR) != 0) {
+        LOGE("dir is not permission.");
+        return E_PARAMS_INVALID;
+    }
+    
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

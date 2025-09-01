@@ -84,5 +84,9 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
      [ipccode 55] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
      [ipccode 56] void UnregisterUeceActivationCallback();
-     [ipccode 57] void UpdateUserPublicDirPolicy([in] unsigned int userId);
+     [ipccode 57] void CreateUserDir([in] String path, [in] unsigned int mode,
+                                     [in] unsigned int uid, [in] unsigned int gid);
+     [ipccode 58] void DeleteUserDir([in] String path);
+     [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
+     [ipccode 60] void UpdateUserPublicDirPolicy([in] unsigned int userId);
 }

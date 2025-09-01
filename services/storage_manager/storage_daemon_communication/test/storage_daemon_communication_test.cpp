@@ -64,6 +64,29 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, test
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetDirEncryptionPolicy_0000
+ * @tc.name: Daemon_communication_SetDirEncryptionPolicy_0000
+ * @tc.desc: Test function of SetDirEncryptionPolicy interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetDirEncryptionPolicy_0000,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetDirEncryptionPolicy_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string dirPath = "/data/service/test";
+    uint32_t userId = 100;
+    uint32_t type = 2;
+    int32_t result = sdCommunication->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetDirEncryptionPolicy_0000 SUCCESS";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Daemon_communication_PrepareAddUser_0000
  * @tc.name: Daemon_communication_PrepareAddUser_0000
  * @tc.desc: Test function of PrepareAddUser interface for SUCCESS.

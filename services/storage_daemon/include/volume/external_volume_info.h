@@ -63,7 +63,7 @@ private:
 
     int32_t ReadMetadata();
     int32_t DoMount4Ext(uint32_t mountFlags);
-    int32_t DoMount4Hmfs(uint32_t mountFlags);
+    int32_t DoMount4Hmfs();
     int32_t DoMount4Ntfs(uint32_t mountFlags);
     int32_t DoMount4Exfat(uint32_t mountFlags);
     int32_t DoFix4Ntfs();

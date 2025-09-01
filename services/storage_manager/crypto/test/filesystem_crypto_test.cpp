@@ -140,6 +140,32 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_ActiveUserKey_0000, testin
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_SetDirEncryptionPolicy
+ * @tc.name: Storage_manager_crypto_SetDirEncryptionPolicy
+ * @tc.desc: Test function of SetDirEncryptionPolicy.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_SetDirEncryptionPolicy, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_SetDirEncryptionPolicy start";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    ASSERT_NE(fileSystemCrypto_, nullptr);
+    std::string dirPath = "/data/service/test";
+    uint32_t type = 6;
+    uint32_t userId = 19999;
+    uint32_t ret = fileSystemCrypto_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    userId = 100;
+    ret = fileSystemCrypto_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_SetDirEncryptionPolicy end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_crypto_ActiveUserKey_0001
  * @tc.name: Storage_manager_crypto_ActiveUserKey_0001
  * @tc.desc: Test function of ActiveUserKey interface for Parameters ERROR which userId not in [101, 1099].

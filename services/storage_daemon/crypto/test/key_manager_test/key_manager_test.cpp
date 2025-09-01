@@ -28,6 +28,7 @@
 #include "fscrypt_key_v2_mock.h"
 #include "fscrypt_key_v2.h"
 #include "key_control_mock.h"
+#include "storage_service_constants.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
 #include "mock/uece_activation_callback_mock.h"
@@ -87,6 +88,63 @@ void KeyManagerTest::SetUp(void)
 void KeyManagerTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
+}
+
+/**
+ * @tc.name: KeyManager_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerTest, KeyManager_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_SetDirEncryptionPolicy_001 Start";
+    std::string dirPath = "/data/service/test";
+    uint32_t userId = 100;
+    StorageService::EncryptionLevel type = StorageService::EL2_USER_KEY;
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), E_NOT_SUPPORT);
+    unsigned int user = 100;
+    shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
+
+    KeyManager::GetInstance().SaveUserElKey(user, EL1_KEY, elKey);
+    KeyManager::GetInstance().DeleteElKey(user, EL1_KEY);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    type = StorageService::EL1_USER_KEY;
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), -ENOENT);
+
+    KeyManager::GetInstance().SaveUserElKey(user, EL2_KEY, elKey);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, LoadAndSetPolicy(_, _)).WillOnce(Return(-1));
+    type = StorageService::EL2_USER_KEY;
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), -1);
+
+    KeyManager::GetInstance().SaveUserElKey(user, EL3_KEY, elKey);
+    KeyManager::GetInstance().DeleteElKey(user, EL3_KEY);
+    KeyManager::GetInstance().SaveUserElKey(user, EL2_KEY, elKey);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, LoadAndSetPolicy(_, _)).WillOnce(Return(-1));
+    type = StorageService::EL3_USER_KEY;
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), -1);
+
+    KeyManager::GetInstance().SaveUserElKey(user, EL3_KEY, elKey);
+    KeyManager::GetInstance().DeleteElKey(user, EL3_KEY);
+    KeyManager::GetInstance().SaveUserElKey(user, EL2_KEY, elKey);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, LoadAndSetPolicy(_, _)).WillOnce(Return(0));
+    type = StorageService::EL3_USER_KEY;
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), -2);
+
+
+    KeyManager::GetInstance().SaveUserElKey(user, EL4_KEY, elKey);
+    KeyManager::GetInstance().SaveUserElKey(user, EL2_KEY, elKey);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, LoadAndSetPolicy(_, _)).WillOnce(Return(-1));
+    type = StorageService::EL4_USER_KEY;
+    EXPECT_EQ(KeyManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, type), -1);
+
+    GTEST_LOG_(INFO) << "KeyManager_SetDirEncryptionPolicy_001 end";
 }
 
 /**

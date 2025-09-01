@@ -18,6 +18,7 @@
 
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
+#include "storage_service_constants.h"
 #include "storage_daemon_provider.h"
 namespace OHOS {
 namespace StorageDaemon {
@@ -72,6 +73,7 @@ public:
                              const std::vector<uint8_t> &secret);
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
 
     // app file share api
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
@@ -115,6 +117,8 @@ private:
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
     int32_t RestoreOneUserKey(int32_t userId, KeyType type);
 #endif
+    int32_t IsDirPathSupport(const std::string &dirPath);
+    StorageService::EncryptionLevel UintToKeyType(uint32_t type);
     int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
     int32_t GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType type,
                                           const std::vector<uint8_t> &token,
