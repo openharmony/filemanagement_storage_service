@@ -282,10 +282,11 @@ int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t userId)
 {
     LOGI("Update public dir policy, user:%{public}u", userId);
     if (!IsServiceExtSoLoaded()) {
-        LOGI("user key ext policy is disabled");
+        LOGE("user key ext policy is disabled");
         return E_OK;
     }
     if (!KeyCtrlHasFscryptSyspara()) {
+        LOGE("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
