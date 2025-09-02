@@ -865,7 +865,7 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     }
 
     if (IsFilePathInvalid(path)) {
-        LOGE("The path: %{public}s is not invalid.", path.c_str());
+        LOGE("The path: %{public}s is invalid.", path.c_str());
         return E_PARAMS_INVALID;
     }
 
@@ -892,7 +892,7 @@ int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
     }
 
     if (IsFilePathInvalid(path)) {
-        LOGE("The path: %{public}s is not invalid.", path.c_str());
+        LOGE("The path: %{public}s is invalid.", path.c_str());
         return E_PARAMS_INVALID;
     }
 

@@ -170,8 +170,8 @@ int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
             }
             isPathEmpty = false;
 
-            bool inVailed = true;
-            auto ret = DestroyDir(path + "/" + ent->d_name, inVailed);
+            bool invalid = true;
+            auto ret = DestroyDir(path + "/" + ent->d_name, invalid);
             if (ret != E_OK) {
                 LOGE("failed to RmDirRecurse %{public}s, errno %{public}d", path.c_str(), errno);
                 (void)closedir(dir);
