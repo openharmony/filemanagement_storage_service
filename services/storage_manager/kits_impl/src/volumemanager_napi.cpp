@@ -15,6 +15,9 @@
 
 #include "volumemanager_napi.h"
 
+#ifdef HMDFS_FILE_MANAGER
+#include "napi_module_dfs_service.h"
+#endif
 #include "volumemanager_n_exporter.h"
 
 namespace OHOS {
@@ -34,6 +37,16 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("setVolumeDescription", SetVolumeDescription),
         DECLARE_NAPI_FUNCTION("format", Format),
         DECLARE_NAPI_FUNCTION("partition", Partition),
+        #ifdef HMDFS_FILE_MANAGER
+        DECLARE_NAPI_FUNCTION("isSameAccountDevice", DfsService::IsSameAccountDevice),
+        DECLARE_NAPI_FUNCTION("getDfsSwitchStatus", DfsService::GetDfsSwitchStatus),
+        DECLARE_NAPI_FUNCTION("updateDfsSwitchStatus", DfsService::UpdateDfsSwitchStatus),
+        DECLARE_NAPI_FUNCTION("connectDfs", DfsService::ConnectDfs),
+        DECLARE_NAPI_FUNCTION("disconnectDfs", DfsService::DisconnectDfs),
+        DECLARE_NAPI_FUNCTION("getConnectedDeviceList", DfsService::GetConnectedDeviceList),
+        DECLARE_NAPI_FUNCTION("deviceOnline", DfsService::DeviceOnline),
+        DECLARE_NAPI_FUNCTION("deviceOffline", DfsService::DeviceOffline),
+        #endif
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
