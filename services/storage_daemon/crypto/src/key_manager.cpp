@@ -1658,15 +1658,15 @@ int32_t KeyManager::FileBasedEncryptfsMount()
 {
     std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
     std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
-    int32_t ret = TEMP_FAILURE_RETRY(umount(dstPath.c_str()));
+    int32_t ret = UMount(dstPath);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount file based encrypt fs, err %{public}d", errno);
         std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + std::to_string(errno);
-        StorageRadar::ReportUserManager("FileBasedEncryptfsMount", DEFAULT_REPAIR_USERID, E_MOUNT_FBE, extraData);
-        return E_MOUNT_FBE;
+        StorageRadar::ReportUserManager("FileBasedEncryptfsMount", DEFAULT_REPAIR_USERID, E_UMOUNT_FBE, extraData);
+        return E_UMOUNT_FBE;
     }
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = TEMP_FAILURE_RETRY(mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND, nullptr));
+    ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount file based encrypt fs, err %{public}d", errno);
         std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + std::to_string(errno);
