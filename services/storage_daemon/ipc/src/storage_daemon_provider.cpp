@@ -652,8 +652,8 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
         return ret;
     }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
-     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
-     LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
+    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
     return E_OK;
 }
 
