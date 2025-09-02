@@ -15,10 +15,10 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("FileSystemCryptoFuzzTest") {
+ohos_fuzztest("FileSystemCryptoUpdateKeyContextFuzzTest") {
   module_out_path = "storage_service/storage_service/storage_manager"
   fuzz_config_file =
-      "${storage_service_path}/test/fuzztest/filesystemcrypto_fuzzer"
+      "${storage_service_path}/test/fuzztest/filesystemcryptoupdatekeycontext_fuzzer"
   include_dirs = [
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -34,7 +34,7 @@ ohos_fuzztest("FileSystemCryptoFuzzTest") {
   sources = [
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "filesystemcrypto_fuzzer.cpp",
+    "filesystemcryptoupdatekeycontext_fuzzer.cpp",
   ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
   deps = [
@@ -62,5 +62,5 @@ ohos_fuzztest("FileSystemCryptoFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":FileSystemCryptoFuzzTest" ]
+  deps = [ ":FileSystemCryptoUpdateKeyContextFuzzTest" ]
 }
