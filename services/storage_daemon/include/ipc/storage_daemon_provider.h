@@ -152,6 +152,7 @@ private:
     std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
     void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
     int32_t RawDataToStringVec(const StorageFileRawData &rawData, std::vector<std::string> &stringVec);
+    void SetUserStatistics(uint32_t userId, RadarStatisticInfoType type);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

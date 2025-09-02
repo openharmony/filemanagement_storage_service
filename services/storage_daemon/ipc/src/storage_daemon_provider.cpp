@@ -61,13 +61,62 @@ constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
-    std::lock_guard<std::mutex> lock(mutexStats_);
     auto it = opStatistics_.find(userId);
     if (it != opStatistics_.end()) {
         return it;
     }
     RadarStatisticInfo radarInfo = {0};
     return opStatistics_.insert(make_pair(userId, radarInfo)).first;
+}
+
+void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInfoType type)
+{
+    std::lock_guard<std::mutex> lock(mutexStats_);
+    auto it = GetUserStatistics(userId);
+    if (it == opStatistics_.end()) {
+        LOGE("GetUserStatistics is nullptr, type: %{public}d", static_cast<int32_t>(type));
+        return;
+    }
+    switch (type) {
+        case RadarStatisticInfoType::KEY_LOAD_SUCCESS:
+            it->second.keyLoadSuccCount++;
+            break;
+        case RadarStatisticInfoType::KEY_LOAD_FAIL:
+            it->second.keyLoadFailCount++;
+            break;
+        case RadarStatisticInfoType::KEY_UNLOAD_SUCCESS:
+            it->second.keyUnloadSuccCount++;
+            break;
+        case RadarStatisticInfoType::KEY_UNLOAD_FAIL:
+            it->second.keyUnloadFailCount++;
+            break;
+        case RadarStatisticInfoType::USER_ADD_SUCCESS:
+            it->second.userAddSuccCount++;
+            break;
+        case RadarStatisticInfoType::USER_ADD_FAIL:
+            it->second.userAddFailCount++;
+            break;
+        case RadarStatisticInfoType::USER_REMOVE_SUCCESS:
+            it->second.userRemoveSuccCount++;
+            break;
+        case RadarStatisticInfoType::USER_REMOVE_FAIL:
+            it->second.userRemoveFailCount++;
+            break;
+        case RadarStatisticInfoType::USER_START_SUCCESS:
+            it->second.userStartSuccCount++;
+            break;
+        case RadarStatisticInfoType::USER_START_FAIL:
+            it->second.userStartFailCount++;
+            break;
+        case RadarStatisticInfoType::USER_STOP_SUCCESS:
+            it->second.userStopSuccCount++;
+            break;
+        case RadarStatisticInfoType::USER_STOP_FAIL:
+            it->second.userStopFailCount++;
+            break;
+        default:
+            break;
+    }
 }
 
 void StorageDaemonProvider::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics)
@@ -310,7 +359,6 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance().SetPriority();  // set tid priority to 40
     int32_t ret = UserManager::GetInstance().StartUser(userId);
@@ -323,11 +371,8 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
         AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    if (ret != E_OK) {
-        it->second.userStartFailCount++;
-    } else {
-        it->second.userStartSuccCount++;
-    }
+    SetUserStatistics(userId, ret != E_OK ? USER_START_FAIL : USER_START_SUCCESS);
+
     auto delay = StorageService::StorageRadar::ReportDuration("START USER",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: START USER: delay time = %{public}s", delay.c_str());
@@ -336,7 +381,6 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
@@ -345,39 +389,25 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
     std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
     AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
     HiAudit::GetInstance().Write(storageAuditLog);
-    if (ret != E_OK) {
-        it->second.userStopFailCount++;
-    } else {
-        it->second.userStopSuccCount++;
-    }
+    SetUserStatistics(userId, ret != E_OK ? USER_STOP_FAIL : USER_STOP_SUCCESS);
     return ret;
 }
 
 int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
-    if (err != E_OK) {
-        it->second.userAddFailCount++;
-    } else {
-        it->second.userAddSuccCount++;
-    }
+    SetUserStatistics(userId, err != E_OK ? USER_ADD_FAIL : USER_ADD_SUCCESS);
     return err;
 }
 
 int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
-    if (err != E_OK) {
-        it->second.userRemoveFailCount++;
-    } else {
-        it->second.userRemoveSuccCount++;
-    }
+    SetUserStatistics(userId, err != E_OK ? USER_REMOVE_FAIL : USER_REMOVE_SUCCESS);
     return err;
 }
 
@@ -390,14 +420,9 @@ int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 int32_t StorageDaemonProvider::InitGlobalKey()
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(USER0ID);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().InitGlobalKey();
-    if (err != E_OK) {
-        it->second.keyLoadFailCount++;
-    } else {
-        it->second.keyLoadSuccCount++;
-    }
+    SetUserStatistics(USER0ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     return err;
 }
 
@@ -405,14 +430,9 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().InitGlobalUserKeys();
-    if (err != E_OK) {
-        it->second.keyLoadFailCount++;
-    } else {
-        it->second.keyLoadSuccCount++;
-    }
+    SetUserStatistics(USER100ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     return err;
 }
 
@@ -454,14 +474,13 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().ActiveUserKey(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
     if ((err == E_OK) || ((err == E_ACTIVE_EL2_FAILED) && token.empty() && secret.empty())) {
-        it->second.keyLoadSuccCount++;
+        SetUserStatistics(userId, KEY_LOAD_SUCCESS);
     } else {
-        it->second.keyLoadFailCount++;
+        SetUserStatistics(userId, KEY_LOAD_FAIL);
     }
     auto delay = StorageService::StorageRadar::ReportDuration("ACTIVE USER KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -473,15 +492,10 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 {
     int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", INACTIVE_USER_KEY_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t ret = StorageDaemon::GetInstance().InactiveUserKey(userId);
     StorageXCollie::CancelTimer(timerId);
-    if (ret != E_OK) {
-        it->second.keyUnloadFailCount++;
-    } else {
-        it->second.keyUnloadSuccCount++;
-    }
+    SetUserStatistics(userId, ret != E_OK ? KEY_UNLOAD_FAIL : KEY_UNLOAD_SUCCESS);
     return ret;
 }
 
@@ -513,15 +527,10 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
     int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance().LockUserScreen(userId);
     StorageXCollie::CancelTimer(timerId);
-    if (ret != E_OK) {
-        it->second.keyUnloadFailCount++;
-    } else {
-        it->second.keyUnloadSuccCount++;
-    }
+    SetUserStatistics(userId, ret != E_OK ? KEY_UNLOAD_FAIL : KEY_UNLOAD_SUCCESS);
     return ret;
 }
 
@@ -531,15 +540,10 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
 {
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::unique_lock<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance().UnlockUserScreen(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
-    if (ret != E_OK) {
-        it->second.keyLoadFailCount++;
-    } else {
-        it->second.keyLoadSuccCount++;
-    }
+    SetUserStatistics(userId, ret != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     lock.unlock();
 
 #ifdef USER_CRYPTO_MANAGER
@@ -618,6 +622,10 @@ int32_t StorageDaemonProvider::RawDataToStringVec(const StorageFileRawData &rawD
     for (uint32_t i = 0; i < stringVecSize; i++) {
         uint32_t strLen = 0;
         ss.read(reinterpret_cast<char *>(&strLen), sizeof(strLen));
+        if (ss.tellg() == -1 || ssLength < static_cast<uint32_t>(ss.tellg())) {
+            LOGE("ssLength length:%{public}u is invalid", ssLength);
+            return ERR_DEAD_OBJECT;
+        }
         if (strLen > ssLength - static_cast<uint32_t>(ss.tellg())) {
             LOGE("string length:%{public}u is invalid", strLen);
             return ERR_DEAD_OBJECT;
@@ -644,8 +652,8 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
         return ret;
     }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
-    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
-    LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
+    // AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    // LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
     return E_OK;
 }
 
