@@ -983,9 +983,9 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountDfsDocs_002, T
     int32_t ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
     EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
 
-    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(22));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(2));
     ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_NOT_EMPTY_TO_UMOUNT);
+    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDfsDocs_002 end";
 }

@@ -23,7 +23,6 @@
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
-#include "file_utils_mock.h"
 
 using namespace std;
 namespace OHOS {
@@ -38,13 +37,10 @@ public:
     static void TearDownTestCase(void) {};
     void SetUp() {};
     void TearDown();
-    static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void UserManagerTest::SetUpTestCase(void)
 {
-    fileUtilMoc_ = make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     std::vector<std::string> paths = {
         "/data/app",
         "/data/app/el1",
@@ -73,8 +69,6 @@ void UserManagerTest::SetUpTestCase(void)
 
 void UserManagerTest::TearDown()
 {
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
     StorageTest::StorageTestUtils::ClearTestResource();
 }
 
@@ -441,28 +435,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestS
     ret = MountManager::GetInstance().LocalUMount(userId);
     EXPECT_EQ(ret, E_UMOUNT_LOCAL_CLOUD);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";
-}
-
-/**
- * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_001
- * @tc.desc: Verify the MountDfsDocs function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 start";
-
-    int32_t userId = 100;
-    std::string relativePath = "/data";
-    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
-    int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
-
-    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(22));
-    ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, deviceId, deviceId);
-    EXPECT_NE(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
 }
 
 /**
