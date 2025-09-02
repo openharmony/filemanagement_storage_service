@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef FILESYSTEMCRYPTO_FUZZER_H
-#define FILESYSTEMCRYPTO_FUZZER_H
+#ifndef FILESYSTEMCRYPTOLOCKUSERSCREEN_FUZZER_H
+#define FILESYSTEMCRYPTOLOCKUSERSCREEN_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "filesystemcrypto_fuzzer"
+#define FUZZ_PROJECT_NAME "filesystemcryptolockuserscreen_fuzzer"
 
 #endif
