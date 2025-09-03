@@ -92,112 +92,6 @@ void StorageDaemonProviderTest::TearDown(void)
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_SetUserStatistics_001
- * @tc.desc: Verify the SetUserStatistics function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetUserStatistics_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = 100;
-    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_LOAD_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].keyLoadSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_LOAD_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].keyLoadFailCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_UNLOAD_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].keyUnloadSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_UNLOAD_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].keyUnloadFailCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_ADD_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userAddSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_ADD_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userAddFailCount, 1);
-
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_SetUserStatistics_002
- * @tc.desc: Verify the SetUserStatistics function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetUserStatistics_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = 100;
-    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_REMOVE_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userRemoveSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_REMOVE_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userRemoveFailCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_START_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userStartSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_START_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userStartFailCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_STOP_SUCCESS);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userStopSuccCount, 1);
-
-    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_STOP_FAIL);
-    opStatisticsTemp.clear();
-    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
-    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
-    EXPECT_EQ(opStatisticsTemp[userId].userStopFailCount, 1);
-
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_002 end";
-}
-
-/**
  * @tc.name: StorageDaemonProviderTest_Shutdown_001
  * @tc.desc: Verify the Shutdown function.
  * @tc.type: FUNC
@@ -1010,6 +904,112 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     EXPECT_EQ(ret, ERR_DEAD_OBJECT);
 
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_SetUserStatistics_001
+ * @tc.desc: Verify the SetUserStatistics function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetUserStatistics_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_LOAD_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].keyLoadSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_LOAD_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].keyLoadFailCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_UNLOAD_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].keyUnloadSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::KEY_UNLOAD_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].keyUnloadFailCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_ADD_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userAddSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_ADD_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userAddFailCount, 1);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_SetUserStatistics_002
+ * @tc.desc: Verify the SetUserStatistics function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetUserStatistics_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_REMOVE_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userRemoveSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_REMOVE_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userRemoveFailCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_START_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userStartSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_START_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userStartFailCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_STOP_SUCCESS);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userStopSuccCount, 1);
+
+    storageDaemonProviderTest_->SetUserStatistics(userId, RadarStatisticInfoType::USER_STOP_FAIL);
+    opStatisticsTemp.clear();
+    storageDaemonProviderTest_->GetTempStatistics(opStatisticsTemp);
+    ASSERT_TRUE(opStatisticsTemp.find(userId) != opStatisticsTemp.end());
+    EXPECT_EQ(opStatisticsTemp[userId].userStopFailCount, 1);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetUserStatistics_002 end";
 }
 
 /**
