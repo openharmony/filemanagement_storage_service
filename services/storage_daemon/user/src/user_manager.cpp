@@ -245,13 +245,13 @@ int32_t UserManager::CreateUserDir(const std::string &path, mode_t mode, uid_t u
     LOGI("CreateUserDir path: %{public}s, %{public}d, %{public}d, %{public}d", path.c_str(), mode, uid, gid);
     std::string prefix = "/data/virt_service/rgm_hmos/anco_hmos_data/";
     if (path.compare(0, prefix.size(), prefix) != 0) {
-        LOGE("the path: %{public}s is invalid", path.c_str());
+        LOGE("The path: %{public}s is invalid", path.c_str());
         return E_PARAMS_INVALID;
     }
 
     auto ret = PrepareDirSimple(path, mode, uid, gid);
     if (ret != E_OK) {
-        LOGE("failed to prepareDir %{public}s, ret: %{public}d", path.c_str(), ret);
+        LOGE("Failed to prepareDir %{public}s, ret: %{public}d", path.c_str(), ret);
     } else {
         LOGI("CreateUserDir end. ret: %{public}d", ret);
     }
@@ -266,7 +266,7 @@ int32_t UserManager::DeleteUserDir(const std::string &path)
     LOGE("DeleteUserDir path: %{public}s", path.c_str());
     std::string prefix = "/data/virt_service/rgm_hmos/anco_hmos_data/";
     if (path.compare(0, prefix.size(), prefix) != 0) {
-        LOGE("the path: %{public}s is invalid", path.c_str());
+        LOGE("The path: %{public}s is invalid", path.c_str());
         return E_PARAMS_INVALID;
     }
 

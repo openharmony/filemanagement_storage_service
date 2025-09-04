@@ -36,6 +36,21 @@ struct RadarStatisticInfo {
     uint64_t userStopFailCount;
 };
 
+enum RadarStatisticInfoType {
+    KEY_LOAD_SUCCESS,
+    KEY_LOAD_FAIL,
+    KEY_UNLOAD_SUCCESS,
+    KEY_UNLOAD_FAIL,
+    USER_ADD_SUCCESS,
+    USER_ADD_FAIL,
+    USER_REMOVE_SUCCESS,
+    USER_REMOVE_FAIL,
+    USER_START_SUCCESS,
+    USER_START_FAIL,
+    USER_STOP_SUCCESS,
+    USER_STOP_FAIL,
+};
+
 class StorageStatisticRadar {
 public:
     static StorageStatisticRadar &GetInstance()
