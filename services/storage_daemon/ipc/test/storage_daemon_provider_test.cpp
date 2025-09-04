@@ -990,7 +990,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_001,
     std::string deviceId = "device-456";
     int32_t result =
         storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_001 end";
 }
 

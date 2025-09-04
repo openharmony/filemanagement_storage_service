@@ -161,13 +161,10 @@ void NapiFileDfsListener::OnStatus(const std::string &networkId, int32_t status,
     eventInfo.status = status;
     eventInfo.path = path;
     eventInfo.type = type;
-    auto weakThis = std::weak_ptr<NapiFileDfsListener>(shared_from_this());
     napi_status ret = napi_send_event(
         env_,
-        [weakThis, eventInfo]() mutable {
-            if (auto thisPtr = weakThis.lock()) {
-                thisPtr->HandleStatusEvent(thisPtr->env_, thisPtr->callbackRef_, eventInfo);
-            }
+        [this, eventInfo]() mutable {
+            HandleStatusEvent(env_, callbackRef_, eventInfo);
         },
         napi_eprio_immediate);
     if (ret != napi_ok) {

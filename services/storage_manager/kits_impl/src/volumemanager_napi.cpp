@@ -44,8 +44,8 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("connectDfs", DfsService::ConnectDfs),
         DECLARE_NAPI_FUNCTION("disconnectDfs", DfsService::DisconnectDfs),
         DECLARE_NAPI_FUNCTION("getConnectedDeviceList", DfsService::GetConnectedDeviceList),
-        DECLARE_NAPI_FUNCTION("deviceOnline", DfsService::DeviceOnline),
-        DECLARE_NAPI_FUNCTION("deviceOffline", DfsService::DeviceOffline),
+        DECLARE_NAPI_FUNCTION("on", DfsService::DeviceOnline),
+        DECLARE_NAPI_FUNCTION("off", DfsService::DeviceOffline),
         #endif
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
