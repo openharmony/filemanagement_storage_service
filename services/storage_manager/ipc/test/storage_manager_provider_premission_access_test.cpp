@@ -150,6 +150,28 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryUsbIsInUse_
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskPath = "../dev/sda1";
+    std::string diskPathSec = "/dev/sda1";
+    g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    std::uint32_t userId = 100;
+    std::uint32_t level = 2;
+    auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, diskPath, level);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, diskPathSec, level);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_IsFilePathInvalid_001
  * @tc.desc: Verify the IsFilePathInvalid function.
  * @tc.type: FUNC
