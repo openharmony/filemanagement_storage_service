@@ -26,6 +26,7 @@
 #include "observer/appstate_observer.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/mount_constant.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 #ifdef DFS_SERVICE
@@ -579,12 +580,12 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
 {
     size_t pos = path.find(CURRENT_USER_ID_FLAG);
     if (pos != string::npos) {
-        path = path.replace(pos, CURRENT_USER_ID_FLAG.length(), userId);
+        path = path.replace(pos, strlen(CURRENT_USER_ID_FLAG), userId);
     }
 
     pos = path.find(PACKAGE_NAME_FLAG);
     if (pos != string::npos) {
-        path = path.replace(pos, PACKAGE_NAME_FLAG.length(), bundleName);
+        path = path.replace(pos, strlen(PACKAGE_NAME_FLAG), bundleName);
     }
 }
 
@@ -609,7 +610,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(rootDir, errCode)) {
-        LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
+        LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH);
         return -ENOENT;
     }
 
@@ -647,7 +648,7 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
     }
     LOGI("MountSandboxPath, bundleName: %{public}s, userID: %{public}s", bundleName.c_str(), userId.c_str());
     for (int i = 0; i < dstCnt; i++) {
-        std::string dstPath = SANDBOX_ROOT_PATH;
+        std::string dstPath(SANDBOX_ROOT_PATH);
         dstPath = dstPath.append(userId).append("/").append(bundleName).append(dstPaths[i]);
         string srcPath = srcPaths[i];
         ParseSandboxPath(srcPath, userId, bundleName);
@@ -732,7 +733,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
 
 int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId)
 {
-    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    std::ifstream inputStream(MOUNT_POINT_INFO, std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
         return E_UMOUNT_PROC_MOUNTS_OPEN;
@@ -958,7 +959,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
 bool MountManager::SupportHmdfs()
 {
     char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
-    int ret = GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
+    int ret = GetParameter(HMDFS_SYS_CAP, "", hmdfsEnable, HMDFS_VAL_LEN);
     LOGI("GetParameter hmdfsEnable %{public}s, ret %{public}d", hmdfsEnable, ret);
     if (strncmp(hmdfsEnable, "true", HMDFS_TRUE_LEN) == 0) {
         return true;
@@ -1531,7 +1532,7 @@ int32_t MountManager::SetFafQuotaProId(int32_t userId)
     for (const DirInfo &dir: fileManagerDir_) {
         QuotaManager::GetInstance().SetQuotaPrjId(StringPrintf(dir.path.c_str(), userId), prjId, true);
     }
-    QuotaManager::GetInstance().SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
+    QuotaManager::GetInstance().SetQuotaPrjId(StringPrintf(SHARE_PATH, userId), prjId, true);
     return E_OK;
 }
 
@@ -1636,7 +1637,7 @@ int32_t MountManager::BindAndRecMount(int32_t userId, std::string &srcPath, std:
 
 void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
 {
-    const std::string &path = APP_EL1_PATH;
+    const std::string path(APP_EL1_PATH);
     if (!DirExist(path)) {
         return;
     }
@@ -1804,7 +1805,7 @@ void MountManager::SetMediaObserverState(bool active)
 {
     LOGI("set meidalibrary observer state start, active is %{public}d", active);
     if (active == true) {
-        vector<string> bandleNameList = { MEDIALIBRARY_NAME };
+        vector<string> bandleNameList = { "com.ohos.medialibrary.medialibrarydata" };
         AppStateObserverManager::GetInstance().UnSubscribeAppState();
         AppStateObserverManager::GetInstance().SubscribeAppState(bandleNameList);
     }
@@ -1974,7 +1975,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
 
 int32_t MountManager::OpenProcForMulti(const std::string &path, std::set<std::string> &occupyFiles)
 {
-    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC.c_str()), closedir);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return E_UMOUNT_PROC_OPEN;
@@ -1988,7 +1989,7 @@ int32_t MountManager::OpenProcForMulti(const std::string &path, std::set<std::st
         if (!StringIsNumber(name)) {
             continue;
         }
-        std::string pidPath = PID_PROC + FILE_SEPARATOR_CHAR + name;
+        std::string pidPath = std::string(PID_PROC) + FILE_SEPARATOR_CHAR + name;
         FindProcForMulti(pidPath, path, occupyFiles);
     }
     return E_OK;
@@ -1996,7 +1997,7 @@ int32_t MountManager::OpenProcForMulti(const std::string &path, std::set<std::st
 
 int32_t MountManager::OpenProcForPath(const std::string &path, bool &isOccupy, bool isDir)
 {
-    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC.c_str()), closedir);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return E_UMOUNT_PROC_OPEN;
@@ -2010,7 +2011,7 @@ int32_t MountManager::OpenProcForPath(const std::string &path, bool &isOccupy, b
         if (!StringIsNumber(name)) {
             continue;
         }
-        std::string pidPath = PID_PROC + FILE_SEPARATOR_CHAR + name;
+        std::string pidPath = std::string(PID_PROC) + FILE_SEPARATOR_CHAR + name;
         if (FindProcForPath(pidPath, path, isDir)) {
             isOccupy = true;
             break;
@@ -2061,7 +2062,7 @@ bool MountManager::CheckSymlinkForPath(const std::string &fdPath, const std::str
     std::string realPathStr(realPath);
     if (isDir) {
         if (realPathStr.find(UN_REACHABLE) == 0) {
-            realPathStr = realPathStr.substr(UN_REACHABLE.size()) + FILE_SEPARATOR_CHAR;
+            realPathStr = realPathStr.substr(strlen(UN_REACHABLE)) + FILE_SEPARATOR_CHAR;
         }
         if (realPathStr.find(path) == 0) {
             LOGE("find a fd from link for dir, %{public}s", realPathStr.c_str());
@@ -2069,7 +2070,7 @@ bool MountManager::CheckSymlinkForPath(const std::string &fdPath, const std::str
         }
     } else {
         if (realPathStr.find(UN_REACHABLE) == 0) {
-            realPathStr = realPathStr.substr(UN_REACHABLE.size());
+            realPathStr = realPathStr.substr(strlen(UN_REACHABLE));
         }
         if (realPathStr == path) {
             LOGE("find a fd from link for file, %{public}s", realPathStr.c_str());
