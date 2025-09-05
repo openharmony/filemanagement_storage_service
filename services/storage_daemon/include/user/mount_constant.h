@@ -44,71 +44,70 @@ constexpr const char *PID_FD = "fd";
 constexpr const char *PID_PROC = "/proc";
 
 const inline std::set<std::string> SANDBOX_EXCLUDE_PATH = {
-   "chipset",
-   "system",
-   "com.ohos.render"
+    "chipset",
+    "system",
+    "com.ohos.render"
 };
 const inline std::vector<std::string> CRYPTO_SANDBOX_PATH = {
-   "/data/storage/el2/base/",
-   "/data/storage/el2/database/",
-   "/data/storage/el2/share/",
-   "/data/storage/el2/log/",
-   "/data/storage/el2/distributedfiles/",
-   "/data/storage/el2/cloud/",
-   "/data/storage/el3/base/",
-   "/data/storage/el3/database/",
-   "/data/storage/el4/base/",
-   "/data/storage/el4/database/",
-   "/data/storage/el5/base/",
-   "/data/storage/el5/database/"
+    "/data/storage/el2/base/",
+    "/data/storage/el2/database/",
+    "/data/storage/el2/share/",
+    "/data/storage/el2/log/",
+    "/data/storage/el2/distributedfiles/",
+    "/data/storage/el2/cloud/",
+    "/data/storage/el3/base/",
+    "/data/storage/el3/database/",
+    "/data/storage/el4/base/",
+    "/data/storage/el4/database/",
+    "/data/storage/el5/base/",
+    "/data/storage/el5/database/"
 };
 const inline std::vector<std::string> CRYPTO_SRC_PATH = {
-   "/data/app/el2/<currentUserId>/base/<bundleName>/",
-   "/data/app/el2/<currentUserId>/database/<bundleName>/",
-   "/mnt/share/<currentUserId>/<bundleName>/",
-   "/data/app/el2/<currentUserId>/log/<bundleName>/",
-   "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
-   "/mnt/hmdfs/<currentUserId>/cloud/data/<bundleName>/",
-   "/data/app/el3/<currentUserId>/base/<bundleName>/",
-   "/data/app/el3/<currentUserId>/database/<bundleName>/",
-   "/data/app/el4/<currentUserId>/base/<bundleName>/",
-   "/data/app/el4/<currentUserId>/database/<bundleName>/",
-   "/data/app/el5/<currentUserId>/base/<bundleName>/",
-   "/data/app/el5/<currentUserId>/database/<bundleName>/"
+    "/data/app/el2/<currentUserId>/base/<bundleName>/",
+    "/data/app/el2/<currentUserId>/database/<bundleName>/",
+    "/mnt/share/<currentUserId>/<bundleName>/",
+    "/data/app/el2/<currentUserId>/log/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/<bundleName>/",
+    "/data/app/el3/<currentUserId>/base/<bundleName>/",
+    "/data/app/el3/<currentUserId>/database/<bundleName>/",
+    "/data/app/el4/<currentUserId>/base/<bundleName>/",
+    "/data/app/el4/<currentUserId>/database/<bundleName>/",
+    "/data/app/el5/<currentUserId>/base/<bundleName>/",
+    "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
 
 const inline std::vector<std::string> APPDATA_DST_PATH = {
-   "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
-   "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
-   "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
-   "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/",
-   "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
 };
 
 const inline std::vector<std::string> APPDATA_SRC_PATH = {
-   "/data/app/el1/<currentUserId>/base/",
-   "/data/app/el2/<currentUserId>/base/",
-   "/mnt/hmdfs/<currentUserId>/cloud/data/",
-   "/mnt/hmdfs/<currentUserId>/account/merge_view/data/",
-   "/data/app/el5/<currentUserId>/base/"
+    "/data/app/el1/<currentUserId>/base/",
+    "/data/app/el2/<currentUserId>/base/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/",
+    "/data/app/el5/<currentUserId>/base/"
 };
 
 const inline std::vector<std::string> FD_PATH = {
-   "/data/service/el2/<currentUserId>",
-   "/data/service/el3/<currentUserId>",
-   "/data/service/el4/<currentUserId>",
-   "/data/service/el5/<currentUserId>",
-   "/storage/media/<currentUserId>"
+    "/data/service/el2/<currentUserId>",
+    "/data/service/el3/<currentUserId>",
+    "/data/service/el4/<currentUserId>",
+    "/data/service/el5/<currentUserId>",
+    "/storage/media/<currentUserId>"
 };
 
 const inline std::vector<std::string> SYS_PATH = {
-   "/mnt/hmdfs/<currentUserId>/account",
-   "/mnt/hmdfs/<currentUserId>/non_account",
-   "/mnt/hmdfs/<currentUserId>/cloud"
+    "/mnt/hmdfs/<currentUserId>/account",
+    "/mnt/hmdfs/<currentUserId>/non_account",
+    "/mnt/hmdfs/<currentUserId>/cloud"
 };
 
 const inline std::vector<std::string> HMDFS_SUFFIX = {"account", "non_account", "cloud"};
-
 
 constexpr const int32_t HMDFS_VAL_LEN = 6;
 constexpr const int32_t HMDFS_TRUE_LEN = 5;
