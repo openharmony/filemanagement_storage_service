@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "istorage_daemon.h"
+#include "user/mount_constant.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "storage_service_constant.h"
