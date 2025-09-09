@@ -1654,6 +1654,7 @@ int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
     }
     return E_OK;
 }
+
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 int32_t KeyManager::FileBasedEncryptfsMount()
 {
