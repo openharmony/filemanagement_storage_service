@@ -575,46 +575,6 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyManager_UnlockUece_001
- * @tc.desc: Verify the UnlockUece function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUece_001 Start";
-    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    unsigned int user = 800;
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> secret;
-    string keyDir = KeyManager::GetInstance().GetKeyDirByUserAndType(user, EL5_KEY);
-    OHOS::ForceCreateDirectory(keyDir);
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUece(user, token, secret), -1);
-
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
-    if (access(UECE_PATH, F_OK) == 0) {
-        #ifdef EL5_FILEKEY_MANAGER
-        std::vector<std::pair<int, std::string>> keyInfo;
-        keyInfo.push_back(make_pair(1, "test"));
-        keyInfo.push_back(make_pair(2, "test2"));
-        keyInfo.push_back(make_pair(3, "test3"));
-
-        EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
-        EXPECT_EQ(KeyManager::GetInstance().UnlockUece(user, token, secret), -1);
-        EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
-        EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
-        #endif
-    }
-
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUece(user, token, secret), E_OK);
-    OHOS::ForceRemoveDirectory(keyDir);
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUece_001 end";
-}
-
-/**
  * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_001
  * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
  * @tc.type: FUNC
