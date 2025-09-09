@@ -619,7 +619,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001 start";
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
-    int32_t ret = externalVolumeInfo_->DoMount4Hmfs();
+    uint32_t mountFlags = 0;
+    int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_NE(ret, E_OK);
 
