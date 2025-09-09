@@ -76,10 +76,10 @@ AppStateObserverManager &AppStateObserverManager::GetInstance()
 
 void AppStateObserver::OnAppStopped(const AppStateData &appStateData)
 {
-    if (appStateData.bundleName == MEDIALIBRARY_NAME) {
+    if (appStateData.bundleName == "com.ohos.medialibrary.medialibrarydata") {
         LOGI("StorageDaemon OnAppStopped start %{public}d", appStateData.uid);
         int32_t userId = appStateData.uid / BASE_USER_RANGE;
-        list<string> killList = { MEDIA_FUSE_EL2 };
+        list<string> killList = { "/data/storage/el2/media/" };
         MountManager::GetInstance().FindAndKillProcessWithoutRadar(userId, killList);
     }
 }

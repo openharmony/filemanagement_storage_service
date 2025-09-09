@@ -25,6 +25,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/mount_constant.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
@@ -312,7 +313,7 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
 
 int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
 {
-    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), MODE_0711, OID_ROOT, OID_ROOT)) {
+    if (!PrepareDir(StringPrintf(bundle_, userId), MODE_0711, OID_ROOT, OID_ROOT)) {
         return E_PREPARE_DIR;
     }
 
@@ -320,7 +321,7 @@ int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
     std::vector<FileList> list;
     FileList temp;
     temp.userId = static_cast<uint32_t>(userId);
-    temp.path = StringPrintf(bundle_.c_str(), userId);
+    temp.path = StringPrintf(bundle_, userId);
     list.push_back(temp);
     int ret = SetElDirFscryptPolicy(userId, EL1, list);
     if (ret != E_OK) {
@@ -333,7 +334,7 @@ int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
 
 int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
 {
-    if (!RmDirRecurse(StringPrintf(bundle_.c_str(), userId))) {
+    if (!RmDirRecurse(StringPrintf(bundle_, userId))) {
         return E_DESTROY_DIR;
     }
 

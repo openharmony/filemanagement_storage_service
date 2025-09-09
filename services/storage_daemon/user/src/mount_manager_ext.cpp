@@ -18,6 +18,7 @@
 #include <unistd.h>
 
 #include "parameter.h"
+#include "user/mount_constant.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/storage_radar.h"
 #include "storage_service_constant.h"
@@ -44,7 +45,7 @@ void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::st
     realPath[res] = '\0';
     std::string realPathStr(realPath);
     if (realPathStr.find(UN_REACHABLE) == 0) {
-        realPathStr = realPathStr.substr(UN_REACHABLE.size()) + FILE_SEPARATOR_CHAR;
+        realPathStr = realPathStr.substr(strlen(UN_REACHABLE)) + FILE_SEPARATOR_CHAR;
     }
     if (realPathStr.find(path) == 0) {
         LOGE("find a fd from link, %{public}s", realPathStr.c_str());
