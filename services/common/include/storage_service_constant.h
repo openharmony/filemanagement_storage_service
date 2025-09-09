@@ -43,11 +43,11 @@ constexpr const char *ANCO_DIR = "/data/virt_service/rgm_hmos/anco_hmos_data/";
 constexpr const char *ANCO_MEDIA_PATH = "/data/virt_service/rgm_hmos/anco_hmos_data/media/0";
 constexpr const char *SERVICE_DIR_PATH = "/data/service/";
 
-const inline std::string EL1 = "el1";
-const inline std::string EL2 = "el2";
-const inline std::string EL3 = "el3";
-const inline std::string EL4 = "el4";
-const inline std::string EL5 = "el5";
+static const std::string EL1 = "el1";
+static const std::string EL2 = "el2";
+static const std::string EL3 = "el3";
+static const std::string EL4 = "el4";
+static const std::string EL5 = "el5";
 
 enum KeyType {
     EL1_KEY = 1,

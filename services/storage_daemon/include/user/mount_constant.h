@@ -43,12 +43,12 @@ constexpr const char *PID_ROOT = "root";
 constexpr const char *PID_FD = "fd";
 constexpr const char *PID_PROC = "/proc";
 
-const inline std::set<std::string> SANDBOX_EXCLUDE_PATH = {
+const std::set<std::string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
     "com.ohos.render"
 };
-const inline std::vector<std::string> CRYPTO_SANDBOX_PATH = {
+const std::vector<std::string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/base/",
     "/data/storage/el2/database/",
     "/data/storage/el2/share/",
@@ -62,7 +62,7 @@ const inline std::vector<std::string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el5/base/",
     "/data/storage/el5/database/"
 };
-const inline std::vector<std::string> CRYPTO_SRC_PATH = {
+const std::vector<std::string> CRYPTO_SRC_PATH = {
     "/data/app/el2/<currentUserId>/base/<bundleName>/",
     "/data/app/el2/<currentUserId>/database/<bundleName>/",
     "/mnt/share/<currentUserId>/<bundleName>/",
@@ -77,7 +77,7 @@ const inline std::vector<std::string> CRYPTO_SRC_PATH = {
     "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
 
-const inline std::vector<std::string> APPDATA_DST_PATH = {
+const std::vector<std::string> APPDATA_DST_PATH = {
     "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
@@ -85,7 +85,7 @@ const inline std::vector<std::string> APPDATA_DST_PATH = {
     "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
 };
 
-const inline std::vector<std::string> APPDATA_SRC_PATH = {
+const std::vector<std::string> APPDATA_SRC_PATH = {
     "/data/app/el1/<currentUserId>/base/",
     "/data/app/el2/<currentUserId>/base/",
     "/mnt/hmdfs/<currentUserId>/cloud/data/",
@@ -93,7 +93,7 @@ const inline std::vector<std::string> APPDATA_SRC_PATH = {
     "/data/app/el5/<currentUserId>/base/"
 };
 
-const inline std::vector<std::string> FD_PATH = {
+const std::vector<std::string> FD_PATH = {
     "/data/service/el2/<currentUserId>",
     "/data/service/el3/<currentUserId>",
     "/data/service/el4/<currentUserId>",
@@ -101,13 +101,13 @@ const inline std::vector<std::string> FD_PATH = {
     "/storage/media/<currentUserId>"
 };
 
-const inline std::vector<std::string> SYS_PATH = {
+const std::vector<std::string> SYS_PATH = {
     "/mnt/hmdfs/<currentUserId>/account",
     "/mnt/hmdfs/<currentUserId>/non_account",
     "/mnt/hmdfs/<currentUserId>/cloud"
 };
 
-const inline std::vector<std::string> HMDFS_SUFFIX = {"account", "non_account", "cloud"};
+const std::vector<std::string> HMDFS_SUFFIX = {"account", "non_account", "cloud"};
 
 constexpr const int32_t HMDFS_VAL_LEN = 6;
 constexpr const int32_t HMDFS_TRUE_LEN = 5;
