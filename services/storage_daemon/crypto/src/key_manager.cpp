@@ -68,6 +68,7 @@ constexpr uint32_t FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG = 0xFBE30034;
 #ifdef EL5_FILEKEY_MANAGER
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 500;
 #endif
+
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 const std::string FILE_BASED_ENCRYPT_SRC_PATH = "/mnt/data_old/service/el1/public/sec_storage_data/fbe3";
 const std::string FILE_BASED_ENCRYPT_DST_PATH = "/data/service/el1/public/sec_storage_data/fbe3";
