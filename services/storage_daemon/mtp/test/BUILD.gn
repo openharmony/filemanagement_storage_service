@@ -64,6 +64,7 @@ ohos_unittest("mtp_device_manager_test") {
     "ipc:ipc_single",
     "samgr:samgr_proxy",
     "usb_manager:usbsrv_client",
+    "init:libbegetutil",
   ]
 }
 

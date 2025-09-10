@@ -185,6 +185,9 @@ private:
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    int32_t FileBasedEncryptfsMount();
+#endif
     using KeyMap = std::map<KeyType, std::shared_ptr<BaseKey>>;
     std::map<unsigned int, KeyMap> userElKeys_;
     std::map<unsigned int, std::shared_ptr<DelayHandler>> userLockScreenTask_;
