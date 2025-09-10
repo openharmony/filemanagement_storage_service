@@ -132,7 +132,7 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(1));
     errno = 0;
     EXPECT_EQ(KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key), E_UMOUNT_FBE);
@@ -145,7 +145,7 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(0));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = 0;
@@ -159,7 +159,7 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(0));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     errno = 0;
