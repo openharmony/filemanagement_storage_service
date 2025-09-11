@@ -28,6 +28,7 @@
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_service_constant.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -146,13 +147,25 @@ void StorageMonitorService::MonitorAndManageStorage()
         RefreshAllNotificationTimeStamp();
         hasNotifiedStorageEvent_ = false;
     }
-    if (IsMidnightOne()) {
-        LOGI("storage monitor statistic start.");
-        std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-        sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-        int32_t ret = sdCommunication->StatisticSysDirSpace();
-        LOGI("storage monitor statistic end, ret is {public}d.", ret);
+    StatisticSysDirSpace(freeSize);
+}
+
+void StorageMonitorService::StatisticSysDirSpace(int64_t &freeSize)
+{
+    if (!IsMidnightOne()) {
+        return;
     }
+    if (freesizeCache > 0 && std::abs(freeSize - freesizeCache) < StorageService::TWO_G_BYTE) {
+        return;
+    }
+    if (freesizeCache == 0) {
+        freesizeCache = freeSize;
+    }
+    LOGI("storage monitor statistic start.");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t ret = sdCommunication->StatisticSysDirSpace();
+    LOGI("storage monitor statistic end, ret is %{public}d.", ret);
 }
 
 bool StorageMonitorService::IsMidnightOne()

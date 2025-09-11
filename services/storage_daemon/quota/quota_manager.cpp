@@ -44,7 +44,6 @@ constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr int32_t ONE_HUNDRED_M_BYTE = 1024 * 1024 * 100;
-constexpr int64_t TWO_G_BYTE = 2LL * 1024 * 1024 * 1024;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -650,7 +649,7 @@ bool QuotaManager::IsNeedScan()
             return true;
         }
         int64_t size = static_cast<int64_t>(dq.dqb_curspace);
-        if (size > TWO_G_BYTE) {
+        if (size > StorageService::TWO_G_BYTE) {
             LOGI("sys uid bigger than two gb, uid is %{public}d.", uid);
             return true;
         }

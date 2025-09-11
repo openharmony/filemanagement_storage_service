@@ -34,6 +34,7 @@ const int32_t DEFAULT_USER_ID = 100;
 const int MAX_APP_INDEX = 5;
 const int PRIORITY_LEVEL = -20;
 const int ANCO_SA_UID = 7558;
+const int64_t TWO_G_BYTE = 2LL * 1024 * 1024 * 1024;
 }
 
 namespace StorageDaemon {
