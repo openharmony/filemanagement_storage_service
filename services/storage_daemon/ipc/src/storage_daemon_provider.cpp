@@ -259,7 +259,7 @@ int32_t StorageDaemonProvider::MountUsbFuse(const std::string &volumeId, std::st
 #ifdef EXTERNAL_STORAGE_MANAGER
     int32_t ret = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (ret != E_OK) {
-        LOGW("MountUsbFuse failed, please check");
+        LOGW("MountUsbFuse failed, please check.");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::MountUsbFuse", ret);
     }
     return ret;
