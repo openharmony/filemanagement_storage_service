@@ -15,10 +15,10 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageDaemonVolumeChangeFuzzTest") {
+ohos_fuzztest("StorageDaemonVolumeFormatFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file =
-      "${storage_service_path}/test/fuzztest/storagedaemonvolumechange_fuzzer"
+      "${storage_service_path}/test/fuzztest/storagedaemonvolumeformat_fuzzer"
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
@@ -51,7 +51,7 @@ ohos_fuzztest("StorageDaemonVolumeChangeFuzzTest") {
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_daemon_path}/utils/zip_util.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
-    "storagedaemonvolumechange_fuzzer.cpp",
+    "storagedaemonvolumeformat_fuzzer.cpp",
   ]
 
   defines = [

@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef STORAGEDAEMONVOLUMEMOUNT_FUZZER_H
-#define STORAGEDAEMONVOLUMEMOUNT_FUZZER_H
+#ifndef STORAGEDAEMONVOLUMESETDESC_FUZZER_H
+#define STORAGEDAEMONVOLUMESETDESC_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "storagedaemonvolumemount_fuzzer"
+#define FUZZ_PROJECT_NAME "storagedaemonvolumesetdesc_fuzzer"
 
 #endif

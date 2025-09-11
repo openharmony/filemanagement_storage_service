@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonvolumemount_fuzzer.h"
+#include "storagedaemonvolumesetdesc_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -61,18 +61,6 @@ bool StorageDaemonFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool HandlePartitionFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageDaemon->HandlePartition(datas, reply);
-    return true;
-}
-
 bool HandleSetVolDescFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -84,26 +72,12 @@ bool HandleSetVolDescFuzzTest(const uint8_t *data, size_t size)
     storageDaemon->HandleSetVolDesc(datas, reply);
     return true;
 }
-
-bool HandleFormatFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageDaemon->HandleFormat(datas, reply);
-    return true;
-}
 } // namespace OHOS
 
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     OHOS::StorageDaemonFuzzTest(data, size);
-    OHOS::HandlePartitionFuzzTest(data, size);
     OHOS::HandleSetVolDescFuzzTest(data, size);
-    OHOS::HandleFormatFuzzTest(data, size);
     return 0;
 }
