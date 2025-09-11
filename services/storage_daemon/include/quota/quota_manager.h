@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,8 +16,11 @@
 #ifndef OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 #define OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 
+#include <map>
 #include <nocopyable.h>
 #include <string>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -43,6 +46,12 @@ struct UidSaInfo {
     int64_t size;
 };
 
+struct DirSpaceInfo {
+    std::string path;
+    uid_t type;
+    int64_t size;
+};
+
 uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
 public:
@@ -54,6 +63,7 @@ public:
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
+    int32_t StatisticSysDirSpace();
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
@@ -62,6 +72,10 @@ private:
     bool StringToInt32(const std::string &strUid, int32_t &outUid32);
     int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
+    std::string AddDirSpace(const std::vector<DirSpaceInfo> &dirInfos, const std::vector<int32_t> &userIds);
+    int32_t AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid);
+    int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
+    bool IsNeedScan();
 };
 } // STORAGE_DAEMON
 } // OHOS

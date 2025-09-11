@@ -326,4 +326,23 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetStorageAlertClean
 
     GTEST_LOG_(INFO) << "storage_monitor_service_GetStorageAlertCleanupParams_0000 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_IsMidnightOne_0000
+ * @tc.name: Storage_monitor_service_IsMidnightOne_0000
+ * @tc.desc: Test function of IsMidnightOne interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, Storage_monitor_service_IsMidnightOne_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_monitor_service_IsMidnightOne_0000 start";
+
+    bool res = service->IsMidnightOne();
+    EXPECT_EQ(res, false);
+
+    GTEST_LOG_(INFO) << "Storage_monitor_service_IsMidnightOne_0000 end";
+}
 }

@@ -22,8 +22,6 @@
 #include <linux/quota.h>
 #include <stack>
 #include <sys/quota.h>
-#include <sys/stat.h>
-#include <sys/statvfs.h>
 #include <thread>
 #include <unistd.h>
 
@@ -34,6 +32,7 @@
 #include "storage_service_constant.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -45,13 +44,17 @@ constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr int32_t ONE_HUNDRED_M_BYTE = 1024 * 1024 * 100;
+constexpr int64_t TWO_G_BYTE = 2LL * 1024 * 1024 * 1024;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ONE_MS = 1000;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
+constexpr int32_t BLOCK_BYTE = 512;
+constexpr int32_t TOP_SPACE_COUNT = 20;
 static std::map<std::string, std::string> mQuotaReverseMounts;
+static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 #define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
 
@@ -77,6 +80,102 @@ struct NextDqBlk {
     /* the next ID greater than or equal to id that has a quota set */
     uint32_t dqbId;
 };
+
+static std::vector<DirSpaceInfo> GetRootDir()
+{
+    return {{"/data/app/el1/0/shader_cache", 0, 0},
+            {"/data/log/bbox", 0, 0},
+            {"/data/log/sysres", 0, 0},
+            {"/data/log/last_tee", 0, 0},
+            {"/data/log/security_guard", 0, 0},
+            {"/data/log/hiaudit/storageservice", 0, 0},
+            {"/data/app/el1/bundle/public", 0, 0},
+            {"/data/service/el1/public/udev", 0, 0},
+            {"/data/service/el1/public/i18n", 0, 0},
+            {"/data/service/el1/public/hosts_user", 0, 0},
+            {"/data/service/el1/public/usb/mode", 0, 0},
+            {"/data/service/el0/startup", 0, 0},
+            {"/data/service/el0/access_token", 0, 0},
+            {"/data/service/el0/storage_daemon", 0, 0},
+            {"/data/service/el0/public/for-all-app", 0, 0},
+            {"/data/service/el1/startup", 0, 0},
+            {"/data/service/el1/public/for-all-app", 0, 0},
+            {"/data/service/el1/public/startup", 0, 0},
+            {"/data/service/el1/public/storage_daemon", 0, 0},
+            {"/data/service/el1/public/hdc", 0, 0},
+            {"/data/service/el1/public/usb/mode", 0, 0},
+            {"/data/service/el1/public/udev", 0, 0},
+            {"/data/service/el1/public/i18n", 0, 0},
+            {"/data/service/el1/public/rgm_engine", 0, 0},
+            {"/data/service/el1/network", 0, 0},
+            {"/data/service/el1/0/hyperhold", 0, 0},
+            {"/data/log/hiaudit/storageservice", 0, 0},
+            {"/data/local/shader_cache", 0, 0},
+            {"/data/local/tmp", 0, 0},
+            {"/data/app/el1/0/aot_compiler", 0, 0},
+            {"/data/app/el1/0/base", 0, 0},
+            {"/data/app/el1/0/shader_cache", 0, 0},
+            {"/data/app/el1/0/system_optimize", 0, 0},
+            {"/data/app/el1/public/aot_compiler", 0, 0},
+            {"/data/app/el1/public/shader_cache", 0, 0},
+            {"/data/app/el1/%d/aot_compiler", 0, 0},
+            {"/data/app/el1/%d/shader_cache", 0, 0},
+            {"/data/app/el1/%d/system_optimize", 0, 0},
+            {"/data/apr_dumplogs", 0, 0},
+            {"/data/misc/shared_relro", 0, 0},
+            {"/data/vendor/hyperhold", 0, 0},
+            {"/data/vendor/log/thplog", 0, 0},
+            {"/data/vendor/log/dfx_logs", 0, 0},
+            {"/data/vendor/log/wifi", 0, 0},
+            {"/data/vendor/log/hi110x", 0, 0},
+            {"/data/hisi_logs", 0, 0},
+            {"/data/uwb", 0, 0},
+            {"/data/log/tcpdump", 0, 0},
+            {"/data/virt_service", 0, 0},
+            {"/data/updater/log", 0, 0}};
+}
+
+static std::vector<DirSpaceInfo> GetSystemDir()
+{
+    return {{"/data/hmos4", 1000, 0},
+            {"/data/service/el1/public/for-all-app/framework_ark_cache", 1000, 0},
+            {"/data/service/el1/public/shader_cache", 1000, 0},
+            {"/data/service/el2/100/virt_service", 1000, 0},
+            {"/data/log/faultlog/temp", 1000, 0},
+            {"/data/log/hiview", 1000, 0},
+            {"/data/system/RTShaderCache", 1000, 0},
+            {"/data/local/shader_cache/local/system", 1000, 0},
+            {"/data/local/mtp_tmp", 1000, 0},
+            {"/data/virt_service", 1000, 0},
+            {"/data/misc", 1000, 0},
+            {"/data/vendor/log", 1000, 0},
+            {"/data/data", 1000, 0}};
+}
+
+static std::vector<DirSpaceInfo> GetFoundationDir()
+{
+    return {{"/data/service/el1/public/AbilityManagerService", 5523, 0},
+            {"/data/service/el1/public/database/bundle_manager_service", 5523, 0},
+            {"/data/service/el1/public/database/notification_service", 5523, 0},
+            {"/data/service/el1/public/database/form_storage", 5523, 0},
+            {"/data/service/el1/public/database/common_event_service", 5523, 0},
+            {"/data/service/el1/public/database/auto_startup_service", 5523, 0},
+            {"/data/service/el1/public/database/app_config_data", 5523, 0},
+            {"/data/service/el1/public/database/app_exit_reason", 5523, 0},
+            {"/data/service/el1/public/database/ability_manager_service", 5523, 0},
+            {"/data/service/el1/public/database/keep_alive_service", 5523, 0},
+            {"/data/service/el1/public/database/insight_intent", 5523, 0},
+            {"/data/service/el1/public/notification", 5523, 0},
+            {"/data/service/el1/public/window", 5523, 0},
+            {"/data/service/el1/public/ecological_rule_mgr_service", 5523, 0},
+            {"/data/service/el1/public/app_domain_verify_mgr_service", 5523, 0},
+            {"/data/service/el1/public/screenlock", 5523, 0},
+            {"/data/service/el1/public/bms/bundle_manager_service", 5523, 0},
+            {"/data/service/el1/public/bms/bundle_resources", 5523, 0},
+            {"/data/service/el1/0/utdtypes", 5523, 0},
+            {"/data/service/el1/%d/utdtypes", 5523, 0},
+            {"/data/log/eventlog/freeze", 5523, 0}};
+}
 
 QuotaManager &QuotaManager::GetInstance()
 {
@@ -510,6 +609,136 @@ uint32_t CheckOverLongPath(const std::string &path)
         LOGE("Path over long, length:%{public}d, fileName:%{public}s.", len, sub.c_str());
     }
     return len;
+}
+
+int32_t QuotaManager::StatisticSysDirSpace()
+{
+    LOGI("statistic sys dir space start.");
+    if (!IsNeedScan()) {
+        LOGI("not need to statistic sys dir space.");
+        return E_OK;
+    }
+    std::ostringstream extraData;
+    std::vector<int32_t> userIds;
+    GetAllUserIds(userIds);
+    if (userIds.empty()) {
+        userIds.push_back(StorageService::DEFAULT_USER_ID);
+    }
+    std::vector<DirSpaceInfo> dirs = GetRootDir();
+    std::string res = AddDirSpace(dirs, userIds);
+    extraData << res << std::endl;
+
+    dirs = GetSystemDir();
+    res = AddDirSpace(dirs, userIds);
+    extraData << res << std::endl;
+
+    dirs = GetFoundationDir();
+    res = AddDirSpace(dirs, userIds);
+    extraData << res << std::endl;
+    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::StartScanDir", E_SYS_DIR_SPACE_STATUS,
+        extraData.str());
+    LOGI("statistic sys dir space end.");
+    return E_OK;
+}
+
+bool QuotaManager::IsNeedScan()
+{
+    for (auto &uid : SYS_UIDS) {
+        struct dqblk dq;
+        if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) != 0) {
+            LOGE("failed to get quota, uid is %{public}d, errno is %{public}d", uid, errno);
+            return true;
+        }
+        int64_t size = static_cast<int64_t>(dq.dqb_curspace);
+        if (size > TWO_G_BYTE) {
+            LOGI("sys uid bigger than two gb, uid is %{public}d.", uid);
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, const std::vector<int32_t> &userIds)
+{
+    std::vector<DirSpaceInfo> allPaths;
+    for (const auto &dirInfo : dirs) {
+        std::string path = dirInfo.path;
+        uid_t type = dirInfo.type;
+        if (path.find("%d") == std::string::npos) {
+            int64_t blks = 0;
+            AddBlksRecurse(path, blks, type);
+            int64_t dirSize = blks * BLOCK_BYTE;
+            allPaths.push_back({path, type, dirSize});
+            continue;
+        }
+        for (const int32_t userId : userIds) {
+            std::string userPath = StringPrintf(path.c_str(), userId);
+            int64_t blks = 0;
+            AddBlksRecurse(userPath, blks, type);
+            int64_t dirSize = blks * BLOCK_BYTE;
+            allPaths.push_back({userPath, type, dirSize});
+        }
+    }
+    std::sort(allPaths.begin(), allPaths.end(), [](const DirSpaceInfo& a, const DirSpaceInfo& b) {
+        return a.size > b.size;
+    });
+    std::ostringstream extraData;
+    int32_t count = 1;
+    for (const auto& info : allPaths) {
+        if (count > TOP_SPACE_COUNT) {
+            break;
+        }
+        extraData << "{path:" << info.path
+                  << ",type:" << info.type
+                  << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
+                  << "MB}"<< std::endl;
+        count++;
+    }
+    LOGI("extraData is %{public}s", extraData.str().c_str());
+    return extraData.str();
+}
+
+int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid)
+{
+    if (AddBlks(path, blks, uid) != E_OK) {
+        return E_STATISTIC_STAT_FAILED;
+    }
+    if (!IsDir(path)) {
+        return E_OK;
+    }
+
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        LOGE("open dir %{public}s failed, errno %{public}d", path.c_str(), errno);
+        return E_STATISTIC_OPEN_DIR_FAILED;
+    }
+    int ret = E_OK;
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if ((strcmp(ent->d_name, ".") == 0) ||
+            (strcmp(ent->d_name, "..") == 0)) {
+            continue;
+        }
+        std::string subPath = path + "/" + ent->d_name;
+        int32_t retTmp = AddBlksRecurse(subPath, blks, uid);
+        if (retTmp != E_OK) {
+            ret = retTmp;
+        }
+    }
+    (void)closedir(dir);
+    return ret;
+}
+
+int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
+{
+    struct stat st;
+    if (lstat(path.c_str(), &st) != E_OK) {
+        LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
+        return E_STATISTIC_STAT_FAILED;
+    }
+    if (uid == st.st_uid) {
+        blks += static_cast<int64_t>(st.st_blocks);
+    }
+    return E_OK;
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

@@ -26,6 +26,8 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
+static constexpr int32_t DEFAULT_USERID = 100;
+static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
     va_list ap;
@@ -162,6 +164,30 @@ std::string ListToString(const std::list<std::string> &strList)
         result += iter + ",";
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);
+}
+
+void GetAllUserIds(std::vector<int32_t> userIds)
+{
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(APP_EL1_PATH), closedir);
+    if (!procDir) {
+        LOGE("open dir failed, path is %{public}s, errno is %{public}d", APP_EL1_PATH, errno);
+        return;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
+        std::string name = entry->d_name;
+        if (!StringIsNumber(name)) {
+            continue;
+        }
+        int32_t userId = atoi(name.c_str());
+        if (userId < DEFAULT_USERID) {
+            continue;
+        }
+        userIds.push_back(userId);
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -53,6 +53,7 @@ private:
     void EventNotifyFreqHandlerForHigh();
     void ParseStorageParameters(int64_t totalSize);
     std::string GetStorageAlertCleanupParams();
+    bool IsMidnightOne();
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
