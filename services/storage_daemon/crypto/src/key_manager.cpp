@@ -1658,6 +1658,7 @@ int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 int32_t KeyManager::FileBasedEncryptfsMount()
 {
+    
     std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
     std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
     int32_t ret = UMount(dstPath);
