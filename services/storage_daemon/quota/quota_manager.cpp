@@ -731,6 +731,9 @@ int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
 {
     struct stat st;
     if (lstat(path.c_str(), &st) != E_OK) {
+        int32_t errnoTmp = errno;
+        std::string extraData = "path=" + path + ",kernelCode=" + to_string(errnoTmp);
+        StorageService::StorageRadar::ReportSaSizeResult("AddBlks", E_STATISTIC_STAT_FAILED, extraData);
         LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
         return E_STATISTIC_STAT_FAILED;
     }

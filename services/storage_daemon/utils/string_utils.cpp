@@ -168,7 +168,7 @@ std::string ListToString(const std::list<std::string> &strList)
     return result.empty() ? "" : result.substr(0, result.length() -1);
 }
 
-void GetAllUserIds(std::vector<int32_t> userIds)
+void GetAllUserIds(std::vector<int32_t> &userIds)
 {
     auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(APP_EL1_PATH), closedir);
     if (!procDir) {

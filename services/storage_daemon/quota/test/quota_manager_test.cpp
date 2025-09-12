@@ -429,10 +429,14 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddBlksRecurse_001, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddBlksRecurse_001 start";
 
-    std::string path = "/data/app/el2/100/base";
+    std::string path = "/data/xxx";
     int64_t blks = 0;
     uid_t type = 0;
     int32_t ret = QuotaManager::GetInstance().AddBlksRecurse(path, blks, type);
+    EXPECT_EQ(ret, E_STATISTIC_STAT_FAILED);
+
+    path = "/data/app/el2/100/base";
+    ret = QuotaManager::GetInstance().AddBlksRecurse(path, blks, type);
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddBlksRecurse_001 end";
@@ -448,10 +452,14 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddBlks_001, TestSiz
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddBlks_001 start";
 
-    std::string path = "/data/app/el2/100/base";
+    std::string path = "/data/xxx";
     int64_t blks = 0;
     uid_t type = 0;
     int32_t ret = QuotaManager::GetInstance().AddBlks(path, blks, type);
+    EXPECT_EQ(ret, E_STATISTIC_STAT_FAILED);
+
+    path = "/data/app/el2/100/base";
+    ret = QuotaManager::GetInstance().AddBlks(path, blks, type);
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddBlks_001 end";
