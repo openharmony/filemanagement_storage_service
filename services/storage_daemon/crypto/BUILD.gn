@@ -90,7 +90,6 @@ ohos_static_library("libsdcrypto") {
 
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
-    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 
   if (enable_user_auth_framework) {

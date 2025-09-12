@@ -883,7 +883,6 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(const std::string &s
 int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
     const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
-#ifdef EL5_FILEKEY_MANAGER
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -894,15 +893,10 @@ int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->RegisterUeceActivationCallback(ueceCallback);
-#else
-    LOGI("EL5_FILEKEY_MANAGER is not supported");
-    return E_OK;
-#endif
 }
 
 int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
 {
-#ifdef EL5_FILEKEY_MANAGER
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -913,10 +907,6 @@ int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UnregisterUeceActivationCallback();
-#else
-    LOGI("EL5_FILEKEY_MANAGER is not supported");
-    return E_OK;
-#endif
 }
 
 int32_t StorageDaemonCommunication::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)

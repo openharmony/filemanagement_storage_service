@@ -27,7 +27,6 @@
 #include "volume/volume_manager.h"
 #endif
 #include "file_ex.h"
-#include "hi_audit.h"
 #include "user/mount_manager.h"
 #include "utils/string_utils.h"
 #include <dlfcn.h>
@@ -207,11 +206,6 @@ int32_t StorageDaemonProvider::Mount(const std::string &volId, uint32_t flags)
     if (ret != E_OK) {
         LOGW("Mount failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Mount", ret);
-        AuditLog storageAuditLog = {false, "FAILED TO Mount", "ADD", "Mount", 1, "FAIL"};
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = {false, "SUCCESS TO Mount", "ADD", "Mount", 1, "SUCCESS"};
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -227,11 +221,6 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
     if (ret != E_OK) {
         LOGW("UMount failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::UMount", ret);
-        AuditLog storageAuditLog = {false, "FAILED TO UMount", "DEL", "UMount", 1, "FAIL"};
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = {false, "SUCCESS TO UMount", "DEL", "UMount", 1, "SUCCESS"};
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -291,11 +280,6 @@ int32_t StorageDaemonProvider::Format(const std::string &volId, const std::strin
     if (ret != E_OK) {
         LOGW("Format failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Format", ret);
-        AuditLog storageAuditLog = {true, "FAILED TO Format", "UPDATE", "Format", 1, "FAIL"};
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = {true, "SUCCESS TO Format", "UPDATE", "Format", 1, "SUCCESS"};
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -311,11 +295,6 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskId, int32_t type
     if (ret != E_OK) {
         LOGW("HandlePartition failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Partition", ret);
-        AuditLog storageAuditLog = {true, "FAILED TO Partition", "UPDATE", "Partition", 1, "FAIL"};
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = {true, "SUCCESS TO Partition", "UPDATE", "Partition", 1, "SUCCESS"};
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -331,13 +310,6 @@ int32_t StorageDaemonProvider::SetVolumeDescription(const std::string &volId, co
     if (ret != E_OK) {
         LOGW("SetVolumeDescription failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::SetVolumeDescription", ret);
-        AuditLog storageAuditLog = {true,  "FAILED TO SetVolumeDescription", "UPDATE", "SetVolumeDescription", 1,
-                                    "FAIL"};
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = {true,     "SUCCESS TO SetVolumeDescription", "UPDATE", "SetVolumeDescription", 1,
-                                    "SUCCESS"};
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -365,11 +337,6 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
         StorageService::StorageRadar::ReportUserManager("StartUser", userId, ret, "");
-        AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     SetUserStatistics(userId, ret != E_OK ? USER_START_FAIL : USER_START_SUCCESS);
 
@@ -385,10 +352,6 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
     int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
     StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "");
-    std::string status = ret == E_OK ? "SUCCESS" : "FAIL";
-    std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
-    AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
-    HiAudit::GetInstance().Write(storageAuditLog);
     SetUserStatistics(userId, ret != E_OK ? USER_STOP_FAIL : USER_STOP_SUCCESS);
     return ret;
 }

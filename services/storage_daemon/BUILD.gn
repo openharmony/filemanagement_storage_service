@@ -255,7 +255,6 @@ ohos_executable("storage_daemon") {
 
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
-    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 
   ldflags = [
@@ -373,13 +372,11 @@ ohos_shared_library("storage_common_utils") {
   sources = [
     "utils/disk_utils.cpp",
     "utils/file_utils.cpp",
-    "utils/hi_audit.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/storage_radar.cpp",
     "utils/storage_statistics_radar.cpp",
     "utils/storage_xcollie.cpp",
     "utils/string_utils.cpp",
-    "utils/zip_util.cpp",
   ]
 
   external_deps = [
@@ -389,7 +386,6 @@ ohos_shared_library("storage_common_utils") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
-    "zlib:shared_libz",
   ]
 
   if (build_selinux) {

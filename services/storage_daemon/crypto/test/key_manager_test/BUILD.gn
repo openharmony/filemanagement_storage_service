@@ -92,7 +92,6 @@ ohos_unittest("KeyManagerTest") {
 
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
-    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 }
 
@@ -134,7 +133,6 @@ ohos_unittest("KeyManagerSupTest") {
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/crypto/src/recover_manager.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
-    "${storage_daemon_path}/mock/el5_filekey_manager_kit_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
     "${storage_daemon_path}/mock/key_control_mock.cpp",
@@ -170,7 +168,6 @@ ohos_unittest("KeyManagerSupTest") {
 
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
-    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 
   if (enable_huks_hdi) {

@@ -150,11 +150,6 @@ int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
     return E_OK;
 }
 
-int32_t KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
-{
-    return E_OK;
-}
-
 int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {

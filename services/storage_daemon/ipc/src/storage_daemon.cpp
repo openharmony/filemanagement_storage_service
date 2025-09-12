@@ -15,7 +15,6 @@
 
 #include "ipc/storage_daemon.h"
 #include "file_ex.h"
-#include "hi_audit.h"
 #include "utils/storage_radar.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
@@ -213,8 +212,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     int32_t ret = KeyManager::GetInstance().GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (ret == -EEXIST) {
-        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         auto restoreRet = RestoreUserKey(userId, flags);
         if (restoreRet != E_OK) {
             std::string extraData = "flags=" + std::to_string(flags);
@@ -227,8 +224,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         LOGE("Generate user %{public}d key error", userId);
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("PrepareUserDirs::GenerateUserKeys", userId, ret, extraData);
-        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
 #endif
@@ -262,8 +257,6 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("DestroyUserDirs", userId, errCode, extraData);
-        AuditLog storageAuditLog = { false, "FAILED TO DestroyUserDirs", "DEL", "DestroyUserDirs", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
 
 #ifdef USER_CRYPTO_MANAGER
@@ -273,8 +266,6 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         LOGW("DeleteUserKeys failed, please check");
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("DestroyUserDirs::DeleteUserKeys", userId, errCode, extraData);
-        AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (destroyUserRet == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().DeleteUserKeys(userId);
@@ -314,8 +305,6 @@ int32_t StorageDaemon::InitGlobalKey(void)
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
-        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalDeviceKey", "ADD", "InitGlobalDeviceKey", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
@@ -361,8 +350,6 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     if (ret) {
         LOGE("Init global users els failed");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
-        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
 #endif
@@ -398,8 +385,6 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().DeleteUserKeys(userId);
@@ -434,8 +419,6 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { false, "FAILED TO UpdateUserAuth", "CP", "UpdateUserAuth", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -740,9 +723,6 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL3");
-        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
-            "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
     auto delay = StorageService::StorageRadar::ReportDuration("ACTIVE EL3",
@@ -754,9 +734,6 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL4");
-        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
-            "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
     delay = StorageService::StorageRadar::ReportDuration("ACTIVE EL4",
@@ -768,9 +745,6 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL5_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL5");
-        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
-            "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
     delay = StorageService::StorageRadar::ReportDuration("ACTIVE EL5",
@@ -853,8 +827,8 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
-        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
+        LOGE("NotifyUeceActivation failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::NotifyUeceActivation", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEY",
@@ -939,8 +913,8 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
 
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
-        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::UnlockUserAppKeys", userId, ueceRet, "EL5");
+        LOGE("NotifyUeceActivation failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::NotifyUeceActivation", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     LOGW("Active user key for update secen for userId=%{public}d success.", userId);
@@ -1023,8 +997,6 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
@@ -1054,8 +1026,6 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
@@ -1088,8 +1058,6 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);
@@ -1190,11 +1158,6 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { true, "FAILED TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "FAILED" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { true, "SUCCESS TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "SUCCESS" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -1219,9 +1182,6 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        AuditLog storageAuditLog = { false, "FAILED TO GetFileEncryptStatus", "SELECT", "GetFileEncryptStatus", 1,
-            "FAILED" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -1333,6 +1293,7 @@ int StorageDaemon::UnregisterUeceActivationCallback()
     return E_OK;
 #endif
 }
+
 int32_t StorageDaemon::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
