@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ using namespace testing::ext;
 using namespace testing;
 
 namespace OHOS::StorageDaemon {
-class KeyMgrWidthFileMockAnotherTest : public testing::Test {
+class KeyMgrWithFileMockAnotherTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
@@ -49,13 +49,9 @@ public:
     static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
     static inline shared_ptr<FscryptControlMoc> fscryptControlMock_ = nullptr;
     static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
-    bool globalUserEl1PathFlag = true;
-    bool deviceEl1DirFlag = true;
 };
 
-const std::string GLOBAL_USER_EL1_PATH = std::string(USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
-
-void KeyMgrWidthFileMockAnotherTest::SetUpTestCase(void)
+void KeyMgrWithFileMockAnotherTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
     recoveryMgrMock_ = make_shared<RecoveryMgrMock>();
@@ -70,7 +66,7 @@ void KeyMgrWidthFileMockAnotherTest::SetUpTestCase(void)
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
-void KeyMgrWidthFileMockAnotherTest::TearDownTestCase(void)
+void KeyMgrWithFileMockAnotherTest::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
     RecoveryMgrMock::recoveryMgrMock = nullptr;
@@ -85,30 +81,14 @@ void KeyMgrWidthFileMockAnotherTest::TearDownTestCase(void)
     fileUtilMoc_ = nullptr;
 }
 
-void KeyMgrWidthFileMockAnotherTest::SetUp(void)
+void KeyMgrWithFileMockAnotherTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp Start";
-    if (access(GLOBAL_USER_EL1_PATH.c_str(), F_OK) != 0) {
-        globalUserEl1PathFlag = false;
-        OHOS::ForceCreateDirectory(GLOBAL_USER_EL1_PATH);
-    }
-
-    if (access(DEVICE_EL1_DIR, F_OK) != 0) {
-        deviceEl1DirFlag = false;
-        OHOS::ForceCreateDirectory(DEVICE_EL1_DIR);
-    }
 }
 
-void KeyMgrWidthFileMockAnotherTest::TearDown(void)
+void KeyMgrWithFileMockAnotherTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
-    if (!globalUserEl1PathFlag) {
-        OHOS::ForceRemoveDirectory(GLOBAL_USER_EL1_PATH);
-    }
-
-    if (!deviceEl1DirFlag) {
-        OHOS::ForceRemoveDirectory(DEVICE_EL1_DIR);
-    }
 }
 
 /**
@@ -117,7 +97,7 @@ void KeyMgrWidthFileMockAnotherTest::TearDown(void)
  * @tc.type: FUNC
  * @tc.require: IAHHWW
  */
-HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_000, TestSize.Level1)
+HWTEST_F(KeyMgrWithFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_ResetSecretWithRecoveryKey_000 Start";
     uint32_t userId = 1112;
@@ -132,7 +112,8 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true))
+        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(1));
     errno = 0;
     EXPECT_EQ(KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key), E_UMOUNT_FBE);
@@ -145,7 +126,8 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true))
+        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(0));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = 0;
@@ -159,7 +141,8 @@ HWTEST_F(KeyMgrWidthFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_0
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).Times(6).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true))
+        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(0));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     errno = 0;
