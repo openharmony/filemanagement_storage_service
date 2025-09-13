@@ -689,7 +689,7 @@ std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, con
             break;
         }
         extraData << "{path:" << info.path
-                  << ",type:" << info.type
+                  << ",uid:" << info.uid
                   << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
                   << "MB}" << std::endl;
         count++;
@@ -700,13 +700,10 @@ std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, con
 
 int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid)
 {
-    if (AddBlks(path, blks, uid) != E_OK) {
-        return E_STATISTIC_STAT_FAILED;
-    }
+    AddBlks(path, blks, uid);
     if (!IsDir(path)) {
         return E_OK;
     }
-
     DIR *dir = opendir(path.c_str());
     if (!dir) {
         LOGE("open dir %{public}s failed, errno %{public}d", path.c_str(), errno);
@@ -714,8 +711,7 @@ int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid
     }
     int ret = E_OK;
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
-        if ((strcmp(ent->d_name, ".") == 0) ||
-            (strcmp(ent->d_name, "..") == 0)) {
+        if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..") == 0)) {
             continue;
         }
         std::string subPath = path + "/" + ent->d_name;

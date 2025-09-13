@@ -48,7 +48,7 @@ struct UidSaInfo {
 
 struct DirSpaceInfo {
     std::string path;
-    uid_t type;
+    uid_t uid;
     int64_t size;
 };
 
