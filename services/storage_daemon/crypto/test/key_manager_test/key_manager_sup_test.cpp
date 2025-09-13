@@ -24,7 +24,6 @@
 
 #include "base_key_mock.h"
 #include "directory_ex.h"
-#include "el5_filekey_manager_kit_mock.h"
 #include "fscrypt_control_mock.h"
 #include "fscrypt_key_v2_mock.h"
 #include "key_control_mock.h"
@@ -53,7 +52,6 @@ public:
     static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
     static inline shared_ptr<BaseKeyMoc> baseKeyMock_ = nullptr;
     static inline shared_ptr<FscryptControlMoc> fscryptControlMock_ = nullptr;
-    static inline shared_ptr<El5FilekeyManagerKitMoc> el5FilekeyManagerKitMoc_ = nullptr;
 };
 
 void KeyManagerSupTest::SetUpTestCase(void)
@@ -69,8 +67,6 @@ void KeyManagerSupTest::SetUpTestCase(void)
     KeyControlMoc::keyControlMoc = keyControlMock_;
     baseKeyMock_ = make_shared<BaseKeyMoc>();
     BaseKeyMoc::baseKeyMoc = baseKeyMock_;
-    el5FilekeyManagerKitMoc_ = make_shared<El5FilekeyManagerKitMoc>();
-    El5FilekeyManagerKitMoc::el5FilekeyManagerKitMoc = el5FilekeyManagerKitMoc_;
 }
 
 void KeyManagerSupTest::TearDownTestCase(void)
@@ -86,8 +82,6 @@ void KeyManagerSupTest::TearDownTestCase(void)
     keyControlMock_ = nullptr;
     BaseKeyMoc::baseKeyMoc = nullptr;
     baseKeyMock_ = nullptr;
-    El5FilekeyManagerKitMoc::el5FilekeyManagerKitMoc = nullptr;
-    el5FilekeyManagerKitMoc_ = nullptr;
 }
 
 void KeyManagerSupTest::SetUp(void)
@@ -480,98 +474,6 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockEceSece_001, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance().UnlockEceSece(user, token, secret), E_UNLOCK_SCREEN_FAILED);
     OHOS::ForceRemoveDirectory(keyDir);
     GTEST_LOG_(INFO) << "KeyManager_UnlockEceSece_001 end";
-}
-
-#ifdef EL5_FILEKEY_MANAGER
-/**
- * @tc.name: KeyManager_GenerateAndLoadAppKeyInfo_001
- * @tc.desc: Verify the GenerateAndLoadAppKeyInfo function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAndLoadAppKeyInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_GenerateAndLoadAppKeyInfo_001 Start";
-    uint32_t userId = 800;
-    std::vector<std::pair<int, std::string>> keyInfo;
-    EXPECT_EQ(KeyManager::GetInstance().GenerateAndLoadAppKeyInfo(userId, keyInfo), E_OK);
-
-    keyInfo.push_back(make_pair(1, "test"));
-    keyInfo.push_back(make_pair(2, "test2"));
-    keyInfo.push_back(make_pair(3, "test3"));
-    KeyManager::GetInstance().DeleteElKey(userId, EL5_KEY);
-    EXPECT_EQ(KeyManager::GetInstance().GenerateAndLoadAppKeyInfo(userId, keyInfo), -ENOENT);
-
-    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance().SaveUserElKey(userId, EL5_KEY, tmpKey);
-    EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false)).WillOnce(Return(true))
-        .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, ChangeUserAppkeysLoadInfo(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance().GenerateAndLoadAppKeyInfo(userId, keyInfo), -EPERM);
-
-    EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false)).WillOnce(Return(true))
-        .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, ChangeUserAppkeysLoadInfo(_, _)).WillOnce(Return(0));
-    EXPECT_EQ(KeyManager::GetInstance().GenerateAndLoadAppKeyInfo(userId, keyInfo), E_OK);
-    KeyManager::GetInstance().DeleteElKey(userId, EL5_KEY);
-    GTEST_LOG_(INFO) << "KeyManager_GenerateAndLoadAppKeyInfo_001 end";
-}
-#endif
-
-/**
- * @tc.name: KeyManager_UnlockUserAppKeys_001
- * @tc.desc: Verify the UnlockUserAppKeys function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUserAppKeys_001 Start";
-    bool existUece = true;
-    bool needGetAllAppKey = true;
-    uint32_t userId = 800;
-    if (access(UECE_PATH, F_OK) != 0) {
-        existUece = false;
-        EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), E_OK);
-
-        std::ofstream file(UECE_PATH);
-        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
-    }
-
-    std::vector<std::pair<int, std::string>> keyInfo;
-    keyInfo.push_back(make_pair(1, "test"));
-    keyInfo.push_back(make_pair(2, "test2"));
-    keyInfo.push_back(make_pair(3, "test3"));
-
-    #ifdef EL5_FILEKEY_MANAGER
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), -EPERM);
-
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _))
-        .WillOnce(DoAll(SetArgReferee<1>(keyInfo), Return(0)));
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), -ENOENT);
-
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _)).WillOnce(Return(0));
-    #endif
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), E_OK);
-    KeyManager::GetInstance().DeleteElKey(userId, EL5_KEY);
-    needGetAllAppKey = false;
-    #ifdef EL5_FILEKEY_MANAGER
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), -EPERM);
-
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _))
-        .WillOnce(DoAll(SetArgReferee<1>(keyInfo), Return(0)));
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), -ENOENT);
-
-    EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
-    #endif
-    EXPECT_EQ(KeyManager::GetInstance().UnlockUserAppKeys(userId, needGetAllAppKey), E_OK);
-    KeyManager::GetInstance().DeleteElKey(userId, EL5_KEY);
-    if (!existUece) {
-        OHOS::RemoveFile(UECE_PATH);
-    }
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUece_001 end";
 }
 
 /**

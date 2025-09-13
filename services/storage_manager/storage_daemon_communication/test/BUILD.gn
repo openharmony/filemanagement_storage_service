@@ -123,10 +123,6 @@ ohos_unittest("storage_daemon_communication_sub_test") {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
-  if (storage_service_el5_filekey_manager) {
-    defines += [ "EL5_FILEKEY_MANAGER" ]
-  }
-
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",

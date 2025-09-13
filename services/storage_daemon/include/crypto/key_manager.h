@@ -88,7 +88,6 @@ public:
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId, bool needReSet = false);
     int DeleteAppkey(uint32_t user, const std::string keyId);
-    int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
@@ -182,9 +181,6 @@ private:
     int GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std::string &keyId);
     int UpdateClassEBackUpFix(uint32_t userId);
 
-#ifdef EL5_FILEKEY_MANAGER
-    int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
-#endif
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     int32_t FileBasedEncryptfsMount();
 #endif

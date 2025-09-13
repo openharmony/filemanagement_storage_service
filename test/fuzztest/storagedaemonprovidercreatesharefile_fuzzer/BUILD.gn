@@ -73,7 +73,6 @@ ohos_fuzztest("StorageDaemonProviderCreateShareFileFuzzTest") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "zlib:shared_libz",
   ]
 
   if (storage_service_cloud_fuse) {

@@ -1370,7 +1370,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActi
 
     sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
     EXPECT_NE(ueceCallback, nullptr);
-    EXPECT_EQ(storageManagerProviderTest_->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    EXPECT_EQ(storageManagerProviderTest_->RegisterUeceActivationCallback(ueceCallback), E_SERVICE_IS_NULLPTR);
     storageManagerProviderTest_->UnregisterUeceActivationCallback();
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 end";
 }
@@ -1386,7 +1386,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceAc
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
 
-    EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_OK);
+    EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallback_001 end";
 }
 

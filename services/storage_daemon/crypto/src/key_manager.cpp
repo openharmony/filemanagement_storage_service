@@ -28,12 +28,6 @@
 #include "storage_service_log.h"
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
-#ifdef EL5_FILEKEY_MANAGER
-#include "el5_filekey_manager_kit.h"
-#endif
-#ifdef EL5_FILEKEY_MANAGER
-using namespace OHOS::Security::AccessToken;
-#endif
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -1732,96 +1726,6 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
 #endif
     return E_OK;
 }
-
-int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
-{
-    if (!IsUeceSupport() || !IsEncryption()) {
-        LOGI("E type is not support or encryption not enabled");
-        return E_OK;
-    }
-#ifdef EL5_FILEKEY_MANAGER
-    int ret = E_OK;
-    std::vector<std::pair<int, std::string>> keyInfo;
-    std::vector<std::pair<std::string, bool>> loadInfos;
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    if (needGetAllAppKey) {
-        ret = El5FilekeyManagerKit::GetUserAllAppKey(userId, keyInfo);
-        if (ret != 0) {
-            LOGE("get user all app keys fail.");
-            StorageRadar::ReportEl5KeyMgrResult("UnlockUserAppKeys::GetUserAllAppKey", ret, userId);
-            return ret;
-        }
-        LOGI("get user all app keys success.");
-    } else {
-        ret = El5FilekeyManagerKit::GetUserAppKey(userId, keyInfo);
-        if (ret != 0) {
-            LOGE("get User Appkeys fail.");
-            StorageRadar::ReportEl5KeyMgrResult("UnlockUserAppKeys::GetUserAppKey", ret, userId);
-            return ret;
-        }
-        LOGI("get User Appkeys success.");
-    }
-    auto delay = StorageService::StorageRadar::ReportDuration("GET USER APP KEYS",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("SD_DURATION: GET USER APP KEYS: delay time = %{public}s", delay.c_str());
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = GenerateAndLoadAppKeyInfo(userId, keyInfo);
-    delay = StorageService::StorageRadar::ReportDuration("GEN&LOAD APP KEY INFO",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("SD_DURATION: GEN&LOAD APP KEY INFO: delay time = %{public}s", delay.c_str());
-    if (ret != E_OK) {
-        LOGE("UnlockUserAppKeys fail.");
-        return ret;
-    }
-#endif
-    LOGI("UnlockUserAppKeys success!");
-    return E_OK;
-}
-
-#ifdef EL5_FILEKEY_MANAGER
-int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo)
-{
-    std::vector<std::pair<std::string, bool>> loadInfos;
-    if (keyInfo.size() == 0) {
-        LOGE("The keyInfo is empty!");
-        return E_OK;
-    }
-    if (!HasElkey(userId, EL5_KEY)) {
-        return -ENOENT;
-    }
-    auto elKey = userElKeys_[userId][EL5_KEY];
-    std::string keyId;
-    for (auto keyInfoAppUid :keyInfo) {
-        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-        if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) != E_OK) {
-            LOGE("Failed to Generate Appkey2!");
-            loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
-            continue;
-        }
-        auto delay = StorageService::StorageRadar::ReportDuration("GENERATE APP KEY",
-            startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-        LOGI("SD_DURATION: GENERATE APPKEY, delay time = %{public}s", delay.c_str());
-        if (keyInfoAppUid.second != keyId) {
-            LOGE("The keyId check fails!");
-            loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
-            continue;
-        }
-        loadInfos.push_back(std::make_pair(keyInfoAppUid.second, true));
-    }
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = El5FilekeyManagerKit::ChangeUserAppkeysLoadInfo(userId, loadInfos);
-    if (ret != 0) {
-        LOGE("Change User Appkeys LoadInfo fail.");
-        StorageRadar::ReportEl5KeyMgrResult("GenerateAndLoadAppKeyInfo::ChangeUserAppkeysLoadInfo", ret, userId);
-        return ret;
-    }
-    auto delay = StorageService::StorageRadar::ReportDuration("CHANGE USER APP KEYS LOAD INFO",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("SD_DURATION: CHANGE USER APP KEYS LOAD INFO: delay time = %{public}s", delay.c_str());
-    return E_OK;
-}
-#endif
 
 int KeyManager::InActiveUserKey(unsigned int user)
 {
