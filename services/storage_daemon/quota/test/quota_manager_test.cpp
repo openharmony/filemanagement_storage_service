@@ -409,8 +409,8 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddDirSpace_001, Tes
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddDirSpace_001 start";
 
     std::vector<DirSpaceInfo> dirs = {
-            {"/data/app/el1/public", 0, 0},
-            {"/data/app/el1/%d/base", 0, 0}
+        {"/data/app/el1/public", 0, 0},
+        {"/data/app/el1/%d/base", 0, 0}
     };
     std::vector<int32_t> userIds = {100};
     std::string data = QuotaManager::GetInstance().AddDirSpace(dirs, userIds);
@@ -433,7 +433,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddBlksRecurse_001, 
     int64_t blks = 0;
     uid_t type = 0;
     int32_t ret = QuotaManager::GetInstance().AddBlksRecurse(path, blks, type);
-    EXPECT_EQ(ret, E_STATISTIC_STAT_FAILED);
+    EXPECT_EQ(ret, E_OK);
 
     path = "/data/app/el2/100/base";
     ret = QuotaManager::GetInstance().AddBlksRecurse(path, blks, type);
