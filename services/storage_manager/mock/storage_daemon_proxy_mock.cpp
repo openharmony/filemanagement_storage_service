@@ -329,5 +329,10 @@ int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::StatisticSysDirSpace()
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

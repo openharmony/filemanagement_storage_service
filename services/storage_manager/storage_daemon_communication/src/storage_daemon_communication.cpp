@@ -961,5 +961,19 @@ int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
     }
     return storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);
 }
+
+int32_t StorageDaemonCommunication::StatisticSysDirSpace()
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->StatisticSysDirSpace();
+}
 } // namespace StorageManager
 } // namespace OHOS

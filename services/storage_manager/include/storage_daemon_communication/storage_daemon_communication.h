@@ -117,6 +117,7 @@ public:
 
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
     int32_t DeleteUserDir(const std::string &path);
+    int32_t StatisticSysDirSpace();
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

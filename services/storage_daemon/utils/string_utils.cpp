@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,17 +15,23 @@
 
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
+#include <dirent.h>
 #include <fcntl.h>
+#include <regex>
 #include <unistd.h>
+#include <memory>
 
 #include "securec.h"
 #include "storage_service_log.h"
+#include "storage_service_constant.h"
 
 using namespace std;
 
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
+static constexpr int32_t DECIMAL_NOTATION = 10;
+static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
     va_list ap;
@@ -162,6 +168,40 @@ std::string ListToString(const std::list<std::string> &strList)
         result += iter + ",";
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);
+}
+
+void GetAllUserIds(std::vector<int32_t> &userIds)
+{
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(APP_EL1_PATH), closedir);
+    if (!procDir) {
+        LOGE("open dir failed, path is %{public}s, errno is %{public}d", APP_EL1_PATH, errno);
+        return;
+    }
+    std::regex pattern("^[1-9]\\d*$");
+    struct dirent *entry;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
+        std::string name = entry->d_name;
+        if (!std::regex_match(name, pattern)) {
+            continue;
+        }
+        char *endptr;
+        errno = 0;
+        int64_t tollRes = strtoll(name.c_str(), &endptr, DECIMAL_NOTATION);
+        if (errno != 0 || endptr != name.c_str() + name.size()) {
+            continue;
+        }
+        if (tollRes < INT32_MIN || tollRes > INT32_MAX) {
+            continue;
+        }
+        int32_t userId = static_cast<int32_t>(tollRes);
+        if (userId < StorageService::DEFAULT_USER_ID) {
+            continue;
+        }
+        userIds.push_back(userId);
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS

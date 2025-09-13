@@ -53,7 +53,10 @@ private:
     void EventNotifyFreqHandlerForHigh();
     void ParseStorageParameters(int64_t totalSize);
     std::string GetStorageAlertCleanupParams();
+    void StatisticSysDirSpace(int64_t &freeSize);
+    bool IsCurTimeNeedStatistic();
 
+    int64_t freesizeCache = 0;
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
     std::thread eventThread_;

@@ -854,5 +854,10 @@ int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
 {
     return UserManager::GetInstance().DeleteUserDir(path);
 }
+
+int32_t StorageDaemonProvider::StatisticSysDirSpace()
+{
+    return QuotaManager::GetInstance().StatisticSysDirSpace();
+}
 } // namespace StorageDaemon
 } // namespace OHOS
