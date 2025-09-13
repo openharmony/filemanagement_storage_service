@@ -190,7 +190,7 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         char *endptr;
         errno = 0;
         int64_t tollRes = strtoll(name.c_str(), &endptr, DECIMAL_NOTATION);
-        if (errno != 0 || endptr == name.c_str() + name.size()) {
+        if (errno != 0 || endptr != name.c_str() + name.size()) {
             continue;
         }
         if (tollRes < INT32_MIN || tollRes > INT32_MAX) {
