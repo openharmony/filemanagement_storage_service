@@ -644,7 +644,7 @@ bool QuotaManager::IsNeedScan()
         struct dqblk dq;
         if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) != 0) {
             int32_t errnoTmp = errno;
-            std::string extraData = "uid=" + uid + ",kernelCode=" + std::to_string(errnoTmp);
+            std::string extraData = "uid=" + std::to_string(uid) + ",kernelCode=" + std::to_string(errnoTmp);
             StorageService::StorageRadar::ReportSpaceRadar("IsNeedScan", E_STATISTIC_QUOTA_UID_FAILED, extraData);
             LOGE("failed to get quota, uid is %{public}d, errno is %{public}d", uid, errno);
             return true;

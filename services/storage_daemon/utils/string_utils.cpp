@@ -17,18 +17,20 @@
 #include "utils/file_utils.h"
 #include <dirent.h>
 #include <fcntl.h>
+#include <regex>
 #include <unistd.h>
 #include <memory>
 
 #include "securec.h"
 #include "storage_service_log.h"
+#include "storage_service_constant.h"
 
 using namespace std;
 
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
-static constexpr int32_t DEFAULT_USERID = 100;
+static constexpr int32_t DECIMAL_NOTATION = 10;
 static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
@@ -182,13 +184,13 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
             continue;
         }
         std::string name = entry->d_name;
-        if (!std::regex_match(name, pattern);) {
+        if (!std::regex_match(name, pattern)) {
             continue;
         }
         char *endptr;
         errno = 0;
         int64_t tollRes = strtoll(name.c_str(), &endptr, DECIMAL_NOTATION);
-        if (errno != 0 || endptr == str.c_str() + str.size()) {
+        if (errno != 0 || endptr == name.c_str() + name.size()) {
             continue;
         }
         if (tollRes < INT32_MIN || tollRes > INT32_MAX) {
