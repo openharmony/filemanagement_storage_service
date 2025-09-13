@@ -127,14 +127,14 @@ void StorageRadar::ReportSaSizeResult(const std::string &funcName, int ret, cons
 void StorageRadar::ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData)
 {
     RadarParameter param = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = GLOBAL_USER_ID,
-            .funcName = funcName,
-            .bizScene = BizScene::SPACE_STATISTICS,
-            .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
-            .keyElxLevel = "NA",
-            .errorCode = ret,
-            .extraData = extraData
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = GLOBAL_USER_ID,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
