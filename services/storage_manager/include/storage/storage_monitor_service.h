@@ -54,7 +54,7 @@ private:
     void ParseStorageParameters(int64_t totalSize);
     std::string GetStorageAlertCleanupParams();
     void StatisticSysDirSpace(int64_t &freeSize);
-    bool IsMidnightOne();
+    bool IsCurTimeNeedStatistic();
 
     int64_t freesizeCache = 0;
     bool hasNotifiedStorageEvent_ = true;

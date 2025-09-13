@@ -175,17 +175,27 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         LOGE("open dir failed, path is %{public}s, errno is %{public}d", APP_EL1_PATH, errno);
         return;
     }
+    std::regex pattern("^[1-9]\\d*$");
     struct dirent *entry;
     while ((entry = readdir(procDir.get())) != nullptr) {
         if (entry->d_type != DT_DIR) {
             continue;
         }
         std::string name = entry->d_name;
-        if (!StringIsNumber(name)) {
+        if (!std::regex_match(name, pattern);) {
             continue;
         }
-        int32_t userId = atoi(name.c_str());
-        if (userId < DEFAULT_USERID) {
+        char *endptr;
+        errno = 0;
+        int64_t tollRes = strtoll(name.c_str(), &endptr, DECIMAL_NOTATION);
+        if (errno != 0 || endptr == str.c_str() + str.size()) {
+            continue;
+        }
+        if (tollRes < INT32_MIN || tollRes > INT32_MAX) {
+            continue;
+        }
+        int32_t userId = (int32_t)tollRes;
+        if (userId < StorageService::DEFAULT_USER_ID) {
             continue;
         }
         userIds.push_back(userId);

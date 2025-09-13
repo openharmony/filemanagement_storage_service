@@ -113,7 +113,6 @@ static std::vector<DirSpaceInfo> GetRootDir()
             {"/data/local/tmp", 0, 0},
             {"/data/app/el1/0/aot_compiler", 0, 0},
             {"/data/app/el1/0/base", 0, 0},
-            {"/data/app/el1/0/shader_cache", 0, 0},
             {"/data/app/el1/0/system_optimize", 0, 0},
             {"/data/app/el1/public/aot_compiler", 0, 0},
             {"/data/app/el1/public/shader_cache", 0, 0},
@@ -634,8 +633,7 @@ int32_t QuotaManager::StatisticSysDirSpace()
     dirs = GetFoundationDir();
     res = AddDirSpace(dirs, userIds);
     extraData << res << std::endl;
-    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::StartScanDir", E_SYS_DIR_SPACE_STATUS,
-        extraData.str());
+    StorageService::StorageRadar::ReportSpaceRadar("StatisticSysDirSpace", E_SYS_DIR_SPACE_STATUS, extraData.str());
     LOGI("statistic sys dir space end.");
     return E_OK;
 }
@@ -645,6 +643,9 @@ bool QuotaManager::IsNeedScan()
     for (auto &uid : SYS_UIDS) {
         struct dqblk dq;
         if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) != 0) {
+            int32_t errnoTmp = errno;
+            std::string extraData = "uid=" + uid + ",kernelCode=" + std::to_string(errnoTmp);
+            StorageService::StorageRadar::ReportSpaceRadar("IsNeedScan", E_STATISTIC_QUOTA_UID_FAILED, extraData);
             LOGE("failed to get quota, uid is %{public}d, errno is %{public}d", uid, errno);
             return true;
         }
@@ -690,7 +691,7 @@ std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, con
         extraData << "{path:" << info.path
                   << ",type:" << info.type
                   << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
-                  << "MB}"<< std::endl;
+                  << "MB}" << std::endl;
         count++;
     }
     LOGI("extraData is %{public}s", extraData.str().c_str());
@@ -732,8 +733,8 @@ int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
     struct stat st;
     if (lstat(path.c_str(), &st) != E_OK) {
         int32_t errnoTmp = errno;
-        std::string extraData = "path=" + path + ",kernelCode=" + to_string(errnoTmp);
-        StorageService::StorageRadar::ReportSaSizeResult("AddBlks", E_STATISTIC_STAT_FAILED, extraData);
+        std::string extraData = "path=" + path + ",kernelCode=" + std::to_string(errnoTmp);
+        StorageService::StorageRadar::ReportSpaceRadar("AddBlks", E_STATISTIC_STAT_FAILED, extraData);
         LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
         return E_STATISTIC_STAT_FAILED;
     }
