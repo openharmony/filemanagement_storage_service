@@ -663,20 +663,20 @@ std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, con
     std::vector<DirSpaceInfo> allPaths;
     for (const auto &dirInfo : dirs) {
         std::string path = dirInfo.path;
-        uid_t type = dirInfo.type;
+        uid_t uid = dirInfo.uid;
         if (path.find("%d") == std::string::npos) {
             int64_t blks = 0;
-            AddBlksRecurse(path, blks, type);
+            AddBlksRecurse(path, blks, uid);
             int64_t dirSize = blks * BLOCK_BYTE;
-            allPaths.push_back({path, type, dirSize});
+            allPaths.push_back({path, uid, dirSize});
             continue;
         }
         for (const int32_t userId : userIds) {
             std::string userPath = StringPrintf(path.c_str(), userId);
             int64_t blks = 0;
-            AddBlksRecurse(userPath, blks, type);
+            AddBlksRecurse(userPath, blks, uid);
             int64_t dirSize = blks * BLOCK_BYTE;
-            allPaths.push_back({userPath, type, dirSize});
+            allPaths.push_back({userPath, uid, dirSize});
         }
     }
     std::sort(allPaths.begin(), allPaths.end(), [](const DirSpaceInfo& a, const DirSpaceInfo& b) {
