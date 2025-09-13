@@ -196,7 +196,7 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         if (tollRes < INT32_MIN || tollRes > INT32_MAX) {
             continue;
         }
-        int32_t userId = (int32_t)tollRes;
+        int32_t userId = static_cast<int32_t>(tollRes);
         if (userId < StorageService::DEFAULT_USER_ID) {
             continue;
         }
