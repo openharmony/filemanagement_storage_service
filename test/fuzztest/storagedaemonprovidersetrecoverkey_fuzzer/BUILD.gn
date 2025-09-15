@@ -15,9 +15,9 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageDaemonProviderFuzzTest") {
+ohos_fuzztest("StorageDaemonProviderSetRecoverKeyFuzzTest") {
   module_out_path = "storage_service/storage_service"
-  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer"
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovidersetrecoverkey_fuzzer"
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
@@ -35,17 +35,15 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+   "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
-    "${storage_daemon_path}/utils/string_utils.cpp",
-    "${storage_daemon_path}/observer/appstate_observer.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
+    "${storage_service_path}/test/fuzztest/storagedaemonprovidersetrecoverkey_fuzzer/storagedaemonprovidersetrecoverkey_fuzzer.cpp",
   ]
 
   defines = [
@@ -56,7 +54,6 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-
   ]
 
   external_deps = [
@@ -94,14 +91,11 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]
   }
-  if (storage_service_media_fuse) {
-    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
-    external_deps += [ "ability_runtime:app_manager" ]
-  }
+
   use_exceptions = true
 }
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageDaemonProviderFuzzTest" ]
+  deps = [ ":StorageDaemonProviderSetRecoverKeyFuzzTest" ]
 }
