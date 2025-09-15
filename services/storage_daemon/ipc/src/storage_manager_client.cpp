@@ -108,9 +108,20 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
     }
 
     std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
-    storageManager_->NotifyVolumeMounted(info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
-                                         info->GetMountPath(), info->GetFsLabel());
 
+    if (info == nullptr) {
+        LOGE("volumeInfo is not ExternalVolumeInfo");
+        return E_PARAMS_INVALID;
+    }
+    
+    if (storageManager_ != nullptr) {
+        storageManager_->NotifyVolumeMounted(
+            StorageManager::VolumeInfoStr{
+                info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
+                info->GetMountPath(), info->GetFsLabel(), info->GetDamagedFlag()
+            }
+        );
+    }
     return E_OK;
 }
 
@@ -136,8 +147,20 @@ int32_t StorageManagerClient::NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> vo
     }
 
     std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
-    storageManager_->NotifyVolumeDamaged(info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
-                                         info->GetMountPath(), info->GetFsLabel());
+    
+    if (info == nullptr) {
+        LOGE("volumeInfo is not ExternalVolumeInfo");
+        return E_PARAMS_INVALID;
+    }
+    
+    if (storageManager_ != nullptr) {
+        storageManager_->NotifyVolumeDamaged(
+            StorageManager::VolumeInfoStr{
+                info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
+                info->GetMountPath(), info->GetFsLabel(), info->GetDamagedFlag()
+            }
+        );
+    }
     return E_OK;
 }
 

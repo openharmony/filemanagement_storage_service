@@ -74,6 +74,11 @@ std::string ExternalVolumeInfo::GetMountPath()
     return mountPath_;
 }
 
+bool ExternalVolumeInfo::GetDamagedFlag()
+{
+    return isDamaged_;
+}
+
 int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
 {
     int32_t ret = 0;
@@ -244,7 +249,8 @@ int32_t ExternalVolumeInfo::DoFix4Ntfs()
 
 int32_t ExternalVolumeInfo::DoFix4Exfat()
 {
-    LOGE("DoFix4Exfat");
+    LOGI("DoFix4Exfat");
+    LOGI("devPath_ is %{public}s", devPath_.c_str());
     std::vector<std::string> cmd = {
         "fsck.exfat",
         "-p",
@@ -430,7 +436,7 @@ int32_t ExternalVolumeInfo::DoTryToCheck()
 
     if (fsType_ != "ntfs" && fsType_ != "exfat") {
         LOGE("Volume type %{public}s, is not support fix", fsType_.c_str());
-        return E_OK;
+        return E_VOL_FIX_NOT_SUPPORT;
     }
 
     std::promise<int32_t> promise;

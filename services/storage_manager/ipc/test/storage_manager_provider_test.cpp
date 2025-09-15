@@ -349,7 +349,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMoun
     std::string fsUuid = "testFsUuid";
     std::string path = "/mnt/testVolume";
     std::string description = "Test Volume";
-    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(
+        VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 end";
 }
@@ -1165,9 +1166,52 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
     std::string uuid = "uuid-1";
     std::string path = "/";
     std::string description = "My Disk";
-    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(volId, fsTypeStr, uuid, path, description);
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_002
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volId = "vol-8-1";
+    std::string fsTypeStr = "exfat";
+    std::string uuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "My Disk";
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_003
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volId = "vol-8-1";
+    std::string fsTypeStr = "vfat";
+    std::string uuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "My Disk";
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_003 end";
 }
 
 /**

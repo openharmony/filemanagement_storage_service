@@ -33,7 +33,33 @@ enum VolumeState {
     BAD_REMOVAL,
     DAMAGED,
     FUSE_REMOVED,
+    DAMAGED_MOUNTED,
 };
+
+class VolumeInfoStr : public Parcelable {
+public:
+    VolumeInfoStr() {};
+    
+    VolumeInfoStr(std::string volumeId_, std::string fsTypeStr_, std::string fsUuid_,
+                  std::string path_, std::string description_, bool isDamaged_)
+        : volumeId(volumeId_),
+          fsTypeStr(fsTypeStr_),
+          fsUuid(fsUuid_),
+          path(path_),
+          description(description_),
+          isDamaged(isDamaged_) {};
+    
+    std::string volumeId;
+    std::string fsTypeStr;
+    std::string fsUuid;
+    std::string path;
+    std::string description;
+    bool isDamaged = false;
+
+    bool Marshalling(Parcel &parcel) const override;
+    static VolumeInfoStr *Unmarshalling(Parcel &parcel);
+};
+
 class VolumeCore : public Parcelable {
 public:
     VolumeCore();

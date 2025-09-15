@@ -118,4 +118,70 @@ HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0000, testing::ext::TestSize.
     EXPECT_EQ(result->GetState(), state);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_VolumeInfoStr_Marshalling_0000
+ * @tc.name: VolumeInfoStr_Marshalling_0000
+ * @tc.desc: Test function of Marshalling interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeCoreTest, VolumeInfoStr_Marshalling_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin VolumeInfoStr_Marshalling_0000";
+    std::string volumeId = "200";
+    std::string fsTypeStr = "exfat";
+    std::string fsUuid = "200";
+    std::string path = "/data/200";
+    std::string description = "Volume 200";
+    bool isDamaged = false;
+    VolumeInfoStr volumeInfo(volumeId, fsTypeStr, fsUuid, path, description, isDamaged);
+    Parcel parcel;
+    volumeInfo.Marshalling(parcel);
+    EXPECT_EQ(parcel.ReadString(), volumeId);
+    EXPECT_EQ(parcel.ReadString(), fsTypeStr);
+    EXPECT_EQ(parcel.ReadString(), fsUuid);
+    EXPECT_EQ(parcel.ReadString(), path);
+    EXPECT_EQ(parcel.ReadString(), description);
+    EXPECT_EQ(parcel.ReadBool(), isDamaged);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end VolumeInfoStr_Marshalling_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_VolumeInfoStr_Unmarshalling_0000
+ * @tc.name: VolumeInfoStr_Unmarshalling_0000
+ * @tc.desc: Test function of Unmarshalling interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeCoreTest, VolumeInfoStr_Unmarshalling_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin VolumeInfoStr_Unmarshalling_0000";
+    std::string volumeId = "300";
+    std::string fsTypeStr = "exfat";
+    std::string fsUuid = "300";
+    std::string path = "/data/300";
+    std::string description = "Volume 300";
+    bool isDamaged = false;
+    VolumeInfoStr volumeInfoStr;
+    Parcel parcel;
+    parcel.WriteString(volumeId);
+    parcel.WriteString(fsTypeStr);
+    parcel.WriteString(fsUuid);
+    parcel.WriteString(path);
+    parcel.WriteString(description);
+    parcel.WriteBool(isDamaged);
+    auto result = volumeInfoStr.Unmarshalling(parcel);
+    EXPECT_EQ(result->volumeId, volumeId);
+    EXPECT_EQ(result->fsTypeStr, fsTypeStr);
+    EXPECT_EQ(result->fsUuid, fsUuid);
+    EXPECT_EQ(result->path, path);
+    EXPECT_EQ(result->description, description);
+    EXPECT_EQ(result->isDamaged, isDamaged);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end VolumeInfoStr_Unmarshalling_0000";
+}
 }

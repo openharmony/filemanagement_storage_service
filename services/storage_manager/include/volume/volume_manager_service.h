@@ -33,12 +33,8 @@ public:
     int32_t MountUsbFuse(const std::string &volumeId);
     int32_t TryToFix(std::string volumeId);
     void OnVolumeCreated(VolumeCore vc);
-    void OnVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
-                         const std::string &fsUuid, const std::string &path,
-                         const std::string &description);
-    void OnVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
-                         const std::string &fsUuid, const std::string &path,
-                         const std::string &description);
+    void OnVolumeMounted(const VolumeInfoStr &volumeInfoStr);
+    void OnVolumeDamaged(const VolumeInfoStr &volumeInfoStr);
     void OnVolumeStateChanged(std::string volumeId, VolumeState state);
     std::vector<VolumeExternal> GetAllVolumes();
     std::shared_ptr<VolumeExternal> GetVolumeByUuid(std::string volumeUuid);

@@ -387,6 +387,64 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0001, testing:
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0002
+ * @tc.name: Volume_manager_service_Unmount_0002
+ * @tc.desc: Test function of Unmount interface for FAILED.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0002";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-3";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-3";
+    VolumeCore vc(volumeId, fsType, diskId);
+    int32_t result;
+    vc.SetState(VolumeState::MOUNTED);
+    vmService.OnVolumeCreated(vc);
+    result = vmService.Unmount(volumeId);
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0002";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0003
+ * @tc.name: Volume_manager_service_Unmount_0003
+ * @tc.desc: Test function of Unmount interface for FAILED.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0003";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-4";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-4";
+    std::string fsTypeStr = "exfat";
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService.OnVolumeCreated(vc);
+    VolumeExternal ve;
+    int32_t res = vmService.GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_OK);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
+    int32_t result = vmService.Unmount(volumeId);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0003";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeCreated_0000
  * @tc.name: Volume_manager_service_OnVolumeCreated_0000
  * @tc.desc: Test function of OnVolumeCreated interface for SUCCESS.
@@ -429,7 +487,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
-    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_NON_EXIST);
@@ -454,7 +512,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0000, 
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_NON_EXIST);
@@ -491,10 +549,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
     dmService.diskMap_.Insert(diskId, diskPtr);
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
@@ -532,10 +590,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
     dmService.diskMap_.Insert(diskId, diskPtr);
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
@@ -573,10 +631,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
     dmService.diskMap_.Insert(diskId, diskPtr);
-    vmService.OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
@@ -646,7 +704,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
     VolumeCore vc(volumeId, fsType, diskId);
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
-    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid(fsUuid);
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0000";
@@ -675,7 +733,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, t
     VolumeCore vc(volumeId, fsType, diskId);
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
-    vmService.OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     VolumeExternal ve;
     int32_t ret = vmService.GetVolumeByUuid(fsUuid, ve);
     EXPECT_EQ(ret, E_OK);

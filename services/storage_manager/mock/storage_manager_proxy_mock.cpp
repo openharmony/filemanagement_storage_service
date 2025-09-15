@@ -154,8 +154,7 @@ int32_t StorageManagerProxy::NotifyVolumeCreated(const VolumeCore& vc)
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeMounted(const std::string& volumeId, const std::string &fsTypeStr,
-    const std::string& fsUuid, const std::string& path, const std::string& description)
+int32_t StorageManagerProxy::NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr)
 {
     return E_OK;
 }
@@ -165,8 +164,7 @@ int32_t StorageManagerProxy::NotifyVolumeStateChanged(const std::string& volumeI
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeDamaged(const std::string& volumeId, const std::string &fsTypeStr,
-    const std::string& fsUuid, const std::string& path, const std::string& description)
+int32_t StorageManagerProxy::NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
 {
     return E_OK;
 }
