@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproviderlockuserscreen_fuzzer.h"
+#include "storagedaemonprovidershutdown_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
