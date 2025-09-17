@@ -96,16 +96,6 @@ ohos_static_library("storage_daemon_provider_createrecoverkey_fuzztest") {
 ohos_fuzztest("StorageDaemonProviderCreateRecoverKeyFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovidercreaterecoverkey_fuzzer"
-  include_dirs = [
-    "${storage_service_common_path}/include",
-    "${storage_daemon_path}/include",
-    "${storage_daemon_path}/include/crypto",
-    "${storage_daemon_path}/include/ipc",
-    "${storage_daemon_path}/include/quota",
-    "${storage_daemon_path}/include/user",
-    "${storage_daemon_path}/include/utils",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
   cflags = [
     "-g",
     "-O0",
@@ -128,11 +118,15 @@ ohos_fuzztest("StorageDaemonProviderCreateRecoverKeyFuzzTest") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
     "ability_base:zuri",
     "ability_runtime:abilitykit_native",
     "app_file_service:fileshare_native",
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
     "c_utils:utils",
@@ -140,30 +134,24 @@ ohos_fuzztest("StorageDaemonProviderCreateRecoverKeyFuzzTest") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
+    "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
+    "crypto_framework:crypto_framework_lib",
   ]
 
-  if (storage_service_cloud_fuse) {
-    defines += [ "DFS_SERVICE" ]
-    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
-  }
 
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  if (enable_tee_client) {
-    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
-    external_deps += [ "tee_client:libteec" ]
-  }
-
-  use_exceptions = true
 }
 
 group("fuzztest") {
