@@ -35,7 +35,7 @@ ohos_fuzztest("StorageDaemonProviderLockUserScreenFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-   "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
