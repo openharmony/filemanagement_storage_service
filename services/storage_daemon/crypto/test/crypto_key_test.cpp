@@ -427,7 +427,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
     // Default to maximum zero-padding to leak less info about filename lengths.
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
-    EXPECT_TRUE(KeyCtrlSetPolicy(TEST_DIR_LEGACY.c_str(), &arg));
+    EXPECT_EQ(KeyCtrlSetPolicy(TEST_DIR_LEGACY.c_str(), &arg), E_OK);
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
@@ -444,16 +444,16 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
 {
     struct fscrypt_policy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    EXPECT_TRUE(KeyCtrlGetPolicy(TEST_DIR_LEGACY.c_str(), &arg));
+    EXPECT_EQ(KeyCtrlGetPolicy(TEST_DIR_LEGACY.c_str(), &arg), E_OK);
     EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 
     std::string testDir = TEST_DIR_LEGACY + "/test_dir";
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    EXPECT_TRUE(KeyCtrlGetPolicy(testDir.c_str(), &arg));
+    EXPECT_EQ(KeyCtrlGetPolicy(testDir.c_str(), &arg), E_OK);
     EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 
-    EXPECT_FALSE(KeyCtrlGetPolicy(NULL, NULL));
-    EXPECT_FALSE(KeyCtrlGetPolicy(testDir.c_str(), NULL));
+    EXPECT_EQ(KeyCtrlGetPolicy(NULL, NULL), FSCRYPT_INVALID_REALPATH);
+    EXPECT_EQ(KeyCtrlGetPolicy(testDir.c_str(), NULL), EFAULT);
 }
 
 /**
