@@ -12,7 +12,7 @@
 # limitations under the License.
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_static_library("storage_daemon_provider_common_fuzztest") {
+ohos_static_library("storage_daemoncommon_fuzztest") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
