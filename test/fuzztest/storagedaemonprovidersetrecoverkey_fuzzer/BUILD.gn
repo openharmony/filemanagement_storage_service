@@ -109,7 +109,7 @@ ohos_fuzztest("StorageDaemonProviderSetRecoverKeyFuzzTest") {
     "${storage_service_path}/test/fuzztest/storagedaemonprovidersetrecoverkey_fuzzer/storagedaemonprovidersetrecoverkey_fuzzer.cpp",
   ]
 
-  configs = [ "${storage_daemon_path}:storeage_daemon_config" ]
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
     "ability_base:base",
