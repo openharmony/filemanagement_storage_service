@@ -481,7 +481,6 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
         } else {
             LOGE("Create MBR Volume failed");
         }
-        }
     } else if (table == Table::GPT) {
         if (CreateVolume(partitionDev) == E_OK) {
             foundPart = true;
