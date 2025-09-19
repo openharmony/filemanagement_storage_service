@@ -441,6 +441,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         dir->Clear();
         dir->objHandles->num = 0;
         dir->objHandles->offset = 0;
+        free(out);
         LOGI("childrenNum is 0");
         return;
     }
@@ -936,6 +937,10 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
         fileToUpload.SetId(f->item_id);
         fileToUpload.SetParent(f->parent_id);
         fileToUpload.SetStorage(f->storage_id);
+        if (f->filename == nullptr) {
+            LOGE("filename is null");
+            return -EINVAL;   
+        }
         fileToUpload.SetName(std::string(f->filename));
         fileToUpload.SetModificationDate(fileStat.st_mtime);
         if (fileToRemove) {

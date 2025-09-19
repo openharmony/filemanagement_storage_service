@@ -465,11 +465,22 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
         if (++it == end) {
             return;
         }
-        int32_t type = std::stoi("0x0" + *it, 0, 16);
+        char *end;
+        errno = 0;
+        long long val = std::strtoll(("0x0" + *it).c_str(), &end , 16);
+        if (errno == ERANGE || val > INT32_MAX || val < INT32_MIN) {
+            LOGE("Range error");
+            return;
+        }
+        if (end ==  ("0x0" + *it).c_str() || *end != '\0') {
+            LOGE("Invalid input or not fully parsed");
+        }
+        int32_t type = static_cast<int32_t>(val);
         if (CreateMBRVolume(type, partitionDev)) {
             foundPart = true;
         } else {
             LOGE("Create MBR Volume failed");
+        }
         }
     } else if (table == Table::GPT) {
         if (CreateVolume(partitionDev) == E_OK) {
