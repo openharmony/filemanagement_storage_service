@@ -83,7 +83,9 @@ void StorageMonitorService::StartStorageMonitorTask()
     }
 
     auto executeFunc = [this] { Execute(); };
-    
+    if (eventHandler_ == nullptr) {
+        LOGE("event handler is nullptr in StartStorageMonitorTask.");
+    }
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
 
