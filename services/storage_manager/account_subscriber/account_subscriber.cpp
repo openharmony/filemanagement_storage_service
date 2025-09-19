@@ -29,6 +29,7 @@ namespace StorageManager {
 static constexpr int CONNECT_TIME = 10;
 static std::mutex userRecordLock;
 static std::mutex mediaMapLock;
+static const int32_t SLEEP_TIME_INTERVAL_1MS = 1000;
 
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
     : EventFwk::CommonEventSubscriber(subscriberInfo)
@@ -175,6 +176,7 @@ void AccountSubscriber::GetSystemAbility()
             break;
         }
         LOGE("try to connect media again.");
+        usleep(SLEEP_TIME_INTERVAL_1MS);
     }
 }
 }  // namespace StorageManager

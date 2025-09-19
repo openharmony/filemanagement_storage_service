@@ -83,6 +83,7 @@ void StorageMonitorService::StartStorageMonitorTask()
     }
 
     auto executeFunc = [this] { Execute(); };
+    
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
 
