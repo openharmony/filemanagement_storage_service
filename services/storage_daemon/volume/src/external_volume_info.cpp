@@ -127,13 +127,13 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
 {
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
-    auto mountData = StringPrintf("rw,big_writes,uid=%d,gid=%d,dmask=0007,fmask=0007",
+    auto mountData = StringPrintf("rw,big_writes,uid=%d,gid=%d,dmask=0006,fmask=0007",
         UID_FILE_MANAGER, UID_FILE_MANAGER);
 #else
-    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
 #endif
     if (mountFlags & MS_RDONLY) {
-        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     }
 
     std::vector<std::string> cmd = {
@@ -161,9 +161,9 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 {
-    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (mountFlags & MS_RDONLY) {
-        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     }
 
     std::vector<std::string> cmd = {
@@ -269,7 +269,7 @@ int32_t ExternalVolumeInfo::DoFix4Exfat()
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
-    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret) {
         return E_OTHER_MOUNT;
@@ -280,7 +280,7 @@ int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
-    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007,utf8", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret) {
         return E_FAT_MOUNT;
@@ -629,10 +629,12 @@ int32_t ExternalVolumeInfo::CreateMountPath()
         remove(mountBackupPath_.c_str());
         return E_SYS_KERNEL_ERR;
     }
+    mode_t originalUmask = umask(0);
     if (mkdir(mountBackupPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
         LOGE("the volume %{public}s create path %{public}s failed", GetVolumeId().c_str(), mountBackupPath_.c_str());
         return E_MKDIR_MOUNT;
     }
+    umask(originalUmask);
     mountPath_ = mountBackupPath_;
     return E_OK;
 }
