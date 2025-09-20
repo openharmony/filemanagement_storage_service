@@ -27,7 +27,8 @@
       "storage_service_crypto_test",
       "storage_service_external_storage_qos_trans",
       "storage_service_media_fuse",
-      "storage_service_cloud_fuse"
+      "storage_service_cloud_fuse",
+      "enable_fscrypt_data_reliability_option"
     ],
     "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",
