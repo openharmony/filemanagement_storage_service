@@ -62,6 +62,15 @@ public:
         }
         return false;
     }
+    V GetShared(const K& key)
+    {
+        Utils::UniqueWriteGuard<Utils::RWLock> mapGuard(this->rl_);
+        auto it = map_.find(key);
+        if (it != map_.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
     typename std::map<K, V>::iterator Find(const K& key)
     {
         Utils::UniqueWriteGuard<Utils::RWLock> mapGuard(this->rl_);
