@@ -48,11 +48,7 @@ VolumeManager &VolumeManager::Instance()
 
 std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
 {
-    auto it = volumes_.Find(volId);
-    if (it == volumes_.End()) {
-        return nullptr;
-    }
-    return it->second;
+    return volumes_.GetShared(volId);
 }
 
 std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device, bool isUserdata)
