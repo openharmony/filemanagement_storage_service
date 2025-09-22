@@ -116,7 +116,7 @@ ohos_static_library("libsdcrypto") {
     external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 
-  if (enable_fscrypt_data_reliability_option) {
+  if (storage_service_enable_fscrypt_data_reliability_option) {
     defines += [ "EL2_INACTIVE_SPECIAL_HANDLING" ]
   }
 
