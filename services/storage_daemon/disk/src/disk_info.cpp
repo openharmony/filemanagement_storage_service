@@ -466,14 +466,10 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
             return;
         }
         char *endptr;
-        errno = 0;
-        long long val = std::strtoll(("0x0" + *it).c_str(), &endptr , 16);
-        if (errno == ERANGE || val > INT32_MAX || val < INT32_MIN) {
-            LOGE("Range error");
+        int64_t val = std::strtoll(("0x0" + *it).c_str(), &endptr , 16);
+        if (val > INT32_MAX || val < INT32_MIN) {
+            LOGE("Illegal type value , out of range");
             return;
-        }
-        if (endptr ==  ("0x0" + *it).c_str() || *endptr != '\0') {
-            LOGE("Invalid input or not fully parsed");
         }
         int32_t type = static_cast<int32_t>(val);
         if (CreateMBRVolume(type, partitionDev)) {
