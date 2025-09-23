@@ -95,7 +95,7 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToCheck_0
 
     g_readMetadata = 0;
     externalVolumeInfo_->fsType_ = "f2fs";
-    EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_OK);
+    EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_VOL_FIX_NOT_SUPPORT);
 
     externalVolumeInfo_->fsType_ = "ntfs";
     g_forkExecWithExit = 0;

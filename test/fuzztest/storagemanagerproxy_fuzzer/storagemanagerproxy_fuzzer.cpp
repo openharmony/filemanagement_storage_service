@@ -24,7 +24,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 {
-    size_t dataMinSize = sizeof(int32_t) + sizeof(uint32_t) + sizeof(uint64_t);
+    size_t dataMinSize = sizeof(int32_t) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(bool);
     if ((data == nullptr) || (size <= dataMinSize)) {
         return false;
     }
@@ -44,6 +44,8 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     int32_t metaData2 = *(reinterpret_cast<const int32_t *>(data));
     uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
     uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data + sizeof(uint32_t) + sizeof(uint64_t)));
+    bool metadata6 = *(reinterpret_cast<const bool *>(data + sizeof(uint32_t) + sizeof(uint64_t) +
+        sizeof(bool)));
     std::string metaData(reinterpret_cast<const char *>(data + dataMinSize), size - dataMinSize);
     std::map<std::string, std::string> metaData5 = {{metaData, metaData}};
     token.push_back(*data);
@@ -66,7 +68,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->ActiveUserKey(metaData2, token, secret);
     proxy->SetVolumeDescription(metaData, metaData);
     proxy->UpdateUserAuth(metaData2, metaData4, token, secret, secret);
-    proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData);
+    proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData, metadata6);
     proxy->MountDisShareFile(metaData2, metaData5);
     proxy->UMountDisShareFile(metaData2, metaData);
     return true;

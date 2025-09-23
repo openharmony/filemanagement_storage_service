@@ -30,6 +30,7 @@ enum VolumeState {
     BADREMOVABLE,
     DAMAGED,
     FUSE_REMOVED,
+    DAMAGED_MOUNTED,
 };
 
 enum VolumeType {
@@ -41,8 +42,6 @@ public:
     VolumeInfo() = default;
     virtual ~VolumeInfo() = default;
 
-    virtual int32_t DoTryToCheck() = 0;
-    virtual int32_t DoTryToFix() = 0;
     int32_t Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata);
     int32_t Destroy();
     int32_t DestroyUsbFuse();
@@ -52,6 +51,8 @@ public:
     int32_t Check();
     int32_t Format(const std::string type);
     int32_t SetVolumeDescription(const std::string description);
+    int32_t TryToCheck();
+    int32_t TryToFix();
 
     std::string GetVolumeId();
     int32_t GetVolumeType();
@@ -68,6 +69,8 @@ protected:
     virtual int32_t DoCheck() = 0;
     virtual int32_t DoFormat(std::string type) = 0;
     virtual int32_t DoSetVolDesc(std::string description) = 0;
+    virtual int32_t DoTryToCheck() = 0;
+    virtual int32_t DoTryToFix() = 0;
 
 private:
     std::string id_;
@@ -77,6 +80,8 @@ private:
     uint32_t mountFlags_;
     int32_t userIdOwner_;
     bool isUserdata_;
+protected:
+    bool isDamaged_ = false;
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -285,28 +285,20 @@ int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
     return StorageManager::GetInstance().NotifyVolumeCreated(vc);
 }
 
-int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
-                                                    const std::string &fsTypeStr,
-                                                    const std::string &fsUuid,
-                                                    const std::string &path,
-                                                    const std::string &description)
+int32_t StorageManagerProvider::NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    return StorageManager::GetInstance().NotifyVolumeMounted(volumeInfoStr);
 }
 
-int32_t StorageManagerProvider::NotifyVolumeDamaged(const std::string &volumeId,
-                                                    const std::string &fsTypeStr,
-                                                    const std::string &fsUuid,
-                                                    const std::string &path,
-                                                    const std::string &description)
+int32_t StorageManagerProvider::NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    return StorageManager::GetInstance().NotifyVolumeDamaged(volumeInfoStr);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)

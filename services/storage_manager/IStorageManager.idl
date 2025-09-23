@@ -17,6 +17,7 @@ sequenceable BundleStats..OHOS.StorageManager.BundleStats;
 sequenceable Disk..OHOS.StorageManager.Disk;
 sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
 sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
+sequenceable VolumeCore..OHOS.StorageManager.VolumeInfoStr;
 rawdata OHOS.StorageManager.StorageFileRawData;
 import IUeceActivationCallback;
 interface OHOS.StorageManager.IStorageManager {
@@ -38,8 +39,7 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 46] void GetUserStorageStatsByType([in] int userId, [out] StorageStats storageStats,
                                                 [in] String type);
     [ipccode 15] void NotifyVolumeCreated([in] VolumeCore vc);
-    [ipccode 16] void NotifyVolumeMounted([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
-                                          [in] String path, [in] String description);
+    [ipccode 16] void NotifyVolumeMounted([in] VolumeInfoStr vis);
     [ipccode 17] void NotifyVolumeStateChanged([in] String volumeId, [in] unsigned int  state);
     [ipccode 18] void Mount([in] String volumeId);
     [ipccode 19] void Unmount([in] String volumeId);
@@ -101,8 +101,7 @@ interface OHOS.StorageManager.IStorageManager {
                                                  [in] unsigned char[] key);
     [ipccode 65] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
     [ipccode 66] void UMountDisShareFile([in] int userId, [in] String networkId);
-    [ipccode 67] void NotifyVolumeDamaged([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
-                                          [in] String path, [in] String description);
+    [ipccode 67] void NotifyVolumeDamaged([in] VolumeInfoStr vis);
     [ipccode 68] void TryToFix([in] String volumeId);
     [ipccode 69] void InactiveUserPublicDirKey([in] unsigned int userId);
     [ipccode 72] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
