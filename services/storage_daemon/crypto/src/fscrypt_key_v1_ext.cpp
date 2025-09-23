@@ -272,8 +272,13 @@ int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 
     LOGI("enter");
     bool destroy = !!flag;
+#ifdef EL2_INACTIVE_SPECIAL_HANDLING
+    if ((type_ == TYPE_EL1 || type_ == TYPE_EL2) && !destroy) {
+        LOGI("Is el1/el2, no need to inactive");
+#else
     if ((type_ == TYPE_EL1) && !destroy) {
         LOGI("Is el1, no need to inactive");
+#endif
         return E_OK;
     }
     uint8_t buf[FBEX_IV_SIZE] = {0};

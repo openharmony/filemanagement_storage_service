@@ -22,6 +22,7 @@ declare_args() {
   storage_service_fstools = true
   storage_service_media_fuse = true
   storage_service_cloud_fuse = true
+  storage_service_enable_fscrypt_data_reliability_option = false
 
   storage_service_el5_filekey_manager =
       defined(global_parts_info) &&
