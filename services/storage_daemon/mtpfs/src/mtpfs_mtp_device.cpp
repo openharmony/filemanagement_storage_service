@@ -434,6 +434,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
     if (childrenNum < 0) {
         LOGE("LIBMTP_Get_Children fail");
         DumpLibMtpErrorStack();
+        free(out);
         return;
     }
     auto diffFdMap = FindDifferenceFds(out, childrenNum, dir->objHandles->handler, dir->objHandles->num);
@@ -441,8 +442,8 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         dir->Clear();
         dir->objHandles->num = 0;
         dir->objHandles->offset = 0;
-        free(out);
         LOGI("childrenNum is 0");
+        free(out);
         return;
     }
     if (!diffFdMap.empty()) {

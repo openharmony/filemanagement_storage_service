@@ -465,14 +465,14 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
         if (++it == end) {
             return;
         }
-        char *end;
+        char *endptr;
         errno = 0;
-        long long val = std::strtoll(("0x0" + *it).c_str(), &end , 16);
+        long long val = std::strtoll(("0x0" + *it).c_str(), &endptr , 16);
         if (errno == ERANGE || val > INT32_MAX || val < INT32_MIN) {
             LOGE("Range error");
             return;
         }
-        if (end ==  ("0x0" + *it).c_str() || *end != '\0') {
+        if (endptr ==  ("0x0" + *it).c_str() || *endptr != '\0') {
             LOGE("Invalid input or not fully parsed");
         }
         int32_t type = static_cast<int32_t>(val);
