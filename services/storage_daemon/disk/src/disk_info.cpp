@@ -466,7 +466,7 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
             return;
         }
         char *endptr;
-        int64_t val = std::strtoll(("0x0" + *it).c_str(), &endptr , 16);
+        int64_t val = std::strtoll(("0x0" + *it).c_str(), &endptr, 16);
         if (val > INT32_MAX) {
             LOGE("Illegal type value , out of range");
             return;
