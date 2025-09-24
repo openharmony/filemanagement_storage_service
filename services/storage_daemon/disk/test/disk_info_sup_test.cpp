@@ -158,5 +158,71 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_002, Tes
     ret = diskInfo->Destroy();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_002 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_CreateTableVolume_001
+ * @tc.desc: Verify the CreateTableVolume function.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_001 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    Table table = Table::MBR;
+    bool foundPart = false;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    int32_t maxVols = 3;
+    std::vector<std::string> data = {"80000000", "123"};
+    std::vector<std::string>::iterator it = data.begin();
+    const std::vector<std::string>::iterator end = data.end();
+    diskInfo->CreateTableVolume(it, end, table, foundPart, device);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_CreateTableVolume_002
+ * @tc.desc: Verify the CreateTableVolume function.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_002 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    Table table = Table::MBR;
+    bool foundPart = false;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    int32_t maxVols = 3;
+    std::vector<std::string> data = {"FFFFFFFFFFFFFFF7", "123"};
+    std::vector<std::string>::iterator it = data.begin();
+    const std::vector<std::string>::iterator end = data.end();
+    diskInfo->CreateTableVolume(it, end, table, foundPart, device);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_002 end";
+}
 }
 }
