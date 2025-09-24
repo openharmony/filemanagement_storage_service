@@ -1064,7 +1064,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FilterOutput_001, TestSize.L
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     std::vector<std::string> lines;
-    std::vector<std::string> output = {"DISK test1", "test2"};
+    std::vector<std::string> output = {"test1", "test2"};
+    diskInfo->FilterOutput(lines, output);
+    EXPECT_TRUE(lines.empty());
+
+    output = {"DISK test1", "test2"};
     diskInfo->FilterOutput(lines, output);
     EXPECT_TRUE(!lines.empty());
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 end";
