@@ -184,7 +184,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001,
     DiskInfo::Table table = DiskInfo::Table::MBR;
     bool foundPart = false;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    std::vector<std::string> testData = {"80000000", "123"};
+    std::vector<std::string> testData = {"123", "80000000"};
     std::vector<std::string>::iterator it = testData.begin();
     const std::vector<std::string>::iterator end = testData.end();
     diskInfo->CreateTableVolume(it, end, table, foundPart, device);
@@ -216,7 +216,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_002,
     DiskInfo::Table table = DiskInfo::Table::MBR;
     bool foundPart = false;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    std::vector<std::string> testData = {"FFFFFFFFFFFFFFF7", "123"};
+    std::vector<std::string> testData = {"123", "-80000001"};
     std::vector<std::string>::iterator it = testData.begin();
     const std::vector<std::string>::iterator end = testData.end();
     diskInfo->CreateTableVolume(it, end, table, foundPart, device);
