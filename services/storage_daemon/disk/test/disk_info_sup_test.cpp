@@ -181,13 +181,13 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001,
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-    Table table = Table::MBR;
+    DiskInfo::Table table = DiskInfo::Table::MBR;
     bool foundPart = false;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     int32_t maxVols = 3;
-    std::vector<std::string> data = {"80000000", "123"};
-    std::vector<std::string>::iterator it = data.begin();
-    const std::vector<std::string>::iterator end = data.end();
+    std::vector<std::string> testData = {"80000000", "123"};
+    std::vector<std::string>::iterator it = testData.begin();
+    const std::vector<std::string>::iterator end = testData.end();
     diskInfo->CreateTableVolume(it, end, table, foundPart, device);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_001 end";
 }
@@ -214,13 +214,13 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_002,
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-    Table table = Table::MBR;
+    DiskInfo::Table table = DiskInfo::Table::MBR;
     bool foundPart = false;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     int32_t maxVols = 3;
-    std::vector<std::string> data = {"FFFFFFFFFFFFFFF7", "123"};
-    std::vector<std::string>::iterator it = data.begin();
-    const std::vector<std::string>::iterator end = data.end();
+    std::vector<std::string> testData = {"FFFFFFFFFFFFFFF7", "123"};
+    std::vector<std::string>::iterator it = testData.begin();
+    const std::vector<std::string>::iterator end = testData.end();
     diskInfo->CreateTableVolume(it, end, table, foundPart, device);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_002 end";
 }
