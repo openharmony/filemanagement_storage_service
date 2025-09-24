@@ -477,6 +477,7 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
         }
 #ifdef SUPPORT_FSCRYPT_V2
     } else if (fscryptVer == FSCRYPT_V2) {
+        SAFE_FREE_PTR(pathBuf);
         return 0;
 #endif
     }

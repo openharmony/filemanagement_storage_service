@@ -465,7 +465,13 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
         if (++it == end) {
             return;
         }
-        int32_t type = std::stoi("0x0" + *it, 0, 16);
+        char *endptr;
+        int64_t val = std::strtoll(("0x0" + *it).c_str(), &endptr, 16);
+        if (val > INT32_MAX) {
+            LOGE("Illegal type value , out of range");
+            return;
+        }
+        int32_t type = static_cast<int32_t>(val);
         if (CreateMBRVolume(type, partitionDev)) {
             foundPart = true;
         } else {

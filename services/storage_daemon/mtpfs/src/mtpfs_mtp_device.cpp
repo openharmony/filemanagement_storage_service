@@ -434,6 +434,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
     if (childrenNum < 0) {
         LOGE("LIBMTP_Get_Children fail");
         DumpLibMtpErrorStack();
+        free(out);
         return;
     }
     auto diffFdMap = FindDifferenceFds(out, childrenNum, dir->objHandles->handler, dir->objHandles->num);
@@ -442,6 +443,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         dir->objHandles->num = 0;
         dir->objHandles->offset = 0;
         LOGI("childrenNum is 0");
+        free(out);
         return;
     }
     if (!diffFdMap.empty()) {
@@ -940,6 +942,10 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
         fileToUpload.SetId(f->item_id);
         fileToUpload.SetParent(f->parent_id);
         fileToUpload.SetStorage(f->storage_id);
+        if (f->filename == nullptr) {
+            LOGE("filename is null");
+            return -EINVAL;
+        }
         fileToUpload.SetName(std::string(f->filename));
         fileToUpload.SetModificationDate(fileStat.st_mtime);
         if (fileToRemove) {
