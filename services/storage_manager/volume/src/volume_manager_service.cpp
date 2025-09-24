@@ -70,23 +70,22 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
     }
 }
 
-void VolumeManagerService::OnVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
-                                           const std::string &fsUuid, const std::string &path,
-                                           const std::string &description)
+void VolumeManagerService::OnVolumeMounted(const VolumeInfoStr &volumeInfoStr)
 {
-    if (!volumeMap_.Contains(volumeId)) {
-        LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists", volumeId.c_str());
+    if (!volumeMap_.Contains(volumeInfoStr.volumeId)) {
+        LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists",
+            volumeInfoStr.volumeId.c_str());
         return;
     }
-    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeInfoStr.volumeId);
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
         return;
     }
-    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(fsTypeStr));
-    volumePtr->SetFsUuid(fsUuid);
-    volumePtr->SetPath(path);
-    std::string des = description;
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(volumeInfoStr.fsTypeStr));
+    volumePtr->SetFsUuid(volumeInfoStr.fsUuid);
+    volumePtr->SetPath(volumeInfoStr.path);
+    std::string des = volumeInfoStr.description;
     auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
@@ -101,27 +100,27 @@ void VolumeManagerService::OnVolumeMounted(const std::string &volumeId, const st
         volumePtr->SetFlags(disk->GetFlag());
     }
     volumePtr->SetDescription(des);
-    volumePtr->SetState(VolumeState::MOUNTED);
-    VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
+    volumePtr->SetState(volumeInfoStr.isDamaged == true ? VolumeState::DAMAGED_MOUNTED : VolumeState::MOUNTED);
+    LOGI("volumePtr OnVolumeMounted Info %{public}s, %{public}s, %{public}d in VolumeManagerService::OnVolumeMounted",
+        volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
+    VolumeStateNotify(volumeInfoStr.isDamaged == true ? VolumeState::DAMAGED_MOUNTED : VolumeState::MOUNTED, volumePtr);
 }
 
-void VolumeManagerService::OnVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
-                                           const std::string &fsUuid, const std::string &path,
-                                           const std::string &description)
+void VolumeManagerService::OnVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
 {
-    if (!volumeMap_.Contains(volumeId)) {
-        LOGE("VolumeManagerService::OnVolumeDamaged volumeId %{public}s not exists", volumeId.c_str());
+    if (!volumeMap_.Contains(volumeInfoStr.volumeId)) {
+        LOGE("VolumeManagerService::OnVolumeDamaged volumeId %{public}s not exists", volumeInfoStr.volumeId.c_str());
         return;
     }
-    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeInfoStr.volumeId);
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
         return;
     }
-    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(fsTypeStr));
-    volumePtr->SetFsUuid(fsUuid);
-    volumePtr->SetPath(path);
-    std::string des = description;
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(volumeInfoStr.fsTypeStr));
+    volumePtr->SetFsUuid(volumeInfoStr.fsUuid);
+    volumePtr->SetPath(volumeInfoStr.path);
+    std::string des = volumeInfoStr.description;
     auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
@@ -136,6 +135,9 @@ void VolumeManagerService::OnVolumeDamaged(const std::string &volumeId, const st
         volumePtr->SetFlags(disk->GetFlag());
     }
     volumePtr->SetDescription(des);
+    volumePtr->SetState(VolumeState::DAMAGED);
+    LOGI("volumePtr OnVolumeDamaged Info %{public}s, %{public}s, %{public}d in VolumeManagerService::OnVolumeDamaged",
+        volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
     VolumeStateNotify(VolumeState::DAMAGED, volumePtr);
 }
 
@@ -209,8 +211,10 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         LOGE("volumePtr is nullptr for volumeId");
         return E_VOLUMEEX_IS_NULLPTR;
     }
-    if (volumePtr->GetState() != VolumeState::MOUNTED) {
-        LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted", volumeId.c_str());
+    if (volumePtr->GetState() != VolumeState::MOUNTED &&
+        volumePtr->GetState() != VolumeState::DAMAGED_MOUNTED) {
+        LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted, %{public}d", volumeId.c_str(),
+            volumePtr->GetState());
         return E_VOL_UMOUNT_ERR;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -244,7 +248,7 @@ int32_t VolumeManagerService::TryToFix(std::string volumeId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = Check(volumePtr->GetId());
-    if (result == E_OK && sdCommunication != nullptr) {
+    if (sdCommunication != nullptr) {
         result = sdCommunication->TryToFix(volumeId, 0);
     } else {
         volumePtr->Reset();

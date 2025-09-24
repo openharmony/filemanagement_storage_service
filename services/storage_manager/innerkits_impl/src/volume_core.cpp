@@ -84,6 +84,35 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
     return true;
 }
 
+bool VolumeInfoStr::Marshalling(Parcel &parcel) const
+{
+    if (!parcel.WriteString(volumeId)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(fsTypeStr)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(fsUuid)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(path)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(description)) {
+        return false;
+    }
+
+    if (!parcel.WriteBool(isDamaged)) {
+        return false;
+    }
+
+    return true;
+}
+
 VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
 {
     VolumeCore* obj = new (std::nothrow) VolumeCore();
@@ -95,6 +124,21 @@ VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
     obj->diskId_ = parcel.ReadString();
     obj->state_ = parcel.ReadInt32();
     obj->errorFlag_ = parcel.ReadBool();
+    return obj;
+}
+
+VolumeInfoStr *VolumeInfoStr::Unmarshalling(Parcel &parcel)
+{
+    VolumeInfoStr* obj = new (std::nothrow) VolumeInfoStr();
+    if (!obj) {
+        return nullptr;
+    }
+    obj->volumeId = parcel.ReadString();
+    obj->fsTypeStr = parcel.ReadString();
+    obj->fsUuid = parcel.ReadString();
+    obj->path = parcel.ReadString();
+    obj->description = parcel.ReadString();
+    obj->isDamaged = parcel.ReadBool();
     return obj;
 }
 }

@@ -244,23 +244,21 @@ int32_t StorageManager::NotifyVolumeCreated(const VolumeCore& vc)
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
-    const std::string &fsUuid, const std::string &path, const std::string &description)
+int32_t StorageManager::NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyVolumeMounted start, fsType is %{public}s.", fsTypeStr.c_str());
-    VolumeManagerService::GetInstance().OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
-        description);
+    LOGI("StorageManger::NotifyVolumeMounted start, fsType is %{public}s.", volumeInfoStr.fsTypeStr.c_str());
+    VolumeManagerService::GetInstance().OnVolumeMounted(volumeInfoStr);
 #endif
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
-    const std::string &fsUuid, const std::string &path, const std::string &description)
+int32_t StorageManager::NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.", fsTypeStr.c_str(), fsUuid.c_str());
-    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.",
+        volumeInfoStr.fsTypeStr.c_str(), volumeInfoStr.fsUuid.c_str());
+    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeInfoStr);
 #endif
     return E_OK;
 }
@@ -282,6 +280,10 @@ OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
             return OHOS::StorageManager::VolumeState::BAD_REMOVAL;
         case FUSE_REMOVED:
             return OHOS::StorageManager::VolumeState::FUSE_REMOVED;
+        case DAMAGED_MOUNTED:
+            return OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED;
+        case DAMAGED:
+            return OHOS::StorageManager::VolumeState::DAMAGED;
         default:
             return OHOS::StorageManager::VolumeState::UNMOUNTED;
     }

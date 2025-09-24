@@ -44,18 +44,10 @@ public:
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string& type) override;
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
     int32_t NotifyVolumeCreated(const VolumeCore& vc) override;
-    int32_t NotifyVolumeMounted(const std::string &volumeId,
-                                const std::string &fsTypeStr,
-                                const std::string &fsUuid,
-                                const std::string &path,
-                                const std::string &description) override;
+    int32_t NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr) override;
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type) override;
     int32_t NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state) override;
-    int32_t NotifyVolumeDamaged(const std::string &volumeId,
-                                const std::string &fsTypeStr,
-                                const std::string &fsUuid,
-                                const std::string &path,
-                                const std::string &description) override;
+    int32_t NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr) override;
     int32_t Mount(const std::string& volumeId) override;
     int32_t Unmount(const std::string& volumeId) override;
     int32_t TryToFix(const std::string& volumeId) override;

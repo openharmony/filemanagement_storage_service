@@ -531,6 +531,24 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetMount
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetDamagedFlag_001
+ * @tc.desc: Verify the GetDamagedFlag function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetDamagedFlag_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetDamagedFlag_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    bool ret = externalVolumeInfo_->GetDamagedFlag();
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_FALSE(ret);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetDamagedFlag_001 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001
  * @tc.desc: Verify the DoMount4Ext function.
  * @tc.type: FUNC

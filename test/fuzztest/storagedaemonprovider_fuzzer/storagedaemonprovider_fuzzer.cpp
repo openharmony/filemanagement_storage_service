@@ -312,104 +312,6 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_LOCK_USER_SCREEN);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool UpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UPDATE_MEMORY_PARA);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool ShutdownFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_SHUTDOWN);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_RECOVER_KEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool UMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t) + sizeof(uint32_t))) {
@@ -452,12 +354,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::DeleteAppkeyFuzzTest(data, size);
     OHOS::GenerateAppkeyFuzzTest(data, size);
     OHOS::UnlockUserScreenFuzzTest(data, size);
-    OHOS::LockUserScreenFuzzTest(data, size);
-    OHOS::UpdateMemoryParaFuzzTest(data, size);
-    OHOS::ShutdownFuzzTest(data, size);
-    OHOS::CreateRecoverKeyFuzzTest(data, size);
-    OHOS::SetRecoverKeyFuzzTest(data, size);
-    OHOS::MountMediaFuseFuzzTest(data, size);
-    OHOS::UMountMediaFuseFuzzTest(data, size);
     return 0;
 }

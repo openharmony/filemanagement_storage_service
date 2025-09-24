@@ -1389,8 +1389,10 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
     int32_t ret = memcpy_s(out, size, deviceName, nameLen);
     if (ret != 0) {
         LOGE("memcpy_s devicename fail, ret=%{public}d", ret);
+        free(deviceName);
         return 0;
     }
+    free(deviceName);
     return nameLen;
 }
 

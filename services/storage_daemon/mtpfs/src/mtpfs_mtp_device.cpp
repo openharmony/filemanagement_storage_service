@@ -687,11 +687,15 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
         return -EINVAL;
     }
     if (tmpOldDirName != tmpNewDirName) {
-        LOGE("Can not move");
+        LOGE("Can not rename");
         return -EINVAL;
     }
 
     LIBMTP_folder_t *folder = dirToReName->ToLIBMTPFolder();
+    if (folder == nullptr) {
+        LOGE("Can not rename");
+        return -EINVAL;
+    }
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int ret = LIBMTP_Set_Folder_Name(device_, folder, tmpNewBaseName.c_str());
     free(static_cast<void *>(folder->name));
@@ -997,6 +1001,10 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
     }
 
     LIBMTP_file_t *file = fileToReName->ToLIBMTPFile();
+    if (file == nullptr) {
+        LOGE("Can not rename");
+        return -EINVAL;
+    }
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int rval = LIBMTP_Set_File_Name(device_, file, tmpNewBaseName.c_str());
     free(static_cast<void *>(file->filename));

@@ -27,9 +27,8 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 static constexpr int CONNECT_TIME = 10;
-static std::mutex userRecordLock;
-static std::mutex mediaMapLock;
-static const int32_t SLEEP_TIME_INTERVAL_1MS = 1000;
+static std::mutex mediaMutex_;
+static std::mutex userRecordMutex_;
 
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
     : EventFwk::CommonEventSubscriber(subscriberInfo)
@@ -83,12 +82,14 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
         LOGE("accountSubscriber_ is nullptr");
         return;
     }
+
+    std::unique_lock<std::mutex> userLock(userRecordMutex_);
     if (accountSubscriber_->userRecord_.find(userId) != accountSubscriber_->userRecord_.end()) {
-        std::lock_guard<std::mutex> lock(userRecordLock);
         accountSubscriber_->userRecord_.erase(userId);
     }
+
+    std::unique_lock<std::mutex> mediaLock(mediaMutex_);
     if (accountSubscriber_->mediaShareMap_.find(userId) != accountSubscriber_->mediaShareMap_.end()) {
-        std::lock_guard<std::mutex> lockMedia(mediaMapLock);
         accountSubscriber_->mediaShareMap_.erase(userId);
     }
 }
@@ -98,7 +99,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
     int32_t userId = eventData.GetCode();
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(userRecordMutex_);
     /* get user status */
     uint32_t status = GetUserStatus(userId);
     /* update status */

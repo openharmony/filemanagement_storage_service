@@ -48,11 +48,7 @@ VolumeManager &VolumeManager::Instance()
 
 std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
 {
-    auto it = volumes_.Find(volId);
-    if (it == volumes_.End()) {
-        return nullptr;
-    }
-    return it->second;
+    return volumes_.GetShared(volId);
 }
 
 std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device, bool isUserdata)
@@ -139,13 +135,14 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
         return E_NON_EXIST;
 #endif
     }
-    int32_t checkRet = info->DoTryToCheck();
+    LOGI("TryToCheck in VolumeManager::Mount");
+    int32_t checkRet = info->TryToCheck();
     if (checkRet == E_VOL_NEED_FIX) {
-        LOGE("external volume maybe damage");
+        LOGI("external volume maybe damage");
         StorageManagerClient client;
         checkRet = client.NotifyVolumeDamaged(info);
     }
-
+    LOGI("Before Mount in VolumeManager::Mount");
     int32_t err = info->Mount(flags);
     if (err != E_OK) {
         LOGE("the volume %{public}s mount failed.", volId.c_str());
@@ -239,40 +236,41 @@ int32_t VolumeManager::TryToFix(const std::string volId, uint32_t flags)
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
     }
-    int32_t errFix = info->DoTryToFix();
+    LOGI("Try to fix %{public}s in VolumeManager::TryToFix", volId.c_str());
+    int32_t currentState = info->GetState();
+    if (currentState == DAMAGED_MOUNTED || currentState == MOUNTED) {
+        int32_t errUmount = info->UMount();
+        if (errUmount != E_OK) {
+            LOGE("the volume %{public}s UMount failed, ret:%{public}d.", volId.c_str(), errUmount);
+            return errUmount;
+        }
+    }
+    LOGI("Mount %{public}s done in VolumeManager::TryToFix", volId.c_str());
+    int32_t errFix = info->TryToFix();
     LOGE("The volume result: %{public}d.", errFix);
     if (errFix != E_OK) {
         LOGE("the volume %{public}s fix failed, ret: %{public}d.", volId.c_str(), errFix);
     }
 
-    int32_t currentState = info->GetState();
-    if (currentState == MOUNTED) {
-        LOGE("the volume has mounted.id: %{public}s", volId.c_str());
-        return errFix;
-    }
-
-    int32_t errMount = info->UMount();
+    LOGI("After TryToFix %{public}s in VolumeManager::TryToFix", volId.c_str());
+    int32_t errMount = info->Check();
     if (errMount != E_OK) {
-        LOGE("the volume %{public}s UMount failed, ret:%{public}d.", volId.c_str(), errMount);
-    }
-
-    errMount = info->Check();
-    if (errMount != E_OK) {
-        LOGE("the volume %{public}s check failed.", volId.c_str());
+        LOGE("the volume %{public}s check failed, error code %{public}d.", volId.c_str(), errMount);
         return errMount;
     }
-
+    LOGI("Check done %{public}s in VolumeManager::TryToFix", volId.c_str());
     errMount = info->Mount(flags);
     if (errMount != E_OK) {
-        LOGE("the volume %{public}s mount failed.", volId.c_str());
+        LOGE("the volume %{public}s mount failed, error code is %{public}d.", volId.c_str(), errMount);
         return errMount;
     }
-
+    LOGI("Mount done %{public}s in VolumeManager::TryToFix", volId.c_str());
     StorageManagerClient client;
     errMount = client.NotifyVolumeMounted(info);
     if (errMount) {
         LOGE("Volume Notify Mount Destroyed failed");
     }
+    LOGI("NotifyVolumeMounted done %{public}s in VolumeManager::TryToFix", volId.c_str());
     return E_OK;
 }
 

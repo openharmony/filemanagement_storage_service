@@ -42,6 +42,7 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountFlags_ = 0;
     userIdOwner_ = 0;
     isUserdata_ = isUserdata;
+    isDamaged_ = false;
 
     int32_t err = DoCreate(device);
     if (err) {
@@ -127,7 +128,8 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_MOUNT_ERR;
     }
 
-    if (mountState_ == MOUNTED) {
+    LOGI("Volume mount state is %{public}d, isDamaged_ is %{public}d at mount start.", mountState_, isDamaged_);
+    if (mountState_ == MOUNTED || mountState_ == DAMAGED_MOUNTED) {
         return E_OK;
     }
     if (mountState_ != CHECKING) {
@@ -158,7 +160,8 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return err;
     }
     LOGI("external volume mount success");
-    mountState_ = MOUNTED;
+    LOGI("Volume mount state is %{public}d, isDamaged_ is %{public}d at mount end.", mountState_, isDamaged_);
+    mountState_ = (isDamaged_ == true ? DAMAGED_MOUNTED : MOUNTED);
     return E_OK;
 }
 
@@ -166,6 +169,7 @@ int32_t VolumeInfo::UMount(bool force)
 {
     int32_t err = 0;
 
+    LOGI("Volume mount state is %{public}d, isDamaged_ is %{public}d at unmount start.", mountState_, isDamaged_);
     if (mountState_ == REMOVED || mountState_ == BADREMOVABLE) {
         LOGE("the volume %{public}s is in REMOVED state", GetVolumeId().c_str());
         return E_VOL_STATE;
@@ -184,6 +188,7 @@ int32_t VolumeInfo::UMount(bool force)
         return E_UMOUNT_BUSY;
     }
 
+    LOGI("Volume %{public}s start to unmount, now mount state is %{public}d.", GetVolumeId().c_str(), mountState_);
     mountState_ = EJECTING;
     StorageManagerClient client;
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::EJECTING) != E_OK) {
@@ -192,7 +197,8 @@ int32_t VolumeInfo::UMount(bool force)
 
     err = DoUMount(force);
     if (!force && err) {
-        mountState_ = MOUNTED;
+        mountState_ = (isDamaged_ == true ? DAMAGED_MOUNTED : MOUNTED);
+        LOGE("Volume DoUmount failed, err: %{public}d, mountState_: %{public}d", err, mountState_);
         return err;
     }
 
@@ -210,8 +216,9 @@ int32_t VolumeInfo::UMountUsbFuse()
 
 int32_t VolumeInfo::Check()
 {
+    LOGI("Volume enter Check, mountState_ is %{public}d.", mountState_);
     if (mountState_ != UNMOUNTED) {
-        LOGE("the volume %{public}s is not in UNMOUNT state", GetVolumeId().c_str());
+        LOGE("the volume %{public}s is not in UNMOUNT state, in %{public}d state.", GetVolumeId().c_str(), mountState_);
         return E_VOL_STATE;
     }
 
@@ -224,6 +231,30 @@ int32_t VolumeInfo::Check()
         return err;
     }
     mountState_ = CHECKING;
+    return E_OK;
+}
+
+int32_t VolumeInfo::TryToCheck()
+{
+    int32_t checkRet = DoTryToCheck();
+    if (checkRet == E_VOL_NEED_FIX) {
+        LOGE("External Volume need fix.");
+        isDamaged_ = true;
+    } else if (checkRet == E_VOL_FIX_NOT_SUPPORT) {
+        LOGE("External Volume need fix, but not support.");
+    }
+    return checkRet;
+}
+
+int32_t VolumeInfo::TryToFix()
+{
+    int32_t errFix = DoTryToFix();
+    if (errFix != E_OK) {
+        LOGE("Volume TryToFix failed, err: %{public}d", errFix);
+        isDamaged_ = true;
+        return errFix;
+    }
+    isDamaged_ = false;
     return E_OK;
 }
 

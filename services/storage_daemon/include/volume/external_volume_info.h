@@ -31,6 +31,7 @@ public:
     std::string GetFsType();
     std::string GetFsUuid();
     std::string GetFsLabel();
+    bool GetDamagedFlag();
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
 

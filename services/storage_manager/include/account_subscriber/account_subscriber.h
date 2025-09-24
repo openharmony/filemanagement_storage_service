@@ -37,8 +37,6 @@ public:
     static void ResetUserEventRecord(int32_t userId);
 private:
     std::map<int32_t, std::shared_ptr<DataShare::DataShareHelper>> mediaShareMap_;
-    std::mutex mediaMutex_;
-    std::mutex mutex_;
 
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;

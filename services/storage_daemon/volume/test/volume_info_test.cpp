@@ -356,6 +356,243 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_006, TestSize.Leve
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_007
+ * @tc.desc: Verify the Mount function when mount state is DAMAGED_MOUNT.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_007 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-20";
+    std::string diskId = "disk-1-20";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 20); // 1 is major device number, 20 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_VOL_NEED_FIX));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.Check();
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_VOL_NEED_FIX);
+    uint32_t mountFlags = 0;
+    ret = mock.Mount(mountFlags);
+    EXPECT_TRUE(ret == E_OK);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_007 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_008
+ * @tc.desc: Verify the Mount function when mount state is normal.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_008 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-21";
+    std::string diskId = "disk-1-21";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 21); // 1 is major device number, 21 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.Check();
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_OK);
+    uint32_t mountFlags = 0;
+    ret = mock.Mount(mountFlags);
+    EXPECT_TRUE(ret == E_OK);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_009
+ * @tc.desc: Verify the Mount function when check result is E_VOL_FIX_NOT_SUPPORT.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_009 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-22";
+    std::string diskId = "disk-1-22";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 22); // 1 is major device number, 22 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_VOL_FIX_NOT_SUPPORT));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.Check();
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_VOL_FIX_NOT_SUPPORT);
+    uint32_t mountFlags = 0;
+    ret = mock.Mount(mountFlags);
+    EXPECT_TRUE(ret == E_OK);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_009 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_TryToCheck_001
+ * @tc.desc: Verify the TryToCheck function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_TryToCheck_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_001 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-1";
+    std::string diskId = "disk-1-1";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_OK);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_TryToCheck_002
+ * @tc.desc: Verify the TryToCheck function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_TryToCheck_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_002 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-2";
+    std::string diskId = "disk-1-2";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_VOL_NEED_FIX));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_VOL_NEED_FIX);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_TryToCheck_003
+ * @tc.desc: Verify the TryToCheck function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_TryToCheck_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_003 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToCheck()).Times(1).WillOnce(testing::Return(E_DOCHECK_MOUNT));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToCheck();
+    EXPECT_TRUE(ret == E_DOCHECK_MOUNT);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToCheck_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_TryToFix_001
+ * @tc.desc: Verify the TryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_TryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToFix_001 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-4";
+    std::string diskId = "disk-1-4";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 4); // 1 is major device number, 4 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToFix()).Times(1).WillOnce(testing::Return(E_VOL_FIX_NOT_SUPPORT));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToFix();
+    EXPECT_TRUE(ret == E_VOL_FIX_NOT_SUPPORT);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToFix_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_TryToFix_002
+ * @tc.desc: Verify the TryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_TryToFix_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToFix_002 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-5";
+    std::string diskId = "disk-1-5";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 5); // 1 is major device number, 5 is minor device number
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoTryToFix()).Times(1).WillOnce(testing::Return(E_TIMEOUT_MOUNT));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.TryToFix();
+    EXPECT_TRUE(ret == E_TIMEOUT_MOUNT);
+
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_TryToFix_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_UMount_001
  * @tc.desc: Verify the UMount function when mount state is incorrect.
  * @tc.type: FUNC
@@ -564,6 +801,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Check_003, TestS
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_Check_003 end";
 }
+
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_Format_001
  * @tc.desc: Verify the Format function when mount state is incorrect.

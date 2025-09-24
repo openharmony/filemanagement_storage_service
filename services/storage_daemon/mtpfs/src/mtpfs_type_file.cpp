@@ -43,6 +43,7 @@ LIBMTP_file_t *MtpFsTypeFile::ToLIBMTPFile() const
     f->storage_id = storageId_;
     f->filename = strdup(name_.c_str());
     if (f->filename == nullptr) {
+        free(static_cast<void *>(f));
         return nullptr;
     }
     f->filesize = size_;
