@@ -274,7 +274,7 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
     }
     int32_t count = static_cast<int32_t>(tempInfo.size());
     int32_t index = -1;
-    for (int i = 0; i < count; i++) {
+    for (int32_t i = 0; i < count; i++) {
         std::string buf = tempInfo[i];
         if (buf.find(DISK_PREFIX) == 0) {
             index = i;
@@ -285,7 +285,7 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
         LOGE("disk info not found");
         return;
     }
-    for (int i = index; i < count; ++i) {
+    for (int32_t i = index; i < count; i++) {
         std::string target = tempInfo[i];
         if (std::find(lines.begin(), lines.end(), target) == lines.end()) {
             lines.push_back(target);
