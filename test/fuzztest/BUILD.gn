@@ -51,6 +51,16 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/sysparamstatic_fuzzer:SysparamStaticFuzzTest",
     "${storage_service_path}/test/fuzztest/volumecore_fuzzer:VolumeCoreFuzzTest",
     "${storage_service_path}/test/fuzztest/volumeexternal_fuzzer:VolumeExternalFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerdeleteuserkeys_fuzzer:StorageManagerQueryUsbIsInUseFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerupdateuserauth_fuzzer:StorageManagerUpdateUserAuthFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanageractiveuserkey_fuzzer:StorageManagerActiveUserKeyFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerinactiveuserkey_fuzzer:StorageManagerInactiveUserKeyFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerlockuserscreen_fuzzer:StorageManagerLockUserScreenFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerunlockuserscreen_fuzzer:StorageManagerUnlockUserScreenFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerupdatekeycontext_fuzzer:StorageManagerUpdateKeyContextFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagersetbundlequota_fuzzer:StorageManagerSetBundleQuotaFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerupdatememorypara_fuzzer:StorageManagerUpdateMemoryParaFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerdeleteappkey_fuzzer:StorageManagerDeleteAppkeyFuzzTest",
   ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {
