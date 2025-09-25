@@ -33,31 +33,31 @@ group("storage_manager_provider_fuzztest") {
 group("storage_daemon_provider_fuzztest") {
   testonly = true
   deps = [
+    "storagedaemonprovidercreaterecoverkey_fuzzer:fuzztest",
     "storagedaemonprovidercreatesharefile_fuzzer:fuzztest",
     "storagedaemonproviderdeletesharefile_fuzzer:fuzztest",
     "storagedaemonproviderlockuserscreen_fuzzer:fuzztest",
-    "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
-    "storagedaemonprovidershutdown_fuzzer:fuzztest",
-    "storagedaemonprovidercreaterecoverkey_fuzzer:fuzztest",
-    "storagedaemonprovidersetrecoverkey_fuzzer:fuzztest",
     "storagedaemonprovidermountmediafuse_fuzzer:fuzztest",
+    "storagedaemonprovidersetrecoverkey_fuzzer:fuzztest",
+    "storagedaemonprovidershutdown_fuzzer:fuzztest",
     "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
+    "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
   ]
 }
 
 group("filesystem_crypto_fuzztest") {
   testonly = true
   deps = [
-    "filesystemcryptodeleteuserkey_fuzzer:fuzztest",
-    "filesystemcryptoupdateuserauth_fuzzer:fuzztest",
     "filesystemcryptoactiveuserkey_fuzzer:fuzztest",
+    "filesystemcryptodeleteappkey_fuzzer:fuzztest",
+    "filesystemcryptodeleteuserkey_fuzzer:fuzztest",
+    "filesystemcryptogenerateappkey_fuzzer:fuzztest",
+    "filesystemcryptogetlockscreenstatus_fuzzer:fuzztest",
     "filesystemcryptoinactiveuserkey_fuzzer:fuzztest",
-    "filesystemcryptoupdatekeycontext_fuzzer:fuzztest",
     "filesystemcryptolockuserscreen_fuzzer:fuzztest",
     "filesystemcryptounlockuserscreen_fuzzer:fuzztest",
-    "filesystemcryptogetlockscreenstatus_fuzzer:fuzztest",
-    "filesystemcryptogenerateappkey_fuzzer:fuzztest",
-    "filesystemcryptodeleteappkey_fuzzer:fuzztest",
+    "filesystemcryptoupdatekeycontext_fuzzer:fuzztest",
+    "filesystemcryptoupdateuserauth_fuzzer:fuzztest",
   ]
 }
 
@@ -65,9 +65,9 @@ group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
-    ":storage_manager_provider_fuzztest",
-    ":storage_daemon_provider_fuzztest",
     ":filesystem_crypto_fuzztest",
+    ":storage_daemon_provider_fuzztest",
+    ":storage_manager_provider_fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
     "fileutils_fuzzer:fuzztest",

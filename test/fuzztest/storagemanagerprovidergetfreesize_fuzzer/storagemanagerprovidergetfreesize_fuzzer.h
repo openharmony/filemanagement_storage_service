@@ -16,6 +16,6 @@
 #ifndef STORAGEMANAGER_FUZZER_H
 #define STORAGEMANAGER_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "storagemanager_fuzzer"
+#define FUZZ_PROJECT_NAME "storagemanagerprovidergetfreesize_fuzzer"
 
 #endif
