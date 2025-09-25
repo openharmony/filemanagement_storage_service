@@ -26,8 +26,10 @@
 #include "recover_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/mount_constant.h"
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -521,8 +523,35 @@ int KeyManager::InitGlobalUserKeys(void)
         return ret;
     }
     LOGW("Init global user key success");
-
+    CreateAotCompilerDir();
     return 0;
+}
+
+void KeyManager::CreateAotCompilerDir()
+{
+    LOGW("init aot_compiler path start");
+    std::vector<FileList> dirInfo;
+    ReadDigitDir(USER_EL1_DIR, dirInfo);
+    for (auto &item : dirInfo) {
+        if (item.userId == GLOBAL_USER_ID) {
+            continue;
+        }
+        std::string arkProfile = StringPrintf("/data/app/el1/%d/aot_compiler/ark_profile", item.userId);
+        if (FileExists(arkProfile.c_str())) {
+            continue;
+        }
+        std::string aotCompiler = StringPrintf("/data/app/el1/%d/aot_compiler", item.userId);
+        if (!FileExists(aotCompiler.c_str()) && !PrepareDir(aotCompiler, MODE_0711, OID_ROOT, OID_ROOT)) {
+            LOGE("failed to prepareDir aot_compiler userid:%{public}d", item.userId);
+            continue;
+        }
+        if (!PrepareDir(arkProfile, MODE_0711, OID_ROOT, OID_ROOT)) {
+            LOGE("failed to prepareDir ark_profile userid:%{public}d", item.userId);
+            continue;
+        }
+        LOGW("init userid:%{public}d path end", item.userId);
+    }
+    LOGW("init aot_compiler path end");
 }
 
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
