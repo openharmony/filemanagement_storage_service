@@ -388,6 +388,20 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
+{
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_CREATED);
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+    MessageOption option;
+
+    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
 bool NotifyVolumeMountedFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_MOUNTED);
@@ -776,6 +790,7 @@ void FuzzerTest1(const uint8_t *data, size_t size)
     OHOS::StorageManager::SetBundleQuotaFuzzTest(data, size);
     OHOS::StorageManager::UpdateMemoryParaFuzzTest(data, size);
     OHOS::StorageManager::DeleteAppkeyFuzzTest(data, size);
+    OHOS::StorageManager::NotifyVolumeCreatedFuzzTest(data, size);
     OHOS::StorageManager::NotifyVolumeMountedFuzzTest(data, size);
     OHOS::StorageManager::NotifyVolumeStateChangedFuzzTest(data, size);
 }
