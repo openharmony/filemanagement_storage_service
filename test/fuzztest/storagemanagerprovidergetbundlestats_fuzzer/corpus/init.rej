@@ -1,0 +1,14 @@
+diff a/test/fuzztest/storagemanagerprovidergetbundlestats_fuzzer/corpus/init b/test/fuzztest/storagemanagerprovidergetbundlestats_fuzzer/corpus/init	(rejected hunks)
+@@ -13,9 +13,4 @@
+  * limitations under the License.
+  */
+ 
+-#ifndef STORAGEDAEMON_FUZZER_H
+-#define STORAGEDAEMON_FUZZER_H
+-
+-#define FUZZ_PROJECT_NAME "storagedaemon_fuzzer"
+-
+-#endif
+\ No newline at end of file
++FUZZ
+\ No newline at end of file

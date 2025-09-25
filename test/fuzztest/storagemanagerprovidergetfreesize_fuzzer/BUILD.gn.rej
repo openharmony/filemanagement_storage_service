@@ -1,0 +1,51 @@
+diff a/test/fuzztest/storagemanagerprovidergetfreesize_fuzzer/BUILD.gn b/test/fuzztest/storagemanagerprovidergetfreesize_fuzzer/BUILD.gn	(rejected hunks)
+@@ -30,30 +33,42 @@ ohos_fuzztest("StorageManagerFuzzTest") {
+     "-Wno-unused-variable",
+     "-fno-omit-frame-pointer",
+   ]
+-  sources = [ "${storage_service_path}/test/fuzztest/storagemanager_fuzzer/storagemanager_fuzzer.cpp" ]
++  sources = [ "storagemanagerprovidergetfreesize_fuzzer.cpp" ]
+ 
+   defines = [
+     "STORAGE_LOG_TAG = \"storage_service\"",
+     "private=public",
+   ]
+   deps = [
++    "${storage_daemon_path}:storage_common_utils",
+     "${storage_daemon_path}:storage_daemon_header",
++    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+-    "${storage_service_path}/services/storage_manager:storage_manager",
++    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
++    "${storage_manager_path}:storage_manager",
+   ]
+-
+   external_deps = [
+-    "ability_runtime:abilitykit_native",
++    "ability_base:want",
+     "access_token:libaccesstoken_sdk",
++    "appspawn:appspawn_client",
+     "bundle_framework:appexecfwk_core",
+-    "c_utils:utils",
+     "hilog:libhilog",
+-    "ipc:ipc_single",
++    "hisysevent:libhisysevent",
++    "os_account:os_account_innerkits",
+     "safwk:system_ability_fwk",
+   ]
++  if (storage_service_user_crypto_manager) {
++    defines += [ "USER_CRYPTO_MANAGER" ]
++    sources += [ "${storage_manager_path}/crypto/filesystem_crypto.cpp" ]
++    external_deps += [ "data_share:datashare_consumer" ]
++  }
++
++  if (storage_service_media_fuse) {
++    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
++  }
+ }
+ 
+ group("fuzztest") {
+   testonly = true
+-  deps = [ ":StorageManagerFuzzTest" ]
++  deps = [ ":StorageManagerProviderGetFreeSizeFuzzTest" ]
+ }
