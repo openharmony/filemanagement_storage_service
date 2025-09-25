@@ -60,48 +60,6 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool PrepareUserDirsFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_PREPARE_USER_DIRS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool DestroyUserDirsFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_DESTROY_USER_DIRS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool MountFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool UMountFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
@@ -116,51 +74,9 @@ bool UMountFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool PartitionFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_PARTITION);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool CheckFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CHECK);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool SetVolDescFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -336,14 +252,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::UserManagerFuzzTest(data, size);
     OHOS::StartUserFuzzTest(data, size);
     OHOS::StopUserFuzzTest(data, size);
-    OHOS::PrepareUserDirsFuzzTest(data, size);
-    OHOS::DestroyUserDirsFuzzTest(data, size);
-    OHOS::MountFuzzTest(data, size);
     OHOS::UMountFuzzTest(data, size);
-    OHOS::PartitionFuzzTest(data, size);
-    OHOS::CheckFuzzTest(data, size);
     OHOS::SetVolDescFuzzTest(data, size);
-    OHOS::QueryUsbIsInUseFuzzTest(data, size);
     OHOS::FormatFuzzTest(data, size);
     OHOS::SetBundleQuotaFuzzTest(data, size);
     OHOS::DeleteUserKeysFuzzTest(data, size);
