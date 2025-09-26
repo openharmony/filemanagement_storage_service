@@ -1,0 +1,108 @@
+# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/features.gni")
+import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+
+ohos_fuzztest("StorageDaemonProviderFormatFuzzTest") {
+  module_out_path = "storage_service/storage_service"
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonproviderformat_fuzzer"
+  include_dirs = [
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/ipc",
+    "${storage_daemon_path}/include/quota",
+    "${storage_daemon_path}/include/user",
+    "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
+    "${storage_daemon_path}/observer/appstate_observer.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_service_path}/test/fuzztest/storagedaemonproviderformat_fuzzer/storagedaemonproviderformat_fuzzer.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"storage_service\"",
+    "STORAGE_DAEMON_FUZZ_TEST",
+  ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_daemon_path}/crypto:libsdcrypto",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+
+  ]
+
+  external_deps = [
+    "ability_base:zuri",
+    "ability_runtime:abilitykit_native",
+    "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
+    "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "huks:libhukssdk",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "crypto_framework:crypto_framework_lib",
+  ]
+
+  if (storage_service_cloud_fuse) {
+    defines += [ "DFS_SERVICE" ]
+    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
+  }
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+    external_deps += [ "ability_runtime:app_manager" ]
+  }
+  use_exceptions = true
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [ ":StorageDaemonProviderFormatFuzzTest" ]
+}
