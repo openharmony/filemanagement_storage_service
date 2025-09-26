@@ -42,7 +42,7 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderpartition_fuzzer:fuzztest",
     "storagedaemonproviderqueryusbisinuse_fuzzer:fuzztest",
     "storagedaemonprovidersetrecoverkey_fuzzer:fuzztest",
-    "storagedaemonprovidersetvoldesc_fuzzer::fuzztest",
+    "storagedaemonprovidersetvoldesc_fuzzer:fuzztest",
     "storagedaemonprovidershutdown_fuzzer:fuzztest",
     "storagedaemonproviderstartuser_fuzzer:fuzztest",
     "storagedaemonproviderstopuser_fuzzer:fuzztest",
@@ -50,6 +50,11 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
     "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
     "storagedaemonproviderusermanager_fuzzer:fuzztest",
+    "storagedaemonproviderformat_fuzzer:fuzztest",
+    "storagedaemonprovidersetbundlequota_fuzzer:fuzztest",
+    "storagedaemonproviderdeleteuserkeys_fuzzer:fuzztest",
+    "storagedaemonproviderupdateuserauth_fuzzer:fuzztest",
+    "storagedaemonprovideractiveuserkey_fuzzer:fuzztest",
   ]
 }
 
