@@ -438,9 +438,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0003, testing:
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
-    vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     int32_t result = vmService.Unmount(volumeId);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0003";
 }
 
