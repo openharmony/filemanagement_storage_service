@@ -32,11 +32,15 @@ group("storage_manager_provider_fuzztest") {
 group("storage_daemon_provider_fuzztest") {
   testonly = true
   deps = [
+    "storagedaemonprovidercheck_fuzzer:fuzztest",
     "storagedaemonprovidercreaterecoverkey_fuzzer:fuzztest",
     "storagedaemonprovidercreatesharefile_fuzzer:fuzztest",
     "storagedaemonproviderdeletesharefile_fuzzer:fuzztest",
     "storagedaemonproviderlockuserscreen_fuzzer:fuzztest",
+    "storagedaemonprovidermount_fuzzer:fuzztest",
     "storagedaemonprovidermountmediafuse_fuzzer:fuzztest",
+    "storagedaemonproviderpartition_fuzzer:fuzztest",
+    "storagedaemonproviderqueryusbisinuse_fuzzer:fuzztest",
     "storagedaemonprovidersetrecoverkey_fuzzer:fuzztest",
     "storagedaemonprovidershutdown_fuzzer:fuzztest",
     "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
