@@ -41,6 +41,11 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidershutdown_fuzzer:fuzztest",
     "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
     "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
+    "storagedaemonproviderformat_fuzzer:fuzztest",
+    "storagedaemonprovidersetbundlequota_fuzzer:fuzztest",
+    "storagedaemonproviderdeleteuserkeys_fuzzer:fuzztest",
+    "storagedaemonproviderupdateuserauth_fuzzer:fuzztest",
+    "storagedaemonprovideractiveuserkey_fuzzer:fuzztest",
   ]
 }
 
