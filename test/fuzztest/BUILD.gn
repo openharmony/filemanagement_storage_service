@@ -12,49 +12,80 @@
 # limitations under the License.
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
+group("storage_manager_provider_fuzztest") {
+  testonly = true
+  deps = [
+    "storagemanagerprovider_fuzzer:fuzztest",
+    "storagemanagerprovidercompleteadduser_fuzzer:fuzztest",
+    "storagemanagerprovidergetallvolumes_fuzzer:fuzztest",
+    "storagemanagerprovidergetbundlestats_fuzzer:fuzztest",
+    "storagemanagerprovidergetfreesize_fuzzer:fuzztest",
+    "storagemanagerprovidergetfreesizeofvolume_fuzzer:fuzztest",
+    "storagemanagerprovidergetsystemsize_fuzzer:fuzztest",
+    "storagemanagerprovidergettotalsize_fuzzer:fuzztest",
+    "storagemanagerprovidergettotalsizeofvolume_fuzzer:fuzztest",
+    "storagemanagerprovidergetuserstoragestats_fuzzer:fuzztest",
+    "storagemanagerprovidergetuserstoragestatswithuserid_fuzzer:fuzztest",
+  ]
+}
+
+group("storage_daemon_provider_fuzztest") {
+  testonly = true
+  deps = [
+    "storagedaemonprovidercreaterecoverkey_fuzzer:fuzztest",
+    "storagedaemonprovidercreatesharefile_fuzzer:fuzztest",
+    "storagedaemonproviderdeletesharefile_fuzzer:fuzztest",
+    "storagedaemonproviderlockuserscreen_fuzzer:fuzztest",
+    "storagedaemonprovidermountmediafuse_fuzzer:fuzztest",
+    "storagedaemonprovidersetrecoverkey_fuzzer:fuzztest",
+    "storagedaemonprovidershutdown_fuzzer:fuzztest",
+    "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
+    "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
+  ]
+}
+
+group("filesystem_crypto_fuzztest") {
+  testonly = true
+  deps = [
+    "filesystemcryptoactiveuserkey_fuzzer:fuzztest",
+    "filesystemcryptodeleteappkey_fuzzer:fuzztest",
+    "filesystemcryptodeleteuserkey_fuzzer:fuzztest",
+    "filesystemcryptogenerateappkey_fuzzer:fuzztest",
+    "filesystemcryptogetlockscreenstatus_fuzzer:fuzztest",
+    "filesystemcryptoinactiveuserkey_fuzzer:fuzztest",
+    "filesystemcryptolockuserscreen_fuzzer:fuzztest",
+    "filesystemcryptounlockuserscreen_fuzzer:fuzztest",
+    "filesystemcryptoupdatekeycontext_fuzzer:fuzztest",
+    "filesystemcryptoupdateuserauth_fuzzer:fuzztest",
+  ]
+}
+
 group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
-    "${storage_service_path}/test/fuzztest/bundlestats_fuzzer:BundleStatsFuzzTest",
-    "${storage_service_path}/test/fuzztest/disk_fuzzer:DiskFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptodeleteuserkey_fuzzer:FileSystemCryptoDeleteUserKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptoupdateuserauth_fuzzer:FileSystemCryptoUpdateUserAuthFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptoactiveuserkey_fuzzer:FileSystemCryptoActiveUserKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptoinactiveuserkey_fuzzer:FileSystemCryptoInActiveUserKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptoupdatekeycontext_fuzzer:FileSystemCryptoUpdateKeyContextFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptolockuserscreen_fuzzer:FileSystemCryptoLockUserScreenFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptounlockuserscreen_fuzzer:FileSystemCryptoUnLockUserScreenFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptogetlockscreenstatus_fuzzer:FileSystemCryptoGetLockScreenStatusFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptogenerateappkey_fuzzer:FileSystemCryptoGenerateAppKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/filesystemcryptodeleteappkey_fuzzer:FileSystemCryptoDeleteAppKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
-    "${storage_service_path}/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
-    "${storage_service_path}/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidercreatesharefile_fuzzer:StorageDaemonProviderCreateShareFileFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonproviderdeletesharefile_fuzzer:StorageDaemonProviderDeleteShareFileFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonproviderlockuserscreen_fuzzer:StorageDaemonProviderLockUserScreenFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonproviderupdatememorypara_fuzzer:StorageDaemonProviderUpdateMemoryParaFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidershutdown_fuzzer:StorageDaemonProviderShutdownFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidercreaterecoverkey_fuzzer:StorageDaemonProviderCreateRecoverKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidersetrecoverkey_fuzzer:StorageDaemonProviderSetRecoverKeyFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidermountmediafuse_fuzzer:StorageDaemonProviderMountMediaFuseFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonproviderumountmediafuse_fuzzer:StorageDaemonProviderUMountMediaFuseFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer:StorageDaemonProxyFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagedaemonstub_fuzzer:StorageDaemonStubFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagemanagerprovider_fuzzer:StorageManagerProviderFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagemanagerstub_fuzzer:StorageManagerStubFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagestatusservice_fuzzer:StorageStatusServiceFuzzTest",
-    "${storage_service_path}/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
-    "${storage_service_path}/test/fuzztest/sysparamdynamic_fuzzer:SysparamDynamicFuzzTest",
-    "${storage_service_path}/test/fuzztest/sysparamstatic_fuzzer:SysparamStaticFuzzTest",
-    "${storage_service_path}/test/fuzztest/volumecore_fuzzer:VolumeCoreFuzzTest",
-    "${storage_service_path}/test/fuzztest/volumeexternal_fuzzer:VolumeExternalFuzzTest",
+    ":filesystem_crypto_fuzztest",
+    ":storage_daemon_provider_fuzztest",
+    ":storage_manager_provider_fuzztest",
+    "bundlestats_fuzzer:fuzztest",
+    "disk_fuzzer:fuzztest",
+    "fileutils_fuzzer:fuzztest",
+    "fscryptutils_fuzzer:fuzztest",
+    "keycontrol_fuzzer:fuzztest",
+    "storagedaemonproxy_fuzzer:fuzztest",
+    "storagedaemonstub_fuzzer:fuzztest",
+    "storagemanagerstub_fuzzer:fuzztest",
+    "storagestats_fuzzer:fuzztest",
+    "storagestatusservice_fuzzer:fuzztest",
+    "stringutils_fuzzer:fuzztest",
+    "sysparamdynamic_fuzzer:fuzztest",
+    "sysparamstatic_fuzzer:fuzztest",
+    "volumecore_fuzzer:fuzztest",
+    "volumeexternal_fuzzer:fuzztest",
   ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {
     deps +=
-        [ "${storage_service_path}/test/fuzztest/libmtp_fuzzer:LibmtpFuzzTest" ]
+        [ "libmtp_fuzzer:fuzztest" ]
   }
 }
