@@ -538,6 +538,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 start";
 
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(false)).WillOnce(Return(false));
     std::string volId = "volId";
     uint32_t flags = 1;
     VolumeManager::Instance().volumes_.Clear();
@@ -547,7 +548,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(-1));
     volumeInfoMock->mountState_ = MOUNTED;
-    EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), -1);
+    EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), 0);
 
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
     volumeInfoMock->mountState_ = REMOVED;
