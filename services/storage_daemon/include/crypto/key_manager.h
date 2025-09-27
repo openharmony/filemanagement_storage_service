@@ -180,6 +180,7 @@ private:
     int CheckNeedRestoreVersion(unsigned int user, KeyType type);
     int GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std::string &keyId);
     int UpdateClassEBackUpFix(uint32_t userId);
+    void CreateAotCompilerDir();
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     int32_t FileBasedEncryptfsMount();
