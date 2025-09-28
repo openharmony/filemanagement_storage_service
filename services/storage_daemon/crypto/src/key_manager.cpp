@@ -1447,8 +1447,11 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
-    if (GetUserDelayHandler(user, userDelayHandler)) {
-        userDelayHandler->CancelDelayTask();
+    {
+        std::lock_guard<std::mutex> lock(keyMutex_);
+        if (GetUserDelayHandler(user, userDelayHandler)) {
+            userDelayHandler->CancelDelayTask();
+        }
     }
     auto iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
