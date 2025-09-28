@@ -17,8 +17,6 @@
 
 #include <string>
 #include <sstream>
-#include <shared_mutex>
-#include <condition_variable>
 
 #include "cJSON.h"
 #include "common_event_manager.h"
