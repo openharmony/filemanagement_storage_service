@@ -39,7 +39,6 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
-
     storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }

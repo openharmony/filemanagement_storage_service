@@ -94,20 +94,6 @@ bool g_storageManagerProviderFTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
-bool PrepareAddUserFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PREPARE_ADD_USER);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool RemoveUserFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_REMOVE_USER);
@@ -150,34 +136,6 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool GetCurrentBundleStatsFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_CURRENT_BUNDLE_STATS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool MountFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool UnmountFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UNMOUNT);
@@ -195,20 +153,6 @@ bool UnmountFuzzTest(const uint8_t *data, size_t size)
 bool PartitionFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PARTITION);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool FormatFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_FORMAT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -629,15 +573,11 @@ bool DeleteUserDirFuzzTest(const uint8_t *data, size_t size)
 
 void FuzzerTest1(const uint8_t *data, size_t size)
 {
-    OHOS::StorageManager::PrepareAddUserFuzzTest(data, size);
     OHOS::StorageManager::RemoveUserFuzzTest(data, size);
     OHOS::StorageManager::PrepareStartUserFuzzTest(data, size);
     OHOS::StorageManager::StopUserFuzzTest(data, size);
-    OHOS::StorageManager::GetCurrentBundleStatsFuzzTest(data, size);
-    OHOS::StorageManager::MountFuzzTest(data, size);
     OHOS::StorageManager::UnmountFuzzTest(data, size);
     OHOS::StorageManager::PartitionFuzzTest(data, size);
-    OHOS::StorageManager::FormatFuzzTest(data, size);
     OHOS::StorageManager::CreateShareFileFuzzTest(data, size);
     OHOS::StorageManager::DeleteShareFileFuzzTest(data, size);
     OHOS::StorageManager::NotifyVolumeCreatedFuzzTest(data, size);

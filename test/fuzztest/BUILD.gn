@@ -26,6 +26,10 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidergettotalsizeofvolume_fuzzer:fuzztest",
     "storagemanagerprovidergetuserstoragestats_fuzzer:fuzztest",
     "storagemanagerprovidergetuserstoragestatswithuserid_fuzzer:fuzztest",
+    "storagemanagerprovideradduser_fuzzer:fuzztest",
+    "storagemanagerproviderformat_fuzzer:fuzztest",
+    "storagemanagerprovidergetcurrentbundle_fuzzer:fuzztest",
+    "storagemanagerprovidermount_fuzzer:fuzztest",
   ]
 }
 
