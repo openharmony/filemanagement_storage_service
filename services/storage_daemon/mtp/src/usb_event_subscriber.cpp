@@ -238,7 +238,7 @@ bool UsbEventSubscriber::IsMTPDevice(const std::string &usbInfo)
 
 bool UsbEventSubscriber::IsPtpMode()
 {
-    LOGI("PTP mode status: %{public}d", isPtp_);
+    LOGI("PTP mode status: %{public}d", isPtp_.load());
     return isPtp_;
 }
 }  // namespace StorageDaemon
