@@ -96,6 +96,16 @@ group("storage_service_fuzztest") {
     "sysparamstatic_fuzzer:fuzztest",
     "volumecore_fuzzer:fuzztest",
     "volumeexternal_fuzzer:fuzztest",
+    "storagemanagerdeleteuserkeys_fuzzer:StorageManagerQueryUsbIsInUseFuzzTest",
+    "storagemanagerupdateuserauth_fuzzer:StorageManagerUpdateUserAuthFuzzTest",
+    "storagemanageractiveuserkey_fuzzer:StorageManagerActiveUserKeyFuzzTest",
+    "storagemanagerinactiveuserkey_fuzzer:StorageManagerInactiveUserKeyFuzzTest",
+    "storagemanagerlockuserscreen_fuzzer:StorageManagerLockUserScreenFuzzTest",
+    "storagemanagerunlockuserscreen_fuzzer:StorageManagerUnlockUserScreenFuzzTest",
+    "storagemanagerupdatekeycontext_fuzzer:StorageManagerUpdateKeyContextFuzzTest",
+    "storagemanagersetbundlequota_fuzzer:StorageManagerSetBundleQuotaFuzzTest",
+    "storagemanagerupdatememorypara_fuzzer:StorageManagerUpdateMemoryParaFuzzTest",
+    "storagemanagerdeleteappkey_fuzzer:StorageManagerDeleteAppkeyFuzzTest",
   ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {

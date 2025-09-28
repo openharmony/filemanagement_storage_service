@@ -1,0 +1,75 @@
+# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/features.gni")
+import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+
+ohos_fuzztest("StorageManagerLockUserScreenFuzzTest") {
+  module_out_path = "storage_service/storage_service"
+  fuzz_config_file =
+      "${storage_service_path}/test/fuzztest/storagemanagerlockuserscreen_fuzzer"
+  include_dirs = [
+    "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_manager_path}/include/ipc",
+    "${storage_daemon_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [ "storagemanagerlockuserscreen_fuzzer.cpp" ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"storage_service\"",
+    "private=public",
+  ]
+  deps = [
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "${storage_manager_path}:storage_manager",
+  ]
+  external_deps = [
+    "ability_base:want",
+    "access_token:libaccesstoken_sdk",
+    "appspawn:appspawn_client",
+    "bundle_framework:appexecfwk_core",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+  ]
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+    sources += [ "${storage_manager_path}/crypto/filesystem_crypto.cpp" ]
+    external_deps += [ "data_share:datashare_consumer" ]
+  }
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [ ":StorageManagerLockUserScreenFuzzTest" ]
+}
