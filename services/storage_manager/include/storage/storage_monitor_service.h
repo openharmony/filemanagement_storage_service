@@ -19,6 +19,7 @@
 #include <singleton.h>
 #include <thread>
 #include <shared_mutex>
+#include <condition_variable>
 #include "event_handler.h"
 #include "utils/storage_radar.h"
 
