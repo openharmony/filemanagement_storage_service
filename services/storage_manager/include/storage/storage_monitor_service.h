@@ -61,7 +61,7 @@ private:
     bool hasNotifiedStorageEvent_ = true;
     std::shared_mutex eventMutex_;
     std::thread eventThread_;
-    std::condition_variable eventCon_;
+    std::condition_variable_any eventCon_;
     std::map<std::string, int64_t> thresholds;
     std::shared_ptr<AppExecFwk::EventHandler> eventHandler_ = nullptr;
     std::chrono::system_clock::time_point lastNotificationTime_ =
