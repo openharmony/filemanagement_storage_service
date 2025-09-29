@@ -30,6 +30,11 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderformat_fuzzer:fuzztest",
     "storagemanagerprovidergetcurrentbundle_fuzzer:fuzztest",
     "storagemanagerprovidermount_fuzzer:fuzztest",
+    "storagemanagerproviderpartition_fuzzer:fuzztest",
+    "storagemanagerproviderremoveuser_fuzzer:fuzztest",
+    "storagemanagerproviderstartuser_fuzzer:fuzztest",
+    "storagemanagerproviderstopuser_fuzzer:fuzztest",
+    "storagemanagerproviderumount_fuzzer:fuzztest",
   ]
 }
 
