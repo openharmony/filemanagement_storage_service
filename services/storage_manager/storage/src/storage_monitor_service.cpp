@@ -60,7 +60,7 @@ StorageMonitorService::StorageMonitorService() {}
 StorageMonitorService::~StorageMonitorService()
 {
     LOGI("StorageMonitorService Destructor.");
-    std::unique_lock<std::shared_mutex> lock(eventMutex_);
+    std::unique_lock<std::mutex> lock(eventMutex_);
     if ((eventHandler_ != nullptr) && (eventHandler_->GetEventRunner() != nullptr)) {
         eventHandler_->RemoveAllEvents();
         eventHandler_->GetEventRunner()->Stop();
@@ -74,7 +74,7 @@ StorageMonitorService::~StorageMonitorService()
 void StorageMonitorService::StartStorageMonitorTask()
 {
     LOGI("StorageMonitorService, start deicve storage monitor task.");
-    std::shared_lock<std::shared_mutex> lock(eventMutex_);
+    std::unique_lock<std::mutex> lock(eventMutex_);
     if (eventHandler_ == nullptr) {
         eventThread_ = std::thread(&StorageMonitorService::StartEventHandler, this);
         eventCon_.wait_for(lock, std::chrono::seconds(WAIT_THREAD_TIMEOUT_MS), [this] {
@@ -98,7 +98,7 @@ void StorageMonitorService::StartEventHandler()
         return;
     }
     {
-        std::unique_lock<std::shared_mutex> lock(eventMutex_);
+        std::lock_guard<std::mutex> lock(eventMutex_);
         eventHandler_ = std::make_shared<AppExecFwk::EventHandler>(runner);
     }
     eventCon_.notify_one();
