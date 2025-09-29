@@ -58,8 +58,8 @@ private:
 
     int64_t freesizeCache = 0;
     bool hasNotifiedStorageEvent_ = true;
-    std::mutex eventMutex_;	
-    std::thread eventThread_;	
+    std::mutex eventMutex_;
+    std::thread eventThread_;
     std::condition_variable eventCon_;
     std::map<std::string, int64_t> thresholds;
     std::shared_ptr<AppExecFwk::EventHandler> eventHandler_ = nullptr;
