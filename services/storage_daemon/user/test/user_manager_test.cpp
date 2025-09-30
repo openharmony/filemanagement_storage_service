@@ -576,5 +576,24 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_DeleteUserDir_001, Te
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_DeleteUserDir_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001
+ * @tc.desc: Verify the CreateElxBundleDataDir function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001 start";
+    int32_t userId = 100;
+    int32_t elx = 1;
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, elx);
+    elx = 2;
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, elx);
+    userId = -1;
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, elx);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

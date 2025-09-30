@@ -156,6 +156,40 @@ ohos_unittest("storage_stats_test") {
   ]
 }
 
+ohos_unittest("storage_file_raw_data_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "storage_file_raw_data_test.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
+    "include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 group("storage_manager_innerkits_test") {
   testonly = true
   deps = [
@@ -163,5 +197,6 @@ group("storage_manager_innerkits_test") {
     ":storage_stats_test",
     ":volume_core_test",
     ":volume_external_test",
+    ":storage_file_raw_data_test",
   ]
 }

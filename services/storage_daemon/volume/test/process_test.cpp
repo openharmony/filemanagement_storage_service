@@ -72,5 +72,76 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_GetXXX_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ProcessTest_CheckSubDir_001
+ * @tc.desc: Verify the CheckSubDir function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ProcessTest, Storage_Service_ProcessTest_CheckSubDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckSubDir_001 start";
+    Process process1("/usr/local/bin");
+    EXPECT_FALSE(process1.CheckSubDir("/usr/local"));
+
+    Process process2("/usr/local/bin");
+    EXPECT_FALSE(process2.CheckSubDir("/usr/local/"));
+
+    Process process3("/usr/local/bin");
+    EXPECT_FALSE(process3.CheckSubDir("/usr/locala"));
+
+    Process process4("/usr/local/bin");
+    EXPECT_TRUE(process4.CheckSubDir("/usr/local/bin/extra"));
+
+    Process process5("/usr/local/bin");
+    EXPECT_FALSE(process5.CheckSubDir("/usr/local/b"));
+
+    Process process6("/usr/local/bin");
+    EXPECT_FALSE(process6.CheckSubDir(""));
+
+    Process process7("/usr/local/bin");
+    EXPECT_TRUE(process7.CheckSubDir("/usr/local/bin/"));
+
+    Process process8("/usr/local/bin");
+    EXPECT_TRUE(process8.CheckSubDir("/usr/local/bin"));
+
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckSubDir_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ProcessTest_CheckFds_001
+ * @tc.desc: Verify the CheckFds function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ProcessTest, Storage_Service_ProcessTest_CheckFds_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckFds_001 start";
+    Process process1("/path/to/process");
+    EXPECT_FALSE(process1.CheckFds("/proc/1"));
+
+    Process process2("/path/to/process");
+    EXPECT_TRUE(process2.CheckFds("/proc/111111"));
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckFds_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ProcessTest_KillProcess_001
+ * @tc.desc: Verify the KillProcess function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ProcessTest, Storage_Service_ProcessTest_KillProcess_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_KillProcess_001 start";
+    Process process1("/path/to/process");
+    process1.KillProcess(0);
+
+    Process process2("/path/to/process");
+    process2.pids_ = {12345, 56789};
+    process2.KillProcess(SIGKILL);
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_KillProcess_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
