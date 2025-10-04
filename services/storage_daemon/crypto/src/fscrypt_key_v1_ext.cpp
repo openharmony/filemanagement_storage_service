@@ -23,11 +23,14 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 constexpr const char *NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
+constexpr const char *EL4_NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el4/%d/latest/need_restore";
 constexpr int NEW_DOUBLE_2_SINGLE_BASE_VERSION = 2;
+constexpr uint8_t RECREATE_KEY = 0x6c;
 constexpr uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
 constexpr uint32_t USER_ID_DIFF = 91;
 
@@ -100,20 +103,33 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elTy
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
     int errNo = FBEX::InstallKeyToKernel(user, type_, iv, static_cast<uint8_t>(flag), authToken);
-    if (errNo != 0) {
-        if (flag != 0) {
-            LOGE("New User InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_,
-                 flag);
+    if (errNo == FILE_ENCRY_ERROR_EL3_STAUTS_WRONG && elType == TYPE_EL3) {
+        if (!std::filesystem::exists(StringPrintf(EL4_NEED_RESTORE_PATH, userId_), errCode)) {
+            LOGE("need restore does not exist, errCode = %{public}d", errCode.value());
             return errNo;
         }
-        LOGE("InstallKeyToKernel first failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
+        errNo = FBEX::InstallKeyToKernel(user, type_, iv, static_cast<uint8_t>(RECREATE_KEY), authToken);
+        if (errNo == E_OK) {
+            LOGE("Recreat iv success, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
+            elType = type_;
+            return E_OK;
+        }
+        LOGE("Recreat failed, user %{public}d, type %{public}d, flag %{public}u, err:%{public}d",
+            user, type_, flag, errNo);
+        return errNo;
+    }
+    if (errNo != 0) {
+        if (flag != 0) {
+            LOGE("First install failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
+            return errNo;
+        }
+        LOGE("Try install again, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
         errNo = FBEX::InstallKeyToKernel(user, type_, iv, static_cast<uint8_t>(flag), authToken);
         if (errNo != 0) {
             LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
             return errNo;
         }
     }
-
     //Used to associate el3 and el4 kernels.
     elType = type_;
     return E_OK;

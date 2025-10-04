@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Huawei Device Co., Ltd.
+# Copyright (C) 2024-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -42,6 +42,8 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
     "${storage_daemon_path}/mock/fbex_mock.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "fscrypt_key_v1_ext_test.cpp",
   ]
 
