@@ -19,9 +19,11 @@
 #include <string>
 #include <vector>
 
+#include "directory_ex.h"
 #include "fbex_mock.h"
 #include "fscrypt_key_v1_ext.h"
 #include "storage_service_errno.h"
+#include "utils/string_utils.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -188,6 +190,51 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_001, TestSize.Level1)
     EXPECT_EQ(ext.ActiveKeyExt(0, iv, elType, {}), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_ActiveKeyExt_002
+ * @tc.desc: Verify the ActiveKeyExt function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_002 end";
+    KeyBlob iv(1);
+    uint32_t el3Type = TYPE_EL3;
+    uint32_t el2Type = TYPE_EL2;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 219;
+    ext.type_ = TYPE_EL2;
+    int el3Err = 0xFBE30004;
+    
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, el2Type, {}), 0);
+
+    ext.userId_ = 219;
+    ext.type_ = TYPE_EL3;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(el3Err)).WillOnce(Return(-1));
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, el3Type, {}), el3Err);
+
+
+    std::string errMsg = "";
+    std::string el4Path = "/data/service/el1/public/storage_daemon/sd/el4/219/latest";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(el4Path));
+    ASSERT_TRUE(SaveStringToFileSync(el4Path + "/need_restore", "1", errMsg));
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(el3Err)).WillOnce(Return(0));
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, el3Type, {}), 0);
+
+    
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(el3Err)).WillOnce(Return(-1));
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, el3Type, {}), -1);
+
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory("/data/service/el1/public/storage_daemon/sd/el4/219"));
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_002 end";
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,7 @@ constexpr int STORAGE_UNSUPPORT_CODE = 0;
 constexpr int SINGLE_ID_INDEX = 0;
 constexpr int DOUBLE_ID_INDEX = 1;
 constexpr int USER_ID_SIZE = 2;
+constexpr int FILE_ENCRY_ERROR_EL3_STAUTS_WRONG = 0xFBE30004;
 
 struct UserIdToFbeStr {
     uint32_t userIds[USER_ID_SIZE];
