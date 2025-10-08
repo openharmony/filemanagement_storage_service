@@ -28,23 +28,33 @@ int32_t g_readMetadata = 0;
 int g_extStorageMountForkExec = 0;
 int g_forkExec = 0;
 int g_forkExecWithExit = 0;
+int g_exitStatus = 0;
 int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string &type, std::string &label)
 {
     return g_readMetadata;
 }
 
-int ForkExecWithExit(std::vector<std::string> &cmd)
+int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
 {
+    if (exitStatus != nullptr) {
+        *exitStatus = g_exitStatus;
+    }
     return g_forkExecWithExit;
 }
 
-int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
+int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
+    if (exitStatus != nullptr) {
+        *exitStatus = g_exitStatus;
+    }
     return g_forkExec;
 }
 
-int ExtStorageMountForkExec(std::vector<std::string> &cmd)
+int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
+    if (exitStatus != nullptr) {
+        *exitStatus = g_exitStatus;
+    }
     return g_extStorageMountForkExec;
 }
 } // STORAGE_DAEMON
@@ -99,10 +109,12 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToCheck_0
 
     externalVolumeInfo_->fsType_ = "ntfs";
     g_forkExecWithExit = 0;
+    g_exitStatus = 1;
     EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_OK);
 
     externalVolumeInfo_->fsType_ = "exfat";
     g_forkExecWithExit = 1;
+    g_exitStatus = 0;
     EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_VOL_NEED_FIX);
 
     GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToCheck_001 end";
@@ -130,11 +142,13 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToFix_001
     externalVolumeInfo_->fsType_ = "ntfs";
     g_extStorageMountForkExec = 0;
     g_forkExec = 0;
+    g_exitStatus = 1;
     EXPECT_EQ(externalVolumeInfo_->DoTryToFix(), E_OK);
 
     externalVolumeInfo_->fsType_ = "exfat";
     g_extStorageMountForkExec = 1;
     g_forkExec = 1;
+    g_exitStatus = 0;
     EXPECT_EQ(externalVolumeInfo_->DoTryToFix(), E_VOL_FIX_FAILED);
 
     GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToFix_001 end";
@@ -172,9 +186,11 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoCheck4Ntfs_0
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
 
     g_forkExecWithExit = 1;
+    g_exitStatus = 0;
     EXPECT_EQ(externalVolumeInfo_->DoCheck4Ntfs(), E_VOL_NEED_FIX);
 
     g_forkExecWithExit = 0;
+    g_exitStatus = 1;
     EXPECT_EQ(externalVolumeInfo_->DoCheck4Ntfs(), E_OK);
 
     GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoCheck4Ntfs_001 end";
@@ -214,10 +230,12 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoFix4Exfat_00
 
     g_extStorageMountForkExec = 1;
     g_forkExec = 1;
+    g_exitStatus = 0;
     EXPECT_EQ(externalVolumeInfo_->DoFix4Exfat(), E_VOL_FIX_FAILED);
 
     g_extStorageMountForkExec = 0;
     g_forkExec = 0;
+    g_exitStatus = 1;
     EXPECT_EQ(externalVolumeInfo_->DoFix4Exfat(), E_OK);
     GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoFix4Exfat_001 end";
 }

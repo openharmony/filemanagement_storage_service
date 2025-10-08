@@ -99,9 +99,9 @@ bool ReadFile(const std::string &path, std::string *str)
     return IFileUtilMoc::fileUtilMoc->ReadFile(path, str);
 }
 
-int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
+int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
-    return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, output);
+    return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, output, exitStatus);
 }
 
 void TraverseDirUevent(const std::string &path, bool flag)

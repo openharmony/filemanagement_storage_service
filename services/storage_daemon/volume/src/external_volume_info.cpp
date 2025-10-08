@@ -215,9 +215,10 @@ int32_t ExternalVolumeInfo::DoCheck4Ntfs()
         "fsck.ntfs",
         devPath_,
     };
-    int execRet = ForkExecWithExit(cmd);
-    LOGI("execRet: %{public}d", execRet);
-    if (execRet != E_OK) {
+    int exitStatus = 0;
+    int execRet = ForkExecWithExit(cmd, &exitStatus);
+    LOGI("execRet: %{public}d, exitStatus: %{public}d", execRet, exitStatus);
+    if (exitStatus != 1) {
         return E_VOL_NEED_FIX;
     }
     return E_OK;
@@ -257,14 +258,20 @@ int32_t ExternalVolumeInfo::DoFix4Exfat()
         devPath_,
     };
     std::vector<std::string> output;
+    int exitStatus = 0;
+    int forkExecRes = 0;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
-    if (ExtStorageMountForkExec(cmd) != E_OK) {
+    forkExecRes = ExtStorageMountForkExec(cmd, &exitStatus);
+    LOGI("ExtStorageMountForkExec is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
+    if (exitStatus != 1) {
         LOGE("ext exec fix for exfat failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
 #else
-    if (ForkExec(cmd, &output) != E_OK) {
+    forkExecRes = ForkExec(cmd, &output, &exitStatus);
+    LOGI("forkExecRes is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
+    if (exitStatus != 1) {
         LOGE("exec fix for exfat failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }

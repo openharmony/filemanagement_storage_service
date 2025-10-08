@@ -534,7 +534,14 @@ static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
     return res;
 }
 
-int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
+void GetExitStatus(int *exitStatus, int inputExitStatus)
+{
+    if (exitStatus != nullptr) {
+        *exitStatus = inputExitStatus;
+    }
+}
+
+int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     int pipe_fd[PIPE_FD_LEN];
     pid_t pid;
@@ -575,7 +582,9 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
             LOGE("Process exits abnormally, errno is %{public}d, status is %{public}d", errno, status);
             return E_WIFEXITED;
         }
-        if (WEXITSTATUS(status) != 0) {
+        int tempExitStatus = WEXITSTATUS(status);
+        GetExitStatus(exitStatus, tempExitStatus);
+        if (tempExitStatus != 0) {
             LOGE("Process exited with an error, errno is %{public}d, status is %{public}d", errno, status);
             return E_WEXITSTATUS;
         }
@@ -583,7 +592,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
     return E_OK;
 }
 
-int ForkExecWithExit(std::vector<std::string> &cmd)
+int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
 {
     int pipe_fd[2];
     pid_t pid;
@@ -618,7 +627,9 @@ int ForkExecWithExit(std::vector<std::string> &cmd)
             LOGE("Process exits abnormally, status: %{public}d", status);
             return E_WIFEXITED;
         }
-        if (WEXITSTATUS(status) != 0) {
+        int tempExitStatus = WEXITSTATUS(status);
+        GetExitStatus(exitStatus, tempExitStatus);
+        if (tempExitStatus != 0) {
             LOGE("Process exited with an error, status: %{public}d", status);
             return E_WEXITSTATUS;
         }
@@ -694,7 +705,7 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
     (void)close(logpipe[0]);
 }
 
-int ExtStorageMountForkExec(std::vector<std::string> &cmd)
+int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
     int pipe_fd[PIPE_FD_LEN];
     int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
@@ -739,7 +750,9 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
             LOGE("Process exits abnormally");
             return E_ERR;
         }
-        if (WEXITSTATUS(status) != 0) {
+        int tempExitStatus = WEXITSTATUS(status);
+        GetExitStatus(exitStatus, tempExitStatus);
+        if (tempExitStatus != 0) {
             LOGE("Process exited with an error");
             return E_ERR;
         }
