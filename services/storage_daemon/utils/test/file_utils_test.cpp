@@ -495,6 +495,44 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: FileUtilsTest_ForkExecWithExit_002
+ * @tc.desc: Verify the ForkExecWithExit function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_002 start";
+
+    std::vector<std::string> cmd = {
+        "fsck.ntfs",
+        "/dev/block/vol-1-8",
+    };
+    int res = 0;
+    EXPECT_EQ(ForkExecWithExit(cmd, &res), E_WEXITSTATUS);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecWithExit_003
+ * @tc.desc: Verify the ForkExecWithExit function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_003 start";
+
+    std::vector<std::string> cmd = {
+        "fsck.ntfs",
+        "/dev/block/vol-1-9",
+    };
+    int res = 1;
+    EXPECT_EQ(ForkExecWithExit(cmd, &res), E_WEXITSTATUS);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_003 end";
+}
+
+/**
  * @tc.name: FileUtilsTest_IsFuse_001
  * @tc.desc: Verify the IsUsbFuse function basic functionality.
  * @tc.type: FUNC
@@ -528,6 +566,44 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_001, TestSize.Level1)
     std::vector<std::string> output;
     EXPECT_EQ(ForkExec(cmd, &output), E_OK);
     GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExec_002
+ * @tc.desc: Verify the ForkExec function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_002 start";
+    std::vector<std::string> cmd = {
+            "ls",
+            "/dev/block/",
+    };
+    std::vector<std::string> output;
+    int res = 0;
+    EXPECT_EQ(ForkExec(cmd, &output, &res), E_OK);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExec_003
+ * @tc.desc: Verify the ForkExec function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_003 start";
+    std::vector<std::string> cmd = {
+            "ls",
+            "/dev/block/",
+    };
+    std::vector<std::string> output;
+    int res = 1;
+    EXPECT_EQ(ForkExec(cmd, &output, &res), E_OK);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_003 end";
 }
 
 /**

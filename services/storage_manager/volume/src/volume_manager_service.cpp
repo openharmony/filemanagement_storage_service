@@ -236,6 +236,7 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
 
 int32_t VolumeManagerService::TryToFix(std::string volumeId)
 {
+    int32_t result = E_OK;
     if (!volumeMap_.Contains(volumeId)) {
         LOGE("VolumeManagerService::TryToFix volumeId %{public}s not exists", volumeId.c_str());
         return E_NON_EXIST;
@@ -247,7 +248,6 @@ int32_t VolumeManagerService::TryToFix(std::string volumeId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result = Check(volumePtr->GetId());
     if (sdCommunication != nullptr) {
         result = sdCommunication->TryToFix(volumeId, 0);
     } else {

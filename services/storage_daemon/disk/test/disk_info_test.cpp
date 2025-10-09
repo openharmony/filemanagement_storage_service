@@ -682,7 +682,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
 
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
     int ret = diskInfo->Partition();
 
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -778,7 +779,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
 
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
     int ret = diskInfo->Partition();
     
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -1037,10 +1039,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.
     int flag = 0;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_ERR);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_003 end";
