@@ -229,7 +229,8 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUidStorageStats_0
 
     int before = E_OK;
     std::string str = "";
-    QuotaManager::GetInstance().GetUidStorageStats(str);
+    std::map<int32_t, std::string> bundleNameAndUid;
+    QuotaManager::GetInstance().GetUidStorageStats(str, bundleNameAndUid);
     EXPECT_FALSE(before);
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 end";
 }
@@ -375,10 +376,12 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForU
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 start";
 
     std::vector<struct UidSaInfo> vec;
-    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec), E_OK);
+    std::vector<struct UidSaInfo> vec1;
+    std::vector<struct UidSaInfo> vec2;
+    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec, vec1, vec2), E_OK);
     struct UidSaInfo info = {0, "root", 0};
     vec.emplace_back(info);
-    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec), E_OK);
+    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec, vec1, vec2), E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 end";
 }
@@ -463,6 +466,79 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddBlks_001, TestSiz
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddBlks_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_AssembleSaInfoVec_001
+ * @tc.desc: Test AssembleSaInfoVec handles valid/invalid UIDs and empty bundle map.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_AssembleSaInfoVec_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_AssembleSaInfoVec_001 start";
+
+    std::vector<UidSaInfo> vec;
+    UidSaInfo info1 = {1001, "default", 1024};
+    UidSaInfo info2 = {2002, "default", 2048};
+    vec.emplace_back(info1);
+    vec.emplace_back(info2);
+    std::map<int32_t, std::string> bundleMap;
+    bundleMap[1001] = "SystemApp";
+    bundleMap[2002] = "UserApp";
+    QuotaManager::GetInstance().AssembleSaInfoVec(vec, bundleMap);
+    EXPECT_EQ(vec[0].saName, "SystemApp");
+    EXPECT_EQ(vec[1].saName, "UserApp");
+
+    std::vector<UidSaInfo> vec1;
+    UidSaInfo info3 = {3003, "original", 4096};
+    vec1.emplace_back(info3);
+    std::map<int32_t, std::string> bundleMap1;
+    bundleMap1[4004] = "NonExistingApp"; // 不包含 UID 3003
+    QuotaManager::GetInstance().AssembleSaInfoVec(vec1, bundleMap1);
+    EXPECT_EQ(vec1[0].saName, "original"); // 未修改
+
+    std::vector<UidSaInfo> vec2;
+    UidSaInfo info4 = {5005, "initial", 8192};
+    vec2.emplace_back(info4);
+    std::map<int32_t, std::string> bundleMap2; // 空 map
+    QuotaManager::GetInstance().AssembleSaInfoVec(vec2, bundleMap2);
+    EXPECT_EQ(vec2[0].saName, "initial"); // 未修改
+
+    GTEST_LOG_(INFO) << "QuotaManagerTest_AssembleSaInfoVec_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ProcessVecList_001
+ * @tc.desc: Test ProcessVecList processes all vectors and handles empty bundle map.
+ * @tc.type: FUNC
+* @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessVecList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessVecList_001 start";
+    std::vector<UidSaInfo> sysAppVec = {{1001, "sysDefault", 1024}};
+    std::vector<UidSaInfo> userAppVec = {{2002, "userDefault", 2048}};
+    std::vector<UidSaInfo> vec = {{3003, "vecDefault", 4096}};
+    std::map<int32_t, std::string> bundleMap = {{1001, "SystemApp"}, {2002, "UserApp"}, {3003, "VecApp"}};
+
+    QuotaManager::GetInstance().ProcessVecList(sysAppVec, userAppVec, vec, bundleMap);
+
+    EXPECT_EQ(sysAppVec[0].saName, "SystemApp");
+    EXPECT_EQ(userAppVec[0].saName, "UserApp");
+    EXPECT_EQ(vec[0].saName, "vecDefault");
+
+    std::vector<UidSaInfo> sysAppVec1 = {{1001, "original", 1024}};
+    std::vector<UidSaInfo> userAppVec1 = {{2002, "original", 2048}};
+    std::vector<UidSaInfo> vec1 = {{3003, "original", 4096}};
+    std::map<int32_t, std::string> bundleMap1; // 空 map
+
+    QuotaManager::GetInstance().ProcessVecList(sysAppVec1, userAppVec1, vec1, bundleMap1);
+
+    EXPECT_EQ(sysAppVec1[0].saName, "original");
+    EXPECT_EQ(userAppVec1[0].saName, "original");
+    EXPECT_EQ(vec1[0].saName, "original");
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessVecList_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -20,6 +20,7 @@
 #include "storage/storage_monitor_service.h"
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
+#include "storage/storage_status_service.h"
 
 namespace OHOS::StorageManager {
 class SystemUtil {
@@ -75,6 +76,12 @@ using namespace testing::ext;
 
 constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
+int g_storageFlag = 0;
+
+int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
+{
+    return g_storageFlag;
+}
 
 class StorageMonitorServiceTest : public testing::Test {
 public:
@@ -325,6 +332,27 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetStorageAlertClean
     EXPECT_EQ(storageParams, value);
 
     GTEST_LOG_(INFO) << "storage_monitor_service_GetStorageAlertCleanupParams_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_StorageStatisticsThd_0000
+ * @tc.name: Storage_monitor_service_StorageStatisticsThd_0000
+ * @tc.desc: Test function of StorageStatisticsThd interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, Storage_monitor_service_StorageStatisticsThd_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_monitor_service_StorageStatisticsThd_0000 start";
+    g_storageFlag = 0;
+    service->StorageStatisticsThd();
+    EXPECT_TRUE(true);
+    g_storageFlag = -1;
+    service->StorageStatisticsThd();
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_monitor_service_StorageStatisticsThd_0000 end";
 }
 
 /**

@@ -25,6 +25,8 @@
 #include "parameters.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage_stats.h"
+#include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -43,6 +45,8 @@ constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 constexpr int32_t STORAGE_PARAMS_PATH_LEN = 128;
+constexpr int32_t STORAGE_STATIC_BEGIN_INTERVAL = 10 * 60 * 1000; //10min
+constexpr int32_t STORAGE_STATIC_INTERVAL = 480 * 60 * 1000; //8h
 constexpr const char *STORAGE_ALERT_CLEANUP_PARAMETER = "const.storage_service.storage_alert_policy";
 constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
@@ -86,7 +90,9 @@ void StorageMonitorService::StartStorageMonitorTask()
     if (eventHandler_ == nullptr) {
         LOGE("event handler is nullptr in StartStorageMonitorTask.");
     }
+    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
+    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -114,6 +120,24 @@ void StorageMonitorService::Execute()
     MonitorAndManageStorage();
     auto executeFunc = [this] { Execute(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
+}
+
+void StorageMonitorService::StorageStatisticsThd()
+{
+    LOGI("begin storage statistic scheduled task. ");
+    if (eventHandler_ == nullptr) {
+        LOGE("event handler is nullptr.");
+        return;
+    }
+    StorageStats stats;
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(DEFAULT_USERID, stats, true);
+    if (err != E_OK) {
+        LOGE("failed storage statistic scheduled task, %{public}d.", err);
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
+            "setting");
+    }
+    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
+    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_INTERVAL);
 }
 
 void StorageMonitorService::MonitorAndManageStorage()

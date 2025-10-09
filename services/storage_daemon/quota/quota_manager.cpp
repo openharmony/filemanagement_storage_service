@@ -17,7 +17,6 @@
 
 #include <charconv>
 #include <dirent.h>
-#include <fstream>
 #include <linux/fs.h>
 #include <linux/quota.h>
 #include <stack>
@@ -43,7 +42,6 @@ constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t ONE_HUNDRED_M_BYTE = 1024 * 1024 * 100;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -252,39 +250,50 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
-void QuotaManager::GetUidStorageStats(const std::string &storageStatus)
+void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
+    const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("GetUidStorageStats begin!");
-    std::vector<UidSaInfo> vec;
-    auto ret = ParseConfigFile(CONFIG_FILE_PATH, vec);
+    std::vector<UidSaInfo> sysSaVec;
+    std::vector<UidSaInfo> sysAppVec;
+    std::vector<UidSaInfo> userAppVec;
+    auto ret = ParseConfigFile(CONFIG_FILE_PATH, sysSaVec);
     if (ret != E_OK) {
         LOGE("parsePasswd File failed.");
         return;
     }
- 
-    ret = GetOccupiedSpaceForUidList(vec);
+
+    ret = GetOccupiedSpaceForUidList(sysSaVec, sysAppVec, userAppVec);
     if (ret != E_OK) {
         return;
     }
+
+    ProcessVecList(sysAppVec, userAppVec, sysSaVec, bundleNameAndUid);
  
-    std::sort(vec.begin(), vec.end(), [](const UidSaInfo& a, const UidSaInfo& b) {
-    return a.size > b.size;
-    });
     std::ostringstream extraData;
+    // DATA分区SIZE
     extraData << storageStatus <<std::endl;
+    extraData << "{Sa data is:}" <<std::endl;
+    WriteExtraData(sysSaVec, extraData);
+    extraData << "{SysApp data is:}" <<std::endl;
+    WriteExtraData(sysAppVec, extraData);
+    extraData << "{UserApp data is:}" <<std::endl;
+    WriteExtraData(userAppVec, extraData);
+
+    LOGI("extraData is %{public}s", extraData.str().c_str());
+    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
+        extraData.str());
+    LOGI("GetUidStorageStats end!");
+}
+
+void QuotaManager::WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData)
+{
     for (const auto& info : vec) {
-        if (info.size < ONE_HUNDRED_M_BYTE) {
-            continue;
-        }
         extraData << "{uid:" << info.uid
             << ",saName:" << info.saName
             << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
             << "MB}"<<std::endl;
     }
-    LOGI("extraData is %{public}s", extraData.str().c_str());
-    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
-        extraData.str());
-    LOGI("GetUidStorageStats end!");
 }
 
 double QuotaManager::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)
@@ -375,8 +384,42 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
     LOGI("pasePasswdFile end!");
     return E_OK;
 }
+
+void QuotaManager::ProcessVecList(std::vector<struct UidSaInfo> &sysAppVec,
+    std::vector<struct UidSaInfo> &userAppVec, std::vector<struct UidSaInfo> &vec,
+    const std::map<int32_t, std::string> &bundleNameAndUid)
+{
+    SortAndCutSaInfoVec(sysAppVec);
+    SortAndCutSaInfoVec(userAppVec);
+    SortAndCutSaInfoVec(vec);
+    AssembleSaInfoVec(sysAppVec, bundleNameAndUid);
+    AssembleSaInfoVec(userAppVec, bundleNameAndUid);
+}
+
+void QuotaManager::AssembleSaInfoVec(std::vector<UidSaInfo> &vec,
+    const std::map<int32_t, std::string> &bundleNameAndUid)
+{
+    if (bundleNameAndUid.empty()) {
+        return;
+    }
+    for (UidSaInfo &saInfo : vec) {
+        auto it = bundleNameAndUid.find(saInfo.uid);
+        if (it != bundleNameAndUid.end()) {
+            saInfo.saName = it->second;
+        }
+    }
+}
+
  
-int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec)
+void QuotaManager::SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec)
+{
+    std::sort(vec.begin(), vec.end(), [](const UidSaInfo& a, const UidSaInfo& b) {
+        return a.size > b.size;
+    });
+    vec.erase(vec.begin() + std::min(static_cast<size_t>(TOP_SPACE_COUNT), vec.size()), vec.end());
+}
+int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec,
+    std::vector<struct UidSaInfo> &sysAppVec, std::vector<struct UidSaInfo> &userAppVec)
 {
     LOGI("GetOccupiedSpaceForUidList begin!");
     int32_t curUid = 0;
@@ -402,6 +445,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             } else {
                 userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
+            userAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace)));
         }
         if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
             int32_t userId = StorageService::ZERO_USER;
@@ -410,6 +454,7 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             } else {
                 userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
+            sysAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace)));
         }
         count++;
         curUid = dqUid + 1;

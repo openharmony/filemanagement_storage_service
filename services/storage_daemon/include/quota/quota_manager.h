@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 #define OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 
+#include <fstream>
 #include <map>
 #include <nocopyable.h>
 #include <string>
@@ -44,6 +45,9 @@ struct UidSaInfo {
     int32_t uid;
     std::string saName;
     int64_t size;
+    UidSaInfo(int32_t uid_, const std::string& saName_, int64_t size_)
+        : uid(uid_), saName(saName_), size(size_) {}
+    UidSaInfo() : uid(0), saName(""), size(0) {}
 };
 
 struct DirSpaceInfo {
@@ -64,10 +68,19 @@ public:
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
     int32_t StatisticSysDirSpace();
+    void GetUidStorageStats(const std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
-    int64_t GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec);
+    void ProcessVecList(std::vector<struct UidSaInfo> &sysAppVec,
+        std::vector<struct UidSaInfo> &userAppVec, std::vector<struct UidSaInfo> &vec,
+        const std::map<int32_t, std::string> &bundleNameAndUid);
+    int64_t GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec,
+        std::vector<struct UidSaInfo> &sysAppVec, std::vector<struct UidSaInfo> &userAppVec);
+    void SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec);
+    void AssembleSaInfoVec(std::vector<struct UidSaInfo> &vec,
+        const std::map<int32_t, std::string> &bundleNameAndUid);
+    void WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData);
     bool GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName);
     bool StringToInt32(const std::string &strUid, int32_t &outUid32);
     int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);

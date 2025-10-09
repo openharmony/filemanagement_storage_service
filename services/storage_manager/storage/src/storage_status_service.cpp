@@ -15,6 +15,7 @@
 
 #include "storage/storage_status_service.h"
 #include "accesstoken_kit.h"
+#include "os_account_manager.h"
 #include "ipc_skeleton.h"
 #include "hitrace_meter.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -26,6 +27,7 @@
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "datashare_abs_result_set.h"
 #include "datashare_helper.h"
@@ -48,6 +50,7 @@ static std::atomic<bool> checkDirSizeFlag = false;
 constexpr int DECIMAL_PLACE = 2;
 constexpr double TO_MB = 1024.0 * 1024.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
+constexpr int64_t CHANGE_RANGE = 1024LL * 1024 * 1024 * 2;
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -184,7 +187,7 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
     return GetUserStorageStats(userId, storageStats);
 }
 
-int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
+int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     bool isCeEncrypt = false;
     auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -215,7 +218,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     storageStats.total_ = totalSize;
     storageStats.app_ = appSize;
 
-    err = GetMediaAndFileStorageStats(userId, storageStats);
+    err = GetMediaAndFileStorageStats(userId, storageStats, isSchedule);
 
     LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
         "totalSize=%{public}lld, appSize=%{public}lld, videoSize=%{public}lld, audioSize=%{public}lld, "
@@ -226,7 +229,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     return err;
 }
 
-int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats)
+int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     // mediaSize
     auto err = GetMediaStorageStats(storageStats);
@@ -244,7 +247,7 @@ int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, Storag
             GetCallingPkgName());
         return err;
     }
-    auto ret = QueryOccupiedSpaceForSa(storageStats);
+    auto ret = QueryOccupiedSpaceForSa(storageStats, userId, isSchedule);
     if (ret != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats QueryOccupiedSpaceForSa failed, err: %{public}d", ret);
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::QueryOccupiedSpaceForSa", userId, ret,
@@ -260,48 +263,119 @@ std::string StorageStatusService::ConvertBytesToMB(int64_t bytes)
     return oss.str();
 }
 
-int32_t StorageStatusService::QueryOccupiedSpaceForSa(StorageStats &storageStats)
+int32_t StorageStatusService::QueryOccupiedSpaceForSa(StorageStats &storageStats, int32_t userId, bool isSchedule)
 {
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
+    // 检查权限
+    int32_t errNo = CheckBundlePermissions(uid, bundleName, isSchedule);
+    if (errNo != E_OK) {
+        return errNo;
+    }
+    // 检查是否正在运行任务
+    if (checkDirSizeFlag.load()) {
+        LOGI("The task to query SA space usage is running, ignore");
+        return E_OK;
+    }
+    // 启动线程处理
+    std::thread([this, storageStats, userId, isSchedule]() {
+        ProcessStorageStatus(storageStats, userId, isSchedule);
+    }).detach();
+    return E_OK;
+}
+
+void StorageStatusService::ProcessStorageStatus(const StorageStats &storageStats, int32_t userId, bool isSchedule)
+{
+    checkDirSizeFlag.store(true);
+    int64_t freeSize = 0;
+    int64_t systemSize = 0;
+    int32_t errNo = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
+    if (errNo != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats getFreeSize failed, errNo:%{public}d.", errNo);
+    }
+    errNo = StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
+    if (errNo != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats getSysSize failed, errNo:%{public}d.", errNo);
+    }
+    int64_t changeSize = freeSize - oldFreeSizeCache;
+    if (abs(changeSize) < CHANGE_RANGE && isSchedule) {
+        LOGI("free size changed less than 2G, do not report storage");
+        checkDirSizeFlag.store(false);
+        return;
+    }
+    oldFreeSizeCache = freeSize;
+    std::map<int32_t, std::string> bundleNameAndUid;
+    errNo = GetBundleNameAndUid(userId, bundleNameAndUid);
+    if (errNo != E_OK) {
+        LOGE("GetAllBundleNames failed, errNo:%{public}d.", errNo);
+        std::string extraData = "errNo is :" + std::to_string(errNo);
+        StorageRadar::ReportCommonResult("QueryOccupiedSpaceForSa::GetBundleNameAndUid",
+            E_GET_BUNDLE_NAME_FAILED, userId, extraData);
+    }
+    std::string storageStatusResult = "{userId is:" + std::to_string(userId) + "}\n" +
+                                     "{app size is:" + ConvertBytesToMB(storageStats.app_) +
+                                     ",audio size is:" + ConvertBytesToMB(storageStats.audio_) +
+                                     ",image size is:" + ConvertBytesToMB(storageStats.image_) +
+                                     ",video size is:" + ConvertBytesToMB(storageStats.video_) +
+                                     ",file size is:" + ConvertBytesToMB(storageStats.file_) +
+                                     ",total size is:" + std::to_string(storageStats.total_) + "B" +
+                                     ",sys size is:" + ConvertBytesToMB(systemSize) +
+                                     ",free size is:" + ConvertBytesToMB(freeSize) + "}";
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("get sdCommunication error");
+        checkDirSizeFlag.store(false);
+        return;
+    }
+    sdCommunication->QueryOccupiedSpaceForSa(storageStatusResult, bundleNameAndUid);
+    checkDirSizeFlag.store(false);
+}
+
+int32_t StorageStatusService::CheckBundlePermissions(int32_t uid, std::string &bundleName, bool isSchedule)
+{
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
         return E_SERVICE_IS_NULLPTR;
     }
-    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName) && !isSchedule) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
         return E_BUNDLEMGR_ERROR;
     }
-    if (bundleName != SETTING_BUNDLE_NAME) {
+    if (bundleName != SETTING_BUNDLE_NAME && !isSchedule) {
         LOGE("permissionCheck error");
         return E_PERMISSION_DENIED;
     }
-    if (checkDirSizeFlag.load()) {
-        LOGI("The task to query SA space usage is running, ignore");
-        return E_OK;
+    return E_OK;
+}
+
+int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid)
+{
+    LOGI("begin getBundleNameAndUid.");
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed, userId:%{public}d.", userId);
+        return E_SERVICE_IS_NULLPTR;
     }
-    std::thread([this, storageStats]() {
-        checkDirSizeFlag.store(true);
-        int64_t freeSize = 0;
-        auto errNo = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
-        if (errNo != E_OK) {
-            LOGE("StorageStatusService::GetUserStorageStats getFreeSize failed");
+    std::vector<std::string> bundleNames;
+    std::vector<AccountSA::OsAccountInfo> OsAccountInfo;
+    int32_t errNo = AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(OsAccountInfo);
+    if (errNo != ERR_OK || OsAccountInfo.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", errNo);
+        StorageRadar::ReportOsAccountResult("GetBundleNameAndUid::QueryActiveOsAccountIds", errNo, DEFAULT_USERID);
+    }
+    for (const auto &info : OsAccountInfo) {
+        std::vector<AppExecFwk::BundleInfo> bundleInfos;
+        auto ret = bundleMgr->GetBundleInfosV9(0, bundleInfos, info.GetLocalId());
+        if (ret != E_OK) {
+            LOGE("GetBundleInfosV9 failed, ret is %{public}d", ret);
+            return ret;
         }
-        std::string storageStatusResult = "{App size is:" + ConvertBytesToMB(storageStats.app_) +
-                                          ",audio size is:" + ConvertBytesToMB(storageStats.audio_) +
-                                          ",image size is:" + ConvertBytesToMB(storageStats.image_) +
-                                          ",video size is:" + ConvertBytesToMB(storageStats.video_) +
-                                          ",file size is:" + ConvertBytesToMB(storageStats.file_) +
-                                          ",free size is:" + ConvertBytesToMB(freeSize) + "}";
-        auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-        if (sdCommunication == nullptr) {
-            LOGE("get sdCommunication error");
-            return;
+        for (const auto &bundInfo : bundleInfos) {
+            bundleNameAndUid[bundInfo.uid] = bundInfo.name;
         }
-        sdCommunication->QueryOccupiedSpaceForSa(storageStatusResult);
-        checkDirSizeFlag.store(false);
-    }).detach();
+    }
+    LOGI("end getBundleNameAndUid.");
     return E_OK;
 }
 
