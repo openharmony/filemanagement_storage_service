@@ -1050,4 +1050,32 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMount
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001 end";
 }
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_IsFileOccupied_001
+* @tc.desc: Verify the IsFileOccupied function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_IsFileOccupied_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 start";
+    std::string path;
+    std::vector<std::string> input;
+    std::vector<std::string> output;
+    bool isOccupy;
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 end";
+}
 }

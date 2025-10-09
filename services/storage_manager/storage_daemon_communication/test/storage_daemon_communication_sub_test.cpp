@@ -1962,4 +1962,64 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StatisticSysDirSpa
 
     GTEST_LOG_(INFO) << "Daemon_communication_StatisticSysDirSpace_001 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_ResetSecretWithRecoveryKey_001
+ * @tc.name: Daemon_communication_ResetSecretWithRecoveryKey_001
+ * @tc.desc: Test function of ResetSecretWithRecoveryKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSecretWithRecoveryKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_ResetSecretWithRecoveryKey_001 begin ";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    uint32_t userId = 100;
+    uint32_t rkType = 100;
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, {}), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, {}), E_SERVICE_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "Daemon_communication_ResetSecretWithRecoveryKey_001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_IsFileOccupied_001
+ * @tc.name: Daemon_communication_IsFileOccupied_001
+ * @tc.desc: Test function of IsFileOccupied interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_IsFileOccupied_001 begin ";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    const std::string path = "test_file.txt";
+    const std::vector<std::string> inputList = {"unrelated_process_1", "unrelated_process_2"};
+    std::vector<std::string> outputList;
+    bool status = true;
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_SERVICE_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "Daemon_communication_VerifyAncoUserDirs_001 end";
+}
 }

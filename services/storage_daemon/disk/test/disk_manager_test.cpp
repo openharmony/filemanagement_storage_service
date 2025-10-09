@@ -117,6 +117,24 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSi
 }
 
 /**
+ * @tc.name: Storage_Service_DiskManagerTest_CreateDisk_002
+ * @tc.desc: Verify the CreateDisk function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::shared_ptr<DiskInfo> diskInfo = nullptr;
+
+    diskManager.CreateDisk(diskInfo);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_DiskManagerTest_DestroyDisk_001
  * @tc.desc: Verify the DestroyDisk function.
  * @tc.type: FUNC
@@ -364,6 +382,23 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
 }
 
 /**
+ * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_003
+ * @tc.desc: Verify the MatchConfig function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_003 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    auto diskInfo1 = diskManager.MatchConfig(nullptr);
+    EXPECT_TRUE(diskInfo1 == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_003 end";
+}
+
+/**
  * @tc.name: Storage_Service_DiskManagerTest_HandlePartition_001
  * @tc.desc: Verify the HandlePartition function.
  * @tc.type: FUNC
@@ -381,6 +416,28 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandlePartition_001, T
     EXPECT_TRUE(ret == E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandlePartition_002
+ * @tc.desc: Verify the HandlePartition function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandlePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    MessageParcel data;
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+    int ret = diskManager.HandlePartition(diskId);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

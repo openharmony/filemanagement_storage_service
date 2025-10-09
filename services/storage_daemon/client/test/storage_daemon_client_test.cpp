@@ -387,5 +387,24 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetFil
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_IsFileOccupied_001
+ * @tc.desc: Verify the IsFileOccupied function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_IsFileOccupied_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 start";
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+    std::string path;
+    std::vector<std::string> input;
+    std::vector<std::string> output;
+    bool isOccupy;
+    int32_t ret = storageDaemonClient_->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 end";
+}
 }
 }

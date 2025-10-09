@@ -629,6 +629,10 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsFileOccupied_001, T
     ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_OK);
 
+    path = "/storage/Users/currentUser/";
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_OK);
+
     path = "/data/test/tdd/";
     input = {"aa", "bb", "1.txt"};
     ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
@@ -637,6 +641,12 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsFileOccupied_001, T
     path = "/data/test/tdd/test.txt";
     ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    path = "/storage/Users/currentUser/";
+    input = {"aa", "bb", "1.txt"};
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_OK);
+
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsFileOccupied_001 end";
 }
 
@@ -1019,6 +1029,137 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FilterNotMountedPa
     auto ret = MountManager::GetInstance().FilterNotMountedPath(notMountPaths);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001
+ * @tc.desc: Verify the MountCryptoPathAgain function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001 start";
+    uint32_t userId = 101;
+    auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, -ENOENT);
+
+    userId = 100;
+    std::string path = "/data/virt_service/rgm_hmos/anco_hmos_data/media/0";
+    ForceCreateDirectory(path);
+    ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
+    ForceRemoveDirectory(path);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_MountPointToList_001
+ * @tc.desc: Verify the MountPointToList function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountPointToList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountPointToList_001 start";
+    std::list<std::string> hmdfsList;
+    std::list<std::string> hmdfsLists;
+    std::list<std::string> sharefsList;
+    std::string line;
+    uint32_t userId = 100;
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+    line = "sourcesourcesourcesourcesourcesourcesource destination hmdfs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+    line = "s destination hmdfs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+
+    line = "sourcesourcesourcesourcesourcesourcesource destination sharefs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+    line = "s destination sharefs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+
+    line = "source destination hmfs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+    line = "source destinationdestinationdestinationdestinationdestination hmfs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+
+    line = "source destination f2fs";
+    MountManager::GetInstance().MountPointToList(hmdfsList, hmdfsLists, sharefsList, line, userId);
+
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountPointToList_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001
+ * @tc.desc: Verify the CheckProcessUserId function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001 start";
+    int32_t userId = 100;
+    vector<ProcessInfo> proInfos = {{1234, "testproc1"}, {5678, "testproc2"}};
+    vector<ProcessInfo> processKillInfos;
+    auto ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002
+ * @tc.desc: Verify the CheckProcessUserId function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002 start";
+    int32_t userId = 100;
+    vector<ProcessInfo> proInfos = {{1, "testproc1"}};
+    vector<ProcessInfo> processKillInfos;
+    auto ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 0;
+    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_CloudAndFuseDirFlag_001
+ * @tc.desc: Verify the CloudAndFuseDirFlag function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_CloudAndFuseDirFlag_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CloudAndFuseDirFlag_001 start";
+    std::string path;
+    bool ret = MountManager::GetInstance().CloudAndFuseDirFlag(path);
+    EXPECT_TRUE(ret);
+    
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CloudAndFuseDirFlag_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_001
+ * @tc.desc: Verify the MediaFuseDirFlag function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_001 start";
+    std::string path;
+    bool ret = MountManager::GetInstance().MediaFuseDirFlag(path);
+    EXPECT_TRUE(ret);
+    
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

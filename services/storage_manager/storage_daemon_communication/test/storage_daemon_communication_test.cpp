@@ -1076,4 +1076,29 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_IsFileOccupied_0000
+ * @tc.name: Daemon_communication_IsFileOccupied_0000
+ * @tc.desc: Test function of IsFileOccupied interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_IsFileOccupied_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    const std::string path;
+    const std::vector<std::string> inputList = {"unrelated_process_1", "unrelated_process_2"};
+    std::vector<std::string> outputList;
+    bool status = true;
+    EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_IsFileOccupied_0000 SUCCESS";
+}
 } // namespace
