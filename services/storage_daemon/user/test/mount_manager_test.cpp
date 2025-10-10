@@ -21,6 +21,7 @@
 
 #include "file_utils_mock.h"
 #include "library_func_mock.h"
+#include "os_account_manager.h"
 #include "parameter_mock.h"
 #include "storage_service_errno.h"
 #include "string_utils.h"
@@ -33,6 +34,16 @@ namespace {
 }
 
 namespace OHOS {
+int32_t g_checkOsAccountConstraintEnabled;
+bool g_isEnabled = false;
+
+namespace AccountSA {
+ErrCode OsAccountManager::CheckOsAccountConstraintEnabled(const int id, const std::string &constraint, bool &isEnabled)
+{
+    isEnabled = g_isEnabled;
+    return g_checkOsAccountConstraintEnabled;
+}
+}
 namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
@@ -196,6 +207,68 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, T
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_001
+ * @tc.desc: Verify the HmdfsMount function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_001 start";
+    int32_t userId = 901;
+    std::string relativePath = "";
+    bool mountCloudDisk = false;
+    g_checkOsAccountConstraintEnabled = E_MOUNT_HMDFS;
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_002
+ * @tc.desc: Verify the HmdfsMount function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_002 start";
+    int32_t userId = 901;
+    std::string relativePath = "";
+    bool mountCloudDisk = false;
+    g_checkOsAccountConstraintEnabled = E_OK;
+    g_isEnabled = true;
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_002 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_003
+ * @tc.desc: Verify the HmdfsMount function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_003 start";
+    int32_t userId = 901;
+    std::string relativePath = "";
+    bool mountCloudDisk = false;
+    g_checkOsAccountConstraintEnabled = E_OK;
+    g_isEnabled = false;
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_003 end";
+}
+
+/**
  * @tc.name: Storage_Daemon_MountManagerTest_CheckSymlink_001
  * @tc.desc: Verify the CheckSymlink function.
  * @tc.type: FUNC
@@ -212,7 +285,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckSymlink_001, Tes
     path = "/data/test/tdd/test.txt";
     ret = MountManager::GetInstance().CheckSymlink(path, unMountFailList);
     EXPECT_EQ(ret, false);
-
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
 
