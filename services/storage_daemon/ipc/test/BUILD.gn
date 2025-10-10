@@ -32,7 +32,6 @@ ohos_unittest("storage_daemon_test") {
     "private = public",
   ]
 
-
   cflags_cc = [ "-Wno-unused-const-variable" ]
 
   include_dirs = [
@@ -40,6 +39,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
     "${storage_manager_path}/include",
+    "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
@@ -70,6 +70,7 @@ ohos_unittest("storage_daemon_test") {
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
@@ -81,6 +82,7 @@ ohos_unittest("storage_daemon_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "ipc:libdbinder",
+    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
