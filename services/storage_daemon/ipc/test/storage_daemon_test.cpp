@@ -26,9 +26,9 @@
 #include "file_sharing/file_sharing.h"
 
 namespace {
-int gSetupFileSharingDir = 0;
-bool gSaveStringToFile = true;
-bool gSaveStringToFileSync = true;
+int g_setupFileSharingDir = 0;
+bool g_saveStringToFile = true;
+bool g_saveStringToFileSync = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
 constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
@@ -38,18 +38,18 @@ constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 namespace OHOS {
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated /*= true*/)
 {
-    return gSaveStringToFile;
+    return g_saveStringToFile;
 }
 
 namespace StorageDaemon {
 int SetupFileSharingDir()
 {
-    return gSetupFileSharingDir;
+    return g_setupFileSharingDir;
 }
 
 bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
-    return gSaveStringToFileSync;
+    return g_saveStringToFileSync;
 }
 
 namespace Test {
@@ -646,9 +646,9 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
 #ifdef USER_CRYPTO_MIGRATE_KEY
     CreateNeedRestoreFile(StorageService::START_USER_ID, EL1_KEY);
 
-    gSaveStringToFile = false;
+    g_saveStringToFile = false;
     EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), false);
-    gSaveStringToFile = true;
+    g_saveStringToFile = true;
 
 #endif
     EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillOnce(Return(E_OK));
@@ -674,7 +674,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_002, TestSize.L
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
 #ifdef USER_FILE_SHARING
-    gSetupFileSharingDir = -1;
+    g_setupFileSharingDir = -1;
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
@@ -937,11 +937,11 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 
     // new_need_restore equal UPDATE_V4 and SaveStringToFileSync failed
-    gSaveStringToFileSync = false;
+    g_saveStringToFileSync = false;
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 
     // new_need_restore equal UPDATE_V4 and SaveStringToFileSync success
-    gSaveStringToFileSync = true;
+    g_saveStringToFileSync = true;
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 }
 

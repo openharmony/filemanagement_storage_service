@@ -23,6 +23,7 @@ ohos_unittest("storage_daemon_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
