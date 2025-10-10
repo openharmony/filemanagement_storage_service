@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +18,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 
-#include "mount_manager.h"
+#include "user/mount_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -27,13 +27,15 @@ public:
     virtual ~IMountManagerMoc() = default;
 public:
     virtual bool CheckMountFileByUser(int32_t userId) = 0;
+    virtual int32_t PrepareAppdataDir(int32_t userId) = 0;
 public:
     static inline std::shared_ptr<IMountManagerMoc> mountManagerMoc = nullptr;
 };
 
 class MountManagerMoc : public IMountManagerMoc {
 public:
-    MOCK_METHOD1(CheckMountFileByUser, bool(int32_t userId));
+    MOCK_METHOD(bool, CheckMountFileByUser, (int32_t));
+    MOCK_METHOD(int32_t, PrepareAppdataDir, (int32_t));
 };
 }
 }

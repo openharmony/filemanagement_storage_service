@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "crypto/key_manager.h"
+#include "mock/key_manager_mock.h"
 
 #include "storage_service_errno.h"
 
@@ -25,22 +25,34 @@ int32_t flag_num_thir = 3;
 int32_t main_user = 100;
 int32_t KeyManager::InitGlobalDeviceKey(void)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->InitGlobalDeviceKey();
 }
 
 int32_t KeyManager::InitGlobalUserKeys(void)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->InitGlobalUserKeys();
 }
 
 int32_t KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GenerateUserKeys(user, flags);
 }
 
 int32_t KeyManager::DeleteUserKeys(unsigned int user)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->DeleteUserKeys(user);
 }
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
@@ -55,29 +67,44 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 
 int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->RestoreUserKey(userId, type);
 }
 
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
     bool needGenerateShield)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuth(user, userTokenSecret);
 }
 #else
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuth(user, userTokenSecret);
 }
 #endif
 
 std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
 {
-    return "";
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return "";
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetNatoNeedRestorePath(userId, type);
 }
 
 std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
 {
-    return "";
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return "";
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetKeyDirByUserAndType(user, type);
 }
 std::string KeyManager::GetKeyDirByType(KeyType type)
 {
@@ -98,7 +125,10 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
 }
 int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->ActiveElxUserKey4Nato(user, type, authToken);
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -111,12 +141,18 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         KeyType type)
 #endif
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateCeEceSeceUserAuth(user, userTokenSecret, type);
 }
 
 int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateCeEceSeceKeyContext(userId, type);
 }
 
 int32_t KeyManager::InActiveUserKey(unsigned int user)
@@ -198,14 +234,20 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
                                       const std::vector<uint8_t> &token,
                                       const std::vector<uint8_t> &secret)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GenerateUserKeyByType(user, type, token, secret);
 }
 
 int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->ActiveCeSceSeceUserKey(user, type, token, secret);
 }
 
 int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)

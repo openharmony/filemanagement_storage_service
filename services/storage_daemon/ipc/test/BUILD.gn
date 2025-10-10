@@ -30,16 +30,8 @@ ohos_unittest("storage_daemon_test") {
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
     "private = public",
-    "USER_CRYPTO_MIGRATE_KEY",
   ]
 
-  if (storage_service_user_crypto_manager) {
-    defines += [ "USER_CRYPTO_MANAGER" ]
-  }
-
-  if (storage_service_external_storage_manager) {
-    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
-  }
 
   cflags_cc = [ "-Wno-unused-const-variable" ]
 
@@ -54,31 +46,13 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
-    "$ROOT_DIR/crypto/src/key_backup.cpp",
-    "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
-    "$ROOT_DIR/crypto/src/iam_client.cpp",
+    "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
+    "$ROOT_DIR/ipc/src/storage_daemon.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
     "$ROOT_DIR/crypto/test/key_manager_ext_mock.cpp",
-    "$ROOT_DIR/disk/src/disk_config.cpp",
-    "$ROOT_DIR/disk/src/disk_info.cpp",
-    "$ROOT_DIR/disk/src/disk_manager.cpp",
-    "$ROOT_DIR/ipc/src/storage_daemon.cpp",
-    "$ROOT_DIR/ipc/src/storage_daemon_provider.cpp",
-    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
-    "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
-    "$ROOT_DIR/quota/quota_manager.cpp",
-    "$ROOT_DIR/user/src/mount_manager.cpp",
-    "$ROOT_DIR/user/src/mount_manager_ext.cpp",
-    "$ROOT_DIR/user/src/user_manager.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
-    "$ROOT_DIR/utils/test/common/help_utils.cpp",
-    "$ROOT_DIR/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
-    "$ROOT_DIR/volume/src/volume_info.cpp",
-    "$ROOT_DIR/volume/src/volume_manager.cpp",
-    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
-    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
+    "$ROOT_DIR/mock/user_manager_mock.cpp",
+    "$ROOT_DIR/mock/mount_manager_mock.cpp",
+    "$ROOT_DIR/mock/iam_client_mock.cpp",
   ]
 
   deps = [
@@ -104,7 +78,6 @@ ohos_unittest("storage_daemon_test") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
-    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
     "ipc:libdbinder",
@@ -113,9 +86,18 @@ ohos_unittest("storage_daemon_test") {
     "samgr:samgr_proxy",
   ]
 
-  if (storage_service_cloud_fuse) {
-    defines += [ "DFS_SERVICE" ]
-    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  if (storage_service_user_crypto_manager) {
+    defines += [
+      "USER_CRYPTO_MANAGER",
+      "USER_CRYPTO_MIGRATE_KEY",
+    ]
+    deps += [
+      "$ROOT_DIR/libfscrypt:libfscryptutils",
+    ]
+    external_deps += [
+      "crypto_framework:crypto_framework_lib",
+      "huks:libhukssdk",
+    ]
   }
 
   if (enable_user_auth_framework) {
@@ -123,10 +105,10 @@ ohos_unittest("storage_daemon_test") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  if (enable_huks_hdi) {
-    defines += [ "HUKS_IDL_ENVIRONMENT" ]
-    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  if (storage_service_user_file_sharing) {
+    defines += [ "USER_FILE_SHARING" ]
   }
+
 
   use_exceptions = true
 }
