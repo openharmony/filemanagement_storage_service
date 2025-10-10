@@ -47,7 +47,7 @@ private:
     bool CheckAllInterfaces(const cJSON* configs);
 
 private:
-    static bool isPtp_;
+    static std::atomic<bool> isPtp_;
 };
 } // namespace UsbEventSubscriber
 } // namespace OHOS

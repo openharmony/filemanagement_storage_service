@@ -29,7 +29,7 @@ constexpr const char *DEV_PRODUCT_ID_KEY = "productId";
 constexpr const char *DEV_CLASS_KEY = "clazz";
 constexpr int USB_CLASS_IMAGE = 6;
 constexpr int USB_CLASS_VENDOR_SPEC = 255;
-bool UsbEventSubscriber::isPtp_ = true;
+std::atomic<bool> UsbEventSubscriber::isPtp_ = true;
 
 UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info)
@@ -238,7 +238,7 @@ bool UsbEventSubscriber::IsMTPDevice(const std::string &usbInfo)
 
 bool UsbEventSubscriber::IsPtpMode()
 {
-    LOGI("PTP mode status: %{public}d", isPtp_);
+    LOGI("PTP mode status: %{public}d", isPtp_.load());
     return isPtp_;
 }
 }  // namespace StorageDaemon

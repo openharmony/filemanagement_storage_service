@@ -573,6 +573,26 @@ HWTEST_F(KeyManagerTest, KeyManager_UnlockUserScreen, TestSize.Level1)
 }
 
 /**
+ * @tc.name: KeyManager_UnlockUserScreen_NotCancelDelayTask
+ * @tc.desc: Verify the UnlockUserScreen_NotCancelDelayTask function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerTest, KeyManager_UnlockUserScreen_NotCancelDelayTask, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UnlockUserScreen_NotCancelDelayTask Start";
+    unsigned int user = 1;
+    const std::vector<uint8_t> token = {};
+    const std::vector<uint8_t> secret = {};
+    KeyManager::GetInstance().userLockScreenTask_[user] = nullptr;
+    EXPECT_EQ(KeyManager::GetInstance().UnlockUserScreen(user, token, secret), 0);
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance().UnlockUserScreen(100, token, secret), 0);
+    GTEST_LOG_(INFO) << "KeyManager_UnlockUserScreen end";
+}
+
+/**
  * @tc.name: KeyManager_SetDirectoryElPolicy
  * @tc.desc: Verify the SetDirectoryElPolicy function.
  * @tc.type: FUNC
