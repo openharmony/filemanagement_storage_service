@@ -19,7 +19,6 @@
 
 #include <gtest/gtest.h>
 
-#include "anco_file_util_mock.h"
 #include "file_utils_mock.h"
 #include "iam_client_mock.h"
 #include "key_manager_ext_mock.h"
@@ -48,7 +47,6 @@ public:
     std::vector<uint8_t> token_;
     std::vector<uint8_t> secret_;
 
-    std::shared_ptr<AncoFileUtilMoc> ancoMock_ = nullptr;
     std::shared_ptr<KeyManagerMock> keyManagerMock_ = nullptr;
     std::shared_ptr<KeyManagerExtMock> keyManagerExtMock_ = nullptr;
     std::shared_ptr<UserManagerMock> userManagerMock_ = nullptr;

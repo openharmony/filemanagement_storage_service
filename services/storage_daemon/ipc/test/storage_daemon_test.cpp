@@ -241,8 +241,6 @@ void StorageDaemonTest::SetUp()
 {
     storageDaemon_ = std::make_shared<StorageDaemon>();
 
-    ancoMock_ = std::make_shared<AncoFileUtilMoc>();
-    AncoFileUtilMoc::ancoMoc = ancoMock_;
     keyManagerMock_ = std::make_shared<KeyManagerMock>();
     KeyManagerMock::iKeyManagerMock_ = keyManagerMock_;
     keyManagerExtMock_ = std::make_shared<KeyManagerExtMock>();
@@ -267,8 +265,6 @@ void StorageDaemonTest::TearDown(void)
     token_.clear();
     secret_.clear();
 
-    AncoFileUtilMoc::ancoMoc = nullptr;
-    ancoMock_ = nullptr;
     KeyManagerMock::iKeyManagerMock_ = nullptr;
     keyManagerMock_ = nullptr;
     KeyManagerExtMock::iKeyManagerExtMock_ = nullptr;
