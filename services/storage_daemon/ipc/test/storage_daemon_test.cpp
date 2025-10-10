@@ -26,9 +26,9 @@
 #include "file_sharing/file_sharing.h"
 
 namespace {
-int g_SetupFileSharingDir = 0;
-bool g_SaveStringToFile = true;
-bool g_SaveStringToFileSync = true;
+int gSetupFileSharingDir = 0;
+bool gSaveStringToFile = true;
+bool gSaveStringToFileSync = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
 constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
@@ -38,18 +38,18 @@ constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 namespace OHOS {
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated /*= true*/)
 {
-    return g_SaveStringToFile;
+    return gSaveStringToFile;
 }
 
 namespace StorageDaemon {
 int SetupFileSharingDir()
 {
-    return g_SetupFileSharingDir;
+    return gSetupFileSharingDir;
 }
 
 bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
-    return g_SaveStringToFileSync;
+    return gSaveStringToFileSync;
 }
 
 namespace Test {
@@ -650,9 +650,9 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
 #ifdef USER_CRYPTO_MIGRATE_KEY
     CreateNeedRestoreFile(StorageService::START_USER_ID, EL1_KEY);
 
-    g_SaveStringToFile = false;
+    gSaveStringToFile = false;
     EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), false);
-    g_SaveStringToFile = true;
+    gSaveStringToFile = true;
 
 #endif
     EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillOnce(Return(E_OK));
@@ -678,7 +678,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_002, TestSize.L
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
 #ifdef USER_FILE_SHARING
-    g_SetupFileSharingDir = -1;
+    gSetupFileSharingDir = -1;
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
@@ -816,7 +816,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
     auto ret = storageDaemon_->PrepareUserDirsAndUpdateUserAuthOld(userId_,
         static_cast<KeyType>(EL5_KEY + 1), token_, secret_);
     EXPECT_EQ(ret, E_KEY_TYPE_INVALID);
-
 }
 
 /**
@@ -942,11 +941,11 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 
     // new_need_restore equal UPDATE_V4 and SaveStringToFileSync failed
-    g_SaveStringToFileSync = false;
+    gSaveStringToFileSync = false;
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 
     // new_need_restore equal UPDATE_V4 and SaveStringToFileSync success
-    g_SaveStringToFileSync = true;
+    gSaveStringToFileSync = true;
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 }
 
@@ -968,7 +967,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
 
 /**
  * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_004
- * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx 
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx
     when NatoNeedRestorePath not exist and PrepareUserDirs failed.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6

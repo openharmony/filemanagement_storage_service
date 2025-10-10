@@ -60,10 +60,10 @@ public:
     MOCK_METHOD(int, UpdateCeEceSeceKeyContext, (unsigned int, KeyType));
     MOCK_METHOD(int, ActiveElxUserKey4Nato, (unsigned int, KeyType, const KeyBlob &));
     MOCK_METHOD(std::string, GetNatoNeedRestorePath, (uint32_t, KeyType));
-    MOCK_METHOD(std::string, GetKeyDirByUserAndType, (unsigned int , KeyType));
-    MOCK_METHOD(int, GenerateUserKeyByType, (unsigned int , KeyType,
+    MOCK_METHOD(std::string, GetKeyDirByUserAndType, (unsigned int, KeyType));
+    MOCK_METHOD(int, GenerateUserKeyByType, (unsigned int, KeyType,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
 };
 }
 }
-#endif // STORAGE_DAEMON_KEY_MANAGER_MOCK_H
+#endif // STORAGE_DAEMON_KEY_MANAGER_MOCK_H

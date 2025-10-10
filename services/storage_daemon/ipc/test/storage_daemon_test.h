@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef STORAGE_DAEMON_TEST_H
+#define STORAGE_DAEMON_TEST_H
 
 #include "ipc/storage_daemon.h"
 
@@ -57,4 +59,5 @@ public:
 };
 } // Test
 } // STORAGE_DAEMON
-} // OHOS
+} // OHOS
+#endif /* STORAGE_DAEMON_TEST_H */
