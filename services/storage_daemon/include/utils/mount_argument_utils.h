@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,7 @@ struct MountArgument final {
     bool enableCloudDisk_{ false };
     bool enableFixupOwnerShip_{ false };
     bool enableOfflineStash_{ true };
+    bool isSecurityMode_{ false };
     std::string relativePath_;
 
     std::string GetFullSrc() const;

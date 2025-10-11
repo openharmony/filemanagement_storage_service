@@ -214,6 +214,9 @@ string MountArgument::OptionsToString() const
     if (!enableOfflineStash_) {
         ss << ",no_offline_stash";
     }
+    if (isSecurityMode_) {
+        ss << ",security_mode";
+    }
     return ss.str();
 }
 
@@ -320,6 +323,7 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
         .enableFixupOwnerShip_ = false,
         .enableOfflineStash_ = true,
         .relativePath_ = relativePath,
+        .isSecurityMode_ = false,
     };
     return mountArgument;
 }

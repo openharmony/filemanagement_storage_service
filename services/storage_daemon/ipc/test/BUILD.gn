@@ -271,6 +271,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "ipc:libdbinder",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy"
   ]

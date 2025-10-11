@@ -24,6 +24,7 @@
 #include "parameters.h"
 #include "quota/quota_manager.h"
 #include "observer/appstate_observer.h"
+#include "os_account_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/mount_constant.h"
@@ -48,6 +49,7 @@ using namespace OHOS::StorageService;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
 constexpr int32_t ERROR_FILE_NOT_FOUND = 22;
+const std::string CONSTRAINT = "constraint.distributed.transmission.outgoing";
 
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
     systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
@@ -314,12 +316,21 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         hmdfsMntArgs.enableMergeView_ = false;
         srcPath = hmdfsMntArgs.GetFullCloud();
     }
-
     std::string dstPath = hmdfsMntArgs.GetFullDst();
     if (IsPathMounted(dstPath)) {
         LOGI("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
+    LOGI("CheckOsAccountConstraintEnabled start");
+    ErrCode err = AccountSA::OsAccountManager::CheckOsAccountConstraintEnabled(userId, CONSTRAINT,
+        hmdfsMntArgs.isSecurityMode_);
+    if (err != E_OK) {
+        hmdfsMntArgs.isSecurityMode_ = false;
+        LOGE("CheckOsAccountConstraintEnabled failed, %{public}d", err);
+        std::string extraData = "CheckOsAccountConstraintEnabled Failed kernelCode=" + to_string(err);
+        StorageRadar::ReportUserManager("HmdfsMount", userId, E_MOUNT_HMDFS, extraData);
+    }
+    LOGI("CheckOsAccountConstraintEnabled end, %{public}d", hmdfsMntArgs.isSecurityMode_);
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount(srcPath, dstPath, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
