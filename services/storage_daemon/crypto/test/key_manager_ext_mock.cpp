@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "crypto/key_manager_ext.h"
+#include "mock/key_manager_ext_mock.h"
 
 #include "storage_service_errno.h"
 
@@ -22,12 +22,18 @@ namespace StorageDaemon {
 
 int KeyManagerExt::GenerateUserKeys(uint32_t user, uint32_t flags)
 {
-    return E_OK;
+    if (KeyManagerExtMock::iKeyManagerExtMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerExtMock::iKeyManagerExtMock_->GenerateUserKeys(user, flags);
 }
 
 int KeyManagerExt::DeleteUserKeys(uint32_t user)
 {
-    return E_OK;
+    if (KeyManagerExtMock::iKeyManagerExtMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerExtMock::iKeyManagerExtMock_->DeleteUserKeys(user);
 }
 
 int KeyManagerExt::ActiveUserKey(uint32_t user,

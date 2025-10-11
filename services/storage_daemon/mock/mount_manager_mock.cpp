@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,9 @@ MountManager &MountManager::GetInstance()
 
 bool MountManager::CheckMountFileByUser(int32_t userId)
 {
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return false;
+    }
     return IMountManagerMoc::mountManagerMoc->CheckMountFileByUser(userId);
 }
 
@@ -56,4 +59,12 @@ int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
 int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 {
     return 0;
+}
+
+int32_t MountManager::PrepareAppdataDir(int32_t userId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->PrepareAppdataDir(userId);
 }
