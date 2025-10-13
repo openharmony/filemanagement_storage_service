@@ -107,7 +107,8 @@ public:
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
-    virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus) override;
+    virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus,
+        const std::map<int32_t, std::string> &bundleNameAndUid) override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
     virtual int32_t UnregisterUeceActivationCallback();

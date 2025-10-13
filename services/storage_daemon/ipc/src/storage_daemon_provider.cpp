@@ -791,9 +791,10 @@ int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     return StorageDaemon::GetInstance().UpdateUserPublicDirPolicy(userId);
 }
 
-int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storageStatus)
+int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storageStatus,
+    const std::map<int32_t, std::string> &bundleNameAndUid)
 {
-    QuotaManager::GetInstance().GetUidStorageStats(storageStatus);
+    QuotaManager::GetInstance().GetUidStorageStats(storageStatus, bundleNameAndUid);
     return E_OK;
 }
 

@@ -33,6 +33,7 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     std::string pkgName(reinterpret_cast<const char *>(data + pos), len);
     std::string type(reinterpret_cast<const char *>(data + pos + len), len);
     std::string metaData(reinterpret_cast<const char *>(data + pos + len + len), len);
+    bool isSchedule(static_cast<bool>(data + pos + len + len + sizeof(bool)));
     BundleStats bundleStats;
     StorageStats storageStats;
     std::vector<std::string> bundleName;
@@ -45,7 +46,7 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     incPkgFileSizes.push_back(metaData2);
     service.GetBundleStats(pkgName, bundleStats, 0, 0);
     service.GetUserStorageStats(storageStats);
-    service.GetUserStorageStats(userId, storageStats);
+    service.GetUserStorageStats(userId, storageStats, isSchedule);
     service.GetUserStorageStatsByType(userId, storageStats, type);
     service.GetCurrentBundleStats(bundleStats, 0);
     service.GetBundleStats(pkgName, userId, bundleStats, 0, 0);

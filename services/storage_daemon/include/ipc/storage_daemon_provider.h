@@ -125,7 +125,8 @@ public:
         const sptr<StorageManager::IUeceActivationCallback> &ueceCallback) override;
     virtual int32_t UnregisterUeceActivationCallback() override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
-    virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus) override;
+    virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus,
+        const std::map<int32_t, std::string> &bundleNameAndUid) override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level) override;
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
