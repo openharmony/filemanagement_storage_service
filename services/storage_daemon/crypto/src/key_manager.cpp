@@ -2052,24 +2052,15 @@ int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 
 bool KeyManager::IsUeceSupport()
 {
-    FILE *f = fopen(UECE_PATH, "r+");
-    if (f == nullptr) {
-        if (errno == ENOENT) {
-            LOGE("uece does not support !");
-        }
-        LOGE("open uece failed, errno : %{public}d", errno);
-        return false;
-    }
-    int fd = fileno(f);
+    int fd = open(UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("uece does not support !");
         }
         LOGE("open uece failed, errno : %{public}d", errno);
-        (void)fclose(f);
         return false;
     }
-    (void)fclose(f);
+    close(fd);
     LOGI("uece is support.");
     return true;
 }

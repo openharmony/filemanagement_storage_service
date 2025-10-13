@@ -70,6 +70,7 @@ public:
     void TearDown();
 
     void MockFopenSuccess();
+    void MockopenSuccess();
 
     static inline std::shared_ptr<FuncMock> funcMock_ = nullptr;
     static inline std::shared_ptr<CommonUtilsMock> commonUtilsMock_ = nullptr;
@@ -207,6 +208,11 @@ inline void FbexTest::MockFopenSuccess()
     EXPECT_CALL(*funcMock_, fclose(_)).WillOnce(Return(1));
 }
 
+inline void FbexTest::MockopenSuccess()
+{
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(fd_));
+    EXPECT_CALL(*funcMock_, close(_)).WillOnce(Return(1));
+}
 /**
  * @tc.name: Fbex_IsFBEXSupported_001
  * @tc.desc: Should returns false when LoadStringFromFile failed.
@@ -279,7 +285,7 @@ HWTEST_F(FbexTest, Fbex_IsFBEXSupported_004, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_InstallEL5KeyToKernel_001
- * @tc.desc: Should returns -errno and closes the file when fopen failed with an error other than ENOENT.
+ * @tc.desc: Should returns -errno and closes the file when open < 0 returns -EACCES.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -288,7 +294,7 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_001, TestSize.Level1)
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), -EACCES);
@@ -297,7 +303,7 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_001, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_InstallEL5KeyToKernel_002
- * @tc.desc: Should returns 0 and sets isSupport to false when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno and closes the file when open < 0 returns -EACCES.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -306,8 +312,7 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_002, TestSize.Level1)
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), 0);
@@ -316,7 +321,7 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_InstallEL5KeyToKernel_003
- * @tc.desc: Should returns -errno and closes the file when fileno failed with an error other than ENOENT.
+ * @tc.desc: Should returns 0 and sets isNeedEncryptClassE to false when ioctl returns ERROR_UECE_ALREADY_CREATED.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -325,17 +330,16 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_003, TestSize.Level1)
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
+    MockopenSuccess();
+    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(FILE_ENCRY_ERROR_UECE_ALREADY_CREATED));
 
-    EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), -EACCES);
-    EXPECT_TRUE(isSupport);
+    EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), 0);
+    EXPECT_FALSE(isNeedEncryptClassE);
 }
 
 /**
  * @tc.name: Fbex_InstallEL5KeyToKernel_004
- * @tc.desc: Should returns 0 and sets isNeedEncryptClassE to false when ioctl returns ERROR_UECE_ALREADY_CREATED.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -344,25 +348,7 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_004, TestSize.Level1)
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(FILE_ENCRY_ERROR_UECE_ALREADY_CREATED));
-
-    EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), 0);
-    EXPECT_FALSE(isNeedEncryptClassE);
-}
-
-/**
- * @tc.name: Fbex_InstallEL5KeyToKernel_005
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
-{
-    bool isSupport = true;
-    bool isNeedEncryptClassE = true;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(FILE_ENCRY_ERROR_UECE_ALREADY_CREATED + 1));
     errno = EACCES;
 
@@ -371,17 +357,17 @@ HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_InstallEL5KeyToKernel_006
+ * @tc.name: Fbex_InstallEL5KeyToKernel_005
  * @tc.desc: Should returns -errno when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_InstallEL5KeyToKernel_005, TestSize.Level1)
 {
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::InstallEL5KeyToKernel(1, 1, 1, isSupport, isNeedEncryptClassE), 0);
@@ -416,7 +402,7 @@ HWTEST_F(FbexTest, Fbex_InstallKeyToKernel_002, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::InstallKeyToKernel(1, 1, iv_, 1, authToken), -EACCES);
@@ -424,7 +410,7 @@ HWTEST_F(FbexTest, Fbex_InstallKeyToKernel_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_InstallKeyToKernel_003
- * @tc.desc: Should return -errno when fileno failed
+ * @tc.desc: Should return ret when ioctl failed
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -432,16 +418,15 @@ HWTEST_F(FbexTest, Fbex_InstallKeyToKernel_003, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
+    MockopenSuccess();
+    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
 
-    EXPECT_EQ(FBEX::InstallKeyToKernel(1, 1, iv_, 1, authToken), -EACCES);
+    EXPECT_EQ(FBEX::InstallKeyToKernel(1, 1, iv_, 1, authToken), -1);
 }
 
 /**
  * @tc.name: Fbex_InstallKeyToKernel_004
- * @tc.desc: Should return ret when ioctl failed
+ * @tc.desc: Should return ret when all operations succeed
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -449,23 +434,7 @@ HWTEST_F(FbexTest, Fbex_InstallKeyToKernel_004, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
-
-    EXPECT_EQ(FBEX::InstallKeyToKernel(1, 1, iv_, 1, authToken), -1);
-}
-
-/**
- * @tc.name: Fbex_InstallKeyToKernel_005
- * @tc.desc: Should return ret when all operations succeed
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_InstallKeyToKernel_005, TestSize.Level1)
-{
-    KeyBlob authToken;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::InstallKeyToKernel(1, 1, iv_, 1, authToken), 0);
@@ -561,22 +530,7 @@ HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_001, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_002, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::UninstallOrLockUserKeyToKernel(1, 1, iv_.data.get(), iv_.size, true), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_UninstallOrLockUserKeyToKernel_003
- * @tc.desc: Should return -errno when fileno failed
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_003, TestSize.Level1)
-{
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::UninstallOrLockUserKeyToKernel(1, 1, iv_.data.get(), iv_.size, true), -EACCES);
@@ -590,7 +544,7 @@ HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_003, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_004, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(FILE_ENCRY_ERROR_NOT_FOUND_UECE + 1));
 
     int ret = FBEX::UninstallOrLockUserKeyToKernel(1, 1, iv_.data.get(), iv_.size, true);
@@ -606,7 +560,7 @@ HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_004, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_005, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(FILE_ENCRY_ERROR_NOT_FOUND_UECE));
 
     EXPECT_EQ(FBEX::UninstallOrLockUserKeyToKernel(1, 1, iv_.data.get(), iv_.size, true), 0);
@@ -620,7 +574,7 @@ HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_005, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_006, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::UninstallOrLockUserKeyToKernel(1, 1, iv_.data.get(), iv_.size, true), 0);
@@ -634,7 +588,7 @@ HWTEST_F(FbexTest, Fbex_UninstallOrLockUserKeyToKernel_006, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_001, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::DeleteClassEPinCode(1, 1), 0);
@@ -648,7 +602,7 @@ HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_001, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_002, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::DeleteClassEPinCode(1, 1), -EACCES);
@@ -656,43 +610,13 @@ HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_DeleteClassEPinCode_003
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
 HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_003, TestSize.Level1)
 {
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
-
-    EXPECT_EQ(FBEX::DeleteClassEPinCode(1, 1), 0);
-}
-
-/**
- * @tc.name: Fbex_DeleteClassEPinCode_004
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_004, TestSize.Level1)
-{
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::DeleteClassEPinCode(1, 1), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_DeleteClassEPinCode_005
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_005, TestSize.Level1)
-{
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
@@ -700,14 +624,14 @@ HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_DeleteClassEPinCode_006
+ * @tc.name: Fbex_DeleteClassEPinCode_004
  * @tc.desc: Should returns 0 when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_DeleteClassEPinCode_004, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::DeleteClassEPinCode(1, 1), 0);
@@ -789,7 +713,7 @@ HWTEST_F(FbexTest, Fbex_ChangePinCodeClassE_004, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_001, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::UpdateClassEBackUp(1, 1), 0);
@@ -803,7 +727,7 @@ HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_001, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_002, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::UpdateClassEBackUp(1, 1), -EACCES);
@@ -811,43 +735,13 @@ HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_UpdateClassEBackUp_003
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
 HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_003, TestSize.Level1)
 {
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
-
-    EXPECT_EQ(FBEX::UpdateClassEBackUp(1, 1), 0);
-}
-
-/**
- * @tc.name: Fbex_UpdateClassEBackUp_004
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_004, TestSize.Level1)
-{
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::UpdateClassEBackUp(1, 1), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_UpdateClassEBackUp_005
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_005, TestSize.Level1)
-{
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
@@ -855,14 +749,14 @@ HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_UpdateClassEBackUp_006
+ * @tc.name: Fbex_UpdateClassEBackUp_004
  * @tc.desc: Should returns 0 when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_004, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::UpdateClassEBackUp(1, 1), 0);
@@ -876,7 +770,7 @@ HWTEST_F(FbexTest, Fbex_UpdateClassEBackUp_006, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_LockScreenToKernel_001, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::LockScreenToKernel(1), -EACCES);
@@ -884,42 +778,27 @@ HWTEST_F(FbexTest, Fbex_LockScreenToKernel_001, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_LockScreenToKernel_002
- * @tc.desc: Should returns -errno when fileno failed.
+ * @tc.desc: Should returns ret when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
 HWTEST_F(FbexTest, Fbex_LockScreenToKernel_002, TestSize.Level1)
 {
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::LockScreenToKernel(1), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_LockScreenToKernel_003
- * @tc.desc: Should returns ret when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_LockScreenToKernel_003, TestSize.Level1)
-{
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
 
     EXPECT_EQ(FBEX::LockScreenToKernel(1), -1);
 }
 
 /**
- * @tc.name: Fbex_LockScreenToKernel_004
+ * @tc.name: Fbex_LockScreenToKernel_003
  * @tc.desc: Should returns ret when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_LockScreenToKernel_004, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_LockScreenToKernel_003, TestSize.Level1)
 {
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::LockScreenToKernel(1), 0);
@@ -935,7 +814,7 @@ HWTEST_F(FbexTest, Fbex_GenerateAppkey_001, TestSize.Level1)
 {
     UserIdToFbeStr userIdToFbe;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::GenerateAppkey(userIdToFbe, 1, iv_.data, iv_.size), 0);
@@ -952,7 +831,7 @@ HWTEST_F(FbexTest, Fbex_GenerateAppkey_002, TestSize.Level1)
 {
     UserIdToFbeStr userIdToFbe;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::GenerateAppkey(userIdToFbe, 1, iv_.data, iv_.size), -EACCES);
@@ -960,7 +839,7 @@ HWTEST_F(FbexTest, Fbex_GenerateAppkey_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_GenerateAppkey_003
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -968,42 +847,7 @@ HWTEST_F(FbexTest, Fbex_GenerateAppkey_003, TestSize.Level1)
 {
     UserIdToFbeStr userIdToFbe;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
-
-    EXPECT_EQ(FBEX::GenerateAppkey(userIdToFbe, 1, iv_.data, iv_.size), 0);
-    EXPECT_EQ(iv_.data, nullptr);
-}
-
-/**
- * @tc.name: Fbex_GenerateAppkey_004
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_GenerateAppkey_004, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::GenerateAppkey(userIdToFbe, 1, iv_.data, iv_.size), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_GenerateAppkey_005
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_GenerateAppkey_005, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
@@ -1011,16 +855,16 @@ HWTEST_F(FbexTest, Fbex_GenerateAppkey_005, TestSize.Level1)
 }
 
 /**
- * @tc.name: Fbex_GenerateAppkey_006
+ * @tc.name: Fbex_GenerateAppkey_004
  * @tc.desc: Should returns 0 when when all operations succeed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_GenerateAppkey_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_GenerateAppkey_004, TestSize.Level1)
 {
     UserIdToFbeStr userIdToFbe;
 
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::GenerateAppkey(userIdToFbe, 1, iv_.data, iv_.size), 0);
@@ -1036,7 +880,7 @@ HWTEST_F(FbexTest, Fbex_LockUece_001, TestSize.Level1)
 {
     bool isFbeSupport = true;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), 0);
@@ -1053,7 +897,7 @@ HWTEST_F(FbexTest, Fbex_LockUece_002, TestSize.Level1)
 {
     bool isFbeSupport = true;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), -EACCES);
@@ -1062,7 +906,7 @@ HWTEST_F(FbexTest, Fbex_LockUece_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_LockUece_003
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns ret when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1070,59 +914,23 @@ HWTEST_F(FbexTest, Fbex_LockUece_003, TestSize.Level1)
 {
     bool isFbeSupport = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
-
-    EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), 0);
-    EXPECT_FALSE(isFbeSupport);
-}
-
-/**
- * @tc.name: Fbex_LockUece_004
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_LockUece_004, TestSize.Level1)
-{
-    bool isFbeSupport = true;
-
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), -EACCES);
-    EXPECT_TRUE(isFbeSupport);
-}
-
-/**
- * @tc.name: Fbex_LockUece_005
- * @tc.desc: Should returns ret when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_LockUece_005, TestSize.Level1)
-{
-    bool isFbeSupport = true;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
 
     EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), -1);
 }
 
 /**
- * @tc.name: Fbex_LockUecey_006
+ * @tc.name: Fbex_LockUecey_004
  * @tc.desc: Should returns ret when when all operations succeed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(FbexTest, Fbex_LockUecey_006, TestSize.Level1)
+HWTEST_F(FbexTest, Fbex_LockUecey_004, TestSize.Level1)
 {
     bool isFbeSupport = true;
 
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::LockUece(1, 1, isFbeSupport), 0);
@@ -1152,7 +960,7 @@ HWTEST_F(FbexTest, Fbex_UnlockScreenToKernel_002, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::UnlockScreenToKernel(1, 1, iv_.data.get(), iv_.size, authToken), -EACCES);
@@ -1160,7 +968,7 @@ HWTEST_F(FbexTest, Fbex_UnlockScreenToKernel_002, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_UnlockScreenToKernel_003
- * @tc.desc: Should returns -errno when fileno failed.
+ * @tc.desc: Should returns ret when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1168,16 +976,15 @@ HWTEST_F(FbexTest, Fbex_UnlockScreenToKernel_003, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
+    MockopenSuccess();
+    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
 
-    EXPECT_EQ(FBEX::UnlockScreenToKernel(1, 1, iv_.data.get(), iv_.size, authToken), -EACCES);
+    EXPECT_EQ(FBEX::UnlockScreenToKernel(1, 1, iv_.data.get(), iv_.size, authToken), -1);
 }
 
 /**
  * @tc.name: Fbex_UnlockScreenToKernel_004
- * @tc.desc: Should returns ret when ioctl failed.
+ * @tc.desc: Should returns ret when when all operations succeed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1185,23 +992,7 @@ HWTEST_F(FbexTest, Fbex_UnlockScreenToKernel_004, TestSize.Level1)
 {
     KeyBlob authToken;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
-
-    EXPECT_EQ(FBEX::UnlockScreenToKernel(1, 1, iv_.data.get(), iv_.size, authToken), -1);
-}
-
-/**
- * @tc.name: Fbex_UnlockScreenToKernel_005
- * @tc.desc: Should returns ret when when all operations succeed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_UnlockScreenToKernel_005, TestSize.Level1)
-{
-    KeyBlob authToken;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::UnlockScreenToKernel(1, 1, iv_.data.get(), iv_.size, authToken), 0);
@@ -1240,7 +1031,7 @@ HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_002, TestSize.Level1)
     KeyBlob authToken;
     bool isFbeSupport = true;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), 0);
@@ -1260,7 +1051,7 @@ HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_003, TestSize.Level1)
     KeyBlob authToken;
     bool isFbeSupport = true;
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_, authToken, isFbeSupport), -EACCES);
@@ -1269,7 +1060,7 @@ HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_003, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_ReadESecretToKernel_004
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1280,17 +1071,16 @@ HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_004, TestSize.Level1)
     KeyBlob authToken;
     bool isFbeSupport = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
+    MockopenSuccess();
+    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
+    errno = EACCES;
 
-    EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), 0);
-    EXPECT_FALSE(isFbeSupport);
+    EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), -EACCES);
 }
 
 /**
  * @tc.name: Fbex_ReadESecretToKernel_005
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
+ * @tc.desc: Should returns 0 when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1301,48 +1091,7 @@ HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_005, TestSize.Level1)
     KeyBlob authToken;
     bool isFbeSupport = true;
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), -EACCES);
-    EXPECT_TRUE(isFbeSupport);
-}
-
-/**
- * @tc.name: Fbex_ReadESecretToKernel_006
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_006, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-    iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
-    KeyBlob authToken;
-    bool isFbeSupport = true;
-
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_ReadESecretToKernel_007
- * @tc.desc: Should returns 0 when ioctl success.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_ReadESecretToKernel_007, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-    iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
-    KeyBlob authToken;
-    bool isFbeSupport = true;
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::ReadESecretToKernel(userIdToFbe, 1, iv_, authToken, isFbeSupport), 0);
@@ -1387,7 +1136,7 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_002, TestSize.Level1)
     UserIdToFbeStr userIdToFbe;
     iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = ENOENT;
 
     EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), 0);
@@ -1404,7 +1153,7 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_003, TestSize.Level1)
     UserIdToFbeStr userIdToFbe;
     iv_ = KeyBlob(GCM_NONCE_BYTES + AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
 
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS + 1, iv_.data.get(), iv_.size), -EACCES);
@@ -1412,7 +1161,7 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_003, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_WriteESecretToKernel_004
- * @tc.desc: Should returns 0 when fileno failed with ENOENT.
+ * @tc.desc: Should returns -errno when ioctl failed.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1421,16 +1170,16 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_004, TestSize.Level1)
     UserIdToFbeStr userIdToFbe;
     iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = ENOENT;
+    MockopenSuccess();
+    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
+    errno = EACCES;
 
-    EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), 0);
+    EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), -EACCES);
 }
 
 /**
  * @tc.name: Fbex_WriteESecretToKernel_005
- * @tc.desc: Should returns -errno when fileno failed with an error other than ENOENT.
+ * @tc.desc: Should returns -errno when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
@@ -1439,43 +1188,7 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_005, TestSize.Level1)
     UserIdToFbeStr userIdToFbe;
     iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
 
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_WriteESecretToKernel_006
- * @tc.desc: Should returns -errno when ioctl failed.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_006, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-    iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
-
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_WriteESecretToKernel_007
- * @tc.desc: Should returns -errno when ioctl success.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_007, TestSize.Level1)
-{
-    UserIdToFbeStr userIdToFbe;
-    iv_ = KeyBlob(AES_256_HASH_RANDOM_SIZE);
-
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::WriteESecretToKernel(userIdToFbe, UNLOCK_STATUS, iv_.data.get(), iv_.size), 0);
@@ -1489,7 +1202,7 @@ HWTEST_F(FbexTest, Fbex_WriteESecretToKernel_007, TestSize.Level1)
  */
 HWTEST_F(FbexTest, Fbex_GetStatus_001, TestSize.Level1)
 {
-    EXPECT_CALL(*funcMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*funcMock_, open(_, _)).WillOnce(Return(-1));
     errno = EACCES;
 
     EXPECT_EQ(FBEX::GetStatus(), -EACCES);
@@ -1497,28 +1210,13 @@ HWTEST_F(FbexTest, Fbex_GetStatus_001, TestSize.Level1)
 
 /**
  * @tc.name: Fbex_GetStatus_002
- * @tc.desc: Should returns -errno when fopen failed.
+ * @tc.desc: Should returns -errno when ioctl success.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
 HWTEST_F(FbexTest, Fbex_GetStatus_002, TestSize.Level1)
 {
-    MockFopenSuccess();
-    EXPECT_CALL(*funcMock_, fileno(_)).WillOnce(Return(-1));
-    errno = EACCES;
-
-    EXPECT_EQ(FBEX::GetStatus(), -EACCES);
-}
-
-/**
- * @tc.name: Fbex_GetStatus_003
- * @tc.desc: Should returns -errno when ioctl success.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(FbexTest, Fbex_GetStatus_003, TestSize.Level1)
-{
-    MockFopenSuccess();
+    MockopenSuccess();
     EXPECT_CALL(*funcMock_, ioctl(_, _)).WillOnce(Return(0));
 
     EXPECT_EQ(FBEX::GetStatus(), 0);
