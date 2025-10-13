@@ -54,6 +54,8 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/mock/user_manager_mock.cpp",
     "$ROOT_DIR/mock/mount_manager_mock.cpp",
     "$ROOT_DIR/mock/iam_client_mock.cpp",
+    "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
+    "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
   ]
 
   deps = [

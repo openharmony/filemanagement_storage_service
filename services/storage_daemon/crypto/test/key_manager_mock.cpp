@@ -269,7 +269,10 @@ int KeyManager::UnregisterUeceActivationCallback()
 
 int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
 } // namespace StorageDaemon
 } // namespace OHOS
