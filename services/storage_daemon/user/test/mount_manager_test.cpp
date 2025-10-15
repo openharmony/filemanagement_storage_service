@@ -992,11 +992,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountDisShareFile_
     EXPECT_EQ(ret, E_NON_EXIST);
  
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_OK);
