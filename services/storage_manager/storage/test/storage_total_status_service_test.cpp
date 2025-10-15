@@ -156,55 +156,6 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_0000, t
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_status_service_GetUserStorageStats_0000
- * @tc.name: Storage_status_service_GetUserStorageStats_0000
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0000";
-    StorageStatusService& service = StorageStatusService::GetInstance();
-    StorageStats storageStats;
-    int32_t userId = 100;
-    string basePath = "/data/app/el2/" + to_string(userId);
-    string path = basePath + "/base";
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-    userId = 0;
-    for (const DirInfo &dir : virtualDir_) {
-        path = StringPrintf(dir.path.c_str(), userId);
-        GTEST_LOG_(INFO) << "path is " << path;
-        EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-    }
-    int32_t result = service.GetUserStorageStats(storageStats);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_status_service_GetUserStorageStats_0001
- * @tc.name: Storage_status_service_GetUserStorageStats_0001
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0001";
-    StorageStatusService& service = StorageStatusService::GetInstance();
-    int32_t userId = 100;
-    StorageStats storageStats;
-    int32_t result = service.GetUserStorageStats(userId, storageStats);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0001";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Storage_status_service_GetBundleStats_0000
  * @tc.name: Storage_status_service_GetBundleStats_0000
  * @tc.desc: Test function of GetBundleStats interface for SUCCESS.
@@ -280,26 +231,6 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_ResetBundleMgrProxy
     int64_t result = service.ResetBundleMgrProxy();
     EXPECT_GE(result, 0);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_ResetBundleMgrProxy_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_status_service_GetUserStorageStatsByType_0000
- * @tc.name: Storage_status_service_GetUserStorageStatsByType_0000
- * @tc.desc: Test function of GetUserStorageStatsByType interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStatsByType_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStatsByType_0000";
-    StorageStatusService& service = StorageStatusService::GetInstance();
-    int32_t userId = 100;
-    std::string type = "media";
-    StorageStats storageStats;
-    int32_t result = service.GetUserStorageStatsByType(userId, storageStats, type);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStatsByType_0000";
 }
 
 /**

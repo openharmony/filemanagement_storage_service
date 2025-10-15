@@ -41,6 +41,7 @@ public:
     virtual std::string GetKeyDirByUserAndType(unsigned int user, KeyType type) = 0;
     virtual int GenerateUserKeyByType(unsigned int user, KeyType type,
         const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret) = 0;
+    virtual int NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey) = 0;
 
 public:
     static inline std::shared_ptr<IKeyManagerMock> iKeyManagerMock_ = nullptr;
@@ -63,6 +64,7 @@ public:
     MOCK_METHOD(std::string, GetKeyDirByUserAndType, (unsigned int, KeyType));
     MOCK_METHOD(int, GenerateUserKeyByType, (unsigned int, KeyType,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
+    MOCK_METHOD(int, NotifyUeceActivation, (uint32_t, int32_t, bool));
 };
 }
 }

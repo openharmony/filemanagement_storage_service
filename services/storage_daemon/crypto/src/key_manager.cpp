@@ -1218,7 +1218,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
 {
     if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
-        return 0;
+        return E_OK;
     }
     int ret = CheckNeedRestoreVersion(user, type);
     if (ret == -EFAULT || ret == -ENOENT) {
@@ -1230,7 +1230,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(user, type) && HashElxActived(user, type)) {
-        return 0;
+        return E_ACTIVE_REPEATED;
     }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
@@ -1259,7 +1259,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     userPinProtect[user] = !secret.empty();
     saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success, saveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
-    return 0;
+    return E_OK;
 }
 
 int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
@@ -2339,6 +2339,7 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
         LOGE("el5 activation callback invalid");
         return E_OK;
     }
+    resultCode = (resultCode == E_ACTIVE_REPEATED ? E_OK : resultCode);
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
