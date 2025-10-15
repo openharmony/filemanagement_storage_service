@@ -139,6 +139,8 @@ public:
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
+    int32_t CheckUserIdRange(int32_t userId);
+    int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
     std::mutex mutex_;
 private:
     StorageManager() = default;

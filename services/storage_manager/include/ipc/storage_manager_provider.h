@@ -164,6 +164,7 @@ public:
     int32_t UnregisterUeceActivationCallback() override;
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     int32_t DeleteUserDir(const std::string &path) override;
+    int32_t CheckUserIdRange(int32_t userId);
 
 private:
     StorageManagerProvider();

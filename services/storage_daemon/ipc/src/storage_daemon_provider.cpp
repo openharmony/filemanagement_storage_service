@@ -57,6 +57,9 @@ constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
+constexpr const char *PATH_INVALID_FLAG1 = "../";
+constexpr const char *PATH_INVALID_FLAG2 = "/..";
+constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
@@ -66,6 +69,33 @@ std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserS
     }
     RadarStatisticInfo radarInfo = {0};
     return opStatistics_.insert(make_pair(userId, radarInfo)).first;
+}
+
+int32_t StorageDaemonProvider::CheckUserIdRange(int32_t userId)
+{
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
+        LOGE("StorageDaemonProvider: userId:%{public}d is out of range", userId);
+        return E_USERID_RANGE;
+    }
+    return E_OK;
+}
+
+bool StorageDaemonProvider::IsFilePathInvalid(const std::string &filePath)
+{
+    size_t pos = filePath.find(PATH_INVALID_FLAG1);
+    while (pos != std::string::npos) {
+        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
+            LOGE("Relative path is not allowed, path contain ../");
+            return true;
+        }
+        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    }
+    pos = filePath.rfind(PATH_INVALID_FLAG2);
+    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
+        LOGE("Relative path is not allowed, path tail is /..");
+        return true;
+    }
+    return false;
 }
 
 void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInfoType type)
@@ -320,6 +350,9 @@ int32_t StorageDaemonProvider::SetVolumeDescription(const std::string &volId, co
 int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
+    if (IsFilePathInvalid(diskPath)) {
+        return E_PARAMS_INVALID;
+    }
     LOGI("StorageDaemon::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
     isInUse = true;
     return VolumeManager::Instance().QueryUsbIsInUse(diskPath, isInUse);
@@ -348,6 +381,11 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::PrepareUserDirs userId %{public}d out of range", userId);
+        return err;
+    }
     isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
@@ -358,6 +396,11 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
 
 int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    int32_t error = CheckUserIdRange(userId);
+    if (error != E_OK) {
+        LOGE("StorageDaemon::PrepareUserDirs userId %{public}d out of range", userId);
+        return error;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
@@ -367,6 +410,11 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    int32_t error = CheckUserIdRange(userId);
+    if (error != E_OK) {
+        LOGE("StorageDaemon::DestroyUserDirs userId %{public}d out of range", userId);
+        return error;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
@@ -377,6 +425,9 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
 {
     LOGI("SetDirEncryptionPolicy begin.");
+    if (IsFilePathInvalid(dirPath)) {
+        return E_PARAMS_INVALID;
+    }
     int timerId = StorageXCollie::SetTimer("storage:SetDirEncryptionPolicy", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
     StorageXCollie::CancelTimer(timerId);
@@ -435,6 +486,11 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             uint32_t userId,
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UpdateUseAuthWithRecoveryKey userId %{public}d out of range", userId);
+        return err;
+    }
     return StorageDaemon::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
                                                                      plainText);
 }
@@ -443,6 +499,11 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret)
 {
+    int32_t error = CheckUserIdRange(userId);
+    if (error != E_OK) {
+        LOGE("StorageDaemon::ActiveUserKey userId %{public}d out of range", userId);
+        return error;
+    }
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -462,6 +523,11 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::InactiveUserKey userId %{public}d out of range", userId);
+        return err;
+    }
     int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", INACTIVE_USER_KEY_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
@@ -473,6 +539,11 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UpdateKeyContext userId %{public}d out of range", userId);
+        return E_USERID_RANGE;
+    }
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
@@ -497,6 +568,11 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 
 int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::LockUserScreen userId %{public}d out of range", userId);
+        return err;
+    }
     int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
@@ -533,6 +609,11 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::GetLockScreenStatus userId %{public}d out of range", userId);
+        return err;
+    }
     lockScreenStatus = false;
     int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -543,6 +624,11 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
 
 int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::GenerateAppkey userId %{public}d out of range", userId);
+        return err;
+    }
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = StorageDaemon::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageXCollie::CancelTimer(timerId);
@@ -551,6 +637,11 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
 
 int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::DeleteAppkey userId %{public}d out of range", userId);
+        return err;
+    }
     int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().DeleteAppkey(userId, keyId);
@@ -563,6 +654,11 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::CreateRecoverKey userId %{public}d out of range", userId);
+        return err;
+    }
     return StorageDaemon::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 }
 
@@ -666,6 +762,14 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &deviceId)
 {
     LOGI("StorageDaemon::MountDfsDocs start.");
+    if (IsFilePathInvalid(relativePath)) {
+        return E_PARAMS_INVALID;
+    }
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemonProvider::MountDfsDocs userId %{public}d out of range", userId);
+        return err;
+    }
     return MountManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
@@ -675,6 +779,14 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
                                              const std::string &deviceId)
 {
     LOGI("StorageDaemon::UMountDfsDocs start.");
+    if (IsFilePathInvalid(relativePath)) {
+        return E_PARAMS_INVALID;
+    }
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemonProvider::UMountDfsDocs userId %{public}d out of range", userId);
+        return err;
+    }
     return MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
@@ -690,6 +802,11 @@ int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEnc
 
 int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::GetUserNeedActiveStatus userId %{public}d out of range", userId);
+        return err;
+    }
     needActive = false;
     int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -700,6 +817,11 @@ int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &ne
 
 int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::MountMediaFuse userId %{public}d out of range", userId);
+        return err;
+    }
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::MountMediaFuse start.");
     devFd = -1;
@@ -710,6 +832,11 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 
 int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UMountMediaFuse userId %{public}d out of range", userId);
+        return err;
+    }
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::UMountMediaFuse start.");
     return MountManager::GetInstance().UMountMediaFuse(userId);
@@ -719,6 +846,15 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 
 int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
+        return err;
+    }
     LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
     return MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
@@ -726,6 +862,15 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
 
 int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
+        return err;
+    }
     LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
     return MountManager::GetInstance().UMountFileMgrFuse(userId, path);
 }
@@ -735,6 +880,9 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               std::vector<std::string> &outputList,
                                               bool &isOccupy)
 {
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
     isOccupy = false;
     return StorageDaemon::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
 }
@@ -743,6 +891,11 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
                                                           uint32_t rkType,
                                                           const std::vector<uint8_t> &key)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::ResetSecretWithRecoveryKey userId %{public}d out of range", userId);
+        return err;
+    }
     return StorageDaemon::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
@@ -771,16 +924,39 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
 
 int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
+    if (userId <= 0) {
+        LOGE("mount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    for (const auto &item : shareFiles) {
+        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
+            LOGE("mount share file, shareFiles is invalid.");
+            return E_PARAMS_INVALID;
+        }
+    }
     return MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
 }
 
 int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
+    if (userId <= 0) {
+        LOGE("umount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    if (networkId.find("..") != std::string::npos) {
+        LOGE("umount share file, networkId is invalid.");
+        return E_PARAMS_INVALID;
+    }
     return MountManager::GetInstance().UMountDisShareFile(userId, networkId);
 }
 
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::InactiveUserPublicDirKey userId %{public}d out of range", userId);
+        return err;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     return StorageDaemon::GetInstance().InactiveUserPublicDirKey(userId);
 }
@@ -801,6 +977,10 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storag
 int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
     const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
+    if (ueceCallback == nullptr) {
+        LOGE("callback is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
     return StorageDaemon::GetInstance().RegisterUeceActivationCallback(ueceCallback);
 }
 
@@ -811,11 +991,17 @@ int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 
 int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
     return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
 }
 
 int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
 {
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
     return UserManager::GetInstance().DeleteUserDir(path);
 }
 

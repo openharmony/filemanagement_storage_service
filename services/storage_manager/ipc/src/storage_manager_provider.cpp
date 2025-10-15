@@ -116,6 +116,15 @@ bool CheckClientPermissionForShareFile()
     return true;
 }
 
+int32_t StorageManagerProvider::CheckUserIdRange(int32_t userId)
+{
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
+        LOGE("StorageManagerProvider: userId:%{public}d is out of range", userId);
+        return E_USERID_RANGE;
+    }
+    return E_OK;
+}
+
 void StorageManagerProvider::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
@@ -629,6 +638,9 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
                                                const std::string &bundleDataDirPath,
                                                int32_t limitSizeMb)
 {
+    if (IsFilePathInvalid(bundleDataDirPath)) {
+        return E_PARAMS_INVALID;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -661,6 +673,15 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
                                              const std::string &networkId,
                                              const std::string &deviceId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::MountDfsDocs userId %{public}d out of range", userId);
+        return err;
+    }
+
+    if (IsFilePathInvalid(relativePath)) {
+        return E_PARAMS_INVALID;
+    }
     // Only for dfs create device dir and bind mount from DFS Docs.
     if (IPCSkeleton::GetCallingUid() != DFS_UID) {
         LOGE("HandleMountDfsDocs permissionCheck error, calling uid now is %{public}d, should be DFS_UID: %{public}d",
@@ -675,6 +696,15 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
                                               const std::string &networkId,
                                               const std::string &deviceId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UMountDfsDocs userId %{public}d out of range", userId);
+        return err;
+    }
+
+    if (IsFilePathInvalid(relativePath)) {
+        return E_PARAMS_INVALID;
+    }
     // Only for dfs create device dir and bind mount from DFS Docs.
     if (IPCSkeleton::GetCallingUid() != DFS_UID) {
         LOGE("HandleUMountDfsDocs permissionCheck error, calling uid now is %{public}d, should be DFS_UID: %{public}d",
@@ -705,6 +735,11 @@ int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const 
 
 int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::MountMediaFuse userId %{public}d out of range", userId);
+        return err;
+    }
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageManagerProvider::MountMediaFuse start.");
 
@@ -733,6 +768,11 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 
 int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UMountMediaFuse userId %{public}d out of range", userId);
+        return err;
+    }
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageManagerStub::HandleUMountMediaFuse start.");
 
@@ -760,6 +800,12 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
 
 int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
+        return err;
+    }
+
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -773,6 +819,12 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
 
 int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
+        return err;
+    }
+    
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
