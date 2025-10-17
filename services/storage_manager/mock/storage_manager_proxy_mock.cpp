@@ -404,5 +404,10 @@ int32_t StorageManagerProxy::DeleteUserDir(const std::string &path)
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

@@ -54,7 +54,7 @@ namespace StorageManager {
 void StorageManager::ResetUserEventRecord(int32_t userId)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    AccountSubscriber::ResetUserEventRecord(userId);
+    AccountSubscriber::GetInstance().ResetUserEventRecord(userId);
 #endif
 }
 
@@ -880,6 +880,16 @@ int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivatio
 int32_t StorageManager::UnregisterUeceActivationCallback()
 {
     return FileSystemCrypto::GetInstance().UnregisterUeceActivationCallback();
+}
+
+void StorageManager::NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("NotifyUserChangedEvent UserId: %{public}u, type: %{public}d", userId, eventType);
+    AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, eventType);
+    return;
+#endif
+    LOGI("NotifyUserChangedEvent Not support !");
 }
 }
 }

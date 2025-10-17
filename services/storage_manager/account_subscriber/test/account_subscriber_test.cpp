@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2022 Huawei Device Co., Ltd.
+* Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -34,8 +34,6 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-public:
-    static inline shared_ptr<AccountSubscriber> accountSubscriberPtr_ = nullptr;
 };
 
 void AccountSubscriberTest::SetUpTestCase()
@@ -48,33 +46,9 @@ void AccountSubscriberTest::TearDownTestCase()
     GTEST_LOG_(INFO) << "teardown";
 }
 
-void AccountSubscriberTest::SetUp()
-{
-    accountSubscriberPtr_ = make_shared<AccountSubscriber>();
-}
+void AccountSubscriberTest::SetUp() {}
 
-void AccountSubscriberTest::TearDown()
-{
-    accountSubscriberPtr_ = nullptr;
-}
-
-/**
-* @tc.number: SUB_STORAGE_Account_Subscriber_Subscriber_0000
-* @tc.name: Account_Subscriber_Subscriber_0000
-* @tc.desc: Test function of Subscriber
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: SR000GGUPF
- */
-HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_test_0000, TestSize.Level0)
-{
-    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000-begin";
-    AccountSubscriber::Subscriber();
-    AccountSubscriber::Subscriber();
-    ASSERT_TRUE(true);
-    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000 end";
-}
+void AccountSubscriberTest::TearDown() {}
 
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_ResetUserEventRecord_0000
@@ -90,13 +64,13 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_ResetUserEventRecord_test_000
     GTEST_LOG_(INFO) << "Account_Subscriber_ResetUserEventRecord_0000-begin";
 
     int32_t userId = -1;
-    accountSubscriberPtr_->ResetUserEventRecord(userId);
+    AccountSubscriber::GetInstance().ResetUserEventRecord(userId);
 
     userId = StorageService::MAX_USER_ID + 1;
-    accountSubscriberPtr_->ResetUserEventRecord(userId);
+    AccountSubscriber::GetInstance().ResetUserEventRecord(userId);
 
     userId = 1;
-    accountSubscriberPtr_->ResetUserEventRecord(userId);
+    AccountSubscriber::GetInstance().ResetUserEventRecord(userId);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_ResetUserEventRecord_0000 end";
 }
@@ -113,21 +87,14 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_ResetUserEventRecord_test_000
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnReceiveEvent_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_OnReceiveEvent_0000-begin";
-    EventFwk::CommonEventData testData;
-    AAFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
-    testData.SetWant(want);
-    accountSubscriberPtr_->OnReceiveEvent(testData);
+    StorageService::UserChangedEventType enumType = StorageService::UserChangedEventType::EVENT_USER_UNLOCKED;
+    uint32_t userId = 999;
+    AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, enumType);
 
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
-    testData.SetWant(want);
-    accountSubscriberPtr_->OnReceiveEvent(testData);
+    enumType = StorageService::UserChangedEventType::EVENT_USER_SWITCHED;
+    AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, enumType);
 
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
-    testData.SetWant(want);
-    accountSubscriberPtr_->OnReceiveEvent(testData);
-
-    ASSERT_TRUE(true);
+    EXPECT_EQ(enumType, StorageService::UserChangedEventType::EVENT_USER_SWITCHED);
     GTEST_LOG_(INFO) << "Account_Subscriber_OnReceiveEvent_0000 end";
 }
 
@@ -145,11 +112,11 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_GetUserStatus_test_0000, Test
     GTEST_LOG_(INFO) << "Account_Subscriber_GetUserStatus_0000-begin";
 
     int32_t userId = 102;
-    uint32_t ret = accountSubscriberPtr_->GetUserStatus(userId);
+    uint32_t ret = AccountSubscriber::GetInstance().GetUserStatus(userId);
     EXPECT_TRUE(ret == 0);
 
-    accountSubscriberPtr_->userRecord_[userId] = 1;
-    ret = accountSubscriberPtr_->GetUserStatus(userId);
+    AccountSubscriber::GetInstance().userRecord_[userId] = 1;
+    ret = AccountSubscriber::GetInstance().GetUserStatus(userId);
     EXPECT_TRUE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_GetUserStatus_0000 end";
 }
@@ -167,7 +134,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0000-begin";
     uint32_t userStatus = 0;
-    uint32_t ret = accountSubscriberPtr_->HandleUserUnlockEvent(userStatus);
+    uint32_t ret = AccountSubscriber::GetInstance().HandleUserUnlockEvent(userStatus);
     EXPECT_TRUE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0000 end";
 }
@@ -185,7 +152,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0001-begin";
     uint32_t userStatus = 3;
-    uint32_t ret = accountSubscriberPtr_->HandleUserUnlockEvent(userStatus);
+    uint32_t ret = AccountSubscriber::GetInstance().HandleUserUnlockEvent(userStatus);
     EXPECT_TRUE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0001 end";
 }
@@ -203,7 +170,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserUnlockEvent_test_00
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0002-begin";
     uint32_t userStatus = 2;
-    uint32_t ret = accountSubscriberPtr_->HandleUserUnlockEvent(userStatus);
+    uint32_t ret = AccountSubscriber::GetInstance().HandleUserUnlockEvent(userStatus);
     EXPECT_FALSE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserUnlockEvent_0002 end";
 }
@@ -221,7 +188,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserSwitchedEvent_test_0000-begin";
     uint32_t userStatus = 0;
-    uint32_t ret = accountSubscriberPtr_->HandleUserSwitchedEvent(userStatus);
+    uint32_t ret = AccountSubscriber::GetInstance().HandleUserSwitchedEvent(userStatus);
     EXPECT_FALSE(ret == 1);
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserSwitchedEvent_test_0000 end";
 }
@@ -239,7 +206,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserSwitchedEvent_test_0001-begin";
     uint32_t userStatus = 0;
-    uint32_t ret = accountSubscriberPtr_->HandleUserSwitchedEvent(userStatus);
+    uint32_t ret = AccountSubscriber::GetInstance().HandleUserSwitchedEvent(userStatus);
     EXPECT_TRUE(ret == 2);
     GTEST_LOG_(INFO) << "Account_Subscriber_HandleUserSwitchedEvent_test_0001 end";
 }
@@ -256,9 +223,9 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_GetSystemAbility_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_GetSystemAbility_test_0000-begin";
-    accountSubscriberPtr_->GetSystemAbility();
+    AccountSubscriber::GetInstance().GetSystemAbility();
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_GetSystemAbility_test_0000 end";
 }
-}
-}
+} // namespace StorageManager
+} // namespace OHOS
