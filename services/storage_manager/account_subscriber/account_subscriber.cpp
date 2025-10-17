@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,22 +31,12 @@ static std::mutex mediaMutex_;
 static std::mutex userRecordMutex_;
 static const int32_t SLEEP_TIME_INTERVAL_1MS = 1000;
 
-AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
-    : EventFwk::CommonEventSubscriber(subscriberInfo)
-{}
-
-std::shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
-void AccountSubscriber::Subscriber(void)
+AccountSubscriber &AccountSubscriber::GetInstance()
 {
-    if (accountSubscriber_ == nullptr) {
-        EventFwk::MatchingSkills matchingSkills;
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
-        EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-        accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
-        EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
-    }
+    static AccountSubscriber instance;
+    return instance;
 }
+
 
 static void SendSecondMountedEvent(int32_t userId)
 {
@@ -79,39 +69,32 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
         return;
     }
     LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
-    if (accountSubscriber_ == nullptr) {
-        LOGE("accountSubscriber_ is nullptr");
-        return;
-    }
 
     std::unique_lock<std::mutex> userLock(userRecordMutex_);
-    if (accountSubscriber_->userRecord_.find(userId) != accountSubscriber_->userRecord_.end()) {
-        accountSubscriber_->userRecord_.erase(userId);
+    if (userRecord_.find(userId) != userRecord_.end()) {
+        userRecord_.erase(userId);
     }
 
     std::unique_lock<std::mutex> mediaLock(mediaMutex_);
-    if (accountSubscriber_->mediaShareMap_.find(userId) != accountSubscriber_->mediaShareMap_.end()) {
-        accountSubscriber_->mediaShareMap_.erase(userId);
+    if (mediaShareMap_.find(userId) != mediaShareMap_.end()) {
+        mediaShareMap_.erase(userId);
     }
 }
 
-void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
+void AccountSubscriber::NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType)
 {
-    const AAFwk::Want& want = eventData.GetWant();
-    std::string action = want.GetAction();
-    int32_t userId = eventData.GetCode();
     std::unique_lock<std::mutex> lock(userRecordMutex_);
     /* get user status */
     uint32_t status = GetUserStatus(userId);
     /* update status */
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+    if (eventType == StorageService::UserChangedEventType::EVENT_USER_UNLOCKED) {
         status = HandleUserUnlockEvent(status);
-    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+    } else if (eventType == StorageService::UserChangedEventType::EVENT_USER_SWITCHED) {
         status = HandleUserSwitchedEvent(status);
     }
     userId_ = userId;
     userRecord_[userId] = status;
-    LOGI("action:%{public}s, userId:%{public}d status %{public}d", action.c_str(), userId, status);
+    LOGI("eventType:%{public}u, userId:%{public}d status:%{public}d", eventType, userId, status);
     if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
         return;
     }

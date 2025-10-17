@@ -131,6 +131,7 @@ public:
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
+    int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
