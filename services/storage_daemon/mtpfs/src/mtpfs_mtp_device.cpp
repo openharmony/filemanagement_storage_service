@@ -411,7 +411,7 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
         CheckDirChildren(dir);
     }
 
-    if (!dir->IsFetched()) {
+    if (!dir->IsFetched() || dir->IsEmpty()) {
         std::unique_lock<std::mutex> lock(deviceMutex_);
         FetchDirContent(dir);
     }
