@@ -206,118 +206,6 @@ bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool NotifyVolumeMountedFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_MOUNTED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyVolumeStateChangedFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_STATE_CHANGED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyDiskCreatedFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_CREATED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GetAllDisksFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_ALL_DISKS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GetVolumeByUuidFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_UUID);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GetVolumeByIdFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_VOLUME_BY_ID);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool SetVolumeDescriptionFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_SET_VOLUME_DESCRIPTION);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool QueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_QUERY_USB_IS_IN_USE);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool GetDiskByIdFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_DISK_BY_ID);
@@ -581,18 +469,10 @@ void FuzzerTest1(const uint8_t *data, size_t size)
     OHOS::StorageManager::CreateShareFileFuzzTest(data, size);
     OHOS::StorageManager::DeleteShareFileFuzzTest(data, size);
     OHOS::StorageManager::NotifyVolumeCreatedFuzzTest(data, size);
-    OHOS::StorageManager::NotifyVolumeMountedFuzzTest(data, size);
-    OHOS::StorageManager::NotifyVolumeStateChangedFuzzTest(data, size);
 }
 
 void FuzzerTest2(const uint8_t *data, size_t size)
 {
-    OHOS::StorageManager::NotifyDiskCreatedFuzzTest(data, size);
-    OHOS::StorageManager::GetAllDisksFuzzTest(data, size);
-    OHOS::StorageManager::GetVolumeByUuidFuzzTest(data, size);
-    OHOS::StorageManager::GetVolumeByIdFuzzTest(data, size);
-    OHOS::StorageManager::SetVolumeDescriptionFuzzTest(data, size);
-    OHOS::StorageManager::QueryUsbIsInUseFuzzTest(data, size);
     OHOS::StorageManager::GetDiskByIdFuzzTest(data, size);
     OHOS::StorageManager::UpdateUseAuthWithRecoveryKeyFuzzTest(data, size);
     OHOS::StorageManager::GetFileEncryptStatusFuzzTest(data, size);
