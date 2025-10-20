@@ -340,35 +340,6 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_002, TestSiz
 }
 
 /**
- * @tc.name: Storage_Service_VolumeManagerTest_Mount_003
- * @tc.desc: Verify the Mount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_003 start";
-
-    std::string volId = "mount_test";
-    uint32_t flags = 1;
-    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
-    volumeInfoMock->id_ = "vol-1-1";
-    volumeInfoMock->type_ = EXTERNAL;
-    volumeInfoMock->mountState_ = MOUNTED;
-    volumeInfoMock->mountFlags_ = 0;
-    volumeInfoMock->userIdOwner_ = 100;
-    volumeInfoMock->isUserdata_ = false;
-
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
-    EXPECT_CALL(*volumeInfoMock, DoTryToCheck()).WillOnce(Return(0));
-    EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), 0);
-
-    EXPECT_CALL(*volumeInfoMock, DoTryToCheck()).WillOnce(Return(E_VOL_NEED_FIX));
-    EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), 0);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_003 end";
-}
-
-/**
  * @tc.name: Storage_Service_VolumeManagerTest_UMount_001
  * @tc.desc: Verify the UMount function.
  * @tc.type: FUNC

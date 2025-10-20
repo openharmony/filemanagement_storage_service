@@ -135,13 +135,6 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
         return E_NON_EXIST;
 #endif
     }
-    LOGI("TryToCheck in VolumeManager::Mount");
-    int32_t checkRet = info->TryToCheck();
-    if (checkRet == E_VOL_NEED_FIX) {
-        LOGI("external volume maybe damage");
-        StorageManagerClient client;
-        checkRet = client.NotifyVolumeDamaged(info);
-    }
     LOGI("Before Mount in VolumeManager::Mount");
     int32_t err = info->Mount(flags);
     if (err != E_OK) {
