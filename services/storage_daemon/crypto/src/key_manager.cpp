@@ -2031,7 +2031,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, "EL4", "");
         return ret;
     }
-    if (IsUeceSupport()) {
+    if (IsUeceSupport() && IsEncryption()) {
         ret = UpdateClassEBackUpFix(userId);
         if (ret != 0) {
             LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
