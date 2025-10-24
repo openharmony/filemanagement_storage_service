@@ -206,118 +206,6 @@ bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool GetDiskByIdFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_DISK_BY_ID);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool UpdateUseAuthWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UPDATE_USE_AUTH_WITH_RECOVERY_KEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GetFileEncryptStatusFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_FILE_ENCRYPT_STATUS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_LOCK_SCREEN_STATUS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GENERATE_APPKEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool CreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_CREATE_RECOVER_KEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool SetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_SET_RECOVER_KEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool ResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_RESET_SECRET_WITH_RECOVERY_KEY);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool GetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_GET_USER_STORAGE_STATS_BY_TYPE);
@@ -473,14 +361,6 @@ void FuzzerTest1(const uint8_t *data, size_t size)
 
 void FuzzerTest2(const uint8_t *data, size_t size)
 {
-    OHOS::StorageManager::GetDiskByIdFuzzTest(data, size);
-    OHOS::StorageManager::UpdateUseAuthWithRecoveryKeyFuzzTest(data, size);
-    OHOS::StorageManager::GetFileEncryptStatusFuzzTest(data, size);
-    OHOS::StorageManager::GetLockScreenStatusFuzzTest(data, size);
-    OHOS::StorageManager::GenerateAppkeyFuzzTest(data, size);
-    OHOS::StorageManager::CreateRecoverKeyFuzzTest(data, size);
-    OHOS::StorageManager::SetRecoverKeyFuzzTest(data, size);
-    OHOS::StorageManager::ResetSecretWithRecoveryKeyFuzzTest(data, size);
     OHOS::StorageManager::GetUserStorageStatsByTypeFuzzTest(data, size);
     OHOS::StorageManager::MountDfsDocsFuzzTest(data, size);
     OHOS::StorageManager::UMountDfsDocsFuzzTest(data, size);
