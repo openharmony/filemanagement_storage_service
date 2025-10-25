@@ -16,6 +16,6 @@
 #ifndef KEYCONTROL_FUZZER_H
 #define KEYCONTROL_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "keycontrol_fuzzer"
+#define FUZZ_PROJECT_NAME "keycontrolunlink_fuzzer"
 
-#endif
+#endif
