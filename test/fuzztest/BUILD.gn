@@ -99,11 +99,23 @@ group("filesystem_crypto_fuzztest") {
   ]
 }
 
+group("keycontrol_fuzztest") {
+  testonly = true
+  deps = [
+    "keycontroladdkey_fuzzer:fuzztest",
+    "keycontroladdkeyex_fuzzer:fuzztest",
+    "keycontrolgetkeyringid_fuzzer:fuzztest",
+    "keycontrolsearch_fuzzer:fuzztest",
+    "keycontrolunlink_fuzzer:fuzztest",
+  ]
+}
+
 group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
     ":filesystem_crypto_fuzztest",
+    ":keycontrol_fuzztest",
     ":storage_daemon_provider_fuzztest",
     ":storage_manager_provider_fuzztest",
     "bundlestats_fuzzer:fuzztest",

@@ -16,7 +16,7 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("StorageManagerProviderStopUserFuzzTest") {
-  module_out_path = "storage_service/storage_service"
+  module_out_path = "storage_service/storage_service/storage_manager"
   fuzz_config_file =
       "${storage_service_path}/test/fuzztest/storagemanagerproviderstopuser_fuzzer"
   include_dirs = [
@@ -40,7 +40,6 @@ ohos_fuzztest("StorageManagerProviderStopUserFuzzTest") {
     "private=public",
   ]
   deps = [
-    "${storage_daemon_path}:storage_daemon_header",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
