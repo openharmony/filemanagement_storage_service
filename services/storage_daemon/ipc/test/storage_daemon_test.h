@@ -25,6 +25,7 @@
 #include "key_manager_mock.h"
 #include "mount_manager_mock.h"
 #include "user_manager_mock.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -54,6 +55,10 @@ public:
     std::shared_ptr<MountManagerMoc> mountManagerMock_ = nullptr;
     std::shared_ptr<IamClientMoc> iamClientMock_ = nullptr;
     std::shared_ptr<StorageDaemon> storageDaemon_ = nullptr;
+
+    static inline int g_setupFileSharingDir = 0;
+    static inline bool g_saveStringToFile = true;
+    static inline bool g_saveStringToFileSync = true;
 };
 } // Test
 } // STORAGE_DAEMON

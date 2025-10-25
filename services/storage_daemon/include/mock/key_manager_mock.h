@@ -42,6 +42,16 @@ public:
     virtual int GenerateUserKeyByType(unsigned int user, KeyType type,
         const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret) = 0;
     virtual int NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey) = 0;
+    virtual int32_t InActiveUserKey(unsigned int user) = 0;
+    virtual int32_t LockUserScreen(uint32_t user) = 0;
+    virtual int32_t UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
+        const std::vector<uint8_t> &secret) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet) = 0;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) = 0;
+    virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey) = 0;
+    virtual int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount) = 0;
+    virtual int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+        StorageService::EncryptionLevel level) = 0;
 
 public:
     static inline std::shared_ptr<IKeyManagerMock> iKeyManagerMock_ = nullptr;
@@ -65,6 +75,14 @@ public:
     MOCK_METHOD(int, GenerateUserKeyByType, (unsigned int, KeyType,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD(int, NotifyUeceActivation, (uint32_t, int32_t, bool));
+    MOCK_METHOD(int32_t, InActiveUserKey, (unsigned int));
+    MOCK_METHOD(int32_t, LockUserScreen, (uint32_t));
+    MOCK_METHOD(int32_t, UnlockUserScreen, (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
+    MOCK_METHOD(int32_t, GenerateAppkey, (uint32_t, uint32_t, std::string &, bool));
+    MOCK_METHOD(int32_t, DeleteAppkey, (uint32_t, const std::string));
+    MOCK_METHOD(int32_t, UpdateKeyContext, (uint32_t, bool));
+    MOCK_METHOD(int, GetFileEncryptStatus, (uint32_t, bool &, bool));
+    MOCK_METHOD(int32_t, SetDirEncryptionPolicy, (uint32_t, const std::string &, StorageService::EncryptionLevel));
 };
 }
 }

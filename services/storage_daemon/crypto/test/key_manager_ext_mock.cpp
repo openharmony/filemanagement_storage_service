@@ -40,12 +40,18 @@ int KeyManagerExt::ActiveUserKey(uint32_t user,
                                  const std::vector<uint8_t> &token,
                                  const std::vector<uint8_t> &secret)
 {
-    return E_OK;
+    if (KeyManagerExtMock::iKeyManagerExtMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerExtMock::iKeyManagerExtMock_->ActiveUserKey(user, token, secret);
 }
 
 int KeyManagerExt::InActiveUserKey(uint32_t user)
 {
-    return E_OK;
+    if (KeyManagerExtMock::iKeyManagerExtMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerExtMock::iKeyManagerExtMock_->InActiveUserKey(user);
 }
 
 int KeyManagerExt::SetRecoverKey(uint32_t user, uint32_t keyType, const KeyBlob& ivBlob)
@@ -55,7 +61,10 @@ int KeyManagerExt::SetRecoverKey(uint32_t user, uint32_t keyType, const KeyBlob&
 
 int KeyManagerExt::UpdateUserPublicDirPolicy(uint32_t user)
 {
-    return E_OK;
+    if (KeyManagerExtMock::iKeyManagerExtMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerExtMock::iKeyManagerExtMock_->UpdateUserPublicDirPolicy(user);
 }
 
 KeyManagerExt::KeyManagerExt() {}

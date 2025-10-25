@@ -44,9 +44,11 @@ ohos_unittest("storage_daemon_test") {
     "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
+    "${storage_service_path}/test/unittest/mock/include",
   ]
 
   sources = [
+    "$ROOT_DIR/ipc/test/storage_daemon_other_test.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
