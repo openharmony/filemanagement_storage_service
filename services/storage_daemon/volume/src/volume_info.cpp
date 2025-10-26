@@ -104,19 +104,15 @@ int32_t VolumeInfo::Destroy()
     return E_OK;
 }
 
-int32_t VolumeInfo::DestroyUsbFuse()
+void VolumeInfo::DestroyUsbFuse()
 {
     LOGI("DestroyUsbFuse in");
     StorageManagerClient client;
-    int32_t ret = UMountUsbFuse();
-    if (ret != E_OK) {
-        return ret;
-    }
+    UMountUsbFuse();
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::FUSE_REMOVED) != E_OK) {
         LOGE("Volume Notify Removed failed");
     }
     LOGI("DestroyUsbFuse out");
-    return E_OK;
 }
 
 int32_t VolumeInfo::Mount(uint32_t flags)

@@ -229,9 +229,9 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_003,
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
     std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(true));
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
     int32_t result = VolumeManager::Instance().DestroyVolume(volId);
-    EXPECT_EQ(result, E_RMDIR_MOUNT);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_003 end";
 }
@@ -251,7 +251,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_004,
     std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(Return(false));
     int32_t result = VolumeManager::Instance().DestroyVolume(volId);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_004 end";
 }
