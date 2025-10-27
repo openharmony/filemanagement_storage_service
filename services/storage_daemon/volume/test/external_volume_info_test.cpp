@@ -21,6 +21,7 @@
 #include "storage_service_log.h"
 #include "mock/file_utils_mock.h"
 #include "mock/storage_manager_client_mock.h"
+#include "library_func_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -37,27 +38,28 @@ public:
     ExternalVolumeInfo* externalVolumeInfo_;
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
     static inline std::shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
+    static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
 };
 
 void ExternalVolumeInfoTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTest SetUpTestCase";
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void ExternalVolumeInfoTest::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTest TearDownTestCase";
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
 }
 
 void ExternalVolumeInfoTest::SetUp()
 {
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     externalVolumeInfo_ = new ExternalVolumeInfo();
     storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
     StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
+    libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
+    LibraryFuncMock::libraryFunc_ = libraryFuncMock_;
 }
 
 void ExternalVolumeInfoTest::TearDown(void)
@@ -68,6 +70,10 @@ void ExternalVolumeInfoTest::TearDown(void)
     }
     StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
     storageManagerClientMock_ = nullptr;
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+    LibraryFuncMock::libraryFunc_ = nullptr;
+    libraryFuncMock_ = nullptr;
 }
 
 /**
@@ -411,7 +417,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
 
     ExternalVolumeInfo vol;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     auto ret = vol.DoFormat("exfat");
@@ -430,7 +435,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
 
     ExternalVolumeInfo vol;
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     auto ret = vol.DoFormat("exfat");
@@ -565,6 +569,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(E_EXT_MOUNT));
     int32_t ret = externalVolumeInfo_->DoMount4Ext(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_EQ(ret, E_EXT_MOUNT);
@@ -626,6 +631,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(E_OTHER_MOUNT));
     int32_t ret = externalVolumeInfo_->DoMount4OtherType(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_EQ(ret, E_OTHER_MOUNT);
@@ -645,11 +651,75 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
     int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_NE(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002
+ * @tc.desc: Verify the DoMount4Hmfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(-1));
+    int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_NE(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_003
+ * @tc.desc: Verify the DoMount4Hmfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_003 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(0));
+    int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_NE(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002
+ * @tc.desc: Verify the DoMount4Hmfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_004 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(0));
+    int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_004 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
