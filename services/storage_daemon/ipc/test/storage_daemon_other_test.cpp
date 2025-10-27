@@ -556,7 +556,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_004, TestSi
         std::filesystem::rename(path, path + "_bak", errCode);
     }
     std::filesystem::create_directories(dirPath, errCode);
-    // EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->SetDirEncryptionPolicy(userId_, dirPath, EL2_USER_KEY), E_ERR);
@@ -587,7 +586,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_005, TestSi
         std::filesystem::rename(path, path + "_bak");
     }
     std::filesystem::create_directories(dirPath, errCode);
-    // EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_OK));
 
     EXPECT_EQ(storageDaemon_->SetDirEncryptionPolicy(userId_, dirPath, EL2_USER_KEY), E_OK);
