@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "keycontrol_fuzzer.h"
+#include "keyctrlsetpolicy_fuzzer.h"
 #include "key_control.h"
 #include <securec.h>
 #include <cstddef>
@@ -26,17 +26,15 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int))) {
         return false;
     }
-    struct fscrypt_policy fscryptpolicy;
-    struct fscrypt_policy *fscryptpolicy2 = &fscryptpolicy;
+    
+    union FscryptPolicy policy1;
+    union FscryptPolicy *policy = &policy1;
     char character[MAX_NUM] = { 0x00 };
     if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
     }
 
-    KeyCtrlGetPolicy(character, fscryptpolicy2);
-    KeyCtrlGetFscryptVersion(character);
-    KeyCtrlLoadVersion(character);
-    KeyCtrlHasFscryptSyspara();
+    KeyCtrlSetPolicy(character, policy);
     return true;
 }
 } // namespace OHOS

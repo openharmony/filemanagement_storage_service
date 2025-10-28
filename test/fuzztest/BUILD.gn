@@ -107,6 +107,11 @@ group("keycontrol_fuzztest") {
     "keycontrolgetkeyringid_fuzzer:fuzztest",
     "keycontrolsearch_fuzzer:fuzztest",
     "keycontrolunlink_fuzzer:fuzztest",
+    "keyctrlgetkeystatus_fuzzer:fuzztest",
+    "keyctrlgetpolicyex_fuzzer:fuzztest",
+    "keyctrlinstallkey_fuzzer:fuzztest",
+    "keyctrlremovekey_fuzzer:fuzztest",
+    "keyctrlsetpolicy_fuzzer:fuzztest",
   ]
 }
 
