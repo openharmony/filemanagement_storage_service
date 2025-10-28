@@ -107,6 +107,10 @@ group("keycontrol_fuzztest") {
     "keycontrolgetkeyringid_fuzzer:fuzztest",
     "keycontrolsearch_fuzzer:fuzztest",
     "keycontrolunlink_fuzzer:fuzztest",
+    "keycontrolgetpolicy_fuzzer:fuzztest",
+    "keycontrolgetfscryptversion_fuzzer:fuzztest",
+    "keycontrolloadversion_fuzzer:fuzztest",
+    "keycontrolhasfscryptsyspara_fuzzer:fuzztest",
   ]
 }
 
