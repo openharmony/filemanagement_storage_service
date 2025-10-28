@@ -26,7 +26,6 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int))) {
         return false;
     }
-    int state = *(reinterpret_cast<const int *>(data));
     char character[MAX_NUM] = { 0x00 };
     if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
