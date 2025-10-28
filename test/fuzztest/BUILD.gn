@@ -51,6 +51,11 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderstopuser_fuzzer:fuzztest",
     "storagemanagerproviderumount_fuzzer:fuzztest",
     "storagemanagerproviderupdateuseauthwithrecoverykey_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpunmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifydiskdestroyed_fuzzer:fuzztest",
+    "storagemanagerprovidermountmediafuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountmediafuse_fuzzer:fuzztest",
   ]
 }
 
