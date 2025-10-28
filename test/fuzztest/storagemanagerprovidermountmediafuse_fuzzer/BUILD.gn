@@ -33,7 +33,7 @@ ohos_fuzztest("StorageManagerProviderMountMediaFuseFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "storagemanagerprovidernotifymtpmount_fuzzer.cpp" ]
+  sources = [ "storagemanagerprovidermountmediafuse_fuzzer.cpp" ]
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
