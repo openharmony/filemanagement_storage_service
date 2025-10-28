@@ -16,6 +16,6 @@
 #ifndef STORAGEMANAGER_FUZZER_H
 #define STORAGEMANAGER_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "storagemanagerprovidermountmediafuse_fuzzer"
+#define FUZZ_PROJECT_NAME "storagemanagerproviderumountmediafuse_fuzzer"
 
 #endif
