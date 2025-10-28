@@ -22,13 +22,9 @@
 #include <string>
 
 #include "file_ex.h"
-#include "storage_service_errno.h"
 #include "file_sharing/file_sharing.h"
 
 namespace {
-int g_setupFileSharingDir = 0;
-bool g_saveStringToFile = true;
-bool g_saveStringToFileSync = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
 constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
@@ -38,18 +34,18 @@ constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 namespace OHOS {
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated /*= true*/)
 {
-    return g_saveStringToFile;
+    return StorageDaemon::Test::StorageDaemonTest::g_saveStringToFile;
 }
 
 namespace StorageDaemon {
 int SetupFileSharingDir()
 {
-    return g_setupFileSharingDir;
+    return Test::StorageDaemonTest::g_setupFileSharingDir;
 }
 
 bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
-    return g_saveStringToFileSync;
+    return Test::StorageDaemonTest::g_saveStringToFileSync;
 }
 
 namespace Test {
@@ -1522,8 +1518,22 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_002, TestSize
     ASSERT_TRUE(storageDaemon_ != nullptr);
  
 #ifdef USER_CRYPTO_MANAGER
-    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
- 
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_ERR));
+
+    // token is empty and secret is empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token not empty and secret is empty
+    token_.push_back(1);
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token is empty and secret not empty
+    token_.clear();
+    secret_.push_back(1);
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token not empty and secret not empty
+    token_.push_back(1);
     EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
 #endif
 }
@@ -1540,7 +1550,8 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_003, TestSize
  
 #ifdef USER_CRYPTO_MANAGER
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
- 
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_OK));
+
     EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ERR);
 #endif
 }
@@ -1560,6 +1571,24 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_004, TestSize
         .WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_UNLOCK_APP_KEY2_FAILED);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_005
+ * @tc.desc: Verify the ActiveUserKey4Single when all operations succeed.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).Times(4)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_OK);
 #endif
 }
 
