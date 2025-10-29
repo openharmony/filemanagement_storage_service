@@ -46,6 +46,7 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderremoveuser_fuzzer:fuzztest",
     "storagemanagerproviderresetsecretwithrecoverykey_fuzzer:fuzztest",
     "storagemanagerprovidersetrecoverkey_fuzzer:fuzztest",
+    "storagemanagerprovidermountdfsdocs_fuzzer:fuzztest",
     "storagemanagerprovidersetvolumedescription_fuzzer:fuzztest",
     "storagemanagerproviderstartuser_fuzzer:fuzztest",
     "storagemanagerproviderstopuser_fuzzer:fuzztest",
