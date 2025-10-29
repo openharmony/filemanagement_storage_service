@@ -25,7 +25,6 @@
 
 namespace OHOS {
 using namespace std;
-constexpr int PARAM_COUNT = 5;
 template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
@@ -57,21 +56,6 @@ bool ShutdownFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t 
     (void)data;
     proxy->Shutdown();
     proxy->InitGlobalKey();
-    return true;
-}
-
-bool QueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int64_t) * PARAM_COUNT) {
-        return true;
-    }
-    string storageStats(reinterpret_cast<const char *>(data), size);
-    int pos = 0;
-    int len = (size - pos) / 2;
-    int32_t key = TypeCast<int32_t>(data + pos, &pos);
-    string value(reinterpret_cast<const char *>(data + pos + len), len);
-    map<int32_t, std::string> bundleNameAndUid {{key, value}};
-    proxy->QueryOccupiedSpaceForSa(storageStats, bundleNameAndUid);
     return true;
 }
 
@@ -497,33 +481,6 @@ bool ResetSecretWithRecoveryKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& pro
     return true;
 }
 
-bool IsFileOccupiedFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    int len = size / 2;
-    string path(reinterpret_cast<const char *>(data), len);
-    vector<std::string> inputList { string(reinterpret_cast<const char *>(data + len), len) };
-    vector<std::string> outputList;
-    bool isOccupy;
-    proxy->IsFileOccupied(path, inputList, outputList, isOccupy);
-    return true;
-}
-
-bool MountDisShareFileFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int)) {
-        return true;
-    }
-
-    int pos = 0;
-    int userId = TypeCast<int>(data, &pos);
-    int len = (size - pos) / 2;
-    string key(reinterpret_cast<const char *>(data + pos), len);
-    string value(reinterpret_cast<const char *>(data + pos + len), len);
-    map<string, string> shareFiles {{key, value}};
-    proxy->MountDisShareFile(userId, shareFiles);
-    return true;
-}
-
 [[maybe_unused]]bool UMountDisShareFileFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data,
     size_t size)
 {
@@ -536,31 +493,6 @@ bool MountDisShareFileFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const
     int len = (size - pos);
     string networkId(reinterpret_cast<const char *>(data + pos), len);
     proxy->UMountDisShareFile(userId, networkId);
-    return true;
-}
-
-bool TryToFixFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t flags = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos);
-    string volId(reinterpret_cast<const char *>(data + pos), len);
-    proxy->TryToFix(volId, flags);
-    return true;
-}
-
-bool InactiveUserPublicDirKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    uint32_t userId = TypeCast<uint32_t>(data, nullptr);
-    proxy->InactiveUserPublicDirKey(userId);
     return true;
 }
 
@@ -593,11 +525,6 @@ void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, cons
     MountFileMgrFuseFuzzTest(proxy, data, size);
     QueryUsbIsInUseFuzzTest(proxy, data, size);
     ResetSecretWithRecoveryKeyFuzzTest(proxy, data, size);
-    IsFileOccupiedFuzzTest(proxy, data, size);
-    MountDisShareFileFuzzTest(proxy, data, size);
-    TryToFixFuzzTest(proxy, data, size);
-    InactiveUserPublicDirKeyFuzzTest(proxy, data, size);
-    QueryOccupiedSpaceForSaFuzzTest(proxy, data, size);
 }
 } // namespace OHOS
 
