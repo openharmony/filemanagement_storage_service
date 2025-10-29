@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef KEYCONTROL_FUZZER_H
-#define KEYCONTROL_FUZZER_H
+#ifndef KEYCONTROL_HASFSCRYPTSYSPARA_FUZZER_H
+#define KEYCONTROL_HASFSCRYPTSYSPARA_FUZZER_H
 
 #define FUZZ_PROJECT_NAME "keycontrolhasfscryptsyspara_fuzzer"
 

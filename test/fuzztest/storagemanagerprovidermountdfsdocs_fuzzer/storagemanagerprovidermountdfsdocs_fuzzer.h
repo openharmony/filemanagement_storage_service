@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef STORAGEMANAGER_FUZZER_H
-#define STORAGEMANAGER_FUZZER_H
+#ifndef STORAGEMANAGER_PROVIDERMOUNTDFSDOCS_FUZZER_H
+#define STORAGEMANAGER_PROVIDERMOUNTDFSDOCS_FUZZER_H
 
 #define FUZZ_PROJECT_NAME "storagemanagerprovidermountdfsdocs_fuzzer"
 

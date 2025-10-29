@@ -33,6 +33,9 @@ std::shared_ptr<StorageManagerProvider> storageManagerProvider =
     std::make_shared<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
 bool MountDfsDocsFuzzTest(const uint8_t *data, size_t size)
 {
+    if ((data == nullptr) || (size < sizeof(int))) {
+        return false;
+    }
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_DFS_DOCS);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
@@ -52,9 +55,6 @@ bool MountDfsDocsFuzzTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    if (data == nullptr) {
-        return 0;
-    }
     OHOS::StorageManager::MountDfsDocsFuzzTest(data, size);
     return 0;
 }
