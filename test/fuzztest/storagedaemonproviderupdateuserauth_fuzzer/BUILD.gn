@@ -119,7 +119,7 @@ ohos_fuzztest("StorageDaemonProviderUpdateUserAuthFuzzTest") {
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
-    ":storagedaemonprovider_updateuserauth_fuzztest"
+    ":storagedaemonprovider_updateuserauth_fuzztest",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
