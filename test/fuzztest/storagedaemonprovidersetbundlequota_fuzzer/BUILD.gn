@@ -15,6 +15,82 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
+ohos_static_library("storagedaemonprovider_setbundlequota_fuzztest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  sources = [
+    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "KMSG_LOG",
+  ]
+
+  cflags = [
+    "-fstack-protector-strong",
+    "-O2",
+  ]
+
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
+
+  deps = [
+    "${storage_daemon_path}/crypto:libsdcrypto",
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
+    "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
+    "c_utils:utils",
+    "crypto_framework:crypto_framework_lib",
+    "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "huks:libhukssdk",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+}
+
 ohos_fuzztest("StorageDaemonProviderSetBundleQuotaFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovidersetbundlequota_fuzzer"
@@ -35,16 +111,6 @@ ohos_fuzztest("StorageDaemonProviderSetBundleQuotaFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "${storage_daemon_path}/crypto/src/key_manager.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
-    "${storage_daemon_path}/quota/quota_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
-    "${storage_daemon_path}/user/src/user_manager.cpp",
-    "${storage_daemon_path}/utils/string_utils.cpp",
-    "${storage_daemon_path}/observer/appstate_observer.cpp",
-    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovidersetbundlequota_fuzzer/storagedaemonprovidersetbundlequota_fuzzer.cpp",
   ]
 
@@ -53,12 +119,14 @@ ohos_fuzztest("StorageDaemonProviderSetBundleQuotaFuzzTest") {
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
+    ":storagedaemonprovider_setbundlequota_fuzztest"
     "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
+
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
     "ability_base:zuri",
@@ -82,24 +150,6 @@ ohos_fuzztest("StorageDaemonProviderSetBundleQuotaFuzzTest") {
     "crypto_framework:crypto_framework_lib",
   ]
 
-  if (storage_service_cloud_fuse) {
-    defines += [ "DFS_SERVICE" ]
-    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
-  }
-
-  if (enable_user_auth_framework) {
-    defines += [ "USER_AUTH_FRAMEWORK" ]
-    external_deps += [ "user_auth_framework:userauth_client" ]
-  }
-
-  if (enable_tee_client) {
-    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
-    external_deps += [ "tee_client:libteec" ]
-  }
-  if (storage_service_media_fuse) {
-    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
-    external_deps += [ "ability_runtime:app_manager" ]
-  }
   use_exceptions = true
 }
 
