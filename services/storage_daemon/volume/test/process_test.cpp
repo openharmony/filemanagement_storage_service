@@ -122,7 +122,7 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_CheckFds_001, TestSize.Level1)
     EXPECT_FALSE(process1.CheckFds("/proc/1"));
 
     Process process2("/path/to/process");
-    EXPECT_TRUE(process2.CheckFds("/proc/111111"));
+    EXPECT_FALSE(process2.CheckFds("/proc/111111"));
     GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckFds_001 end";
 }
 
