@@ -89,6 +89,20 @@ group("storage_daemon_provider_fuzztest") {
   ]
 }
 
+group("storage_daemon_proxy_fuzztest") {
+  testonly = true
+  deps = [
+    "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
+    "storagedaemonproxyformat_fuzzer:fuzztest",
+    "storagedaemonproxymount_fuzzer:fuzztest",
+    "storagedaemonproxypartition_fuzzer:fuzztest",
+    "storagedaemonproxyprepareuserdirs_fuzzer:fuzztest",
+    "storagedaemonproxysetvolumedescription_fuzzer:fuzztest",
+    "storagedaemonproxyshutdown_fuzzer:fuzztest",
+    "storagedaemonproxystartuser_fuzzer:fuzztest",
+  ]
+}
+
 group("filesystem_crypto_fuzztest") {
   testonly = true
   deps = [
@@ -132,6 +146,7 @@ group("storage_service_fuzztest") {
     ":filesystem_crypto_fuzztest",
     ":keycontrol_fuzztest",
     ":storage_daemon_provider_fuzztest",
+    ":storage_daemon_proxy_fuzztest",
     ":storage_manager_provider_fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
