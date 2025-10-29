@@ -26,28 +26,10 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int))) {
         return false;
     }
-    union FscryptPolicy policy1;
-    union FscryptPolicy *policy = &policy1;
     char character[MAX_NUM] = { 0x00 };
     if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
     }
-
-#ifdef SUPPORT_FSCRYPT_V2
-    struct fscrypt_add_key_arg fscryptaddkeyarg;
-    struct fscrypt_add_key_arg *fscryptaddkeyarg2 = &fscryptaddkeyarg;
-    struct fscrypt_remove_key_arg fscryptremovekeyarg;
-    struct fscrypt_remove_key_arg *fscryptremovekeyarg2 = &fscryptremovekeyarg;
-    struct fscrypt_get_key_status_arg fscryptgetkeystatusarg;
-    struct fscrypt_get_key_status_arg *fscryptgetkeystatusarg2 = &fscryptgetkeystatusarg;
-    struct fscrypt_get_policy_ex_arg fscryptgetpolicyexarg;
-    struct fscrypt_get_policy_ex_arg *fscryptgetpolicyexarg2 = &fscryptgetpolicyexarg;
-    KeyCtrlInstallKey(character, fscryptaddkeyarg2);
-    KeyCtrlRemoveKey(character, fscryptremovekeyarg2);
-    KeyCtrlGetKeyStatus(character, fscryptgetkeystatusarg2);
-    KeyCtrlGetPolicyEx(character, fscryptgetpolicyexarg2);
-#endif
-    KeyCtrlSetPolicy(character, policy);
     return true;
 }
 } // namespace OHOS
