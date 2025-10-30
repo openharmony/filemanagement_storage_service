@@ -92,14 +92,21 @@ group("storage_daemon_provider_fuzztest") {
 group("storage_daemon_proxy_fuzztest") {
   testonly = true
   deps = [
+    "storagedaemonproxyactiveuserkey_fuzzer:fuzztest",
     "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
+    "storagedaemonproxydeleteuserkeys_fuzzer:fuzztest",
     "storagedaemonproxyformat_fuzzer:fuzztest",
+    "storagedaemonproxygenerateappkey_fuzzer:fuzztest",
     "storagedaemonproxymount_fuzzer:fuzztest",
     "storagedaemonproxypartition_fuzzer:fuzztest",
     "storagedaemonproxyprepareuserdirs_fuzzer:fuzztest",
     "storagedaemonproxysetvolumedescription_fuzzer:fuzztest",
     "storagedaemonproxyshutdown_fuzzer:fuzztest",
     "storagedaemonproxystartuser_fuzzer:fuzztest",
+    "storagedaemonproxyunlockuserscreen_fuzzer:fuzztest",
+    "storagedaemonproxyupdatekeycontext_fuzzer:fuzztest",
+    "storagedaemonproxyupdateuseauthwithrecoverykey_fuzzer:fuzztest",
+    "storagedaemonproxyupdateuserauth_fuzzer:fuzztest",
   ]
 }
 

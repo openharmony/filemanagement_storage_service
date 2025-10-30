@@ -21,8 +21,6 @@
 #include "iservice_registry.h"
 #include "securec.h"
 #include "storage_daemon_proxy.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -30,13 +28,13 @@ using namespace std;
 template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
-    T value;
+    T value{};
     if (pos) {
         *pos += sizeof(T);
     }
     auto ret = memcpy_s(&value, sizeof(T), data, sizeof(T));
     if (ret != 0) {
-        LOGE("memcpy_s failed %{public}d", ret);
+        printf("memcpy_s failed, ret: %d\n", ret);
     }
     return value;
 }
@@ -45,13 +43,13 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
 {
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        printf("samgr empty error");
+        printf("samgr empty error\n");
         return nullptr;
     }
 
     sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_MANAGER_DAEMON_ID);
     if (object == nullptr) {
-        printf("storage daemon client samgr ablity empty error");
+        printf("storage daemon client samgr ablity empty error\n");
         return nullptr;
     }
 
@@ -81,7 +79,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (proxy != nullptr) {
         OHOS::PrepareUserDirsFuzzTest(proxy, data, size);
     } else {
-        printf("daemon proxy is nullptr");
+        printf("daemon proxy is nullptr\n");
     }
 
     return 0;
