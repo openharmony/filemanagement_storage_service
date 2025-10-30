@@ -176,7 +176,14 @@ group("storage_service_fuzztest") {
   ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {
-    deps +=
-        [ "libmtp_fuzzer:fuzztest" ]
+    deps += [
+      "libmtpcheckspecificdevice_fuzzer:fuzztest",
+      "libmtpcreatefolder_fuzzer:fuzztest",
+      "libmtpdetectrawdevices_fuzzer:fuzztest",
+      "libmtp_fuzzer:fuzztest",
+      "libmtpgetfilesandfolders_fuzzer:fuzztest",
+      "libmtpopenrawdeviceuncached_fuzzer:fuzztest",
+      "libmtpreleasedevice_fuzzer:fuzztest",
+    ]
   }
 }
