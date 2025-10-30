@@ -19,9 +19,7 @@
 #include <cstring>
 
 #include "message_parcel.h"
-#include "storage_daemon.h"
 #include "storage_daemon_provider.h"
-#include "storage_daemon_stub.h"
 
 using namespace OHOS::StorageDaemon;
 

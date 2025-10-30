@@ -92,6 +92,11 @@ group("storage_daemon_provider_fuzztest") {
 group("storage_daemon_proxy_fuzztest") {
   testonly = true
   deps = [
+    "storagedaemonproxyisfileoccupied_fuzzer:fuzztest",
+    "storagedaemonproxyinactiveuserpublicdirkey_fuzzer:fuzztest",
+    "storagedaemonproxymountdissharefile_fuzzer:fuzztest",
+    "storagedaemonproxyqueryoccupiedspaceforsa_fuzzer:fuzztest",
+    "storagedaemonproxytrytofix_fuzzer:fuzztest",
     "storagedaemonproxyactiveuserkey_fuzzer:fuzztest",
     "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
     "storagedaemonproxydeleteuserkeys_fuzzer:fuzztest",
@@ -155,6 +160,7 @@ group("storage_service_fuzztest") {
     ":storage_daemon_provider_fuzztest",
     ":storage_daemon_proxy_fuzztest",
     ":storage_manager_provider_fuzztest",
+    ":storage_daemon_proxy_fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
     "fileutils_fuzzer:fuzztest",
