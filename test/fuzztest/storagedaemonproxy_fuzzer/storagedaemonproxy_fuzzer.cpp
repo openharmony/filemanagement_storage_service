@@ -51,21 +51,6 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool QueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int64_t) * PARAM_COUNT) {
-        return true;
-    }
-    string storageStats(reinterpret_cast<const char *>(data), size);
-    int pos = 0;
-    int len = (size - pos) / 2;
-    int32_t key = TypeCast<int32_t>(data + pos, &pos);
-    string value(reinterpret_cast<const char *>(data + pos + len), len);
-    map<int32_t, std::string> bundleNameAndUid {{key, value}};
-    proxy->QueryOccupiedSpaceForSa(storageStats, bundleNameAndUid);
-    return true;
-}
-
 bool GetLockScreenStatusFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
     if (data == nullptr || size < sizeof(uint32_t) + sizeof(bool)) {
