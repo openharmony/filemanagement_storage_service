@@ -46,11 +46,17 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderremoveuser_fuzzer:fuzztest",
     "storagemanagerproviderresetsecretwithrecoverykey_fuzzer:fuzztest",
     "storagemanagerprovidersetrecoverkey_fuzzer:fuzztest",
+    "storagemanagerprovidermountdfsdocs_fuzzer:fuzztest",
     "storagemanagerprovidersetvolumedescription_fuzzer:fuzztest",
     "storagemanagerproviderstartuser_fuzzer:fuzztest",
     "storagemanagerproviderstopuser_fuzzer:fuzztest",
     "storagemanagerproviderumount_fuzzer:fuzztest",
     "storagemanagerproviderupdateuseauthwithrecoverykey_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpunmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifydiskdestroyed_fuzzer:fuzztest",
+    "storagemanagerprovidermountmediafuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountmediafuse_fuzzer:fuzztest",
   ]
 }
 
@@ -91,6 +97,14 @@ group("storage_daemon_proxy_fuzztest") {
     "storagedaemonproxymountdissharefile_fuzzer:fuzztest",
     "storagedaemonproxyqueryoccupiedspaceforsa_fuzzer:fuzztest",
     "storagedaemonproxytrytofix_fuzzer:fuzztest",
+    "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
+    "storagedaemonproxyformat_fuzzer:fuzztest",
+    "storagedaemonproxymount_fuzzer:fuzztest",
+    "storagedaemonproxypartition_fuzzer:fuzztest",
+    "storagedaemonproxyprepareuserdirs_fuzzer:fuzztest",
+    "storagedaemonproxysetvolumedescription_fuzzer:fuzztest",
+    "storagedaemonproxyshutdown_fuzzer:fuzztest",
+    "storagedaemonproxystartuser_fuzzer:fuzztest",
   ]
 }
 
@@ -118,6 +132,10 @@ group("keycontrol_fuzztest") {
     "keycontrolgetkeyringid_fuzzer:fuzztest",
     "keycontrolsearch_fuzzer:fuzztest",
     "keycontrolunlink_fuzzer:fuzztest",
+    "keycontrolgetpolicy_fuzzer:fuzztest",
+    "keycontrolgetfscryptversion_fuzzer:fuzztest",
+    "keycontrolloadversion_fuzzer:fuzztest",
+    "keycontrolhasfscryptsyspara_fuzzer:fuzztest",
     "keyctrlgetkeystatus_fuzzer:fuzztest",
     "keyctrlgetpolicyex_fuzzer:fuzztest",
     "keyctrlinstallkey_fuzzer:fuzztest",
@@ -133,6 +151,7 @@ group("storage_service_fuzztest") {
     ":filesystem_crypto_fuzztest",
     ":keycontrol_fuzztest",
     ":storage_daemon_provider_fuzztest",
+    ":storage_daemon_proxy_fuzztest",
     ":storage_manager_provider_fuzztest",
     ":storage_daemon_proxy_fuzztest",
     "bundlestats_fuzzer:fuzztest",

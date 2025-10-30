@@ -220,93 +220,9 @@ bool GetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool MountDfsDocsFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_DFS_DOCS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool UMountDfsDocsFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_DFS_DOCS);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyMtpMountFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_MOUNTED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyMtpUnmountFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_MTP_UNMOUNTED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_DISK_DESTROYED);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool MountMediaFuseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_MOUNT_MEDIA_FUSE);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool UMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_MEDIA_FUSE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -362,13 +278,7 @@ void FuzzerTest1(const uint8_t *data, size_t size)
 void FuzzerTest2(const uint8_t *data, size_t size)
 {
     OHOS::StorageManager::GetUserStorageStatsByTypeFuzzTest(data, size);
-    OHOS::StorageManager::MountDfsDocsFuzzTest(data, size);
     OHOS::StorageManager::UMountDfsDocsFuzzTest(data, size);
-    OHOS::StorageManager::NotifyMtpMountFuzzTest(data, size);
-    OHOS::StorageManager::NotifyMtpUnmountFuzzTest(data, size);
-    OHOS::StorageManager::NotifyDiskDestroyedFuzzTest(data, size);
-    OHOS::StorageManager::MountMediaFuseFuzzTest(data, size);
-    OHOS::StorageManager::UMountMediaFuseFuzzTest(data, size);
     OHOS::StorageManager::CreateUserDirFuzzTest(data, size);
     OHOS::StorageManager::DeleteUserDirFuzzTest(data, size);
 }

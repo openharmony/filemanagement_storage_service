@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "keycontrol_fuzzer.h"
+#include "keycontrolgetfscryptversion_fuzzer.h"
 #include "key_control.h"
 #include <securec.h>
 #include <cstddef>
@@ -30,6 +30,8 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
     }
+
+    KeyCtrlGetFscryptVersion(character);
     return true;
 }
 } // namespace OHOS

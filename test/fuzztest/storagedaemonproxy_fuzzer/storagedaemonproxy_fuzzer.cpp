@@ -51,97 +51,6 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool ShutdownFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    (void)data;
-    proxy->Shutdown();
-    proxy->InitGlobalKey();
-    return true;
-}
-
-bool MountFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t flags = TypeCast<uint32_t>(data, &pos);
-    std::string volId(reinterpret_cast<const char *>(data + pos), size - pos);
-    proxy->Mount(volId, flags);
-    proxy->Check(volId);
-    proxy->UMount(volId);
-    return true;
-}
-
-bool FormatFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    int len = size / 2;
-    string volId(reinterpret_cast<const char *>(data), len);
-    string fsType(reinterpret_cast<const char *>(data + len), len);
-    proxy->Format(volId, fsType);
-    return true;
-}
-
-bool PartitionFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    int32_t type = TypeCast<int32_t>(data, &pos);
-    std::string diskId(reinterpret_cast<const char *>(data + pos), size - pos);
-    proxy->Partition(diskId, type);
-    return true;
-}
-
-bool SetVolumeDescriptionFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    int len = size / 2;
-    string volId(reinterpret_cast<const char *>(data), len);
-    string description(reinterpret_cast<const char *>(data + len), len);
-    proxy->SetVolumeDescription(volId, description);
-    return true;
-}
-
-bool StartUserFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int32_t)) {
-        return true;
-    }
-
-    int32_t userId = TypeCast<int32_t>(data, nullptr);
-    proxy->StartUser(userId);
-    proxy->StopUser(userId);
-    return true;
-}
-
-bool PrepareUserDirsFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int32_t) + sizeof(uint32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    int32_t userId = TypeCast<int32_t>(data, &pos);
-    uint32_t flags = TypeCast<uint32_t>(data + pos, &pos);
-    proxy->PrepareUserDirs(userId, flags);
-    proxy->DestroyUserDirs(userId, flags);
-    return true;
-}
-
-bool CompleteAddUserFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int32_t)) {
-        return true;
-    }
-
-    int32_t userId = TypeCast<int32_t>(data, nullptr);
-    proxy->CompleteAddUser(userId);
-    return true;
-}
-
 bool DeleteUserKeysFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
     if (data == nullptr || size < sizeof(uint32_t)) {
@@ -498,14 +407,6 @@ bool ResetSecretWithRecoveryKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& pro
 
 void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    ShutdownFuzzTest(proxy, data, size);
-    MountFuzzTest(proxy, data, size);
-    FormatFuzzTest(proxy, data, size);
-    PartitionFuzzTest(proxy, data, size);
-    SetVolumeDescriptionFuzzTest(proxy, data, size);
-    StartUserFuzzTest(proxy, data, size);
-    PrepareUserDirsFuzzTest(proxy, data, size);
-    CompleteAddUserFuzzTest(proxy, data, size);
     DeleteUserKeysFuzzTest(proxy, data, size);
     UpdateUserAuthFuzzTest(proxy, data, size);
     UpdateUseAuthWithRecoveryKeyFuzzTest(proxy, data, size);
