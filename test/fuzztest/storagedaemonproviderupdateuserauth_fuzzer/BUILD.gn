@@ -126,6 +126,8 @@ ohos_fuzztest("StorageDaemonProviderUpdateUserAuthFuzzTest") {
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
+
   external_deps = [
     "ability_base:zuri",
     "ability_runtime:abilitykit_native",
