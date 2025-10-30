@@ -139,6 +139,16 @@ group("keycontrol_fuzztest") {
   ]
 }
 
+group("storage_daemon_provider_stub__fuzztest") {
+  testonly = true
+  deps = [
+    "storagedaemonprovideronremoterequest_fuzzer:fuzztest",
+    "storagedaemonproviderstubupdateuserauth_fuzzer:fuzztest",
+    "storagedaemonproviderupdateuserauthwithrecoverykey_fuzzer:fuzztest",
+    "storagedaemonproviderstubactiveuserkey_fuzzer:fuzztest"
+  ]
+}
+
 group("storage_service_fuzztest") {
   testonly = true
   deps = [
@@ -148,6 +158,7 @@ group("storage_service_fuzztest") {
     ":storage_daemon_provider_fuzztest",
     ":storage_daemon_proxy_fuzztest",
     ":storage_manager_provider_fuzztest",
+    ":storage_daemon_provider_stub__fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
     "fileutils_fuzzer:fuzztest",
