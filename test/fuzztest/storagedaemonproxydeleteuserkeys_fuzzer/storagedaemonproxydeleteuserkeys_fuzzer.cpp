@@ -12,19 +12,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproxysetvolumedescription_fuzzer.h"
+#include "storagedaemonproxydeleteuserkeys_fuzzer.h"
 
-#include <map>
 #include <vector>
+#include <map>
 
-#include "ipc/storage_daemon_provider.h"
 #include "iservice_registry.h"
+#include "system_ability_definition.h"
+
 #include "securec.h"
 #include "storage_daemon_proxy.h"
-#include "system_ability_definition.h"
+#include "ipc/storage_daemon_provider.h"
 
 namespace OHOS {
 using namespace std;
+template<typename T>
+T TypeCast(const uint8_t *data, int *pos)
+{
+    T value{};
+    if (pos) {
+        *pos += sizeof(T);
+    }
+    auto ret = memcpy_s(&value, sizeof(T), data, sizeof(T));
+    if (ret != 0) {
+        printf("memcpy_s failed, ret: %d\n", ret);
+    }
+    return value;
+}
 
 sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
 {
@@ -43,19 +57,14 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool SetVolumeDescriptionFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool DeleteUserKeysFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    constexpr size_t minTestLen = 1;
-    constexpr size_t maxTestLen = 256;
-    constexpr uint32_t testCount = 2;
-    if (data == nullptr || size < minTestLen * testCount || size > maxTestLen * testCount) {
+    if (data == nullptr || size < sizeof(uint32_t)) {
         return true;
     }
 
-    int len = size / 2;
-    string volId(reinterpret_cast<const char *>(data), len);
-    string description(reinterpret_cast<const char *>(data + len), len);
-    proxy->SetVolumeDescription(volId, description);
+    uint32_t userId = TypeCast<uint32_t>(data, nullptr);
+    proxy->DeleteUserKeys(userId);
     return true;
 }
 } // namespace OHOS
@@ -66,7 +75,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Run your code on data */
     auto proxy = OHOS::GetStorageDaemonProxy();
     if (proxy != nullptr) {
-        OHOS::SetVolumeDescriptionFuzzTest(proxy, data, size);
+        OHOS::DeleteUserKeysFuzzTest(proxy, data, size);
     } else {
         printf("daemon proxy is nullptr\n");
     }

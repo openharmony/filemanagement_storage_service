@@ -21,8 +21,6 @@
 #include "iservice_registry.h"
 #include "securec.h"
 #include "storage_daemon_proxy.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -32,13 +30,13 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
 {
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        printf("samgr empty error");
+        printf("samgr empty error\n");
         return nullptr;
     }
 
     sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_MANAGER_DAEMON_ID);
     if (object == nullptr) {
-        printf("storage daemon client samgr ablity empty error");
+        printf("storage daemon client samgr ablity empty error\n");
         return nullptr;
     }
 
@@ -62,7 +60,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (proxy != nullptr) {
         OHOS::ShutdownFuzzTest(proxy, data, size);
     } else {
-        printf("daemon proxy is nullptr");
+        printf("daemon proxy is nullptr\n");
     }
 
     return 0;

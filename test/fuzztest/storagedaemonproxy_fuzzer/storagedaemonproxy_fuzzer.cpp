@@ -51,116 +51,6 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool DeleteUserKeysFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    uint32_t userId = TypeCast<uint32_t>(data, nullptr);
-    proxy->DeleteUserKeys(userId);
-    return true;
-}
-
-bool UpdateUserAuthFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint64_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
-    int len = (size - pos) / 3;
-    vector<uint8_t> token;
-    vector<uint8_t> oldSecret;
-    vector<uint8_t> newSecret;
-    for (int i = 0; i < len; i++) {
-        token.emplace_back(data[pos + i]);
-        oldSecret.emplace_back(data[pos + len + i]);
-        newSecret.emplace_back(data[pos + len + len + i]);
-    }
-    proxy->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
-    return true;
-}
-
-bool UpdateUseAuthWithRecoveryKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint64_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
-    int len = (size - pos) / 3;
-    vector<uint8_t> authToken;
-    vector<uint8_t> newSecret;
-    vector<uint8_t> plain;
-    for (int i = 0; i < len; i++) {
-        authToken.emplace_back(data[pos + i]);
-        newSecret.emplace_back(data[pos + len + i]);
-        plain.emplace_back(data[pos + len + len + i]);
-    }
-    std::vector<std::vector<uint8_t>> plainText { plain };
-    proxy->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
-    return true;
-}
-
-bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos) / 2;
-    vector<uint8_t> token;
-    vector<uint8_t> secret;
-    for (int i = 0; i < len; i++) {
-        token.emplace_back(data[pos + i]);
-        secret.emplace_back(data[pos + len + i]);
-    }
-    proxy->ActiveUserKey(userId, token, secret);
-    proxy->InactiveUserKey(userId);
-    proxy->MountCryptoPathAgain(userId);
-    proxy->LockUserScreen(userId);
-    return true;
-}
-
-bool UpdateKeyContextFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(bool)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    bool needRemoveTmpKey = TypeCast<bool>(data + pos, &pos);
-    proxy->UpdateKeyContext(userId, needRemoveTmpKey);
-    return true;
-}
-
-bool UnlockUserScreenFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos) / 2;
-    vector<uint8_t> token;
-    vector<uint8_t> secret;
-    for (int i = 0; i < len; i++) {
-        token.emplace_back(data[pos + i]);
-        secret.emplace_back(data[pos + len + i]);
-    }
-    proxy->UnlockUserScreen(userId, token, secret);
-    return true;
-}
-
 bool GetLockScreenStatusFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
     if (data == nullptr || size < sizeof(uint32_t) + sizeof(bool)) {
@@ -171,22 +61,6 @@ bool GetLockScreenStatusFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, con
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
     bool lockScreenStatus = TypeCast<bool>(data + pos, &pos);
     proxy->GetLockScreenStatus(userId, lockScreenStatus);
-    return true;
-}
-
-bool GenerateAppkeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(bool)) {
-        return true;
-    }
-
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint32_t hashId = TypeCast<uint32_t>(data + pos, &pos);
-    bool needReSet = TypeCast<bool>(data + pos, &pos);
-    string keyId(reinterpret_cast<const char *>(data + pos), size - pos);
-    proxy->GenerateAppkey(userId, hashId, keyId, needReSet);
-    proxy->DeleteAppkey(userId, keyId);
     return true;
 }
 
@@ -407,13 +281,6 @@ bool ResetSecretWithRecoveryKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& pro
 
 void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    DeleteUserKeysFuzzTest(proxy, data, size);
-    UpdateUserAuthFuzzTest(proxy, data, size);
-    UpdateUseAuthWithRecoveryKeyFuzzTest(proxy, data, size);
-    ActiveUserKeyFuzzTest(proxy, data, size);
-    UpdateKeyContextFuzzTest(proxy, data, size);
-    UnlockUserScreenFuzzTest(proxy, data, size);
-    GenerateAppkeyFuzzTest(proxy, data, size);
     CreateRecoverKeyFuzzTest(proxy, data, size);
     SetRecoverKeyFuzzTest(proxy, data, size);
     CreateShareFileFuzzTest(proxy, data, size);
