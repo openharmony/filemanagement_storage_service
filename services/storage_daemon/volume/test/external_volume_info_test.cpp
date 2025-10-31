@@ -639,6 +639,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 end";
 }
 
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_001
  * @tc.desc: Verify the DoMount4Hmfs function.
@@ -721,5 +722,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_004 end";
 }
+#endif
 } // STORAGE_DAEMON
 } // OHOS
