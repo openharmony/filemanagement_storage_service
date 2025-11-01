@@ -526,7 +526,7 @@ static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
     res.reserve(cmd.size() + 1);
 
     for (auto& line : cmd) {
-        LOGI("cmd %{public}s", line.c_str());
+        LOGE("cmd %{public}s", line.c_str());
         res.emplace_back(const_cast<char*>(line.c_str()));
     }
     res.emplace_back(nullptr);
@@ -569,7 +569,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
             while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
-                LOGI("get result %{public}s", buf);
+                LOGE("get result %{public}s", buf);
                 output->push_back(buf);
             }
         }
@@ -696,7 +696,7 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
     if (fp) {
         char line[BUF_LEN];
         while (fgets(line, sizeof(line), fp)) {
-            LOGI("exec exfat log: %{public}s", line);
+            LOGE("exec mount log: %{public}s", line);
         }
         fclose(fp);
         return;
