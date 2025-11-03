@@ -29,12 +29,17 @@ template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
     T value{};
-    if (pos) {
-        *pos += sizeof(T);
+    if (data == nullptr) {
+        printf("data is nullptr\n");
+        return value;
     }
     auto ret = memcpy_s(&value, sizeof(T), data, sizeof(T));
     if (ret != 0) {
         printf("memcpy_s failed, ret: %d\n", ret);
+        return value;
+    }
+    if (pos) {
+        *pos += sizeof(T);
     }
     return value;
 }

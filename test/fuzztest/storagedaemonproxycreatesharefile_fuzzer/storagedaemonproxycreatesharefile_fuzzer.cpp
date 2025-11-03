@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproxyactiveuserkey_fuzzer.h"
+#include "storagedaemonproxycreatesharefile_fuzzer.h"
 
 #include <vector>
 #include <map>
@@ -62,25 +62,28 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool CreateShareFileFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size < sizeof(uint32_t)) {
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t)) {
         return true;
     }
 
     int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos) / 2;
-    vector<uint8_t> token;
-    vector<uint8_t> secret;
-    for (int i = 0; i < len; i++) {
-        token.emplace_back(data[pos + i]);
-        secret.emplace_back(data[pos + len + i]);
+    uint32_t tokenId = TypeCast<uint32_t>(data, &pos);
+    uint32_t flag = TypeCast<uint32_t>(data + pos, &pos);
+    if (pos != sizeof(uint32_t) + sizeof(uint32_t)) {
+        return true;
     }
-    proxy->ActiveUserKey(userId, token, secret);
-    proxy->InactiveUserKey(userId);
-    proxy->MountCryptoPathAgain(userId);
-    proxy->LockUserScreen(userId);
+    unsigned int len = (size - pos) / 2;
+    vector<int32_t> funcResult;
+    StorageManager::StorageFileRawData uriList;
+    uriList.ownedData = string(reinterpret_cast<const char *>(data + pos + len), len);
+    for (unsigned int i = 0; i + sizeof(int32_t) <= len; i += sizeof(int32_t)) {
+        funcResult.emplace_back(TypeCast<int32_t>(data + pos + i, nullptr));
+    }
+    if (proxy->CreateShareFile(uriList, tokenId, flag, funcResult) == 0) {
+        proxy->DeleteShareFile(tokenId, uriList);
+    }
     return true;
 }
 } // namespace OHOS
@@ -91,7 +94,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Run your code on data */
     auto proxy = OHOS::GetStorageDaemonProxy();
     if (proxy != nullptr) {
-        OHOS::ActiveUserKeyFuzzTest(proxy, data, size);
+        OHOS::CreateShareFileFuzzTest(proxy, data, size);
     } else {
         printf("daemon proxy is nullptr\n");
     }

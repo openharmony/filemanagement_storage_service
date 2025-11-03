@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproxyactiveuserkey_fuzzer.h"
+#include "storagedaemonproxysetrecoverkey_fuzzer.h"
 
 #include <vector>
 #include <map>
@@ -20,30 +20,11 @@
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
 
-#include "securec.h"
 #include "storage_daemon_proxy.h"
 #include "ipc/storage_daemon_provider.h"
 
 namespace OHOS {
 using namespace std;
-template<typename T>
-T TypeCast(const uint8_t *data, int *pos)
-{
-    T value{};
-    if (data == nullptr) {
-        printf("data is nullptr\n");
-        return value;
-    }
-    auto ret = memcpy_s(&value, sizeof(T), data, sizeof(T));
-    if (ret != 0) {
-        printf("memcpy_s failed, ret: %d\n", ret);
-        return value;
-    }
-    if (pos) {
-        *pos += sizeof(T);
-    }
-    return value;
-}
 
 sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
 {
@@ -62,25 +43,17 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool SetRecoverKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size < sizeof(uint32_t)) {
+    if (data == nullptr) {
         return true;
     }
 
-    int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos) / 2;
-    vector<uint8_t> token;
-    vector<uint8_t> secret;
-    for (int i = 0; i < len; i++) {
-        token.emplace_back(data[pos + i]);
-        secret.emplace_back(data[pos + len + i]);
+    vector<uint8_t> key;
+    for (size_t i = 0; i < size; i++) {
+        key.emplace_back(data[i]);
     }
-    proxy->ActiveUserKey(userId, token, secret);
-    proxy->InactiveUserKey(userId);
-    proxy->MountCryptoPathAgain(userId);
-    proxy->LockUserScreen(userId);
+    proxy->SetRecoverKey(key);
     return true;
 }
 } // namespace OHOS
@@ -91,7 +64,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Run your code on data */
     auto proxy = OHOS::GetStorageDaemonProxy();
     if (proxy != nullptr) {
-        OHOS::ActiveUserKeyFuzzTest(proxy, data, size);
+        OHOS::SetRecoverKeyFuzzTest(proxy, data, size);
     } else {
         printf("daemon proxy is nullptr\n");
     }

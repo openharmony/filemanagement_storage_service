@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproxyactiveuserkey_fuzzer.h"
+#include "storagedaemonproxycreaterecoverkey_fuzzer.h"
 
 #include <vector>
 #include <map>
@@ -62,14 +62,18 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool CreateRecoverKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size < sizeof(uint32_t)) {
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t)) {
         return true;
     }
 
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t userType = TypeCast<uint32_t>(data + pos, &pos);
+    if (pos != sizeof(uint32_t) + sizeof(uint32_t)) {
+        return true;
+    }
     int len = (size - pos) / 2;
     vector<uint8_t> token;
     vector<uint8_t> secret;
@@ -77,10 +81,7 @@ bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uin
         token.emplace_back(data[pos + i]);
         secret.emplace_back(data[pos + len + i]);
     }
-    proxy->ActiveUserKey(userId, token, secret);
-    proxy->InactiveUserKey(userId);
-    proxy->MountCryptoPathAgain(userId);
-    proxy->LockUserScreen(userId);
+    proxy->CreateRecoverKey(userId, userType, token, secret);
     return true;
 }
 } // namespace OHOS
@@ -91,7 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Run your code on data */
     auto proxy = OHOS::GetStorageDaemonProxy();
     if (proxy != nullptr) {
-        OHOS::ActiveUserKeyFuzzTest(proxy, data, size);
+        OHOS::CreateRecoverKeyFuzzTest(proxy, data, size);
     } else {
         printf("daemon proxy is nullptr\n");
     }
