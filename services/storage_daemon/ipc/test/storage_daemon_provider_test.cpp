@@ -293,6 +293,57 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_00
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_QueryUsbIsInUse_002
+ * @tc.desc: Verify the QueryUsbIsInUse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskPath = "/..";
+    bool isInUse = true;
+    auto ret = storageDaemonProviderTest_->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_QueryUsbIsInUse_002
+ * @tc.desc: Verify the QueryUsbIsInUse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskPath = "";
+    bool isInUse = false;
+    auto ret = storageDaemonProviderTest_->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_QueryUsbIsInUse_004
+ * @tc.desc: Verify the QueryUsbIsInUse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskPath = "/..";
+    bool isInUse = false;
+    auto ret = storageDaemonProviderTest_->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_004 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_StartUser_001
  * @tc.desc: Verify the StartUser function.
  * @tc.type: FUNC
@@ -568,7 +619,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ActiveUserKey_002,
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
     int32_t ret = storageDaemonProviderTest_->ActiveUserKey(StorageService::START_USER_ID - 1, token, secret);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ActiveUserKey_002 end";
 }
 
@@ -599,7 +650,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserKey_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = storageDaemonProviderTest_->InactiveUserKey(StorageService::START_USER_ID - 1);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_USERID_RANGE);
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserKey_002 end";
 }
@@ -618,6 +669,23 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateKeyContext_0
     int32_t result = storageDaemonProviderTest_->UpdateKeyContext(StorageTest::USER_ID1, needRemoveTmpKey);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateKeyContext_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UpdateKeyContext_002
+ * @tc.desc: Verify the UpdateKeyContext function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateKeyContext_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateKeyContext_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    bool needRemoveTmpKey = true;
+    uint32_t secureUid = -1;
+    int32_t result = storageDaemonProviderTest_->UpdateKeyContext(secureUid, needRemoveTmpKey);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateKeyContext_002 end";
 }
 
 /**
@@ -663,7 +731,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_LockUserScreen_002
 #ifdef USER_CRYPTO_MANAGER
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t ret = storageDaemonProviderTest_->LockUserScreen(StorageService::START_USER_ID - 1);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_USERID_RANGE);
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_LockUserScreen_002 end";
 }
@@ -740,6 +808,26 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateAppkey_001
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_GenerateAppkey_002
+ * @tc.desc: Verify the GenerateAppkey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateAppkey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateAppkey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string keyId;
+    uint32_t hashId = 1234;
+    uint32_t secureUid = -1;
+    bool needreset = false;
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t result = storageDaemonProviderTest_->GenerateAppkey(secureUid, hashId, keyId, needreset);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateAppkey_002 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey function.
  * @tc.type: FUNC
@@ -753,6 +841,23 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteAppkey_001, 
     int32_t result = storageDaemonProviderTest_->DeleteAppkey(StorageTest::USER_ID1, keyId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteAppkey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_DeleteAppkey_002
+ * @tc.desc: Verify the DeleteAppkey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteAppkey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteAppkey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string keyId;
+    uint32_t secureUid = -1;
+    int32_t result = storageDaemonProviderTest_->DeleteAppkey(secureUid, keyId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteAppkey_002 end";
 }
 
 /**
@@ -776,6 +881,30 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateRecoverKey_0
     int32_t result = storageDaemonProviderTest_->CreateRecoverKey(StorageTest::USER_ID1, userType, token, secret);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateRecoverKey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreateRecoverKey_002
+ * @tc.desc: Verify the CreateRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateRecoverKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateRecoverKey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint32_t userType = 1;
+    uint32_t secureUid = -1;
+    const std::vector<uint8_t> token = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10};
+
+    const std::vector<uint8_t> secret = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B,
+                                         0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26,
+                                         0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30};
+
+    int32_t result = storageDaemonProviderTest_->CreateRecoverKey(secureUid, userType, token, secret);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateRecoverKey_002 end";
 }
 
 /**
@@ -1164,6 +1293,23 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetUserNeedActiveS
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_GetUserNeedActiveStatus_002
+ * @tc.desc: Verify the GetUserNeedActiveStatus function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetUserNeedActiveStatus_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetUserNeedActiveStatus_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    bool needActive = true;
+    uint32_t secureUid = -1;
+    int32_t result = storageDaemonProviderTest_->GetUserNeedActiveStatus(secureUid, needActive);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetUserNeedActiveStatus_002 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
  * @tc.type: FUNC
@@ -1414,6 +1560,419 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StatisticSysDirSpa
     auto ret = storageDaemonProviderTest_->StatisticSysDirSpace();
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StatisticSysDirSpace_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CheckUserid_001
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CheckUserid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto ret = storageDaemonProviderTest_->CheckUserIdRange(StorageService::START_USER_ID - 1);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CheckUserid_002
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CheckUserid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto ret = storageDaemonProviderTest_->CheckUserIdRange(StorageService::START_USER_ID);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CheckUserid_003
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CheckUserid_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto ret = storageDaemonProviderTest_->CheckUserIdRange(StorageService::MAX_USER_ID + 1);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_001
+ * @tc.desc: Verify the IsFilePathInvalid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "../";
+    bool result = storageDaemonProviderTest_->IsFilePathInvalid(path);
+    EXPECT_TRUE(result);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_002
+ * @tc.desc: Verify the IsFilePathInvalid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "/..";
+    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
+    EXPECT_TRUE(result);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_003
+ * @tc.desc: Verify the IsFilePathInvalid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "/valid/path/test/";
+    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
+    EXPECT_FALSE(result);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_004
+ * @tc.desc: Verify the IsFilePathInvalid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "/valid/path/test";
+    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
+    EXPECT_FALSE(result);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_SetDirEncryptionPolicy_001
+ * @tc.desc: Verify the SetDirEncryptionPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetDirEncryptionPolicy_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/..";
+    int32_t result = storageDaemonProviderTest_->SetDirEncryptionPolicy(userId, path, true);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetDirEncryptionPolicy end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetLockScreenStatus_002
+ * @tc.desc: Verify the GetLockScreenStatus function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetLockScreenStatus_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetLockScreenStatus_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    bool lockStatus = true;
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->GetLockScreenStatus(userId, lockStatus);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetLockScreenStatus_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto authToken = GenerateTestVector(0x01, 32);
+    auto newSecret = GenerateTestVector(0x02, 32);
+    uint64_t secureUid = 100;
+    uint32_t userid = -1;
+    std::vector<std::vector<uint8_t>> plainText = {GenerateTestVector(0x03, 64), GenerateTestVector(0x04, 64)};
+    int32_t ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+                                                                           userid, plainText);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDfsDocs_002
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/..";
+    std::string networkId = "network-123";
+    std::string deviceId = "device-456";
+    int32_t result = storageDaemonProviderTest_->MountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDfsDocs_003
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDfsDocs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/documents";
+    std::string networkId = "network-123";
+    std::string deviceId = "device-456";
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDfsDocs_002
+ * @tc.desc: Verify the UMountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/..";
+    std::string networkId = "network-123";
+    std::string deviceId = "device-456";
+    int32_t result =
+        storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDfsDocs_003
+ * @tc.desc: Verify the UMountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/documents";
+    std::string networkId = "network-123";
+    std::string deviceId = "device-456";
+    uint32_t userId = -1;
+    int32_t result =
+        storageDaemonProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountMediaFuse_002
+ * @tc.desc: Verify the MountMediaFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountMediaFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountMediaFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t devFd = 1001;
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountMediaFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountMediaFuse_002
+ * @tc.desc: Verify the UMountMediaFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountMediaFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountMediaFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->UMountMediaFuse(userId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountMediaFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_002
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "";
+    int32_t fuseFd = 0;
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountFileMgrFuse_002
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "";
+    uint32_t userId = -1;
+    int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_IsFileOccupied_002
+ * @tc.desc: Verify the IsFileOccupied function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFileOccupied_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    const std::string path = "/..";
+    const std::vector<std::string> inputList = {"unrelated_process_1", "unrelated_process_2"};
+    std::vector<std::string> outputList;
+    bool status = true;
+    int32_t result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFileOccupied_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_ResetSecretWithRecoveryKey_002
+ * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRecoveryKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint32_t rkType = 1;
+    uint32_t userId = -1;
+    std::vector<uint8_t> key = {0x01, 0x23, 0x45, 0x67};
+    int32_t result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(userId, rkType, key);
+    EXPECT_EQ(result, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDisShareFile_002
+ * @tc.desc: Verify the MountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_002
+ * @tc.desc: Verify the UMountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string networkId = "sharefile1";
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_InactiveUserPublicDirKey_001
+ * @tc.desc: Verify the InactiveUserPublicDirKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserPublicDirKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef USER_CRYPTO_MANAGER
+    int32_t ret = storageDaemonProviderTest_->InactiveUserPublicDirKey(StorageService::START_USER_ID);
+    EXPECT_EQ(ret, E_OK);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_InactiveUserPublicDirKey_002
+ * @tc.desc: Verify the InactiveUserPublicDirKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserPublicDirKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef USER_CRYPTO_MANAGER
+    int32_t ret = storageDaemonProviderTest_->InactiveUserPublicDirKey(StorageService::START_USER_ID - 1);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_002 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

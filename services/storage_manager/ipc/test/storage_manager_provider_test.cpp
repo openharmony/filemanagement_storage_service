@@ -1339,5 +1339,217 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_00
     EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
 }
+
+/**
+ * @tc.name: storageManagerProviderTest_CheckUserid_001
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    auto ret = storageManagerProviderTest_->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_002 end";
+}
+
+/**
+ * @tc.name: storageManagerProviderTest_CheckUserid_002
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 0;
+    auto ret = storageManagerProviderTest_->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_002 end";
+}
+
+/**
+ * @tc.name: storageManagerProviderTest_CheckUserid_003
+ * @tc.desc: Verify the CheckUserid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1;
+    auto ret = storageManagerProviderTest_->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "storageManagerProviderTest_CheckUserid_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetBundleQuota_002
+ * @tc.desc: Verify the SetBundleQuota function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string bundleName = "com.example.app";
+    int32_t uid = 1001;
+    std::string bundleDataDirPath = "/..";
+    int32_t limitSizeMb = 1024;
+    auto ret = storageManagerProviderTest_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDfsDocs_003
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDfsDocs_003
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/..";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDfsDocs_002
+ * @tc.desc: Verify the UMountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDfsDocs_003
+ * @tc.desc: Verify the UMountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/..";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountMediaFuse_002
+ * @tc.desc: Verify the MountMediaFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    int32_t devFd = -1;
+    auto ret = storageManagerProviderTest_->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountMediaFuse_002
+ * @tc.desc: Verify the UMountMediaFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    auto ret = storageManagerProviderTest_->UMountMediaFuse(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_002
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/mtp/device/storage/usb";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_002
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/mtp/device/storage/usb";
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
