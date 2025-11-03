@@ -49,10 +49,7 @@ bool SetRecoverKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uin
         return true;
     }
 
-    vector<uint8_t> key;
-    for (size_t i = 0; i < size; i++) {
-        key.emplace_back(data[i]);
-    }
+    vector<uint8_t> key(data, data + size);
     proxy->SetRecoverKey(key);
     return true;
 }
