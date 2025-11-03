@@ -19,6 +19,7 @@
 #include "common_event_support.h"
 #include "datashare_helper.h"
 #include "storage_service_constant.h"
+#include "storage_service_constants.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -27,19 +28,20 @@ enum {
     USER_SWITCH_BIT
 };
 
-class AccountSubscriber : public EventFwk::CommonEventSubscriber {
+class AccountSubscriber {
 public:
-    AccountSubscriber() = default;
-    explicit AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo);
-    static void Subscriber(void);
-    virtual ~AccountSubscriber() = default;
-    virtual void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
-    static void ResetUserEventRecord(int32_t userId);
+    static AccountSubscriber &GetInstance();
+    void ResetUserEventRecord(int32_t userId);
+    void NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType);
 private:
-    std::map<int32_t, std::shared_ptr<DataShare::DataShareHelper>> mediaShareMap_;
+    AccountSubscriber() = default;
+    ~AccountSubscriber() = default;
+    AccountSubscriber(const AccountSubscriber &) = delete;
+    AccountSubscriber &operator=(const AccountSubscriber &) = delete;
 
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;
+    std::map<int32_t, std::shared_ptr<DataShare::DataShareHelper>> mediaShareMap_;
     uint32_t GetUserStatus(int32_t userId);
     uint32_t HandleUserUnlockEvent(uint32_t userStatus);
     uint32_t HandleUserSwitchedEvent(uint32_t userStatus);

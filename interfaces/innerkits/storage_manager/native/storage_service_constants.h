@@ -25,7 +25,12 @@ enum EncryptionLevel {
     EL3_USER_KEY = 3,
     EL4_USER_KEY = 4,
 };
+
+enum UserChangedEventType {
+    EVENT_USER_UNLOCKED = 0,
+    EVENT_USER_SWITCHED = 1,
+};
 }
 } // OHOS
 
-#endif // OHOS_STORAGE_POLICE_CONSTANT_H
+#endif // OHOS_STORAGE_POLICE_CONSTANT_H

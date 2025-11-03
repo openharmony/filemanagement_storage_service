@@ -146,15 +146,12 @@ void StorageManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, const s
 {
     (void)systemAbilityId;
     (void)deviceId;
-#ifdef USER_CRYPTO_MANAGER
-    AccountSubscriber::Subscriber();
-#endif
 }
 
 void StorageManagerProvider::ResetUserEventRecord(int32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    AccountSubscriber::ResetUserEventRecord(userId);
+    AccountSubscriber::GetInstance().ResetUserEventRecord(userId);
 #endif
 }
 
@@ -968,6 +965,23 @@ int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
     StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
     return ret;
+}
+
+int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
+{
+    pid_t callingUid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) && callingUid != ACCOUNT_UID) {
+        LOGE("NotifyUserChangedEvent permission denied ! uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+    StorageService::UserChangedEventType enumType = static_cast<StorageService::UserChangedEventType>(eventType);
+    if (enumType != StorageService::UserChangedEventType::EVENT_USER_UNLOCKED &&
+        enumType != StorageService::UserChangedEventType::EVENT_USER_SWITCHED) {
+        LOGE("NotifyUserChangedEvent event type invalid ! type: %{public}u", eventType);
+        return E_PARAMS_INVALID;
+    }
+    StorageManager::GetInstance().NotifyUserChangedEvent(userId, enumType);
+    return E_OK;
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -157,18 +157,27 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 
 int32_t KeyManager::InActiveUserKey(unsigned int user)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->InActiveUserKey(user);
 }
 
 int32_t KeyManager::LockUserScreen(uint32_t user)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->LockUserScreen(user);
 }
 
 int32_t KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UnlockUserScreen(user, token, secret);
 }
 
 int32_t KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
@@ -178,12 +187,18 @@ int32_t KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
 int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->DeleteAppkey(userId, keyId);
 }
 
 int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
@@ -222,12 +237,18 @@ int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 int32_t KeyManager::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
     StorageService::EncryptionLevel level)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->SetDirEncryptionPolicy(userId, dirPath, level);
 }
 
 int32_t KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
@@ -252,7 +273,10 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
 
 int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
 #ifdef EL5_FILEKEY_MANAGER
@@ -269,7 +293,10 @@ int KeyManager::UnregisterUeceActivationCallback()
 
 int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

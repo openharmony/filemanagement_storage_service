@@ -132,7 +132,7 @@ bool Process::CheckFds(std::string pidPath)
     auto path = StringPrintf("%s/fd", pidPath.c_str());
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
-        return E_ERR;
+        return false;
     }
 
     while ((dirEntry = readdir(dir)) != nullptr) {

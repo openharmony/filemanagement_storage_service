@@ -28,71 +28,9 @@
 #include "storage_manager_stub.h"
 
 using namespace OHOS::StorageManager;
-
-namespace OHOS::Security::AccessToken {
-ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
-{
-    return Security::AccessToken::TOKEN_NATIVE;
-}
-
-int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string &permissionName)
-{
-    return Security::AccessToken::PermissionState::PERMISSION_GRANTED;
-}
-
-int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo &nativeTokenInfoRes)
-{
-    nativeTokenInfoRes.processName = "foundation";
-    return 0;
-}
-} // namespace OHOS::Security::AccessToken
-
-namespace OHOS {
-#ifdef CONFIG_IPC_SINGLE
-using namespace IPC_SINGLE;
-#endif
-pid_t IPCSkeleton::GetCallingUid()
-{
-    pid_t callingUid = 5523;
-    return callingUid;
-}
-
-uint32_t IPCSkeleton::GetCallingTokenID()
-{
-    uint32_t callingTokenID = 100;
-    return callingTokenID;
-}
-} // namespace OHOS
-
 namespace OHOS::StorageManager {
-constexpr uint8_t MAX_CALL_TRANSACTION = 64;
-constexpr size_t U32_AT_SIZE = 4;
-
 std::shared_ptr<StorageManagerProvider> storageManagerProvider =
     std::make_shared<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
-
-uint32_t GetU32Data(const char *ptr)
-{
-    // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
-    return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
-}
-
-bool g_storageManagerProviderAddUserFTest(std::unique_ptr<char[]> data, size_t size)
-{
-    uint32_t code = GetU32Data(data.get());
-    if (code == 0) {
-        return true;
-    }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data.get(), size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-    storageManagerProvider->OnRemoteRequest(code % MAX_CALL_TRANSACTION, datas, reply, option);
-
-    return true;
-}
 
 bool UnmountFuzzTest(const uint8_t *data, size_t size)
 {
@@ -118,18 +56,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    /* Validate the length of size */
-    if (size < OHOS::StorageManager::U32_AT_SIZE) {
-        return 0;
-    }
-
-    auto str = std::make_unique<char[]>(size + 1);
-    (void)memset_s(str.get(), size + 1, 0x00, size + 1);
-    if (memcpy_s(str.get(), size, data, size) != EOK) {
-        return 0;
-    }
-
-    OHOS::StorageManager::g_storageManagerProviderAddUserFTest(move(str), size);
     OHOS::StorageManager::UnmountFuzzTest(data, size);
     return 0;
-}
+}

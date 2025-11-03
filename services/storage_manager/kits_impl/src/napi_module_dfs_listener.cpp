@@ -127,7 +127,7 @@ static void HandleStatusEvent(napi_env env, napi_ref callbackRef_,
 {
     napi_handle_scope scope = nullptr;
     napi_status napiStatus = napi_open_handle_scope(env, &scope);
-    if (napiStatus != napi_ok) {
+    if (napiStatus != napi_ok || scope == nullptr) {
         HILOGE("Failed to open handle scope, status: %{public}d", napiStatus);
         return;
     }

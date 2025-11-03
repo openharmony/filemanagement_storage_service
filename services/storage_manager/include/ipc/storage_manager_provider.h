@@ -165,6 +165,7 @@ public:
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     int32_t DeleteUserDir(const std::string &path) override;
     int32_t CheckUserIdRange(int32_t userId);
+    int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
 
 private:
     StorageManagerProvider();

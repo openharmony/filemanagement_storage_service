@@ -111,4 +111,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 75] void DeleteUserDir([in] String path);
     [ipccode 76] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int type);
     [ipccode 77] void UpdateUserPublicDirPolicy([in] unsigned int userId);
+    [ipccode 78] void NotifyUserChangedEvent([in] unsigned int userId, [in] unsigned int eventType);
 }

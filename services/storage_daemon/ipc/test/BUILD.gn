@@ -44,9 +44,11 @@ ohos_unittest("storage_daemon_test") {
     "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
+    "${storage_service_path}/test/unittest/mock/include",
   ]
 
   sources = [
+    "$ROOT_DIR/ipc/test/storage_daemon_other_test.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
@@ -54,6 +56,9 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/mock/user_manager_mock.cpp",
     "$ROOT_DIR/mock/mount_manager_mock.cpp",
     "$ROOT_DIR/mock/iam_client_mock.cpp",
+    "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
+    "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
   ]
 
   deps = [

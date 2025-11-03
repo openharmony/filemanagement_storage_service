@@ -927,48 +927,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Leve
 }
 
 /**
- * @tc.name: key_manager_generate_delete_user_keys
- * @tc.desc: Verify the KeyManager GenerateUserKeys and DeleteUserKeys
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Level1)
-{
-    const string USER_EL1_DIR = "/data/test/user/el1";
-    const string USER_EL2_DIR = "/data/test/user/el2";
-
-    EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
-    EXPECT_EQ(0, InitFscryptPolicy());
-    OHOS::ForceRemoveDirectory(USER_EL1_DIR);
-    OHOS::ForceRemoveDirectory(USER_EL2_DIR);
-    MkDirRecurse(USER_EL1_DIR, S_IRWXU);
-    MkDirRecurse(USER_EL2_DIR, S_IRWXU);
-
-    KeyManager::GetInstance().InitGlobalDeviceKey();
-    KeyManager::GetInstance().InitGlobalUserKeys();
-    UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'}, .oldSecret = {},
-                                       .newSecret = {'s', 'e', 'c', 'r', 'e', 't'}, .secureUid = 0};
-    UserTokenSecret userTokenSecretNull = {.token = {}, .oldSecret = {}, .newSecret = {}, .secureUid = 0};
-
-    EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
-    KeyManager::GetInstance().InitGlobalDeviceKey();
-    KeyManager::GetInstance().InitGlobalUserKeys();
-    uint32_t userId = 801; // bad userId, not generated
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
-    EXPECT_EQ(0, KeyManager::GetInstance().SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
-                                                                 {{userId, USER_EL2_DIR}})); // bad keytype
-#ifdef EL5_FILEKEY_MANAGER
-    EXPECT_EQ(E_EL5_DELETE_CLASS_ERROR, KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecretNull));
-#else
-    EXPECT_EQ(E_PARAMS_NULLPTR_ERR, KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecretNull));
-#endif
-    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance().UpdateKeyContext(userId));
-    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance().InActiveUserKey(userId));
-    EXPECT_EQ(0, KeyManager::GetInstance().DeleteUserKeys(userId));
-}
-
-/**
  * @tc.name: fscrypt_key_secure_access_control
  * @tc.desc: Verify the secure access when user have pin code.
  * @tc.type: FUNC

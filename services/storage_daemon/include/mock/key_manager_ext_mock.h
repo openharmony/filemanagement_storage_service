@@ -27,6 +27,10 @@ public:
 public:
     virtual int DeleteUserKeys(uint32_t user) = 0;
     virtual int GenerateUserKeys(uint32_t user, uint32_t flags) = 0;
+    virtual int ActiveUserKey(uint32_t user, const std::vector<uint8_t> &token,
+        const std::vector<uint8_t> &secret) = 0;
+    virtual int InActiveUserKey(uint32_t user) = 0;
+    virtual int UpdateUserPublicDirPolicy(uint32_t user) = 0;
 
 public:
     static inline std::shared_ptr<IKeyManagerExtMock> iKeyManagerExtMock_ = nullptr;
@@ -36,7 +40,10 @@ class KeyManagerExtMock : public IKeyManagerExtMock {
 public:
     MOCK_METHOD(int, DeleteUserKeys, (uint32_t));
     MOCK_METHOD(int, GenerateUserKeys, (uint32_t, uint32_t));
+    MOCK_METHOD(int, ActiveUserKey, (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
+    MOCK_METHOD(int, InActiveUserKey, (uint32_t));
+    MOCK_METHOD(int, UpdateUserPublicDirPolicy, (uint32_t));
 };
 }
 }
-#endif // STORAGE_DAEMON_KEY_MANAGER_EXT_MOCK_H
+#endif // STORAGE_DAEMON_KEY_MANAGER_EXT_MOCK_H

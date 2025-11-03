@@ -44,7 +44,7 @@ public:
 
     int32_t Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata);
     int32_t Destroy();
-    int32_t DestroyUsbFuse();
+    void DestroyUsbFuse();
     int32_t Mount(uint32_t flags);
     int32_t UMount(bool force = false);
     int32_t UMountUsbFuse();

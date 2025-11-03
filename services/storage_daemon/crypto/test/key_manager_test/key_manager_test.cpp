@@ -401,7 +401,7 @@ HWTEST_F(KeyManagerTest, KeyManager_ActiveCeSceSeceUserKey_002, TestSize.Level1)
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance().ActiveCeSceSeceUserKey(user, EL5_KEY, token, secret), 0);
+    EXPECT_EQ(KeyManager::GetInstance().ActiveCeSceSeceUserKey(user, EL5_KEY, token, secret), E_ACTIVE_REPEATED);
     KeyManager::GetInstance().DeleteElKey(user, EL5_KEY);
     OHOS::RemoveFile(keyDir + "/test.txt");
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(keyUeceDir));

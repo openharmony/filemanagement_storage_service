@@ -480,7 +480,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     }
 
     ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, {'!'});
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
@@ -544,7 +544,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     }
     LOGW("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
     ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
@@ -682,7 +682,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
 #ifdef USER_CRYPTO_MANAGER
     LOGW("ActiveUserKey with type %{public}u enter", type);
     int ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, type, token, secret);
-    if (ret != E_OK && ret != -ENOENT) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         std::error_code errCode;
         std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
@@ -720,7 +720,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL3");
         return ret;
@@ -731,7 +731,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL4");
         return ret;
@@ -742,7 +742,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL5_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL5");
         return ret;
@@ -750,6 +750,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     delay = StorageService::StorageRadar::ReportDuration("ACTIVE EL5",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: ACTIVE EL5: delay time = %{public}s", delay.c_str());
+    return ret;
 #endif
     return E_OK;
 }
@@ -803,7 +804,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("ActiveUserKey failed, userId=%{public}u, type=%{public}u, tok empty %{public}d sec empty %{public}d",
             userId, EL2_KEY, token.empty(), secret.empty());
         if (!token.empty() && !secret.empty()) {
@@ -817,7 +818,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         userId, delay.c_str());
 
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("ActiveUserKeyAndPrepareElX failed, userId %{public}u.", userId);
         KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;
@@ -825,7 +826,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
-    auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
+    auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, ret == E_ACTIVE_REPEATED ? false : true);
     if (ueceRet != E_OK) {
         LOGE("NotifyUeceActivation failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::NotifyUeceActivation", userId, ueceRet, "EL5");
@@ -836,7 +837,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     LOGI("SD_DURATION: UNLOCK USER APP KEY: delay time = %{public}s.", delay.c_str());
     LOGW("Active user key for single secen for userId=%{public}d success.", userId);
 #endif
-    return ret;
+    return ret == E_ACTIVE_REPEATED ? E_OK : ret;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -904,7 +905,7 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     LOGI("Prepare dirs and update auth for update secen for userId=%{public}d el2 success.", userId);
 
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
         LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
         KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;

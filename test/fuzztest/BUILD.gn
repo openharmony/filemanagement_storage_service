@@ -17,10 +17,16 @@ group("storage_manager_provider_fuzztest") {
   deps = [
     "storagemanagerprovider_fuzzer:fuzztest",
     "storagemanagerprovidercompleteadduser_fuzzer:fuzztest",
+    "storagemanagerprovidercreaterecoverkey_fuzzer:fuzztest",
+    "storagemanagerprovidergenerateappkey_fuzzer:fuzztest",
+    "storagemanagerprovidergetalldisks_fuzzer:fuzztest",
     "storagemanagerprovidergetallvolumes_fuzzer:fuzztest",
     "storagemanagerprovidergetbundlestats_fuzzer:fuzztest",
+    "storagemanagerprovidergetdiskbyid_fuzzer:fuzztest",
+    "storagemanagerprovidergetfileencryptstatus_fuzzer:fuzztest",
     "storagemanagerprovidergetfreesize_fuzzer:fuzztest",
     "storagemanagerprovidergetfreesizeofvolume_fuzzer:fuzztest",
+    "storagemanagerprovidergetlockscreenstatus_fuzzer:fuzztest",
     "storagemanagerprovidergetsystemsize_fuzzer:fuzztest",
     "storagemanagerprovidergettotalsize_fuzzer:fuzztest",
     "storagemanagerprovidergettotalsizeofvolume_fuzzer:fuzztest",
@@ -29,12 +35,28 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovideradduser_fuzzer:fuzztest",
     "storagemanagerproviderformat_fuzzer:fuzztest",
     "storagemanagerprovidergetcurrentbundle_fuzzer:fuzztest",
+    "storagemanagerprovidergetvolumebyid_fuzzer:fuzztest",
+    "storagemanagerprovidergetvolumebyuuid_fuzzer:fuzztest",
     "storagemanagerprovidermount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifydiskcreated_fuzzer:fuzztest",
+    "storagemanagerprovidernotifyvolumemounted_fuzzer:fuzztest",
+    "storagemanagerprovidernotifyvolumestatechanged_fuzzer:fuzztest",
     "storagemanagerproviderpartition_fuzzer:fuzztest",
+    "storagemanagerproviderqueryusbisinuse_fuzzer:fuzztest",
     "storagemanagerproviderremoveuser_fuzzer:fuzztest",
+    "storagemanagerproviderresetsecretwithrecoverykey_fuzzer:fuzztest",
+    "storagemanagerprovidersetrecoverkey_fuzzer:fuzztest",
+    "storagemanagerprovidermountdfsdocs_fuzzer:fuzztest",
+    "storagemanagerprovidersetvolumedescription_fuzzer:fuzztest",
     "storagemanagerproviderstartuser_fuzzer:fuzztest",
     "storagemanagerproviderstopuser_fuzzer:fuzztest",
     "storagemanagerproviderumount_fuzzer:fuzztest",
+    "storagemanagerproviderupdateuseauthwithrecoverykey_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifymtpunmount_fuzzer:fuzztest",
+    "storagemanagerprovidernotifydiskdestroyed_fuzzer:fuzztest",
+    "storagemanagerprovidermountmediafuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountmediafuse_fuzzer:fuzztest",
   ]
 }
 
@@ -67,6 +89,32 @@ group("storage_daemon_provider_fuzztest") {
   ]
 }
 
+group("storage_daemon_proxy_fuzztest") {
+  testonly = true
+  deps = [
+    "storagedaemonproxyisfileoccupied_fuzzer:fuzztest",
+    "storagedaemonproxyinactiveuserpublicdirkey_fuzzer:fuzztest",
+    "storagedaemonproxymountdissharefile_fuzzer:fuzztest",
+    "storagedaemonproxyqueryoccupiedspaceforsa_fuzzer:fuzztest",
+    "storagedaemonproxytrytofix_fuzzer:fuzztest",
+    "storagedaemonproxyactiveuserkey_fuzzer:fuzztest",
+    "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
+    "storagedaemonproxydeleteuserkeys_fuzzer:fuzztest",
+    "storagedaemonproxyformat_fuzzer:fuzztest",
+    "storagedaemonproxygenerateappkey_fuzzer:fuzztest",
+    "storagedaemonproxymount_fuzzer:fuzztest",
+    "storagedaemonproxypartition_fuzzer:fuzztest",
+    "storagedaemonproxyprepareuserdirs_fuzzer:fuzztest",
+    "storagedaemonproxysetvolumedescription_fuzzer:fuzztest",
+    "storagedaemonproxyshutdown_fuzzer:fuzztest",
+    "storagedaemonproxystartuser_fuzzer:fuzztest",
+    "storagedaemonproxyunlockuserscreen_fuzzer:fuzztest",
+    "storagedaemonproxyupdatekeycontext_fuzzer:fuzztest",
+    "storagedaemonproxyupdateuseauthwithrecoverykey_fuzzer:fuzztest",
+    "storagedaemonproxyupdateuserauth_fuzzer:fuzztest",
+  ]
+}
+
 group("filesystem_crypto_fuzztest") {
   testonly = true
   deps = [
@@ -83,13 +131,47 @@ group("filesystem_crypto_fuzztest") {
   ]
 }
 
+group("keycontrol_fuzztest") {
+  testonly = true
+  deps = [
+    "keycontroladdkey_fuzzer:fuzztest",
+    "keycontroladdkeyex_fuzzer:fuzztest",
+    "keycontrolgetkeyringid_fuzzer:fuzztest",
+    "keycontrolsearch_fuzzer:fuzztest",
+    "keycontrolunlink_fuzzer:fuzztest",
+    "keycontrolgetpolicy_fuzzer:fuzztest",
+    "keycontrolgetfscryptversion_fuzzer:fuzztest",
+    "keycontrolloadversion_fuzzer:fuzztest",
+    "keycontrolhasfscryptsyspara_fuzzer:fuzztest",
+    "keyctrlgetkeystatus_fuzzer:fuzztest",
+    "keyctrlgetpolicyex_fuzzer:fuzztest",
+    "keyctrlinstallkey_fuzzer:fuzztest",
+    "keyctrlremovekey_fuzzer:fuzztest",
+    "keyctrlsetpolicy_fuzzer:fuzztest",
+  ]
+}
+
+group("storage_daemon_provider_stub__fuzztest") {
+  testonly = true
+  deps = [
+    "storagedaemonprovideronremoterequest_fuzzer:fuzztest",
+    "storagedaemonproviderstubupdateuserauth_fuzzer:fuzztest",
+    "storagedaemonproviderupdateuserauthwithrecoverykey_fuzzer:fuzztest",
+    "storagedaemonproviderstubactiveuserkey_fuzzer:fuzztest"
+  ]
+}
+
 group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
     ":filesystem_crypto_fuzztest",
+    ":keycontrol_fuzztest",
     ":storage_daemon_provider_fuzztest",
+    ":storage_daemon_proxy_fuzztest",
     ":storage_manager_provider_fuzztest",
+    ":storage_daemon_provider_stub__fuzztest",
+    ":storage_daemon_proxy_fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
     "fileutils_fuzzer:fuzztest",
@@ -118,7 +200,14 @@ group("storage_service_fuzztest") {
   ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {
-    deps +=
-        [ "libmtp_fuzzer:fuzztest" ]
+    deps += [
+      "libmtpcheckspecificdevice_fuzzer:fuzztest",
+      "libmtpcreatefolder_fuzzer:fuzztest",
+      "libmtpdetectrawdevices_fuzzer:fuzztest",
+      "libmtp_fuzzer:fuzztest",
+      "libmtpgetfilesandfolders_fuzzer:fuzztest",
+      "libmtpopenrawdeviceuncached_fuzzer:fuzztest",
+      "libmtpreleasedevice_fuzzer:fuzztest",
+    ]
   }
 }

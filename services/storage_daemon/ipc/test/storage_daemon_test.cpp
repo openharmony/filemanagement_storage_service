@@ -22,13 +22,9 @@
 #include <string>
 
 #include "file_ex.h"
-#include "storage_service_errno.h"
 #include "file_sharing/file_sharing.h"
 
 namespace {
-int g_setupFileSharingDir = 0;
-bool g_saveStringToFile = true;
-bool g_saveStringToFileSync = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
 constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
@@ -38,18 +34,18 @@ constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 namespace OHOS {
 bool SaveStringToFile(const std::string& filePath, const std::string& content, bool truncated /*= true*/)
 {
-    return g_saveStringToFile;
+    return StorageDaemon::Test::StorageDaemonTest::g_saveStringToFile;
 }
 
 namespace StorageDaemon {
 int SetupFileSharingDir()
 {
-    return g_setupFileSharingDir;
+    return Test::StorageDaemonTest::g_setupFileSharingDir;
 }
 
 bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
-    return g_saveStringToFileSync;
+    return Test::StorageDaemonTest::g_saveStringToFileSync;
 }
 
 namespace Test {
@@ -816,7 +812,8 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
 /**
  * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOld_002
- * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthOld when ActiveCeSceSeceUserKey failed.
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthOld when
+    ActiveCeSceSeceUserKey failed with not E_ACTIVE_REPEATED.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
@@ -905,6 +902,26 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 }
 
 /**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOld_007
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthOld when ActiveCeSceSeceUserKey failed with E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOld_007, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ACTIVE_REPEATED));
+    EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_OK));
+    
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthOld(userId_, EL1_KEY, token_, secret_), E_OK);
+}
+
+
+/**
  * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_001
  * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx when KeyType invalid.
  * @tc.type: FUNC
@@ -921,7 +938,8 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
 
 /**
  * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_002
- * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx when ActiveCeSceSeceUserKey failed.
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx when ActiveCeSceSeceUserKey failed
+    with not E_ACTIVE_REPEATED.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
@@ -944,7 +962,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
     g_saveStringToFileSync = true;
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "3"), E_ERR);
 }
-
 
 /**
  * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_003
@@ -999,6 +1016,25 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
 
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL3_KEY, token_, secret_, "1"), E_OK);
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL2_KEY, token_, secret_, "1"), E_OK);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_006
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuthVx when ActiveCeSceSeceUserKey failed with E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx_006, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ACTIVE_REPEATED));
+    auto el2NatoPath = KeyManager::GetInstance().GetNatoNeedRestorePath(userId_, EL2_KEY) + FSCRYPT_VERSION_DIR;
+    std::error_code errCode;
+    std::filesystem::remove(el2NatoPath, errCode);
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
+
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL1_KEY, token_, secret_, "1"), E_OK);
 }
 
 /**
@@ -1240,6 +1276,355 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_GenerateKeyAndPrepareUserDirs_005,
     EXPECT_CALL(*keyManagerMock_, GenerateUserKeyByType(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_ERR));
     EXPECT_EQ(storageDaemon_->GenerateKeyAndPrepareUserDirs(userId_, EL1_KEY, token_, secret_), E_ERR);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepare_001
+ * @tc.desc: Verify the ActiveUserKeyAndPrepare when ActiveCeSceSeceUserKey success.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_OK);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepare_002
+ * @tc.desc: Verify the ActiveUserKeyAndPrepare when ActiveCeSceSeceUserKey failed with E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ACTIVE_REPEATED));
+
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ACTIVE_REPEATED);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepare_003
+ * @tc.desc: Verify the ActiveUserKeyAndPrepare when ActiveCeSceSeceUserKey failed with -ENOENT.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(-ENOENT));
+    EXPECT_CALL(*keyManagerMock_, GenerateUserKeyByType(_, _, _, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_OK));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ERR);
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_OK);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepare_004
+ * @tc.desc: Verify the ActiveUserKeyAndPrepare when ActiveCeSceSeceUserKey failed
+    with not E_ACTIVE_REPEATED and -ENOENT and elNeedRestorePath not exist.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_ERR));
+    // token is empty, secret is empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ERR);
+ 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL1_KEY) + RESTORE_DIR;
+    std::error_code errCode;
+    std::filesystem::remove(path, errCode);
+ 
+    secret_.push_back(1);
+    // token is empty, secret is not empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ERR);
+ 
+    secret_.clear();
+    token_.push_back(1);
+    // token is empty but secret is not empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ERR);
+ 
+    secret_.push_back(1);
+    // token is not empty, secret is not empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_ERR);
+#endif
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepare_005
+ * @tc.desc: Verify the ActiveUserKeyAndPrepare when ActiveCeSceSeceUserKey failed
+    with not E_ACTIVE_REPEATED and -ENOENT and elNeedRestorePath exist.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    token_.push_back(1);
+    secret_.push_back(1);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL1_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "1";
+    file.close();
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL1_KEY), "1");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepare(userId_, EL1_KEY, token_, secret_), E_OK);
+#endif
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepareElX_001
+ * @tc.desc: Verify the ActiveUserKeyAndPrepareElX when EL3_KEY failed with not E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepareElX_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepareElX(userId_, token_, secret_), E_ERR);
+#endif
+}
+ 
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepareElX_002
+ * @tc.desc: Verify the ActiveUserKeyAndPrepareElX when EL4_KEY failed with not E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepareElX_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepareElX(userId_, token_, secret_), E_ERR);
+#endif
+}
+ 
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepareElX_003
+ * @tc.desc: Verify the ActiveUserKeyAndPrepareElX when EL5_KEY failed with not E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepareElX_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepareElX(userId_, token_, secret_), E_ERR);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepareElX_004
+ * @tc.desc: Verify the ActiveUserKeyAndPrepareElX when EL345_KEY failed with E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepareElX_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_ACTIVE_REPEATED));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepareElX(userId_, token_, secret_), E_ACTIVE_REPEATED);
+#endif
+}
+ 
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKeyAndPrepareElX_005
+ * @tc.desc: Verify the ActiveUserKeyAndPrepareElX when all operations succeed.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepareElX_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKeyAndPrepareElX(userId_, token_, secret_), E_OK);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_001
+ * @tc.desc: Verify the ActiveUserKey4Single when ActiveCeSceSeceUserKey and ActiveUserKeyAndPrepareElX failed
+    with E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).Times(4)
+        .WillRepeatedly(Return(E_ACTIVE_REPEATED));
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_OK));
+ 
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_OK);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_002
+ * @tc.desc: Verify the ActiveUserKey4Single when ActiveCeSceSeceUserKey failed with not E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_ERR));
+
+    // token is empty and secret is empty
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token not empty and secret is empty
+    token_.push_back(1);
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token is empty and secret not empty
+    token_.clear();
+    secret_.push_back(1);
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+
+    // token not empty and secret not empty
+    token_.push_back(1);
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ACTIVE_EL2_FAILED);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_003
+ * @tc.desc: Verify the ActiveUserKey4Single when ActiveUserKeyAndPrepareElX failed with not E_ACTIVE_REPEATED.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_OK));
+
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_ERR);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_004
+ * @tc.desc: Verify the ActiveUserKey4Single when NotifyUeceActivation failed.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).Times(4)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_UNLOCK_APP_KEY2_FAILED);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveUserKey4Single_005
+ * @tc.desc: Verify the ActiveUserKey4Single when all operations succeed.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Single_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).Times(4)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, NotifyUeceActivation(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->ActiveUserKey4Single(userId_, token_, secret_), E_OK);
+#endif
+}
+
+/**
+ * @tc.name: StorageDaemonTest_ActiveAppCloneUserKey_001
+ * @tc.desc: Verify the ActiveAppCloneUserKey.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveAppCloneUserKey_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+ 
+#ifdef USER_CRYPTO_MANAGER
+    CreateNeedRestoreFile(StorageService::START_APP_CLONE_USER_ID, EL1_KEY);
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_NOT_SUPPORT));
+    storageDaemon_->ActiveAppCloneUserKey();
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK))
+        .WillOnce(Return(E_NOT_SUPPORT));
+    storageDaemon_->ActiveAppCloneUserKey();
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
+        .WillOnce(Return(E_NOT_SUPPORT));
+    storageDaemon_->ActiveAppCloneUserKey();
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _))
+        .WillOnce(Return(E_ACTIVE_REPEATED)).WillOnce(Return(E_ACTIVE_REPEATED)).WillOnce(Return(E_ACTIVE_REPEATED));
+    storageDaemon_->ActiveAppCloneUserKey();
+
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    storageDaemon_->ActiveAppCloneUserKey();
+
+    DeleteNeedRestoreFile(StorageService::START_APP_CLONE_USER_ID, EL1_KEY);
 #endif
 }
 } // Test
