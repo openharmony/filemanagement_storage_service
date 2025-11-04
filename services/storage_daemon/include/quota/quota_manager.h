@@ -45,15 +45,48 @@ struct UidSaInfo {
     int32_t uid;
     std::string saName;
     int64_t size;
-    UidSaInfo(int32_t uid_, const std::string& saName_, int64_t size_)
-        : uid(uid_), saName(saName_), size(size_) {}
-    UidSaInfo() : uid(0), saName(""), size(0) {}
+    uint64_t iNodes;
+    
+    UidSaInfo(int32_t uid, const std::string& saName, int64_t size, uint64_t iNodes = 0)
+        : uid(uid), saName(saName), size(size), iNodes(iNodes) {}
+    
+    UidSaInfo() : uid(0), saName(""), size(0), iNodes(0) {}
 };
 
 struct DirSpaceInfo {
     std::string path;
     uid_t uid;
     int64_t size;
+};
+
+struct NextDqBlk {
+    /* Absolute limit on disk quota blocks alloc */
+    uint64_t dqbHardLimit;
+    /* Preferred limit on disk quota blocks */
+    uint64_t dqbBSoftLimit;
+    /* Current occupied space(in bytes) */
+    uint64_t dqbCurSpace;
+    /* Maximum number of allocated inodes */
+    uint64_t dqbIHardLimit;
+    /* Preferred inode limit */
+    uint64_t dqbISoftLimit;
+    /* Current number of allocated inodes */
+    uint64_t dqbCurInodes;
+    /* Time limit for excessive disk use */
+    uint64_t dqbBTime;
+    /* Time limit for excessive files */
+    uint64_t dqbITime;
+    /* Bit mask of QIF_* constants */
+    uint32_t dqbValid;
+    /* the next ID greater than or equal to id that has a quota set */
+    uint32_t dqbId;
+};
+
+struct AllAppVec {
+    std::vector<struct UidSaInfo> sysSaVec;
+    std::vector<struct UidSaInfo> sysAppVec;
+    std::vector<struct UidSaInfo> userAppVec;
+    std::vector<struct UidSaInfo> otherAppVec;
 };
 
 uint32_t CheckOverLongPath(const std::string &path);
@@ -72,11 +105,8 @@ public:
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
-    void ProcessVecList(std::vector<struct UidSaInfo> &sysAppVec,
-        std::vector<struct UidSaInfo> &userAppVec, std::vector<struct UidSaInfo> &vec,
-        const std::map<int32_t, std::string> &bundleNameAndUid);
-    int64_t GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec,
-        std::vector<struct UidSaInfo> &sysAppVec, std::vector<struct UidSaInfo> &userAppVec);
+    void ProcessVecList(struct AllAppVec &allVec, const std::map<int32_t, std::string> &bundleNameAndUid);
+    void GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t &iNodes);
     void SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec);
     void AssembleSaInfoVec(std::vector<struct UidSaInfo> &vec,
         const std::map<int32_t, std::string> &bundleNameAndUid);
@@ -89,6 +119,16 @@ private:
     int32_t AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid);
     int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
     bool IsNeedScan();
+    void GetMetaData(std::ostringstream &extraData);
+    void GetAncoSize(std::ostringstream &extraData);
+    int32_t GetFileData(const std::string &path, int64_t &size);
+    bool StringToInt64(const std::string& str, int64_t& out_value);
+    void GetCurrentTime(std::ostringstream &extraData);
+    int32_t CheckOccupation(std::ostringstream &extraData);
+    void AssembleSysAppVec(int32_t dqUid, const struct NextDqBlk &dq,
+        std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec);
+    void GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec);
+    int64_t oldChangeSizeCache_ = 0;
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -263,7 +263,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ConvertBytesToMB_001
 
     decimalPlaces = 2;
     result = QuotaManager::GetInstance().ConvertBytesToMB(bytes, decimalPlaces);
-    EXPECT_EQ(result, 1.00);
+    EXPECT_NEAR(result, 1.05, 1e-6);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ConvertBytesToMB_001 end";
 }
@@ -374,14 +374,12 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
 HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 start";
-
-    std::vector<struct UidSaInfo> vec;
-    std::vector<struct UidSaInfo> vec1;
-    std::vector<struct UidSaInfo> vec2;
-    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec, vec1, vec2), E_OK);
+    struct AllAppVec allVec;
+    std::uint64_t iNodes;
+    QuotaManager::GetInstance().GetOccupiedSpaceForUidList(allVec, iNodes);
     struct UidSaInfo info = {0, "root", 0};
-    vec.emplace_back(info);
-    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec, vec1, vec2), E_OK);
+    allVec.sysSaVec.emplace_back(info);
+    QuotaManager::GetInstance().GetOccupiedSpaceForUidList(allVec, iNodes);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 end";
 }
@@ -520,25 +518,121 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessVecList_001, TestSize.Level1)
     std::vector<UidSaInfo> sysAppVec = {{1001, "sysDefault", 1024}};
     std::vector<UidSaInfo> userAppVec = {{2002, "userDefault", 2048}};
     std::vector<UidSaInfo> vec = {{3003, "vecDefault", 4096}};
+    std::vector<UidSaInfo> otherAppVec = {{4004, "vecDefault", 4096}};
     std::map<int32_t, std::string> bundleMap = {{1001, "SystemApp"}, {2002, "UserApp"}, {3003, "VecApp"}};
+    struct AllAppVec allVec;
+    allVec.otherAppVec = otherAppVec;
+    allVec.sysAppVec = sysAppVec;
+    allVec.userAppVec = userAppVec;
+    allVec.sysSaVec = vec;
+    QuotaManager::GetInstance().ProcessVecList(allVec, bundleMap);
 
-    QuotaManager::GetInstance().ProcessVecList(sysAppVec, userAppVec, vec, bundleMap);
-
-    EXPECT_EQ(sysAppVec[0].saName, "SystemApp");
-    EXPECT_EQ(userAppVec[0].saName, "UserApp");
-    EXPECT_EQ(vec[0].saName, "vecDefault");
+    EXPECT_EQ(allVec.sysAppVec[0].saName, "SystemApp");
+    EXPECT_EQ(allVec.userAppVec[0].saName, "UserApp");
+    EXPECT_EQ(allVec.sysSaVec[0].saName, "vecDefault");
 
     std::vector<UidSaInfo> sysAppVec1 = {{1001, "original", 1024}};
     std::vector<UidSaInfo> userAppVec1 = {{2002, "original", 2048}};
     std::vector<UidSaInfo> vec1 = {{3003, "original", 4096}};
     std::map<int32_t, std::string> bundleMap1; // 空 map
+    allVec.sysAppVec = sysAppVec1;
+    allVec.userAppVec = userAppVec1;
+    allVec.sysSaVec = vec1;
 
-    QuotaManager::GetInstance().ProcessVecList(sysAppVec1, userAppVec1, vec1, bundleMap1);
-
-    EXPECT_EQ(sysAppVec1[0].saName, "original");
-    EXPECT_EQ(userAppVec1[0].saName, "original");
-    EXPECT_EQ(vec1[0].saName, "original");
+    QuotaManager::GetInstance().ProcessVecList(allVec, bundleMap1);
+    EXPECT_EQ(allVec.sysAppVec[0].saName, "original");
+    EXPECT_EQ(allVec.userAppVec[0].saName, "original");
+    EXPECT_EQ(allVec.sysSaVec[0].saName, "original");
     GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessVecList_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetMetaData_001
+ * @tc.desc: Test GetMetaData processes all vectors and handles empty bundle map.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetMetaData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaData_001 start";
+    std::ostringstream extraData;
+    std::string hmfsPath = "/sys/fs/hmfs/userdata";
+    std::string mainBlk = "/main_blkaddr";
+    std::string ovpChunks = "/ovp_chunks";
+    std::string blkPath = hmfsPath + mainBlk;
+    std::string chunkPath = hmfsPath + ovpChunks;
+    EXPECT_TRUE(DeleteFile(blkPath) == 0);
+    QuotaManager::GetInstance().GetMetaData(extraData);
+    StorageTest::StorageTestUtils::CreateFile(blkPath);
+    EXPECT_TRUE(DeleteFile(chunkPath) == 0);
+    QuotaManager::GetInstance().GetMetaData(extraData);
+    EXPECT_TRUE(DeleteFile(blkPath) == 0);
+    QuotaManager::GetInstance().GetMetaData(extraData);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaData_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetFileData_001
+ * @tc.desc: Test QuotaManager::GetFileData with various file scenarios.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_001 start";
+    int64_t size = 0;
+    QuotaManager quotaManager_;
+    int32_t result = quotaManager_.GetFileData("/nonexistent/path/file.txt", size);
+    EXPECT_EQ(result, E_NON_ACCESS);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_StringToInt64_001
+ * @tc.desc: Test QuotaManager::StringToInt64 with various input scenarios.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_StringToInt64_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_StringToInt64_001 start";
+    QuotaManager quotaManager_;
+    int64_t outValue = 0;
+    bool result = quotaManager_.StringToInt64("123", outValue);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(outValue, 123);
+
+    result = quotaManager_.StringToInt64("-456", outValue);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(outValue, -456);
+
+    result = quotaManager_.StringToInt64("0", outValue);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(outValue, 0);
+
+    result = quotaManager_.StringToInt64("9223372036854775807", outValue);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(outValue, std::numeric_limits<int64_t>::max());
+
+    result = quotaManager_.StringToInt64("-9223372036854775808", outValue);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(outValue, std::numeric_limits<int64_t>::min());
+
+    result = quotaManager_.StringToInt64("123abc", outValue);
+    EXPECT_FALSE(result);
+
+    result = quotaManager_.StringToInt64("hello", outValue);
+    EXPECT_FALSE(result);
+
+    result = quotaManager_.StringToInt64("", outValue);
+    EXPECT_FALSE(result);
+
+    result = quotaManager_.StringToInt64("9223372036854775808", outValue);
+    EXPECT_FALSE(result);
+
+    result = quotaManager_.StringToInt64("-9223372036854775809", outValue);
+    EXPECT_FALSE(result);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_StringToInt64_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

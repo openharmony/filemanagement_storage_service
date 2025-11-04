@@ -37,6 +37,7 @@ ohos_unittest("file_utils_test") {
 
   sources = [
     "common/help_utils.cpp",
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "file_utils_test.cpp",
   ]
 

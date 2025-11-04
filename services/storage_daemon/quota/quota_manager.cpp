@@ -16,6 +16,8 @@
 #include "quota/quota_manager.h"
 
 #include <charconv>
+#include <chrono>
+#include <ctime>
 #include <dirent.h>
 #include <linux/fs.h>
 #include <linux/quota.h>
@@ -40,43 +42,30 @@ constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
+constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
+constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
+constexpr const char *OVP_CHUNKS = "/ovp_chunks";
+constexpr uint64_t FOUR_K = 4096;
+constexpr uint64_t BLOCK_COUNT = 512;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr uint64_t PATH_MAX_LEN = 4096;
-constexpr double DIVISOR = 1024.0 * 1024.0;
+constexpr double DIVISOR = 1000.0 * 1000.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ONE_MS = 1000;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
 constexpr int32_t BLOCK_BYTE = 512;
 constexpr int32_t TOP_SPACE_COUNT = 20;
+constexpr int32_t ROOT_UID = 0;
+constexpr int32_t SYSTEM_UID = 1000;
+constexpr int32_t FOUNDATION_UID = 5523;
+constexpr int32_t LINE_MAX_LEN = 32;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 #define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
-
-struct NextDqBlk {
-    /* Absolute limit on disk quota blocks alloc */
-    uint64_t dqbHardLimit;
-    /* Preferred limit on disk quota blocks */
-    uint64_t dqbBSoftLimit;
-    /* Current occupied space(in bytes) */
-    uint64_t dqbCurSpace;
-    /* Maximum number of allocated inodes */
-    uint64_t dqbIHardLimit;
-    /* Preferred inode limit */
-    uint64_t dqbISoftLimit;
-    /* Current number of allocated inodes */
-    uint64_t dqbCurInodes;
-    /* Time limit for excessive disk use */
-    uint64_t dqbBTime;
-    /* Time limit for excessive files */
-    uint64_t dqbITime;
-    /* Bit mask of QIF_* constants */
-    uint32_t dqbValid;
-    /* the next ID greater than or equal to id that has a quota set */
-    uint32_t dqbId;
-};
+std::mutex cacheMutex_;
 
 static std::vector<DirSpaceInfo> GetRootDir()
 {
@@ -254,36 +243,183 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("GetUidStorageStats begin!");
-    std::vector<UidSaInfo> sysSaVec;
-    std::vector<UidSaInfo> sysAppVec;
-    std::vector<UidSaInfo> userAppVec;
-    auto ret = ParseConfigFile(CONFIG_FILE_PATH, sysSaVec);
+    struct AllAppVec allVec;
+    auto ret = ParseConfigFile(CONFIG_FILE_PATH, allVec.sysSaVec);
     if (ret != E_OK) {
         LOGE("parsePasswd File failed.");
         return;
     }
+    uint64_t iNodes;
+    GetOccupiedSpaceForUidList(allVec, iNodes);
 
-    ret = GetOccupiedSpaceForUidList(sysSaVec, sysAppVec, userAppVec);
-    if (ret != E_OK) {
-        return;
-    }
-
-    ProcessVecList(sysAppVec, userAppVec, sysSaVec, bundleNameAndUid);
- 
     std::ostringstream extraData;
-    // DATA分区SIZE
-    extraData << storageStatus <<std::endl;
-    extraData << "{Sa data is:}" <<std::endl;
-    WriteExtraData(sysSaVec, extraData);
-    extraData << "{SysApp data is:}" <<std::endl;
-    WriteExtraData(sysAppVec, extraData);
-    extraData << "{UserApp data is:}" <<std::endl;
-    WriteExtraData(userAppVec, extraData);
+
+    GetCurrentTime(extraData);
+
+    extraData << storageStatus << std::endl;
+
+    GetMetaData(extraData);
+
+    GetAncoSize(extraData);
+
+    extraData << "{iNodes count is:" << iNodes << ",iNodes size is:" <<
+    ConvertBytesToMB(iNodes * FOUR_K, ACCURACY_NUM) <<"MB}" << std::endl;
+
+    GetSaOrOtherTotal(allVec.sysSaVec, extraData, true);
+
+    if (!allVec.otherAppVec.empty()) {
+        GetSaOrOtherTotal(allVec.otherAppVec, extraData, false);
+    }
+    ProcessVecList(allVec, bundleNameAndUid);
+    extraData << "{Sa data is:}" << std::endl;
+    WriteExtraData(allVec.sysSaVec, extraData);
+    extraData << "{SysApp data is:}" << std::endl;
+    WriteExtraData(allVec.sysAppVec, extraData);
+    extraData << "{UserApp data is:}" << std::endl;
+    WriteExtraData(allVec.userAppVec, extraData);
+    if (!allVec.otherAppVec.empty()) {
+        extraData << "{otherAppVec data is:}" << std::endl;
+        WriteExtraData(allVec.otherAppVec, extraData);
+    } else {
+        extraData << "{otherAppVec data is null}" << std::endl;
+    }
 
     LOGI("extraData is %{public}s", extraData.str().c_str());
     StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
         extraData.str());
     LOGI("GetUidStorageStats end!");
+}
+
+void QuotaManager::GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec)
+{
+    int64_t totalSize = 0;
+    for (const auto &info : vec) {
+        totalSize += info.size;
+    }
+    if (isSaVec) {
+        extraData << "{sa totalSize is:" << ConvertBytesToMB(totalSize, ACCURACY_NUM) << "MB}" << std::endl;
+        return;
+    }
+    extraData << "{other totalSize is:" << ConvertBytesToMB(totalSize, ACCURACY_NUM) << "MB}" << std::endl;
+}
+
+void QuotaManager::GetAncoSize(std::ostringstream &extraData)
+{
+    LOGI("begin get Anco info.");
+    uint64_t imageSize = 0;
+    GetRmgResourceSize("rgm_hmos", imageSize);
+    extraData << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
+    LOGI("end get Anco info.");
+}
+
+void QuotaManager::GetMetaData(std::ostringstream &extraData)
+{
+    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
+    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
+    int64_t blkSize = -1;
+    auto ret = GetFileData(blkPath, blkSize);
+    if (ret == E_OK && blkSize != -1) {
+        extraData << "{main_blkaddr data is:" << ConvertBytesToMB(blkSize * FOUR_K, ACCURACY_NUM) << "MB}" << std::endl;
+    } else {
+        extraData << "{get main_blkaddr wrong, ret:" << ret << ",blkSize is:" << blkSize << "}" << std::endl;
+    }
+
+    int64_t chunkSize = -1;
+    ret = GetFileData(chunkPath, chunkSize);
+    if (ret == E_OK && chunkSize != -1) {
+        extraData << "{ovp_chunks data is:" <<
+            ConvertBytesToMB(chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
+    } else {
+        extraData << "{get ovp_chunks wrong, ret:" << ret << ",chunkSize is:" << chunkSize << "}" << std::endl;
+    }
+
+    if (blkSize != -1 && chunkSize != -1) {
+        extraData << "{metaData is:" <<
+            ConvertBytesToMB(blkSize * FOUR_K + chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
+    }
+}
+
+int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
+{
+    if (path.empty() || path.size() >= PATH_MAX) {
+        return E_FILE_PATH_INVALID;
+    }
+    
+    char realPath[PATH_MAX] = {0x00};
+    if (!realpath(path.c_str(), realPath)) {
+        return E_FILE_PATH_INVALID;
+    }
+    
+    // 确保规范化后的路径在预期范围内
+    std::string normalizedPath(realPath);
+    if (normalizedPath != path) {
+        return E_FILE_PATH_INVALID;
+    }
+    
+    std::ifstream infile(normalizedPath, std::ios::in);
+    if (!infile.is_open()) {
+        return E_OPEN_JSON_FILE_ERROR;
+    }
+    
+    std::string line;
+    while (std::getline(infile, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        // 添加长度限制
+        if (line.size() > LINE_MAX_LEN) {
+            return E_NON_ACCESS;
+        }
+        
+        int64_t listNum = 0;
+        if (StringToInt64(line, listNum)) {
+            // 检查加法溢出
+            if (size > INT64_MAX - listNum) {
+                return E_NON_ACCESS;
+            }
+            size += listNum;
+        }
+    }
+    return E_OK;
+}
+
+bool QuotaManager::StringToInt64(const std::string& str, int64_t& out_value)
+{
+    if (str.empty() || str.size() > 20) { // 20是INT64_MAX的字符串长度
+        LOGE("Invalid input length");
+        return false;
+    }
+    auto result = std::from_chars(str.data(), str.data() + str.size(), out_value);
+    if (result.ec == std::errc::invalid_argument) {
+        LOGE("Invalid argument");
+        return false;
+    }
+    
+    if (result.ec == std::errc::result_out_of_range) {
+        LOGE("Integer overflow");
+        return false;
+    }
+    
+    if (result.ptr != str.data() + str.size()) {
+        LOGE("The string contains invalid characters");
+        return false;
+    }
+    
+    return true;
+}
+
+void QuotaManager::GetCurrentTime(std::ostringstream &extraData)
+{
+    auto now = std::chrono::system_clock::now();
+    auto timeStamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()).count();
+    auto timeT = std::chrono::system_clock::to_time_t(now);
+    struct tm timeInfo;
+    localtime_r(&timeT, &timeInfo);
+    std::ostringstream timeStr;
+    timeStr << std::put_time(&timeInfo, "%Y-%m-%d %H:%M:%S");
+    extraData << "{timeStamp is:" << timeStamp
+              << "MS,BeiJingTime is:" << timeStr.str() << "}" << std::endl;
 }
 
 void QuotaManager::WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData)
@@ -292,7 +428,7 @@ void QuotaManager::WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostrin
         extraData << "{uid:" << info.uid
             << ",saName:" << info.saName
             << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
-            << "MB}"<<std::endl;
+            << "MB, iNodes:" << info.iNodes << "}" << std::endl;
     }
 }
 
@@ -385,15 +521,15 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
     return E_OK;
 }
 
-void QuotaManager::ProcessVecList(std::vector<struct UidSaInfo> &sysAppVec,
-    std::vector<struct UidSaInfo> &userAppVec, std::vector<struct UidSaInfo> &vec,
-    const std::map<int32_t, std::string> &bundleNameAndUid)
+void QuotaManager::ProcessVecList(struct AllAppVec &allVec, const std::map<int32_t, std::string> &bundleNameAndUid)
 {
-    SortAndCutSaInfoVec(sysAppVec);
-    SortAndCutSaInfoVec(userAppVec);
-    SortAndCutSaInfoVec(vec);
-    AssembleSaInfoVec(sysAppVec, bundleNameAndUid);
-    AssembleSaInfoVec(userAppVec, bundleNameAndUid);
+    SortAndCutSaInfoVec(allVec.sysAppVec);
+    SortAndCutSaInfoVec(allVec.userAppVec);
+    SortAndCutSaInfoVec(allVec.otherAppVec);
+    SortAndCutSaInfoVec(allVec.sysSaVec);
+    AssembleSaInfoVec(allVec.otherAppVec, bundleNameAndUid);
+    AssembleSaInfoVec(allVec.sysAppVec, bundleNameAndUid);
+    AssembleSaInfoVec(allVec.userAppVec, bundleNameAndUid);
 }
 
 void QuotaManager::AssembleSaInfoVec(std::vector<UidSaInfo> &vec,
@@ -418,8 +554,8 @@ void QuotaManager::SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec)
     });
     vec.erase(vec.begin() + std::min(static_cast<size_t>(TOP_SPACE_COUNT), vec.size()), vec.end());
 }
-int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec,
-    std::vector<struct UidSaInfo> &sysAppVec, std::vector<struct UidSaInfo> &userAppVec)
+
+void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t &iNodes)
 {
     LOGI("GetOccupiedSpaceForUidList begin!");
     int32_t curUid = 0;
@@ -432,9 +568,13 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             break;
         }
         int32_t dqUid = static_cast<int32_t>(dq.dqbId);
-        for (struct UidSaInfo &info : vec) {
+        bool isSaUid = false;
+        iNodes += dq.dqbCurInodes;
+        for (struct UidSaInfo &info : allVec.sysSaVec) {
             if (info.uid == dqUid) {
+                isSaUid = true;
                 info.size = static_cast<int64_t>(dq.dqbCurSpace);
+                info.iNodes = dq.dqbCurInodes;
                 break;
             }
         }
@@ -445,16 +585,11 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
             } else {
                 userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
             }
-            userAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace)));
-        }
-        if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
-            int32_t userId = StorageService::ZERO_USER;
-            if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
-                userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
-            } else {
-                userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
-            }
-            sysAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace)));
+            allVec.userAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace), dq.dqbCurInodes));
+        } else if (dqUid >= StorageService::ZERO_USER_MIN_UID && dqUid <= StorageService::ZERO_USER_MAX_UID) {
+            AssembleSysAppVec(dqUid, dq, userAppSizeMap, allVec.sysAppVec);
+        } else if (!isSaUid) {
+            allVec.otherAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace), dq.dqbCurInodes));
         }
         count++;
         curUid = dqUid + 1;
@@ -465,10 +600,21 @@ int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &
     }
     for (const auto &pair : userAppSizeMap) {
         UidSaInfo info = {pair.first, "userId", pair.second};
-        vec.push_back(info);
+        allVec.sysSaVec.push_back(info);
     }
     LOGI("GetOccupiedSpaceForUidList end!");
-    return E_OK;
+}
+
+void QuotaManager::AssembleSysAppVec(int32_t dqUid, const struct NextDqBlk &dq,
+    std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec)
+{
+    int32_t userId = StorageService::ZERO_USER;
+    if (userAppSizeMap.find(userId) != userAppSizeMap.end()) {
+        userAppSizeMap[userId] += static_cast<int64_t>(dq.dqbCurSpace);
+    } else {
+        userAppSizeMap[userId] = static_cast<int64_t>(dq.dqbCurSpace);
+    }
+    sysAppVec.push_back(UidSaInfo(dqUid, "", static_cast<int64_t>(dq.dqbCurSpace), dq.dqbCurInodes));
 }
 
 static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
@@ -662,6 +808,12 @@ int32_t QuotaManager::StatisticSysDirSpace()
         return E_OK;
     }
     std::ostringstream extraData;
+    GetCurrentTime(extraData);
+    if (CheckOccupation(extraData) != E_OK) {
+        LOGE("root + system + foundation change < 1G, statistic space end.");
+        return E_OK;
+    }
+
     std::vector<int32_t> userIds;
     GetAllUserIds(userIds);
     if (userIds.empty()) {
@@ -681,6 +833,46 @@ int32_t QuotaManager::StatisticSysDirSpace()
     StorageService::StorageRadar::ReportSpaceRadar("StatisticSysDirSpace", E_SYS_DIR_SPACE_STATUS, extraData.str());
     LOGI("statistic sys dir space end.");
     return E_OK;
+}
+
+int32_t QuotaManager::CheckOccupation(std::ostringstream &extraData)
+{
+    int64_t foundationSize = 0;
+    int64_t systemSize = 0;
+    int64_t rootSize = 0;
+    
+    auto ret = GetOccupiedSpaceForUid(FOUNDATION_UID, foundationSize);
+    if (ret != E_OK) {
+        LOGE("Get foundation size failed.");
+        return ret;
+    }
+    
+    ret = GetOccupiedSpaceForUid(SYSTEM_UID, systemSize);
+    if (ret != E_OK) {
+        LOGE("Get system size failed.");
+        return ret;
+    }
+    
+    ret = GetOccupiedSpaceForUid(ROOT_UID, rootSize);
+    if (ret != E_OK) {
+        LOGE("Get root size failed.");
+        return ret;
+    }
+    
+    int64_t sumSize = foundationSize + systemSize + rootSize;
+    
+    std::lock_guard<std::mutex> lock(cacheMutex_);
+    int64_t changeSize = sumSize - oldChangeSizeCache_;
+    bool shouldUpdate = (changeSize > StorageService::ONE_G_BYTE) || (changeSize < -StorageService::ONE_G_BYTE);
+    
+    if (shouldUpdate) {
+        oldChangeSizeCache_ = sumSize;
+        extraData << "{root size is:" << ConvertBytesToMB(rootSize, ACCURACY_NUM) << "MB}" << std::endl;
+        extraData << "{system size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB}" << std::endl;
+        extraData << "{foundation size is:" << ConvertBytesToMB(foundationSize, ACCURACY_NUM) << "MB}" << std::endl;
+        return E_OK;
+    }
+    return E_ERR;
 }
 
 bool QuotaManager::IsNeedScan()
