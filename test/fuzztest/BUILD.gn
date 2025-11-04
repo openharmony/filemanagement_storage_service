@@ -112,6 +112,13 @@ group("storage_daemon_proxy_fuzztest") {
     "storagedaemonproxyupdatekeycontext_fuzzer:fuzztest",
     "storagedaemonproxyupdateuseauthwithrecoverykey_fuzzer:fuzztest",
     "storagedaemonproxyupdateuserauth_fuzzer:fuzztest",
+    "storagedaemonproxycreaterecoverkey_fuzzer:fuzztest",
+    "storagedaemonproxycreatesharefile_fuzzer:fuzztest",
+    "storagedaemonproxygetfileencryptstatus_fuzzer:fuzztest",
+    "storagedaemonproxymountdfsdocs_fuzzer:fuzztest",
+    "storagedaemonproxysetbundlequota_fuzzer:fuzztest",
+    "storagedaemonproxysetrecoverkey_fuzzer:fuzztest",
+    "storagedaemonproxyupdatememorypara_fuzzer:fuzztest",
   ]
 }
 

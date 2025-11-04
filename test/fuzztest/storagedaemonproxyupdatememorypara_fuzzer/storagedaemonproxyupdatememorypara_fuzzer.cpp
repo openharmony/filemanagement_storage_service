@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproxygenerateappkey_fuzzer.h"
+#include "storagedaemonproxyupdatememorypara_fuzzer.h"
 
 #include <vector>
 #include <map>
@@ -61,19 +61,16 @@ sptr<StorageDaemon::IStorageDaemon> GetStorageDaemonProxy()
     return iface_cast<StorageDaemon::IStorageDaemon>(object);
 }
 
-bool GenerateAppkeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+bool UpdateMemoryParaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(bool)) {
+    if (data == nullptr || size < sizeof(int32_t) + sizeof(int32_t)) {
         return true;
     }
 
     int pos = 0;
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    uint32_t hashId = TypeCast<uint32_t>(data + pos, &pos);
-    bool needReSet = TypeCast<bool>(data + pos, &pos);
-    string keyId(reinterpret_cast<const char *>(data + pos), size - pos);
-    proxy->GenerateAppkey(userId, hashId, keyId, needReSet);
-    proxy->DeleteAppkey(userId, keyId);
+    int32_t sz = TypeCast<int32_t>(data, &pos);
+    int32_t oldSize = TypeCast<uint32_t>(data + pos, &pos);
+    proxy->UpdateMemoryPara(sz, oldSize);
     return true;
 }
 } // namespace OHOS
@@ -84,7 +81,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Run your code on data */
     auto proxy = OHOS::GetStorageDaemonProxy();
     if (proxy != nullptr) {
-        OHOS::GenerateAppkeyFuzzTest(proxy, data, size);
+        OHOS::UpdateMemoryParaFuzzTest(proxy, data, size);
     } else {
         printf("daemon proxy is nullptr\n");
     }
