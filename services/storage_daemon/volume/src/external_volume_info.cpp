@@ -116,11 +116,9 @@ int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 {
-    int32_t ret = E_NOT_SUPPORT;
-#ifdef EXTERNAL_STORAGE_QOS_TRANS
     const char *fsType = "hmfs";
     auto mountData = StringPrintf("context=u:object_r:mnt_external_file:s0,errors=continue");
-    ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
     if (ret != E_OK) {
         LOGE("mount hmfs failed errno %{public}d", errno);
         return ret;
@@ -138,7 +136,6 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
         LOGE("mount read only failed errno %{public}d", errno);
         return ret;
     }
-#endif
     return ret;
 }
 
