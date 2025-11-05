@@ -119,10 +119,10 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
     const char *fsType = "hmfs";
     auto mountData = StringPrintf("context=u:object_r:mnt_external_file:s0,errors=continue");
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
-    if (ret != E_OK) {
-        LOGE("mount hmfs failed errno %{public}d", errno);
-        return ret;
-    }
+    if (!ret) {	
+        StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
+    } else {
+        LOGE("initial mount failed errno %{public}d", errno);
  
     ret = umount(mountPath_.c_str());
     if (ret != E_OK) {
