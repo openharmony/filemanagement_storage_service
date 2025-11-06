@@ -100,7 +100,7 @@ std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
     LOGW("enter");
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
@@ -485,7 +485,7 @@ int KeyManager::InitUserElkeyStorageDir(void)
 int KeyManager::InitGlobalUserKeys(void)
 {
     LOGW("enter");
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -557,7 +557,7 @@ void KeyManager::CreateAotCompilerDir()
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGW("start, user:%{public}u", user);
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -701,7 +701,7 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
                                       const std::vector<uint8_t> &secret)
 {
     LOGI("start, user:%{public}u, type %{public}u", user, type);
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -817,7 +817,7 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
 int KeyManager::DeleteUserKeys(unsigned int user)
 {
     LOGI("start, user:%{public}d", user);
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -975,7 +975,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
 {
     LOGW("UpdateESecret enter");
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
@@ -1043,7 +1043,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
 #endif
 {
     LOGW("start, user:%{public}d", user);
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
@@ -1216,7 +1216,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret)
 {
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
@@ -1265,7 +1265,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
 int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
 {
     LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u", user, type);
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return E_OK;
     }
@@ -1461,7 +1461,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = true;
         LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
         return 0;
@@ -1544,7 +1544,7 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
-    if (!IsUeceSupport() || !IsEncryption()) {
+    if (!IsUeceSupport()) {
         LOGI("Not support uece or encryption not enabled!");
         return -ENOTSUP;
     }
@@ -1607,7 +1607,7 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
 
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
-    if (!IsUeceSupport() || !IsEncryption()) {
+    if (!IsUeceSupport()) {
         LOGI("Not support uece or encryption not enabled!");
         return -ENOTSUP;
     }
@@ -1762,7 +1762,7 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -1845,7 +1845,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGI("User is %{public}u ,Insert LockScreenStatus, SaveLockScreenStatus is %{public}d", user,
              saveLockScreenStatus[user]);
     }
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = false;
         LOGI("KeyCtrlHasFscryptSyspara is false, saveLockScreenStatus is %{public}d",
             saveLockScreenStatus[user]);
@@ -1989,7 +1989,7 @@ int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxK
 int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 {
     LOGI("start");
-    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         LOGW("FscryptSyspara has not or encryption not enabled");
         return 0;
     }
@@ -2031,7 +2031,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, "EL4", "");
         return ret;
     }
-    if (IsUeceSupport() && IsEncryption()) {
+    if (IsUeceSupport()) {
         ret = UpdateClassEBackUpFix(userId);
         if (ret != 0) {
             LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
