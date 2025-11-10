@@ -15,6 +15,7 @@
 
 #include "volume/external_volume_info.h"
 
+#include <cstring>
 #include <fcntl.h>
 #include <future>
 #include <sys/stat.h>
@@ -33,6 +34,7 @@
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 constexpr uid_t FILE_MANAGER_UID = 1006;
 constexpr gid_t FILE_MANAGER_GID = 1006;
+constexpr const char *NTFS_LABEL_DESC_PREFIX = "Volume label :  ";
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -47,9 +49,10 @@ int32_t ExternalVolumeInfo::ReadMetadata()
         std::vector<std::string> cmd;
         cmd = {
             "ntfslabel",
+            "-v",
             devPath_
         };
-        fsLabel_ = GetBlkidDataByCmd(cmd);
+        fsLabel_ = GetVolDescByNtfsLabel(cmd);
     }
     return ret;
 }
@@ -662,6 +665,44 @@ int32_t ExternalVolumeInfo::CreateMountPath()
     umask(originalUmask);
     mountPath_ = mountBackupPath_;
     return E_OK;
+}
+
+std::string ExternalVolumeInfo::GetVolDescByNtfsLabel(std::vector<std::string> &cmd)
+{
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(cmd, &output);
+    if (ret != E_OK) {
+        LOGE("exec ntfs label failed, ret is: %{public}d, output size is %{public}zu", ret, output.size());
+        StorageRadar::ReportVolumeOperation("ForkExec", ret);
+        return "";
+    }
+    return SplitOutputIntoLines(output);
+}
+
+std::string ExternalVolumeInfo::SplitOutputIntoLines(std::vector<std::string> &output)
+{
+    std::vector<std::string> lines;
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+        lines.insert(lines.end(), split.begin(), split.end());
+    }
+    if (lines.empty()) {
+        LOGE("lines is empty");
+        return "";
+    }
+    std::string volDesc;
+    for (size_t i = lines.size() - 1; i < lines.size(); --i) {
+        std::string line = lines[i];
+        std::string::size_type index = line.find(NTFS_LABEL_DESC_PREFIX);
+        if (index == std::string::npos) {
+            continue;
+        }
+        volDesc = line.substr(index + std::strlen(NTFS_LABEL_DESC_PREFIX));
+        break;
+    }
+    LOGE("exec ntfs label success, label is %{public}s", volDesc.c_str());
+    return volDesc;
 }
 } // StorageDaemon
 } // OHOS

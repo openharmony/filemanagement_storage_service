@@ -75,6 +75,8 @@ private:
     int32_t DoCheck4Exfat();
     int32_t CreateMountPath();
     int32_t CreateFuseMountPath();
+    std::string GetVolDescByNtfsLabel(std::vector<std::string> &cmd);
+    std::string SplitOutputIntoLines(std::vector<std::string> &output);
 };
 } // STORAGE_DAEMON
 } // OHOS

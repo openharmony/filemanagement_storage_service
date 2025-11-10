@@ -721,5 +721,51 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_004 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetVolDescByNtfsLabel_001
+ * @tc.desc: Verify the GetVolDescByNtfsLabel function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+*/
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetVolDescByNtfsLabel_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetVolDescByNtfsLabel_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    std::vector<std::string> cmd = {"ntfslabel", "-v", "1111"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
+    std::string ret = externalVolumeInfo_->GetVolDescByNtfsLabel(cmd);
+    EXPECT_TRUE(ret.empty());
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    ret = externalVolumeInfo_->GetVolDescByNtfsLabel(cmd);
+    EXPECT_TRUE(ret.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetVolDescByNtfsLabel_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001
+ * @tc.desc: Verify the SplitOutputIntoLines function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+*/
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    std::vector<std::string> output;
+    std::string ret = externalVolumeInfo_->SplitOutputIntoLines(output);
+    EXPECT_TRUE(ret.empty());
+
+    output = {"warning info", "Volume label :  desc", "warning info"};
+    ret = externalVolumeInfo_->SplitOutputIntoLines(output);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, "desc");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
