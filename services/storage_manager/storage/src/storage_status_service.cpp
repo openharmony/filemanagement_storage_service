@@ -48,7 +48,7 @@ const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
 constexpr const char *SETTING_BUNDLE_NAME = "settings";
 static std::atomic<bool> checkDirSizeFlag = false;
 constexpr int DECIMAL_PLACE = 2;
-constexpr double TO_MB = 1024.0 * 1024.0;
+constexpr double TO_MB = 1000.0 * 1000.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
 constexpr int64_t CHANGE_RANGE = 1024LL * 1024 * 1024 * 2;
 #ifdef STORAGE_SERVICE_GRAPHIC

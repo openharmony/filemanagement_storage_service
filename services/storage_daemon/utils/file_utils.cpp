@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License,2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -32,6 +32,8 @@
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 #include "concurrent_task_client.h"
 #endif
+
+using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
@@ -42,8 +44,76 @@ constexpr int BUF_LEN = 1024;
 constexpr int PIPE_FD_LEN = 2;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
+constexpr int32_t MAX_STATISTICS_FILES_NUMBER = 5120000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+#define RGM_MANAGER_PATH_DEF  "/data/service/el1/public/rgm_manager/data"
+#define RGM_STATE_PRE_DEF "virt_service.rgm_state."
+const std::string CONTAINER_HMOS = "rgm_hmos";
+const std::string CONTAINER_LINUX = "rgm_linux";
+const std::string VM_LINUX = "rgm_openEuler";
+const std::string EL_RGM_MANAGER_PATH = "/data/service/el1/public/vm_manager";
+const std::string RGM_MANAGER_PATH = RGM_MANAGER_PATH_DEF;
+
+struct RgmPathConfig {
+    bool isImg = false;
+    std::string stateParam = "";
+    std::string mgrPath = "";
+    std::string imgDir = "";
+    std::string imgPath = "";
+    std::string configZipPath = "";
+    std::string configVerifyDir = "";
+    std::string configDir = "";
+    std::string configBakDir = "";
+    std::string businessPath = "";
+    std::string rootfsPath = "";
+};
+
+const static std::map<std::string, RgmPathConfig> rgmConfigs = {
+    {
+        CONTAINER_HMOS, {
+            true,
+            RGM_STATE_PRE_DEF    "rgm_hmos",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/image",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/image/agi.img",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/image/config.zip",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/config",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/config/",
+            RGM_MANAGER_PATH_DEF "/rgm_hmos/config.old",
+            "/data/virt_service/rgm_hmos",
+            "/data/virt_service/rgm_hmos/anco_hmos",
+        }
+    }, {
+        CONTAINER_LINUX, {
+            false,
+            RGM_STATE_PRE_DEF    "rgm_linux",
+            RGM_MANAGER_PATH_DEF "/rgm_linux",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/image",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/image/a.tgz",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/image/config.zip",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/config",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/config/",
+            RGM_MANAGER_PATH_DEF "/rgm_linux/config.old",
+            "/data/virt_service/rgm_linux",
+            "/data/virt_service/rgm_linux/rootfs",
+        }
+    }, {
+        VM_LINUX, {
+            true,
+            RGM_STATE_PRE_DEF    "rgm_openEuler",
+            RGM_MANAGER_PATH_DEF "/vm_linux",
+            RGM_MANAGER_PATH_DEF "/vm_linux/image",
+            RGM_MANAGER_PATH_DEF "/vm_linux/image/a.tgz",
+            RGM_MANAGER_PATH_DEF "/vm_linux/image/config.zip",
+            RGM_MANAGER_PATH_DEF "/vm_linux/config",
+            RGM_MANAGER_PATH_DEF "/vm_linux/config/",
+            RGM_MANAGER_PATH_DEF "/vm_linux/config.old",
+            "/data/virt_service/vm_linux",
+            "",
+        }
+    }
+};
 
 int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
@@ -1046,6 +1116,195 @@ bool RestoreconDir(const std::string &path)
     }
 #endif
     return true;
+}
+
+int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    if (!IsValidRgmName(rgmName)) {
+        LOGE("rgm name %{public}s invaild", rgmName.c_str());
+        return E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID;
+    }
+    std::vector<std::string> ignorePaths;
+    ignorePaths.clear();
+    return StatisticsFilesTotalSize(rgmConfigs.at(rgmName).mgrPath, ignorePaths, totalSize);
+}
+
+
+bool IsValidRgmName(const std::string &rgmName)
+{
+    if (rgmConfigs.find(rgmName) == rgmConfigs.end()) {
+        LOGI("check rgm name not in whitelist %{public}s", rgmName.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool IsValidPath(const string &path)
+{
+    char buf[PATH_MAX] = { 0 };
+    if (realpath(path.c_str(), buf) == nullptr) {
+        LOGE("Standardized path fail!");
+        return false;
+    }
+    string standardizedPath = buf;
+    if (path != standardizedPath) {
+        LOGE("UnStandardized!");
+        return false;
+    }
+    return true;
+}
+
+bool IsValidBusinessPath(const string &path, const string &userId)
+{
+    string tmp = path;
+    // path is exist and real path same as input path and this path is belong my business
+    if (!IsValidPath(tmp) || !IsBusinessPath(tmp, userId)) {
+        return false;
+    }
+    return true;
+}
+
+int32_t StatisticsFilesTotalSize(const string &dirPath, const vector<string> &ignorePaths,
+    uint64_t &totalSize)
+{
+    if (!IsFileExist(dirPath)) {
+        return E_OK;
+    }
+    if (!IsValidBusinessPath(dirPath)) {
+        LOGE("Statistics dir is illegal!");
+        return E_CONTAINERPLUGIN_UTILS_FILE_PATH_ILLEGAL;
+    }
+
+    if (!IsFolder(dirPath)) {
+        totalSize += GetFileSize(dirPath);
+        return E_OK;
+    }
+    int32_t ret = E_OK;
+    int fileCount = 1;
+    queue<string> dirTraverseQue;
+    dirTraverseQue.push(dirPath);
+    while (!dirTraverseQue.empty()) {
+        string folder = dirTraverseQue.front();
+        int curErr = GetSubFilesSize(folder, dirTraverseQue, ignorePaths, totalSize, fileCount);
+        if (curErr == E_CONTAINERPLUGIN_UTILS_FILE_STATISTICS_MAX) {
+            LOGD("Statistics out off range!");
+            return curErr;
+        } else {
+            ret = HandleStaticsDirError(ret, curErr);
+        }
+        dirTraverseQue.pop();
+    }
+    return ret;
+}
+
+bool IsFolder(const string &filename)
+{
+    struct stat st;
+    if (lstat(filename.c_str(), &st) != 0) {
+        return false;
+    }
+    return S_ISDIR(st.st_mode);
+}
+
+int32_t HandleStaticsDirError(int32_t oldErrno, int32_t newErrno)
+{
+    if (oldErrno == newErrno) {
+        return newErrno;
+    }
+    if (oldErrno == E_OK) {
+        return newErrno;
+    }
+    if (newErrno == E_OK) {
+        return oldErrno;
+    }
+    return E_CONTAINERPLUGIN_UTILS_STATISTICS_OPEN_FILE_FAILED_AND_STATISTICS_FILE_FAILED;
+}
+
+int32_t GetSubFilesSize(const std::string &folder, queue<std::string> &dirTraverseQue,
+    const vector<std::string> &ignorePaths, uint64_t &totalSize, int &fileCount)
+{
+    int32_t err = E_OK;
+    std::string path = folder;
+    auto it = std::find(ignorePaths.begin(), ignorePaths.end(), path);
+    if (it != ignorePaths.end()) {
+        LOGW("skip Statistics dir %{private}s", folder.c_str());
+        return err;
+    }
+
+    unique_ptr<DIR, int (*)(DIR *)> dir(opendir(folder.c_str()), &closedir);
+    if (!dir) {
+        return E_NOT_DIR_PATH;
+    }
+    dirent *dt;
+    while ((dt = readdir(dir.get())) != nullptr) {
+        std::string name = dt->d_name;
+        if (name == "." || name == "..") {
+            continue;
+        }
+        if (++fileCount > MAX_STATISTICS_FILES_NUMBER) {
+            return E_CONTAINERPLUGIN_UTILS_FILE_STATISTICS_MAX;
+        }
+        std::string subPath = folder + "/" + name;
+        if (IsFolder(subPath)) {
+            dirTraverseQue.push(subPath);
+        } else {
+            totalSize += GetFileSize(subPath);
+            continue;
+        }
+    }
+    return err;
+}
+
+bool IsBusinessPath(const string &path, const string &userId)
+{
+    string prefix = "/system/opt/virt_service/";
+    if (path.size() >= prefix.size() && prefix == path.substr(0, prefix.size())) {
+        return true;
+    }
+    prefix = "/data/virt_service/rgm";
+    if (path.size() >= prefix.size() && prefix == path.substr(0, prefix.size())) {
+        return true;
+    }
+
+    if (path.size() >= RGM_MANAGER_PATH.size() && RGM_MANAGER_PATH == path.substr(0, RGM_MANAGER_PATH.size())) {
+        return true;
+    }
+
+    if (path.size() >= EL_RGM_MANAGER_PATH.size() &&
+        EL_RGM_MANAGER_PATH == path.substr(0, EL_RGM_MANAGER_PATH.size())) {
+        return true;
+    }
+
+    if (!userId.empty()) {
+        string el2VmImagePath = "/data/service/el2/" + userId + "/virt_service/vm_manager";
+        if (path.size() >= el2VmImagePath.size() && el2VmImagePath == path.substr(0, el2VmImagePath.size())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool IsFileExist(const string &path)
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0) {
+        LOGD("IsFileExist path fail! %{public}d", errno);
+        return false;
+    }
+    return true;
+}
+
+uint64_t GetFileSize(const string &filename)
+{
+    struct stat st;
+    if (lstat(filename.c_str(), &st) != 0) {
+        LOGD("Get %{private}s FileSize is Failed %{public}d", filename.c_str(), errno);
+        return 0;
+    }
+    if (S_ISLNK(st.st_mode)) {
+        return 0;
+    }
+    return st.st_size;
 }
 } // STORAGE_DAEMON
 } // OHOS

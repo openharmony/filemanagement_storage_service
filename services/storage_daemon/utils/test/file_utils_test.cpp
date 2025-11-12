@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License,2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <fstream>
 #include <filesystem>
+#include <fstream>
 
 #include "gtest/gtest.h"
 #include "common/help_utils.h"
@@ -630,5 +631,151 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RedirectStdToPipe_001, TestSize.Level1)
     EXPECT_EQ(res, E_ERR);
     GTEST_LOG_(INFO) << "FileUtilsTest_RedirectStdToPipe_001 end";
 }
+
+/**
+ * @tc.name: FileUtilsTest_GetRmgResourceSize_001
+ * @tc.desc: Verify the FileUtilsTest_GetRmgResourceSize_001 function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgResourceSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgResourceSize_001 start";
+    uint64_t totalSize = 0;
+    std::string path = "xxx";
+    auto ret = GetRmgResourceSize(path, totalSize);
+    EXPECT_EQ(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
+
+    auto result = IsValidPath(path);
+    EXPECT_FALSE(result);
+
+    result = IsValidBusinessPath(path, "-1");
+    EXPECT_FALSE(result);
+
+    int32_t oldErrno = 0;
+    int32_t newErrno = 1;
+    ret = HandleStaticsDirError(oldErrno, newErrno);
+    EXPECT_EQ(ret, newErrno);
+    oldErrno = 1;
+    newErrno = 0;
+    ret = HandleStaticsDirError(oldErrno, newErrno);
+    EXPECT_EQ(ret, oldErrno);
+    oldErrno = 1;
+    newErrno = 2;
+    ret = HandleStaticsDirError(oldErrno, newErrno);
+    EXPECT_EQ(ret, E_CONTAINERPLUGIN_UTILS_STATISTICS_OPEN_FILE_FAILED_AND_STATISTICS_FILE_FAILED);
+
+    oldErrno = 0;
+    newErrno = 0;
+    ret = HandleStaticsDirError(oldErrno, newErrno);
+    EXPECT_EQ(ret, newErrno);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgResourceSize_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_StatisticsFilesTotalSize_001
+ * @tc.desc: Verify the StatisticsFilesTotalSize function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_StatisticsFilesTotalSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_StatisticsFilesTotalSize_001 start";
+    std::string optPath = "/system/opt";
+    std::string virPath = "/system/opt/virt_service";
+    std::string testPath = "/system/opt/virt_service/test1";
+    MkDir(optPath, S_IRWXU);
+    MkDir(virPath, S_IRWXU);
+    MkDir(testPath, S_IRWXU);
+    std::string path = "/system/opt/virt_service/2.txt";
+    std::ofstream file(path);
+    file.close();
+
+    std::vector<string> ignorePaths;
+    uint64_t totalSize;
+    GetFileSize(path);
+    EXPECT_EQ(StatisticsFilesTotalSize(path, ignorePaths, totalSize), 0);
+
+    std::string path1 = "/system/opt/test";
+    std::ofstream file1(path1);
+    file1.close();
+    GetFileSize(path1);
+    EXPECT_EQ(StatisticsFilesTotalSize(path1, ignorePaths, totalSize), E_CONTAINERPLUGIN_UTILS_FILE_PATH_ILLEGAL);
+    EXPECT_EQ(StatisticsFilesTotalSize(virPath, ignorePaths, totalSize), 0);
+    EXPECT_EQ(StatisticsFilesTotalSize(testPath, ignorePaths, totalSize), 0);
+    GTEST_LOG_(INFO) << "FileUtilsTest_StatisticsFilesTotalSize_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_IsBusinessPath_Comprehensive
+ * @tc.desc: Comprehensive test for IsBusinessPath function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0E6F
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsBusinessPath_Comprehensive, TestSize.Level1)
+{
+    std::string rgmPath = "/data/service/el1/public/rgm_manager/data";
+    std::string rgmManagerPath = "/data/service/el1/public/vm_manager";
+    EXPECT_TRUE(IsBusinessPath("/system/opt/virt_service/", "100"));
+    EXPECT_TRUE(IsBusinessPath("/system/opt/virt_service/file", "100"));
+    EXPECT_TRUE(IsBusinessPath("/data/virt_service/rgm", "100"));
+    EXPECT_TRUE(IsBusinessPath("/data/virt_service/rgm/data", "100"));
+    EXPECT_TRUE(IsBusinessPath(rgmPath, "100"));
+    EXPECT_TRUE(IsBusinessPath(rgmPath + "/file", "100"));
+    EXPECT_TRUE(IsBusinessPath(rgmManagerPath, "200"));
+    EXPECT_TRUE(IsBusinessPath(rgmManagerPath + "/config", "200"));
+    EXPECT_TRUE(IsBusinessPath("/data/service/el2/123/virt_service/vm_manager", "123"));
+
+    EXPECT_FALSE(IsBusinessPath("/system/opt/virt_serv", "100"));
+    EXPECT_FALSE(IsBusinessPath("/data/virt_service/rg", "100"));
+    EXPECT_FALSE(IsBusinessPath(rgmPath.substr(0, rgmPath.size() - 1), "100"));
+    EXPECT_FALSE(IsBusinessPath(rgmManagerPath.substr(0, rgmManagerPath.size() - 1), "100"));
+    EXPECT_FALSE(IsBusinessPath("/data/service/el2/100/virt_service/vm_manage", "100"));
+
+    EXPECT_FALSE(IsBusinessPath("", "100"));
+    EXPECT_FALSE(IsBusinessPath("/invalid/path", "100"));
+    EXPECT_FALSE(IsBusinessPath("/data/service/el2/100/virt_service/vm_manager", ""));
+    EXPECT_FALSE(IsBusinessPath("/data/service/el2/200/virt_service/vm_manager", "100"));
+}
+
+/**
+ * @tc.name: FileUtilsTest_GetSubFilesSize_001
+ * @tc.desc: Verify the FileUtilsTest_GetSubFilesSize_001 function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_GetSubFilesSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetSubFilesSize_001 start";
+    std::string folder = "xxx";
+    std::queue<std::string> dirTraverseQue;
+    std::vector<std::string> ignorePaths;
+    ignorePaths.push_back(folder);
+    uint64_t totalSize = 0;
+    int fileCount = 0;
+    EXPECT_EQ(GetSubFilesSize(folder, dirTraverseQue, ignorePaths, totalSize, fileCount), 0);
+    ignorePaths.clear();
+    EXPECT_EQ(GetSubFilesSize(folder, dirTraverseQue, ignorePaths, totalSize, fileCount), E_NOT_DIR_PATH);
+    folder = "/data/service";
+    EXPECT_EQ(GetSubFilesSize(folder, dirTraverseQue, ignorePaths, totalSize, fileCount), 0);
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetSubFilesSize_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_IsFolder_001
+ * @tc.desc: Verify the FileUtilsTest_IsFolder_001 function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsFolder_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFolder_001 start";
+    std::string folder = "/data/service";
+    EXPECT_TRUE(IsFolder(folder));
+    EXPECT_FALSE(IsFolder("folder"));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFolder_001 end";
+}
+
 } // STORAGE_DAEMON
 } // OHOS

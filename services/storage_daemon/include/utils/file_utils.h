@@ -18,6 +18,8 @@
 #include <sstream>
 #include <sys/types.h>
 #include <sys/mount.h>
+#include <queue>
+#include <map>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -74,6 +76,19 @@ bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
 bool RestoreconDir(const std::string &path);
 int32_t RedirectStdToPipe(int logpipe[2], size_t len);
+int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
+int32_t GetSubFilesSize(const std::string &folder, std::queue<std::string> &dirTraverseQue,
+    const std::vector<std::string> &ignorePaths, uint64_t &totalSize, int &fileCount);
+int32_t HandleStaticsDirError(int32_t oldErrno, int32_t newErrno);
+bool IsValidRgmName(const std::string &rgmName);
+bool IsValidPath(const std::string &path);
+bool IsValidBusinessPath(const std::string &path, const std::string &userId = "");
+int32_t StatisticsFilesTotalSize(const std::string &dirPath, const std::vector<std::string> &ignorePaths,
+    uint64_t &totalSize);
+bool IsBusinessPath(const std::string& path, const std::string &userId);
+uint64_t GetFileSize(const std::string &filename);
+bool IsFolder(const std::string &filename);
+bool IsFileExist(const std::string &path);
 }
 }
 
