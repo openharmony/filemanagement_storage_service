@@ -237,6 +237,10 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
+        if (iter->devNum != devNum || iter->busLocation != busLoc) {
+            LOGI("not this mtp device");
+            return;
+        }
         int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
