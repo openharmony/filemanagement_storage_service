@@ -701,8 +701,10 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_StatisticsFilesTotalSize_001, TestSize.Lev
     std::ofstream file1(path1);
     file1.close();
     GetFileSize(path1);
-    EXPECT_EQ(StatisticsFilesTotalSize(path1, ignorePaths, totalSize), E_CONTAINERPLUGIN_UTILS_FILE_PATH_ILLEGAL);
-    EXPECT_EQ(StatisticsFilesTotalSize(virPath, ignorePaths, totalSize), 0);
+    EXPECT_EQ(StatisticsFilesTotalSize(path1, ignorePaths, totalSize),
+        E_CONTAINERPLUGIN_UTILS_FILE_PATH_ILLEGAL);
+    EXPECT_EQ(StatisticsFilesTotalSize(virPath, ignorePaths, totalSize),
+        E_CONTAINERPLUGIN_UTILS_FILE_PATH_ILLEGAL);
     EXPECT_EQ(StatisticsFilesTotalSize(testPath, ignorePaths, totalSize), 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_StatisticsFilesTotalSize_001 end";
 }
@@ -776,6 +778,5 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFolder_001, TestSize.Level1)
     EXPECT_FALSE(IsFolder("folder"));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFolder_001 end";
 }
-
 } // STORAGE_DAEMON
 } // OHOS
