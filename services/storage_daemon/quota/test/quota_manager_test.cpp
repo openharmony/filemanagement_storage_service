@@ -583,7 +583,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_001, TestSize.Level1)
     int64_t size = 0;
     QuotaManager quotaManager_;
     int32_t result = quotaManager_.GetFileData("/nonexistent/path/file.txt", size);
-    EXPECT_EQ(result, E_NON_ACCESS);
+    EXPECT_EQ(result, E_FILE_PATH_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_001 end";
 }
 
