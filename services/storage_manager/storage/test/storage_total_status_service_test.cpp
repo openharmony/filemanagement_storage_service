@@ -211,7 +211,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
     StorageStatusService& service = StorageStatusService::GetInstance();
     BundleStats bundleStats;
     int32_t result = service.GetCurrentBundleStats(bundleStats, 0);
-    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
+    EXPECT_EQ(result, E_GET_BUNDLE_NAME_FAILED);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetCurrentBundleStats_0000";
 }
 

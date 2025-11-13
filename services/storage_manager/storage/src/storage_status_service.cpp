@@ -381,12 +381,36 @@ int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32
 
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
+    LOGD("StorageStatusService::GetCurrentBundleStats start");
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        StorageRadar::ReportBundleMgrResult("GetCurrentBundleStats::GetBundleMgrProxy", E_SERVICE_IS_NULLPTR, 0, "");
+        return E_SERVICE_IS_NULLPTR;
+    }
+
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    std::string bundleName;
+    int32_t appIndex = DEFAULT_APP_INDEX;
+    ErrCode getIndexRet = bundleMgr->GetNameAndIndexForUid(uid, bundleName, appIndex);
+    if (getIndexRet != ERR_OK) {
+        LOGE("GetNameAndIndexForUid ErrCode: %{public}d", getIndexRet);
+        appIndex = DEFAULT_APP_INDEX;
+        StorageRadar::ReportBundleMgrResult("GetCurrentBundleStats::GetNameAndIndexForUid", getIndexRet, 0, "");
+    }
+
+    if (bundleName.empty()) {
+        LOGE("GetCurrentBundleStats: bundleName is empty");
+        StorageRadar::ReportBundleMgrResult("GetCurrentBundleStats::bundleName", E_GET_BUNDLE_NAME_FAILED, 0, "");
+        return E_GET_BUNDLE_NAME_FAILED;
+    }
+
     int userId = GetCurrentUserId();
-    std::string pkgName = GetCallingPkgName();
-    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX, statFlag);
+    int32_t ret = GetBundleStats(bundleName, userId, bundleStats, appIndex, statFlag);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
-        std::string extraData = "pkgName=" + pkgName + ",statFlag=" + std::to_string(statFlag);
+        std::string extraData = "bundleName=" + bundleName + ",statFlag=" + std::to_string(statFlag) +
+            ",appIndex=" + std::to_string(appIndex);
         StorageRadar::ReportBundleMgrResult("GetCurrentBundleStats::GetBundleStats", ret, userId, extraData);
     }
     return ret;

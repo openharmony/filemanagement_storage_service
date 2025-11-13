@@ -32,6 +32,10 @@ int g_bundleUid = 0;
 int g_bundleFlag  = 1;
 int g_sysFlag = 1;
 int64_t free_size = 0;
+ErrCode g_getNameIndexRet = ERR_OK;
+int32_t g_appIndex = 0;
+std::string g_bundleName = "com.test.app";
+int32_t g_getBundleStatsRet = E_OK;
 } // namespace
 std::string str = "settings";
 namespace OHOS::AppExecFwk {
@@ -50,6 +54,13 @@ bool BundleMgrProxy::GetBundleNameForUid(const int uid, std::string &bundleName)
 int BundleMgrProxy::GetUidByBundleName(const std::string &bundleName, const int userId)
 {
     return g_bundleUid;
+}
+
+ErrCode BundleMgrProxy::GetNameAndIndexForUid(int32_t uid, std::string &bundleName, int32_t &appIndex)
+{
+    bundleName = g_bundleName;
+    appIndex = g_appIndex;
+    return g_getNameIndexRet;
 }
 } // namespace OHOS::AppExecFwk
 
@@ -73,6 +84,12 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     return E_OK;
+}
+
+int32_t StorageStatusService::GetBundleStats(const std::string &bundleName, int userId, BundleStats &bundleStats,
+    int32_t appIndex, uint32_t statFlag)
+{
+    return g_getBundleStatsRet;
 }
 }
 
@@ -282,4 +299,105 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_ProcessStorageStatus_0001, testing::e
     service->ProcessStorageStatus(storageStats, userId, isSchedule);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_ProcessStorageStatus_0001";
+}
+
+/**
+ * @tc.number: STORAGE_GetCurrentBundleStats_0001
+ * @tc.name: STORAGE_GetCurrentBundleStats_0001
+ * @tc.desc: Test function of GetCurrentBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0001 start: bundleMgr is null";
+    g_getNameIndexRet = ERR_OK;
+    g_appIndex = 1;
+    g_bundleName = "com.test.app";
+    g_getBundleStatsRet = E_OK;
+
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    BundleStats bundleStats;
+    uint32_t statFlag = 0x1;
+    int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetCurrentBundleStats_0002
+ * @tc.name: STORAGE_GetCurrentBundleStats_0002
+ * @tc.desc: Test function of GetCurrentBundleStats interface for ERROR.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0002 start: bundleMgr is null";
+    g_getNameIndexRet = ERR_APPEXECFWK_PARCEL_ERROR;
+    g_appIndex = 1;
+    g_bundleName = "";
+
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    BundleStats bundleStats;
+    uint32_t statFlag = 0x1;
+    int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
+
+    EXPECT_EQ(result, E_GET_BUNDLE_NAME_FAILED);
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0002 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetCurrentBundleStats_0003
+ * @tc.name: STORAGE_GetCurrentBundleStats_0003
+ * @tc.desc: Test function of GetCurrentBundleStats interface for ERROR.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0003 start: bundleMgr is null";
+    g_getNameIndexRet = ERR_OK;
+    g_appIndex = 1;
+    g_bundleName = "";
+
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    BundleStats bundleStats;
+    uint32_t statFlag = 0x1;
+    int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
+
+    EXPECT_EQ(result, E_GET_BUNDLE_NAME_FAILED);
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0003 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetCurrentBundleStats_0004
+ * @tc.name: STORAGE_GetCurrentBundleStats_0004
+ * @tc.desc: Test function of GetCurrentBundleStats interface for ERROR.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0004 start: bundleMgr is null";
+    g_getNameIndexRet = ERR_OK;
+    g_appIndex = 1;
+    g_bundleName = "com.test.app";
+    g_getBundleStatsRet = E_BUNDLEMGR_ERROR;
+
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    BundleStats bundleStats;
+    uint32_t statFlag = 0x1;
+    int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
+
+    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
+    GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0004 end";
 }
