@@ -276,7 +276,8 @@ int32_t MountManager::SharefsMount(int32_t userId)
     return E_OK;
 }
 
-int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath)
+int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath,
+    bool isUseShared, const std::string &data)
 {
     if (!IsDir(srcPath)) {
         LOGE("srcPath not exist, %{public}s", srcPath.c_str());
@@ -293,12 +294,21 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
     Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount(srcPath, dstPath, "sharefs", sharefsMntArgs.GetFlags(),
-                    sharefsMntArgs.GetHmUserIdPara().c_str());
+                    (data + sharefsMntArgs.GetHmUserIdPara()).c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmSharefs, err %{public}d", errno);
         std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("HmSharefsMount", userId, E_MOUNT_HM_SHAREFS, extraData);
         return E_MOUNT_HM_SHAREFS;
+    }
+    if (isUseShared) {
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
+        if (ret != 0) {
+            LOGE("set MS_SHARED failed, path=%{public}s, errno=%{public}d.", dstPath.c_str(), errno);
+            std::string extraData = " set MS_SHARED failed, srcPath=" + srcPath +
+                ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("HmSharefsMount", userId, E_MOUNT_HM_SHAREFS, extraData);
+        }
     }
     auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: HM SHARE FS MOUNT",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -1731,7 +1741,7 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string mediaDocPath = mountArgument.GetMediaDocsPath();
     std::string curOtherPath = mountArgument.GetCurOtherPath();
-    BindAndRecMount(userId, mediaDocPath, curOtherPath);
+    HmSharefsMount(userId, mediaDocPath, curOtherPath, true, "");
 
     LOGI("mount currentUser/other/appdata");
     std::string noSharefsAppdataPath = mountArgument.GetNoSharefsAppdataPath();
@@ -1749,14 +1759,14 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
             StorageRadar::ReportUserManager("MountAppdataAndSharefs", userId, E_CREATE_DIR_APPDATA_FILEMGR, extraData);
         }
     }
-    BindAndRecMount(userId, noSharefsAppdataPath, curOtherAppdataPath);
+    HmSharefsMount(userId, noSharefsAppdataPath, curOtherAppdataPath, false, "sniffer,");
 
     LOGI("mount currentUser/filemgr");
     std::string curFileMgrPath = mountArgument.GetCurFileMgrPath();
     BindAndRecMount(userId, mediaDocPath, curFileMgrPath);
 
     LOGI("mount currentUser/filemgr/appdata");
-    HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath);
+    HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath, false, "sniffer,");
 
     LOGI("mount sharefs/docs/currentUser");
     std::string sharefsDocCurPath = mountArgument.GetSharefsDocCurPath();
