@@ -21,6 +21,8 @@ config("storage_manager_config") {
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
+    "${storage_manager_path}/include/storage",
+    "${storage_manager_path}/include/rdb_adapter",
   ]
 
   cflags = [
@@ -47,6 +49,7 @@ ohos_shared_library("storage_manager") {
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
     "user/src/multi_user_manager_service.cpp",
     "utils/src/storage_utils.cpp",
+    "rdb_adapter/src/storage_rdb_adapter.cpp",
   ]
 
   defines = [
@@ -97,6 +100,7 @@ ohos_shared_library("storage_manager") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "relational_store:native_rdb",
   ]
 
   if (storage_service_storage_statistics_manager) {
@@ -167,6 +171,7 @@ group("storage_manager_unit_test") {
     "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
+    "rdb_adapter/test:storage_manager_rdb_test",
   ]
 
   if (storage_service_user_crypto_manager) {
