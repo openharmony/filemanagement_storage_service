@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,7 @@ using namespace OHOS::FileManagement::LibN;
 namespace OHOS {
 namespace StorageManager {
 const std::string EMPTY_STRING = "";
+const std::string FEATURE_STR = "StorageStatistics.";
 constexpr int32_t INVALID_INDEX = -1;
 constexpr int32_t INVALID_STATFLAG = -1;
 
@@ -74,7 +75,8 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -122,7 +124,8 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -206,7 +209,8 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -256,7 +260,8 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -293,7 +298,8 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -356,10 +362,12 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     } else {
         if (!fac) {
             NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
-            return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+            return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbExec, cbComplete).val_;
         }
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -392,7 +400,8 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
@@ -425,7 +434,8 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
-        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 
