@@ -15,13 +15,16 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
+#include <storage/storage_total_status_service.h>
 
+#include "accesstoken_kit.h"
 #include "bundle_mgr_interface.h"
 #include "bundle_mgr_proxy.h"
+#include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_status_service.h"
+#include "storage_rdb_adapter.h"
 #include "storage_service_errno.h"
-#include <storage/storage_total_status_service.h>
 
 namespace {
 using namespace OHOS;
@@ -36,6 +39,7 @@ ErrCode g_getNameIndexRet = ERR_OK;
 int32_t g_appIndex = 0;
 std::string g_bundleName = "com.test.app";
 int32_t g_getBundleStatsRet = E_OK;
+int32_t accessTokenType = -1;
 } // namespace
 std::string str = "settings";
 namespace OHOS::AppExecFwk {
@@ -90,6 +94,33 @@ int32_t StorageStatusService::GetBundleStats(const std::string &bundleName, int 
     int32_t appIndex, uint32_t statFlag)
 {
     return g_getBundleStatsRet;
+}
+}
+
+namespace OHOS::Security::AccessToken {
+ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
+{
+    if (accessTokenType == -1) {
+        return Security::AccessToken::TOKEN_INVALID;
+    }
+    if (accessTokenType == 0) {
+        return Security::AccessToken::TOKEN_HAP;
+    }
+    if (accessTokenType == 1) {
+        return Security::AccessToken::TOKEN_NATIVE;
+    }
+    return Security::AccessToken::TOKEN_NATIVE;
+}
+
+int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string& permissionName)
+{
+    return Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+}
+
+int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& nativeTokenInfoRes)
+{
+    nativeTokenInfoRes.processName = "foundation";
+    return 0;
 }
 }
 
@@ -400,4 +431,65 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::
 
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0004 end";
+}
+
+/**
+ * @tc.number: STORAGE_SetExtBundleStats_00001
+ * @tc.name: STORAGE_SetExtBundleStats_00001
+ * @tc.desc: Test function of GetCurrentBundleStats interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_SetExtBundleStats_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    uint32_t userId = 10;
+    std::string businessName= "test";;
+    uint64_t bundleSize = 1;
+    int32_t ret = service->SetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_EQ(ret, E_GET_CALL_BUNDLE_NAME_ERROR);
+    accessTokenType = 0;
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_NE(ret, E_OK);
+    accessTokenType = 1;
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_NE(ret, E_OK);
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    rdbAdapter.Init();
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_EQ(ret, E_OK);
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_EQ(ret, E_OK);
+    rdbAdapter.UnInit();
+    GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetExtBundleStats_00001
+ * @tc.name: STORAGE_GetExtBundleStats_00001
+ * @tc.desc: Test function of GetCurrentBundleStats interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    uint32_t userId = 10;
+    std::string businessName = "test";
+    uint64_t bundleSize = 0;
+    int32_t ret = service->GetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_EQ(ret, E_TB_GET_ERROR);
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    rdbAdapter.Init();
+    ret = service->GetExtBundleStats(userId, businessName, bundleSize);
+    EXPECT_EQ(ret, OHOS::E_OK);
+    EXPECT_EQ(bundleSize, 1);
+    rdbAdapter.UnInit();
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 end";
 }

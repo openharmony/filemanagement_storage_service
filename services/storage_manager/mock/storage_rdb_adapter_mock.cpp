@@ -64,11 +64,6 @@ std::shared_ptr<NativeRdb::AbsSharedResultSet> MockRdbStore::QuerySql(
 {
     return nullptr;
 }
-std::shared_ptr<NativeRdb::ResultSet> MockRdbStore::QueryByStep(
-    const std::string &sql, const std::vector<std::string> &selectionArgs)
-{
-    return nullptr;
-}
 
 int MockRdbStore::ExecuteAndGetLong(int64_t &outValue, const std::string &sql,
     const std::vector<NativeRdb::ValueObject> &bindArgs)

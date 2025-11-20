@@ -40,6 +40,8 @@ public:
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag);
     int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats,
         int32_t appIndex, uint32_t statFlag);
+    int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize);
+    int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize);
 
 private:
     StorageStatusService();
@@ -58,6 +60,14 @@ private:
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
     int32_t GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule = false);
+    int32_t GetBundleNameFromDB(uint32_t userId, const std::string &businessName, std::string &dbBundleName,
+        int32_t &rowCount);
+    int32_t UpdateExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize,
+        std::string callingBundleName);
+    int32_t InsertExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize,
+        std::string callingBundleName);
+    std::string GetCallingBundleName();
+    std::mutex extBundleMtx_;
 };
 } // StorageManager
 } // OHOS

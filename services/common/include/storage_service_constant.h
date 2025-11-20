@@ -36,15 +36,26 @@ const int PRIORITY_LEVEL = -20;
 const int ANCO_SA_UID = 7558;
 const int64_t TWO_G_BYTE = 2LL * 1000 * 1000 * 1000;
 const int64_t ONE_G_BYTE = 1LL * 1000 * 1000 * 1000;
+const int32_t ROWCOUNT_INIT = 0;
+const int32_t COLINDEX_INIT = -1;
 const std::string CREATE_BUNDLE_EXT_STATS_TABLE_SQL = "CREATE TABLE IF NOT EXISTS bundle_ext_stats_table \
 ( \
     businessName               TEXT NOT NULL, \
     businessSize               LONG NOT NULL, \
     userId                     INTEGER NOT NULL DEFAULT 0, \
     bundleName                 TEXT NOT NULL, \
-    lastModifyTime             INTEGER NOT NULL, \
+    lastModifyTime             INTEGER NOT NULL DEFAULT 0, \
     PRIMARY KEY (businessName, userId) \
 );";
+const std::string BUSINESS_NAME = "businessName";
+const std::string BUSINESS_SIZE = "businessSize";
+const std::string USER_ID = "userId";
+const std::string BUNDLE_NAME = "bundleName";
+const std::string LAST_MODIFY_TIME = "lastModifyTime";
+const std::string BUNDLE_EXT_STATS_TABLE = "bundle_ext_stats_table";
+const std::string WHERE_CLAUSE = "businessName = ? and userId = ?";
+const std::string SELECT_BUNDLE_EXT_SQL = "SELECT * FROM bundle_ext_stats_table "
+    "WHERE businessName = ? AND userId = ? LIMIT 1";
 }
 
 namespace StorageDaemon {

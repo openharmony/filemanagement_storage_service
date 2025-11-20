@@ -23,6 +23,7 @@
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
+#include "storage_rdb_adapter.h"
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
@@ -133,12 +134,16 @@ void StorageManagerProvider::OnStart()
     (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     StorageMonitorService::GetInstance().StartStorageMonitorTask();
+    std::thread([]() { OHOS::StorageManager::StorageRdbAdapter::GetInstance().Init(); }).detach();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
 void StorageManagerProvider::OnStop()
 {
+#ifdef STORAGE_STATISTICS_MANAGER
+    OHOS::StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+#endif
     LOGI("StorageManager::OnStop Done");
 }
 
@@ -982,6 +987,61 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
     }
     StorageManager::GetInstance().NotifyUserChangedEvent(userId, enumType);
     return E_OK;
+}
+
+int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t businessSize)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    if (userId >= INT32_MAX || businessSize >= INT64_MAX || businessName.empty()) {
+        LOGE("invalid params, userId: %{public}d, businessSize: %{public}lld, businessName: %{public}s",
+            userId, static_cast<long long>(businessSize), businessName.c_str());
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = CheckUserIdRange(static_cast<int32_t>(userId));
+    if (ret != E_OK) {
+        return ret;
+    }
+#ifdef STORAGE_STATISTICS_MANAGER
+    ret = StorageStatusService::GetInstance().SetExtBundleStats(userId, businessName, businessSize);
+    if (ret != E_OK) {
+        std::string extraData = "errCode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_SET_EXT_BUNDLE_STATS_ERROR, extraData);
+        return E_SET_EXT_BUNDLE_STATS_ERROR;
+    }
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t &businessSize)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    if (userId >= INT32_MAX || businessName.empty()) {
+        LOGE("invalid params, userId: %{public}d, businessName: %{public}s", userId, businessName.c_str());
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = CheckUserIdRange(static_cast<int32_t>(userId));
+    if (ret != E_OK) {
+        return ret;
+    }
+#ifdef STORAGE_STATISTICS_MANAGER
+    ret = StorageStatusService::GetInstance().GetExtBundleStats(userId, businessName, businessSize);
+    if (ret != E_OK) {
+        std::string extraData = "errCode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("GetExtBundleStats", E_GET_EXT_BUNDLE_STATS_ERROR, extraData);
+        return E_GET_EXT_BUNDLE_STATS_ERROR;
+    }
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -30,7 +30,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-using namespace OHOS::NativeRdb;
 class StorageRdbAdapter final : public StorageService::IRdbAdapter {
 public:
     static StorageRdbAdapter &GetInstance();
@@ -39,25 +38,25 @@ public:
     int32_t Init() override;
     int32_t UnInit() override;
     int32_t GetRDBPtr() override;
-    int32_t Put(int64_t &outRowId, const std::string &table, const ValuesBucket &Values) override;
+    int32_t Put(int64_t &outRowId, const std::string &table, const NativeRdb::ValuesBucket &Values) override;
     int32_t Delete(int32_t &deleteRows, const std::string &table, const std::string &whereClause,
-        const std::vector<ValueObject> &bindArgs = {}) override;
-    int32_t Update(int32_t &changedRows, const std::string &table, const ValuesBucket &values,
-        const std::string &whereClause, const std::vector<ValueObject> &bindArgs = {}) override;
-    std::shared_ptr<ResultSet> Get(const std::string &sql,
-        const std::vector<ValueObject> &args = {}) override;
+        const std::vector<NativeRdb::ValueObject> &bindArgs = {}) override;
+    int32_t Update(int32_t &changedRows, const std::string &table, const NativeRdb::ValuesBucket &values,
+        const std::string &whereClause, const std::vector<NativeRdb::ValueObject> &bindArgs = {}) override;
+    std::shared_ptr<NativeRdb::ResultSet> Get(const std::string &sql,
+        const std::vector<NativeRdb::ValueObject> &args = {}) override;
 
 private:
     StorageRdbAdapter() = default;
-    std::shared_ptr<RdbStore> store_ = nullptr;
+    std::shared_ptr<NativeRdb::RdbStore> store_ = nullptr;
     std::mutex rdbAdapterMtx_;
 };
 
-class OpenCallback : public RdbOpenCallback {
+class OpenCallback : public NativeRdb::RdbOpenCallback {
 public:
-    int32_t OnCreate(RdbStore &store) override;
-    int32_t OnUpgrade(RdbStore &store, int oldVersion, int newVersion) override;
-    int32_t CreateTable(RdbStore &store);
+    int32_t OnCreate(NativeRdb::RdbStore &store) override;
+    int32_t OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion) override;
+    int32_t CreateTable(NativeRdb::RdbStore &store);
 private:
     std::mutex rdbStoreMtx_;
 };

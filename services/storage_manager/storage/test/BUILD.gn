@@ -105,6 +105,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
+    "${storage_manager_path}/include/rdb_adapter",
   ]
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -132,6 +133,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "relational_store:native_rdb",
   ]
 }
 
@@ -196,6 +198,7 @@ ohos_unittest("storage_status_service_test") {
     "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include/rdb_adapter/",
   ]
 
   defines = [
@@ -223,8 +226,65 @@ ohos_unittest("storage_status_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "relational_store:native_rdb",
   ]
 
+}
+
+ohos_unittest("storage_status_service_mock_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [ 
+    "storage_status_service_mock_test.cpp",
+    "${storage_manager_path}/mock/storage_rdb_adapter_mock.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include/rdb_adapter/",
+    "${storage_manager_path}/include/mock/",
+    "${storage_manager_path}/include/storage",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "private = public",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_service_path}/services/storage_manager:storage_manager",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "relational_store:native_rdb",
+  ]
 }
 
 group("storage_manager_storage_test") {
@@ -234,5 +294,6 @@ group("storage_manager_storage_test") {
     ":storage_total_status_service_test",
     ":volume_storage_status_service_test",
     ":storage_status_service_test",
+    ":storage_status_service_mock_test",
   ]
 }

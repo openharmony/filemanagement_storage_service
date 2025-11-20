@@ -19,6 +19,7 @@
 #include "ipc_skeleton.h"
 #include "hitrace_meter.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_rdb_adapter.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -28,6 +29,8 @@
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "value_object.h"
+#include "values_bucket.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "datashare_abs_result_set.h"
 #include "datashare_helper.h"
@@ -514,6 +517,182 @@ int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageS
     }
 
     return err;
+}
+
+int32_t StorageStatusService::SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize)
+{
+    std::string callingBundleName = GetCallingBundleName();
+    if (callingBundleName.empty()) {
+        LOGE("GetCallingBundleName is empty");
+        return E_GET_CALL_BUNDLE_NAME_ERROR;
+    }
+    std::string dbBundleName;
+    int32_t rowCount = ROWCOUNT_INIT;
+    std::lock_guard<std::mutex> lock(extBundleMtx_);
+    {
+        int32_t ret = GetBundleNameFromDB(userId, businessName, dbBundleName, rowCount);
+        if (ret != E_OK) {
+            return ret;
+        }
+        if (rowCount == ROWCOUNT_INIT) {
+            return InsertExtBundleStats(userId, businessName, businessSize, callingBundleName);
+        }
+        if (callingBundleName != dbBundleName) {
+            std::string extraData = "callingBundleName=" + callingBundleName + "dbBundleName=" + dbBundleName;
+            StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_CALL_AND_DB_NAME_ERROR, extraData);
+        }
+        return UpdateExtBundleStats(userId, businessName, businessSize, callingBundleName);
+    }
+}
+
+int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t &businessSize)
+{
+    std::lock_guard<std::mutex> lock(extBundleMtx_);
+    std::string sql = SELECT_BUNDLE_EXT_SQL;
+    std::vector<NativeRdb::ValueObject> bindArgs;
+    bindArgs.emplace_back(NativeRdb::ValueObject(businessName));
+    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
+    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
+    if (resultSet == nullptr) {
+        LOGE("get businessSize failed");
+        return E_TB_GET_ERROR;
+    }
+    int32_t ret = resultSet->GoToFirstRow();
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("go to firstrow failed, ret: %{public}d", ret);
+        return ret;
+    }
+    int32_t colIndex = COLINDEX_INIT;
+    ret = resultSet->GetColumnIndex(BUSINESS_SIZE.c_str(), colIndex);
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("get column index failed, ret: %{public}d", ret);
+        return ret;
+    }
+    int64_t tmpSize;
+    ret = resultSet->GetLong(colIndex, tmpSize);
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("get long failed, ret: %{public}d", ret);
+        return ret;
+    }
+    businessSize = static_cast<uint64_t>(tmpSize);
+    resultSet->Close();
+    LOGI("get business size success, size: %{public}lld", static_cast<long long>(businessSize));
+    return E_OK;
+}
+
+std::string StorageStatusService::GetCallingBundleName()
+{
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
+    std::string callingBundleName;
+    if (tokenType == Security::AccessToken::TOKEN_NATIVE) {
+        auto uid = IPCSkeleton::GetCallingUid();
+        callingBundleName = std::to_string(uid);
+        LOGI("GetCallingBundleName success for sa, callingBundleName: %{public}s", callingBundleName.c_str());
+        return callingBundleName;
+    }
+    if (tokenType == Security::AccessToken::TOKEN_HAP) {
+        callingBundleName = GetCallingPkgName();
+        LOGI("GetCallingBundleName success for hap, callingBundleName: %{public}s", callingBundleName.c_str());
+        return callingBundleName;
+    }
+    return "";
+}
+
+int32_t StorageStatusService::GetBundleNameFromDB(uint32_t userId, const std::string &businessName,
+    std::string &dbBundleName, int32_t &rowCount)
+{
+    std::string sql = SELECT_BUNDLE_EXT_SQL;
+    std::vector<NativeRdb::ValueObject> bindArgs;
+    bindArgs.emplace_back(NativeRdb::ValueObject(businessName));
+    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
+    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
+    if (resultSet == nullptr) {
+        LOGE("query bundleName failed");
+        return E_TB_GET_ERROR;
+    }
+    int32_t ret = resultSet->GetRowCount(rowCount);
+    if (ret != E_OK || rowCount == ROWCOUNT_INIT) {
+        resultSet->Close();
+        LOGE("get row count failed, ret: %{public}d, rowCount: %{public}d", ret, rowCount);
+        return ret;
+    }
+    ret = resultSet->GoToFirstRow();
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("go to firstrow failed, ret: %{public}d", ret);
+        return ret;
+    }
+    int32_t colIndex = COLINDEX_INIT;
+    ret = resultSet->GetColumnIndex(BUNDLE_NAME.c_str(), colIndex);
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("get column index failed, ret: %{public}d", ret);
+        return ret;
+    }
+    ret = resultSet->GetString(colIndex, dbBundleName);
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("get string failed, ret: %{public}d", ret);
+        return ret;
+    }
+    resultSet->Close();
+    return E_OK;
+}
+
+int32_t StorageStatusService::UpdateExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t businessSize, std::string callingBundleName)
+{
+    std::string table = BUNDLE_EXT_STATS_TABLE;
+    std::vector<NativeRdb::ValueObject> bindArgs;
+    bindArgs.emplace_back(NativeRdb::ValueObject(businessName));
+    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
+    NativeRdb::ValuesBucket updateValues;
+    updateValues.PutLong(BUSINESS_SIZE, static_cast<int64_t>(businessSize));
+    updateValues.PutString(BUNDLE_NAME, callingBundleName);
+    time_t now = time(nullptr);
+    if (now != static_cast<time_t>(E_ERR)) {
+        updateValues.PutLong(LAST_MODIFY_TIME, static_cast<int64_t>(now));
+    }
+    int32_t rowCount = ROWCOUNT_INIT;
+    std::string whereClause = WHERE_CLAUSE;
+    int32_t ret = StorageRdbAdapter::GetInstance().Update(rowCount, table, updateValues,
+        whereClause, bindArgs);
+    if (ret != E_OK) {
+        LOGE("update failed, ret: %{public}d", ret);
+        return ret;
+    }
+    LOGI("update success, userId: %{public}d, businessName: %{public}s, businessSize: %{public}lld", userId,
+        businessName.c_str(), static_cast<long long>(businessSize));
+    return E_OK;
+}
+
+int32_t StorageStatusService::InsertExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t businessSize, std::string callingBundleName)
+{
+    std::string table = BUNDLE_EXT_STATS_TABLE;
+    NativeRdb::ValuesBucket insertValues;
+    insertValues.PutString(BUSINESS_NAME, businessName);
+    insertValues.PutLong(BUSINESS_SIZE, static_cast<int64_t>(businessSize));
+    insertValues.PutInt(USER_ID, static_cast<int32_t>(userId));
+    insertValues.PutString(BUNDLE_NAME, callingBundleName);
+    time_t now = time(nullptr);
+    if (now != static_cast<time_t>(E_ERR)) {
+        insertValues.PutLong(LAST_MODIFY_TIME, static_cast<int64_t>(now));
+    }
+    int64_t rowCount = ROWCOUNT_INIT;
+    int32_t ret = StorageRdbAdapter::GetInstance().Put(rowCount, table, insertValues);
+    if (ret != E_OK) {
+        LOGE("insert extBundle stats failed, ret: %{public}d", ret);
+        return ret;
+    }
+    LOGI("insert success, userId: %{public}d, businessName: %{public}s, businessSize: %{public}lld", userId,
+        businessName.c_str(), static_cast<long long>(businessSize));
+    return E_OK;
 }
 } // StorageManager
 } // OHOS

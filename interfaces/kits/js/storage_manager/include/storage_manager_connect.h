@@ -51,6 +51,8 @@ public:
 
     int32_t ResetProxy();
     int32_t DeactivateUserKey(uint32_t userId);
+    int32_t SetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t businessSize);
+    int32_t GetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t &businessSize);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
