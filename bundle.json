@@ -78,7 +78,8 @@
         "user_auth_framework",
         "zlib",
         "qos_manager",
-        "usb_manager"
+        "usb_manager",
+        "runtime_core"
       ],
       "third_party": [
         "e2fsprogs",
@@ -89,7 +90,10 @@
       "group_type": {
         "base_group": [],
         "fwk_group": [
-          "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js"
+          "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js",
+          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/key_manager:storage_service_key_manager_taihe",
+          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/storage_statistics:storage_service_storage_statistics_taihe",
+          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/volume_manager:storage_service_volume_manager_taihe"
         ],
         "service_group": [
           "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",
