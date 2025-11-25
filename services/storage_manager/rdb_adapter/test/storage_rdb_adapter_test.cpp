@@ -245,7 +245,7 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Get_0000, testing::ext::TestSize.Le
 
 /**
  * @tc.number: SUB_STORAGE_Storage_rdb_adapter_Delete_0000
- * @tc.name: Storage_rdb_adapter_Put_0000
+ * @tc.name: Storage_rdb_adapter_Delete_0000
  * @tc.desc: Test the function of the Delete interface.
  * @tc.size: MEDIUM
  * @tc.type: FUNC

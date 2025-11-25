@@ -39,9 +39,20 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
+
+  if (storage_service_storage_statistics_manager) {
+    sources += [
+    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
+    ]
+  }
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -70,6 +81,11 @@ ohos_unittest("storage_manager_provider_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "relational_store:native_rdb",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:dataobs_manager",
+    "eventhandler:libeventhandler",
+    "cJSON:cjson",
   ]
 
   if (storage_service_media_fuse) {
@@ -108,9 +124,20 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
+
+  if (storage_service_storage_statistics_manager) {
+    sources += [
+      "${storage_manager_path}/storage/src/storage_status_service.cpp",
+      "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+      "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+      "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
+      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+    ]
+  }
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -140,6 +167,11 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "relational_store:native_rdb",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:dataobs_manager",
+    "eventhandler:libeventhandler",
+    "cJSON:cjson",
   ]
 
   if (storage_service_media_fuse) {

@@ -28,7 +28,6 @@ constexpr const char* STORAGE_MANAGER_DATABASE_NAME = "storage_manager_db.db";
 constexpr int32_t RDB_VERSION = 1;
 constexpr int32_t RDB_INIT_MAX_TIMES = 30;
 constexpr int32_t RDB_INIT_INTERVAL_TIME = 100000;
-constexpr int32_t ROWCOUNT_INIT = -1;
 
 StorageRdbAdapter &StorageRdbAdapter::GetInstance()
 {
@@ -70,9 +69,10 @@ int32_t StorageRdbAdapter::GetRDBPtr()
     }
     int32_t version = RDB_VERSION;
     OpenCallback helper;
-    RdbStoreConfig config(std::string(STORAGE_MANAGER_RDB_PATH) + std::string(STORAGE_MANAGER_DATABASE_NAME));
+    NativeRdb::RdbStoreConfig config(std::string(STORAGE_MANAGER_RDB_PATH) +
+        std::string(STORAGE_MANAGER_DATABASE_NAME));
     int32_t errCode = OHOS::E_OK;
-    store_ = RdbHelper::GetRdbStore(config, version, helper, errCode);
+    store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, helper, errCode);
     if (store_ == nullptr) {
         LOGE("get rdb store failed, errCode is %{public}d", errCode);
         return E_RDB_STORE_NULL;
@@ -80,7 +80,7 @@ int32_t StorageRdbAdapter::GetRDBPtr()
     return OHOS::E_OK;
 }
 
-int32_t StorageRdbAdapter::Put(int64_t &outRowId, const std::string &table, const ValuesBucket &values)
+int32_t StorageRdbAdapter::Put(int64_t &outRowId, const std::string &table, const NativeRdb::ValuesBucket &values)
 {
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     if (store_ == nullptr) {
@@ -96,7 +96,7 @@ int32_t StorageRdbAdapter::Put(int64_t &outRowId, const std::string &table, cons
 }
 
 int32_t StorageRdbAdapter::Delete(int32_t &deleteRows, const std::string &table, const std::string &whereClause,
-    const std::vector<ValueObject> &bindArgs)
+    const std::vector<NativeRdb::ValueObject> &bindArgs)
 {
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     if (store_ == nullptr) {
@@ -111,8 +111,8 @@ int32_t StorageRdbAdapter::Delete(int32_t &deleteRows, const std::string &table,
     return OHOS::E_OK;
 }
 
-int32_t StorageRdbAdapter::Update(int32_t &changedRows, const std::string &table, const ValuesBucket &values,
-    const std::string &whereClause, const std::vector<ValueObject> &bindArgs)
+int32_t StorageRdbAdapter::Update(int32_t &changedRows, const std::string &table, const NativeRdb::ValuesBucket &values,
+    const std::string &whereClause, const std::vector<NativeRdb::ValueObject> &bindArgs)
 {
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     if (store_ == nullptr) {
@@ -127,9 +127,10 @@ int32_t StorageRdbAdapter::Update(int32_t &changedRows, const std::string &table
     return OHOS::E_OK;
 }
 
-std::shared_ptr<ResultSet> StorageRdbAdapter::Get(const std::string &sql, const std::vector<ValueObject> &args)
+std::shared_ptr<NativeRdb::ResultSet> StorageRdbAdapter::Get(const std::string &sql,
+    const std::vector<NativeRdb::ValueObject> &args)
 {
-    std::shared_ptr<ResultSet> resultSet = nullptr;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     if (store_ == nullptr) {
         LOGE("rdb store is null when get");
@@ -140,16 +141,10 @@ std::shared_ptr<ResultSet> StorageRdbAdapter::Get(const std::string &sql, const 
         LOGE("result set is null when get");
         return nullptr;
     }
-    int32_t rowCount = ROWCOUNT_INIT;
-    int32_t ret = resultSet->GetRowCount(rowCount);
-    if (ret != OHOS::E_OK) {
-        LOGE("restore failed when get, ret is %{public}d", ret);
-        return nullptr;
-    }
     return resultSet;
 }
 
-int32_t OpenCallback::CreateTable(RdbStore &store)
+int32_t OpenCallback::CreateTable(NativeRdb::RdbStore &store)
 {
     std::lock_guard<std::mutex> lock(rdbStoreMtx_);
     std::string sql = StorageService::CREATE_BUNDLE_EXT_STATS_TABLE_SQL;
@@ -161,7 +156,7 @@ int32_t OpenCallback::CreateTable(RdbStore &store)
     return OHOS::E_OK;
 }
 
-int32_t OpenCallback::OnCreate(RdbStore &store)
+int32_t OpenCallback::OnCreate(NativeRdb::RdbStore &store)
 {
     LOGI("rdb store create");
     int32_t ret = CreateTable(store);
@@ -173,7 +168,7 @@ int32_t OpenCallback::OnCreate(RdbStore &store)
     return OHOS::E_OK;
 }
 
-int32_t OpenCallback::OnUpgrade(RdbStore &store, int oldVersion, int newVersion)
+int32_t OpenCallback::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion)
 {
     LOGI("rdb store upgrade, old version : %{public}d, new version : %{public}d", oldVersion, newVersion);
     return OHOS::E_OK;

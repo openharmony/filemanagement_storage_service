@@ -57,6 +57,8 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidernotifydiskdestroyed_fuzzer:fuzztest",
     "storagemanagerprovidermountmediafuse_fuzzer:fuzztest",
     "storagemanagerproviderumountmediafuse_fuzzer:fuzztest",
+    "storagemanagerprovidersetextbundlestats_fuzzer:fuzztest",
+    "storagemanagerprovidergetextbundlestats_fuzzer:fuzztest",
   ]
 }
 

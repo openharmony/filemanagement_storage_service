@@ -166,6 +166,8 @@ public:
     int32_t DeleteUserDir(const std::string &path) override;
     int32_t CheckUserIdRange(int32_t userId);
     int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
+    int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize) override;
+    int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize) override;
 
 private:
     StorageManagerProvider();

@@ -350,7 +350,6 @@ HWTEST_F(RdbAdapterTest, Get001, TestSize.Level1)
     std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
     EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs),
         _)).WillOnce(Return(mockResultSet));
-    EXPECT_CALL(*mockResultSet, GetRowCount(_)).WillOnce(Return(OHOS::E_OK));
 
     std::shared_ptr<ResultSet> resultSet = StorageRdbAdapter::GetInstance().Get(GET_SQL, bindArgs);
     EXPECT_NE(resultSet, nullptr);
@@ -392,10 +391,9 @@ HWTEST_F(RdbAdapterTest, Get003, TestSize.Level1)
     std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
     EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs),
     _)).WillOnce(Return(mockResultSet));
-    EXPECT_CALL(*mockResultSet, GetRowCount(_)).WillOnce(Return(E_ERR));
 
     std::shared_ptr<ResultSet> resultSet = StorageRdbAdapter::GetInstance().Get(GET_SQL, bindArgs);
-    EXPECT_EQ(resultSet, nullptr);
+    EXPECT_NE(resultSet, nullptr);
 }
 
 /**

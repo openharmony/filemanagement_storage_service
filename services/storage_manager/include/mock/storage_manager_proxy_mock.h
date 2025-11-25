@@ -132,6 +132,8 @@ public:
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
+    int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize) override;
+    int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

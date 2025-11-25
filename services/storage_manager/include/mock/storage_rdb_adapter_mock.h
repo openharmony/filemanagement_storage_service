@@ -42,6 +42,8 @@ public:
     MOCK_METHOD(int, Close, (), (override));
     MOCK_METHOD(int, GetColumnCount, (int &count), (override));
     MOCK_METHOD(int, GetRowCount, (int &count), (override));
+    MOCK_METHOD(int, GetColumnIndex, (const std::string &columnName, int32_t &columnIndex), (override));
+    MOCK_METHOD(int, GetLong, (int columnIndex, int64_t &value), (override));
 };
 class MockRdbStore : public OHOS::NativeRdb::RdbStore {
 public:
@@ -70,6 +72,8 @@ public:
             const std::string &whereClause, const std::vector<NativeRdb::ValueObject> &bindArgs),
         (override));
     MOCK_METHOD(std::shared_ptr<NativeRdb::ResultSet>, QueryByStep,
+        (const std::string &sql, const std::vector<std::string> &selectionArgs), (override));
+    MOCK_METHOD(std::shared_ptr<NativeRdb::ResultSet>, QueryByStep,
         (const std::string &sql, const std::vector<NativeRdb::ValueObject> &bindArgs, bool preCount),
         (override));
     ~MockRdbStore() override = default;
@@ -95,8 +99,6 @@ public:
         const std::string &sql, const std::vector<std::string> &selectionArgs) override;
     std::shared_ptr<NativeRdb::AbsSharedResultSet> QuerySql(
         const std::string &sql, const std::vector<NativeRdb::ValueObject> &selectionArgs) override;
-    std::shared_ptr<NativeRdb::ResultSet> QueryByStep(
-        const std::string &sql, const std::vector<std::string> &selectionArgs) override;
 
     int ExecuteAndGetLong(int64_t &outValue, const std::string &sql,
         const std::vector<NativeRdb::ValueObject> &bindArgs) override;

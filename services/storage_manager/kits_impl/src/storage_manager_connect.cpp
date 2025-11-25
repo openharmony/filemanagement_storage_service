@@ -387,5 +387,33 @@ int32_t StorageManagerConnect::GetUserStorageStatsByType(int32_t userId, Storage
     }
     return storageManager_->GetUserStorageStatsByType(userId, storageStats, type);
 }
+
+int32_t StorageManagerConnect::SetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t businessSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::SetExtBundleStats:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::SetExtBundleStats service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->SetExtBundleStats(userId, businessName, businessSize);
+}
+
+int32_t StorageManagerConnect::GetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t &businessSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetExtBundleStats:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetExtBundleStats service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetExtBundleStats(userId, businessName, businessSize);
+}
 } // StorageManager
 } // OHOS

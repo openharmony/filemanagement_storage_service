@@ -38,6 +38,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <cstdint>
 namespace OHOS::Security::AccessToken {
 ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
 {
@@ -55,8 +56,9 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
     return 0;
 }
 }
- 
+
 pid_t g_testCallingUid = 5523;
+const int MAX_USER_ID = 10738;
  
 namespace OHOS {
 pid_t IPCSkeleton::GetCallingUid()
@@ -1575,6 +1577,66 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserPublic
     auto ret = storageManagerProviderTest_->UpdateUserPublicDirPolicy(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserPublicDirPolicy_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_001
+ * @tc.desc: Verify the SetExtBundleStats function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = MAX_USER_ID + 1;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
+    g_testCallingUid = 7558;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    userId = INT32_MAX;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    userId = 1;
+    businessSize = INT64_MAX;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    businessSize = 1;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, "", businessSize);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
+}
+
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetExtBundleStats_001
+ * @tc.desc: Verify the GetExtBundleStats function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250722463628
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = MAX_USER_ID + 1;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
+    g_testCallingUid = 7558;
+    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    userId = INT32_MAX;
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    userId = 1;
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, "", businessSize);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
 }
 }

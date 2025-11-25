@@ -33,6 +33,9 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#ifdef STORAGE_STATISTICS_MANAGER
+#include "storage/storage_status_service.h"
+#endif
 namespace OHOS {
 namespace StorageManager {
 using namespace testing;
@@ -1550,6 +1553,42 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_001
+ * @tc.desc: Verify the SetExtBundleStats function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetExtBundleStats_001
+ * @tc.desc: Verify the GetExtBundleStats function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
+    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS
