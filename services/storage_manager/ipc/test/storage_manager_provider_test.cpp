@@ -607,6 +607,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_0
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_001
+ * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncryptedKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
  * @tc.type: FUNC

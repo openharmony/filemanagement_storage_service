@@ -29,6 +29,7 @@ constexpr size_t INDEX_1 = 1;
 constexpr size_t INDEX_2 = 2;
 
 #ifdef SDC_TEST_ENABLE
+constexpr int32_t ARG_CNT_3 = 3;
 constexpr int32_t ARG_CNT_4 = 4;
 constexpr int32_t ARG_CNT_5 = 5;
 constexpr int32_t ARG_CNT_6 = 6;
@@ -338,6 +339,15 @@ static int32_t StartUser(const std::vector<std::string> &args)
     }
     return OHOS::StorageDaemon::StorageDaemonClient::StartUser(userId);
 }
+
+static int32_t EraseAllUserEncryptedKeys(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_3) {
+        LOGE("Parameter nums is less than 3, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageDaemon::StorageDaemonClient::EraseAllUserEncryptedKeys();
+}
 #endif
 
 static const auto g_fscryptCmdHandler = std::map<std::string,
@@ -362,6 +372,7 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"set_recover_key", SetRecoverKey},
     {"stop_user", StopUser},
     {"start_user", StartUser},
+    {"erase_all_user_encrypted_keys", EraseAllUserEncryptedKeys},
 #endif
 };
 

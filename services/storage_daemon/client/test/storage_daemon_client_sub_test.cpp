@@ -448,6 +448,58 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Delete
 }
 
 /**
+* @tc.name: StorageDaemonClientTest_EraseAllUserEncryptedKeys_001
+* @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_001 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_001 end";
+}
+
+/**
+* @tc.name: StorageDaemonClientTest_EraseAllUserEncryptedKeys_002
+* @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedKeys_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_002 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_002 end";
+}
+
+/**
+* @tc.name: StorageDaemonClientTest_EraseAllUserEncryptedKeys_003
+* @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedKeys_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_003 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys()).WillOnce(Return(E_OK));
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_003 end";
+}
+
+/**
 * @tc.name: Storage_Service_StorageDaemonClientTest_UpdateUserAuth_001
 * @tc.desc: Verify the UpdateUserAuth function.
 * @tc.type: FUNC

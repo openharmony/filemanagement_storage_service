@@ -55,6 +55,14 @@ int32_t KeyManager::DeleteUserKeys(unsigned int user)
     return KeyManagerMock::iKeyManagerMock_->DeleteUserKeys(user);
 }
 
+int32_t KeyManager::EraseAllUserEncryptedKeys()
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->EraseAllUserEncryptedKeys();
+}
+
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
     const std::vector<std::vector<uint8_t>> &plainText)

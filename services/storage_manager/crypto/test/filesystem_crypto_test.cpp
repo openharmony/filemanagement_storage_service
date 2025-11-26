@@ -75,6 +75,25 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_DeleteUserKeys_0001, testi
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_EraseAllUserEncryptedKeys_0000
+ * @tc.name: Storage_manager_crypto_EraseAllUserEncryptedKeys_0000
+ * @tc.desc: Test function of EraseAllUserEncryptedKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_EraseAllUserEncryptedKeys_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_EraseAllUserEncryptedKeys_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t result = fileSystemCrypto_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_EraseAllUserEncryptedKeys_0000";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_crypto_UpdateUserAuth_0000
  * @tc.name: Storage_manager_crypto_UpdateUserAuth_0000
  * @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.

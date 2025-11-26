@@ -1322,6 +1322,23 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_009, TestSize.Level1)
 }
 
 /**
+ * @tc.name: fscrypt_sdc_filecrypt_010
+ * @tc.desc: Verify the sdc interface.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_010, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc erase_all_user_encrypted_keys
+    params.clear();
+    params.push_back("erase_all_user_encrypted_keys");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+/**
  * @tc.name: libfscrypt api test
  * @tc.desc: Verify the libfscrypt interface.
  * @tc.type: FUNC

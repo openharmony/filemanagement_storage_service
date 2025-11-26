@@ -30,6 +30,7 @@ public:
         return instance;
     }
     int32_t DeleteUserKeys(uint32_t userId);
+    int32_t EraseAllUserEncryptedKeys();
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,
                            const std::vector<uint8_t> &oldSecret,
