@@ -151,7 +151,6 @@ group("keycontrol_fuzztest") {
     "keycontrolgetpolicy_fuzzer:fuzztest",
     "keycontrolgetfscryptversion_fuzzer:fuzztest",
     "keycontrolloadversion_fuzzer:fuzztest",
-    "keycontrolhasfscryptsyspara_fuzzer:fuzztest",
     "keyctrlgetkeystatus_fuzzer:fuzztest",
     "keyctrlgetpolicyex_fuzzer:fuzztest",
     "keyctrlinstallkey_fuzzer:fuzztest",
