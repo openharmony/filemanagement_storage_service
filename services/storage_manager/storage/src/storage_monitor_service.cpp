@@ -26,6 +26,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_stats.h"
+#include "storage/storage_quota_controller.h"
 #include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
@@ -91,8 +92,10 @@ void StorageMonitorService::StartStorageMonitorTask()
         LOGE("event handler is nullptr in StartStorageMonitorTask.");
     }
     auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
+    auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
     eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
+    eventHandler_->PostTask(executeUpdateBaseLineByUid, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -138,6 +141,12 @@ void StorageMonitorService::StorageStatisticsThd()
     }
     auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
     eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_INTERVAL);
+}
+
+void StorageMonitorService::UpdateBaseLineByUid()
+{
+    LOGI("begin update base line by uid task.");
+    StorageQuotaController::GetInstance().UpdateBaseLineByUid();
 }
 
 void StorageMonitorService::MonitorAndManageStorage()
