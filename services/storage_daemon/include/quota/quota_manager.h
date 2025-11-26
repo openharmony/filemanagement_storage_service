@@ -46,10 +46,10 @@ struct UidSaInfo {
     std::string saName;
     int64_t size;
     uint64_t iNodes;
-    
+
     UidSaInfo(int32_t uid, const std::string& saName, int64_t size, uint64_t iNodes = 0)
         : uid(uid), saName(saName), size(size), iNodes(iNodes) {}
-    
+
     UidSaInfo() : uid(0), saName(""), size(0), iNodes(0) {}
 };
 
@@ -102,6 +102,7 @@ public:
     void GetUidStorageStats(const std::string &storageStatus);
     int32_t StatisticSysDirSpace();
     void GetUidStorageStats(const std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
+    int32_t GetFileData(const std::string &path, int64_t &size);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
@@ -120,8 +121,6 @@ private:
     int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
     bool IsNeedScan();
     void GetMetaData(std::ostringstream &extraData);
-    void GetAncoSize(std::ostringstream &extraData);
-    int32_t GetFileData(const std::string &path, int64_t &size);
     bool StringToInt64(const std::string& str, int64_t& out_value);
     void GetCurrentTime(std::ostringstream &extraData);
     int32_t CheckOccupation(std::ostringstream &extraData);

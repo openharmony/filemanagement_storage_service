@@ -133,6 +133,10 @@ public:
     virtual int32_t DeleteUserDir(const std::string &path) override;
     virtual int32_t StatisticSysDirSpace() override;
 
+    // stats api
+    virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
+    virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
+
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

@@ -108,6 +108,7 @@ ohos_shared_library("storage_manager") {
     sources += [
       "account_subscriber/account_subscriber.cpp",
       "storage/src/bundle_manager_connector.cpp",
+      "dfx_report/storage_dfx_reporter.cpp",
       "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_service.cpp",
       "storage/src/storage_total_status_service.cpp",

@@ -31,6 +31,7 @@
 #include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
+#include "dfx_report/storage_dfx_reporter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -58,6 +59,7 @@ const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
 const std::string FAULT_SUGGEST_THREE = "545010023";
 constexpr int RETRY_MAX_TIMES = 3;
+constexpr int32_t SEVEN_DAYS_IN_HOURS = 7 * 24; // 7 days in hours
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -90,9 +92,10 @@ void StorageMonitorService::StartStorageMonitorTask()
     if (eventHandler_ == nullptr) {
         LOGE("event handler is nullptr in StartStorageMonitorTask.");
     }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
+
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -122,24 +125,6 @@ void StorageMonitorService::Execute()
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
 
-void StorageMonitorService::StorageStatisticsThd()
-{
-    LOGI("begin storage statistic scheduled task. ");
-    if (eventHandler_ == nullptr) {
-        LOGE("event handler is nullptr.");
-        return;
-    }
-    StorageStats stats;
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(DEFAULT_USERID, stats, true);
-    if (err != E_OK) {
-        LOGE("failed storage statistic scheduled task, %{public}d.", err);
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
-            "setting");
-    }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_INTERVAL);
-}
-
 void StorageMonitorService::MonitorAndManageStorage()
 {
     int64_t totalSize;
@@ -163,7 +148,7 @@ void StorageMonitorService::MonitorAndManageStorage()
     if (freeSize < thresholds["clean_h"]) {
         CheckAndCleanCache(freeSize, totalSize);
     }
- 
+
     LOGI("notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
         static_cast<long long>(thresholds["notify_l"]), static_cast<long long>(thresholds["notify_m"]),
         static_cast<long long>(thresholds["notify_h"]));
@@ -204,17 +189,17 @@ std::string StorageMonitorService::GetStorageAlertCleanupParams()
 {
     std::string storageParams;
     char tmpBuffer[STORAGE_PARAMS_PATH_LEN] = {0};
-    
+
     int ret = GetParameter(STORAGE_ALERT_CLEANUP_PARAMETER, DEFAULT_PARAMS, tmpBuffer, STORAGE_PARAMS_PATH_LEN);
     if (ret <= 0) {
         LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
              STORAGE_ALERT_CLEANUP_PARAMETER, ret);
         return DEFAULT_PARAMS;
     }
-    
+
     return tmpBuffer;
 }
- 
+
 void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
 {
     std::string storageParams = GetStorageAlertCleanupParams();
@@ -223,7 +208,7 @@ void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
     while (std::getline(storageParamsStream, item, '/')) {
         std::string key;
         std::string value;
- 
+
         size_t pos = item.find(':');
         if (pos != std::string::npos) {
             key = item.substr(0, pos);
@@ -232,7 +217,7 @@ void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
             LOGE("Invalid parameter format");
             continue;
         }
- 
+
         if (value.length() > 1 && value.substr(value.length() - 1) == "%") {
             int percentage = std::atoi(value.substr(0, value.length() - 1).c_str());
             if (percentage < 0 || percentage > CONST_NUM_ONE_HUNDRED) {
@@ -469,6 +454,64 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
     lastNotificationTimeHighFreq_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+}
+
+void StorageMonitorService::HapAndSaStatisticsThd()
+{
+    LOGI("begin hap and sa statistic scheduled task.");
+    if (eventHandler_ == nullptr) {
+        LOGE("event handler is nullptr.");
+        return;
+    }
+
+    // 1. 从 dfx_reporter 获取上次Hap和Sa统计的时间和剩余空间大小
+    int64_t lastHapAndSaFreeSize = StorageDfxReporter::GetInstance().GetLastHapAndSaFreeSize();
+    auto lastHapAndSaTime = StorageDfxReporter::GetInstance().GetLastHapAndSaTime();
+
+    // 2. 从 storage_total_status_service 获取当前剩余空间大小
+    bool needStatistic = false;
+    int64_t currentFreeSize = 0;
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize);
+    if (err == E_OK && currentFreeSize >= 0) {
+        needStatistic = true;
+    }
+    // 3. 判断是否需要执行整机空间统计打点
+    auto currentTime = std::chrono::system_clock::now();
+    std::string reason;
+    // 3.1 检查时间间隔是否超过7天 (仅当上次存在正常记录时才检查)
+    int64_t hoursSinceLastStat = std::chrono::duration_cast<std::chrono::hours>(
+        currentTime - lastHapAndSaTime).count();
+    if (needStatistic && lastHapAndSaTime.time_since_epoch().count() != 0 &&
+        hoursSinceLastStat >= SEVEN_DAYS_IN_HOURS) {
+        needStatistic = true;
+        reason = "time interval >= 7 days";
+        LOGI("Hap and Sa statistic needed: %{public}s, hours since last: %{public}lld",
+             reason.c_str(), static_cast<long long>(hoursSinceLastStat));
+    }
+    // 3.2 检查空间变化是否超过2GB
+    int64_t freeSizeDiff = std::abs(currentFreeSize - lastHapAndSaFreeSize);
+    if (needStatistic && freeSizeDiff >= StorageService::TWO_G_BYTE) {
+        needStatistic = true;
+        reason = "free size diff >= 2GB";
+        LOGI("Hap and Sa statistic needed: %{public}s, diff=%{public}lld bytes",
+             reason.c_str(), static_cast<long long>(freeSizeDiff));
+    }
+    // 4. 执行整机空间统计打点
+    if (needStatistic) {
+        LOGI("Start whole device space statistic - reason: %{public}s, currentFreeSize=%{public}lld, "
+             "lastFreeSize=%{public}lld", reason.c_str(),
+             static_cast<long long>(currentFreeSize), static_cast<long long>(lastHapAndSaFreeSize));
+
+        // 调用 dfx_reporter 执行整机空间统计打点
+        StorageDfxReporter::GetInstance().StartReportHapAndSaStorageStatus();
+    } else {
+        LOGI("Skip hap and sa statistic - time diff: %{public}lld hours, size diff: %{public}lld bytes",
+             static_cast<long long>(hoursSinceLastStat), static_cast<long long>(freeSizeDiff));
+    }
+
+    // 5. 调度下一次执行(8小时后)
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
 }
 } // StorageManager
 } // OHOS

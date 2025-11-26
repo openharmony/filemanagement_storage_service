@@ -1009,5 +1009,36 @@ int32_t StorageDaemonProvider::StatisticSysDirSpace()
 {
     return QuotaManager::GetInstance().StatisticSysDirSpace();
 }
+
+int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    LOGI("GetDataSizeByPath start, path=%{public}s", path.c_str());
+    // 初始化size为0
+    size = 0;
+    // 调用 quota_manager 的 GetFileData 方法获取数据
+    int32_t ret = QuotaManager::GetInstance().GetFileData(path, size);
+    if (ret != E_OK) {
+        LOGE("GetFileData failed, path=%{public}s, ret=%{public}d", path.c_str(), ret);
+        return ret;
+    }
+    LOGI("GetDataSizeByPath success, path=%{public}s, size=%{public}lld", path.c_str(), static_cast<long long>(size));
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    LOGI("GetRmgResourceSize start, rgmName=%{public}s", rgmName.c_str());
+    // 初始化totalSize为0
+    totalSize = 0;
+    // 调用 file_utils 的 GetRmgResourceSize 方法获取资源大小
+    int32_t ret = OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
+    if (ret != E_OK) {
+        LOGE("GetRmgResourceSize failed, rgmName=%{public}s, ret=%{public}d", rgmName.c_str(), ret);
+        return ret;
+    }
+    LOGI("GetRmgResourceSize success, rgmName=%{public}s, totalSize=%{public}llu", rgmName.c_str(),
+         static_cast<unsigned long long>(totalSize));
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

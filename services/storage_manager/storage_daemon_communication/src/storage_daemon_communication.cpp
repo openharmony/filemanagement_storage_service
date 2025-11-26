@@ -966,5 +966,33 @@ int32_t StorageDaemonCommunication::StatisticSysDirSpace()
     }
     return storageDaemon_->StatisticSysDirSpace();
 }
+
+int32_t StorageDaemonCommunication::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetDataSizeByPath service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetDataSizeByPath(path, size);
+}
+
+int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -120,6 +120,10 @@ public:
     int32_t DeleteUserDir(const std::string &path);
     int32_t StatisticSysDirSpace();
 
+    // stats api
+    int32_t GetDataSizeByPath(const std::string &path, int64_t &size);
+    int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
+
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

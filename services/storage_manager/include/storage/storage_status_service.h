@@ -42,21 +42,17 @@ public:
         int32_t appIndex, uint32_t statFlag);
     int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize);
     int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize);
+    int32_t GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid);
 
 private:
     StorageStatusService();
     ~StorageStatusService();
-    int32_t QueryOccupiedSpaceForSa(StorageStats &storageStats, int32_t userId, bool isSchedule = false);
-    void ProcessStorageStatus(const StorageStats &storageStats, int32_t userId, bool isSchedule);
-    int32_t CheckBundlePermissions(int32_t uid, std::string &bundleName, bool isSchedule);
-    int32_t GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid);
     std::string ConvertBytesToMB(int64_t bytes);
     int GetCurrentUserId();
     std::string GetCallingPkgName();
     int32_t GetAppSize(int32_t userId, int64_t &size);
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
     const int DEFAULT_APP_INDEX = 0;
-    int64_t oldFreeSizeCache = 0;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
     int32_t GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule = false);

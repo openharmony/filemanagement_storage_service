@@ -335,5 +335,15 @@ int32_t StorageDaemonProxy::StatisticSysDirSpace()
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

@@ -335,27 +335,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetStorageAlertClean
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_StorageStatisticsThd_0000
- * @tc.name: Storage_monitor_service_StorageStatisticsThd_0000
- * @tc.desc: Test function of StorageStatisticsThd interface.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issuesIC35N9
- */
-HWTEST_F(StorageMonitorServiceTest, Storage_monitor_service_StorageStatisticsThd_0000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_monitor_service_StorageStatisticsThd_0000 start";
-    g_storageFlag = 0;
-    service->StorageStatisticsThd();
-    EXPECT_TRUE(true);
-    g_storageFlag = -1;
-    service->StorageStatisticsThd();
-    EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "Storage_monitor_service_StorageStatisticsThd_0000 end";
-}
-
-/**
  * @tc.number: SUB_STORAGE_storage_monitor_service_IsCurTimeNeedStatistic_0000
  * @tc.name: Storage_monitor_service_IsCurTimeNeedStatistic_0000
  * @tc.desc: Test function of IsCurTimeNeedStatistic interface.

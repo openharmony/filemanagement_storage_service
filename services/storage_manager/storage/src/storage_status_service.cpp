@@ -48,12 +48,9 @@ const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
-constexpr const char *SETTING_BUNDLE_NAME = "settings";
-static std::atomic<bool> checkDirSizeFlag = false;
 constexpr int DECIMAL_PLACE = 2;
 constexpr double TO_MB = 1000.0 * 1000.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
-constexpr int64_t CHANGE_RANGE = 1024LL * 1024 * 1024 * 2;
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -250,12 +247,6 @@ int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, Storag
             GetCallingPkgName());
         return err;
     }
-    auto ret = QueryOccupiedSpaceForSa(storageStats, userId, isSchedule);
-    if (ret != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats QueryOccupiedSpaceForSa failed, err: %{public}d", ret);
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::QueryOccupiedSpaceForSa", userId, ret,
-            GetCallingPkgName());
-    }
     return err;
 }
 
@@ -264,92 +255,6 @@ std::string StorageStatusService::ConvertBytesToMB(int64_t bytes)
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(DECIMAL_PLACE) << static_cast<double>(bytes) / TO_MB << "MB";
     return oss.str();
-}
-
-int32_t StorageStatusService::QueryOccupiedSpaceForSa(StorageStats &storageStats, int32_t userId, bool isSchedule)
-{
-    std::string bundleName;
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    // 检查权限
-    int32_t errNo = CheckBundlePermissions(uid, bundleName, isSchedule);
-    if (errNo != E_OK) {
-        return errNo;
-    }
-    // 检查是否正在运行任务
-    if (checkDirSizeFlag.load()) {
-        LOGI("The task to query SA space usage is running, ignore");
-        return E_OK;
-    }
-    // 启动线程处理
-    std::thread([this, storageStats, userId, isSchedule]() {
-        ProcessStorageStatus(storageStats, userId, isSchedule);
-    }).detach();
-    return E_OK;
-}
-
-void StorageStatusService::ProcessStorageStatus(const StorageStats &storageStats, int32_t userId, bool isSchedule)
-{
-    checkDirSizeFlag.store(true);
-    int64_t freeSize = 0;
-    int64_t systemSize = 0;
-    int32_t errNo = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
-    if (errNo != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getFreeSize failed, errNo:%{public}d.", errNo);
-    }
-    errNo = StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
-    if (errNo != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getSysSize failed, errNo:%{public}d.", errNo);
-    }
-    int64_t changeSize = freeSize - oldFreeSizeCache;
-    if (abs(changeSize) < CHANGE_RANGE && isSchedule) {
-        LOGI("free size changed less than 2G, do not report storage");
-        checkDirSizeFlag.store(false);
-        return;
-    }
-    oldFreeSizeCache = freeSize;
-    std::map<int32_t, std::string> bundleNameAndUid;
-    errNo = GetBundleNameAndUid(userId, bundleNameAndUid);
-    if (errNo != E_OK) {
-        LOGE("GetAllBundleNames failed, errNo:%{public}d.", errNo);
-        std::string extraData = "errNo is :" + std::to_string(errNo);
-        StorageRadar::ReportCommonResult("QueryOccupiedSpaceForSa::GetBundleNameAndUid",
-            E_GET_BUNDLE_NAME_FAILED, userId, extraData);
-    }
-    std::string storageStatusResult = "{userId is:" + std::to_string(userId) + "}\n" +
-                                     "{app size is:" + ConvertBytesToMB(storageStats.app_) +
-                                     ",audio size is:" + ConvertBytesToMB(storageStats.audio_) +
-                                     ",image size is:" + ConvertBytesToMB(storageStats.image_) +
-                                     ",video size is:" + ConvertBytesToMB(storageStats.video_) +
-                                     ",file size is:" + ConvertBytesToMB(storageStats.file_) +
-                                     ",total size is:" + std::to_string(storageStats.total_) + "B" +
-                                     ",sys size is:" + ConvertBytesToMB(systemSize) +
-                                     ",free size is:" + ConvertBytesToMB(freeSize) + "}";
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("get sdCommunication error");
-        checkDirSizeFlag.store(false);
-        return;
-    }
-    sdCommunication->QueryOccupiedSpaceForSa(storageStatusResult, bundleNameAndUid);
-    checkDirSizeFlag.store(false);
-}
-
-int32_t StorageStatusService::CheckBundlePermissions(int32_t uid, std::string &bundleName, bool isSchedule)
-{
-    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
-    if (bundleMgr == nullptr) {
-        LOGE("Connect bundle manager sa proxy failed.");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    if (!bundleMgr->GetBundleNameForUid(uid, bundleName) && !isSchedule) {
-        LOGE("Invoke bundleMgr interface to get bundle name failed.");
-        return E_BUNDLEMGR_ERROR;
-    }
-    if (bundleName != SETTING_BUNDLE_NAME && !isSchedule) {
-        LOGE("permissionCheck error");
-        return E_PERMISSION_DENIED;
-    }
-    return E_OK;
 }
 
 int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid)

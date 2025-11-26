@@ -52,10 +52,13 @@ private:
     void EventNotifyFreqHandlerForMedium();
     void EventNotifyFreqHandlerForHigh();
     void ParseStorageParameters(int64_t totalSize);
-    void StorageStatisticsThd();
     std::string GetStorageAlertCleanupParams();
     void StatisticSysDirSpace(int64_t &freeSize);
     bool IsCurTimeNeedStatistic();
+
+    // stats
+    void HapAndSaStatisticsThd();
+    void SubscribeScreenAndPowerEventTask();
 
     int64_t freesizeCache = 0;
     bool hasNotifiedStorageEvent_ = true;
