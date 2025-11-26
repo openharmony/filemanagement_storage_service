@@ -79,7 +79,8 @@
         "zlib",
         "qos_manager",
         "usb_manager",
-        "runtime_core"
+        "runtime_core",
+        "json"
       ],
       "third_party": [
         "e2fsprogs",
