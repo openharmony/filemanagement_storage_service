@@ -29,6 +29,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_manager_path}/storage/src/app_status_manager.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/user/src/multi_user_manager_service.cpp",
