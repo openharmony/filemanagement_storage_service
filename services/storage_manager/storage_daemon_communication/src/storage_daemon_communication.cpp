@@ -953,7 +953,8 @@ int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
     return storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);
 }
 
-int32_t StorageDaemonCommunication::StatisticSysDirSpace()
+int32_t StorageDaemonCommunication::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
+    std::vector<NextDqBlk> &dqBlks)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -964,7 +965,50 @@ int32_t StorageDaemonCommunication::StatisticSysDirSpace()
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->StatisticSysDirSpace();
+    return storageDaemon_->GetDqBlkSpacesByUids(uids, dqBlks);
+}
+
+int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+    std::vector<DirSpaceInfo> &outDirs)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetDirListSpace(inDirs, outDirs);
+}
+
+int32_t StorageDaemonCommunication::SetStopScanFlg(bool stop)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->SetStopScanFlg(stop);
+}
+
+int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetAncoSizeData(outExtraData);
 }
 } // namespace StorageManager
 } // namespace OHOS

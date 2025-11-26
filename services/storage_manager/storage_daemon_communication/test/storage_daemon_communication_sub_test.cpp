@@ -1757,7 +1757,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     std::string volumeId = "vol-usb-001";
     int fuseFd = -1;
     std::string fsUuid;
-    
+
     // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
@@ -1782,7 +1782,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
     EXPECT_CALL(*sd, MountUsbFuse(volumeId, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_OK);
-    
+
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
 }
 
@@ -1833,7 +1833,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
 {
     GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 begin";
     ASSERT_TRUE(sdCommunication != nullptr);
-    
+
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
@@ -1925,43 +1925,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserDir_001,
     EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_OK);
 
     GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 end";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_StatisticSysDirSpace_001
- * @tc.name: Daemon_communication_StatisticSysDirSpace_001
- * @tc.desc: Test function of StatisticSysDirSpace interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Daemon_communication_StatisticSysDirSpace_001 begin ";
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_SA_IS_NULLPTR);
-
-    // Test storageDaemon_ == nullptr branch after Connect() success
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_SERVICE_IS_NULLPTR);
-
-    // Test normal success path
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, StatisticSysDirSpace()).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_OK);
-
-    GTEST_LOG_(INFO) << "Daemon_communication_StatisticSysDirSpace_001 end";
 }
 
 /**

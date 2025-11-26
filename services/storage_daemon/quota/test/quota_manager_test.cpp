@@ -360,7 +360,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
     ASSERT_EQ(vec.size(), 1);
     EXPECT_EQ(vec[0].saName, "saName");
     EXPECT_EQ(vec[0].uid, 1234);
-    
+
     std::remove(path.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ParseConfigFile_001 end";
 }
@@ -382,42 +382,6 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForU
     QuotaManager::GetInstance().GetOccupiedSpaceForUidList(allVec, iNodes);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001
- * @tc.desc: Test whether StatisticSysDirSpace is called normally.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001 start";
-
-    EXPECT_EQ(QuotaManager::GetInstance().StatisticSysDirSpace(), E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_QuotaManagerTest_AddDirSpace_001
- * @tc.desc: Test whether AddDirSpace is called normally.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddDirSpace_001 start";
-
-    std::vector<DirSpaceInfo> dirs = {
-        {"/data/app/el1/public", 0, 0},
-        {"/data/app/el1/%d/base", 0, 0}
-    };
-    std::vector<int32_t> userIds = {100};
-    std::string data = QuotaManager::GetInstance().AddDirSpace(dirs, userIds);
-    EXPECT_TRUE(!data.empty());
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddDirSpace_001 end";
 }
 
 /**

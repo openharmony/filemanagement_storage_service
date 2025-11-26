@@ -89,7 +89,10 @@ public:
     MOCK_METHOD3(SetDirEncryptionPolicy, int32_t(uint32_t, const std::string &, uint32_t));
     MOCK_METHOD4(CreateUserDir, int32_t(const std::string &, mode_t, uid_t, gid_t));
     MOCK_METHOD1(DeleteUserDir, int32_t(const std::string &));
-    MOCK_METHOD0(StatisticSysDirSpace, int32_t(void));
+    MOCK_METHOD2(GetDqBlkSpacesByUids, int32_t(const std::vector<int32_t> &, std::vector<NextDqBlk> &));
+    MOCK_METHOD2(GetDirListSpace, int32_t(const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
+    MOCK_METHOD1(SetStopScanFlg, int32_t(bool));
+    MOCK_METHOD1(GetAncoSizeData, int32_t(std::string &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

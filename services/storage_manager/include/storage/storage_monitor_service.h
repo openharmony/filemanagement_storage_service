@@ -33,6 +33,9 @@ public:
         return instance;
     }
     void StartStorageMonitorTask();
+    // root/system/foundation stats
+    void StartScan();
+    void StopScan();
 
 private:
     StorageMonitorService();
@@ -54,10 +57,16 @@ private:
     void ParseStorageParameters(int64_t totalSize);
     void StorageStatisticsThd();
     std::string GetStorageAlertCleanupParams();
-    void StatisticSysDirSpace(int64_t &freeSize);
-    bool IsCurTimeNeedStatistic();
 
-    int64_t freesizeCache = 0;
+    // root/system/foundation stats
+    void SubscribeScreenAndPowerEventTask();
+    bool CheckScanPreconditions();
+    void LaunchScanWorker();
+    std::chrono::system_clock::time_point lastScanTime_;
+    std::atomic<bool> isScanRunning_{false};
+    std::mutex scanMutex_;
+    std::thread scanThread_;
+
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
     std::thread eventThread_;

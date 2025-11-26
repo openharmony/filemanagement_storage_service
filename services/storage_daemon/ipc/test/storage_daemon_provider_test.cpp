@@ -1436,7 +1436,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountUsbFuse_001, 
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountUsbFuse_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    
+
     std::string volumeId = "vol-usb-001";
     int fuseFd = -1;
     std::string fsUuid;
@@ -1545,21 +1545,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StorageRadarThd_00
     delete provider;
     SUCCEED();
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StorageRadarThd_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_StatisticSysDirSpace_001
- * @tc.desc: Verify the StatisticSysDirSpace function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StatisticSysDirSpace_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto ret = storageDaemonProviderTest_->StatisticSysDirSpace();
-    EXPECT_TRUE(ret == E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StatisticSysDirSpace_001 end";
 }
 
 /**

@@ -118,7 +118,12 @@ public:
 
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
     int32_t DeleteUserDir(const std::string &path);
-    int32_t StatisticSysDirSpace();
+
+    // stats radar
+    int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
+    int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
+    int32_t SetStopScanFlg(bool stop = false);
+    int32_t GetAncoSizeData(std::string &outExtraData);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

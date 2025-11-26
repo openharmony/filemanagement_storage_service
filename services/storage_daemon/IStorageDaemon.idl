@@ -14,6 +14,9 @@
  */
 rawdata OHOS.StorageManager.StorageFileRawData;
 import ../storage_manager/IUeceActivationCallback;
+sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
+sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
+
 interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 1] void Shutdown();
      [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);
@@ -89,5 +92,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 58] void DeleteUserDir([in] String path);
      [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
      [ipccode 60] void UpdateUserPublicDirPolicy([in] unsigned int userId);
-     [ipccode 61] void StatisticSysDirSpace();
+     [ipccode 61] void GetDqBlkSpacesByUids([in] int[] uids, [out] NextDqBlk[] dqBlks);
+     [ipccode 62] void GetDirListSpace([in] DirSpaceInfo[] inDirs, [out] DirSpaceInfo[] outDirs);
+     [ipccode 63] void SetStopScanFlg([in] boolean stop);
+     [ipccode 64] void GetAncoSizeData([out] String outExtraData);
 }

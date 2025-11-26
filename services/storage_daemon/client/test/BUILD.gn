@@ -102,6 +102,7 @@ ohos_unittest("storage_daemon_client_sub_test") {
     "${storage_daemon_path}/client/test/storage_daemon_client_sub_test.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
   ]
 
   deps = [

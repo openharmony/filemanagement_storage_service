@@ -280,7 +280,7 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
         LOGE("failed to chmod, errno %{public}d", errno);
         return E_CHMOD_ERROR;
     }
-    
+
     if (ChOwn(path, uid, gid)) {
         LOGE("failed to chown, errno %{public}d", errno);
         return E_CHOWN_ERROR;
@@ -1129,6 +1129,29 @@ int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
     return StatisticsFilesTotalSize(rgmConfigs.at(rgmName).mgrPath, ignorePaths, totalSize);
 }
 
+int32_t GetRmgDataSize(const std::string &rgmName, const std::string &path,
+    const std::vector<std::string> &ignorePaths, uint64_t &totalSize)
+{
+    if (!IsValidRgmName(rgmName)) {
+        LOGE("rgm name %{public}s invalid", rgmName.c_str());
+        return E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID;
+    }
+
+    std::string statisticsPath = rgmConfigs.at(rgmName).businessPath;
+    if (!path.empty()) {
+        statisticsPath += "/" + path;
+    }
+    std::vector<std::string> innerIgnorePaths;
+    int ignorePathSize = static_cast<int>(ignorePaths.size());
+    for (int i = 0; i < ignorePathSize; i++) { // 必须使用引用类型
+        innerIgnorePaths.push_back(rgmConfigs.at(rgmName).businessPath + "/" + ignorePaths[i]); // 直接修改元素
+    }
+    std::string realPath = statisticsPath;
+    if (!IsValidPath(statisticsPath)) {
+        return E_CONTAINERPLUGIN_UTILS_REMOVE_PATH_INVALID;
+    }
+    return StatisticsFilesTotalSize(realPath, innerIgnorePaths, totalSize);
+}
 
 bool IsValidRgmName(const std::string &rgmName)
 {
