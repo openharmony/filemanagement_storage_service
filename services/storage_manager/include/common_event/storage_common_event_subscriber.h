@@ -29,7 +29,6 @@ public:
     virtual ~StorageCommonEventSubscriber() = default;
     static void SubscribeCommonEvent(void);
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
-    static std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
 };
 }  // namespace StorageManager
 }  // namespace OHOS

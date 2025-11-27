@@ -29,6 +29,7 @@ static constexpr int32_t WANT_DEFAULT_VALUE = -1;
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
 
+std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
 void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
 {
     LOGI("subscribe common event start");

@@ -26,6 +26,7 @@ ohos_unittest("storage_manager_provider_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
@@ -40,6 +41,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
@@ -58,6 +60,7 @@ ohos_unittest("storage_manager_provider_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
+    "private=public",
   ]
 
   deps = [
@@ -113,9 +116,11 @@ ohos_unittest("storage_manager_provider_permission_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_manager_path}/storage/src/app_status_manager.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/user/src/multi_user_manager_service.cpp",
     "storage_manager_provider_permission_test.cpp",
@@ -125,6 +130,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
@@ -199,9 +205,11 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_manager_path}/storage/src/app_status_manager.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/user/src/multi_user_manager_service.cpp",
@@ -212,9 +220,17 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
+    "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
+
+  if (storage_service_storage_statistics_manager) {
+    sources += [
+      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+    ]
+  }
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -242,6 +258,7 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
