@@ -82,7 +82,7 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0000, Test
     AAFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
     testData.SetWant(want);
-    service.bmsSubscriber_->OnReceiveEvent(testData);
+    subscriberPtr_->OnReceiveEvent(testData);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0000 end";
 }
@@ -103,7 +103,7 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0001, Test
     EventFwk::CommonEventData testData;
     AAFwk::Want want;
     testData.SetWant(want);
-    service.bmsSubscriber_->OnReceiveEvent(testData);
+    subscriberPtr_->OnReceiveEvent(testData);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0000 end";
 }
