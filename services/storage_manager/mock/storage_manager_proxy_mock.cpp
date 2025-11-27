@@ -53,6 +53,11 @@ int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::EraseAllUserEncryptedKeys()
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &token,
                                             const std::vector<uint8_t> &oldSecret,

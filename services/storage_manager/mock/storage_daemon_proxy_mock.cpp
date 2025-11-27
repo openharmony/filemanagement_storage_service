@@ -111,6 +111,11 @@ int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::EraseAllUserEncryptedKeys()
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &oldSecret,

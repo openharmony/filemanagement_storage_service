@@ -398,6 +398,18 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 #endif
 }
 
+int32_t StorageDaemon::EraseAllUserEncryptedKeys()
+{
+#ifdef USER_CRYPTO_MANAGER
+    int32_t ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys();
+    LOGI("EraseAllUserEncryptedKeys result, ret: %{public}d", ret);
+    StorageRadar::ReportUserKeyResult("StorageDaemon::EraseAllUserEncryptedKeys", DEFAULT_USERID, ret, "ELx", "");
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                       const std::vector<uint8_t> &token,
                                       const std::vector<uint8_t> &oldSecret,

@@ -90,6 +90,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
      [ipccode 60] void UpdateUserPublicDirPolicy([in] unsigned int userId);
      [ipccode 61] void StatisticSysDirSpace();
-     [ipccode 65] void GetDataSizeByPath([in] String path, [out] long size);
-     [ipccode 66] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
+     [ipccode 62] void EraseAllUserEncryptedKeys();
+     [ipccode 66] void GetDataSizeByPath([in] String path, [out] long size);
+     [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
 }

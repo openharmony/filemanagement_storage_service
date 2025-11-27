@@ -45,6 +45,7 @@ public:
     virtual int32_t InitGlobalKey(void) override;
     virtual int32_t InitGlobalUserKeys(void) override;
     virtual int32_t DeleteUserKeys(uint32_t userId) override;
+    virtual int32_t EraseAllUserEncryptedKeys() override;
     virtual int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
