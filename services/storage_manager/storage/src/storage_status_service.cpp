@@ -702,14 +702,15 @@ int32_t StorageStatusService::DelBundleExtStats(uint32_t userId, const std::stri
         LOGE("invalid params, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
         return E_PARAMS_INVALID;
     }
-    if (IsUserIdValid(static_cast<int32_t>(userId)) != E_OK) {
+    int32_t tmpUserId = static_cast<int32_t>(userId);
+    if (IsUserIdValid(tmpUserId) != E_OK) {
         return E_PARAMS_INVALID;
     }
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     StorageRdbAdapter &rdbAdapter = StorageRdbAdapter::GetInstance();
     std::vector<NativeRdb::ValueObject> values;
     values.emplace_back(NativeRdb::ValueObject(bundleName));
-    values.emplace_back(NativeRdb::ValueObject(userId));
+    values.emplace_back(NativeRdb::ValueObject(tmpUserId));
     int32_t deleteRows = ROWCOUNT_INIT;
     int32_t ret = rdbAdapter.Delete(deleteRows, BUNDLE_EXT_STATS_TABLE, WHERE_CLAUSE, values);
     if (ret != E_OK) {
