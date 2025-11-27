@@ -34,7 +34,7 @@ public:
     static void TearDownTestCase() {};
     void SetUp();
     void TearDown();
-    static inline stared_ptr<StorageCommonEventSubscriber> subscriberPtr_ = nullptr;
+    static inline shared_ptr<StorageCommonEventSubscriber> subscriberPtr_ = nullptr;
 };
 
 void StorageCommonEventSubscriberTest::SetUp()
@@ -98,14 +98,40 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0000, Test
 */
 HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0001, TestSize.Level0)
 {
-    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0000 begin";
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0001 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    int32_t userId = 100;
+    std::string bundleName = "test";
+    want.SetParam("userId", userId);
+    want.SetParam("bundleName", bundleName);
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0001 end";
+}
+
+/**
+* @tc.number: Storage_subscriber_OnReceiveEvent_test_0002
+* @tc.name: Storage_subscriber_OnReceiveEvent_test_0002
+* @tc.desc: Test function of OnReceiveEvent
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+*/
+HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0002, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0002 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
     EventFwk::CommonEventData testData;
     AAFwk::Want want;
     testData.SetWant(want);
     subscriberPtr_->OnReceiveEvent(testData);
     ASSERT_TRUE(true);
-    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0000 end";
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0002 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

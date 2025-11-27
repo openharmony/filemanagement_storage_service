@@ -52,6 +52,9 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
     std::string action = want.GetAction();
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED) {
         int32_t userId = want.GetIntParam(USER_ID, WANT_DEFAULT_VALUE);
+        if (userId <= 0) {
+            return;
+        }
         std::string bundleName = want.GetStringParam(BUNDLE_NAME);
         LOGI("receive app remove action, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
 #ifdef STORAGE_STATISTICS_MANAGER

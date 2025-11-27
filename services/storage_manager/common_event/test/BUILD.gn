@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_unittest("storage_account_subscriber_test") {
+ohos_unittest("storage_common_event_subscriber_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -25,7 +25,7 @@ ohos_unittest("storage_account_subscriber_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "storage_account_subscriber_test.cpp",
+    "storage_common_event_subscriber_test.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
   ]
 
@@ -60,7 +60,7 @@ ohos_unittest("storage_account_subscriber_test") {
     ]
 }
 
-group("storage_account_subscriber_test") {
+group("storage_common_event_test") {
   testonly = true
   deps = [ ":storage_common_event_subscriber_test" ]
 }
