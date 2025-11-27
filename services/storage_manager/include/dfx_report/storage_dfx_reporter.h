@@ -36,14 +36,14 @@ public:
     }
 
     void StartReportHapAndSaStorageStatus();
+    void CheckAndTriggerHapAndSaStatistics();
 
-    // 获取上次Hap和Sa查询的时间和空间大小(线程安全)
     int64_t GetLastHapAndSaFreeSize();
     std::chrono::system_clock::time_point GetLastHapAndSaTime();
 
 private:
     StorageDfxReporter() = default;
-    ~StorageDfxReporter() = default;
+    ~StorageDfxReporter();
     StorageDfxReporter(const StorageDfxReporter&) = delete;
     StorageDfxReporter& operator=(const StorageDfxReporter&) = delete;
 
@@ -55,15 +55,22 @@ private:
     void UpdateHapAndSaState();
     int32_t UpdateScanState(int64_t totalSize);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
+    bool CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
+                                    int64_t timeIntervalHours, int64_t &hoursDiff);
+    bool CheckValueChangeTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
+                                   int64_t &valueDiff);
+    bool CheckThresholdTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
+                                 const std::chrono::system_clock::time_point &lastTime,
+                                 int64_t timeIntervalHours,
+                                 bool &timeTriggered, bool &valueTriggered);
 
     int32_t GetStorageStatsInfo(int32_t userId, StorageStats &storageStats);
     void GetMetaDataSize(std::ostringstream &extraData);
     void GetAncoDataSize(std::ostringstream &extraData);
 
-    // Hap和Sa统计状态变量(需要线程安全保护)
+    // hap and sa statistics state
     std::mutex hapAndSaStateMutex_;
     std::thread hapAndSaThread_;
-    std::thread scanThread_;
     int64_t lastHapAndSaFreeSize_ = 0;
     std::chrono::system_clock::time_point lastHapAndSaTime_;
     std::atomic<bool> isHapAndSaRunning_{false};

@@ -59,7 +59,6 @@ const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
 const std::string FAULT_SUGGEST_THREE = "545010023";
 constexpr int RETRY_MAX_TIMES = 3;
-constexpr int32_t SEVEN_DAYS_IN_HOURS = 7 * 24; // 7 days in hours
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -463,53 +462,7 @@ void StorageMonitorService::HapAndSaStatisticsThd()
         LOGE("event handler is nullptr.");
         return;
     }
-
-    // 1. 从 dfx_reporter 获取上次Hap和Sa统计的时间和剩余空间大小
-    int64_t lastHapAndSaFreeSize = StorageDfxReporter::GetInstance().GetLastHapAndSaFreeSize();
-    auto lastHapAndSaTime = StorageDfxReporter::GetInstance().GetLastHapAndSaTime();
-
-    // 2. 从 storage_total_status_service 获取当前剩余空间大小
-    bool needStatistic = false;
-    int64_t currentFreeSize = 0;
-    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize);
-    if (err == E_OK && currentFreeSize >= 0) {
-        needStatistic = true;
-    }
-    // 3. 判断是否需要执行整机空间统计打点
-    auto currentTime = std::chrono::system_clock::now();
-    std::string reason;
-    // 3.1 检查时间间隔是否超过7天 (仅当上次存在正常记录时才检查)
-    int64_t hoursSinceLastStat = std::chrono::duration_cast<std::chrono::hours>(
-        currentTime - lastHapAndSaTime).count();
-    if (needStatistic && lastHapAndSaTime.time_since_epoch().count() != 0 &&
-        hoursSinceLastStat >= SEVEN_DAYS_IN_HOURS) {
-        needStatistic = true;
-        reason = "time interval >= 7 days";
-        LOGI("Hap and Sa statistic needed: %{public}s, hours since last: %{public}lld",
-             reason.c_str(), static_cast<long long>(hoursSinceLastStat));
-    }
-    // 3.2 检查空间变化是否超过2GB
-    int64_t freeSizeDiff = std::abs(currentFreeSize - lastHapAndSaFreeSize);
-    if (needStatistic && freeSizeDiff >= StorageService::TWO_G_BYTE) {
-        needStatistic = true;
-        reason = "free size diff >= 2GB";
-        LOGI("Hap and Sa statistic needed: %{public}s, diff=%{public}lld bytes",
-             reason.c_str(), static_cast<long long>(freeSizeDiff));
-    }
-    // 4. 执行整机空间统计打点
-    if (needStatistic) {
-        LOGI("Start whole device space statistic - reason: %{public}s, currentFreeSize=%{public}lld, "
-             "lastFreeSize=%{public}lld", reason.c_str(),
-             static_cast<long long>(currentFreeSize), static_cast<long long>(lastHapAndSaFreeSize));
-
-        // 调用 dfx_reporter 执行整机空间统计打点
-        StorageDfxReporter::GetInstance().StartReportHapAndSaStorageStatus();
-    } else {
-        LOGI("Skip hap and sa statistic - time diff: %{public}lld hours, size diff: %{public}lld bytes",
-             static_cast<long long>(hoursSinceLastStat), static_cast<long long>(freeSizeDiff));
-    }
-
-    // 5. 调度下一次执行(8小时后)
+    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
     auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
     eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
 }

@@ -43,25 +43,30 @@ constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char *OVP_CHUNKS = "/ovp_chunks";
 constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t BLOCK_COUNT = 512;
+constexpr int32_t SEVEN_DAYS_IN_HOURS = 7 * 24;
+
+StorageDfxReporter::~StorageDfxReporter()
+{
+    LOGI("StorageDfxReporter destructor called.");
+    if (hapAndSaThread_.joinable()) {
+        LOGI("Waiting for hapAndSaThread to finish...");
+        hapAndSaThread_.join();
+    }
+    LOGI("StorageDfxReporter destructor completed.");
+}
 
 void StorageDfxReporter::StartReportHapAndSaStorageStatus()
 {
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus start.");
-    // 1. 检查是否有任务正在执行
     if (isHapAndSaRunning_.load()) {
         LOGI("Hap and Sa statistics task is already running, ignoring this request.");
         return;
     }
-    // 2. 启动异步线程执行所有耗时统计任务
-    std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
-    // 如果之前的线程还在运行,先join
     if (hapAndSaThread_.joinable()) {
         LOGI("Previous Hap and Sa thread is still joinable, joining it.");
         hapAndSaThread_.join();
     }
-    // 设置运行标志
     isHapAndSaRunning_.store(true);
-    // 创建新线程执行统计任务
     int32_t userId = StorageService::DEFAULT_USERID;
     hapAndSaThread_ = std::thread([this, userId]() {
         pthread_setname_np(pthread_self(), "hap_sa_stats_task");
@@ -69,6 +74,70 @@ void StorageDfxReporter::StartReportHapAndSaStorageStatus()
     });
     LOGI("StartReportHapAndSaStorageStatus launched async task successfully.");
 }
+
+bool StorageDfxReporter::CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
+    int64_t timeIntervalHours, int64_t &hoursDiff)
+{
+    if (lastTime.time_since_epoch().count() == 0) {
+        hoursDiff = 0;
+        return false;
+    }
+    auto currentTime = std::chrono::system_clock::now();
+    hoursDiff = std::chrono::duration_cast<std::chrono::hours>(
+        currentTime - lastTime).count();
+    bool triggered = hoursDiff >= timeIntervalHours;
+    if (triggered) {
+        LOGI("Time interval >= %{public}lld hours, hours: %{public}lld",
+             static_cast<long long>(timeIntervalHours), static_cast<long long>(hoursDiff));
+    }
+    return triggered;
+}
+
+bool StorageDfxReporter::CheckValueChangeTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
+    int64_t &valueDiff)
+{
+    valueDiff = std::abs(currentValue - lastValue);
+    bool triggered = valueDiff >= threshold;
+    if (triggered) {
+        LOGI("Free size diff >= %{public}lld bytes, diff: %{public}lld bytes",
+             static_cast<long long>(threshold), static_cast<long long>(valueDiff));
+    }
+
+    return triggered;
+}
+
+void StorageDfxReporter::CheckAndTriggerHapAndSaStatistics()
+{
+    LOGI("CheckAndTriggerHapAndSaStatistics start.");
+
+    int64_t lastFreeSize = 0;
+    std::chrono::system_clock::time_point lastTime;
+    {
+        std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
+        lastFreeSize = lastHapAndSaFreeSize_;
+        lastTime = lastHapAndSaTime_;
+    }
+    int64_t currentFreeSize = 0;
+    if (StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize) != E_OK || currentFreeSize < 0) {
+        LOGE("Get current free size failed");
+        return;
+    }
+    int64_t hoursDiff = 0;
+    int64_t sizeDiff = 0;
+    bool timeTriggered = CheckTimeIntervalTriggered(lastTime, SEVEN_DAYS_IN_HOURS, hoursDiff);
+    bool sizeTriggered = CheckValueChangeTriggered(currentFreeSize, lastFreeSize, StorageService::TWO_G_BYTE,
+        sizeDiff);
+    if (timeTriggered || sizeTriggered) {
+        LOGI("Trigger statistic - reason: %{public}s, current: %{public}lld, last: %{public}lld",
+             timeTriggered ? "time >= 7d" : "size >= 2GB",
+             static_cast<long long>(currentFreeSize), static_cast<long long>(lastFreeSize));
+        StartReportHapAndSaStorageStatus();
+    } else {
+        LOGI("Skip statistic - time: %{public}lld hrs, size: %{public}lld bytes",
+             static_cast<long long>(hoursDiff), static_cast<long long>(sizeDiff));
+    }
+}
+
 void StorageDfxReporter::GetCurrentTime(std::ostringstream &extraData)
 {
     auto now = std::chrono::system_clock::now();
@@ -88,23 +157,17 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     LOGI("Hap and Sa statistics thread started.");
     std::ostringstream extraData;
     GetCurrentTime(extraData);
-    // 收集存储统计信息
     int32_t ret = CollectStorageStats(userId, extraData);
     if (ret != E_OK) {
         isHapAndSaRunning_.store(false);
         return;
     }
-    // 收集元数据和Anco信息
     CollectMetadataAndAnco(extraData);
-    // 收集Bundle统计信息
     ret = CollectBundleStatistics(userId, extraData);
-    // 上报打点数据
     StorageService::StorageRadar::ReportSpaceRadar("StartReportHapAndSaStorageStatus",
         E_STORAGE_STATUS, extraData.str());
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus end.");
-    // 更新状态
     UpdateHapAndSaState();
-    // 重置运行标志
     isHapAndSaRunning_.store(false);
     LOGI("Hap and Sa statistics thread completed.");
 }
@@ -128,7 +191,7 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     extraData << ",image size is:" << ConvertBytesToMB(storageStatsInfo.image_, ACCURACY_NUM) << "MB";
     extraData << ",video size is:" << ConvertBytesToMB(storageStatsInfo.video_, ACCURACY_NUM) << "MB";
     extraData << ",file size is:" << ConvertBytesToMB(storageStatsInfo.file_, ACCURACY_NUM) << "MB";
-    extraData << ",total size is:" << storageStatsInfo.total_ << "B";
+    extraData << ",total size is:" << ConvertBytesToMB(storageStatsInfo.total_, ACCURACY_NUM) << "MB";
     extraData << ",sys size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB";
     extraData << ",free size is:" << ConvertBytesToMB(freeSize, ACCURACY_NUM) << "MB}" << std::endl;
     return E_OK;
@@ -191,14 +254,12 @@ double StorageDfxReporter::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces
     return std::round(mb * factor) / factor;
 }
 
-// 获取上次Hap和Sa统计时的剩余空间大小
 int64_t StorageDfxReporter::GetLastHapAndSaFreeSize()
 {
     std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
     return lastHapAndSaFreeSize_;
 }
 
-// 获取上次Hap和Sa统计的时间点
 std::chrono::system_clock::time_point StorageDfxReporter::GetLastHapAndSaTime()
 {
     std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
@@ -209,7 +270,6 @@ int32_t StorageDfxReporter::GetStorageStatsInfo(int32_t userId, StorageStats &st
 {
     LOGI("GetStorageStatsInfo start, userId=%{public}d", userId);
 
-    // 调用 storage_status_service 的 GetUserStorageStats 方法获取存储统计信息
     int32_t ret = StorageStatusService::GetInstance().GetUserStorageStats(userId, storageStats, true);
     if (ret != E_OK) {
         LOGE("GetUserStorageStats failed, userId=%{public}d, ret=%{public}d", userId, ret);
@@ -270,10 +330,8 @@ void StorageDfxReporter::GetAncoDataSize(std::ostringstream &extraData)
         LOGE("Get StorageDaemonCommunication instance failed.");
         return;
     }
-
     sdCommunication->GetRmgResourceSize("rgm_hmos", imageSize);
     extraData << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
-
     LOGI("end get Anco info.");
 }
 } // namespace StorageManager
