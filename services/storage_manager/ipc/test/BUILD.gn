@@ -218,7 +218,6 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
