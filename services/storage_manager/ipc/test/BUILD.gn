@@ -223,12 +223,6 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
 
-  if (storage_service_storage_statistics_manager) {
-    sources += [
-      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
-    ]
-  }
-
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
@@ -255,7 +249,6 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
-    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

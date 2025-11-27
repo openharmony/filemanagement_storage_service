@@ -54,7 +54,9 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
         int32_t userId = want.GetIntParam(USER_ID, WANT_DEFAULT_VALUE);
         std::string bundleName = want.GetStringParam(BUNDLE_NAME);
         LOGI("receive app remove action, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
+#ifdef STORAGE_STATISTICS_MANAGER
         StorageStatusService::GetInstance().DelBundleExtStats(static_cast<uint32_t>(userId), bundleName);
+#endif
     }
 }
 }  // namespace StorageManager

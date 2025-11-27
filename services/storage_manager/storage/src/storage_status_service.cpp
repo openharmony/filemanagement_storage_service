@@ -719,6 +719,7 @@ int32_t StorageStatusService::DelBundleExtStats(uint32_t userId, const std::stri
         StorageRadar::ReportSpaceRadar("DelBundleExtStats", E_DEL_EXT_BUNDLE_STATS_ERROR, extraData);
         return E_DEL_EXT_BUNDLE_STATS_ERROR;
     }
+    LOGI("del bundle ext stats success, userId: %{public}d, bundleName: %{public}s.", userId, bundleName.c_str());
     return E_OK;
 }
 } // StorageManager
