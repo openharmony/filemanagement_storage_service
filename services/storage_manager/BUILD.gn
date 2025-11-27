@@ -109,7 +109,6 @@ ohos_shared_library("storage_manager") {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "account_subscriber/account_subscriber.cpp",
-      "storage/src/app_status_manager.cpp",
       "storage/src/bundle_manager_connector.cpp",
       "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_service.cpp",

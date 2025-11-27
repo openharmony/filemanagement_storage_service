@@ -20,7 +20,7 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
-#include "storage/app_status_manager.h"
+#include "storage/storage_status_service.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -29,7 +29,6 @@ static constexpr int32_t WANT_DEFAULT_VALUE = -1;
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
 
-std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
 void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
 {
     LOGI("subscribe common event start");
@@ -53,9 +52,9 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
     std::string action = want.GetAction();
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED) {
         int32_t userId = want.GetIntParam(USER_ID, WANT_DEFAULT_VALUE);
-        std::string businessName = want.GetStringParam(BUNDLE_NAME);
-        LOGI("receive app remove action, userId: %{public}d, businessName: %{public}s", userId, businessName.c_str());
-        AppStatusManager::GetInstance().DelBundleExtStats(userId, businessName);
+        std::string bundleName = want.GetStringParam(BUNDLE_NAME);
+        LOGI("receive app remove action, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
+        StorageStatusService::GetInstance().DelBundleExtStats(static_cast<uint32_t>(userId), bundleName);
     }
 }
 }  // namespace StorageManager
