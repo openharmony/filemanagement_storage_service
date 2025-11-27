@@ -23,6 +23,7 @@
 
 namespace {
 using namespace std;
+using namespace testing::ext;
 using namespace OHOS;
 using namespace StorageManager;
 const string FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
@@ -714,6 +715,26 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_EraseAllUserEncryptedKeys_0000
+ * @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0000
+ * @tc.desc: Test function of EraseAllUserEncryptedKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication != nullptr) {
+        EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_OK);
+    }
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0000";
 }
 
 /**

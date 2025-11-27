@@ -493,6 +493,16 @@ int32_t StorageManager::DeleteUserKeys(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::EraseAllUserEncryptedKeys()
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("StorageManager::EraseAllUserEncryptedKeys start");
+    return FileSystemCrypto::GetInstance().EraseAllUserEncryptedKeys();
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &oldSecret,

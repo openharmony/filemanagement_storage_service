@@ -290,6 +290,27 @@ int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
+int32_t StorageDaemonClient::EraseAllUserEncryptedKeys()
+{
+    LOGI("StorageDaemonClient::EraseAllUserEncryptedKeys");
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        StorageRadar::ReportUserKeyResult("EraseAllUserEncryptedKeys::CheckServiceStatus", 0, status, "EL1", "");
+        return status;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        StorageRadar::ReportUserKeyResult("EraseAllUserEncryptedKeys::GetStorageDaemonProxy", 0, E_SA_IS_NULLPTR,
+            "EL1", "");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->EraseAllUserEncryptedKeys();
+}
+
 int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &token,
                                             const std::vector<uint8_t> &oldSecret,

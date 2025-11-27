@@ -53,6 +53,7 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
+    int EraseAllUserEncryptedKeys();
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
@@ -136,6 +137,7 @@ private:
     KeyManager& operator= (KeyManager &&) = delete;
     int GenerateAndInstallDeviceKey(const std::string &dir);
     int RestoreDeviceKey(const std::string &dir);
+    int DeleteGlobalDeviceKey(const std::string &dir);
     int GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
     int GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir, const UserAuth &auth);
     int RestoreUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);

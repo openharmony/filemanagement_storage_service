@@ -116,4 +116,5 @@ interface OHOS.StorageManager.IStorageManager {
                                         [in] unsigned long businessSize);
     [ipccode 80] void GetExtBundleStats([in] unsigned int userId, [in] String businessName,
                                         [out] unsigned long businessSize);
+    [ipccode 81] void EraseAllUserEncryptedKeys();
 }

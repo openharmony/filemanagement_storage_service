@@ -60,6 +60,7 @@ constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
 constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
+constexpr pid_t UPDATE_SERVICE_UID = 6666;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -443,6 +444,22 @@ int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance().DeleteUserKeys(userId);
+}
+
+int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
+{
+    LOGI("StorageManagerProvider::EraseAllUserEncryptedKeys Begin");
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+
+    auto callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != UPDATE_SERVICE_UID) {
+        LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().EraseAllUserEncryptedKeys();
 }
 
 int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,

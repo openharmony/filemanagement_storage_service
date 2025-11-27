@@ -550,6 +550,21 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteUserKeys_001
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001
+ * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
  * @tc.type: FUNC
