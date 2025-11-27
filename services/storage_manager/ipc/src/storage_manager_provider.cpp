@@ -38,7 +38,7 @@
 #endif
 #include "ipc/storage_manager_provider.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "storage/app_status_manager.h"
+#include "common_event/storage_common_event_subscriber.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -152,7 +152,7 @@ void StorageManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, const s
 {
     LOGI("OnAddSystemAbility: sysId: %{public}d, devId: %{public}s", systemAbilityId, deviceId.c_str());
     if (systemAbilityId == COMMON_EVENT_SERVICE_ID) {
-        AppStatusManager::GetInstance().SubscribeCommonEvent();
+        StorageCommonEventSubscriber::SubscribeCommonEvent();
     }
 }
 

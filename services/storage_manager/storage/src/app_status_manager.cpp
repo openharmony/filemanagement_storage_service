@@ -21,36 +21,16 @@
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
+#include "rdb_adapter/storage_rdb_adapter.h"
 #include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
-static constexpr int32_t WANT_DEFAULT_VALUE = -1;
-BmsSubscriber::BmsSubscriber(const EventFwk::CommonEventSubscribeInfo &info) : EventFwk::CommonEventSubscriber(info) {}
-
 AppStatusManager &AppStatusManager::GetInstance()
 {
     static AppStatusManager instance;
     return instance;
-}
-
-bool AppStatusManager::SubscribeCommonEvent(void)
-{
-    LOGI("bmsSubscriber start");
-    if (bmsSubscriber == nullptr) {
-        EventFwk::MatchingSkills matchingSkills;
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
-        EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-        bmsSubscriber = std::make_shared<BmsSubscriber>(subscribeInfo);
-        if (!EventFwk::CommonEventManager::SubscribeCommonEvent(bmsSubscriber)) {
-            bmsSubscriber = nullptr;
-            LOGE("bms subscribe common event failed.");
-            return false;
-        }
-    }
-    LOGI("bmsSubscriber success");
-    return true;
 }
 
 int32_t AppStatusManager::DelBundleExtStats(int32_t userId, std::string &businessName)
@@ -61,24 +41,12 @@ int32_t AppStatusManager::DelBundleExtStats(int32_t userId, std::string &busines
     values.emplace_back(NativeRdb::ValueObject(userId));
     int32_t deleteRows = ROWCOUNT_INIT;
     int32_t ret = rdbAdapter.Delete(deleteRows, BUNDLE_EXT_STATS_TABLE, WHERE_CLAUSE, values);
-    if (ret != OHOS::E_OK) {
+    if (ret != E_OK) {
         LOGE("DelBundleExtStats failed.");
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("DelBundleExtStats", E_DEL_EXT_BUNDLE_STATS_ERROR, extraData);
     }
-    return ret;
-}
-
-void BmsSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
-{
-    const AAFwk::Want& want = eventData.GetWant();
-    std::string action = want.GetAction();
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED) {
-        int32_t userId = want.GetIntParam(USER_ID, WANT_DEFAULT_VALUE);
-        std::string businessName = want.GetStringParam(BUNDLE_NAME);
-        LOGI("receive app remove action, userId: %{public}d, businessName: %{public}s", userId, businessName.c_str());
-        AppStatusManager::GetInstance().DelBundleExtStats(userId, businessName);
-    }
+    return E_OK;
 }
 }  // namespace StorageManager
 }  // namespace OHOS

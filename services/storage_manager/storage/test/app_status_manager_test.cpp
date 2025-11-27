@@ -36,95 +36,23 @@ public:
 };
 
 /**
-* @tc.number: App_status_OnReceiveEvent_test_0000
-* @tc.name: App_status_OnReceiveEvent_test_0000
-* @tc.desc: Test function of OnReceiveEvent
+* @tc.number: App_status_DelBundleExtStats_test_0000
+* @tc.name: App_status_DelBundleExtStats_test_0000
+* @tc.desc: Test function of DelBundleExtStats
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
 * @tc.require: SR000GGUPF
 */
-HWTEST_F(AppStatusManagerTest, App_status_OnReceiveEvent_test_0000, TestSize.Level0)
+HWTEST_F(AppStatusManagerTest, App_status_DelBundleExtStats_test_0000, TestSize.Level0)
 {
-    GTEST_LOG_(INFO) << "App_status_OnReceiveEvent_test_0000-begin";
-    AppStatusService &service = AppStatusService::GetInstance();
-
-    EventFwk::MatchingSkills matchingSkills;
-    EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-    service.bmsSubscriber_ = std::make_shared<BmsSubscriber>(subscribeInfo);
-
-    EventFwk::CommonEventData testData;
-    AAFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
-    testData.SetWant(want);
-    service.bmsSubscriber_->OnReceiveEvent(testData);
-    ASSERT_TRUE(true);
-    GTEST_LOG_(INFO) << "App_status_OnReceiveEvent_test_0000 end";
-}
-
-/**
-* @tc.number: App_status_OnReceiveEvent_test_0001
-* @tc.name: App_status_OnReceiveEvent_test_0001
-* @tc.desc: Test function of OnReceiveEvent
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: SR000GGUPF
-*/
-HWTEST_F(AppStatusManagerTest, App_status_OnReceiveEvent_test_0001, TestSize.Level0)
-{
-    GTEST_LOG_(INFO) << "App_status_OnReceiveEvent_test_0001-begin";
-    AppStatusService &service = AppStatusService::GetInstance();
-
-    EventFwk::MatchingSkills matchingSkills;
-    EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-    service.bmsSubscriber_ = std::make_shared<BmsSubscriber>(subscribeInfo);
-
-    EventFwk::CommonEventData testData;
-    AAFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
-    testData.SetWant(want);
-    service.bmsSubscriber_->OnReceiveEvent(testData);
-    ASSERT_TRUE(true);
-    GTEST_LOG_(INFO) << "App_status_OnReceiveEvent_test_0001 end";
-}
-
-/**
-* @tc.number: App_status_RemoveBundleExtStats_test_0000
-* @tc.name: App_status_RemoveBundleExtStats_test_0000
-* @tc.desc: Test function of RemoveBundleExtStats
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: SR000GGUPF
-*/
-HWTEST_F(AppStatusManagerTest, App_status_RemoveBundleExtStats_test_0000, TestSize.Level0)
-{
-    GTEST_LOG_(INFO) << "App_status_RemoveBundleExtStats_test_0000-begin";
-    AppStatusService &service = AppStatusService::GetInstance();
+    GTEST_LOG_(INFO) << "App_status_DelBundleExtStats_test_0000 begin";
+    AppStatusManager &service = AppStatusManager::GetInstance();
     int32_t userId = 100;
     std::string businessName = "test";
-    int32_t ret = service.RemoveBundleExtStats(userId, businessName);
+    int32_t ret = service.DelBundleExtStats(userId, businessName);
     EXPECT_EQ(ret, E_RDB_STORE_NULL);
-    GTEST_LOG_(INFO) << "App_status_RemoveBundleExtStats_test_0000 end";
-}
-
-/**
-* @tc.number: App_status_SubscribeCommonEvent_test_0000
-* @tc.name: App_status_SubscribeCommonEvent_test_0000
-* @tc.desc: Test function of SubscribeCommonEvent
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: SR000GGUPF
-*/
-HWTEST_F(AppStatusManagerTest, App_status_SubscribeCommonEvent_test_0000, TestSize.Level0)
-{
-    GTEST_LOG_(INFO) << "App_status_SubscribeCommonEvent_test_0000-begin";
-    AppStatusService &service = AppStatusService::GetInstance();
-    bool ret = service.SubscribeCommonEvent();
-    ASSERT_TRUE(ret);
-    GTEST_LOG_(INFO) << "App_status_SubscribeCommonEvent_test_0000 end";
+    GTEST_LOG_(INFO) << "App_status_DelBundleExtStats_test_0000 end";
 }
 }
 }

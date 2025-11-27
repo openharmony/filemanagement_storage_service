@@ -12,21 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_APP_STATUS_MANAGER_H
-#define STORAGE_APP_STATUS_MANAGER_H
+#ifndef STORAGE_COMMON_EVENT_SUBSCRIBER_H
+#define STORAGE_COMMON_EVENT_SUBSCRIBER_H
 
 #include <string>
 
+#include "common_event_manager.h"
+#include "common_event_support.h"
+
 namespace OHOS {
 namespace StorageManager {
-class AppStatusManager {
+class StorageCommonEventSubscriber : public EventFwk::CommonEventSubscriber {
 public:
-    static AppStatusManager &GetInstance();
-    virtual ~AppStatusManager() = default;
-    int32_t DelBundleExtStats(int32_t userId, std::string &businessName);
-private:
-    AppStatusManager() = default;
+    StorageCommonEventSubscriber() = default;
+    explicit StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info);
+    virtual ~StorageCommonEventSubscriber() = default;
+    static void SubscribeCommonEvent(void);
+    virtual void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
+    static std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
 };
 }  // namespace StorageManager
 }  // namespace OHOS
-#endif // STORAGE_APP_STATUS_MANAGER_H
+#endif // STORAGE_COMMON_EVENT_SUBSCRIBER_H
