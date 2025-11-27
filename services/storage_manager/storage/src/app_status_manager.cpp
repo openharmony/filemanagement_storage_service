@@ -45,6 +45,7 @@ int32_t AppStatusManager::DelBundleExtStats(int32_t userId, std::string &busines
         LOGE("DelBundleExtStats failed.");
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("DelBundleExtStats", E_DEL_EXT_BUNDLE_STATS_ERROR, extraData);
+        return E_DEL_EXT_BUNDLE_STATS_ERROR;
     }
     return E_OK;
 }
