@@ -150,7 +150,7 @@ void StorageManagerProvider::OnStop()
 
 void StorageManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
-    LOGI("OnAddSystemAbility: sysId: %{public}d, devId: %{public}s", systemAbilityId, deviceId.c_str());
+    LOGI("OnAddSystemAbility: sysId: %{public}d", systemAbilityId);
     if (systemAbilityId == COMMON_EVENT_SERVICE_ID) {
         StorageCommonEventSubscriber::SubscribeCommonEvent();
     }
