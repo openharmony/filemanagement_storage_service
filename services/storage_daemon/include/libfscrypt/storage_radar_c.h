@@ -37,7 +37,7 @@ typedef enum {
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
-    STORAGE_MTPFS,
+    MTP_DEVICE_MANAGER,
 } BizScene;
 
 typedef enum {
