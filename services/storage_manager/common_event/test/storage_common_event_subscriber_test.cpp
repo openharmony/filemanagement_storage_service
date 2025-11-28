@@ -56,7 +56,7 @@ void StorageCommonEventSubscriberTest::TearDown()
 * @tc.level Level 1
 * @tc.require: SR000GGUPF
 */
-HWTEST_F(AppStatusManagerTest, Storage_subscriber_SubscribeCommonEvent_test_0000, TestSize.Level0)
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_SubscribeCommonEvent_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_SubscribeCommonEvent_test_0000 begin";
     StorageCommonEventSubscriber::SubscribeCommonEvent();
@@ -74,7 +74,7 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_SubscribeCommonEvent_test_0000
 * @tc.level Level 1
 * @tc.require: SR000GGUPF
 */
-HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0000, TestSize.Level0)
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0000 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
@@ -96,7 +96,7 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0000, Test
 * @tc.level Level 1
 * @tc.require: SR000GGUPF
 */
-HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0001, TestSize.Level0)
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0001, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0001 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
@@ -122,7 +122,7 @@ HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0001, Test
 * @tc.level Level 1
 * @tc.require: SR000GGUPF
 */
-HWTEST_F(AppStatusManagerTest, Storage_subscriber_OnReceiveEvent_test_0002, TestSize.Level0)
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0002, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0002 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
