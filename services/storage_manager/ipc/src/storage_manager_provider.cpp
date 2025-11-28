@@ -38,6 +38,7 @@
 #endif
 #include "ipc/storage_manager_provider.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
+#include "common_event/storage_common_event_subscriber.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -150,8 +151,10 @@ void StorageManagerProvider::OnStop()
 
 void StorageManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
-    (void)systemAbilityId;
-    (void)deviceId;
+    LOGI("OnAddSystemAbility: sysId: %{public}d", systemAbilityId);
+    if (systemAbilityId == COMMON_EVENT_SERVICE_ID) {
+        StorageCommonEventSubscriber::SubscribeCommonEvent();
+    }
 }
 
 void StorageManagerProvider::ResetUserEventRecord(int32_t userId)

@@ -254,18 +254,6 @@ double StorageDfxReporter::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces
     return std::round(mb * factor) / factor;
 }
 
-int64_t StorageDfxReporter::GetLastHapAndSaFreeSize()
-{
-    std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
-    return lastHapAndSaFreeSize_;
-}
-
-std::chrono::system_clock::time_point StorageDfxReporter::GetLastHapAndSaTime()
-{
-    std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
-    return lastHapAndSaTime_;
-}
-
 int32_t StorageDfxReporter::GetStorageStatsInfo(int32_t userId, StorageStats &storageStats)
 {
     LOGI("GetStorageStatsInfo start, userId=%{public}d", userId);

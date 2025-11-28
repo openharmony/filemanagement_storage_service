@@ -29,6 +29,7 @@
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/storage_utils.h"
 #include "value_object.h"
 #include "values_bucket.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
@@ -597,6 +598,33 @@ int32_t StorageStatusService::InsertExtBundleStats(uint32_t userId, const std::s
     }
     LOGI("insert success, userId: %{public}d, businessName: %{public}s, businessSize: %{public}lld", userId,
         businessName.c_str(), static_cast<long long>(businessSize));
+    return E_OK;
+}
+
+int32_t StorageStatusService::DelBundleExtStats(uint32_t userId, const std::string &bundleName)
+{
+    if (userId >= INT32_MAX || bundleName.empty()) {
+        LOGE("invalid params, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
+        return E_PARAMS_INVALID;
+    }
+    int32_t tmpUserId = static_cast<int32_t>(userId);
+    if (IsUserIdValid(tmpUserId) != E_OK) {
+        return E_PARAMS_INVALID;
+    }
+    std::lock_guard<std::mutex> lock(extBundleMtx_);
+    StorageRdbAdapter &rdbAdapter = StorageRdbAdapter::GetInstance();
+    std::vector<NativeRdb::ValueObject> values;
+    values.emplace_back(NativeRdb::ValueObject(bundleName));
+    values.emplace_back(NativeRdb::ValueObject(tmpUserId));
+    int32_t deleteRows = ROWCOUNT_INIT;
+    int32_t ret = rdbAdapter.Delete(deleteRows, BUNDLE_EXT_STATS_TABLE, WHERE_CLAUSE, values);
+    if (ret != E_OK) {
+        LOGE("DelBundleExtStats failed.");
+        std::string extraData = "errCode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("DelBundleExtStats", E_DEL_EXT_BUNDLE_STATS_ERROR, extraData);
+        return E_DEL_EXT_BUNDLE_STATS_ERROR;
+    }
+    LOGI("del bundle ext stats success, userId: %{public}d, bundleName: %{public}s.", userId, bundleName.c_str());
     return E_OK;
 }
 } // StorageManager

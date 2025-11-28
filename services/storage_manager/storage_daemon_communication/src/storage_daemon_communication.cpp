@@ -881,7 +881,7 @@ int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, st
     return storageDaemon_->MountUsbFuse(volumeId, fsUuid, fuseFd);
 }
 
-int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(const std::string &storageStatus,
+int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     int32_t err = Connect();

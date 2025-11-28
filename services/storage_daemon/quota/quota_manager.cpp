@@ -235,7 +235,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
-void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
+void QuotaManager::GetUidStorageStats(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("GetUidStorageStats begin!");
@@ -249,8 +249,6 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     GetOccupiedSpaceForUidList(allVec, iNodes);
 
     std::ostringstream extraData;
-
-    extraData << storageStatus << std::endl;
 
     extraData << "{iNodes count is:" << iNodes << ",iNodes size is:" <<
     ConvertBytesToMB(iNodes * FOUR_K, ACCURACY_NUM) <<"MB}" << std::endl;
@@ -273,7 +271,7 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     } else {
         extraData << "{otherAppVec data is null}" << std::endl;
     }
-
+    storageStatus = extraData.str();
     LOGI("extraData is %{public}s", extraData.str().c_str());
     LOGI("GetUidStorageStats end!");
 }

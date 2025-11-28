@@ -80,7 +80,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 50] void UMountDisShareFile([in] int userId, [in] String networkId);
      [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
-     [ipccode 53] void QueryOccupiedSpaceForSa([in] String storageStatus, [in] OrderedMap<int, String> bundleNameAndUid);
+     [ipccode 53] void QueryOccupiedSpaceForSa([out] String storageStatus, [in] OrderedMap<int, String> bundleNameAndUid);
      [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
      [ipccode 55] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
      [ipccode 56] void UnregisterUeceActivationCallback();

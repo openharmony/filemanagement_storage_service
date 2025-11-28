@@ -38,9 +38,6 @@ public:
     void StartReportHapAndSaStorageStatus();
     void CheckAndTriggerHapAndSaStatistics();
 
-    int64_t GetLastHapAndSaFreeSize();
-    std::chrono::system_clock::time_point GetLastHapAndSaTime();
-
 private:
     StorageDfxReporter() = default;
     ~StorageDfxReporter();

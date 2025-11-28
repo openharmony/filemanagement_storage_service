@@ -101,7 +101,7 @@ public:
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
     int32_t StatisticSysDirSpace();
-    void GetUidStorageStats(const std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
+    void GetUidStorageStats(std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
     int32_t GetFileData(const std::string &path, int64_t &size);
 private:
     QuotaManager() = default;

@@ -360,3 +360,42 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 end";
 }
+
+/**
+ * @tc.number: STORAGE_DelBundleExtStats_00001
+ * @tc.name: STORAGE_DelBundleExtStats_00001
+ * @tc.desc: Test function of DelBundleExtStats interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    uint32_t userId = INT32_MAX;
+    std::string bundleName;
+    int32_t ret = service->DelBundleExtStats(userId, bundleName);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 100;
+    ret = service->DelBundleExtStats(userId, bundleName);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 11111;
+    bundleName = "test";
+    ret = service->DelBundleExtStats(userId, bundleName);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 100;
+    ret = service->DelBundleExtStats(userId, bundleName);
+    EXPECT_EQ(ret, E_DEL_EXT_BUNDLE_STATS_ERROR);
+
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    rdbAdapter.Init();
+    ret = service->DelBundleExtStats(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+    rdbAdapter.UnInit();
+    GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
+}

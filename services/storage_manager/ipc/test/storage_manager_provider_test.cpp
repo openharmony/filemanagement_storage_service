@@ -1605,5 +1605,39 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_001
+ * @tc.desc: Verify the OnAddSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t systemAbilityId = 100;
+    std::string deviceId = "test";
+    storageManagerProviderTest_->OnAddSystemAbility(systemAbilityId, deviceId);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_002
+ * @tc.desc: Verify the OnAddSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t systemAbilityId = COMMON_EVENT_SERVICE_ID;
+    std::string deviceId = "test";
+    storageManagerProviderTest_->OnAddSystemAbility(systemAbilityId, deviceId);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_002 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

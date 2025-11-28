@@ -26,6 +26,7 @@ ohos_unittest("storage_manager_provider_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
@@ -39,6 +40,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
@@ -57,6 +59,7 @@ ohos_unittest("storage_manager_provider_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
+    "private=public",
   ]
 
   deps = [
@@ -112,6 +115,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
@@ -124,6 +128,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
@@ -198,6 +203,7 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
@@ -211,6 +217,7 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerk/its/storage_manager/native",
   ]
