@@ -301,6 +301,21 @@ int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
     return storageDaemon_->DeleteUserKeys(userId);
 }
 
+int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
+{
+    LOGD("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->EraseAllUserEncryptedKeys();
+}
+
 int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                                    const std::vector<uint8_t> &token,
                                                    const std::vector<uint8_t> &oldSecret,
@@ -983,7 +998,7 @@ int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceIn
     return storageDaemon_->GetDirListSpace(inDirs, outDirs);
 }
 
-int32_t StorageDaemonCommunication::SetStopScanFlg(bool stop)
+int32_t StorageDaemonCommunication::SetStopScanFlag(bool stop)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -994,7 +1009,7 @@ int32_t StorageDaemonCommunication::SetStopScanFlg(bool stop)
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetStopScanFlg(stop);
+    return storageDaemon_->SetStopScanFlag(stop);
 }
 
 int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)

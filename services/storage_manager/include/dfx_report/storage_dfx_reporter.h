@@ -34,16 +34,14 @@ public:
         static StorageDfxReporter instance;
         return instance;
     }
-
     int32_t StartReportDirStatus();
-
-    // 获取上次扫描的时间和空间大小(线程安全)
-    int64_t GetLastScanFreeSize();
-    std::chrono::system_clock::time_point GetLastScanTime();
+    // Scan control methods
+    void StartScan();
+    void StopScan();
 
 private:
     StorageDfxReporter() = default;
-    ~StorageDfxReporter() = default;
+    ~StorageDfxReporter();
     StorageDfxReporter(const StorageDfxReporter&) = delete;
     StorageDfxReporter& operator=(const StorageDfxReporter&) = delete;
 
@@ -58,11 +56,19 @@ private:
     std::vector<DirSpaceInfo> GetRootDirList();
     std::vector<DirSpaceInfo> GetSystemDirList();
     std::vector<DirSpaceInfo> GetFoundationDirList();
-    // 扫描状态变量(需要线程安全保护)
+
+    // Scan control helper methods
+    bool CheckScanPreconditions();
+    void LaunchScanWorker();
     std::mutex scanStateMutex_;
     int64_t lastScanFreeSize_ = 0;
     int64_t lastTotalSize_ = 0;
     std::chrono::system_clock::time_point lastScanTime_;
+
+    // Scan control variables
+    std::atomic<bool> isScanRunning_{false};
+    std::mutex scanMutex_;
+    std::thread scanThread_;
 };
 } // namespace StorageManager
 } // namespace OHOS

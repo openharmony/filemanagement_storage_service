@@ -52,6 +52,7 @@ public:
     virtual int32_t InitGlobalKey(void) override;
     virtual int32_t InitGlobalUserKeys(void) override;
     virtual int32_t DeleteUserKeys(uint32_t userId) override;
+    virtual int32_t EraseAllUserEncryptedKeys() override;
     virtual int32_t UpdateUserAuth(uint32_t userId,
                                    uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
@@ -132,10 +133,10 @@ public:
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     virtual int32_t DeleteUserDir(const std::string &path) override;
     virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
-        std::vector<OHOS::StorageDaemon::NextDqBlk> &dqBlks) override;
-    virtual int32_t GetDirListSpace(const std::vector<OHOS::StorageDaemon::DirSpaceInfo> &inDirs,
-        std::vector<OHOS::StorageDaemon::DirSpaceInfo> &outDirs) override;
-    virtual int32_t SetStopScanFlg(bool stop = false) override;
+        std::vector<NextDqBlk> &dqBlks) override;
+    virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+        std::vector<DirSpaceInfo> &outDirs) override;
+    virtual int32_t SetStopScanFlag(bool stop = false) override;
     virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {

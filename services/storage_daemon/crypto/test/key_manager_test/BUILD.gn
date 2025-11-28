@@ -159,6 +159,7 @@ ohos_unittest("KeyManagerSupTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 
@@ -196,6 +197,7 @@ ohos_unittest("KeyManagerOtherTest") {
   ]
 
   include_dirs = [
+    "${storage_daemon_path}/crypto/test/mock",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/libfscrypt",
@@ -238,6 +240,7 @@ ohos_unittest("KeyManagerOtherTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 
@@ -289,6 +292,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
     "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/crypto/test/mock/os_account_manager_mock.cpp",
     "${storage_daemon_path}/crypto/test/mock/recover_manager_mock.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
@@ -316,6 +320,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
     "bundle_framework:appexecfwk_core",
   ]
@@ -401,6 +406,7 @@ ohos_unittest("KeyManagerWithFileMockAnotherTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
     "bundle_framework:appexecfwk_core",
   ]

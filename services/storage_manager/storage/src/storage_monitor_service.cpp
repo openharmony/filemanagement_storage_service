@@ -20,7 +20,6 @@
 
 #include "cJSON.h"
 #include "common_event_manager.h"
-#include "common_event/common_event_service.h"
 #include "init_param.h"
 #include "parameter.h"
 #include "parameters.h"
@@ -30,9 +29,7 @@
 #include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
-#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
-#include "dfx_report/storage_dfx_reporter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -60,7 +57,6 @@ const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
 const std::string FAULT_SUGGEST_THREE = "545010023";
 constexpr int RETRY_MAX_TIMES = 3;
-constexpr int64_t TIME_INTERVAL_HOURS = 24;
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -96,9 +92,6 @@ void StorageMonitorService::StartStorageMonitorTask()
     auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
     eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
-
-    auto subscribeEventTask = [this] { SubscribeScreenAndPowerEventTask(); };
-    eventHandler_->PostTask(subscribeEventTask, DEFAULT_CHECK_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -451,137 +444,6 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
     lastNotificationTimeHighFreq_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
-}
-
-void StorageMonitorService::SubscribeScreenAndPowerEventTask()
-{
-    LOGI("SubscribeScreenAndPowerEventTask called.");
-
-    if (eventHandler_ == nullptr) {
-        LOGE("event handler is nullptr in SubscribeScreenAndPowerEventTask.");
-        return;
-    }
-
-    // 订阅屏幕和电源事件
-    CommonEventService::SubscribeScreenAndPowerEvent();
-
-    // 循环调度自己,定期检查订阅状态
-    auto subscribeEventTask = [this] { SubscribeScreenAndPowerEventTask(); };
-    eventHandler_->PostTask(subscribeEventTask, DEFAULT_CHECK_INTERVAL);
-}
-
-bool StorageMonitorService::CheckScanPreconditions()
-{
-    // 检查扫描任务是否正在执行,防止并发
-    if (isScanRunning_.load()) {
-        LOGI("Scan task is already running, ignoring this request.");
-        return false;
-    }
-
-    // 查询当前剩余空间大小
-    int64_t currentFreeSize = 0;
-    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize);
-    if (err != E_OK || currentFreeSize < 0) {
-        LOGE("Failed to get free size, err=%{public}d", err);
-        return false;
-    }
-    // 从 DFX 获取上次扫描的剩余空间大小并计算差异
-    int64_t lastScanFreeSize = StorageDfxReporter::GetInstance().GetLastScanFreeSize();
-    int64_t sizeDiff = std::abs(currentFreeSize - lastScanFreeSize);
-    if (sizeDiff < StorageService::TWO_G_BYTE) {
-        LOGI("Free size diff %{public}lld < 2GB, skip scan.", static_cast<long long>(sizeDiff));
-        return false;
-    }
-    // 从 DFX 获取上次扫描时间并检查是否已过24小时
-    auto currentTime = std::chrono::system_clock::now();
-    auto lastScanTime = StorageDfxReporter::GetInstance().GetLastScanTime();
-    int64_t duration = std::chrono::duration_cast<std::chrono::hours>(currentTime - lastScanTime).count();
-    if (duration < TIME_INTERVAL_HOURS && lastScanTime.time_since_epoch().count() != 0) {
-        LOGI("Last scan was %{public}lld hours ago, less than 24 hours, skip scan.",
-            static_cast<long long>(duration));
-        return false;
-    }
-    LOGI("Starting scan task - free size diff: %{public}lld, hours since last scan: %{public}lld",
-         static_cast<long long>(sizeDiff), static_cast<long long>(duration));
-    return true;
-}
-
-void StorageMonitorService::LaunchScanWorker()
-{
-    // 重置停止扫描标志
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        int32_t ret = sdCommunication->SetStopScanFlg(false);
-        if (ret != E_OK) {
-            LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
-        } else {
-            LOGI("Successfully reset stop scan flag.");
-        }
-    }
-    // 启动异步线程执行扫描任务
-    std::lock_guard<std::mutex> lock(scanMutex_);
-    // 如果之前的线程还在运行,直接返回,不重复执行
-    if (scanThread_.joinable()) {
-        LOGI("Previous scan thread is still running, ignoring this scan request.");
-        return;
-    }
-    // 设置扫描运行标志
-    isScanRunning_.store(true);
-    // 创建新线程执行扫描
-    scanThread_ = std::thread([this]() {
-        pthread_setname_np(pthread_self(), "storage_scan_task");
-        LOGI("Scan thread started.");
-        // 调用 dfx_reporter 的 StartReportDirStatus 方法
-        // DFX 内部会在扫描成功后自动更新 lastScanTime_ 和 lastScanFreeSize_
-        int32_t ret = StorageDfxReporter::GetInstance().StartReportDirStatus();
-        if (ret == E_OK) {
-            LOGI("Scan completed successfully.");
-        } else {
-            LOGE("Scan failed with ret=%{public}d", ret);
-        }
-        // 扫描完成,重置标志
-        isScanRunning_.store(false);
-        LOGI("Scan thread completed.");
-    });
-    LOGI("StartScan completed, scan task launched in background.");
-}
-
-void StorageMonitorService::StartScan()
-{
-    LOGI("StartScan called.");
-    if (!CheckScanPreconditions()) {
-        return;
-    }
-    LaunchScanWorker();
-}
-
-void StorageMonitorService::StopScan()
-{
-    LOGI("StopScan called.");
-
-    // 设置停止扫描标志,通知正在执行的扫描任务停止
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        int32_t ret = sdCommunication->SetStopScanFlg(true);
-        if (ret != E_OK) {
-            LOGE("Failed to set stop scan flag, ret=%{public}d", ret);
-        } else {
-            LOGI("Successfully set stop scan flag to true.");
-        }
-    } else {
-        LOGE("StorageDaemonCommunication instance is nullptr.");
-    }
-    // 等待扫描线程结束(带超时机制,避免无限等待)
-    if (scanThread_.joinable()) {
-        scanThread_.join();
-        LOGI("Scan thread has been joined successfully.");
-    }
-    // 确保标志被重置
-    if (isScanRunning_.load()) {
-        isScanRunning_.store(false);
-        LOGI("Force reset isScanRunning flag to false.");
-    }
-    LOGI("StopScan completed - all scan resources cleaned up.");
 }
 } // StorageManager
 } // OHOS

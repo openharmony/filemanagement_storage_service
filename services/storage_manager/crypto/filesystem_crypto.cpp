@@ -60,6 +60,15 @@ int32_t FileSystemCrypto::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
+int32_t FileSystemCrypto::EraseAllUserEncryptedKeys()
+{
+    LOGI("Enter EraseAllUserEncryptedKeys");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->EraseAllUserEncryptedKeys();
+    return err;
+}
+
 int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                          const std::vector<uint8_t> &token,
                                          const std::vector<uint8_t> &oldSecret,

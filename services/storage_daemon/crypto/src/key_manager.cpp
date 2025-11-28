@@ -23,6 +23,7 @@
 #include "fscrypt_key_v2.h"
 #include "iam_client.h"
 #include "libfscrypt/fscrypt_control.h"
+#include "os_account_manager.h"
 #include "recover_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -35,6 +36,7 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
+constexpr const char *BACKUP_NAME = "_bak";
 constexpr const char *DEFAULT_NEED_RESTORE_VERSION = "1";
 constexpr const char *DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
@@ -832,6 +834,58 @@ int KeyManager::DeleteUserKeys(unsigned int user)
         LOGI("Delete user %{public}u, erase user task", user);
     }
     return ret;
+}
+
+int KeyManager::EraseAllUserEncryptedKeys()
+{
+    LOGI("Start EraseAllUserEncryptedKeys");
+    std::vector<AccountSA::OsAccountInfo> OsAccountInfo;
+    int32_t errNo = AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(OsAccountInfo);
+    if (errNo != ERR_OK || OsAccountInfo.empty()) {
+        LOGE("Query userid failed, ret = %{public}u", errNo);
+        StorageRadar::ReportOsAccountResult("QueryAllCreatedOsAccounts", errNo, DEFAULT_USERID);
+    }
+    bool isDeleteFailed = false;
+    for (const auto &info : OsAccountInfo) {
+        LOGI("Deleting keys for user: %{public}u", info.GetLocalId());
+        if (!info.GetIsCreateCompleted() || !info.GetToBeRemoved()) {
+            DeleteUserKeys(info.GetLocalId());
+            continue;
+        }
+        int32_t ret = DeleteUserKeys(info.GetLocalId());
+        if (ret != E_OK) {
+            LOGE("EraseAllUserEncryptedKeys failed, please check, user: %{public}u", info.GetLocalId());
+            StorageRadar::ReportUserKeyResult("KeyManager::EraseAllUserEncryptedKeys", info.GetLocalId(), ret,
+                "ELx", "");
+            isDeleteFailed = true;
+        }
+    }
+    DeleteUserKeys(ZERO_USER);
+
+    DeleteGlobalDeviceKey(DEVICE_EL1_DIR);
+    LOGI("EraseAllUserEncryptedKeys completed, last error: %{public}d", isDeleteFailed);
+    return isDeleteFailed ? E_ERASE_USER_KEY_ERROR : E_OK;
+}
+
+int KeyManager::DeleteGlobalDeviceKey(const std::string &dir)
+{
+    LOGI("Start DeleteGlobalDeviceKey");
+    globalEl1Key_ = GetBaseKey(dir);
+    if (globalEl1Key_ != nullptr) {
+        globalEl1Key_->ClearKey();
+        globalEl1Key_ = nullptr;
+        hasGlobalDeviceKey_ = false;
+        LOGE("global security key is clear");
+    }
+    std::string backupDir = dir + BACKUP_NAME;
+    globalEl1Key_ = GetBaseKey(backupDir);
+    if (globalEl1Key_ != nullptr) {
+        globalEl1Key_->ClearKey();
+        globalEl1Key_ = nullptr;
+        hasGlobalDeviceKey_ = false;
+        LOGE("global security bakup key is clear");
+    }
+    return E_OK;
 }
 
 std::string BuildSecretStatus(struct UserTokenSecret &userTokenSecret)

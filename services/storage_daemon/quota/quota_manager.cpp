@@ -748,50 +748,64 @@ int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std
 {
     LOGI("GetDqBlkSpacesByUids start, uids size: %{public}zu", uids.size());
     dqBlks.clear();
-
     for (auto &uid : uids) {
-        if (stopScanFlg_.load()) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
             LOGI("GetDqBlkSpacesByUids stopped by stopScanFlg");
+            std::vector<NextDqBlk>().swap(dqBlks);
             return E_ERR;
         }
         struct dqblk dq;
 #ifdef ENABLE_EMULATOR
-        if (!InitialiseQuotaMounts()) {
-            LOGE("Failed to initialise quota mounts");
-            return E_INIT_QUOTA_MOUNTS_FAILED;
-        }
-        std::string device = "";
-        device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
-        if (!device.empty()) {
-            LOGE("device quotas present");
-            return E_ERR;
-        }
-        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char *>(&dq)) != 0) {
-            LOGE("get size for emulator by quota failed, size is %{public}s", std::to_string(size).c_str());
-            return E_ERR;
-        }
+        return E_NOT_SUPPORT;
 #else
         if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char *>(&dq)) != 0) {
             LOGE("get size by quota failed, size is %{public}s", std::to_string(dq.dqb_curspace).c_str());
+            std::vector<NextDqBlk>().swap(dqBlks);
             return E_ERR;
         }
 #endif
-
         // 将 dqblk 转换为 NextDqBlk 对象
         NextDqBlk nextDq(dq.dqb_bhardlimit, dq.dqb_bsoftlimit, dq.dqb_curspace, dq.dqb_ihardlimit, dq.dqb_isoftlimit,
                          dq.dqb_curinodes, dq.dqb_btime, dq.dqb_itime, dq.dqb_valid,
-                         0, uid);
+                         uid);
         dqBlks.push_back(nextDq);
     }
     LOGI("GetDqBlkSpacesByUids end, dqBlks size: %{public}zu", dqBlks.size());
     return E_OK;
 }
 
+void QuotaManager::ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs)
+{
+    std::string path = dirInfo.path;
+    uid_t uid = dirInfo.uid;
+    int64_t blks = 0;
+    AddBlksRecurse(path, blks, uid);
+    int64_t dirSize = blks * BLOCK_BYTE;
+    resultDirs.push_back({path, uid, dirSize});
+}
+
+void QuotaManager::ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
+    std::vector<DirSpaceInfo> &resultDirs)
+{
+    std::string path = dirInfo.path;
+    uid_t uid = dirInfo.uid;
+    for (const int32_t userId : userIds) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDirListSpace stopped by stopScanFlag, userIds");
+            std::vector<DirSpaceInfo>().swap(resultDirs);
+            return;
+        }
+        std::string userPath = StringPrintf(path.c_str(), userId);
+        int64_t blks = 0;
+        AddBlksRecurse(userPath, blks, uid);
+        int64_t dirSize = blks * BLOCK_BYTE;
+        resultDirs.push_back({userPath, uid, dirSize});
+    }
+}
+
 int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
 {
     LOGI("GetDirListSpace start, input dirs size: %{public}zu", dirs.size());
-
-    // 获取所有用户 ID
     std::vector<int32_t> userIds;
     GetAllUserIds(userIds);
     if (userIds.empty()) {
@@ -799,49 +813,34 @@ int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
     }
     std::vector<DirSpaceInfo> resultDirs;
     for (const auto &dirInfo : dirs) {
-        if (stopScanFlg_.load()) {
-            LOGI("GetDirListSpace stopped by stopScanFlg");
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDirListSpace stopped by stopScanFlag, dirs");
+            std::vector<DirSpaceInfo>().swap(resultDirs);
             return E_ERR;
         }
-        std::string path = dirInfo.path;
-        uid_t uid = dirInfo.uid;
-
-        if (path.find("%d") == std::string::npos) {
-            // 路径不包含 %d,直接计算空间
-            int64_t blks = 0;
-            AddBlksRecurse(path, blks, uid);
-            int64_t dirSize = blks * BLOCK_BYTE;
-            resultDirs.push_back({path, uid, dirSize});
+        if (dirInfo.path.find("%d") == std::string::npos) {
+            ProcessSingleDir(dirInfo, resultDirs);
         } else {
-            // 路径包含 %d,为每个用户ID计算空间
-            for (const int32_t userId : userIds) {
-                std::string userPath = StringPrintf(path.c_str(), userId);
-                int64_t blks = 0;
-                AddBlksRecurse(userPath, blks, uid);
-                int64_t dirSize = blks * BLOCK_BYTE;
-                resultDirs.push_back({userPath, uid, dirSize});
-            }
+            ProcessDirWithUserId(dirInfo, userIds, resultDirs);
         }
     }
-    // 按空间大小降序排序
     std::sort(resultDirs.begin(), resultDirs.end(), [](const DirSpaceInfo& a, const DirSpaceInfo& b) {
         return a.size > b.size;
     });
-    // 更新输入的 dirs 为计算结果
     dirs = resultDirs;
     LOGI("GetDirListSpace end, result dirs size: %{public}zu", dirs.size());
     return E_OK;
 }
 
-void QuotaManager::SetStopScanFlg(bool stop)
+void QuotaManager::SetStopScanFlag(bool stop)
 {
-    stopScanFlg_.store(stop);
-    LOGI("QuotaManager::SetStopScanFlg called with stop=%{public}d", stop);
+    stopScanFlag_.store(stop);
+    LOGI("QuotaManager::SetStopScanFlag called with stop=%{public}d", stop);
 }
 
 void QuotaManager::GetAncoSizeData(std::string &extraData)
 {
-    if (stopScanFlg_.load()) {
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
         LOGI("GetAncoSize stopped by stopScanFlg");
         return;
     }

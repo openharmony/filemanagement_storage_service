@@ -467,6 +467,11 @@ int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
+int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys()
+{
+    return StorageDaemon::GetInstance().EraseAllUserEncryptedKeys();
+}
+
 int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
                                               uint64_t secureUid,
                                               const std::vector<uint8_t> &token,
@@ -1018,9 +1023,9 @@ int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &
     return QuotaManager::GetInstance().GetDirListSpace(outDirs);
 }
 
-int32_t StorageDaemonProvider::SetStopScanFlg(bool stop)
+int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
 {
-    QuotaManager::GetInstance().SetStopScanFlg(stop);
+    QuotaManager::GetInstance().SetStopScanFlag(stop);
     return E_OK;
 }
 

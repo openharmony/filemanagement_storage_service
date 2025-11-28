@@ -33,8 +33,7 @@ public:
               uint64_t bTime,
               uint64_t iTime,
               uint32_t valid,
-              uint32_t id,
-              uint32_t u)
+              uint32_t id)
         : dqbHardLimit(hardLimit),
           dqbBSoftLimit(bSoftLimit),
           dqbCurSpace(curSpace),
@@ -44,8 +43,7 @@ public:
           dqbBTime(bTime),
           dqbITime(iTime),
           dqbValid(valid),
-          dqbId(id),
-          uid(u)
+          dqbId(id)
     {
     }
 
@@ -69,8 +67,6 @@ public:
     uint32_t dqbValid = 0;
     /* the next ID greater than or equal to id that has a quota set */
     uint32_t dqbId = 0;
-    /* UID */
-    uint32_t uid = 0;
 
     bool Marshalling(Parcel &parcel) const override;
     static NextDqBlk *Unmarshalling(Parcel &parcel);

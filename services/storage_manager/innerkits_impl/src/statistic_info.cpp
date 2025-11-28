@@ -49,9 +49,6 @@ bool NextDqBlk::Marshalling(Parcel &parcel) const
     if (!parcel.WriteUint32(dqbId)) {
         return false;
     }
-    if (!parcel.WriteUint32(uid)) {
-        return false;
-    }
     return true;
 }
 
@@ -71,7 +68,6 @@ NextDqBlk *NextDqBlk::Unmarshalling(Parcel &parcel)
     obj->dqbITime = parcel.ReadUint64();
     obj->dqbValid = parcel.ReadUint32();
     obj->dqbId = parcel.ReadUint32();
-    obj->uid = parcel.ReadUint32();
     return obj;
 }
 } // StorageManager

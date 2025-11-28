@@ -652,6 +652,62 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
 }
 
 /**
+* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0001
+* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for E_SA_IS_NULLPTR.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_SA_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0001";
+}
+
+/**
+* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0002
+* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for E_SERVICE_IS_NULLPTR.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0002";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0002";
+}
+
+/**
+* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0003
+* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for SUCCESS.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0003";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys()).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0003";
+}
+
+/**
 * @tc.number: SUB_STORAGE_Daemon_communication_UpdateUserAuth_0000
 * @tc.name: Daemon_communication_UpdateUserAuth_0000
 * @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.

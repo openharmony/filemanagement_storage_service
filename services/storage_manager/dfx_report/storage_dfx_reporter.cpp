@@ -38,12 +38,23 @@ constexpr double DIVISOR = 1000.0 * 1000.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t TOP_COUNT = 20; // Top N directories to report
+constexpr int64_t TIME_INTERVAL_HOURS = 24;
 
 // HMFS metadata constants
 constexpr int32_t ROOT_UID = 0;
 constexpr int32_t SYSTEM_UID = 1000;
 constexpr int32_t FOUNDATION_UID = 5523;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
+
+StorageDfxReporter::~StorageDfxReporter()
+{
+    LOGI("StorageDfxReporter destructor called.");
+    if (scanThread_.joinable()) {
+        LOGI("Waiting for scanThread to finish...");
+        scanThread_.join();
+    }
+    LOGI("StorageDfxReporter destructor completed.");
+}
 
 int32_t StorageDfxReporter::StartReportDirStatus()
 {
@@ -55,14 +66,12 @@ int32_t StorageDfxReporter::StartReportDirStatus()
         LOGE("Get StorageDaemonCommunication instance failed.");
         return E_ERR;
     }
-    // 获取系统UID配额信息
     std::vector<NextDqBlk> dqBlks;
     int32_t ret = sdCommunication->GetDqBlkSpacesByUids(SYS_UIDS, dqBlks);
     if (ret != E_OK) {
         LOGE("GetDqBlkSpacesByUids failed, ret=%{public}d.", ret);
         return ret;
     }
-    // 检查系统UID大小
     int64_t totalSize = 0;
     int64_t rootSize = 0;
     int64_t systemSize = 0;
@@ -71,16 +80,12 @@ int32_t StorageDfxReporter::StartReportDirStatus()
     if (ret != E_OK) {
         return ret;
     }
-    // 准备打点数据
     std::ostringstream extraData;
     GetCurrentTime(extraData);
-    // 收集目录统计信息
     CollectDirStatistics(rootSize, systemSize, foundationSize, extraData);
-    // 上报打点数据
     StorageService::StorageRadar::ReportSpaceRadar("StartReportDirStatus",
         E_SYS_DIR_SPACE_STATUS, extraData.str());
     LOGI("StorageDfxReporter StartReportDirStatus end.");
-    // 更新扫描状态
     return UpdateScanState(totalSize);
 }
 
@@ -94,7 +99,7 @@ int32_t StorageDfxReporter::CheckSystemUidSize(const std::vector<NextDqBlk> &dqB
     foundationSize = 0;
     for (size_t i = 0; i < dqBlks.size() && i < SYS_UIDS.size(); i++) {
         int64_t uidSize = static_cast<int64_t>(dqBlks[i].dqbCurSpace);
-        int32_t uid = static_cast<int32_t>(dqBlks[i].uid);
+        int32_t uid = static_cast<int32_t>(dqBlks[i].dqbId);
         if (uidSize < StorageService::TWO_G_BYTE) {
             LOGE("uid=%{public}d size %{public}lld bytes less than 2GB, break.",
                  uid, static_cast<long long>(uidSize));
@@ -110,8 +115,8 @@ int32_t StorageDfxReporter::CheckSystemUidSize(const std::vector<NextDqBlk> &dqB
         }
         LOGI("uid=%{public}d, curSpace=%{public}lld bytes", SYS_UIDS[i], static_cast<long long>(uidSize));
     }
-    int64_t sizeIncrease = totalSize - lastTotalSize_;
-    if (lastTotalSize_ > 0 && sizeIncrease < StorageService::ONE_G_BYTE) {
+    int64_t sizeIncrease = abs(totalSize - lastTotalSize_);
+    if (sizeIncrease < StorageService::ONE_G_BYTE) {
         LOGE("Total size increase %{public}lld bytes (from %{public}lld to %{public}lld) is less than 1GB, "
              "skip dir statistics.",
              static_cast<long long>(sizeIncrease), static_cast<long long>(lastTotalSize_),
@@ -130,7 +135,6 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
         LOGE("Get StorageDaemonCommunication instance failed.");
         return;
     }
-    // 获取 root 目录详细信息
     std::vector<DirSpaceInfo> rootDirs = GetRootDirList();
     std::vector<DirSpaceInfo> rootOutDirs;
     int32_t ret = sdCommunicationInstance->GetDirListSpace(rootDirs, rootOutDirs);
@@ -139,7 +143,6 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
         extraData << "{root directories:}" << std::endl;
         AppendDirInfo(rootOutDirs, extraData);
     }
-    // 获取 system 目录详细信息
     std::vector<DirSpaceInfo> systemDirs = GetSystemDirList();
     std::vector<DirSpaceInfo> systemOutDirs;
     ret = sdCommunicationInstance->GetDirListSpace(systemDirs, systemOutDirs);
@@ -148,7 +151,6 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
         extraData << "{system directories:}" << std::endl;
         AppendDirInfo(systemOutDirs, extraData);
     }
-    // 获取 foundation 目录详细信息
     std::vector<DirSpaceInfo> foundationDirs = GetFoundationDirList();
     std::vector<DirSpaceInfo> foundationOutDirs;
     ret = sdCommunicationInstance->GetDirListSpace(foundationDirs, foundationOutDirs);
@@ -157,7 +159,6 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
         extraData << "{foundation directories:}" << std::endl;
         AppendDirInfo(foundationOutDirs, extraData);
     }
-    // 获取 Anco 大小信息
     std::string ancoData;
     ret = sdCommunicationInstance->GetAncoSizeData(ancoData);
     if (ret == E_OK) {
@@ -322,16 +323,104 @@ std::vector<DirSpaceInfo> StorageDfxReporter::GetFoundationDirList()
             {"/data/log/eventlog/freeze", 5523, 0}};
 }
 
-int64_t StorageDfxReporter::GetLastScanFreeSize()
+
+bool StorageDfxReporter::CheckScanPreconditions()
 {
-    std::lock_guard<std::mutex> lock(scanStateMutex_);
-    return lastScanFreeSize_;
+    if (isScanRunning_.load()) {
+        LOGI("Scan task is already running, ignoring this request.");
+        return false;
+    }
+
+    int64_t currentFreeSize = 0;
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize);
+    if (err != E_OK || currentFreeSize < 0) {
+        LOGE("Failed to get free size, err=%{public}d", err);
+        return false;
+    }
+    {
+        std::lock_guard<std::mutex> lock(scanStateMutex_);
+        int64_t sizeDiff = std::abs(currentFreeSize - lastScanFreeSize_);
+        if (sizeDiff < StorageService::TWO_G_BYTE) {
+            LOGI("Free size diff %{public}lld < 2GB, skip scan.", static_cast<long long>(sizeDiff));
+            return false;
+        }
+        auto currentTime = std::chrono::system_clock::now();
+        int64_t duration = std::chrono::duration_cast<std::chrono::hours>(currentTime - lastScanTime_).count();
+        if (duration < TIME_INTERVAL_HOURS && lastScanTime_.time_since_epoch().count() != 0) {
+            LOGI("Last scan was %{public}lld hours ago, less than 24 hours, skip scan.",
+                static_cast<long long>(duration));
+            return false;
+        }
+        LOGI("Starting scan task - free size diff: %{public}lld, hours since last scan: %{public}lld",
+             static_cast<long long>(sizeDiff), static_cast<long long>(duration));
+    }
+    return true;
 }
 
-std::chrono::system_clock::time_point StorageDfxReporter::GetLastScanTime()
+void StorageDfxReporter::LaunchScanWorker()
 {
-    std::lock_guard<std::mutex> lock(scanStateMutex_);
-    return lastScanTime_;
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication != nullptr) {
+        int32_t ret = sdCommunication->SetStopScanFlag(false);
+        if (ret != E_OK) {
+            LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
+        } else {
+            LOGI("Successfully reset stop scan flag.");
+        }
+    }
+    std::lock_guard<std::mutex> lock(scanMutex_);
+    isScanRunning_.store(true);
+    scanThread_ = std::thread([this]() {
+        pthread_setname_np(pthread_self(), "storage_scan_task");
+        LOGI("Scan thread started.");
+        int32_t ret = StartReportDirStatus();
+        if (ret == E_OK) {
+            LOGI("Scan completed successfully.");
+        } else {
+            LOGE("Scan failed with ret=%{public}d", ret);
+        }
+        isScanRunning_.store(false);
+        LOGI("Scan thread completed.");
+    });
+    LOGI("StartScan completed, scan task launched in background.");
+}
+
+void StorageDfxReporter::StartScan()
+{
+    LOGI("StartScan called.");
+    if (!CheckScanPreconditions()) {
+        return;
+    }
+    LaunchScanWorker();
+}
+
+void StorageDfxReporter::StopScan()
+{
+    LOGI("StopScan called.");
+    if (!isScanRunning_.load()) {
+        LOGI("No scan is running, skip StopScan.");
+        return;
+    }
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication != nullptr) {
+        int32_t ret = sdCommunication->SetStopScanFlag(true);
+        if (ret != E_OK) {
+            LOGE("Failed to set stop scan flag, ret=%{public}d", ret);
+        } else {
+            LOGI("Successfully set stop scan flag to true.");
+        }
+    } else {
+        LOGE("StorageDaemonCommunication instance is nullptr.");
+    }
+    if (scanThread_.joinable()) {
+        scanThread_.join();
+        LOGI("Scan thread has been joined successfully.");
+    }
+    if (isScanRunning_.load()) {
+        isScanRunning_.store(false);
+        LOGI("Force reset isScanRunning flag to false.");
+    }
+    LOGI("StopScan completed - all scan resources cleaned up.");
 }
 } // namespace StorageManager
 } // namespace OHOS

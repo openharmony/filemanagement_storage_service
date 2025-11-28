@@ -21,8 +21,9 @@ config("storage_manager_config") {
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
-    "${storage_manager_path}/include/storage",
+    "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/storage",
   ]
 
   cflags = [
@@ -44,6 +45,7 @@ ohos_shared_library("storage_manager") {
   }
 
   sources = [
+    "common_event/storage_common_event_subscriber.cpp",
     "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_provider.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -107,7 +109,6 @@ ohos_shared_library("storage_manager") {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "account_subscriber/account_subscriber.cpp",
-      "common_event/common_event_service.cpp",
       "dfx_report/storage_dfx_reporter.cpp",
       "storage/src/bundle_manager_connector.cpp",
       "storage/src/storage_monitor_service.cpp",
@@ -174,6 +175,7 @@ group("storage_manager_unit_test") {
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
     "rdb_adapter/test:storage_manager_rdb_test",
+    "common_event/test:storage_common_event_test",
   ]
 
   if (storage_service_user_crypto_manager) {

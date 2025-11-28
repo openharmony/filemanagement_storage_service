@@ -79,7 +79,7 @@ public:
     void GetUidStorageStats(const std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
-    void SetStopScanFlg(bool stop);
+    void SetStopScanFlag(bool stop);
     void GetAncoSizeData(std::string &extraData);
 private:
     QuotaManager() = default;
@@ -104,8 +104,11 @@ private:
     void AssembleSysAppVec(int32_t dqUid, const NextDqBlk &dq,
         std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec);
     void GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec);
+    void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
+    void ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
+        std::vector<DirSpaceInfo> &resultDirs);
     int64_t oldChangeSizeCache_ = 0;
-    std::atomic<bool> stopScanFlg_{false};
+    std::atomic<bool> stopScanFlag_{false};
 };
 } // STORAGE_DAEMON
 } // OHOS

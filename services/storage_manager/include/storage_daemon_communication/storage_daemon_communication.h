@@ -45,6 +45,7 @@ public:
 
     // fscrypt api
     int32_t DeleteUserKeys(uint32_t userId);
+    int32_t EraseAllUserEncryptedKeys();
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,
                            const std::vector<uint8_t> &oldSecret,
@@ -122,7 +123,7 @@ public:
     // stats radar
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
-    int32_t SetStopScanFlg(bool stop = false);
+    int32_t SetStopScanFlag(bool stop = false);
     int32_t GetAncoSizeData(std::string &outExtraData);
 
 private:

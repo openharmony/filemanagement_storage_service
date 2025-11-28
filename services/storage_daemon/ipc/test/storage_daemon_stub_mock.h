@@ -43,6 +43,7 @@ public:
     MOCK_METHOD0(InitGlobalKey, int32_t(void));
     MOCK_METHOD0(InitGlobalUserKeys, int32_t(void));
     MOCK_METHOD1(DeleteUserKeys, int32_t(uint32_t));
+    MOCK_METHOD0(EraseAllUserEncryptedKeys, int32_t(void));
     MOCK_METHOD5(UpdateUserAuth,  int32_t(uint32_t, uint64_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD5(UpdateUseAuthWithRecoveryKey, int32_t(const std::vector<uint8_t> &,
@@ -91,7 +92,7 @@ public:
     MOCK_METHOD1(DeleteUserDir, int32_t(const std::string &));
     MOCK_METHOD2(GetDqBlkSpacesByUids, int32_t(const std::vector<int32_t> &, std::vector<NextDqBlk> &));
     MOCK_METHOD2(GetDirListSpace, int32_t(const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
-    MOCK_METHOD1(SetStopScanFlg, int32_t(bool));
+    MOCK_METHOD1(SetStopScanFlag, int32_t(bool));
     MOCK_METHOD1(GetAncoSizeData, int32_t(std::string &));
 };
 }  // namespace StorageDaemon

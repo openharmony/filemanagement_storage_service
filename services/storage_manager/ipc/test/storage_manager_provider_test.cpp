@@ -607,6 +607,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_0
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_001
+ * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncryptedKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_001 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
  * @tc.type: FUNC
@@ -1589,6 +1604,40 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
     auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_001
+ * @tc.desc: Verify the OnAddSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t systemAbilityId = 100;
+    std::string deviceId = "test";
+    storageManagerProviderTest_->OnAddSystemAbility(systemAbilityId, deviceId);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_002
+ * @tc.desc: Verify the OnAddSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t systemAbilityId = COMMON_EVENT_SERVICE_ID;
+    std::string deviceId = "test";
+    storageManagerProviderTest_->OnAddSystemAbility(systemAbilityId, deviceId);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_002 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

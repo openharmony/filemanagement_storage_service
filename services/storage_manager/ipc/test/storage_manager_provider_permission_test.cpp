@@ -59,10 +59,14 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
 
 pid_t g_testCallingUid = 5523;
 const int MAX_USER_ID = 10738;
- 
+pid_t g_testUpdateServiceUid = 6666;
+bool g_returnUpdateService = false;
 namespace OHOS {
 pid_t IPCSkeleton::GetCallingUid()
 {
+    if (g_returnUpdateService) {
+        return g_testUpdateServiceUid;
+    }
     return g_testCallingUid;
 }
 
@@ -109,6 +113,7 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
 
 void StorageManagerProviderTest::SetUp(void)
 {
+    g_returnUpdateService = false;
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
 }
 
@@ -690,6 +695,37 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_0
     auto ret = storageManagerProviderTest_->DeleteUserKeys(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_002
+ * @tc.desc: Verify the EraseAllUserEncryptedKeys when callingUid not UPDATE_SERVICE_UID.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncryptedKeys_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_003
+ * @tc.desc: Verify the EraseAllUserEncryptedKeys when service is nullptr.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncryptedKeys_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_003 start";
+    g_returnUpdateService = true;
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_EraseAllUserEncryptedKeys_003 end";
 }
 
 /**
