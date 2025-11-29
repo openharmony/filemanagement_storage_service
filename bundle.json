@@ -102,6 +102,8 @@
           "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_disk_config",
           "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_usb_param",
           "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_third_party",
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_user_path",
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_mount_info",
           "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
           "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
           "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",

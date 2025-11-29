@@ -69,6 +69,20 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
   subsystem_name = "filemanagement"
 }
 
+ohos_prebuilt_etc("storage_daemon_user_path") {
+  source = "storage_user_path.json"
+  relative_install_dir = "storage_daemon"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_prebuilt_etc("storage_daemon_mount_info") {
+  source = "storage_mount_info.json"
+  relative_install_dir = "storage_daemon"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg
 config("storage_daemon_config") {
   include_dirs = [

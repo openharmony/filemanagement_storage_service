@@ -1,0 +1,856 @@
+{
+    "user_base": {
+      "el1": [
+        {
+          "path": "/data/service/el1/<userId>",
+          "mode": "0711",
+          "uid": 0,
+          "gid": 0
+        },
+        {
+          "path": "/data/chipset/el1/<userId>",
+          "mode": "0711",
+          "uid": 0,
+          "gid": 0
+        },
+        {
+            "path": "/data/app/el1/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/app/el1/<userId>/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el1/<userId>/database",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el1/bundle/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        }
+      ],
+      "el2": [
+        {
+            "path": "/data/service/el2/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/chipset/el2/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+              "path": "/data/app/el2/<userId>",
+              "mode": "0711",
+              "uid": 0,
+              "gid": 0
+        },
+        {
+            "path": "/data/app/el2/<userId>/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el2/<userId>/database",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        }
+      ],
+      "el3": [
+        {
+            "path": "/data/service/el3/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+              "path": "/data/app/el3/<userId>",
+              "mode": "0711",
+              "uid": 0,
+              "gid": 0
+        },
+        {
+            "path": "/data/app/el3/<userId>/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el3/<userId>/database",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        }
+      ],
+      "el4": [
+        {
+            "path": "/data/service/el4/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+              "path": "/data/app/el4/<userId>",
+              "mode": "0711",
+              "uid": 0,
+              "gid": 0
+        },
+        {
+            "path": "/data/app/el4/<userId>/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el4/<userId>/database",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        }
+      ],
+      "el5": [
+        {
+            "path": "/data/service/el5/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+              "path": "/data/app/el5/<userId>",
+              "mode": "0711",
+              "uid": 0,
+              "gid": 0
+        },
+        {
+            "path": "/data/app/el5/<userId>/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        },
+        {
+            "path": "/data/app/el5/<userId>/database",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0,
+            "options": "check_dir"
+        }
+      ]
+    },
+    "user_service": {
+      "el1": [
+        {
+            "path": "/data/service/el1/<userId>/distributeddata",
+            "mode": "0711",
+            "uid": 3012,
+            "gid": 3012
+        },
+        {
+            "path": "/data/service/el1/<userId>/backup",
+            "mode": "02771",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el1/<userId>/backup/bundles",
+            "mode": "0711",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el1/<userId>/utdtypes",
+            "mode": "0711",
+            "uid": 5523,
+            "gid": 5523
+        },
+        {
+            "path": "/data/app/el1/<userId>/aot_compiler",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/app/el1/<userId>/aot_compiler/ark_profile",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/app/el1/<userId>/shader_cache",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        }
+      ],
+      "el2": [
+        {
+            "path": "/data/service/el2/<userId>/backup",
+            "mode": "02771",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el2/<userId>/backup/backup_sa",
+            "mode": "0711",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el2/<userId>/backup/bundles",
+            "mode": "0711",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/app/el2/<userId>/log",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/app/el2/<userId>/sharefiles",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/data/service/el2/<userId>/share",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files",
+            "mode": "02771",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/data",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/non_account",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/non_account/files",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/non_account/data",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cloud",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cloud/data",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cache",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cloudfile_manager",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cache/account_cache",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cache/non_account_cache",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/cache/cloud_cache",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/services",
+            "mode": "0771",
+            "uid": 3822,
+            "gid": 3822
+        },
+        {
+            "path": "/data/service/el2/<userId>/tee",
+            "mode": "0711",
+            "uid": 6668,
+            "gid": 6668
+        },
+        {
+            "path": "/data/service/el2/<userId>/cloud_backup_service",
+            "mode": "0711",
+            "uid": 5206,
+            "gid": 5206
+        },
+        {
+            "path": "/data/service/el2/<userId>/deviceauth",
+            "mode": "0711",
+            "uid": 3333,
+            "gid": 3333
+        },
+        {
+            "path": "/data/service/el2/<userId>/trustedringsvc",
+            "mode": "0711",
+            "uid": 65936,
+            "gid": 65936
+        },
+        {
+            "path": "/data/service/el2/<userId>/hwid_service",
+            "mode": "0711",
+            "uid": 7008,
+            "gid": 7008
+        },
+        {
+            "path": "/data/service/el2/<userId>/cloud_develop_proxy",
+            "mode": "0711",
+            "uid": 7996,
+            "gid": 7996
+        },
+        {
+            "path": "/data/service/el2/<userId>/media_cloud_enhance_service",
+            "mode": "0711",
+            "uid": 7998,
+            "gid": 7998
+        },
+        {
+            "path": "/data/service/el2/<userId>/push_manager_service",
+            "mode": "0711",
+            "uid": 7023,
+            "gid": 7023
+        },
+        {
+            "path": "/data/service/el2/<userId>/push_manager_service/database",
+            "mode": "0711",
+            "uid": 7023,
+            "gid": 7023
+        },
+        {
+            "path": "/data/service/el2/<userId>/healthsport",
+            "mode": "0711",
+            "uid": 7259,
+            "gid": 7259
+        },
+        {
+            "path": "/data/service/el2/<userId>/huks_service",
+            "mode": "0711",
+            "uid": 3510,
+            "gid": 3510
+        },
+        {
+            "path": "/data/service/el2/<userId>/parentcontrol",
+            "mode": "0711",
+            "uid": 7007,
+            "gid": 7007
+        },
+        {
+            "path": "/data/chipset/el2/<userId>/multimedia",
+            "mode": "0711",
+            "uid": 1013,
+            "gid": 1013
+        },
+        {
+            "path": "/data/chipset/el2/<userId>/multimedia/algorithm_camera",
+            "mode": "0711",
+            "uid": 1013,
+            "gid": 1013
+        },
+        {
+            "path": "/data/service/el2/<userId>/asset_service",
+            "mode": "0711",
+            "uid": 6226,
+            "gid": 6226
+        },
+        {
+            "path": "/data/service/el2/<userId>/account",
+            "mode": "0711",
+            "uid": 3058,
+            "gid": 3058
+        },
+        {
+            "path": "/data/service/el2/<userId>/dlp_credential_service",
+            "mode": "0711",
+            "uid": 3553,
+            "gid": 3553
+        },
+        {
+            "path": "/data/service/el2/<userId>/xpower",
+            "mode": "0711",
+            "uid": 1201,
+            "gid": 1201
+        },
+        {
+            "path": "/data/service/el2/<userId>/iShare",
+            "mode": "0711",
+            "uid": 5520,
+            "gid": 5520
+        },
+        {
+            "path": "/data/service/el2/<userId>/fusion_awareness",
+            "mode": "0711",
+            "uid": 5520,
+            "gid": 5520
+        },
+        {
+            "path": "/data/service/el2/<userId>/av_session",
+            "mode": "0711",
+            "uid": 6700,
+            "gid": 6700
+        },
+        {
+            "path": "/data/service/el2/<userId>/file_transfer_service",
+            "mode": "0711",
+            "uid": 7017,
+            "gid": 7017
+        },
+        {
+            "path": "/data/service/el2/<userId>/gameservice_server",
+            "mode": "0711",
+            "uid": 7011,
+            "gid": 7011
+        },
+        {
+            "path": "/data/service/el2/<userId>/gameservice_server/ucs",
+            "mode": "0711",
+            "uid": 7011,
+            "gid": 7011
+        },
+        {
+            "path": "/data/service/el2/<userId>/virt_service",
+            "mode": "0711",
+            "uid": 1000,
+            "gid": 1000
+        },
+        {
+            "path": "/data/service/el2/<userId>/virt_service/hwf_service",
+            "mode": "0711",
+            "uid": 7700,
+            "gid": 7700
+        },
+        {
+            "path": "/data/service/el2/<userId>/virt_service/vm_manager",
+            "mode": "0711",
+            "uid": 7700,
+            "gid": 7700
+        },
+        {
+            "path": "/data/service/el2/<userId>/file_monitor_service",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/data/service/el2/<userId>/print_service",
+            "mode": "0711",
+            "uid": 3823,
+            "gid": 3823
+        },
+        {
+            "path": "/data/service/el2/<userId>/database",
+            "mode": "0711",
+            "uid": 3012,
+            "gid": 3012
+        },
+        {
+            "path": "/data/service/el2/<userId>/database/pasteboard_service",
+            "mode": "02771",
+            "uid": 3816,
+            "gid": 3012
+        },
+        {
+            "path": "/data/service/el2/<userId>/findnetwork",
+            "mode": "0711",
+            "uid": 7518,
+            "gid": 7518
+        },
+        {
+            "path": "/data/service/el2/<userId>/findnetwork/database",
+            "mode": "0711",
+            "uid": 7518,
+            "gid": 7518
+        },
+        {
+            "path": "/data/service/el2/<userId>/backup",
+            "mode": "02771",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el2/<userId>/backup/backup_sa",
+            "mode": "0711",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el2/<userId>/backup/bundles",
+            "mode": "0711",
+            "uid": 1089,
+            "gid": 1089
+        },
+        {
+            "path": "/data/service/el2/<userId>/glasses_collaboration_service",
+            "mode": "0711",
+            "uid": 7140,
+            "gid": 7140
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/Docs",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/Docs/Documents",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/Docs/Download",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/Docs/Desktop",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/Docs/.Trash",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        },
+        {
+            "path": "/data/service/el2/<userId>/hmdfs/account/files/.Recent",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006,
+            "options": "set_prjId=0,update_uid"
+        }
+      ],
+      "el3": [
+        {
+            "path": "/data/service/el3/<userId>/device_standby",
+            "mode": "0711",
+            "uid": 1096,
+            "gid": 1096
+        }
+      ],
+      "el4": [
+        {
+            "path": "/data/service/el4/<userId>/huks_service",
+            "mode": "0711",
+            "uid": 3510,
+            "gid": 3510
+        },
+        {
+            "path": "/data/service/el4/<userId>/findnetwork",
+            "mode": "0711",
+            "uid": 6226,
+            "gid": 6226
+        },
+        {
+            "path": "/data/service/el4/<userId>/asset_clone",
+            "mode": "0711",
+            "uid": 7518,
+            "gid": 7518
+        }
+      ],
+      "el5": [
+      ]
+    },
+    "appdata": [
+        {
+            "path": "/mnt/user",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/docs",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/docs/currentUser",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el1",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el2",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el2/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el2/cloud",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el2/distributedfiles",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el5",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/nosharefs/appdata/el5/base",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/sharefs",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/sharefs/docs",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/sharefs/docs/currentUser",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/currentUser",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/currentUser/filemgr",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/user/<userId>/currentUser/other",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        }
+    ],
+    "virtual": [
+        {
+            "path": "/storage/media/<userId>",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/storage/media/<userId>/local",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/storage/cloud",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/storage/cloud/<userId>",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/mnt/share/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/share/<userId>/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/data/<userId>/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/data/<userId>/cloud",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/data/<userId>/cloud_fuse",
+            "mode": "0711",
+            "uid": 1009,
+            "gid": 1009
+        },
+        {
+            "path": "/mnt/data/<userId>/media_fuse",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/mnt/data/<userId>/userExternal",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006
+        },
+        {
+            "path": "/mnt/data/<userId>/hmdfs",
+            "mode": "0711",
+            "uid": 1006,
+            "gid": 1006
+        },
+        {
+            "path": "/mnt/hmdfs/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/hmdfs/<userId>/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/hmdfs/<userId>/cloud",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/hmdfs/<userId>/account",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/hmdfs/<userId>/non_account",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        }
+    ]
+  }
