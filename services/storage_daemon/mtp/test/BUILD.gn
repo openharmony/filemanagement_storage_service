@@ -95,6 +95,7 @@ ohos_unittest("mtp_device_monitor_test") {
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
     "${storage_service_path}/utils/include",
+    "${storage_daemon_path}/include/utils",
     "${storage_service_path}/storage_manager/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]

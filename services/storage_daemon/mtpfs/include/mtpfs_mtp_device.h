@@ -107,10 +107,10 @@ public:
     static int EraseRemovingFile(const std::string &path);
     static bool IsFileRemoving(const std::string &path);
     void SetPtpMode(const char *mode);
+    bool IsOpenHarmonyMtpDevice();
 
 private:
     bool EnumStorages();
-    bool IsOpenHarmonyMtpDevice();
     static Capabilities GetCapabilities(const MtpFsDevice &device);
     bool ConvertErrorCode(LIBMTP_error_number_t err);
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
@@ -127,6 +127,7 @@ private:
                       const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName);
     void SetFetched(MtpFsTypeDir *dir);
     void DumpLibMtpErrorStack();
+    int GetMainMtpErrorCode();
     static void SetTransferValue(bool value);
 
 private:

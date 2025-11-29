@@ -26,6 +26,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_stats.h"
+#include "storage/storage_quota_controller.h"
 #include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
@@ -93,6 +94,9 @@ void StorageMonitorService::StartStorageMonitorTask()
     }
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 
+    auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
+    eventHandler_->PostTask(executeUpdateBaseLineByUid, STORAGE_STATIC_BEGIN_INTERVAL);
+
     auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
     eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
@@ -122,6 +126,12 @@ void StorageMonitorService::Execute()
     MonitorAndManageStorage();
     auto executeFunc = [this] { Execute(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
+}
+
+void StorageMonitorService::UpdateBaseLineByUid()
+{
+    LOGI("begin update base line by uid task.");
+    StorageQuotaController::GetInstance().UpdateBaseLineByUid();
 }
 
 void StorageMonitorService::MonitorAndManageStorage()

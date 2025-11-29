@@ -1,0 +1,313 @@
+{
+    "appdata-mount": [
+        {
+            "src-path": "/mnt/user/<userId>/nosharefs/docs",
+            "dest-path": "/mnt/user/<userId>/nosharefs/docs",
+            "mount-flags": ["bind", "rec"],
+            "options": "before_startup"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/docs",
+            "mount-flags": ["shared"],
+            "options": "before_startup"
+        },
+        {
+            "src-path": "/mnt/user/<userId>/sharefs/docs",
+            "dest-path": "/mnt/user/<userId>/sharefs/docs",
+            "mount-flags": ["bind", "rec"],
+            "options": "before_startup"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/sharefs/docs",
+            "mount-flags": ["shared"],
+            "options": "before_startup"
+        },
+        {
+            "src-path": "/data/app/el1/<userId>/base/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted,before_startup"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
+            "mount-flags": ["slave"],
+            "options": "before_startup"
+        },
+        {
+            "src-path": "/data/app/el2/<userId>/base/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/base",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/base",
+            "mount-flags": ["slave"]
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/cloud/data/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/cloud",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/cloud",
+            "mount-flags": ["slave"]
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/account/merge_view/data/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/distributedfiles",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el2/distributedfiles",
+            "mount-flags": ["slave"]
+        },
+        {
+            "src-path": "/data/app/el5/<userId>/base/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el5/base",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el5/base",
+            "mount-flags": ["slave"]
+        },
+        {
+            "src-path": "/storage/media/<userId>/local/files/Docs",
+            "dest-path": "/mnt/user/<userId>/currentUser/other",
+            "file-system-type": "sharefs",
+            "mount-flags": ["nodev"],
+            "data": "override_support_delete,user_id=<userId>",
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/currentUser/other",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/mnt/user/<userId>/nosharefs/appdata",
+            "dest-path": "/mnt/user/<userId>/currentUser/other/appdata",
+            "file-system-type": "sharefs",
+            "mount-flags": ["nodev"],
+            "data": "sniffer,override_support_delete,user_id=<userId>",
+            "options": "check_mounted",
+            "create-dest-path": true,
+            "dest-path-info": {
+                "mode": "0711",
+                "uid": 0,
+                "gid": 0
+            }
+        },
+        {
+            "src-path": "/storage/media/<userId>/local/files/Docs",
+            "dest-path": "/mnt/user/<userId>/currentUser/filemgr",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/currentUser/filemgr",
+            "mount-flags": ["slave"]
+        },
+        {
+            "src-path": "/mnt/user/<userId>/nosharefs/appdata",
+            "dest-path": "/mnt/user/<userId>/currentUser/filemgr/appdata",
+            "file-system-type": "sharefs",
+            "mount-flags": ["nodev"],
+            "options": "check_mounted",
+            "data": "sniffer,override_support_delete,user_id=<userId>",
+            "create-dest-path": true,
+            "dest-path-info": {
+                "mode": "0711",
+                "uid": 0,
+                "gid": 0
+            }
+        },
+        {
+            "src-path": "/mnt/user/<userId>/currentUser/other",
+            "dest-path": "/mnt/user/<userId>/sharefs/docs/currentUser",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/sharefs/docs/currentUser",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/mnt/user/<userId>/currentUser/filemgr",
+            "dest-path": "/mnt/user/<userId>/nosharefs/docs/currentUser",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/docs/currentUser",
+            "mount-flags": ["shared"]
+        }
+    ],
+    "sandbox-mount": [
+        {
+            "src-path": "/data/app/el2/<userId>/base/<bundleName>/",
+            "dest-path": "/data/storage/el2/base/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/base/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el2/<userId>/database/<bundleName>/",
+            "dest-path": "/data/storage/el2/database/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/database/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/mnt/share/<userId>/<bundleName>/",
+            "dest-path": "/data/storage/el2/share/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/share/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el2/<userId>/log/<bundleName>/",
+            "dest-path": "/data/storage/el2/log/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/log/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/account/merge_view/data/<bundleName>/",
+            "dest-path": "/data/storage/el2/distributedfiles/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/distributedfiles/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/cloud/data/<bundleName>/",
+            "dest-path": "/data/storage/el2/cloud/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el2/cloud/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el3/<userId>/base/<bundleName>/",
+            "dest-path": "/data/storage/el3/base/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el3/base/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el3/<userId>/database/<bundleName>/",
+            "dest-path": "/data/storage/el3/database/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el3/database/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el4/<userId>/base/<bundleName>/",
+            "dest-path": "/data/storage/el4/base/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el4/base/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el4/<userId>/database/<bundleName>/",
+            "dest-path": "/data/storage/el4/database/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el4/database/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el5/<userId>/base/<bundleName>/",
+            "dest-path": "/data/storage/el5/base/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el5/base/",
+            "mount-flags": ["shared"]
+        },
+        {
+            "src-path": "/data/app/el5/<userId>/database/<bundleName>/",
+            "dest-path": "/data/storage/el5/database/",
+            "mount-flags": ["bind", "rec"]
+        },
+        {
+            "dest-path": "/data/storage/el5/database/",
+            "mount-flags": ["shared"]
+        }
+    ],
+    "hmdfs-mount": [
+        {
+            "src-path": "/data/service/el2/<userId>/hmdfs/account",
+            "dest-path": "/storage/media/<userId>/local/",
+            "mount-flags": ["bind"],
+            "options": "check_mounted,local_hmdfs"
+        },
+        {
+            "src-path": "/data/service/el2/<userId>/hmdfs/account",
+            "dest-path": "/storage/cloud/<userId>/",
+            "mount-flags": ["bind"],
+            "options": "check_mounted,local_hmdfs"
+        },
+        {
+            "src-path": "/data/service/el2/<userId>/hmdfs/account",
+            "dest-path": "/mnt/hmdfs/<userId>/account",
+            "file-system-type": "hmdfs",
+            "mount-flags": ["nodev"],
+            "data": "local_dst=/mnt/hmdfs/<userId>/account,user_id=<userId>,ra_pages=512,cache_dir=/data/service/el2/<userId>/hmdfs/cache/account_cache/,cloud_dir=/mnt/data/<userId>/cloud,merge",
+            "options": "check_mounted"
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/account/device_view/",
+            "dest-path": "/storage/media/<userId>",
+            "mount-flags": ["bind"],
+            "options": "check_mounted"
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/account/cloud_merge_view/",
+            "dest-path": "/storage/cloud/<userId>/",
+            "mount-flags": ["bind"],
+            "options": "check_mounted"
+        },
+        {
+            "src-path": "/mnt/hmdfs/<userId>/account/device_view/local/files/Docs",
+            "dest-path": "/storage/cloud/<userId>/files/Docs",
+            "mount-flags": ["bind"],
+            "options": "check_mounted"
+        },
+        {
+            "src-path": "/data/service/el2/<userId>/hmdfs/non_account",
+            "dest-path": "/mnt/hmdfs/<userId>/non_account",
+            "file-system-type": "hmdfs",
+            "mount-flags": ["nodev"],
+            "data": "local_dst=/mnt/hmdfs/<userId>/non_account,user_id=<userId>,ra_pages=512,cache_dir=/data/service/el2/<userId>/hmdfs/cache/non_account_cache/,cloud_dir=/mnt/data/<userId>/cloud,merge",
+            "options": "check_mounted"
+        },
+        {
+            "src-path": "/mnt/data/<userId>/cloud_fuse",
+            "dest-path": "/mnt/hmdfs/<userId>/cloud",
+            "file-system-type": "hmdfs",
+            "mount-flags": ["nodev"],
+            "data": "local_dst=/mnt/hmdfs/<userId>/cloud,user_id=<userId>,ra_pages=512,cache_dir=/data/service/el2/<userId>/hmdfs/cloud/,cloud_disk",
+            "options": "check_mounted,no_return"
+        }
+    ]
+}

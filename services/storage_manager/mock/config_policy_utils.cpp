@@ -13,28 +13,18 @@
  * limitations under the License.
  */
 
-#include "keycontrolhasfscryptsyspara_fuzzer.h"
-#include "key_control.h"
-#include <securec.h>
-#include <cstddef>
-#include <cstdint>
-#define MAX_NUM 100
+#include "mock/config_policy_utils.h"
 
-namespace OHOS {
-bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
+namespace {
+IConfigPolicyUtils *g_instance = nullptr;
+} // namespace
+
+IConfigPolicyUtils::IConfigPolicyUtils()
 {
-    if ((data == nullptr) || (size < sizeof(int))) {
-        return false;
-    }
-    KeyCtrlHasFscryptSyspara();
-    return true;
+    g_instance = this;
 }
-} // namespace OHOS
 
-/* Fuzzer entry point */
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+extern "C" char* GetOneCfgFile(const char *pathSuffix, char *buf, unsigned int bufLength)
 {
-    /* Run your code on data */
-    OHOS::SysparamDynamicFuzzTest(data, size);
-    return 0;
+    return g_instance->GetOneCfgFile(pathSuffix, buf, bufLength);
 }

@@ -127,7 +127,8 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
 
 VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
 {
-    VolumeExternal* obj = new (std::nothrow) VolumeExternal(*VolumeCore::Unmarshalling(parcel));
+    std::unique_ptr<VolumeCore> volumeCorePtr(VolumeCore::Unmarshalling(parcel));
+    VolumeExternal* obj = new (std::nothrow) VolumeExternal(*volumeCorePtr);
     if (!obj) {
         return nullptr;
     }

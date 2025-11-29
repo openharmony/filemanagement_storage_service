@@ -88,7 +88,7 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_003, TestSize.Level1)
     manager.isMounting = false;
     deviceInfo.path = "/mnt/data/external";
     int32_t result = manager.MountDevice(deviceInfo);
-    EXPECT_EQ(result, E_MTP_MOUNT_FAILED);
+    EXPECT_EQ(result, E_WEXITSTATUS);
 
     GTEST_LOG_(INFO) << "MountDeviceTest_003 end";
 }

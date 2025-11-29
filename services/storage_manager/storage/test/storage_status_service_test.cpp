@@ -399,3 +399,24 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_GetBundleNameAndUid_0001
+ * @tc.name: STORAGE_GetBundleNameAndUid_0001
+ * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetBundleNameAndUid_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetBundleNameAndUid_0001";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    int userId = 100;
+    std::map<int, std::string> bundleNameAndUid;
+    bundleNameAndUid[100] = "1";
+    int32_t result = service->GetBundleNameAndUid(userId, bundleNameAndUid);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetBundleNameAndUid_0001";
+}

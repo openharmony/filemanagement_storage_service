@@ -52,6 +52,7 @@ private:
     void EventNotifyFreqHandlerForMedium();
     void EventNotifyFreqHandlerForHigh();
     void ParseStorageParameters(int64_t totalSize);
+    void UpdateBaseLineByUid();
     std::string GetStorageAlertCleanupParams();
     void StatisticSysDirSpace(int64_t &freeSize);
     bool IsCurTimeNeedStatistic();
