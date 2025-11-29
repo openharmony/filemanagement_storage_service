@@ -32,7 +32,7 @@ enum class BizScene : int32_t {
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
-    STORAGE_MTPFS,
+    MTP_DEVICE_MANAGER,
 };
 
 enum class StageRes : int32_t {
@@ -134,7 +134,7 @@ public:
         const std::string &extraData);
     static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
     static void ReportHuksResult(const std::string &funcName, int ret);
-    static void ReportMtpfsResult(const std::string &funcName, int ret);
+    static void ReportMtpResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportStorageUsage(enum BizStage stage, const std::string &extraData);
     static void ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId);
