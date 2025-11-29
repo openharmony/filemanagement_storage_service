@@ -166,8 +166,18 @@ bool OpenRawDeviceUncachedTest(const uint8_t *data, size_t size)
         return false;
     }
 
-    LIBMTP_device_entry_t entry;
-    LIBMTP_raw_device_t device;
+    LIBMTP_device_entry_t entry = {
+        .vendor = nullptr,
+        .vendor_id = 0,
+        .product = nullptr,
+        .product_id = 0,
+        .device_flags = 0
+    };
+    LIBMTP_raw_device_t device = {
+        .device_entry = entry,
+        .bus_location = 0,
+        .devnum = 0
+    };
     ConstructRawDevice(data, size, &entry, &device);
 
     LIBMTP_mtpdevice_t *ret = LIBMTP_Open_Raw_Device_Uncached(&device);
@@ -183,8 +193,18 @@ bool DetectRawDevicesTest(const uint8_t *data, size_t size)
         return false;
     }
 
-    LIBMTP_device_entry_t entry;
-    LIBMTP_raw_device_t *device;
+    LIBMTP_device_entry_t entry = {
+        .vendor = nullptr,
+        .vendor_id = 0,
+        .product = nullptr,
+        .product_id = 0,
+        .device_flags = 0
+    };
+    LIBMTP_raw_device_t device = {
+        .device_entry = entry,
+        .bus_location = 0,
+        .devnum = 0
+    };
     int pos = ConstructRawDevice(data, size, &entry, device);
     int numdevs = TypeCast<int>(data + pos);
 
