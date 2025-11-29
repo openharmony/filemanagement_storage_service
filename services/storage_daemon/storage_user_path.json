@@ -380,7 +380,7 @@
             "gid": 7023
         },
         {
-            "path": "/data/service/el2/<userId>/push_manager_service/database", 
+            "path": "/data/service/el2/<userId>/push_manager_service/database",
             "mode": "0711",
             "uid": 7023,
             "gid": 7023
