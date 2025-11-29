@@ -114,12 +114,14 @@ ohos_shared_library("storage_manager") {
       "storage/src/storage_status_service.cpp",
       "storage/src/storage_total_status_service.cpp",
       "storage/src/volume_storage_status_service.cpp",
+      "storage/src/storage_quota_controller.cpp",
     ]
     external_deps += [
       "ability_runtime:abilitykit_native",
       "ability_runtime:dataobs_manager",
       "bundle_framework:appexecfwk_base",
       "bundle_framework:appexecfwk_core",
+      "config_policy:configpolicy_util",
       "data_share:datashare_consumer",
       "eventhandler:libeventhandler",
       "init:libbegetutil",

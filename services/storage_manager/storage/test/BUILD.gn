@@ -188,9 +188,7 @@ ohos_unittest("storage_status_service_test") {
   }
   module_out_path = "storage_service/storage_service/storage_manager"
 
-  sources = [ 
-    "storage_status_service_test.cpp",
-  ]
+  sources = [ "storage_status_service_test.cpp" ]
 
   include_dirs = [
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -287,6 +285,57 @@ ohos_unittest("storage_status_service_mock_test") {
   ]
 }
 
+ohos_unittest("storage_quota_controller_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "storage_quota_controller_test.cpp",
+    "${storage_manager_path}/mock/config_policy_utils.cpp",
+    "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
+    ]
+
+  include_dirs = [
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "private = public",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_service_path}/services/storage_manager:storage_manager",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "cJSON:cjson",
+    "c_utils:utils",
+    "config_policy:configpolicy_util",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+}
+
 group("storage_manager_storage_test") {
   testonly = true
   deps = [
@@ -295,5 +344,6 @@ group("storage_manager_storage_test") {
     ":volume_storage_status_service_test",
     ":storage_status_service_test",
     ":storage_status_service_mock_test",
+    ":storage_quota_controller_test",
   ]
 }
