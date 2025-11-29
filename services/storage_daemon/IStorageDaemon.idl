@@ -90,4 +90,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
      [ipccode 60] void UpdateUserPublicDirPolicy([in] unsigned int userId);
      [ipccode 61] void StatisticSysDirSpace();
+     [ipccode 62] void EraseAllUserEncryptedKeys();
 }

@@ -77,6 +77,18 @@ int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
+int32_t StorageManagerClient::EraseAllUserEncryptedKeys()
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->EraseAllUserEncryptedKeys();
+}
+
 int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &oldSecret,

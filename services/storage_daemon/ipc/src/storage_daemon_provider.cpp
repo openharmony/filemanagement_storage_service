@@ -467,6 +467,11 @@ int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
+int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys()
+{
+    return StorageDaemon::GetInstance().EraseAllUserEncryptedKeys();
+}
+
 int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
                                               uint64_t secureUid,
                                               const std::vector<uint8_t> &token,

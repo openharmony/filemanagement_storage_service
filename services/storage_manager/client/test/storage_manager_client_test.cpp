@@ -121,6 +121,25 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_DeleteUserKeys_0000, T
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Client_manager_service_EraseAllUserEncryptedKeys_0000
+ * @tc.name: Client_manager_service_EraseAllUserEncryptedKeys_0000
+ * @tc.desc: Test function of EraseAllUserEncryptedKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_EraseAllUserEncryptedKeys_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_EraseAllUserEncryptedKeys_0000";
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    int32_t ret = storageManagerClient_->EraseAllUserEncryptedKeys();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Client_manager_service_EraseAllUserEncryptedKeys_0000 end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Client_manager_service_UpdateUserAuth_0000
  * @tc.name: Client_manager_service_UpdateUserAuth_0000
  * @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.

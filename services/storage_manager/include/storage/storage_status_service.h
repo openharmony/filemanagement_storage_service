@@ -42,6 +42,7 @@ public:
         int32_t appIndex, uint32_t statFlag);
     int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize);
     int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize);
+    int32_t DelBundleExtStats(uint32_t userId, const std::string &bundleName);
 
 private:
     StorageStatusService();

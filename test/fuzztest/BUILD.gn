@@ -59,6 +59,7 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderumountmediafuse_fuzzer:fuzztest",
     "storagemanagerprovidersetextbundlestats_fuzzer:fuzztest",
     "storagemanagerprovidergetextbundlestats_fuzzer:fuzztest",
+    "storagemanagerprovidererasealluserencryptedkeys_fuzzer:fuzztest",
   ]
 }
 
@@ -88,6 +89,7 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderdeleteuserkeys_fuzzer:fuzztest",
     "storagedaemonproviderupdateuserauth_fuzzer:fuzztest",
     "storagedaemonprovideractiveuserkey_fuzzer:fuzztest",
+    "storagedaemonprovidererasealluserencryptedkeys_fuzzer:fuzztest",
   ]
 }
 
