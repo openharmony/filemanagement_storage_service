@@ -305,7 +305,7 @@ int32_t StorageDaemonProxy::UpdateUserPublicDirPolicy(uint32_t userId)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(const std::string &storageStatus,
+int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     return E_OK;
@@ -353,6 +353,16 @@ int32_t StorageDaemonProxy::SetStopScanFlag(bool stop)
 }
 
 int32_t StorageDaemonProxy::GetAncoSizeData(std::string &outExtraData)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
 {
     return E_OK;
 }

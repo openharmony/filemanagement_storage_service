@@ -42,11 +42,7 @@ constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
-constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
-constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
-constexpr const char *OVP_CHUNKS = "/ovp_chunks";
 constexpr uint64_t FOUR_K = 4096;
-constexpr uint64_t BLOCK_COUNT = 512;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr uint64_t PATH_MAX_LEN = 4096;
@@ -141,7 +137,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
-void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
+void QuotaManager::GetUidStorageStats(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("GetUidStorageStats begin!");
@@ -155,14 +151,6 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     GetOccupiedSpaceForUidList(allVec, iNodes);
 
     std::ostringstream extraData;
-
-    GetCurrentTime(extraData);
-
-    extraData << storageStatus << std::endl;
-
-    GetMetaData(extraData);
-
-    GetAncoSize(extraData);
 
     extraData << "{iNodes count is:" << iNodes << ",iNodes size is:" <<
     ConvertBytesToMB(iNodes * FOUR_K, ACCURACY_NUM) <<"MB}" << std::endl;
@@ -185,10 +173,8 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     } else {
         extraData << "{otherAppVec data is null}" << std::endl;
     }
-
+    storageStatus = extraData.str();
     LOGI("extraData is %{public}s", extraData.str().c_str());
-    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
-        extraData.str());
     LOGI("GetUidStorageStats end!");
 }
 
@@ -203,42 +189,6 @@ void QuotaManager::GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ost
         return;
     }
     extraData << "{other totalSize is:" << ConvertBytesToMB(totalSize, ACCURACY_NUM) << "MB}" << std::endl;
-}
-
-void QuotaManager::GetAncoSize(std::ostringstream &extraData)
-{
-    LOGI("begin get Anco info.");
-    uint64_t imageSize = 0;
-    GetRmgResourceSize("rgm_hmos", imageSize);
-    extraData << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
-    LOGI("end get Anco info.");
-}
-
-void QuotaManager::GetMetaData(std::ostringstream &extraData)
-{
-    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
-    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
-    int64_t blkSize = -1;
-    auto ret = GetFileData(blkPath, blkSize);
-    if (ret == E_OK && blkSize != -1) {
-        extraData << "{main_blkaddr data is:" << ConvertBytesToMB(blkSize * FOUR_K, ACCURACY_NUM) << "MB}" << std::endl;
-    } else {
-        extraData << "{get main_blkaddr wrong, ret:" << ret << ",blkSize is:" << blkSize << "}" << std::endl;
-    }
-
-    int64_t chunkSize = -1;
-    ret = GetFileData(chunkPath, chunkSize);
-    if (ret == E_OK && chunkSize != -1) {
-        extraData << "{ovp_chunks data is:" <<
-            ConvertBytesToMB(chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
-    } else {
-        extraData << "{get ovp_chunks wrong, ret:" << ret << ",chunkSize is:" << chunkSize << "}" << std::endl;
-    }
-
-    if (blkSize != -1 && chunkSize != -1) {
-        extraData << "{metaData is:" <<
-            ConvertBytesToMB(blkSize * FOUR_K + chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
-    }
 }
 
 int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)

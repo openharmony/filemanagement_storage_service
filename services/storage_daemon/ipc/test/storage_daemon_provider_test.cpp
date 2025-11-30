@@ -1974,5 +1974,50 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserPublic
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_002 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_StorageDaemonProvider_GetDataSizeByPath_001
+ * @tc.name: StorageDaemonProvider_GetDataSizeByPath_001
+ * @tc.desc: Test function of GetDataSizeByPath interface using mock.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProvider_GetDataSizeByPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProvider_GetDataSizeByPath_001 start";
+
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string path = "/data/test/file.txt";
+    int64_t size = 0;
+    int32_t result = storageDaemonProviderTest_->GetDataSizeByPath(path, size);
+    EXPECT_EQ(result, E_FILE_PATH_INVALID);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProvider_GetDataSizeByPath_001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageDaemonProvider_GetRmgResourceSize_001
+ * @tc.name: StorageDaemonProvider_GetRmgResourceSize_001
+ * @tc.desc: Test function of GetRmgResourceSize interface using mock.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProvider_GetRmgResourceSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProvider_GetRmgResourceSize_001 start";
+
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string rgmName = "rgm_hmos";
+    uint64_t totalSize = 0;
+
+    int32_t result = storageDaemonProviderTest_->GetRmgResourceSize(rgmName, totalSize);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProvider_GetRmgResourceSize_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

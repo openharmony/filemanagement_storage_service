@@ -2399,6 +2399,9 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     if (future.wait_for(std::chrono::milliseconds(WAIT_THREAD_TIMEOUT_MS)) == std::future_status::timeout) {
         LOGE("el5 activation callback timed out");
         callbackThread.detach();
+        std::ostringstream extraData;
+        extraData << "Notify EL5 timeout, needGetAllAppKey: " << needGetAllAppKey << " resultCode: " << resultCode;
+        StorageRadar::ReportUpdateUserAuth("NotifyUeceActivation", userId, E_TASK_TIME_OUT, "EL5", extraData.str());
         return E_OK;
     }
 

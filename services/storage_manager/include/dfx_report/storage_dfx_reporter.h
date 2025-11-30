@@ -23,6 +23,7 @@
 #include <map>
 #include <thread>
 #include <atomic>
+#include "storage_stats.h"
 #include "statistic_info.h"
 
 namespace OHOS {
@@ -34,6 +35,10 @@ public:
         static StorageDfxReporter instance;
         return instance;
     }
+
+    void StartReportHapAndSaStorageStatus();
+    void CheckAndTriggerHapAndSaStatistics();
+
     int32_t StartReportDirStatus();
     // Scan control methods
     void StartScan();
@@ -46,12 +51,37 @@ private:
     StorageDfxReporter& operator=(const StorageDfxReporter&) = delete;
 
     void GetCurrentTime(std::ostringstream &extraData);
+    void ExecuteHapAndSaStatistics(int32_t userId);
+    int32_t CollectStorageStats(int32_t userId, std::ostringstream &extraData);
+    void CollectMetadataAndAnco(std::ostringstream &extraData);
+    int32_t CollectBundleStatistics(int32_t userId, std::ostringstream &extraData);
+    void UpdateHapAndSaState();
+    double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
+    bool CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
+                                    int64_t timeIntervalHours, int64_t &hoursDiff);
+    bool CheckValueChangeTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
+                                   int64_t &valueDiff);
+    bool CheckThresholdTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
+                                 const std::chrono::system_clock::time_point &lastTime,
+                                 int64_t timeIntervalHours,
+                                 bool &timeTriggered, bool &valueTriggered);
+
+    int32_t GetStorageStatsInfo(int32_t userId, StorageStats &storageStats);
+    void GetMetaDataSize(std::ostringstream &extraData);
+    void GetAncoDataSize(std::ostringstream &extraData);
+
+    // hap and sa statistics state
+    std::mutex hapAndSaStateMutex_;
+    std::thread hapAndSaThread_;
+    int64_t lastHapAndSaFreeSize_ = 0;
+    std::chrono::system_clock::time_point lastHapAndSaTime_;
+    std::atomic<bool> isHapAndSaRunning_{false};
+
     int32_t CheckSystemUidSize(const std::vector<NextDqBlk> &dqBlks, int64_t &totalSize,
                                int64_t &rootSize, int64_t &systemSize, int64_t &foundationSize);
     void CollectDirStatistics(int64_t rootSize, int64_t systemSize, int64_t foundationSize,
                               std::ostringstream &extraData);
     int32_t UpdateScanState(int64_t totalSize);
-    double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
     void AppendDirInfo(const std::vector<DirSpaceInfo> &dirs, std::ostringstream &extraData);
     std::vector<DirSpaceInfo> GetRootDirList();
     std::vector<DirSpaceInfo> GetSystemDirList();
@@ -68,8 +98,8 @@ private:
     // Scan control variables
     std::atomic<bool> isScanRunning_{false};
     std::mutex scanMutex_;
-    std::thread scanThread_;
 };
 } // namespace StorageManager
 } // namespace OHOS
+
 #endif // OHOS_STORAGE_MANAGER_STORAGE_DFX_REPORTER_H

@@ -101,6 +101,33 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool GetDataSizeByPathFuzzTest(const uint8_t *data, size_t size)
+{
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_GET_DATA_SIZE_BY_PATH);
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+    MessageOption option;
+
+    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool GetRmgResourceSizeFuzzTest(const uint8_t *data, size_t size)
+{
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_GET_RMG_RESOURCE_SIZE);
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+    MessageOption option;
+
+    storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
 } // namespace OHOS
 
 /* Fuzzer entry point */
@@ -111,5 +138,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::DeleteAppkeyFuzzTest(data, size);
     OHOS::GenerateAppkeyFuzzTest(data, size);
     OHOS::UnlockUserScreenFuzzTest(data, size);
+    OHOS::GetDataSizeByPathFuzzTest(data, size);
+    OHOS::GetRmgResourceSizeFuzzTest(data, size);
     return 0;
 }

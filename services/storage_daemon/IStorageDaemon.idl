@@ -83,7 +83,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 50] void UMountDisShareFile([in] int userId, [in] String networkId);
      [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
-     [ipccode 53] void QueryOccupiedSpaceForSa([in] String storageStatus, [in] OrderedMap<int, String> bundleNameAndUid);
+     [ipccode 53] void QueryOccupiedSpaceForSa([out] String storageStatus, [in] OrderedMap<int, String> bundleNameAndUid);
      [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
      [ipccode 55] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
      [ipccode 56] void UnregisterUeceActivationCallback();
@@ -97,4 +97,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 63] void GetDirListSpace([in] DirSpaceInfo[] inDirs, [out] DirSpaceInfo[] outDirs);
      [ipccode 64] void SetStopScanFlag([in] boolean stop);
      [ipccode 65] void GetAncoSizeData([out] String outExtraData);
+     [ipccode 66] void GetDataSizeByPath([in] String path, [out] long size);
+     [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
+
 }

@@ -102,7 +102,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         LOGE("Run mtpfs cmd to mount mtp device failed.");
         UmountDevice(device, false, false);
         isMounting = false;
-        return E_MTP_MOUNT_FAILED;
+        return err;
     }
 
     LOGI("Run mtpfs cmd to mount mtp device success.");

@@ -278,16 +278,16 @@ int32_t ExternalVolumeInfo::DoFix4Exfat()
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     forkExecRes = ExtStorageMountForkExec(cmd, &exitStatus);
     LOGI("ExtStorageMountForkExec is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
-    if (exitStatus != 1) {
-        LOGE("ext exec fix for exfat failed, errno is %{public}d.", errno);
+    if (exitStatus != 1 || forkExecRes != E_OK) {
+        LOGE("ext exec fix for exfat failed, errno is %{public}d, forkExecRes is %{public}d.", errno, forkExecRes);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
 #else
     forkExecRes = ForkExec(cmd, &output, &exitStatus);
     LOGI("forkExecRes is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
-    if (exitStatus != 1) {
-        LOGE("exec fix for exfat failed, errno is %{public}d.", errno);
+    if (exitStatus != 1 || forkExecRes != E_OK) {
+        LOGE("exec fix for exfat failed, errno is %{public}d, forkExecRes is %{public}d.", errno, forkExecRes);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;

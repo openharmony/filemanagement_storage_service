@@ -1122,4 +1122,71 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_000
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_IsFileOccupied_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDataSizeByPath_0000
+ * @tc.name: Daemon_communication_GetDataSizeByPath_0000
+ * @tc.desc: Test function of GetDataSizeByPath interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDataSizeByPath_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDataSizeByPath_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+
+    std::string path = "/data/test/file.txt";
+    int64_t size = 0;
+    int32_t result = -1;
+
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->GetDataSizeByPath(path, size);
+    }
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(size, 0);
+
+    path = "/data/storage_service";
+    size = 0;
+    result = -1;
+
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->GetDataSizeByPath(path, size);
+    }
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(size, 0);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDataSizeByPath_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetRmgResourceSize_0000
+ * @tc.name: Daemon_communication_GetRmgResourceSize_0000
+ * @tc.desc: Test function of GetRmgResourceSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetRmgResourceSize_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+
+    std::string rgmName = "rgm_hmos";
+    uint64_t totalSize = 0;
+    int32_t result = -1;
+
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->GetRmgResourceSize(rgmName, totalSize);
+    }
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(totalSize, 0);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetRmgResourceSize_0000";
+}
+
 } // namespace

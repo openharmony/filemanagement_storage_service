@@ -83,7 +83,7 @@ public:
     MOCK_METHOD2(MountDisShareFile, int32_t (int32_t, const std::map<std::string, std::string> &));
     MOCK_METHOD2(UMountDisShareFile, int32_t (int32_t, const std::string &));
     MOCK_METHOD1(InactiveUserPublicDirKey, int32_t(uint32_t));
-    MOCK_METHOD2(QueryOccupiedSpaceForSa, int32_t(const std::string &, const std::map<int32_t, std::string> &));
+    MOCK_METHOD2(QueryOccupiedSpaceForSa, int32_t(std::string &, const std::map<int32_t, std::string> &));
     MOCK_METHOD3(MountUsbFuse, int32_t(const std::string &, std::string &, int &));
     MOCK_METHOD1(RegisterUeceActivationCallback, int32_t(const sptr<IUeceActivationCallback>&));
     MOCK_METHOD0(UnregisterUeceActivationCallback, int32_t(void));
@@ -94,6 +94,9 @@ public:
     MOCK_METHOD2(GetDirListSpace, int32_t(const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
     MOCK_METHOD1(SetStopScanFlag, int32_t(bool));
     MOCK_METHOD1(GetAncoSizeData, int32_t(std::string &));
+
+    MOCK_METHOD2(GetDataSizeByPath, int32_t(const std::string &, int64_t &));
+    MOCK_METHOD2(GetRmgResourceSize, int32_t(const std::string &, uint64_t &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

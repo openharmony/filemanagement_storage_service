@@ -66,6 +66,27 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetattr_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: MtpfsFuseTest_WrapGetattr_002
+ * @tc.desc: Verify the WrapGetattr function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetattr_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetattr_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    struct stat buf = {0};
+    struct fuse_file_info fi = {0};
+    const char* path = "/test/../invalid/path";
+    
+    int result = instance.fuseOperations_.getattr(path, &buf, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetattr_002 end";
+}
+
+
+/**
  * @tc.name: MtpfsFuseTest_WrapMkNod_001
  * @tc.desc: Verify the WrapMkNod function when msg is incorrect.
  * @tc.type: FUNC
@@ -85,6 +106,26 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkNod_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: MtpfsFuseTest_WrapMkNod_002
+ * @tc.desc: Verify the WrapMkNod function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkNod_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    mode_t mode = S_IFREG | 0644;
+    dev_t dev = 0;
+    
+    int result = instance.fuseOperations_.mknod(path, mode, dev);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_002 end";
+}
+
+/**
  * @tc.name: MtpfsFuseTest_WrapChMod_001
  * @tc.desc: Test WrapChMod function when path is valid
  * @tc.type: FUNC
@@ -101,6 +142,26 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChMod_001, TestSize.Level1)
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChMod_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapChMod_002
+ * @tc.desc: Verify the WrapChMod function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChMod_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChMod_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    mode_t mode = 0644;
+    struct fuse_file_info fi = {0};
+    
+    int result = instance.fuseOperations_.chmod(path, mode, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChMod_002 end";
 }
 
 /**
@@ -124,6 +185,27 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChown_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: MtpfsFuseTest_WrapChown_002
+ * @tc.desc: Verify the WrapChown function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapChown_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChown_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    uid_t uid = 1000;
+    gid_t gid = 1000;
+    struct fuse_file_info fi = {0};
+    
+    int result = instance.fuseOperations_.chown(path, uid, gid, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapChown_002 end";
+}
+
+/**
  * @tc.name: MtpfsFuseTest_WrapWrite_001
  * @tc.desc: Test WrapWrite function when path is invalid
  * @tc.type: FUNC
@@ -142,6 +224,29 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapWrite_001, TestSize.Level1)
     EXPECT_NE(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapWrite_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapWrite_002
+ * @tc.desc: Verify the WrapWrite function with invalid file handle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapWrite_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapWrite_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    const char* data = "test data";
+    size_t size = strlen(data);
+    off_t offset = 0;
+    struct fuse_file_info fi = {0};
+    fi.fh = 0;
+    
+    int result = instance.fuseOperations_.write(path, data, size, offset, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapWrite_002 end";
 }
 
 /**
@@ -197,6 +302,26 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReleaseDir_001, TestSize.Level1)
     EXPECT_EQ(ret, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReleaseDir_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapReleaseDir_002
+ * @tc.desc: Verify the WrapReleaseDir function with invalid directory handle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReleaseDir_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReleaseDir_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    struct fuse_file_info fi = {0};
+    fi.fh = 0;
+    
+    int result = instance.fuseOperations_.releasedir(path, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReleaseDir_002 end";
 }
 
 /**
@@ -306,6 +431,9 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_SetXAttr_001, TestSize.Level1)
     ret = mtpFileSystem.SetXAttr(path, "user.isUploadCompleted", NULL);
     EXPECT_EQ(ret, 0);
 
+    ret = mtpFileSystem.SetXAttr(path, "user.rmdir", NULL);
+    EXPECT_NE(ret, 0);
+
     mtpFileSystem.device_.RemoveUploadRecord(path);
     GTEST_LOG_(INFO) << "MtpfsFuseTest_SetXAttr_001 end";
 }
@@ -344,6 +472,27 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapGetXAttr_002
+ * @tc.desc: Verify the WrapGetXAttr function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetXAttr_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetXAttr_002 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    const char* name = "user.test";
+    char value[256];
+    size_t size = sizeof(value);
+    
+    int result = instance.fuseOperations_.getxattr(path, name, value, size);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetXAttr_002 end";
 }
 
 /**
@@ -484,6 +633,294 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintCh
     EXPECT_EQ(mtpFileSystem.mtpClientWriteMap_[100], 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001 end";
+}
+
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapMkDir_001
+ * @tc.desc: Verify the WrapMkDir function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkDir_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/dir";
+    mode_t mode = 0755;
+    
+    int result = instance.fuseOperations_.mkdir(path, mode);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkDir_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapUnLink_001
+ * @tc.desc: Verify the WrapUnLink function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapUnLink_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapUnLink_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../nonexistent/file";
+    
+    int result = instance.fuseOperations_.unlink(path);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapUnLink_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapRmDir_001
+ * @tc.desc: Verify the WrapRmDir function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapRmDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRmDir_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../nonexistent/dir";
+    
+    int result = instance.fuseOperations_.rmdir(path);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRmDir_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapReName_001
+ * @tc.desc: Verify the WrapReName function when paths are incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReName_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReName_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* oldpath = "/test/../old/path";
+    const char* newpath = "/test/../new/path";
+    unsigned int flags = 0;
+    
+    int result = instance.fuseOperations_.rename(oldpath, newpath, flags);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReName_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapUTimens_001
+ * @tc.desc: Verify the WrapUTimens function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapUTimens_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapUTimens_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    struct timespec ts[2];
+    ts[0].tv_sec = time(nullptr);
+    ts[0].tv_nsec = 0;
+    ts[1].tv_sec = time(nullptr);
+    ts[1].tv_nsec = 0;
+    struct fuse_file_info fi = {0};
+    
+    int result = instance.fuseOperations_.utimens(path, ts, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapUTimens_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapOpen_001
+ * @tc.desc: Verify the WrapOpen function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapOpen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapOpen_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/file";
+    struct fuse_file_info fi = {0};
+    fi.flags = O_RDONLY;
+    
+    int result = instance.fuseOperations_.open(path, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapOpen_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapRead_001
+ * @tc.desc: Verify the WrapRead function with invalid file handle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapRead_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRead_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    char buf[1024];
+    size_t size = 1024;
+    off_t offset = 0;
+    struct fuse_file_info fi = {0};
+    fi.fh = 0;
+    
+    int result = instance.fuseOperations_.read(path, buf, size, offset, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRead_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapStatfs_001
+ * @tc.desc: Verify the WrapStatfs function when statInfo is null.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapStatfs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapStatfs_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    struct statvfs* statInfo = nullptr;
+    
+    int result = instance.fuseOperations_.statfs(path, statInfo);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapStatfs_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapRelease_001
+ * @tc.desc: Verify the WrapRelease function with invalid file handle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapRelease_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRelease_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    struct fuse_file_info fi = {0};
+    fi.fh = 0;
+    
+    int result = instance.fuseOperations_.release(path, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapRelease_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapSetXAttr_001
+ * @tc.desc: Verify the WrapSetXAttr function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapSetXAttr_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapSetXAttr_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    const char* name = "user.test";
+    const char* value = "test_value";
+    size_t size = strlen(value);
+    int flags = 0;
+    
+    int result = instance.fuseOperations_.setxattr(path, name, value, size, flags);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapSetXAttr_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapGetXAttr_001
+ * @tc.desc: Verify the WrapGetXAttr function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetXAttr_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetXAttr_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    const char* name = "user.test";
+    char value[256];
+    size_t size = sizeof(value);
+    
+    int result = instance.fuseOperations_.getxattr(path, name, value, size);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetXAttr_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapOpenDir_001
+ * @tc.desc: Verify the WrapOpenDir function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapOpenDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapOpenDir_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/dir";
+    struct fuse_file_info fi = {0};
+    
+    int result = instance.fuseOperations_.opendir(path, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapOpenDir_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapReadDir_001
+ * @tc.desc: Verify the WrapReadDir function with invalid directory handle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReadDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReadDir_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/path";
+    void* buf = nullptr;
+    fuse_fill_dir_t filler = nullptr;
+    off_t offset = 0;
+    struct fuse_file_info fi = {0};
+    fi.fh = 0;
+    
+    int result = instance.fuseOperations_.readdir(path, buf, filler, offset, &fi, static_cast<fuse_readdir_flags>(0));
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReadDir_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_WrapCreate_001
+ * @tc.desc: Verify the WrapCreate function when path is incorrect.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapCreate_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapCreate_001 start";
+
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    const char* path = "/test/../invalid/file";
+    mode_t mode = S_IFREG | 0644;
+    struct fuse_file_info fi = {0};
+    fi.flags = O_CREAT | O_RDWR;
+    
+    int result = instance.fuseOperations_.create(path, mode, &fi);
+    EXPECT_NE(result, 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapCreate_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

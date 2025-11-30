@@ -22,6 +22,7 @@
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
 #include "string_utils.h"
+#include "storage_radar.h"
 
 #define PERMISSION_ONE 0775
 #define PERMISSION_TWO 0644
@@ -45,7 +46,8 @@ int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapGetattr::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     (void)fi;
     int ret = E_OK;
@@ -62,7 +64,8 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
     LOGI("mtp WrapMkNod");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapMkNod::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -79,7 +82,8 @@ int WrapMkDir(const char *path, mode_t mode)
     LOGI("mtp WrapMkDir");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapMkDir::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -96,7 +100,8 @@ int WrapUnLink(const char *path)
     LOGI("mtp WrapUnLink");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapUnLink::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -113,7 +118,8 @@ int WrapRmDir(const char *path)
     LOGI("mtp WrapRmDir");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapRmDir::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -130,7 +136,8 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
     LOGI("mtp WrapReName");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapReName::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -147,7 +154,8 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
     LOGI("mtp WrapChMod");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapChMod::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -164,7 +172,8 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
     LOGI("mtp WrapChown uid:%{public}lu, gid:%{public}lu", uid, gid);
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapChown::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -181,7 +190,8 @@ int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_
     LOGI("mtp WrapUTimens");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapUTimens::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -198,7 +208,8 @@ int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
     LOGI("mtp WrapOpen");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapOpen::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = E_OK;
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
@@ -215,7 +226,8 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
     LOGI("mtp WrapRead");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapRead::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = E_OK;
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
@@ -232,7 +244,8 @@ int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, stru
     LOGI("mtp WrapWrite");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapWrite::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -249,7 +262,8 @@ int WrapStatfs(const char *path, struct statvfs *statInfo)
     LOGI("mtp WrapStatfs");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapStatfs::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().Statfs(path, statInfo);
     LOGI("Statfs ret = %{public}d.", ret);
@@ -261,7 +275,7 @@ int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
     LOGI("mtp WrapFlush");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().Flush(path, fileInfo);
     LOGI("Flush ret = %{public}d.", ret);
@@ -273,7 +287,8 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
     LOGI("mtp WrapRelease");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapRelease::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -290,7 +305,8 @@ int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
     LOGI("mtp WrapFSync");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapFSync::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -307,7 +323,8 @@ int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
     LOGI("mtp WrapOpenDir");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapOpenDir::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().OpenDir(path, fileInfo);
     LOGI("OpenDir ret = %{public}d.", ret);
@@ -320,7 +337,8 @@ int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offse
     LOGI("mtp WrapReadDir");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapReadDir::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().ReadDir(path, buf, filler, offset, fileInfo, flag);
     LOGI("ReadDir ret = %{public}d.", ret);
@@ -335,7 +353,8 @@ int WrapReleaseDir(const char *path, struct fuse_file_info *fileInfo)
     }
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapReleaseDir::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().ReleaseDir(path, fileInfo);
     LOGI("ReleaseDir ret = %{public}d.", ret);
@@ -347,7 +366,7 @@ int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo
     LOGI("mtp WrapFSyncDir");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().FSyncDir(path, datasync, fileInfo);
     LOGI("FSyncDir ret = %{public}d.", ret);
@@ -379,7 +398,8 @@ int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
     LOGI("mtp WrapCreate");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapCreate::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -396,7 +416,7 @@ int WrapTruncate(const char *path, off_t offset, struct fuse_file_info *fileInfo
     LOGI("mtp WrapTruncate");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -406,7 +426,7 @@ int WrapReadLink(const char *path, char *out, size_t size)
     LOGI("mtp WrapReadLink");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -416,7 +436,7 @@ int WrapSymLink(const char *path, const char * mode)
     LOGI("mtp WrapSymLink");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -426,7 +446,7 @@ int WrapLink(const char *path, const char *out)
     LOGI("mtp WrapLink");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -436,7 +456,8 @@ int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size,
     LOGI("mtp WrapSetXAttr");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapSetXAttr::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
@@ -453,7 +474,8 @@ int WrapGetXAttr(const char *path, const char *in, char *out, size_t size)
     LOGD("mtp WrapGetXAttr");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapGetXAttr::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
     }
     int ret = MtpFileSystem::GetInstance().GetXAttr(path, in, out, size);
     LOGD("WrapGetXAttr ret = %{public}d.", ret);
@@ -465,7 +487,7 @@ int WrapListXAttr(const char *path, char *in, size_t size)
     LOGI("mtp WrapListXAttr");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -475,7 +497,7 @@ int WrapRemoveXAttr(const char *path, const char *in)
     LOGI("mtp WrapRemoveXAttr");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -506,7 +528,7 @@ int WrapAccess(const char *path, int size)
     LOGI("mtp WrapAccess");
     if (!IsFilePathValid(path)) {
         LOGE("Invalid path.");
-        return ;
+        return EINVAL;
     }
     return 0;
 }
@@ -729,10 +751,12 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
     LOGI("MtpFileSystem: GetAttr enter");
     if (memset_s(buf, sizeof(struct stat), 0, sizeof(struct stat)) != EOK) {
         LOGE("memset stat fail");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Memset", E_MEMORY_OPERATION_ERR, "NA");
     }
     struct fuse_context *fc = fuse_get_context();
     if (buf == nullptr || fc == nullptr) {
         LOGE("MtpFileSystem: buf is null or get file contxt failed");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::GetContext", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     buf->st_uid = fc->uid;
@@ -741,21 +765,31 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
         buf->st_mode = S_IFDIR | PERMISSION_ONE;
         buf->st_nlink = ST_NLINK_TWO;
         return 0;
+    }
+    return ProcessFileOrDirAttributes(path, buf);
+}
+
+int MtpFileSystem::ProcessFileOrDirAttributes(const char *path, struct stat *buf)
+{
+    std::string tmpPath(SmtpfsDirName(path));
+    std::string mtpFile(SmtpfsBaseName(path));
+    const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
+    if (content == nullptr) {
+        LOGE("MtpFileSystem: GetAttr error, content is null");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::ReadDirFetchContent",
+            E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+        return -ENOENT;
+    }
+    
+    const MtpFsTypeDir *dir = content->Dir(mtpFile);
+    if (dir != nullptr) {
+        buf->st_ino = dir->Id();
+        buf->st_mode = S_IFDIR | PERMISSION_ONE;
+        buf->st_nlink = ST_NLINK_TWO;
+        buf->st_mtime = dir->ModificationDate();
     } else {
-        std::string tmpPath(SmtpfsDirName(path));
-        std::string mtpFile(SmtpfsBaseName(path));
-        const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
-        if (content == nullptr) {
-            LOGE("MtpFileSystem: GetAttr error, content is null");
-            return -ENOENT;
-        } else if (content->Dir(mtpFile) != nullptr) {
-            const MtpFsTypeDir *dir = content->Dir(mtpFile);
-            buf->st_ino = dir->Id();
-            buf->st_mode = S_IFDIR | PERMISSION_ONE;
-            buf->st_nlink = ST_NLINK_TWO;
-            buf->st_mtime = dir->ModificationDate();
-        } else if (content->File(mtpFile) != nullptr) {
-            const MtpFsTypeFile *file = content->File(mtpFile);
+        const MtpFsTypeFile *file = content->File(mtpFile);
+        if (file != nullptr) {
             buf->st_ino = file->Id();
             buf->st_size = static_cast<ssize_t>(file->Size());
             buf->st_blocks = static_cast<ssize_t>(file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
@@ -766,6 +800,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
             buf->st_atime = buf->st_mtime;
         } else {
             LOGE("MtpFileSystem: GetAttr error, content dir is null");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Content", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
             return -ENOENT;
         }
     }
@@ -781,12 +816,14 @@ int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
     int ret = GetAttr(realPath.c_str(), buf);
     if (ret != 0) {
         LOGE("GetThumbAttr: get attr failed");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetThumbAttr::GetAttr", ret, "NA");
         return ret;
     }
     char *data = nullptr;
     int bufSize = device_.GetThumbnail(realPath, data);
     if (bufSize <= 0) {
         LOGE("GetThumbAttr failed, bufSize invalid.");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetThumbAttr::GetThumbnail", bufSize, "NA");
         return -EIO;
     }
     buf->st_size = static_cast<ssize_t>(bufSize);
@@ -799,21 +836,25 @@ int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
 int MtpFileSystem::MkNod(const char *path, mode_t mode, dev_t dev)
 {
     if (!S_ISREG(mode)) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::InvalidMode", E_PARAMS_INVALID, "NA");
         return -EINVAL;
     }
     std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int rval = ::open(tmpPath.c_str(), O_CREAT | O_WRONLY, mode);
     if (rval < 0) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::OpenTmpFile", errno, "NA");
         return -errno;
     }
     rval = ::close(rval);
     if (rval < 0) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::CloseTmpFile", errno, "NA");
         return -errno;
     }
     rval = device_.FilePush(tmpPath, std::string(path));
     ::unlink(tmpPath.c_str());
 
     if (rval != 0) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::FilePush", rval, "NA");
         return rval;
     }
     return 0;
@@ -847,6 +888,7 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
         return device_.ReName(std::string(path), std::string(newpath));
     }
     if (!options_.enableMove_) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("ReName::EnableMove", E_NOT_SUPPORT, "NA");
         return -EPERM;
     }
     return device_.FileMove(std::string(path), std::string(newpath));
@@ -861,6 +903,7 @@ int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *
         res = chmod(path, mode);
     }
     if (res == -1) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("ChMods", errno, "NA");
         return -errno;
     }
     return 0;
@@ -876,6 +919,7 @@ int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_fil
         res = lchown(path, uid, gid);
     }
     if (res == -1) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Chown", errno, "NA");
         return -errno;
     }
     return 0;
@@ -917,16 +961,19 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
     const MtpFsTypeDir *parent = device_.DirFetchContent(tmpDirName);
     if (parent == nullptr) {
         LOGE("MtpFileSystem: UTimens parent is nullptr");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("UTimens::Parent", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     const MtpFsTypeDir *dir = parent->Dir(tmpBaseName);
     const MtpFsTypeFile *file = parent->File(tmpBaseName);
     if (dir == nullptr && file == nullptr) {
         LOGE("MtpFileSystem: UTimens dir and file is nullptr");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("UTimens::TargetPath", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     if (dir != nullptr && file != nullptr) {
         LOGE("MtpFileSystem: UTimens error, invalid path");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("UTimens::AmbiguousPath", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     if (dir == nullptr) {
@@ -943,6 +990,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int rval = ::creat(tmpPath.c_str(), mode);
     if (rval < 0) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Create::Creat", errno, "NA");
         return -errno;
     }
     if (fileInfo != nullptr) {
@@ -952,6 +1000,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     rval = device_.FilePush(tmpPath, std::string(path));
     if (rval != 0) {
         LOGE("MtpFileSystem: Create, FilePush fail");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Create::FilePush", rval, "NA");
         return rval;
     }
     return 0;
@@ -963,6 +1012,7 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     LOGI("MtpFileSystem: OpenFile enter");
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     unsigned int flags = static_cast<unsigned int>(fileInfo->flags);
@@ -980,6 +1030,7 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
         // only copy the file if needed
         int rval = device_.FilePull(stdPath, tmpPath);
         if (rval != 0) {
+            OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::FilePull", rval, "NA");
             return -rval;
         }
     }
@@ -988,12 +1039,14 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     char realPath[PATH_MAX] = {0};
     if (realpath(tmpPath.c_str(), realPath) == nullptr) {
         LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::RealPath", errno, "NA");
         return -errno;
     }
     int fd = ::open(realPath, fileInfo->flags);
     if (fd < 0) {
         ::unlink(realPath);
         LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::Open", errno, "NA");
         return -errno;
     }
     fileInfo->fh = static_cast<uint32_t>(fd);
@@ -1013,11 +1066,13 @@ int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offs
     LOGI("MtpFileSystem: ReadFile enter");
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("ReadFile::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     int rval = ::pread(fileInfo->fh, buf, size, offset);
     if (rval < 0) {
         LOGE("MtpFileSystem: ReadFile error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("ReadFile::Pread", errno, "NA");
         return -errno;
     }
     LOGI("MtpFileSystem: ReadFile success rval=%{public}d", rval);
@@ -1029,6 +1084,7 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
     LOGI("MtpFileSystem: OpenThumb enter");
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenThumb::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
@@ -1043,12 +1099,14 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
     char realPath[PATH_MAX] = {0};
     if (realpath(tmpPath.c_str(), realPath) == nullptr) {
         LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenThumb::RealPath", errno, "NA");
         return -errno;
     }
     fd = ::open(realPath, fileInfo->flags);
     if (fd < 0) {
         ::unlink(realPath);
         LOGE("MtpFileSystem: OpenThumb error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenThumb::Open", errno, "NA");
         return -errno;
     }
     fileInfo->fh = static_cast<uint32_t>(fd);
@@ -1070,6 +1128,7 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
     LOGI("MtpFileSystem: Write enter");
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Write::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     int rval = 0;
@@ -1080,11 +1139,13 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
         const MtpFsTypeTmpFile *tmpFile = tmpFilesPool_.GetFile(std::string(path));
         if (tmpFile == nullptr) {
             LOGE("MtpFileSystem: Write tmpFile error.");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("Write::GetFile", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
             return -EINVAL;
         }
         rval = ::pwrite(fileInfo->fh, buf, size, offset);
         if (rval < 0) {
             LOGE("MtpFileSystem: Write pwrite error, errno=%{public}d", errno);
+            OHOS::StorageService::StorageRadar::ReportMtpResult("Write::Pwrite", errno, "NA");
             return -errno;
         }
         const_cast<MtpFsTypeTmpFile *>(tmpFile)->SetModified();
@@ -1100,12 +1161,14 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     const std::string stdPath(path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Release::FileInfo", E_PARAMS_INVALID, "NA");
         device_.SetUploadRecord(stdPath, "fail");
         return -ENOENT;
     }
     int rval = ::close(fileInfo->fh);
     if (rval < 0) {
         LOGE("MtpFileSystem: Release close error, errno=%{public}d", errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Release::Close", errno, "NA");
         device_.SetUploadRecord(stdPath, "fail");
         return -errno;
     }
@@ -1121,6 +1184,8 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::GetFile",
+            E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         device_.SetUploadRecord(stdPath, "fail");
         return -EINVAL;
     }
@@ -1143,6 +1208,7 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
         usleep(DEVICE_WRITE_DELAY_US);
         if (rval != 0) {
             LOGE("FilePush  to mtp device fail");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
             device_.SetUploadRecord(stdPath, "fail");
             ::unlink(tmpPath.c_str());
             return -rval;
@@ -1160,6 +1226,7 @@ int MtpFileSystem::Statfs(const char *path, struct statvfs *statInfo)
     uint64_t bs = BS_SIZE;
     if (statInfo == nullptr) {
         LOGE("Missing statInfo");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Statfs::StatInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
     statInfo->f_bsize = static_cast<unsigned long>(bs);
@@ -1201,6 +1268,8 @@ int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
     LOGI("MtpFileSystem: OpenDir");
     const MtpFsTypeDir *content = device_.OpenDirFetchContent(std::string(path));
     if (content == nullptr) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenDir::OpenDirFetchContent",
+            E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     dirMap_[std::string(path)] = content;
@@ -1214,6 +1283,8 @@ int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, 
     enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
     const MtpFsTypeDir *content = device_.ReadDirFetchContent(std::string(path));
     if (content == nullptr) {
+        OHOS::StorageService::StorageRadar::ReportMtpResult("ReadDir::ReadDirFetchContent",
+            E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     const std::set<MtpFsTypeDir> dirs = content->Dirs();
@@ -1223,6 +1294,7 @@ int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, 
         struct stat st;
         if (memset_s(&st, sizeof(st), 0, sizeof(st)) != EOK) {
             LOGE("memset st fail");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("ReadDir::Memset", E_MEMORY_OPERATION_ERR, "NA");
         }
         st.st_ino = d.Id();
         st.st_mode = S_IFDIR | PERMISSION_ONE;
@@ -1233,6 +1305,7 @@ int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, 
         struct stat st;
         if (memset_s(&st, sizeof(st), 0, sizeof(st)) != EOK) {
             LOGE("memset st fail");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("ReadDir::Memset", E_MEMORY_OPERATION_ERR, "NA");
         }
         st.st_ino = f.Id();
         st.st_mode = S_IFREG | PERMISSION_TWO;
@@ -1314,6 +1387,24 @@ static int IsDirFetched(std::string path, MtpFsDevice &device, char *out, size_t
     return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
 }
 
+static int IsOpenHarmonyMtpDevice(MtpFsDevice &device, char *out, size_t size)
+{
+    bool isOpenHarmony = device.IsOpenHarmonyMtpDevice();
+    int ret;
+    if (isOpenHarmony) {
+        ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+    } else {
+        ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+    }
+    if (ret != 0) {
+        LOGE("copy fail, ret=%{public}d", ret);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("IsOpenHarmonyMtpDevice::Memcpy",
+            E_MEMORY_OPERATION_ERR, "NA");
+        return 0;
+    }
+    return isOpenHarmony ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+}
+
 static int IsUploadCompleted(std::string path, MtpFsDevice &device, char *out, size_t size)
 {
     auto [firstParam, secondParam] = device.FindUploadRecord(path);
@@ -1348,6 +1439,7 @@ static int QueryMtpIsInUse(MtpFsDevice &device, char *out, size_t size)
     }
     if (ret != 0) {
         LOGE("copy fail, ret=%{public}d", ret);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("QueryMtpIsInUse::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
         return 0;
     }
     return isEmpty ? UPLOAD_RECORD_FALSE_LEN : UPLOAD_RECORD_TRUE_LEN;
@@ -1371,6 +1463,8 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
         return GetFriendlyName(in, out, size);
     } else if (strcmp(in, "user.queryMtpIsInUse") == 0) {
         return QueryMtpIsInUse(device_, out, size);
+    } else if (strcmp(in, "user.isOpenHarmonyMtpDevice") == 0) {
+        return IsOpenHarmonyMtpDevice(device_, out, size);
     }
     LOGE("attrKey error, attrKey=%{public}s", in);
     return 0;
@@ -1389,6 +1483,7 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
     int32_t ret = memcpy_s(out, size, deviceName, nameLen);
     if (ret != 0) {
         LOGE("memcpy_s devicename fail, ret=%{public}d", ret);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetFriendlyName::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
         free(deviceName);
         return 0;
     }

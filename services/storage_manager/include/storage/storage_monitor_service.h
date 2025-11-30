@@ -52,8 +52,11 @@ private:
     void EventNotifyFreqHandlerForMedium();
     void EventNotifyFreqHandlerForHigh();
     void ParseStorageParameters(int64_t totalSize);
-    void StorageStatisticsThd();
+    void UpdateBaseLineByUid();
     std::string GetStorageAlertCleanupParams();
+
+    // stats
+    void HapAndSaStatisticsThd();
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;

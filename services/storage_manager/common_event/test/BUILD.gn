@@ -46,6 +46,7 @@ ohos_unittest("storage_common_event_subscriber_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
+    "private=public",
   ]
 
   deps = [

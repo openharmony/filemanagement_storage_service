@@ -881,7 +881,7 @@ int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, st
     return storageDaemon_->MountUsbFuse(volumeId, fsUuid, fuseFd);
 }
 
-int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(const std::string &storageStatus,
+int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     int32_t err = Connect();
@@ -1024,6 +1024,34 @@ int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->GetAncoSizeData(outExtraData);
+}
+
+int32_t StorageDaemonCommunication::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetDataSizeByPath service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetDataSizeByPath(path, size);
+}
+
+int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
 }
 } // namespace StorageManager
 } // namespace OHOS

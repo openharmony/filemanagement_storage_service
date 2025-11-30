@@ -16,6 +16,7 @@
 #define STORAGE_COMMON_EVENT_SUBSCRIBER_H
 
 #include <string>
+#include <atomic>
 
 #include "common_event_manager.h"
 #include "common_event_support.h"
@@ -44,8 +45,8 @@ private:
     void UpdateDeviceState(DeviceState state, bool set);
     void HandleBatteryChangedEvent(int batteryCapacity);
     void CheckAndTriggerStatistic();
-    uint8_t deviceState_ = 0x00; // 默认: 0x00 = 亮屏+断电
-    int batteryCapacity_ = 0;
+    std::atomic<uint8_t> deviceState_{0x00}; // 默认: 0x00 = 亮屏+断电
+    std::atomic<int> batteryCapacity_{0};
 };
 }  // namespace StorageManager
 }  // namespace OHOS

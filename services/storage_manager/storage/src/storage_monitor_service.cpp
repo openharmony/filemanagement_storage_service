@@ -26,10 +26,12 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_stats.h"
+#include "storage/storage_quota_controller.h"
 #include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_constant.h"
+#include "dfx_report/storage_dfx_reporter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -89,9 +91,13 @@ void StorageMonitorService::StartStorageMonitorTask()
     if (eventHandler_ == nullptr) {
         LOGE("event handler is nullptr in StartStorageMonitorTask.");
     }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
+
+    auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
+    eventHandler_->PostTask(executeUpdateBaseLineByUid, STORAGE_STATIC_BEGIN_INTERVAL);
+
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -121,22 +127,10 @@ void StorageMonitorService::Execute()
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
 
-void StorageMonitorService::StorageStatisticsThd()
+void StorageMonitorService::UpdateBaseLineByUid()
 {
-    LOGI("begin storage statistic scheduled task. ");
-    if (eventHandler_ == nullptr) {
-        LOGE("event handler is nullptr.");
-        return;
-    }
-    StorageStats stats;
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(DEFAULT_USERID, stats, true);
-    if (err != E_OK) {
-        LOGE("failed storage statistic scheduled task, %{public}d.", err);
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
-            "setting");
-    }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_INTERVAL);
+    LOGI("begin update base line by uid task.");
+    StorageQuotaController::GetInstance().UpdateBaseLineByUid();
 }
 
 void StorageMonitorService::MonitorAndManageStorage()
@@ -444,6 +438,18 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
     lastNotificationTimeHighFreq_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+}
+
+void StorageMonitorService::HapAndSaStatisticsThd()
+{
+    LOGI("begin hap and sa statistic scheduled task.");
+    if (eventHandler_ == nullptr) {
+        LOGE("event handler is nullptr.");
+        return;
+    }
+    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
 }
 } // StorageManager
 } // OHOS

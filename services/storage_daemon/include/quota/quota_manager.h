@@ -76,7 +76,8 @@ public:
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
-    void GetUidStorageStats(const std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
+    void GetUidStorageStats(std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
+    int32_t GetFileData(const std::string &path, int64_t &size);
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
     void SetStopScanFlag(bool stop);
@@ -97,8 +98,6 @@ private:
     int32_t AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid);
     int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
     void GetMetaData(std::ostringstream &extraData);
-    void GetAncoSize(std::ostringstream &extraData);
-    int32_t GetFileData(const std::string &path, int64_t &size);
     bool StringToInt64(const std::string& str, int64_t& out_value);
     void GetCurrentTime(std::ostringstream &extraData);
     void AssembleSysAppVec(int32_t dqUid, const NextDqBlk &dq,

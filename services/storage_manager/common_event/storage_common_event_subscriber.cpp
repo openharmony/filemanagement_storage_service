@@ -84,30 +84,35 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
 
 void StorageCommonEventSubscriber::UpdateDeviceState(DeviceState state, bool set)
 {
+    uint8_t oldState = deviceState_.load();
+    uint8_t newState;
     if (set) {
-        deviceState_ |= state;
+        newState = oldState | state;
     } else {
-        deviceState_ &= ~state;
+        newState = oldState & ~state;
     }
+    deviceState_.store(newState);
     LOGI("UpdateDeviceState: state=0x%{public}02x, set=%{public}d, deviceState=0x%{public}02x",
-         state, set, deviceState_);
+         state, set, newState);
     CheckAndTriggerStatistic();
 }
 
 void StorageCommonEventSubscriber::HandleBatteryChangedEvent(int batteryCapacity)
 {
     LOGI("Handle battery changed event, level=%{public}d", batteryCapacity);
-    batteryCapacity_ = batteryCapacity;
+    batteryCapacity_.store(batteryCapacity);
     CheckAndTriggerStatistic();
 }
 
 void StorageCommonEventSubscriber::CheckAndTriggerStatistic()
 {
-    bool isChargingScreenOff = (deviceState_ == STATE_CHARGING_SCREEN_OFF);
+    uint8_t currentDeviceState = deviceState_.load();
+    int currentBatteryCapacity = batteryCapacity_.load();
+    bool isChargingScreenOff = (currentDeviceState == STATE_CHARGING_SCREEN_OFF);
     LOGI("CheckAndTriggerStatistic: deviceState=0x%{public}02x, battery=%{public}d%%, isChargingScreenOff=%{public}d",
-         deviceState_, batteryCapacity_, isChargingScreenOff);
+         currentDeviceState, currentBatteryCapacity, isChargingScreenOff);
 
-    if (isChargingScreenOff && batteryCapacity_ > BATTERY_LEVEL_TEN) {
+    if (isChargingScreenOff && currentBatteryCapacity > BATTERY_LEVEL_TEN) {
         LOGI("Trigger storage scan - device is charging, screen off, and battery > 10%%");
         StorageDfxReporter::GetInstance().StartScan();
     } else {

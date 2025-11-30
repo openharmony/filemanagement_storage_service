@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,22 +24,23 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     Parcel parcel;
-    StorageManager::VolumeExternal volumeexternal;
+    StorageManager::VolumeExternal volumeExternal;
     int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
     std::string metaData(reinterpret_cast<const char *>(data), size);
-    volumeexternal.SetFlags(fsType);
-    volumeexternal.SetFsType(fsType);
-    volumeexternal.SetFsUuid(metaData);
-    volumeexternal.SetPath(metaData);
-    volumeexternal.SetDescription(metaData);
-    volumeexternal.GetFlags();
-    volumeexternal.GetFsType();
-    volumeexternal.GetUuid();
-    volumeexternal.GetPath();
-    volumeexternal.GetDescription();
-    volumeexternal.Reset();
-    volumeexternal.Marshalling(parcel);
-    volumeexternal.Unmarshalling(parcel);
+    volumeExternal.SetFlags(fsType);
+    volumeExternal.SetFsType(fsType);
+    volumeExternal.SetFsUuid(metaData);
+    volumeExternal.SetPath(metaData);
+    volumeExternal.SetDescription(metaData);
+    volumeExternal.GetFlags();
+    volumeExternal.GetFsType();
+    volumeExternal.GetUuid();
+    volumeExternal.GetPath();
+    volumeExternal.GetDescription();
+    volumeExternal.Reset();
+    volumeExternal.Marshalling(parcel);
+    auto unmarshallingVolumeExternal =
+        std::unique_ptr<StorageManager::VolumeExternal>(volumeExternal.Unmarshalling(parcel));
     return true;
 }
 } // namespace OHOS

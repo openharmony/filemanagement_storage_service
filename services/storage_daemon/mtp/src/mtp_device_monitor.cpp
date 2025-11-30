@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <thread>
 #include "mtp/usb_event_subscriber.h"
+#include "storage_radar.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
@@ -42,13 +43,16 @@ constexpr int32_t MTP_TRUE_LEN = 5;
 constexpr int32_t DETECT_CNT = 4;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+constexpr int32_t BUF_SIZE_512 = 512;
 
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
 constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 constexpr const char *KEY_CUST = "const.cust.custPath";
 constexpr const char *CUST_HWIT = "hwit";
-constexpr const char *IS_PYP_MODE = "user.isptpmode";
+constexpr const char *IS_PTP_MODE = "user.isptpmode";
+constexpr const char *IS_OPEN_HARMONY = "user.isOpenHarmonyMtpDevice";
+constexpr const char *GET_FRIENDLY_NAME = "user.getfriendlyname";
 constexpr int32_t SYS_PARARMETER_SIZE = 256;
 bool g_keepMonitoring = true;
 
@@ -136,19 +140,50 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         return;
     }
     ret = MountMtpDevice(devInfos);
+    bool isPtp = UsbEventSubscriber::IsPtpMode();
+    std::string extraData = "{Protocol:" + std::string(isPtp ? "PTP" : "MTP") +
+        "}{Result:" + std::to_string(ret) + "}";
     if (ret != E_OK) {
         LOGE("mount mtp device failed");
+        const auto& firstDev = devInfos[0];
+        extraData += "{Vendor:" + firstDev.vendor + "}{Product:" + firstDev.product +
+            "}{Name:unknown}{OpenHarmony:unknown}";
+        StorageService::StorageRadar::ReportMtpResult("MountMtpDeviceInfo", E_MTP_MOUNT_FAILED, extraData);
         return;
     }
-    bool isPtp = UsbEventSubscriber::IsPtpMode();
- 
+
     for (const auto& devInfo : devInfos) {
         const char* value = isPtp ? "true" : "false";
-        size_t len = isPtp ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
-        if (setxattr(devInfo.path.c_str(), IS_PYP_MODE, value, len, 0) == -1) {
-            LOGE("Failed to set xattr");
+        size_t ptpLen = isPtp ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+        if (setxattr(devInfo.path.c_str(), IS_PTP_MODE, value, ptpLen, 0) == -1) {
+            LOGE("Failed to set PTP mode xattr");
         }
+
+        std::string isOpenHarmony = "unknown";
+        std::string devName = "unknown";
+        char tempBuffer[BUF_SIZE_512] = {0};
+
+        int32_t attrLen = getxattr(devInfo.path.c_str(), IS_OPEN_HARMONY, tempBuffer, BUF_SIZE_512);
+        if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
+            tempBuffer[attrLen] = '\0';
+            isOpenHarmony = tempBuffer;
+        } else {
+            LOGE("Failed to get os xattr");
+        }
+
+        memset_s(tempBuffer, sizeof(tempBuffer), 0, sizeof(tempBuffer));
+        attrLen = getxattr(devInfo.path.c_str(), GET_FRIENDLY_NAME, tempBuffer, BUF_SIZE_512);
+        if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
+            tempBuffer[attrLen] = '\0';
+            devName = tempBuffer;
+        } else {
+            LOGE("Failed to get device name xattr");
+        }
+
+        extraData += "{Vendor:" + devInfo.vendor + "}{Product:" + devInfo.product +
+            "}{Name:" + devName + "}{OpenHarmony:" + isOpenHarmony + "}";
     }
+    StorageService::StorageRadar::ReportMtpResult("MountMtpDeviceInfo", E_MTP_MOUNT_FAILED, extraData);
 }
 
 void MtpDeviceMonitor::MonitorDevice()
@@ -182,7 +217,7 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
 {
     if (IsNeedDisableMtp()) {
         LOGE("This device cannot support MTP.");
-        return E_MTP_MOUNT_FAILED;
+        return E_NOT_SUPPORT;
     }
     LOGI("MountMtpDevice: start mount mtp device.");
     for (auto device : monitorDevices) {
@@ -201,7 +236,7 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
         } else if (ret == E_MTP_IS_MOUNTING) {
             return E_OK;
         } else {
-            return E_MTP_MOUNT_FAILED;
+            return ret;
         }
     }
     return E_OK;
@@ -246,6 +281,7 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
             iter = lastestMtpDevList_.erase(iter);
         } else {
             LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
+            StorageService::StorageRadar::ReportMtpResult("UmountDetachedMtpDevice::UmountDevice", ret, "NA");
             iter++;
         }
     }
