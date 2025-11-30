@@ -360,7 +360,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
     ASSERT_EQ(vec.size(), 1);
     EXPECT_EQ(vec[0].saName, "saName");
     EXPECT_EQ(vec[0].uid, 1234);
-    
+
     std::remove(path.c_str());
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ParseConfigFile_001 end";
 }
@@ -544,31 +544,6 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessVecList_001, TestSize.Level1)
     EXPECT_EQ(allVec.userAppVec[0].saName, "original");
     EXPECT_EQ(allVec.sysSaVec[0].saName, "original");
     GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessVecList_001 end";
-}
-
-/**
- * @tc.name: QuotaManagerTest_GetMetaData_001
- * @tc.desc: Test GetMetaData processes all vectors and handles empty bundle map.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetMetaData_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaData_001 start";
-    std::ostringstream extraData;
-    std::string hmfsPath = "/sys/fs/hmfs/userdata";
-    std::string mainBlk = "/main_blkaddr";
-    std::string ovpChunks = "/ovp_chunks";
-    std::string blkPath = hmfsPath + mainBlk;
-    std::string chunkPath = hmfsPath + ovpChunks;
-    EXPECT_TRUE(DeleteFile(blkPath) == 0);
-    QuotaManager::GetInstance().GetMetaData(extraData);
-    StorageTest::StorageTestUtils::CreateFile(blkPath);
-    EXPECT_TRUE(DeleteFile(chunkPath) == 0);
-    QuotaManager::GetInstance().GetMetaData(extraData);
-    EXPECT_TRUE(DeleteFile(blkPath) == 0);
-    QuotaManager::GetInstance().GetMetaData(extraData);
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaData_001 end";
 }
 
 /**

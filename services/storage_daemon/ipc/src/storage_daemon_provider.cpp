@@ -972,7 +972,7 @@ int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     return StorageDaemon::GetInstance().UpdateUserPublicDirPolicy(userId);
 }
 
-int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(const std::string &storageStatus,
+int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     QuotaManager::GetInstance().GetUidStorageStats(storageStatus, bundleNameAndUid);
@@ -1013,6 +1013,16 @@ int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
 int32_t StorageDaemonProvider::StatisticSysDirSpace()
 {
     return QuotaManager::GetInstance().StatisticSysDirSpace();
+}
+
+int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    return QuotaManager::GetInstance().GetFileData(path, size);
+}
+
+int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

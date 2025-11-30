@@ -134,7 +134,7 @@ public:
 
 // void StorageStatusServiceTest::SetUp()
 // {
-    
+
 
 /**
  * @tc.number: SUB_STORAGE_Storage_status_GetAppSize_0001
@@ -156,69 +156,6 @@ HWTEST_F(StorageStatusServiceTest, Storage_status_GetAppSize_0001, testing::ext:
     std::cout << "appsize is : " << appSize << "max int is " << std::numeric_limits<int64_t>::max() << std::endl;
     EXPECT_EQ(result, E_CALCULATE_OVERFLOW_UP);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_GetAppSize_0001";
-} // namespace AppExecFwk
-
-/**
- * @tc.number: SUB_STORAGE_QueryOccupiedSpaceForSa_0001
- * @tc.name: QueryOccupiedSpaceForSa_0001
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageStatusServiceTest, QueryOccupiedSpaceForSa_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin QueryOccupiedSpaceForSa_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    StorageStats storageStats = {0, 0, 0, 0, 0, 0};
-    int32_t userId = 100;
-    int32_t result = service->QueryOccupiedSpaceForSa(storageStats, userId);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end QueryOccupiedSpaceForSa_0001";
-} // namespace AppExecFwk
-
-/**
- * @tc.number: SUB_STORAGE_QueryOccupiedSpaceForSa_0002
- * @tc.name: QueryOccupiedSpaceForSa_0002
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageStatusServiceTest, QueryOccupiedSpaceForSa_0002, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin QueryOccupiedSpaceForSa_0002";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-        StorageStats storageStats = {0, 0, 0, 0, 0, 0};
-    int32_t userId = 100;
-    int32_t result = service->QueryOccupiedSpaceForSa(storageStats, userId);
-    EXPECT_EQ(result, E_OK);
-    result = service->QueryOccupiedSpaceForSa(storageStats, userId);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end QueryOccupiedSpaceForSa_0002";
-} // namespace AppExecFwk
-
-/**
- * @tc.number: SUB_STORAGE_QueryOccupiedSpaceForSa_0003
- * @tc.name: QueryOccupiedSpaceForSa_0003
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageStatusServiceTest, QueryOccupiedSpaceForSa_0003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin QueryOccupiedSpaceForSa_0003";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-        StorageStats storageStats = {0, 0, 0, 0, 0, 0};
-    g_flag = false;
-    int32_t userId = 100;
-    int32_t result = service->QueryOccupiedSpaceForSa(storageStats, userId);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end QueryOccupiedSpaceForSa_0003";
 } // namespace AppExecFwk
 
 /**
@@ -261,76 +198,6 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetMediaAndFileStorageStats_0002, tes
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetMediaAndFileStorageStats_0002";
 } // namespace AppExecFwk
-
-/**
- * @tc.number: SUB_STORAGE_CheckBundlePermissions_0001
- * @tc.name: STORAGE_CheckBundlePermissions_0001
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageStatusServiceTest, STORAGE_CheckBundlePermissions_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_CheckBundlePermissions_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    int userId = 100;
-    std::string bundleName = "test";
-    g_bundleFlag  = 0;
-    bool isSchedule = true;
-    int32_t result = service->CheckBundlePermissions(userId, bundleName, isSchedule);
-    EXPECT_EQ(result, 0);
-
-    g_bundleFlag  = 1;
-    isSchedule = false;
-    result = service->CheckBundlePermissions(userId, bundleName, isSchedule);
-    EXPECT_EQ(result, E_PERMISSION_DENIED);
-
-    g_bundleFlag  = 1;
-    isSchedule = true;
-    result = service->CheckBundlePermissions(userId, bundleName, isSchedule);
-    EXPECT_EQ(result, E_OK);
-
-    g_bundleFlag  = 0;
-    isSchedule = false;
-    str = "111";
-    result = service->CheckBundlePermissions(userId, bundleName, isSchedule);
-    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
-
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_CheckBundlePermissions_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_ProcessStorageStatus_0001
- * @tc.name: STORAGE_ProcessStorageStatus_0001
- * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0371
- */
-HWTEST_F(StorageStatusServiceTest, STORAGE_ProcessStorageStatus_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_ProcessStorageStatus_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    StorageStats storageStats = {0, 0, 0, 0, 0, 0};
-    int userId = 0;
-    bool isSchedule = true;
-    g_flag = 0;
-    g_sysFlag = 1;
-    service->ProcessStorageStatus(storageStats, userId, isSchedule);
-    EXPECT_TRUE(true);
-    free_size = 999999999999999;
-    isSchedule = false;
-    service->ProcessStorageStatus(storageStats, userId, isSchedule);
-    EXPECT_TRUE(true);
-    free_size = 0;
-    isSchedule = true;
-    service->ProcessStorageStatus(storageStats, userId, isSchedule);
-    EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_ProcessStorageStatus_0001";
-}
 
 /**
  * @tc.number: STORAGE_GetCurrentBundleStats_0001
@@ -531,4 +398,25 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext
     EXPECT_EQ(ret, E_OK);
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_GetBundleNameAndUid_0001
+ * @tc.name: STORAGE_GetBundleNameAndUid_0001
+ * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetBundleNameAndUid_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetBundleNameAndUid_0001";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    int userId = 100;
+    std::map<int, std::string> bundleNameAndUid;
+    bundleNameAndUid[100] = "1";
+    int32_t result = service->GetBundleNameAndUid(userId, bundleNameAndUid);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetBundleNameAndUid_0001";
 }

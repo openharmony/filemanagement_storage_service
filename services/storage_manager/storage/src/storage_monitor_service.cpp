@@ -32,6 +32,7 @@
 #include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
+#include "dfx_report/storage_dfx_reporter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -91,11 +92,13 @@ void StorageMonitorService::StartStorageMonitorTask()
     if (eventHandler_ == nullptr) {
         LOGE("event handler is nullptr in StartStorageMonitorTask.");
     }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
-    auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
+
+    auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
     eventHandler_->PostTask(executeUpdateBaseLineByUid, STORAGE_STATIC_BEGIN_INTERVAL);
+
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -123,24 +126,6 @@ void StorageMonitorService::Execute()
     MonitorAndManageStorage();
     auto executeFunc = [this] { Execute(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
-}
-
-void StorageMonitorService::StorageStatisticsThd()
-{
-    LOGI("begin storage statistic scheduled task. ");
-    if (eventHandler_ == nullptr) {
-        LOGE("event handler is nullptr.");
-        return;
-    }
-    StorageStats stats;
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(DEFAULT_USERID, stats, true);
-    if (err != E_OK) {
-        LOGE("failed storage statistic scheduled task, %{public}d.", err);
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
-            "setting");
-    }
-    auto executeStorageStatistics = [this] { StorageStatisticsThd(); };
-    eventHandler_->PostTask(executeStorageStatistics, STORAGE_STATIC_INTERVAL);
 }
 
 void StorageMonitorService::UpdateBaseLineByUid()
@@ -172,7 +157,7 @@ void StorageMonitorService::MonitorAndManageStorage()
     if (freeSize < thresholds["clean_h"]) {
         CheckAndCleanCache(freeSize, totalSize);
     }
- 
+
     LOGI("notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
         static_cast<long long>(thresholds["notify_l"]), static_cast<long long>(thresholds["notify_m"]),
         static_cast<long long>(thresholds["notify_h"]));
@@ -213,17 +198,17 @@ std::string StorageMonitorService::GetStorageAlertCleanupParams()
 {
     std::string storageParams;
     char tmpBuffer[STORAGE_PARAMS_PATH_LEN] = {0};
-    
+
     int ret = GetParameter(STORAGE_ALERT_CLEANUP_PARAMETER, DEFAULT_PARAMS, tmpBuffer, STORAGE_PARAMS_PATH_LEN);
     if (ret <= 0) {
         LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
              STORAGE_ALERT_CLEANUP_PARAMETER, ret);
         return DEFAULT_PARAMS;
     }
-    
+
     return tmpBuffer;
 }
- 
+
 void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
 {
     std::string storageParams = GetStorageAlertCleanupParams();
@@ -232,7 +217,7 @@ void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
     while (std::getline(storageParamsStream, item, '/')) {
         std::string key;
         std::string value;
- 
+
         size_t pos = item.find(':');
         if (pos != std::string::npos) {
             key = item.substr(0, pos);
@@ -241,7 +226,7 @@ void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
             LOGE("Invalid parameter format");
             continue;
         }
- 
+
         if (value.length() > 1 && value.substr(value.length() - 1) == "%") {
             int percentage = std::atoi(value.substr(0, value.length() - 1).c_str());
             if (percentage < 0 || percentage > CONST_NUM_ONE_HUNDRED) {
@@ -478,6 +463,18 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
     lastNotificationTimeHighFreq_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+}
+
+void StorageMonitorService::HapAndSaStatisticsThd()
+{
+    LOGI("begin hap and sa statistic scheduled task.");
+    if (eventHandler_ == nullptr) {
+        LOGE("event handler is nullptr.");
+        return;
+    }
+    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
+    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
+    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
 }
 } // StorageManager
 } // OHOS

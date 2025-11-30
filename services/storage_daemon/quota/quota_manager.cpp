@@ -42,11 +42,7 @@ constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
-constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
-constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
-constexpr const char *OVP_CHUNKS = "/ovp_chunks";
 constexpr uint64_t FOUR_K = 4096;
-constexpr uint64_t BLOCK_COUNT = 512;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr uint64_t PATH_MAX_LEN = 4096;
@@ -239,7 +235,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     return E_QUOTA_CTL_KERNEL_ERR;
 }
 
-void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
+void QuotaManager::GetUidStorageStats(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("GetUidStorageStats begin!");
@@ -253,14 +249,6 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     GetOccupiedSpaceForUidList(allVec, iNodes);
 
     std::ostringstream extraData;
-
-    GetCurrentTime(extraData);
-
-    extraData << storageStatus << std::endl;
-
-    GetMetaData(extraData);
-
-    GetAncoSize(extraData);
 
     extraData << "{iNodes count is:" << iNodes << ",iNodes size is:" <<
     ConvertBytesToMB(iNodes * FOUR_K, ACCURACY_NUM) <<"MB}" << std::endl;
@@ -283,10 +271,8 @@ void QuotaManager::GetUidStorageStats(const std::string &storageStatus,
     } else {
         extraData << "{otherAppVec data is null}" << std::endl;
     }
-
+    storageStatus = extraData.str();
     LOGI("extraData is %{public}s", extraData.str().c_str());
-    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
-        extraData.str());
     LOGI("GetUidStorageStats end!");
 }
 
@@ -303,64 +289,28 @@ void QuotaManager::GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ost
     extraData << "{other totalSize is:" << ConvertBytesToMB(totalSize, ACCURACY_NUM) << "MB}" << std::endl;
 }
 
-void QuotaManager::GetAncoSize(std::ostringstream &extraData)
-{
-    LOGI("begin get Anco info.");
-    uint64_t imageSize = 0;
-    GetRmgResourceSize("rgm_hmos", imageSize);
-    extraData << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
-    LOGI("end get Anco info.");
-}
-
-void QuotaManager::GetMetaData(std::ostringstream &extraData)
-{
-    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
-    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
-    int64_t blkSize = -1;
-    auto ret = GetFileData(blkPath, blkSize);
-    if (ret == E_OK && blkSize != -1) {
-        extraData << "{main_blkaddr data is:" << ConvertBytesToMB(blkSize * FOUR_K, ACCURACY_NUM) << "MB}" << std::endl;
-    } else {
-        extraData << "{get main_blkaddr wrong, ret:" << ret << ",blkSize is:" << blkSize << "}" << std::endl;
-    }
-
-    int64_t chunkSize = -1;
-    ret = GetFileData(chunkPath, chunkSize);
-    if (ret == E_OK && chunkSize != -1) {
-        extraData << "{ovp_chunks data is:" <<
-            ConvertBytesToMB(chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
-    } else {
-        extraData << "{get ovp_chunks wrong, ret:" << ret << ",chunkSize is:" << chunkSize << "}" << std::endl;
-    }
-
-    if (blkSize != -1 && chunkSize != -1) {
-        extraData << "{metaData is:" <<
-            ConvertBytesToMB(blkSize * FOUR_K + chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)<< "MB}" << std::endl;
-    }
-}
-
 int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
 {
     if (path.empty() || path.size() >= PATH_MAX) {
         return E_FILE_PATH_INVALID;
     }
-    
+
     char realPath[PATH_MAX] = {0x00};
     if (!realpath(path.c_str(), realPath)) {
         return E_FILE_PATH_INVALID;
     }
-    
+
     // 确保规范化后的路径在预期范围内
     std::string normalizedPath(realPath);
     if (normalizedPath != path) {
         return E_FILE_PATH_INVALID;
     }
-    
+
     std::ifstream infile(normalizedPath, std::ios::in);
     if (!infile.is_open()) {
         return E_OPEN_JSON_FILE_ERROR;
     }
-    
+
     std::string line;
     while (std::getline(infile, line)) {
         if (line.empty()) {
@@ -370,7 +320,7 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
         if (line.size() > LINE_MAX_LEN) {
             return E_NON_ACCESS;
         }
-        
+
         int64_t listNum = 0;
         if (StringToInt64(line, listNum)) {
             // 检查加法溢出
@@ -394,17 +344,17 @@ bool QuotaManager::StringToInt64(const std::string& str, int64_t& out_value)
         LOGE("Invalid argument");
         return false;
     }
-    
+
     if (result.ec == std::errc::result_out_of_range) {
         LOGE("Integer overflow");
         return false;
     }
-    
+
     if (result.ptr != str.data() + str.size()) {
         LOGE("The string contains invalid characters");
         return false;
     }
-    
+
     return true;
 }
 
@@ -438,7 +388,7 @@ double QuotaManager::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)
         return 0.0;
     }
     double mb = static_cast<double>(bytes) / DIVISOR;
- 
+
     if (decimalPlaces < 0) {
         decimalPlaces = 0;
     }
@@ -448,7 +398,7 @@ double QuotaManager::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)
     }
     return std::round(mb * factor) / factor;
 }
- 
+
 bool QuotaManager::StringToInt32(const std::string &strUid, int32_t &outUid32)
 {
     if (strUid.empty()) {
@@ -471,7 +421,7 @@ bool QuotaManager::StringToInt32(const std::string &strUid, int32_t &outUid32)
     outUid32 = static_cast<int32_t>(uid);
     return true;
 }
- 
+
 bool QuotaManager::GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName)
 {
     size_t firstColon = entry.find(':');
@@ -490,7 +440,7 @@ bool QuotaManager::GetUid32FromEntry(const std::string &entry, int32_t &outUid32
     std::string uidStr = entry.substr(secondColon + 1, thirdColon - (secondColon + 1));
     return StringToInt32(uidStr, outUid32);
 }
- 
+
 int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec)
 {
     LOGI("pasePasswdFile begin!");
@@ -499,13 +449,13 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
         LOGE("path not valid, path = %{private}s", path.c_str());
         return E_JSON_PARSE_ERROR;
     }
- 
+
     std::ifstream infile(std::string(realPath), std::ios::in);
     if (!infile.is_open()) {
         LOGE("Open file failed, errno = %{public}d", errno);
         return E_OPEN_JSON_FILE_ERROR;
     }
- 
+
     std::string line;
     while (getline(infile, line)) {
         if (line == "") {
@@ -546,7 +496,7 @@ void QuotaManager::AssembleSaInfoVec(std::vector<UidSaInfo> &vec,
     }
 }
 
- 
+
 void QuotaManager::SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec)
 {
     std::sort(vec.begin(), vec.end(), [](const UidSaInfo& a, const UidSaInfo& b) {
@@ -840,31 +790,31 @@ int32_t QuotaManager::CheckOccupation(std::ostringstream &extraData)
     int64_t foundationSize = 0;
     int64_t systemSize = 0;
     int64_t rootSize = 0;
-    
+
     auto ret = GetOccupiedSpaceForUid(FOUNDATION_UID, foundationSize);
     if (ret != E_OK) {
         LOGE("Get foundation size failed.");
         return ret;
     }
-    
+
     ret = GetOccupiedSpaceForUid(SYSTEM_UID, systemSize);
     if (ret != E_OK) {
         LOGE("Get system size failed.");
         return ret;
     }
-    
+
     ret = GetOccupiedSpaceForUid(ROOT_UID, rootSize);
     if (ret != E_OK) {
         LOGE("Get root size failed.");
         return ret;
     }
-    
+
     int64_t sumSize = foundationSize + systemSize + rootSize;
-    
+
     std::lock_guard<std::mutex> lock(cacheMutex_);
     int64_t changeSize = sumSize - oldChangeSizeCache_;
     bool shouldUpdate = (changeSize > StorageService::ONE_G_BYTE) || (changeSize < -StorageService::ONE_G_BYTE);
-    
+
     if (shouldUpdate) {
         oldChangeSizeCache_ = sumSize;
         extraData << "{root size is:" << ConvertBytesToMB(rootSize, ACCURACY_NUM) << "MB}" << std::endl;

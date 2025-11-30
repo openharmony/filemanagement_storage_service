@@ -1813,7 +1813,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     std::string volumeId = "vol-usb-001";
     int fuseFd = -1;
     std::string fsUuid;
-    
+
     // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
@@ -1838,7 +1838,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
     EXPECT_CALL(*sd, MountUsbFuse(volumeId, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_OK);
-    
+
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
 }
 
@@ -1889,7 +1889,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
 {
     GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 begin";
     ASSERT_TRUE(sdCommunication != nullptr);
-    
+
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
@@ -2078,5 +2078,99 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001
     EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_SERVICE_IS_NULLPTR);
 
     GTEST_LOG_(INFO) << "Daemon_communication_VerifyAncoUserDirs_001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDataSizeByPath_001
+ * @tc.name: Daemon_communication_GetDataSizeByPath_001
+ * @tc.desc: Test function of GetDataSizeByPath interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDataSizeByPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDataSizeByPath_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string path = "/data/test/path";
+    int64_t size = 0;
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_REMOTE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetDataSizeByPath(_, _)).WillOnce(DoAll(testing::SetArgReferee<1>(1024), Return(E_OK)));
+    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_OK);
+    EXPECT_EQ(size, 1024);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetDataSizeByPath(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetDataSizeByPath("", size), E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDataSizeByPath_001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetRmgResourceSize_001
+ * @tc.name: Daemon_communication_GetRmgResourceSize_001
+ * @tc.desc: Test function of GetRmgResourceSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetRmgResourceSize_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string rgmName = "rgm_hmos";
+    uint64_t totalSize = 0;
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_REMOTE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetRmgResourceSize(_, _)).WillOnce(DoAll(testing::SetArgReferee<1>(2048), Return(E_OK)));
+    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_OK);
+    EXPECT_EQ(totalSize, 2048);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetRmgResourceSize(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetRmgResourceSize("", totalSize), E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetRmgResourceSize_001";
 }
 }

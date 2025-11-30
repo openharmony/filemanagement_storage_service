@@ -108,7 +108,7 @@ public:
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
     int32_t InactiveUserPublicDirKey(uint32_t userId);
-    int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus,
+    int32_t QueryOccupiedSpaceForSa(std::string &storageStatus,
         const std::map<int32_t, std::string> &bundleNameAndUid);
     int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
 
@@ -120,6 +120,10 @@ public:
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
     int32_t DeleteUserDir(const std::string &path);
     int32_t StatisticSysDirSpace();
+
+    // stats api
+    int32_t GetDataSizeByPath(const std::string &path, int64_t &size);
+    int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

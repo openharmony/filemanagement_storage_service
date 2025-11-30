@@ -110,6 +110,7 @@ ohos_shared_library("storage_manager") {
     sources += [
       "account_subscriber/account_subscriber.cpp",
       "storage/src/bundle_manager_connector.cpp",
+      "dfx_report/storage_dfx_reporter.cpp",
       "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_service.cpp",
       "storage/src/storage_total_status_service.cpp",
@@ -189,6 +190,7 @@ group("storage_manager_unit_test") {
 
   if (storage_service_external_storage_manager) {
     deps += [
+      "dfx_report/test:storage_manager_dfx_report_test",
       "disk/test:storage_manager_disk_test",
       "volume/test:storage_manager_volume_test",
     ]

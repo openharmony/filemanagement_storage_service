@@ -108,7 +108,7 @@ public:
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
-    virtual int32_t QueryOccupiedSpaceForSa(const std::string &storageStatus,
+    virtual int32_t QueryOccupiedSpaceForSa(std::string &storageStatus,
         const std::map<int32_t, std::string> &bundleNameAndUid) override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
@@ -116,6 +116,9 @@ public:
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     virtual int32_t DeleteUserDir(const std::string &path) override;
     virtual int32_t StatisticSysDirSpace() override;
+
+    virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
+    virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
