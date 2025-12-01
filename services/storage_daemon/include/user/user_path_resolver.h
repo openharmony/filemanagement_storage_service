@@ -28,32 +28,32 @@ namespace StorageDaemon {
 struct DirInfo {
     std::string path;
     mode_t mode;
-    uid_t uid;
-    gid_t gid;
+    uid_t uid = 0;
+    gid_t gid = 0;
 
     std::unordered_map<std::string, std::string> options;
 
-    int32_t DoCreate() const;
-    int32_t DoCreate(const std::string &createPath) const;
-    int32_t DoDelete() const;
-    void UpdateUid(uint32_t userId);
+    int32_t MakeDir() const;
+    int32_t MakeDir(const std::string &createPath) const;
+    int32_t RemoveDir() const;
+    void UpdateDirUid(uint32_t userId);
 };
 void from_json(const nlohmann::json &j, DirInfo &dirInfo);
 
 struct MountNodeInfo {
     std::string srcPath;
-    std::string destPath;
-    std::string fileSystemType;
+    std::string dstPath;
+    std::string fsType;
     unsigned long mountFlags;
     std::string data;
 
     // 可选参数
-    bool createDestPath = false;
-    std::unique_ptr<DirInfo> destPathInfo = nullptr;
+    bool createDstPath = false;
+    std::shared_ptr<DirInfo> dstPathInfo = nullptr;
     std::unordered_map<std::string, std::string> options;
 
-    int32_t DoMount() const;
-    int32_t DoMount(const std::string &src, const std::string &dst) const;
+    int32_t MountDir() const;
+    int32_t MountDir(const std::string &src, const std::string &dst) const;
 };
 void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo);
 

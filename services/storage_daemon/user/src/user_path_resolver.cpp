@@ -33,6 +33,7 @@ namespace StorageDaemon {
 constexpr const char *STORAGE_ETC_PATH = "/etc/storage_daemon/";
 constexpr const char *STORAGE_USER_PATH = "storage_user_path.json";
 constexpr const char *STORAGE_MOUNT_INFO = "storage_mount_info.json";
+#define MAX_JSON_FILE_LEN 102400
 
 // 创建与挂载配置字段
 constexpr const char *FIELDS_SRC_PATH = "src-path";
@@ -53,7 +54,7 @@ constexpr const char *FIELDS_DEST_PATH_INFO = "dest-path-info";
 // 可变参数
 constexpr const char *USER_ID = "<userId>";
 
-// 创建与挂载 扩展属性      
+// 创建与挂载 扩展属性
 constexpr const char *OPTIONS_UPDATE_UID = "update_uid";
 constexpr const char *OPTIONS_CHECK_MOUNTED = "check_mounted";
 
@@ -84,24 +85,55 @@ static const std::unordered_map<std::string, unsigned long> MOUNT_FLAGS_MAP {
 
 void from_json(const nlohmann::json &j, DirInfo &dirInfo)
 {
-    dirInfo.path = j.value(FIELDS_PATH, "");
-    dirInfo.uid = j.value(FIELDS_UID, 0);
-    dirInfo.gid = j.value(FIELDS_GID, 0);
+    if (j.contains(FIELDS_PATH) && j[FIELDS_PATH].is_string()) {
+        dirInfo.path = j[FIELDS_PATH].get<std::string>();
+    }
+
+    if (j.contains(FIELDS_UID) && j[FIELDS_UID].is_number_integer()) {
+        auto uid = j[FIELDS_UID].get<int32_t>();
+        if (uid >= 0) {
+            dirInfo.uid = static_cast<uid_t>(uid);
+        }
+    }
+
+    if (j.contains(FIELDS_GID) && j[FIELDS_GID].is_number_integer()) {
+        auto gid = j[FIELDS_GID].get<int32_t>();
+        if (gid >= 0) {
+            dirInfo.gid = static_cast<gid_t>(gid);
+        }
+    }
+
     int64_t mode = MODE_0711;
     if (j.contains(FIELDS_MODE) && j[FIELDS_MODE].is_string()) {
         ConvertStringToInt(j[FIELDS_MODE].get<std::string>(), mode, BASE_OCTAL);
     }
     dirInfo.mode = static_cast<mode_t>(mode);
 
-    dirInfo.options = ParseKeyValuePairs(j.value(FIELDS_OPTIONS, ""), ',');
+    std::string optionsStr;
+    if (j.contains(FIELDS_OPTIONS) && j[FIELDS_OPTIONS].is_string()) {
+        optionsStr = j[FIELDS_OPTIONS].get<std::string>();
+    }
+    dirInfo.options = ParseKeyValuePairs(optionsStr, ',');
 }
 
 void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo)
 {
-    mountNodeInfo.srcPath = j.value(FIELDS_SRC_PATH, "");
-    mountNodeInfo.destPath = j.value(FIELDS_DEST_PATH, "");
-    mountNodeInfo.fileSystemType = j.value(FIELDS_FS, "");
-    mountNodeInfo.data = j.value(FIELDS_DATA, "");
+    if (j.contains(FIELDS_SRC_PATH) && j[FIELDS_SRC_PATH].is_string()) {
+        mountNodeInfo.srcPath = j[FIELDS_SRC_PATH].get<std::string>();
+    }
+
+    if (j.contains(FIELDS_DEST_PATH) && j[FIELDS_DEST_PATH].is_string()) {
+        mountNodeInfo.dstPath = j[FIELDS_DEST_PATH].get<std::string>();
+    }
+    
+    if (j.contains(FIELDS_FS) && j[FIELDS_FS].is_string()) {
+        mountNodeInfo.fsType = j[FIELDS_FS].get<std::string>();
+    }
+    
+    if (j.contains(FIELDS_DATA) && j[FIELDS_DATA].is_string()) {
+        mountNodeInfo.data = j[FIELDS_DATA].get<std::string>();
+    }
+
     mountNodeInfo.mountFlags = 0;
     if (j.contains(FIELDS_MOUNT_FLAGS) && j[FIELDS_MOUNT_FLAGS].is_array()) {
         for (const auto &flag : j[FIELDS_MOUNT_FLAGS]) {
@@ -115,20 +147,27 @@ void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo)
         }
     }
 
-    mountNodeInfo.createDestPath = j.value(FIELDS_CREATE_DEST_PATH, false);
-    if (j.contains(FIELDS_DEST_PATH_INFO) && j[FIELDS_DEST_PATH_INFO].is_object()) {
-        mountNodeInfo.destPathInfo = std::make_unique<DirInfo>();
-        from_json(j[FIELDS_DEST_PATH_INFO], *mountNodeInfo.destPathInfo);
+    if (j.contains(FIELDS_CREATE_DEST_PATH) && j[FIELDS_CREATE_DEST_PATH].is_boolean()) {
+        mountNodeInfo.createDstPath = j[FIELDS_CREATE_DEST_PATH].get<bool>();
     }
-    mountNodeInfo.options = ParseKeyValuePairs(j.value(FIELDS_OPTIONS, ""), ',');
+    if (j.contains(FIELDS_DEST_PATH_INFO) && j[FIELDS_DEST_PATH_INFO].is_object()) {
+        mountNodeInfo.dstPathInfo = std::make_shared<DirInfo>();
+        from_json(j[FIELDS_DEST_PATH_INFO], *mountNodeInfo.dstPathInfo);
+    }
+
+    std::string optionsStr;
+    if (j.contains(FIELDS_OPTIONS) && j[FIELDS_OPTIONS].is_string()) {
+        optionsStr = j[FIELDS_OPTIONS].get<std::string>();
+    }
+    mountNodeInfo.options = ParseKeyValuePairs(optionsStr, ',');
 }
 
-int32_t DirInfo::DoCreate() const
+int32_t DirInfo::MakeDir() const
 {
-    return DoCreate(path);
+    return MakeDir(path);
 }
 
-int32_t DirInfo::DoCreate(const std::string &createPath) const
+int32_t DirInfo::MakeDir(const std::string &createPath) const
 {
     if (!PrepareDir(createPath, mode, uid, gid)) {
         LOGE("prepareDir failed, path=%{public}s, errno=%{public}d", createPath.c_str(), errno);
@@ -137,7 +176,7 @@ int32_t DirInfo::DoCreate(const std::string &createPath) const
     return E_OK;
 }
 
-int32_t DirInfo::DoDelete() const
+int32_t DirInfo::RemoveDir() const
 {
     if (!RmDirRecurse(path)) {
         LOGE("RmDirRecurse failed, path=%{public}s, errno=%{public}d", path.c_str(), errno);
@@ -146,23 +185,23 @@ int32_t DirInfo::DoDelete() const
     return E_OK;
 }
 
-void DirInfo::UpdateUid(uint32_t userId)
+void DirInfo::UpdateDirUid(uint32_t userId)
 {
     if (options.find(OPTIONS_UPDATE_UID) != options.end()) {
         uid = USER_ID_BASE * userId + uid;
     }
 }
 
-int32_t MountNodeInfo::DoMount() const
+int32_t MountNodeInfo::MountDir() const
 {
-    return DoMount(srcPath, destPath);
+    return MountDir(srcPath, dstPath);
 }
 
-int32_t MountNodeInfo::DoMount(const std::string &src, const std::string &dest) const
+int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) const
 {
-    std::string dst = dest;
-    if (createDestPath && destPathInfo != nullptr) {
-        destPathInfo->DoCreate(dst);
+    std::string currentDst = dst;
+    if (createDstPath && dstPathInfo != nullptr) {
+        dstPathInfo->MakeDir(currentDst);
     }
 
     if (!src.empty() && !IsDir(src)) {
@@ -170,23 +209,22 @@ int32_t MountNodeInfo::DoMount(const std::string &src, const std::string &dest) 
         return E_NON_EXIST;
     }
 
-    if (dst.empty() || !IsDir(dst)) {
-        LOGE("path invalid, %{public}s", dst.c_str());
+    if (currentDst.empty() || !IsDir(currentDst)) {
+        LOGE("path invalid, %{public}s", currentDst.c_str());
         return E_NON_EXIST;
     }
 
     if (options.find(OPTIONS_CHECK_MOUNTED) != options.end()) {
-        if (IsPathMounted(dst)) {
-            LOGI("path has mounted, %{public}s", dst.c_str());
+        if (IsPathMounted(currentDst)) {
+            LOGI("path has mounted, %{public}s", currentDst.c_str());
             return E_OK;
         }
     }
 
-    auto ret = Mount(src, dst, fileSystemType.empty() ? nullptr : fileSystemType.c_str(),
-        mountFlags, data.empty() ? nullptr : data.c_str()
-    );
+    auto ret = Mount(src, currentDst, fsType.empty() ? nullptr : fsType.c_str(),
+        mountFlags, data.empty() ? nullptr : data.c_str());
     if (ret != E_OK && errno != EEXIST && errno != EBUSY) {
-        LOGE("mount failed, path=%{public}s, errno=%{public}d.", dst.c_str(), errno);
+        LOGE("mount failed, path=%{public}s, errno=%{public}d.", currentDst.c_str(), errno);
         return ret;
     }
     return E_OK;
@@ -301,7 +339,14 @@ int32_t UserPathResolver::GetUserPath(uint32_t flags, const std::string &userTyp
 
 int32_t UserPathResolver::OpenJsonFile(const std::string &filename, nlohmann::json &j)
 {
-    std::ifstream file(STORAGE_ETC_PATH + filename);
+    std::string filePath = STORAGE_ETC_PATH + filename;
+    struct stat fileStat;
+    if (stat(filePath.c_str(), &fileStat) != 0 ||
+        fileStat.st_size <= 0 || fileStat.st_size > MAX_JSON_FILE_LEN) {
+        return E_OPEN_JSON_FILE_ERROR;
+    }
+
+    std::ifstream file(filePath);
     if (!file.is_open()) {
         LOGE("json file: %{public}s open failed, error=%{public}d", filename.c_str(), errno);
         return E_OPEN_JSON_FILE_ERROR;
@@ -374,7 +419,7 @@ int32_t UserPathResolver::ReplaceUserId(uint32_t userId, std::vector<MountNodeIn
 {
     for (auto &mountNode : mountNodeList) {
         ReplaceAndCount(mountNode.srcPath, USER_ID, std::to_string(userId));
-        ReplaceAndCount(mountNode.destPath, USER_ID, std::to_string(userId));
+        ReplaceAndCount(mountNode.dstPath, USER_ID, std::to_string(userId));
         ReplaceAndCount(mountNode.data, USER_ID, std::to_string(userId));
     }
     return E_OK;

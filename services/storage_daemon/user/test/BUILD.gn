@@ -158,10 +158,56 @@ ohos_unittest("mount_manager_test") {
   }
 }
 
+ohos_unittest("user_path_resolver_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private=public",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "$ROOT_DIR/include/mock",
+    "$ROOT_DIR/utils",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/user/src/user_path_resolver.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
+    "user_path_resolver_test.cpp",
+  ]
+
+  deps = [
+    #"$ROOT_DIR:storage_common_utils",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "json:nlohmann_json_static",
+    "hilog:libhilog",
+  ]
+}
+
 group("storage_daemon_user_test") {
   testonly = true
   deps = [
     ":mount_manager_test",
     ":user_manager_test",
+    ":user_path_resolver_test",
   ]
 }
