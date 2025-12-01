@@ -74,9 +74,8 @@ bool SetBundleQuotaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const ui
         return true;
     }
     int len = (size - pos) / 2;
-    string bundleName(reinterpret_cast<const char *>(data + pos), len);
     string bundleDataDirPath(reinterpret_cast<const char *>(data + pos + len), len);
-    proxy->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    proxy->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
     return true;
 }
 } // namespace OHOS

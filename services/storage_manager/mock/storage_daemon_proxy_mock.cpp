@@ -216,7 +216,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const StorageFileR
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
+int32_t StorageDaemonProxy::SetBundleQuota(int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     return E_OK;

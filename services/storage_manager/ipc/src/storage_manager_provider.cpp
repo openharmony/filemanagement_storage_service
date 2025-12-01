@@ -666,7 +666,7 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    return StorageManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,

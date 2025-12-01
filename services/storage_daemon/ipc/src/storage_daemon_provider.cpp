@@ -741,12 +741,11 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFi
     return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
 }
 
-int32_t StorageDaemonProvider::SetBundleQuota(const std::string &bundleName,
-                                              int32_t uid,
+int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
                                               const std::string &bundleDataDirPath,
                                               int32_t limitSizeMb)
 {
-    return QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    return QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
