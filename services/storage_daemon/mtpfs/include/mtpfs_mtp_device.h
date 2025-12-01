@@ -72,8 +72,8 @@ public:
         moveEnabled_ = e;
     }
 
-    uint64_t StorageTotalSize() const;
-    uint64_t StorageFreeSize() const;
+    uint64_t StorageTotalSize();
+    uint64_t StorageFreeSize();
 
     int DirCreateNew(const std::string &path);
     int DirRemove(const std::string &path);
