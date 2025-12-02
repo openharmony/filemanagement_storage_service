@@ -1326,7 +1326,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_0
 
 /**
  * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_004
- * @tc.desc: Verify the HandleDisDstPath function when dstPath exists, is empty but doesn't contain REMOTE_SHARE_PATH_DIR.
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath exists, is empty
  * @tc.type: FUNC
  * @tc.require: IB49AM
  */
