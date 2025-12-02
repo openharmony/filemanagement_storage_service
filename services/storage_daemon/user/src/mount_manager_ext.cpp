@@ -118,17 +118,18 @@ int32_t MountManager::HandleDisDstPath(const std::string &dstPath)
             LOGE("dir not empty, uid is %{public}d, gid is %{public}d, mode is %{public}d",
                  st.st_uid, st.st_gid, st.st_mode);
             std::string data = "uid=" + std::to_string(st.st_uid) + ",gid=" + std::to_string(st.st_gid) + ",mode="
-                + std::to_string(st.st_mode) + ",name=" + entryName.string() + "/n";
+                + std::to_string(st.st_mode) + ",name=" + entryName.string();
             extraData += data;
             StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
-            return E_ERR;
         }
-    }
-    if (dstPath.find(REMOTE_SHARE_PATH_DIR) == std::string::npos) {
-        LOGE("dstPath not find REMOTE_SHARE_PATH_DIR");
         return E_ERR;
     }
-    std::string tempPath = dstPath.substr(0, dstPath.find(REMOTE_SHARE_PATH_DIR) + REMOTE_SHARE_PATH_DIR.size());
+    auto pos = dstPath.find(REMOTE_SHARE_PATH_DIR);
+    if (pos == std::string::npos) {
+        LOGE("REMOTE_SHARE_PATH_DIR not found in dstPath");
+        return E_ERR;
+    }
+    std::string tempPath = dstPath.substr(0, pos + REMOTE_SHARE_PATH_DIR.size());
     if (!RmDirRecurse(tempPath)) {
         extraData = "rm dst path failed,errCode=" + std::to_string(errno);
         StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
