@@ -110,16 +110,16 @@ int32_t MountManager::HandleDisDstPath(const std::string &dstPath)
         return E_OK;
     }
     std::string extraData;
+    std::filesystem::directory_iterator iter(dstPath);
     std::filesystem::directory_iterator endIter;
-    for (std::filesystem::directory_iterator iter(dstPath); iter != endIter; ++iter) {
+    if (iter != endIter) {
         std::filesystem::path entryName = iter->path().filename();
         struct stat st;
         if (stat(iter->path().c_str(), &st) == 0) {
             LOGE("dir not empty, uid is %{public}d, gid is %{public}d, mode is %{public}d",
-                 st.st_uid, st.st_gid, st.st_mode);
-            std::string data = "uid=" + std::to_string(st.st_uid) + ",gid=" + std::to_string(st.st_gid) + ",mode="
+                st.st_uid, st.st_gid, st.st_mode);
+            extraData = "uid=" + std::to_string(st.st_uid) + ",gid=" + std::to_string(st.st_gid) + ",mode="
                 + std::to_string(st.st_mode) + ",name=" + entryName.string();
-            extraData += data;
             StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
         }
         return E_ERR;
@@ -152,13 +152,18 @@ int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &netw
     std::list<std::string> mounts;
     FindMountsByNetworkId(networkId, mounts);
     for (const std::string &item: mounts) {
+        auto pos = item.find(REMOTE_SHARE_PATH_DIR);
+        if (pos == std::string::npos) {
+            continue;
+        }
         int32_t ret = UMount2(item, MNT_DETACH);
         if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("umount share file failed, errno is %{public}d.", errno);
             std::string extraData = "networkId=" + networkId + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("UMountDisShareFile", userId, E_UMOUNT_SHARE_FILE, extraData);
+            continue;
         }
-        std::string path = item.substr(0, item.find(REMOTE_SHARE_PATH_DIR) + REMOTE_SHARE_PATH_DIR.size());
+        std::string path = item.substr(0, pos + REMOTE_SHARE_PATH_DIR.size());
         RmDirRecurse(path);
     }
     LOGI("umount share file end.");
