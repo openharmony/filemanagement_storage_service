@@ -62,7 +62,7 @@ void StorageQuotaController::UpdateBaseLineByUid()
         int32_t ret = sdCommunication->SetBundleQuota(param.uid, QUOTA_DEVICE_DATA_PATH,  param.baseline);
         if (ret != E_OK) {
             LOGE("SetBundleQuota failed for uid=%{public}d, baseline=%{public}d, ret=%{public}d",
-                    param.uid, param.baseline, ret);
+                param.uid, param.baseline, ret);
             resultMap[param.uid] = param.baseline;
         }
     }

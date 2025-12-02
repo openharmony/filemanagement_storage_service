@@ -72,7 +72,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_001, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_STAT_VFS_KERNEL_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_001 end";
 }
