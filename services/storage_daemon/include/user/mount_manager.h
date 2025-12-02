@@ -134,6 +134,7 @@ private:
     void CheckSymlinkForMulti(const std::string &fdPath, const std::string &path, std::set<std::string> &occupyFiles);
     int32_t FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts);
     int32_t FilterNotMountedPath(std::map<std::string, std::string> &notMountPaths);
+    int32_t HandleDisDstPath(const std::string &dstPath);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
@@ -143,6 +144,7 @@ private:
     const std::vector<DirInfo> fileManagerDir_;
     const std::vector<DirInfo> appdataDir_;
     std::mutex mountMutex_;
+    std::mutex mountDisMutex_;
     std::vector<int32_t> fuseToMountUsers_;
     std::vector<int32_t> fuseMountedUsers_;
     bool cloudReady_{false};
