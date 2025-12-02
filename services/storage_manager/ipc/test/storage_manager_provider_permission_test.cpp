@@ -40,9 +40,19 @@
 #include <thread>
 #include <vector>
 #include <cstdint>
+int32_t g_accessTokenType = 1;
 namespace OHOS::Security::AccessToken {
 ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
 {
+    if (g_accessTokenType == -1) {
+        return Security::AccessToken::TOKEN_INVALID;
+    }
+    if (g_accessTokenType == 0) {
+        return Security::AccessToken::TOKEN_HAP;
+    }
+    if (g_accessTokenType == 1) {
+        return Security::AccessToken::TOKEN_NATIVE;
+    }
     return Security::AccessToken::TOKEN_NATIVE;
 }
 
@@ -115,6 +125,7 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
 void StorageManagerProviderTest::SetUp(void)
 {
     g_returnUpdateService = false;
+    g_accessTokenType = 1;
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
 }
 
@@ -1646,7 +1657,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     extBundleStats.businessName_ = "test";
     ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_OK);
+    g_accessTokenType = 0;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
+    EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
 }
 
@@ -1677,7 +1691,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     extBundleStats.businessName_ = "test";
     ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_OK);
+    g_accessTokenType = 0;
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
+    EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
 
@@ -1701,7 +1718,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleS
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
     ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_OK);
+    g_accessTokenType = 0;
+    ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
+    EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
 }

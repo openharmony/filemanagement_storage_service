@@ -90,6 +90,17 @@ bool CheckClientPermission(const std::string &permissionStr)
     return false;
 }
 
+bool IsSystemApp()
+{
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
+    if (tokenType == Security::AccessToken::TOKEN_HAP) {
+        uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
+        return Security::AccessToken::AccessTokenKit::IsSystemAppByFullTokenID(fullTokenId);
+    }
+    return true;
+}
+
 bool CheckClientPermissionForCrypt(const std::string &permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -1010,6 +1021,10 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
 
 int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
 {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1019,6 +1034,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
         return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("SetExtBundleStats start");
     int32_t ret = StorageStatusService::GetInstance().SetExtBundleStats(userId, stats);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
@@ -1027,12 +1043,16 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
 int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1041,6 +1061,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
         return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("GetExtBundleStats start");
     int32_t ret = StorageStatusService::GetInstance().GetExtBundleStats(userId, stats);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
@@ -1049,12 +1070,16 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
 int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
 {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1063,6 +1088,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
         return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("GetAllExtBundleStats start");
     int32_t ret = StorageStatusService::GetInstance().GetAllExtBundleStats(userId, statsVec);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
@@ -1071,7 +1097,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 

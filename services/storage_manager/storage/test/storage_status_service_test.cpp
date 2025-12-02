@@ -429,7 +429,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00002, testing::ext
     auto &rdbAdapter = StorageRdbAdapter::GetInstance();
     rdbAdapter.Init();
     ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_NE(ret, OHOS::E_OK);
+    EXPECT_EQ(ret, OHOS::E_OK);
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 end";
 }

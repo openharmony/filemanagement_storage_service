@@ -475,5 +475,172 @@ napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
     }
     return NVal::CreateInt64(env, *resultSize).val_;
 }
+
+static bool ParseExtBundleStats(napi_env env, NVal statsObj, ExtBundleStats &stats)
+{
+    bool succ = false;
+    NVal nameVal = statsObj.GetProp("businessName");
+    std::unique_ptr<char[]> nameBuf;
+    std::tie(succ, nameBuf, std::ignore) = nameVal.ToUTF8String();
+    if (!succ || !nameBuf || !nameBuf[0]) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return false;
+    }
+    stats.businessName_ = std::string(nameBuf.get());
+    NVal sizeVal = statsObj.GetProp("size");
+    int64_t tempSize = 0;
+    std::tie(succ, tempSize) = sizeVal.ToInt64();
+    if (!succ) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return false;
+    }
+    if (tempSize < 0) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return false;
+    }
+    stats.businessSize_ = static_cast<uint64_t>(tempSize);
+    NVal flagVal = statsObj.GetProp("flag");
+    if (!flagVal.TypeIs(napi_boolean)) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return false;
+    }
+    std::tie(succ, stats.showFlag_) = flagVal.ToBool();
+    if (!succ) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return false;
+    }
+    return true;
+}
+
+napi_value SetExtBundleStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs(static_cast<int>(NARG_CNT::TWO))) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    uint32_t userId = 0;
+    bool succ = false;
+    std::tie(succ, userId) = NVal(env, funcArg[static_cast<int>(NARG_POS::FIRST)]).ToUint32();
+    if (!succ) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    NVal statsObj(env, funcArg[static_cast<int>(NARG_POS::SECOND)]);
+    if (!statsObj.TypeIs(napi_object)) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    auto stats = std::make_shared<ExtBundleStats>();
+    if (!ParseExtBundleStats(env, statsObj, *stats)) {
+        return nullptr;
+    }
+    auto cbExec = [userId, stats]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetExtBundleStats(userId, *stats);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return NVal::CreateBool(env, true);
+    };
+    NVal thisVar(env, funcArg.GetThisVar());
+    std::string procedureName = "SetExtBundleStats";
+    return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, std::move(cbExec), std::move(cbComplete)).val_;
+}
+
+napi_value GetExtBundleStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs(static_cast<int>(NARG_CNT::TWO))) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    uint32_t userId = 0;
+    bool succ = false;
+    std::tie(succ, userId) = NVal(env, funcArg[static_cast<int>(NARG_POS::FIRST)]).ToUint32();
+    if (!succ) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    std::unique_ptr<char[]> nameBuf;
+    std::tie(succ, nameBuf, std::ignore) = NVal(env, funcArg[NARG_POS::SECOND]).ToUTF8String();
+    if (!succ || !nameBuf || !nameBuf[0]) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    auto extStats = std::make_shared<ExtBundleStats>();
+    std::string businessName = std::string(nameBuf.get());
+    extStats->businessName_ = businessName;
+    auto cbExec = [userId, extStats]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetExtBundleStats(userId, *extStats);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [extStats](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal obj = NVal::CreateObject(env);
+        obj.AddProp("businessName", NVal::CreateUTF8String(env, extStats->businessName_).val_);
+        obj.AddProp("size", NVal::CreateInt64(env, static_cast<int64_t>(extStats->businessSize_)).val_);
+        obj.AddProp("flag", NVal::CreateBool(env, extStats->showFlag_).val_);
+        return obj;
+    };
+    std::string procedureName = "GetExtBundleStats";
+    NVal thisVar(env, funcArg.GetThisVar());
+    return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, std::move(cbExec), std::move(cbComplete)).val_;
+}
+
+napi_value GetAllExtBundleStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs(static_cast<int>(NARG_CNT::ONE))) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+    uint32_t userId = 0;
+    std::tie(succ, userId) = NVal(env, funcArg[static_cast<int>(NARG_POS::FIRST)]).ToUint32();
+    if (!succ) {
+        NError(E_JS_PARAMS_INVALID).ThrowErr(env);
+        return nullptr;
+    }
+    auto statsVec = std::make_shared<std::vector<ExtBundleStats>>();
+    auto cbExec = [userId, statsVec]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllExtBundleStats(userId,
+            *statsVec);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [statsVec](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        napi_value resultArray = nullptr;
+        napi_create_array(env, &resultArray);
+        uint32_t index = 0;
+        for (const auto &extStats : *statsVec) {
+            NVal obj = NVal::CreateObject(env);
+            obj.AddProp("businessName", NVal::CreateUTF8String(env, extStats.businessName_).val_);
+            obj.AddProp("size", NVal::CreateInt64(env, static_cast<int64_t>(extStats.businessSize_)).val_);
+            obj.AddProp("flag", NVal::CreateBool(env, extStats.showFlag_).val_);
+            napi_set_element(env, resultArray, index++, obj.val_);
+        }
+        return NVal(env, resultArray);
+    };
+    std::string procedureName = "GetAllExtBundleStats";
+    NVal thisVar(env, funcArg.GetThisVar());
+    return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, std::move(cbExec), std::move(cbComplete)).val_;
+}
+
 } // namespace StorageManager
 } // namespace OHOS

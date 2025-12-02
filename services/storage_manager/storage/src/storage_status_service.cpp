@@ -484,10 +484,18 @@ int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, ExtBundleStats 
         LOGE("get businessSize failed");
         return E_TB_GET_ERROR;
     }
-    int32_t ret = resultSet->GoToFirstRow();
+    int32_t rowCount = ROWCOUNT_INIT;
+    resultSet->GetRowCount(rowCount);
+    if (rowCount == 0) {
+        stats.businessSize_ = 0;
+        resultSet->Close();
+        LOGI("the required business size is not found");
+        return E_OK;
+    }
+    int32_t ret = resultSet->GoToNextRow();
     if (ret != E_OK) {
         resultSet->Close();
-        LOGE("go to firstrow failed, ret: %{public}d", ret);
+        LOGE("go to next row failed, ret: %{public}d", ret);
         return ret;
     }
     ret = ConvertToExtBundleStat(resultSet, stats);
@@ -505,17 +513,23 @@ std::string StorageStatusService::GetCallingBundleName()
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
-    std::string callingBundleName;
     if (tokenType == Security::AccessToken::TOKEN_NATIVE) {
-        auto uid = IPCSkeleton::GetCallingUid();
-        callingBundleName = std::to_string(uid);
-        LOGI("GetCallingBundleName success for sa, callBundleName: %{public}s", callingBundleName.c_str());
-        return callingBundleName;
+        Security::AccessToken::NativeTokenInfo tokenInfo;
+        if (Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, tokenInfo) != E_OK) {
+            LOGE("GetNativeTokenInfo failed");
+            return "";
+        }
+        LOGI("GetCallingBundleName success for sa, callBundleName: %{public}s", tokenInfo.processName.c_str());
+        return tokenInfo.processName;
     }
     if (tokenType == Security::AccessToken::TOKEN_HAP) {
-        callingBundleName = GetCallingPkgName();
-        LOGI("GetCallingBundleName success for hap, callBundleName: %{public}s", callingBundleName.c_str());
-        return callingBundleName;
+        Security::AccessToken::HapTokenInfo hapInfo;
+        if (Security::AccessToken::AccessTokenKit::GetHapTokenInfo(tokenCaller, hapInfo) != E_OK) {
+            LOGE("GetHapTokenInfo failed");
+            return "";
+        }
+        LOGI("GetCallingBundleName success for hap, callBundleName: %{public}s", hapInfo.bundleName.c_str());
+        return hapInfo.bundleName;
     }
     return "";
 }
