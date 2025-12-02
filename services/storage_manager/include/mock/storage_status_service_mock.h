@@ -18,6 +18,7 @@
 
 #include <gmock/gmock.h>
 
+#include "ext_bundle_stats.h"
 #include "storage/storage_status_service.h"
 
 namespace OHOS {
@@ -34,10 +35,11 @@ public:
     virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag);
     virtual int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats,
         int32_t appIndex, uint32_t statFlag);
-    virtual int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize);
-    virtual int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize);
     virtual int32_t GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid);
     virtual int32_t DelBundleExtStats(uint32_t userId, const std::string &bundleName);
+    virtual int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats);
+    virtual int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
+    virtual int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
     static inline std::shared_ptr<IStorageStatusServiceMock> storageStatusService = nullptr;
 };
 
@@ -49,8 +51,9 @@ public:
     MOCK_METHOD(int32_t, GetUserStorageStatsByType, (int32_t, StorageStats &, std::string));
     MOCK_METHOD(int32_t, GetCurrentBundleStats, (BundleStats &, uint32_t));
     MOCK_METHOD(int32_t, GetBundleStats, (const std::string &, int32_t, BundleStats &, int32_t, uint32_t));
-    MOCK_METHOD(int32_t, SetExtBundleStats, (uint32_t, const std::string &, uint64_t));
-    MOCK_METHOD(int32_t, GetExtBundleStats, (uint32_t, const std::string &, uint64_t &));
+    MOCK_METHOD(int32_t, SetExtBundleStats, (uint32_t, const ExtBundleStats &));
+    MOCK_METHOD(int32_t, GetExtBundleStats, (uint32_t, ExtBundleStats &));
+    MOCK_METHOD(int32_t, GetAllExtBundleStats, (uint32_t, std::vector<ExtBundleStats> &));
     MOCK_METHOD(int32_t, GetBundleNameAndUid, (int32_t, (std::map<int32_t, std::string> &)));
     MOCK_METHOD(int32_t, DelBundleExtStats, (uint32_t, const std::string &));
 };
