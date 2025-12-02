@@ -1035,7 +1035,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001 start";
     int32_t userId = 100;
-    std::string networkId = "/storage/cloud/100/files/Docs";
+    std::string networkId = "/.remote_share";
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
     errno = 5;
     auto ret = MountManager::GetInstance().UMountDisShareFile(userId, networkId);
