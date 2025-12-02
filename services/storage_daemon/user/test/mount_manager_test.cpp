@@ -1147,15 +1147,9 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountDisShareFile_
     auto ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_NON_EXIST);
 
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
-    EXPECT_EQ(ret, E_NON_EXIST);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
-    ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
-    EXPECT_EQ(ret, E_NON_EXIST);
+    EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
  
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
@@ -1405,6 +1399,216 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_0
     EXPECT_TRUE(ret);
     
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MediaFuseDirFlag_001 end";
+}
+
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_001
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath not exists.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_001 start";
+    std::string dstPath = "/data/test/non_exist_dir";
+    
+    // Mock filesystem not exists
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_002
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath not exists and MkDirRecurse failed.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_002 start";
+    std::string dstPath = "/data/test/non_exist_dir";
+    
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_002 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_003
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath exists and is not empty.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_003 start";
+    std::string dstPath = "/data/test/exist_non_empty_dir";
+    std::string dstPathNotEmpty = "/data/test/exist_non_empty_dir/dir1";
+
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse));
+    MkDirRecurse(dstPathNotEmpty, S_IRWXU);
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_003 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_004
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath exists, is empty but doesn't contain REMOTE_SHARE_PATH_DIR.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_004 start";
+    std::string dstPath = "/data/test/dir_without_remote_share";
+    
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse));
+    MkDirRecurse(dstPath, S_IRWXU);
+    
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_004 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_005
+ * @tc.desc: Verify the HandleDisDstPath function when dstPath exists, is empty and contains REMOTE_SHARE_PATH_DIR, but RmDirRecurse failed.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_005 start";
+    std::string dstPath = "/data/test/sub_dir";
+    
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse));
+    MkDirRecurse(dstPath, S_IRWXU);
+    
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_005 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_006
+ * @tc.desc: Verify the HandleDisDstPath function when all conditions met and MkDirRecurse succeed after remove.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_006 start";
+    std::string dstPath = "/data/test/.remote_share/sub_dir";
+    
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse));
+    MkDirRecurse(dstPath, S_IRWXU);
+
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(false));
+    
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_006 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_007
+ * @tc.desc: Verify the HandleDisDstPath function when MkDirRecurse failed after remove.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_007 start";
+    std::string dstPath = "/data/test/.remote_share/sub_dir";
+
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse)).WillOnce(Return(false));
+    MkDirRecurse(dstPath, S_IRWXU);
+
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true)); 
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_007 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_HandleDisDstPath_008
+ * @tc.desc: Verify the HandleDisDstPath function when MkDirRecurse failed after remove.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_008 start";
+    std::string dstPath = "/data/test/.remote_share/sub_dir";
+
+    auto realMkDirRecurse = [](const std::string& path, mode_t mode) -> bool {
+        std::error_code ec;
+        std::filesystem::create_directories(path, ec);
+        if (ec && ec != std::errc::file_exists) {
+            return false;
+        }
+        return true;
+    };
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _))
+        .WillOnce(Invoke(realMkDirRecurse)).WillOnce(Return(true));
+    MkDirRecurse(dstPath, S_IRWXU);
+
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
+    auto ret = MountManager::GetInstance().HandleDisDstPath(dstPath);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_008 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
