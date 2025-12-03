@@ -16,6 +16,7 @@
 #include <mutex>
 #include <chrono>
 #include <unistd.h>
+#include <filesystem>
 #include "storage_rdb_adapter.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
@@ -42,9 +43,13 @@ int32_t StorageRdbAdapter::Init()
     uint32_t attemptedTimes = 0;
     while (retryTimes > 0) {
         attemptedTimes++;
-        if (GetRDBPtr() == OHOS::E_OK) {
-            LOGI("rdb init success, attempted times: %u", attemptedTimes);
-            return OHOS::E_OK;
+        std::error_code errorCode;
+        if (!std::filesystem::exists(STORAGE_MANAGER_RDB_PATH, errorCode)) {
+            continue;
+        }
+        if (GetRDBPtr() == E_OK) {
+            LOGI("rdb init success, attempted times: %{public}u", attemptedTimes);
+            return E_OK;
         }
         usleep(RDB_INIT_INTERVAL_TIME);
         retryTimes--;
@@ -58,26 +63,26 @@ int32_t StorageRdbAdapter::UnInit()
     LOGI("rdb adapter unInit");
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     store_ = nullptr;
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t StorageRdbAdapter::GetRDBPtr()
 {
     std::lock_guard<std::mutex> lock(rdbAdapterMtx_);
     if (store_ != nullptr) {
-        return OHOS::E_OK;
+        return E_OK;
     }
     int32_t version = RDB_VERSION;
     OpenCallback helper;
     NativeRdb::RdbStoreConfig config(std::string(STORAGE_MANAGER_RDB_PATH) +
         std::string(STORAGE_MANAGER_DATABASE_NAME));
-    int32_t errCode = OHOS::E_OK;
+    int32_t errCode = E_OK;
     store_ = NativeRdb::RdbHelper::GetRdbStore(config, version, helper, errCode);
     if (store_ == nullptr) {
         LOGE("get rdb store failed, errCode is %{public}d", errCode);
         return E_RDB_STORE_NULL;
     }
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t StorageRdbAdapter::Put(int64_t &outRowId, const std::string &table, const NativeRdb::ValuesBucket &values)
@@ -88,11 +93,11 @@ int32_t StorageRdbAdapter::Put(int64_t &outRowId, const std::string &table, cons
         return E_RDB_STORE_NULL;
     }
     int32_t ret = store_->Insert(outRowId, table, values);
-    if (ret != OHOS::E_OK) {
+    if (ret != E_OK) {
         LOGE("rdb adapter put failed when put, ret is %{public}d", ret);
         return E_TB_PUT_ERROR;
     }
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t StorageRdbAdapter::Delete(int32_t &deleteRows, const std::string &table, const std::string &whereClause,
@@ -104,11 +109,11 @@ int32_t StorageRdbAdapter::Delete(int32_t &deleteRows, const std::string &table,
         return E_RDB_STORE_NULL;
     }
     int32_t ret = store_->Delete(deleteRows, table, whereClause, bindArgs);
-    if (ret != OHOS::E_OK) {
+    if (ret != E_OK) {
         LOGE("rdb adapter delete failed when delete, ret is %{public}d", ret);
         return E_TB_DELETE_ERROR;
     }
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t StorageRdbAdapter::Update(int32_t &changedRows, const std::string &table, const NativeRdb::ValuesBucket &values,
@@ -120,11 +125,11 @@ int32_t StorageRdbAdapter::Update(int32_t &changedRows, const std::string &table
         return E_RDB_STORE_NULL;
     }
     int32_t ret = store_->Update(changedRows, table, values, whereClause, bindArgs);
-    if (ret != OHOS::E_OK) {
+    if (ret != E_OK) {
         LOGE("rdb adapter update failed when, ret is %{public}d", ret);
         return E_TB_UPDATE_ERROR;
     }
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 std::shared_ptr<NativeRdb::ResultSet> StorageRdbAdapter::Get(const std::string &sql,
@@ -149,29 +154,29 @@ int32_t OpenCallback::CreateTable(NativeRdb::RdbStore &store)
     std::lock_guard<std::mutex> lock(rdbStoreMtx_);
     std::string sql = StorageService::CREATE_BUNDLE_EXT_STATS_TABLE_SQL;
     int32_t errCode = store.ExecuteSql(sql);
-    if (errCode != OHOS::E_OK) {
+    if (errCode != E_OK) {
         LOGE("rdb adapter create table failed, errCode is %{public}d", errCode);
         return E_DB_CREATE_BUNDLE_TABLE_ERROR;
     }
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t OpenCallback::OnCreate(NativeRdb::RdbStore &store)
 {
     LOGI("rdb store create");
     int32_t ret = CreateTable(store);
-    if (ret != OHOS::E_OK) {
+    if (ret != E_OK) {
         LOGE("create table failed");
         return ret;
     }
     LOGI("rdb store create success");
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 int32_t OpenCallback::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion)
 {
     LOGI("rdb store upgrade, old version : %{public}d, new version : %{public}d", oldVersion, newVersion);
-    return OHOS::E_OK;
+    return E_OK;
 }
 
 } // namespace StorageManager

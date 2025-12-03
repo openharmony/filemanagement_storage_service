@@ -17,6 +17,7 @@
 #include <system_ability_definition.h>
 
 #include "disk.h"
+#include "ext_bundle_stats.h"
 #include "message_parcel.h"
 #include "storage_manager.h"
 #include "storage_manager_provider.h"
@@ -1580,10 +1581,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats bundleStats;
     uint32_t userId = 0;
-    const std::string businessName = "businessName";
-    uint64_t businessSize = 0;
-    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
 }
@@ -1598,10 +1598,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats bundleStats;
     uint32_t userId = 0;
-    const std::string businessName = "businessName";
-    uint64_t businessSize = 0;
-    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
@@ -1638,6 +1637,23 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbili
     storageManagerProviderTest_->OnAddSystemAbility(systemAbilityId, deviceId);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_OnAddSystemAbility_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetAllExtBundleStats_001
+ * @tc.desc: Verify the GetAllExtBundleStats function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    std::vector<ExtBundleStats> bundleStats;
+    auto ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

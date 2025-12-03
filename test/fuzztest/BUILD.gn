@@ -60,6 +60,7 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidersetextbundlestats_fuzzer:fuzztest",
     "storagemanagerprovidergetextbundlestats_fuzzer:fuzztest",
     "storagemanagerprovidererasealluserencryptedkeys_fuzzer:fuzztest",
+    "storagemanagerprovidergetallextbundlestats_fuzzer:fuzztest",
   ]
 }
 
@@ -184,6 +185,7 @@ group("storage_service_fuzztest") {
     ":storage_daemon_proxy_fuzztest",
     "bundlestats_fuzzer:fuzztest",
     "disk_fuzzer:fuzztest",
+    "extbundlestats_fuzzer:fuzztest",
     "fileutils_fuzzer:fuzztest",
     "fscryptutils_fuzzer:fuzztest",
     "keycontrol_fuzzer:fuzztest",

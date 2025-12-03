@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,19 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_MANAGER_STORAGE_UTILS_H
-#define STORAGE_MANAGER_STORAGE_UTILS_H
 
-#include <iostream>
+#ifndef EXTBUNDLESTATS_FUZZER_H
+#define EXTBUNDLESTATS_FUZZER_H
 
-namespace OHOS {
-namespace StorageManager {
-static const int64_t UNIT = 1000;
-static const int64_t THRESHOLD = 512;
-static const int64_t ONE_GB = 1000000000;
-int64_t GetRoundSize(int64_t size);
-std::string GetAnonyString(const std::string &value);
-} // namespace STORAGE_MANAGER
-} // namespace OHOS
+#define FUZZ_PROJECT_NAME "extbundlestats_fuzzer"
 
-#endif // STORAGE_MANAGER_STORAGE_UTILS_H
+#endif
