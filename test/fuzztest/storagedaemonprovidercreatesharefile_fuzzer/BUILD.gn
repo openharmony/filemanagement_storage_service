@@ -40,6 +40,8 @@ ohos_fuzztest("StorageDaemonProviderCreateShareFileFuzzTest") {
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovidercreatesharefile_fuzzer/storagedaemonprovidercreatesharefile_fuzzer.cpp",

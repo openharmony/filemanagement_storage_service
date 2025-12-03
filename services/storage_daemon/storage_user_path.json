@@ -614,14 +614,14 @@
         {
             "path": "/data/service/el4/<userId>/findnetwork",
             "mode": "0711",
-            "uid": 6226,
-            "gid": 6226
+            "uid": 7518,
+            "gid": 7518
         },
         {
             "path": "/data/service/el4/<userId>/asset_clone",
             "mode": "0711",
-            "uid": 7518,
-            "gid": 7518
+            "uid": 6226,
+            "gid": 6226
         }
       ],
       "el5": [

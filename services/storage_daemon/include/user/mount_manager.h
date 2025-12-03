@@ -23,45 +23,26 @@
 #include <set>
 
 #include "utils/file_utils.h"
+#include "user/user_path_resolver.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-struct DirInfo {
-    const std::string path;
-    mode_t mode;
-    uid_t uid;
-    gid_t gid;
-};
 
 class MountManager final {
 public:
     static MountManager &GetInstance();
-    MountManager();
-    virtual ~MountManager() = default;
-    static std::vector<DirInfo> InitHmdfsDirVec();
-    static std::vector<DirInfo> InitVirtualDir();
-    static std::vector<DirInfo> InitSystemServiceDir();
-    static std::vector<DirInfo> InitFileManagerDir();
-    static std::vector<DirInfo> InitAppdataDir();
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
-    int32_t PrepareHmdfsDirs(int32_t userId);
-    int32_t PrepareFileManagerDirs(int32_t userId);
-    int32_t PrepareAppdataDir(int32_t userId);
-    int32_t DestroyHmdfsDirs(int32_t userId);
-    int32_t DestroyFileManagerDirs(int32_t userId);
-    int32_t DestroySystemServiceDirs(int32_t userId);
-    int32_t CloudMount(int32_t userId, const std::string &path);
-    int32_t CloudTwiceMount(int32_t userId);
     int32_t MountCryptoPathAgain(uint32_t userId);
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+    void GetAllUserId(std::vector<int32_t> &userIds);
+
     int32_t UMountAllPath(int32_t userId, std::list<std::string> &unMountFailList);
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList);
     int32_t UMountByListWithDetach(std::list<std::string> &list);
-    void SetCloudState(bool active);
     void SetMediaObserverState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
@@ -109,7 +90,6 @@ private:
     int32_t MountAppdataAndSharefs(int32_t userId);
     int32_t MountAppdata(const std::string &userId);
     bool DirExist(const std::string &dir);
-    void GetAllUserId(std::vector<int32_t> &userIds);
     int32_t PrepareAppdataDirByUserId(int32_t userId);
     int32_t MountSharefsAndNoSharefs(int32_t userId);
     int32_t SharedMount(int32_t userId, const std::string &path);

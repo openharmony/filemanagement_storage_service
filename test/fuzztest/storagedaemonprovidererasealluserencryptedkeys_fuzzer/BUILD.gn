@@ -32,6 +32,8 @@ ohos_static_library("storagedaemonprovider_erasealluserencryptedkeys_fuzztest") 
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
   ]
 

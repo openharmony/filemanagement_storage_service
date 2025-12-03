@@ -356,10 +356,10 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
 #endif
-    auto result = UserManager::GetInstance().PrepareUserDirs(GLOBAL_USER_ID, IStorageDaemonEnum::CRYPTO_FLAG_EL1);
+    auto result = UserManager::GetInstance().PrepareAllUserEl1Dirs();
     if (result != E_OK) {
-        LOGE("PrepareUserDirs failed, please check");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
+        LOGE("PrepareAllUserEl1Dirs failed, please check");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAllUserEl1Dirs", GLOBAL_USER_ID, result, "EL1", "");
     }
     result = MountManager::GetInstance().PrepareAppdataDir(GLOBAL_USER_ID);
     if (result != E_OK) {
@@ -972,7 +972,7 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
     RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
     const std::string &path = std::string(DATA_SERVICE_EL2) + std::to_string(userId);
     LOGI("RestoreconRecurse el2 public end, userId = %{public}d", userId);
-    MountManager::GetInstance().RestoreconSystemServiceDirs(userId);
+    UserManager::GetInstance().RestoreconSystemServiceDirs(userId);
     LOGI("RestoreconSystemServiceDirs el2 end, userId = %{public}d", userId);
     RestoreconRecurse((std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share").c_str());
     LOGI("RestoreconRecurse el2 share end, userId = %{public}d", userId);

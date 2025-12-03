@@ -1941,43 +1941,6 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateESecret_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_UpdateESecret_0100 end";
 }
 
-/**
- * @tc.name: KeyManager_InitAOTCompilerPath_001
- * @tc.desc: Verify the KeyManager InitAOTCompilerPath function.
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(KeyManagerTest, KeyManager_InitAOTCompilerPath_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_InitAOTCompilerPath_001 start";
-    std::vector<FileList> dirInfo;
-    ReadDigitDir(USER_EL1_DIR, dirInfo);
-    for (auto &item : dirInfo) {
-        if (item.userId == GLOBAL_USER_ID) {
-            continue;
-        }
-        std::string aotCompiler = StringPrintf("/data/app/el1/%d/aot_compiler", item.userId);
-        ASSERT_TRUE(OHOS::ForceRemoveDirectory(aotCompiler.c_str()));
-    }
-    KeyManager::GetInstance().CreateAotCompilerDir();
-    for (auto &item : dirInfo) {
-        if (item.userId == GLOBAL_USER_ID) {
-            continue;
-        }
-        std::string aotCompiler = StringPrintf("/data/app/el1/%d/aot_compiler", item.userId);
-        ASSERT_TRUE(OHOS::FileExists(aotCompiler.c_str()));
-    }
-    KeyManager::GetInstance().CreateAotCompilerDir();
-    for (auto &item : dirInfo) {
-        if (item.userId == GLOBAL_USER_ID) {
-            continue;
-        }
-        std::string aotCompiler = StringPrintf("/data/app/el1/%d/aot_compiler", item.userId);
-        ASSERT_TRUE(OHOS::FileExists(aotCompiler.c_str()));
-    }
-    GTEST_LOG_(INFO) << "KeyManager_InitAOTCompilerPath_001 end";
-}
-
 #ifdef EL5_FILEKEY_MANAGER
 /**
  * @tc.name: KeyManager_RegisterUeceActivationCallback_001

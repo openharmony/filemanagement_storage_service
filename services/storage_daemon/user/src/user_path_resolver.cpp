@@ -27,6 +27,7 @@
 #include "utils/file_utils.h"
 #include "user/mount_constant.h"
 #include "quota/quota_manager.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -185,7 +186,7 @@ int32_t DirInfo::RemoveDir() const
     return E_OK;
 }
 
-void DirInfo::UpdateDirUid(uint32_t userId)
+void DirInfo::UpdateDirUid(int32_t userId)
 {
     if (options.find(OPTIONS_UPDATE_UID) != options.end()) {
         uid = USER_ID_BASE * userId + uid;
@@ -220,9 +221,13 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
             return E_OK;
         }
     }
-
+    
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto ret = Mount(src, currentDst, fsType.empty() ? nullptr : fsType.c_str(),
         mountFlags, data.empty() ? nullptr : data.c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("MountDir",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USER_ID);
+    LOGI("SD_DURATION: MountDir, delayTime = %{public}s", delay.c_str());
     if (ret != E_OK && errno != EEXIST && errno != EBUSY) {
         LOGE("mount failed, path=%{public}s, errno=%{public}d.", currentDst.c_str(), errno);
         return ret;
@@ -230,7 +235,7 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
     return E_OK;
 }
 
-int32_t UserPathResolver::GetUserBasePath(uint32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
+int32_t UserPathResolver::GetUserBasePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
 {
     auto ret = GetUserPath(flags, JSON_KEY_USER_BASE, dirInfoList);
     if (ret != E_OK) {
@@ -239,7 +244,7 @@ int32_t UserPathResolver::GetUserBasePath(uint32_t userId, uint32_t flags, std::
     return ReplaceUserId(userId, dirInfoList);
 }
 
-int32_t UserPathResolver::GetUserServicePath(uint32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
+int32_t UserPathResolver::GetUserServicePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
 {
     auto ret = GetUserPath(flags, JSON_KEY_USER_SERVICE, dirInfoList);
     if (ret != E_OK) {
@@ -248,7 +253,7 @@ int32_t UserPathResolver::GetUserServicePath(uint32_t userId, uint32_t flags, st
     return ReplaceUserId(userId, dirInfoList);
 }
 
-int32_t UserPathResolver::GetAppdataPath(uint32_t userId, std::vector<DirInfo> &dirInfoList)
+int32_t UserPathResolver::GetAppdataPath(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_USER_PATH, j);
@@ -263,7 +268,7 @@ int32_t UserPathResolver::GetAppdataPath(uint32_t userId, std::vector<DirInfo> &
     return ReplaceUserId(userId, dirInfoList);
 }
 
-int32_t UserPathResolver::GetVirtualPath(uint32_t userId, std::vector<DirInfo> &dirInfoList)
+int32_t UserPathResolver::GetVirtualPath(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_USER_PATH, j);
@@ -278,22 +283,22 @@ int32_t UserPathResolver::GetVirtualPath(uint32_t userId, std::vector<DirInfo> &
     return ReplaceUserId(userId, dirInfoList);
 }
 
-int32_t UserPathResolver::GetAppDataMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList)
+int32_t UserPathResolver::GetAppDataMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
     return GetMountNodeList(userId, {JSON_KEY_APPDATA_MOUNT}, mountNodeList);
 }
 
-int32_t UserPathResolver::GetHmdfsMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList)
+int32_t UserPathResolver::GetHmdfsMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
     return GetMountNodeList(userId, {JSON_KEY_HMDFS_MOUNT}, mountNodeList);
 }
 
-int32_t UserPathResolver::GetSandboxMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList)
+int32_t UserPathResolver::GetSandboxMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
     return GetMountNodeList(userId, {JSON_KEY_SANDBOX_MOUNT}, mountNodeList);
 }
 
-int32_t UserPathResolver::GetMountNodeList(uint32_t userId, const std::vector<std::string> &pathKeys,
+int32_t UserPathResolver::GetMountNodeList(int32_t userId, const std::vector<std::string> &pathKeys,
     std::vector<MountNodeInfo> &mountNodeList)
 {
     nlohmann::json j;
@@ -407,7 +412,7 @@ template int32_t UserPathResolver::GetTListFromJson<DirInfo>(const nlohmann::jso
 template int32_t UserPathResolver::GetTListFromJson<MountNodeInfo>(const nlohmann::json&,
     const std::vector<std::string>&, std::vector<MountNodeInfo>&);
 
-int32_t UserPathResolver::ReplaceUserId(uint32_t userId, std::vector<DirInfo> &dirInfoList)
+int32_t UserPathResolver::ReplaceUserId(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
     for (auto &dirInfo : dirInfoList) {
         ReplaceAndCount(dirInfo.path, USER_ID, std::to_string(userId));
@@ -415,7 +420,7 @@ int32_t UserPathResolver::ReplaceUserId(uint32_t userId, std::vector<DirInfo> &d
     return E_OK;
 }
 
-int32_t UserPathResolver::ReplaceUserId(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList)
+int32_t UserPathResolver::ReplaceUserId(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
     for (auto &mountNode : mountNodeList) {
         ReplaceAndCount(mountNode.srcPath, USER_ID, std::to_string(userId));

@@ -19,9 +19,6 @@ using namespace std;
 
 using namespace OHOS::StorageDaemon;
 
-MountManager::MountManager()
-{}
-
 MountManager &MountManager::GetInstance()
 {
     static MountManager instance_;
@@ -34,31 +31,6 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
         return false;
     }
     return IMountManagerMoc::mountManagerMoc->CheckMountFileByUser(userId);
-}
-
-int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
-{
-    return 0;
-}
-
-int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
-{
-    return 0;
-}
-
-int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
-{
-    return 0;
-}
-
-int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
-{
-    return 0;
-}
-
-int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
-{
-    return 0;
 }
 
 int32_t MountManager::PrepareAppdataDir(int32_t userId)

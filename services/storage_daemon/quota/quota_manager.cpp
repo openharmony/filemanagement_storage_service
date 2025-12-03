@@ -26,8 +26,6 @@
 #include <thread>
 #include <unistd.h>
 
-#include "file_uri.h"
-#include "sandbox_helper.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"

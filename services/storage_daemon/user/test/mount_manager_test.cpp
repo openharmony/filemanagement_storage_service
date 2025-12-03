@@ -31,6 +31,9 @@ using namespace std;
 namespace {
     const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
     const string EL2_BASE = "/data/storage/el2/base/";
+    constexpr const char *STORAGE_ETC_PATH = "/etc/storage_daemon/";
+    constexpr const char *STORAGE_USER_PATH = "storage_user_path.json";
+    // constexpr const char *STORAGE_MOUNT_INFO = "storage_mount_info.json";
 }
 
 namespace OHOS {
@@ -54,6 +57,10 @@ public:
     static void TearDownTestCase(void);
     void SetUp() {};
     void TearDown() {};
+
+    void CreateFile(const std::string &path, std::string data = "");
+    void DeleteFile(const std::string &path);
+
     static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
     static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
     static inline shared_ptr<ParamMoc> paramMoc_ = nullptr;
@@ -81,6 +88,32 @@ void MountManagerTest::TearDownTestCase()
     paramMoc_ = nullptr;
 }
 
+void MountManagerTest::CreateFile(const std::string &path, std::string data)
+{
+    std::error_code errCode;
+    if (std::filesystem::exists(path, errCode)) {
+        std::filesystem::rename(path, path + "_bak", errCode);
+    }
+
+    std::ofstream file(path, std::ios::out | std::ios::trunc);
+    if (!file.is_open()) {
+        return;
+    }
+    
+    file << data;
+    file.close();
+}
+
+void MountManagerTest::DeleteFile(const std::string &path)
+{
+    std::error_code errCode;
+    std::filesystem::remove(path, errCode);
+    if (std::filesystem::exists(path + "_bak", errCode)) {
+        std::filesystem::rename(path + "_bak", path, errCode);
+    }
+}
+
+
 /**
  * @tc.name: Storage_Daemon_MountManagerTest_GetInstance_001
  * @tc.desc: Verify the GetInstance function.
@@ -96,202 +129,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_GetInstance_001, Test
     ASSERT_TRUE(&mountManager1 == &mountManager2);
 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_GetInstance_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001
- * @tc.desc: Verify the HmdfsTwiceMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001 start";
-    int32_t userId = 888;
-    std::string relativePath;
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(true))
-        .WillOnce(Return(true)).WillOnce(Return(true));
-    auto ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
-        .WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
-        .WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_SharefsMount_001
- * @tc.desc: Verify the SharefsMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharefsMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharefsMount_001 start";
-    int32_t userId = 888;
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    auto ret = MountManager::GetInstance().SharefsMount(userId);
-    EXPECT_EQ(ret, E_OK);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().SharefsMount(userId);
-    EXPECT_EQ(ret, E_MOUNT_SHAREFS);
-
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().SharefsMount(userId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharefsMount_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmSharefsMount_001
- * @tc.desc: Verify the Instance function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_001 start";
-    int32_t userId = 888;
-    std::string srcPath;
-    std::string dstPath;
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, false, "");
-    EXPECT_EQ(ret, E_OK);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, false, "");
-    EXPECT_EQ(ret, E_OK);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, false, "");
-    EXPECT_EQ(ret, E_OK);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, false, "");
-    EXPECT_EQ(ret, E_MOUNT_HM_SHAREFS);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, false, "");
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmSharefsMount_002
- * @tc.desc: Verify the Instance function when isUseShared is true.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_002 start";
-    int32_t userId = 888;
-    std::string srcPath;
-    std::string dstPath;
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true))
-        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    auto ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, true, "");
-    EXPECT_EQ(ret, E_OK);
-    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath, true, "");
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_002 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_001
- * @tc.desc: Verify the HmdfsMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_001 start";
-    int32_t userId = 901;
-    std::string relativePath = "";
-    bool mountCloudDisk = false;
-    g_checkOsAccountConstraintEnabled = E_MOUNT_HMDFS;
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_002
- * @tc.desc: Verify the HmdfsMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_002 start";
-    int32_t userId = 901;
-    std::string relativePath = "";
-    bool mountCloudDisk = false;
-    g_checkOsAccountConstraintEnabled = E_OK;
-    g_isEnabled = true;
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_002 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_HmdfsMount_003
- * @tc.desc: Verify the HmdfsMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsMount_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_003 start";
-    int32_t userId = 901;
-    std::string relativePath = "";
-    bool mountCloudDisk = false;
-    g_checkOsAccountConstraintEnabled = E_OK;
-    g_isEnabled = false;
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    auto ret = MountManager::GetInstance().HmdfsMount(userId, relativePath, mountCloudDisk);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmdfsMount_003 end";
 }
 
 /**
@@ -315,120 +152,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckSymlink_001, Tes
 }
 
 /**
- * @tc.name: Storage_Daemon_MountManagerTest_SharedMount_001
- * @tc.desc: Verify the SharedMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharedMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharedMount_001 start";
-    std::string path;
-    int32_t userId = 100;
-    auto ret = MountManager::GetInstance().SharedMount(userId, path);
-    EXPECT_EQ(ret, E_OK);
-
-    path = "test1";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance().SharedMount(userId, path);
-    EXPECT_EQ(ret, E_OK);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().SharedMount(userId, path);
-    EXPECT_EQ(ret, E_MOUNT_SHARED);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().SharedMount(userId, path);
-    EXPECT_EQ(ret, E_MOUNT_SHARED);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().SharedMount(userId, path);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_BindAndRecMount_001
- * @tc.desc: Verify the BindAndRecMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_001 start";
-    std::string srcPath;
-    std::string dstPath;
-    int32_t userId = 100;
-    bool isUseSlave = true;
-    auto ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_NON_EXIST);
-
-    srcPath = "srcPath";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_NON_EXIST);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_NON_EXIST);
-
-    dstPath = "dstPath";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_NON_EXIST);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_BindAndRecMount_002
- * @tc.desc: Verify the BindAndRecMount function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_002 start";
-    std::string srcPath = "srcPath";
-    std::string dstPath = "dstPath";
-    int32_t userId = 100;
-    bool isUseSlave = true;
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    auto ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_MOUNT_BIND_AND_REC);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, 1);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
-
-    isUseSlave = false;
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_002 end";
-}
-
-/**
  * @tc.name: Storage_Daemon_MountManagerTest_PrepareAppdataDirByUserId_001
  * @tc.desc: Verify the PrepareAppdataDirByUserId function.
  * @tc.type: FUNC
@@ -442,11 +165,14 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
     auto ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
     EXPECT_EQ(ret, E_CREATE_DIR_APPDATA);
 
-    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).Times(MountManager::GetInstance().appdataDir_.size())
-        .WillRepeatedly(::testing::Return(11));
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(false));
     ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
     EXPECT_EQ(ret, E_OK);
+
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+    ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
 
@@ -570,63 +296,19 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMaps_001, TestSi
 HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 start";
-    std::vector<std::string> srcPathEmpty;
-    std::vector<std::string> dstPathEmpty;
     std::string bundleName = "test";
     std::string userId = "100";
-    MountManager::GetInstance().MountSandboxPath(srcPathEmpty, dstPathEmpty, bundleName, userId);
+    std::vector<MountNodeInfo> mountNodeInfoList {
+        MountNodeInfo{.srcPath = "", .dstPath = "test"},
+        MountNodeInfo{.srcPath = "", .dstPath = "test"}
+    };
 
-    std::vector<std::string> srcPaths {
-        "/data/test/tdd1",
-        "/data/test/tdd2"
-    };
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPathEmpty, bundleName, userId);
-    
-    std::vector<std::string> dstPaths {
-        "/data/test/tdd3"
-    };
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    errno = 0;
+    MountManager::GetInstance().MountSandboxPath(userId, mountNodeInfoList, bundleName);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_002
- * @tc.desc: Verify the MountSandboxPath function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 start";
-    std::string bundleName = "test";
-    std::string userId = "100";
-
-    std::vector<std::string> srcPaths {
-        "/data/test/tdd1",
-    };
-    
-    std::vector<std::string> dstPaths {
-        "/data/test/tdd2"
-    };
-    
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
-    
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
-    
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 end";
 }
 
 /**

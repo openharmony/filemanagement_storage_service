@@ -17,10 +17,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-UserManager::UserManager()
-{
-}
-
 UserManager &UserManager::GetInstance()
 {
     static UserManager instance_;

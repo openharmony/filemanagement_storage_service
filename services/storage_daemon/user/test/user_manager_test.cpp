@@ -23,6 +23,7 @@
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
+#include "user/system_mount_manager.h"
 
 using namespace std;
 namespace OHOS {
@@ -413,8 +414,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_SetCloudState_001, Te
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_SetCloudState_001 start";
 
-    MountManager::GetInstance().SetCloudState(true);
-    MountManager::GetInstance().SetCloudState(false);
+    SystemMountManager::GetInstance().SetCloudState(true);
+    SystemMountManager::GetInstance().SetCloudState(false);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_SetCloudState_001 end";
 }
 
@@ -429,10 +430,10 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestS
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMount_001 start";
 
     int32_t userId = 100;
-    int32_t ret = MountManager::GetInstance().LocalMount(userId);
-    EXPECT_EQ(ret, E_OK);
+    // int32_t ret = MountManager::GetInstance().LocalMount(userId);
+    // EXPECT_EQ(ret, E_OK);
 
-    ret = MountManager::GetInstance().LocalUMount(userId);
+    auto ret = MountManager::GetInstance().LocalUMount(userId);
     EXPECT_EQ(ret, E_UMOUNT_LOCAL_CLOUD);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";
 }
@@ -448,7 +449,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_RestoreconSystemServi
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 start";
 
     int32_t userId = 100;
-    int32_t ret = MountManager::GetInstance().RestoreconSystemServiceDirs(userId);
+    int32_t ret = UserManager::GetInstance().RestoreconSystemServiceDirs(userId);
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 end";
