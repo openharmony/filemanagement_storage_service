@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "ext_bundle_stats.h"
 #include "mock/storage_status_service_mock.h"
 namespace OHOS {
 namespace StorageManager {
@@ -49,16 +50,19 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
         appIndex, statFlag);
 }
 
-int32_t StorageStatusService::SetExtBundleStats(uint32_t userId, const std::string &businessName,
-    uint64_t businessSize)
+int32_t StorageStatusService::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
 {
-    return IStorageStatusServiceMock::storageStatusService->SetExtBundleStats(userId, businessName, businessSize);
+    return IStorageStatusServiceMock::storageStatusService->SetExtBundleStats(userId, stats);
 }
 
-int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, const std::string &businessName,
-    uint64_t &businessSize)
+int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
-    return IStorageStatusServiceMock::storageStatusService->GetExtBundleStats(userId, businessName, businessSize);
+    return IStorageStatusServiceMock::storageStatusService->GetExtBundleStats(userId, stats);
+}
+
+int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
+{
+    return IStorageStatusServiceMock::storageStatusService->GetAllExtBundleStats(userId, statsVec);
 }
 
 int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid)

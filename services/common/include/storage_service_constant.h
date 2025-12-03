@@ -22,6 +22,7 @@ namespace OHOS {
 namespace StorageService {
 const int START_USER_ID = 0;
 const int MAX_USER_ID = 10738; // user id range is (0, 10737]
+const uint32_t TOP_USER_ID = 10738;
 const int START_APP_CLONE_USER_ID = 219;
 const int MAX_APP_CLONE_USER_ID = 239;
 const int ZERO_USER = 0;
@@ -45,6 +46,7 @@ const std::string CREATE_BUNDLE_EXT_STATS_TABLE_SQL = "CREATE TABLE IF NOT EXIST
     userId                     INTEGER NOT NULL DEFAULT 0, \
     bundleName                 TEXT NOT NULL, \
     lastModifyTime             INTEGER NOT NULL DEFAULT 0, \
+    showFlag                   INTEGER NOT NULL, \
     PRIMARY KEY (businessName, userId) \
 );";
 const std::string BUSINESS_NAME = "businessName";
@@ -52,10 +54,13 @@ const std::string BUSINESS_SIZE = "businessSize";
 const std::string USER_ID = "userId";
 const std::string BUNDLE_NAME = "bundleName";
 const std::string LAST_MODIFY_TIME = "lastModifyTime";
+const std::string SHOW_FLAG = "showFlag";
 const std::string BUNDLE_EXT_STATS_TABLE = "bundle_ext_stats_table";
 const std::string WHERE_CLAUSE = "businessName = ? and userId = ?";
 const std::string SELECT_BUNDLE_EXT_SQL = "SELECT * FROM bundle_ext_stats_table "
     "WHERE businessName = ? AND userId = ? LIMIT 1";
+const std::string SELECT_ALL_BUNDLE_EXT_SQL = "SELECT * FROM bundle_ext_stats_table "
+    "WHERE userId = ?";
 }
 
 namespace StorageDaemon {

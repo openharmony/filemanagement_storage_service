@@ -20,6 +20,7 @@
 #include <regex>
 #include <unistd.h>
 #include <memory>
+#include <sstream>
 
 #include "securec.h"
 #include "storage_service_log.h"
@@ -30,7 +31,6 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
-static constexpr int32_t DECIMAL_NOTATION = 10;
 static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
@@ -189,7 +189,7 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         }
         char *endptr;
         errno = 0;
-        int64_t tollRes = strtoll(name.c_str(), &endptr, DECIMAL_NOTATION);
+        int64_t tollRes = strtoll(name.c_str(), &endptr, BASE_DECIMAL);
         if (errno != 0 || endptr != name.c_str() + name.size()) {
             continue;
         }
@@ -202,6 +202,72 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         }
         userIds.push_back(userId);
     }
+}
+
+bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base)
+{
+    if (str.empty()) {
+        return false;
+    }
+
+    errno = 0;
+    char* endptr = nullptr;
+
+    int64_t result = std::strtoll(str.c_str(), &endptr, base);
+    
+    if (endptr == str.c_str()) {
+        return false;
+    }
+    if (errno == ERANGE && (result == LLONG_MAX || result == LLONG_MIN)) {
+        return false;
+    }
+    if (*endptr != '\0') {
+        return false;
+    }
+    value = result;
+    return true;
+}
+
+std::unordered_map<std::string, std::string> ParseKeyValuePairs(const std::string &input, char delimiter)
+{
+    std::unordered_map<std::string, std::string> result;
+    std::istringstream ss(input);
+    std::string token;
+    
+    while (std::getline(ss, token, delimiter)) {
+        size_t equalPos = token.find('=');
+        if (equalPos != std::string::npos) {
+            std::string key = token.substr(0, equalPos);
+            std::string value = token.substr(equalPos + 1);
+            if (!key.empty()) {
+                result[key] = value;
+            }
+        } else {
+            std::string key = token;
+            if (!key.empty()) {
+                result[key] = "";
+            }
+        }
+    }
+    
+    return result;
+}
+
+int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::string &replacement)
+{
+    if (str.empty() || target.empty()) {
+        return 0;
+    }
+    
+    int32_t count = 0;
+    size_t pos = 0;
+    while ((pos = str.find(target, pos)) != std::string::npos) {
+        str.replace(pos, target.length(), replacement);
+        pos += replacement.length();
+        count++;
+    }
+    
+    return count;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

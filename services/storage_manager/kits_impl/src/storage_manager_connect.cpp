@@ -22,6 +22,7 @@
 #include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "ext_bundle_stats.h"
 
 using namespace std;
 
@@ -388,7 +389,7 @@ int32_t StorageManagerConnect::GetUserStorageStatsByType(int32_t userId, Storage
     return storageManager_->GetUserStorageStatsByType(userId, storageStats, type);
 }
 
-int32_t StorageManagerConnect::SetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t businessSize)
+int32_t StorageManagerConnect::SetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -399,10 +400,10 @@ int32_t StorageManagerConnect::SetExtBundleStats(uint32_t userId, std::string &b
         LOGE("StorageManagerConnect::SetExtBundleStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->SetExtBundleStats(userId, businessName, businessSize);
+    return storageManager_->SetExtBundleStats(userId, stats);
 }
 
-int32_t StorageManagerConnect::GetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t &businessSize)
+int32_t StorageManagerConnect::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -413,7 +414,21 @@ int32_t StorageManagerConnect::GetExtBundleStats(uint32_t userId, std::string &b
         LOGE("StorageManagerConnect::GetExtBundleStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->GetExtBundleStats(userId, businessName, businessSize);
+    return storageManager_->GetExtBundleStats(userId, stats);
+}
+
+int32_t StorageManagerConnect::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetAllExtBundleStats:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetAllExtBundleStats service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetAllExtBundleStats(userId, statsVec);
 }
 } // StorageManager
 } // OHOS

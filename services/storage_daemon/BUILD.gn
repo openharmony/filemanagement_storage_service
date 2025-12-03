@@ -125,6 +125,7 @@ ohos_executable("storage_daemon") {
     "user/src/mount_manager.cpp",
     "user/src/mount_manager_ext.cpp",
     "user/src/user_manager.cpp",
+    "user/src/user_path_resolver.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
   ]
@@ -204,6 +205,7 @@ ohos_executable("storage_daemon") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 
   if (storage_service_user_crypto_manager) {

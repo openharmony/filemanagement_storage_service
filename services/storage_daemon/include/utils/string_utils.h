@@ -17,9 +17,13 @@
 
 #include <list>
 #include <string>
+#include <unordered_map>
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr int32_t BASE_OCTAL = 8;
+constexpr int32_t BASE_DECIMAL = 10;
+
 std::string StringPrintf(const char *format, ...);
 
 inline bool IsEndWith(const std::string &str, const std::string &end)
@@ -34,6 +38,9 @@ bool StringIsNumber(const std::string &content);
 bool IsStringExist(const std::list<std::string> &strList, const std::string &content);
 std::string ListToString(const std::list<std::string> &strList);
 void GetAllUserIds(std::vector<int32_t> &userIds);
+bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base = BASE_DECIMAL);
+std::unordered_map<std::string, std::string> ParseKeyValuePairs(const std::string &input, char delimiter);
+int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::string &replacement);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H

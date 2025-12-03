@@ -206,14 +206,20 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
   }
   module_out_path = "storage_service/storage_service/storage_manager"
 
-  sources = [
+sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
+    "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
+    "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
+    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/user/src/multi_user_manager_service.cpp",
     "storage_manager_provider_premission_access_test.cpp",
@@ -224,8 +230,9 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
+    "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
-    "${storage_interface_path}/innerk/its/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   defines = [
@@ -258,6 +265,11 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "relational_store:native_rdb",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:dataobs_manager",
+    "eventhandler:libeventhandler",
+    "cJSON:cjson",
   ]
 
   if (storage_service_media_fuse) {

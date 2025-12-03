@@ -15,10 +15,6 @@
 
 #include "utils/storage_utils.h"
 
-#include "storage_service_constant.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-
 namespace OHOS {
 namespace StorageManager {
 int64_t GetRoundSize(int64_t size)
@@ -60,15 +56,6 @@ std::string GetAnonyString(const std::string &value)
     }
 
     return res;
-}
-
-int32_t IsUserIdValid(int32_t userId)
-{
-    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
-        LOGE("userId: %{public}d is out of range", userId);
-        return E_USERID_RANGE;
-    }
-    return E_OK;
 }
 } // namespace STORAGE_Manager
 } // namespace OHOS
