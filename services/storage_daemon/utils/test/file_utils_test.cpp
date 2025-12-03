@@ -234,7 +234,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DestroyDir_001, TestSize.Level1)
 
     std::ofstream file("/data/testFile.txt");
     file.close();
-
     ret = DestroyDir("/data/testFile.txt", isPathEmpty);
     EXPECT_EQ(ret, E_OPENDIR_ERROR);
     std::filesystem::remove("/data/testFile.txt");
@@ -465,7 +464,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_KillProcess_001, TestSize.Level1)
     std::vector<ProcessInfo> processList;
     std::vector<ProcessInfo> killFailList;
     KillProcess(processList, killFailList);
-
     ProcessInfo info1 {.name = "test1", .pid = 65300 };
     ProcessInfo info2 {.name = "test2", .pid = 65301 };
     processList.push_back(info1);
@@ -545,9 +543,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
 
     // Test the IsUsbFuse function basic functionality
     bool result = IsUsbFuse();
-
     EXPECT_FALSE(result);
-
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
 }
 

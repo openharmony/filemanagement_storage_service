@@ -157,18 +157,14 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_tes
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
 
-
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
     EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
-
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
     EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
 
-
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
     EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
-
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
     EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));

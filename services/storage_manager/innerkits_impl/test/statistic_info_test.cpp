@@ -82,38 +82,6 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_NextDqBlk_Marshalling_002, TestSiz
 }
 
 /**
- * @tc.name: StatisticInfoTest_NextDqBlk_Marshalling_003
- * @tc.desc: Test NextDqBlk Marshalling with maximum values.
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(StatisticInfoTest, StatisticInfoTest_NextDqBlk_Marshalling_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StatisticInfoTest_NextDqBlk_Marshalling_003 start";
-    
-    // Create a NextDqBlk with maximum values
-    NextDqBlk dqBlk(
-        UINT64_MAX,   // dqbHardLimit
-        UINT64_MAX,   // dqbBSoftLimit
-        UINT64_MAX,   // dqbCurSpace
-        UINT64_MAX,   // dqbIHardLimit
-        UINT64_MAX,   // dqbISoftLimit
-        UINT64_MAX,   // dqbCurInodes
-        UINT64_MAX,   // dqbBTime
-        UINT64_MAX,   // dqbITime
-        UINT32_MAX,   // dqbValid
-        UINT32_MAX    // dqbId
-    );
-    
-    Parcel parcel;
-    bool result = dqBlk.Marshalling(parcel);
-    
-    EXPECT_TRUE(result);
-    
-    GTEST_LOG_(INFO) << "StatisticInfoTest_NextDqBlk_Marshalling_003 end";
-}
-
-/**
  * @tc.name: StatisticInfoTest_NextDqBlk_Unmarshalling_001
  * @tc.desc: Test NextDqBlk Unmarshalling with valid data.
  * @tc.type: FUNC

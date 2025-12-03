@@ -57,6 +57,7 @@ private:
 
     // stats
     void HapAndSaStatisticsThd();
+    void SubscribeScreenAndPowerEventTask();
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
