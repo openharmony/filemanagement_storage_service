@@ -21,7 +21,6 @@
 #include "bundle_manager_connector.h"
 #include "bundlemgr/bundle_mgr_interface.h"
 #include "disk.h"
-#include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
 #include "storage_manager.h"
@@ -59,7 +58,7 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
 }
 
 pid_t g_testCallingUid = 5523;
-const uint32_t TOP_USER_ID = 10738;
+const int MAX_USER_ID = 10738;
 pid_t g_testUpdateServiceUid = 6666;
 bool g_returnUpdateService = false;
 namespace OHOS {
@@ -1270,7 +1269,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
     int32_t devFd = -1;
     auto ret = storageManagerProviderTest_->MountMediaFuse(userId, devFd);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+    g_testBundleMgrProxy = oldBundleMgrProxy;;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_002 end";
 }
 
@@ -1290,7 +1289,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
     int32_t devFd = -1;
     auto ret = storageManagerProviderTest_->MountMediaFuse(userId, devFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+    g_testBundleMgrProxy = oldBundleMgrProxy;;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_003 end";
 }
 
@@ -1309,7 +1308,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
     int32_t userId = 1001;
     auto ret = storageManagerProviderTest_->UMountMediaFuse(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+    g_testBundleMgrProxy = oldBundleMgrProxy;;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_002 end";
 }
 
@@ -1328,7 +1327,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
     int32_t userId = 1001;
     auto ret = storageManagerProviderTest_->UMountMediaFuse(userId);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+    g_testBundleMgrProxy = oldBundleMgrProxy;;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_003 end";
 }
 
@@ -1626,26 +1625,23 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = TOP_USER_ID + 1;
-    ExtBundleStats extBundleStats;
-    extBundleStats.businessName_ = "businessName";
-    extBundleStats.businessSize_ = 0;
+    uint32_t userId = MAX_USER_ID + 1;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
     g_testCallingUid = 7558;
-    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     userId = INT32_MAX;
-    ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
-    extBundleStats.businessSize_ = INT64_MAX;
-    ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
+    businessSize = INT64_MAX;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    extBundleStats.businessSize_ = 1;
-    extBundleStats.businessName_ = "";
-    ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
+    businessSize = 1;
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, "", businessSize);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    extBundleStats.businessName_ = "test";
-    ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
+    ret = storageManagerProviderTest_->SetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
 }
@@ -1661,48 +1657,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = TOP_USER_ID + 1;
-    ExtBundleStats extBundleStats;
-    extBundleStats.businessName_ = "businessName";
-    extBundleStats.businessSize_ = 0;
+    uint32_t userId = MAX_USER_ID + 1;
+    const std::string businessName = "businessName";
+    uint64_t businessSize = 0;
     g_testCallingUid = 7558;
-    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     userId = INT32_MAX;
-    ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
-    extBundleStats.businessName_ = "";
-    ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, "", businessSize);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    extBundleStats.businessName_ = "test";
-    ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
+    ret = storageManagerProviderTest_->GetExtBundleStats(userId, businessName, businessSize);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetAllExtBundleStats_001
- * @tc.desc: Verify the GetAllExtBundleStats function.
- * @tc.type: FUNC
- * @tc.require: AR20250722463628
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleStats_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = TOP_USER_ID + 1;
-    g_testCallingUid = 7558;
-    std::vector<ExtBundleStats> bundleStats;
-    auto ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    userId = INT32_MAX;
-    ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    userId = 1;
-    ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
 }
 }

@@ -20,7 +20,6 @@
 #include "accesstoken_kit.h"
 #include "bundle_mgr_interface.h"
 #include "bundle_mgr_proxy.h"
-#include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_status_service.h"
@@ -304,7 +303,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::
 /**
  * @tc.number: STORAGE_SetExtBundleStats_00001
  * @tc.name: STORAGE_SetExtBundleStats_00001
- * @tc.desc: Test function of SetExtBundleStats interface for success.
+ * @tc.desc: Test function of GetCurrentBundleStats interface for success.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -314,25 +313,22 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_SetExtBundleStats_00001, testing::ext
 {
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.UnInit();
-    ExtBundleStats extBundleStats;
     uint32_t userId = 10;
-    extBundleStats.businessName_ = "test";
-    extBundleStats.businessSize_ = 1;
-    extBundleStats.showFlag_ = true;
-    int32_t ret = service->SetExtBundleStats(userId, extBundleStats);
+    std::string businessName= "test";;
+    uint64_t bundleSize = 1;
+    int32_t ret = service->SetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_EQ(ret, E_GET_CALL_BUNDLE_NAME_ERROR);
     accessTokenType = 0;
-    ret = service->SetExtBundleStats(userId, extBundleStats);
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_NE(ret, E_OK);
     accessTokenType = 1;
-    ret = service->SetExtBundleStats(userId, extBundleStats);
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_NE(ret, E_OK);
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
     rdbAdapter.Init();
-    ret = service->SetExtBundleStats(userId, extBundleStats);
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_EQ(ret, E_OK);
-    ret = service->SetExtBundleStats(userId, extBundleStats);
+    ret = service->SetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_EQ(ret, E_OK);
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 end";
@@ -341,7 +337,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_SetExtBundleStats_00001, testing::ext
 /**
  * @tc.number: STORAGE_GetExtBundleStats_00001
  * @tc.name: STORAGE_GetExtBundleStats_00001
- * @tc.desc: Test function of GetExtBundleStats interface for success.
+ * @tc.desc: Test function of GetCurrentBundleStats interface for success.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -351,18 +347,16 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext
 {
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
-    ExtBundleStats extBundleStats;
     uint32_t userId = 10;
-    extBundleStats.businessName_ = "test";
-    extBundleStats.businessSize_ = 0;
-    extBundleStats.showFlag_ = true;
-    int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
+    std::string businessName = "test";
+    uint64_t bundleSize = 0;
+    int32_t ret = service->GetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_EQ(ret, E_TB_GET_ERROR);
     auto &rdbAdapter = StorageRdbAdapter::GetInstance();
     rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
+    ret = service->GetExtBundleStats(userId, businessName, bundleSize);
     EXPECT_EQ(ret, OHOS::E_OK);
-    EXPECT_EQ(extBundleStats.businessSize_, 1);
+    EXPECT_EQ(bundleSize, 1);
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 end";
 }
@@ -404,69 +398,6 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext
     EXPECT_EQ(ret, E_OK);
     rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
-}
-
-/**
- * @tc.number: STORAGE_GetExtBundleStats_00002
- * @tc.name: STORAGE_GetExtBundleStats_00002
- * @tc.desc: Test function of GetExtBundleStats interface for success.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require:
- */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00002, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
-    ExtBundleStats extBundleStats;
-    uint32_t userId = 1000;
-    extBundleStats.businessName_ = "test";
-    extBundleStats.businessSize_ = 0;
-    extBundleStats.showFlag_ = true;
-    int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_NE(ret, OHOS::E_OK);
-    rdbAdapter.UnInit();
-    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 end";
-}
-
-/**
- * @tc.number: STORAGE_GetAllExtBundleStats_00001
- * @tc.name: STORAGE_GetAllExtBundleStats_00001
- * @tc.desc: Test function of GetAllExtBundleStats interface for success.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require:
- */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetAllExtBundleStats_00001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
-    ExtBundleStats extBundleStats;
-    std::vector<ExtBundleStats> bundleStats;
-    uint32_t userId = 10;
-    int32_t ret = service->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    extBundleStats.businessName_ = "GetAllExtBundleStats";
-    extBundleStats.businessSize_ = 1;
-    extBundleStats.showFlag_ = true;
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    accessTokenType = 1;
-    ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
-    extBundleStats.businessName_ = "BundleStats";
-    ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
-    ret = service->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
-    GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 end";
 }
 
 /**

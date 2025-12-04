@@ -132,9 +132,7 @@ ohos_unittest("storage_stats_test") {
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
-    "${storage_manager_path}/innerkits_impl/src/ext_bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
-    "ext_bundle_stats_test.cpp",
     "bundle_stats_test.cpp",
     "storage_stats_test.cpp",
   ]

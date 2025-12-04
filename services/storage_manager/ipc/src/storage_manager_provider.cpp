@@ -70,6 +70,7 @@ const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER"
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
+
 bool CheckClientPermission(const std::string &permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -1008,18 +1009,23 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
     return E_OK;
 }
 
-int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
+int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t businessSize)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    if (userId > TOP_USER_ID || stats.businessSize_ >= INT64_MAX || stats.businessName_.empty()) {
-        LOGE("invalid params, userId: %{public}d, size: %{public}lld, name: %{public}s", userId,
-            static_cast<long long>(stats.businessSize_), stats.businessName_.c_str());
+    if (userId >= INT32_MAX || businessSize >= INT64_MAX || businessName.empty()) {
+        LOGE("invalid params, userId: %{public}d, businessSize: %{public}lld, businessName: %{public}s",
+            userId, static_cast<long long>(businessSize), businessName.c_str());
         return E_PARAMS_INVALID;
     }
+    int32_t ret = CheckUserIdRange(static_cast<int32_t>(userId));
+    if (ret != E_OK) {
+        return ret;
+    }
 #ifdef STORAGE_STATISTICS_MANAGER
-    int32_t ret = StorageStatusService::GetInstance().SetExtBundleStats(userId, stats);
+    ret = StorageStatusService::GetInstance().SetExtBundleStats(userId, businessName, businessSize);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_SET_EXT_BUNDLE_STATS_ERROR, extraData);
@@ -1031,17 +1037,22 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
 #endif
 }
 
-int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
+int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, const std::string &businessName,
+    uint64_t &businessSize)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    if (userId > TOP_USER_ID || stats.businessName_.empty()) {
-        LOGE("invalid params, userId: %{public}d, name: %{public}s", userId, stats.businessName_.c_str());
+    if (userId >= INT32_MAX || businessName.empty()) {
+        LOGE("invalid params, userId: %{public}d, businessName: %{public}s", userId, businessName.c_str());
         return E_PARAMS_INVALID;
     }
+    int32_t ret = CheckUserIdRange(static_cast<int32_t>(userId));
+    if (ret != E_OK) {
+        return ret;
+    }
 #ifdef STORAGE_STATISTICS_MANAGER
-    int32_t ret = StorageStatusService::GetInstance().GetExtBundleStats(userId, stats);
+    ret = StorageStatusService::GetInstance().GetExtBundleStats(userId, businessName, businessSize);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("GetExtBundleStats", E_GET_EXT_BUNDLE_STATS_ERROR, extraData);
@@ -1052,28 +1063,5 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
     return E_NOT_SUPPORT;
 #endif
 }
-
-int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
-{
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-    if (userId > TOP_USER_ID) {
-        LOGE("invalid params, userId: %{public}d.", userId);
-        return E_PARAMS_INVALID;
-    }
-#ifdef STORAGE_STATISTICS_MANAGER
-    int32_t ret = StorageStatusService::GetInstance().GetAllExtBundleStats(userId, statsVec);
-    if (ret != E_OK) {
-        std::string extraData = "errCode=" + std::to_string(ret);
-        StorageRadar::ReportSpaceRadar("GetAllExtBundleStats", E_GET_ALL_EXT_BUNDLE_STATS_ERROR, extraData);
-        return E_GET_ALL_EXT_BUNDLE_STATS_ERROR;
-    }
-    return E_OK;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
 } // namespace StorageManager
 } // namespace OHOS

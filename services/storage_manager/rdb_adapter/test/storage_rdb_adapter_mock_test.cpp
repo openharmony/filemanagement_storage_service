@@ -375,6 +375,28 @@ HWTEST_F(RdbAdapterTest, Get002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: Get003
+ * @tc.desc: Get failed.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(RdbAdapterTest, Get003, TestSize.Level1)
+{
+    std::lock_guard<std::mutex> lock(rdbAdapterTestMtx);
+    const std::vector<OHOS::NativeRdb::ValueObject> bindArgs = {
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_BUSINESS_NAME),
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_USER_ID)
+    };
+
+    std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
+    EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs),
+    _)).WillOnce(Return(mockResultSet));
+
+    std::shared_ptr<ResultSet> resultSet = StorageRdbAdapter::GetInstance().Get(GET_SQL, bindArgs);
+    EXPECT_NE(resultSet, nullptr);
+}
+
+/**
  * @tc.name: OnCreate001
  * @tc.desc: OnCreate failed.
  * @tc.type: FUNC

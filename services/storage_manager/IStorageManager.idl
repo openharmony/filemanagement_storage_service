@@ -14,7 +14,6 @@
  */
 sequenceable StorageStats..OHOS.StorageManager.StorageStats;
 sequenceable BundleStats..OHOS.StorageManager.BundleStats;
-sequenceable ExtBundleStats..OHOS.StorageManager.ExtBundleStats;
 sequenceable Disk..OHOS.StorageManager.Disk;
 sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
 sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
@@ -113,8 +112,9 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 76] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int type);
     [ipccode 77] void UpdateUserPublicDirPolicy([in] unsigned int userId);
     [ipccode 78] void NotifyUserChangedEvent([in] unsigned int userId, [in] unsigned int eventType);
-    [ipccode 79] void SetExtBundleStats([in] unsigned int userId, [in] ExtBundleStats stats);
-    [ipccode 80] void GetExtBundleStats([in] unsigned int userId, [inout] ExtBundleStats stats);
+    [ipccode 79] void SetExtBundleStats([in] unsigned int userId, [in] String businessName,
+                                        [in] unsigned long businessSize);
+    [ipccode 80] void GetExtBundleStats([in] unsigned int userId, [in] String businessName,
+                                        [out] unsigned long businessSize);
     [ipccode 81] void EraseAllUserEncryptedKeys();
-    [ipccode 82] void GetAllExtBundleStats([in] unsigned int userId, [out] List<ExtBundleStats> statsVec);
 }

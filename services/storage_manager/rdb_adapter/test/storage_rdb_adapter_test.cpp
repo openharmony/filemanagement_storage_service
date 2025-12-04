@@ -62,7 +62,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Put_0000, testing::ext::TestSize.Le
     values.PutInt("userId", userId);
     values.PutString("bundleName", bundleName);
     values.PutLong("lastModifyTime", lastModifyTime);
-    values.PutInt("showFlag", 1);
 
     int64_t rowId = 0;
     ret = rdbAdapter.Put(rowId, table, values);
@@ -105,7 +104,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Put_0001, testing::ext::TestSize.Le
     values.PutInt("userId", userId);
     values.PutString("bundleName", "com.storage.test");
     values.PutLong("lastModifyTime", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
-    values.PutInt("showFlag", 1);
 
     int64_t rowId = 0;
     ret = rdbAdapter.Put(rowId, table, values);
@@ -158,7 +156,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Update_0000, testing::ext::TestSize
     insertVals.PutInt("userId", uid);
     insertVals.PutString("bundleName", origBundle);
     insertVals.PutLong("lastModifyTime", now);
-    insertVals.PutInt("showFlag", 1);
     ret = rdbAdapter.Put(rowId, table, insertVals);
     EXPECT_EQ(ret, E_OK);
     EXPECT_GT(rowId, 0);
@@ -170,7 +167,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Update_0000, testing::ext::TestSize
     updateVals.PutLong("businessSize", updSize);
     updateVals.PutString("bundleName", updBundle);
     updateVals.PutLong("lastModifyTime", now);
-    updateVals.PutInt("showFlag", 1);
     ret = rdbAdapter.Update(changedRows, table, updateVals, where, args);
     EXPECT_EQ(ret, E_OK);
     EXPECT_EQ(changedRows, 1);
@@ -212,7 +208,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Get_0000, testing::ext::TestSize.Le
     values.PutInt("userId", userId);
     values.PutString("bundleName", bundleName);
     values.PutLong("lastModifyTime", lastModifyTime);
-    values.PutInt("showFlag", 1);
 
     int64_t rowId = 0;
     ret = rdbAdapter.Put(rowId, table, values);
@@ -276,7 +271,6 @@ HWTEST_F(RdbAdapterTest, Storage_rdb_adapter_Delete_0000, testing::ext::TestSize
     values.PutInt("userId", userId);
     values.PutString("bundleName", bundleName);
     values.PutLong("lastModifyTime", lastModifyTime);
-    values.PutInt("showFlag", 1);
 
     int64_t rowId = 0;
     ret = rdbAdapter.Put(rowId, table, values);

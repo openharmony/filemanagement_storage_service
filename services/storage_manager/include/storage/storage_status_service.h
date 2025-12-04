@@ -16,15 +16,13 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 #define OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 
-#include <iostream>
-#include <map>
-#include <sstream>
 #include <singleton.h>
+#include <iostream>
+#include <sstream>
 #include <thread>
-
 #include "bundle_stats.h"
-#include "ext_bundle_stats.h"
 #include "storage_stats.h"
+#include <map>
 
 namespace OHOS {
 namespace StorageManager {
@@ -42,11 +40,10 @@ public:
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag);
     int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats,
         int32_t appIndex, uint32_t statFlag);
+    int32_t SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize);
+    int32_t GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize);
     int32_t GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid);
     int32_t DelBundleExtStats(uint32_t userId, const std::string &bundleName);
-    int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats);
-    int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
-    int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
 
 private:
     StorageStatusService();
@@ -62,8 +59,10 @@ private:
     int32_t GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule = false);
     int32_t GetBundleNameFromDB(uint32_t userId, const std::string &businessName, std::string &dbBundleName,
         int32_t &rowCount);
-    int32_t UpdateExtBundleStats(uint32_t userId, const ExtBundleStats &stats, std::string callingBundleName);
-    int32_t InsertExtBundleStats(uint32_t userId, const ExtBundleStats &stats, std::string callingBundleName);
+    int32_t UpdateExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize,
+        std::string callingBundleName);
+    int32_t InsertExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize,
+        std::string callingBundleName);
     std::string GetCallingBundleName();
     std::mutex extBundleMtx_;
 };

@@ -415,17 +415,12 @@ int32_t StorageManagerProxy::NotifyUserChangedEvent(uint32_t userId, uint32_t ev
     return E_OK;
 }
 
-int32_t StorageManagerProxy::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
+int32_t StorageManagerProxy::SetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t businessSize)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
+int32_t StorageManagerProxy::GetExtBundleStats(uint32_t userId, const std::string &businessName, uint64_t &businessSize)
 {
     return E_OK;
 }

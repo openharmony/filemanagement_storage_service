@@ -19,7 +19,6 @@
 #include <nocopyable.h>
 #include <singleton.h>
 
-#include "ext_bundle_stats.h"
 #include "istorage_manager.h"
 #include "bundle_stats.h"
 #include "storage_stats.h"
@@ -52,9 +51,8 @@ public:
 
     int32_t ResetProxy();
     int32_t DeactivateUserKey(uint32_t userId);
-    int32_t SetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
-    int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
-    int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
+    int32_t SetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t businessSize);
+    int32_t GetExtBundleStats(uint32_t userId, std::string &businessName, uint64_t &businessSize);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

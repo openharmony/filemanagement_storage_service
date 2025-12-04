@@ -27,7 +27,6 @@
 #include "ipc_skeleton.h"
 #include "storage_rdb_adapter.h"
 #include "gmock/gmock.h"
-#include "ext_bundle_stats.h"
 
 namespace OHOS::Security::AccessToken {
 ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
@@ -60,7 +59,6 @@ int32_t ROW_COUNT = 1;
 std::string DB_BUNDLE_NAME = "dbBundleName";
 const int32_t TEST_QUERY_USER_ID = 10001;
 const std::string GET_SQL = "SELECT * FROM bundle_ext_stats_table WHERE businessName = ? AND userId = ? LIMIT 1";
-const ExtBundleStats EXT_BUNDLE_STATS;
 
 class StorageStatusServiceTest : public testing::Test {
 public:
@@ -246,7 +244,8 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_InsertExtBundleStats_00001, testing::
     GTEST_LOG_(INFO) << "STORAGE_InsertExtBundleStats start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
     EXPECT_CALL(*mockStore, Insert(_, _, _)).WillOnce(Return(E_ERR));
-    int32_t ret = service->InsertExtBundleStats(TEST_QUERY_USER_ID, EXT_BUNDLE_STATS, CALLING_BUNDLE_NAME);
+    int32_t ret = service->InsertExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE,
+        CALLING_BUNDLE_NAME);
     EXPECT_NE(ret, OHOS::E_OK);
     GTEST_LOG_(INFO) << "STORAGE_InsertExtBundleStats end";
 }
@@ -265,7 +264,8 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_InsertExtBundleStats_00002, testing::
     GTEST_LOG_(INFO) << "STORAGE_InsertExtBundleStats start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
     EXPECT_CALL(*mockStore, Insert(_, _, _)).WillOnce(Return(OHOS::E_OK));
-    int32_t ret = service->InsertExtBundleStats(TEST_QUERY_USER_ID, EXT_BUNDLE_STATS, CALLING_BUNDLE_NAME);
+    int32_t ret = service->InsertExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE,
+        CALLING_BUNDLE_NAME);
     EXPECT_EQ(ret, OHOS::E_OK);
     GTEST_LOG_(INFO) << "STORAGE_InsertExtBundleStats end";
 }
@@ -284,7 +284,8 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_UpdateExtBundleStats_00001, testing::
     GTEST_LOG_(INFO) << "STORAGE_UpdateExtBundleStats start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
     EXPECT_CALL(*mockStore, Update(_, _, _, _, _)).WillOnce(testing::Return(E_ERR));
-    int32_t ret = service->UpdateExtBundleStats(TEST_QUERY_USER_ID, EXT_BUNDLE_STATS, CALLING_BUNDLE_NAME);
+    int32_t ret = service->UpdateExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE,
+        CALLING_BUNDLE_NAME);
     EXPECT_NE(ret, OHOS::E_OK);
     GTEST_LOG_(INFO) << "STORAGE_UpdateExtBundleStats end";
 }
@@ -303,9 +304,120 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_UpdateExtBundleStats_00002, testing::
     GTEST_LOG_(INFO) << "STORAGE_UpdateExtBundleStats start";
     auto service = DelayedSingleton<StorageStatusService>::GetInstance();
     EXPECT_CALL(*mockStore, Update(_, _, _, _, _)).WillOnce(testing::Return(OHOS::E_OK));
-    int32_t ret = service->UpdateExtBundleStats(TEST_QUERY_USER_ID, EXT_BUNDLE_STATS, CALLING_BUNDLE_NAME);
+    int32_t ret = service->UpdateExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE,
+        CALLING_BUNDLE_NAME);
     EXPECT_EQ(ret, OHOS::E_OK);
     GTEST_LOG_(INFO) << "STORAGE_UpdateExtBundleStats end";
 }
+
+/**
+ * @tc.number: STORAGE_GetExtBundleStats_00001
+ * @tc.name: STORAGE_GetExtBundleStats_00001
+ * @tc.desc: Test function of the GoToFirstRow function in the GetExtBundleStats interface for error.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
+    const std::vector<OHOS::NativeRdb::ValueObject> bindArgs = {
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_BUSINESS_NAME),
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_USER_ID)
+    };
+    EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs), true))
+        .WillOnce(Return(mockResultSet));
+    EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(E_ERR));
+    int32_t ret = service->GetExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE);
+    EXPECT_NE(ret, OHOS::E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats end";
+}
+
+/**
+ * @tc.number: STORAGE_GetExtBundleStats_00002
+ * @tc.name: STORAGE_GetExtBundleStats_00002
+ * @tc.desc: Test function of the GetColumnIndex function in the GetExtBundleStats interface for error.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
+    const std::vector<OHOS::NativeRdb::ValueObject> bindArgs = {
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_BUSINESS_NAME),
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_USER_ID)
+    };
+    EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs), true))
+        .WillOnce(Return(mockResultSet));
+    EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockResultSet, GetColumnIndex(_, _)).WillOnce(Return(E_ERR));
+    int32_t ret = service->GetExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE);
+    EXPECT_NE(ret, OHOS::E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats end";
+}
+
+/**
+ * @tc.number: STORAGE_GetExtBundleStats_00003
+ * @tc.name: STORAGE_GetExtBundleStats_00003
+ * @tc.desc: Test function of the GetLong function in the GetExtBundleStats interface for error.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
+    const std::vector<OHOS::NativeRdb::ValueObject> bindArgs = {
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_BUSINESS_NAME),
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_USER_ID)
+    };
+    EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs), true))
+        .WillOnce(Return(mockResultSet));
+    EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockResultSet, GetColumnIndex(_, _)).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockResultSet, GetLong(_, _)).WillOnce(Return(E_ERR));
+    int32_t ret = service->GetExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE);
+    EXPECT_NE(ret, OHOS::E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats end";
+}
+
+/**
+ * @tc.number: STORAGE_GetExtBundleStats_00004
+ * @tc.name: STORAGE_GetExtBundleStats_00004
+ * @tc.desc: Test function of GetExtBundleStats interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats start";
+    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<MockResultSet> mockResultSet = std::make_shared<MockResultSet>();
+    const std::vector<OHOS::NativeRdb::ValueObject> bindArgs = {
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_BUSINESS_NAME),
+        OHOS::NativeRdb::ValueObject(TEST_QUERY_USER_ID)
+    };
+    EXPECT_CALL(*mockStore, QueryByStep(::testing::Eq(GET_SQL), ::testing::Eq(bindArgs), true))
+        .WillOnce(Return(mockResultSet));
+    EXPECT_CALL(*mockResultSet, GoToFirstRow()).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockResultSet, GetColumnIndex(_, _)).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockResultSet, GetLong(_, _)).WillOnce(Return(OHOS::E_OK));
+    int32_t ret = service->GetExtBundleStats(TEST_QUERY_USER_ID, TEST_QUERY_BUSINESS_NAME, TEST_BUSINESS_SIZE);
+    EXPECT_EQ(ret, OHOS::E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats end";
+}
+
 } // namespace StorageManager
 } // namespace OHOS
