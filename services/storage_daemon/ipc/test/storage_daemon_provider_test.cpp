@@ -19,6 +19,7 @@
 #include "storage_service_errno.h"
 #include "system_ability_definition.h"
 #include "test/common/help_utils.h"
+#include "userdata_dir_info.h"
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -2033,6 +2034,24 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProvider_GetRmgResourceSize_001
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonProvider_GetRmgResourceSize_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_ListUserdataDirInfo_001
+ * @tc.desc: Verify the ListUserdataDirInfo function.
+ * @tc.type: FUNC
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ListUserdataDirInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ListUserdataDirInfo_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<UserdataDirInfo> scanDirs;
+
+    int32_t result =
+        storageDaemonProviderTest_->ListUserdataDirInfo(scanDirs);
+    EXPECT_NE(result, E_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ListUserdataDirInfo_001 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

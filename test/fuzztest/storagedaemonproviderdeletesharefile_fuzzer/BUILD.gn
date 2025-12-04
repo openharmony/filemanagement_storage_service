@@ -43,6 +43,7 @@ ohos_fuzztest("StorageDaemonProviderDeleteShareFileFuzzTest") {
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonproviderdeletesharefile_fuzzer/storagedaemonproviderdeletesharefile_fuzzer.cpp",
   ]
 

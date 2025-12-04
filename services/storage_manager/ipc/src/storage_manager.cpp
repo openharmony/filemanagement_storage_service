@@ -711,6 +711,13 @@ int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t ui
     return sdCommunication->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
+int32_t StorageManager::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->ListUserdataDirInfo(scanDirs);
+}
+
 int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type)
 {
 #ifdef STORAGE_STATISTICS_MANAGER

@@ -22,6 +22,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "userdata_dir_info.h"
 #include "utils/storage_radar.h"
 
 using namespace OHOS::StorageService;
@@ -674,6 +675,22 @@ int32_t StorageDaemonClient::IsFileOccupied(const std::string &path, const std::
         return E_SA_IS_NULLPTR;
     }
     return client->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
+ 
+int32_t StorageDaemonClient::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    LOGI("StorageDaemonClient::ListUserdataDirInfo");
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->ListUserdataDirInfo(scanDirs);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

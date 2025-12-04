@@ -575,6 +575,21 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
     return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
+int32_t StorageDaemonCommunication::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    LOGD("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->ListUserdataDirInfo(scanDirs);
+}
+
 int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     LOGD("enter");

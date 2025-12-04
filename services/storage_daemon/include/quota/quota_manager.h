@@ -20,8 +20,11 @@
 #include <map>
 #include <nocopyable.h>
 #include <string>
+#include <vector>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+
+#include "userdata_dir_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -103,6 +106,7 @@ public:
     int32_t StatisticSysDirSpace();
     void GetUidStorageStats(std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
     int32_t GetFileData(const std::string &path, int64_t &size);
+    int32_t ListUserdataDirInfo(std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
@@ -127,6 +131,8 @@ private:
     void AssembleSysAppVec(int32_t dqUid, const struct NextDqBlk &dq,
         std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec);
     void GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec);
+    OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
+        std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
     int64_t oldChangeSizeCache_ = 0;
 };
 } // STORAGE_DAEMON

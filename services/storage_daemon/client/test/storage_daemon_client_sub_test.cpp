@@ -1130,4 +1130,22 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_IsFile
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 end";
 }
+
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    auto ret = StorageDaemonClient::ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001 end";
+}
 }

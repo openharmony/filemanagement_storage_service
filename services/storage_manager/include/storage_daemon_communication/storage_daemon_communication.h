@@ -125,6 +125,8 @@ public:
     int32_t GetDataSizeByPath(const std::string &path, int64_t &size);
     int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
 
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
+
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

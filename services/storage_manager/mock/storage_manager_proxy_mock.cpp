@@ -429,5 +429,10 @@ int32_t StorageManagerProxy::GetAllExtBundleStats(uint32_t userId, std::vector<E
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

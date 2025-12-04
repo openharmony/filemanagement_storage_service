@@ -1704,5 +1704,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleS
     EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_ListUserdataDirInfo_002
+ * @tc.desc: Verify the UpdateMemoryPara function.
+ * @tc.type: FUNC
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::vector<UserdataDirInfo> scanDirs;
+    auto ret = storageManagerProviderTest_->ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_GE(scanDirs.size(), 0);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 end";
+}
 }
 }

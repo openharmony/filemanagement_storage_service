@@ -91,6 +91,7 @@ public:
     MOCK_METHOD4(CreateUserDir, int32_t(const std::string &, mode_t, uid_t, gid_t));
     MOCK_METHOD1(DeleteUserDir, int32_t(const std::string &));
     MOCK_METHOD0(StatisticSysDirSpace, int32_t(void));
+    MOCK_METHOD1(ListUserdataDirInfo, int32_t(std::vector<UserdataDirInfo> &));
 
     MOCK_METHOD2(GetDataSizeByPath, int32_t(const std::string &, int64_t &));
     MOCK_METHOD2(GetRmgResourceSize, int32_t(const std::string &, uint64_t &));

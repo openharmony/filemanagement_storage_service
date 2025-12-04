@@ -1160,4 +1160,26 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDataSizeByPath_
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDataSizeByPath_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_ListUserdataDirInfo_001
+ * @tc.name: Daemon_communication_ListUserdataDirInfo_001
+ * @tc.desc: Test function of ListUserdataDirInfo interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ListUserdataDirInfo_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::vector<UserdataDirInfo> scanDirs;
+    int32_t ret = sdCommunication->ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
+}
 } // namespace

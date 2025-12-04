@@ -23,6 +23,7 @@
 
 #include "file_ex.h"
 #include "file_sharing/file_sharing.h"
+#include "userdata_dir_info.h"
 
 namespace {
 #ifdef USER_CRYPTO_MIGRATE_KEY

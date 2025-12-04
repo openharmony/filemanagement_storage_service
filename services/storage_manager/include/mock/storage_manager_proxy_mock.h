@@ -136,6 +136,7 @@ public:
     int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats) override;
     int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats) override;
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec) override;
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
