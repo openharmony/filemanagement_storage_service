@@ -31,8 +31,7 @@ ohos_fuzztest("LibmtpCheckSpecificDeviceFuzzTest") {
   defines = []
   sources = [ "libmtpcheckspecificdevice_fuzzer.cpp" ]
   deps = [ "${storage_daemon_path}:storage_common_utils" ]
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     external_deps = [
       "c_utils:utils",
       "libmtp:libmtp",
