@@ -85,7 +85,7 @@ public:
                                     std::vector<int32_t> &funcResult) override;
     virtual int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
-    virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
+    virtual int32_t SetBundleQuota(int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;

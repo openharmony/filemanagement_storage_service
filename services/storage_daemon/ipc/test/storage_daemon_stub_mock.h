@@ -56,7 +56,7 @@ public:
     MOCK_METHOD4(CreateShareFile,
                  int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));
-    MOCK_METHOD4(SetBundleQuota, int32_t (const std::string&, int32_t, const std::string&, int32_t));
+    MOCK_METHOD3(SetBundleQuota, int32_t (int32_t, const std::string&, int32_t));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));
     MOCK_METHOD3(UnlockUserScreen, int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));

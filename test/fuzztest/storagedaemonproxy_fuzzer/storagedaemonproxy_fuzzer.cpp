@@ -130,9 +130,8 @@ bool SetBundleQuotaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const ui
     int32_t uid = TypeCast<int32_t>(data, &pos);
     int32_t limitSizeMb = TypeCast<int32_t>(data + pos, &pos);
     int len = (size - pos) / 2;
-    string bundleName(reinterpret_cast<const char *>(data + pos), len);
     string bundleDataDirPath(reinterpret_cast<const char *>(data + pos + len), len);
-    proxy->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    proxy->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
     return true;
 }
 

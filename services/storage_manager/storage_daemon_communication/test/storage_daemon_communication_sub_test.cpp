@@ -1157,24 +1157,23 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetBundleQuota_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    string bundleName;
     string bundleDataDirPath;
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
 
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
         sdCommunication->storageDaemon_ = nullptr;
     }), Return(true)));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SERVICE_IS_NULLPTR);
 
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, SetBundleQuota(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_OK);
+    EXPECT_CALL(*sd, SetBundleQuota(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetBundleQuota_0000";
 }
 

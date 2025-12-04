@@ -638,16 +638,15 @@ int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size
     return E_OK;
 }
 
-int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
-    const std::string &bundleDataDirPath, int32_t limitSizeMb)
+int32_t QuotaManager::SetBundleQuota(int32_t uid, const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
-    if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
+    if (bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
         LOGE("Calling the function SetBundleQuota with invalid param");
         return E_PARAMS_INVALID;
     }
 
-    LOGE("SetBundleQuota Start, bundleName is %{public}s, uid is %{public}d, bundleDataDirPath is %{public}s, "
-         "limit is %{public}d.", bundleName.c_str(), uid, bundleDataDirPath.c_str(), limitSizeMb);
+    LOGE("SetBundleQuota Start, uid is %{public}d, bundleDataDirPath is %{public}s, "
+         "limit is %{public}d.", uid, bundleDataDirPath.c_str(), limitSizeMb);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_INIT_QUOTA_MOUNTS_FAILED;

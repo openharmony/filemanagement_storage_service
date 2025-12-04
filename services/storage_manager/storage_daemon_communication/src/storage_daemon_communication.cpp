@@ -559,7 +559,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const Stor
     return storageDaemon_->DeleteShareFile(tokenId, rawData);
 }
 
-int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
+int32_t StorageDaemonCommunication::SetBundleQuota(int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     LOGD("enter");
@@ -572,7 +572,7 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    return storageDaemon_->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)

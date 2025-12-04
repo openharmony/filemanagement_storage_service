@@ -95,8 +95,7 @@ public:
     virtual ~QuotaManager() = default;
     static QuotaManager &GetInstance();
 
-    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
-        const std::string &bundleDataDirPath, int32_t limitSizeMb);
+    int32_t SetBundleQuota(int32_t uid, const std::string &bundleDataDirPath, int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
