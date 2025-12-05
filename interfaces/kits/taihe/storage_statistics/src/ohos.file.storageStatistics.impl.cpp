@@ -91,6 +91,76 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t 
     return { (*resultStats).total_, (*resultStats).audio_, (*resultStats).video_, (*resultStats).image_,
         (*resultStats).file_, (*resultStats).app_ };
 }
+
+void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBundleStats stats)
+{
+    if (userId < 0 || stats.size < 0) {
+        taihe::set_error("SetExtBundleStatsSync::Invaild params.");
+        return;
+    }
+    uint32_t userId_i = static_cast<uint32_t>(userId);
+    OHOS::StorageManager::ExtBundleStats extBundleStats;
+    extBundleStats.businessName_ = stats.businessName.c_str();
+    extBundleStats.businessSize_ = static_cast<uint64_t>(stats.size);
+    extBundleStats.showFlag_ = stats.flag;
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->SetExtBundleStats(
+            userId_i, extBundleStats);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum),
+            "Failed to set ext bundle stats.");
+        return;
+    }
+}
+
+ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t userId, taihe::string_view businessName)
+{
+    if (userId < 0) {
+        taihe::set_error("GetExtBundleStatsSync::Invaild params.");
+        return { "", DEFAULTSIZE, false };
+    }
+    uint32_t userId_i = static_cast<uint32_t>(userId);
+    OHOS::StorageManager::ExtBundleStats extBundleStats;
+    extBundleStats.businessName_ = businessName.c_str();
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetExtBundleStats(
+            userId_i, extBundleStats);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum),
+            "Failed to get ext bundle stats");
+        return { "", DEFAULTSIZE, false };
+    }
+    int64_t businessSize_o = static_cast<int64_t>(extBundleStats.businessSize_);
+    return { businessName, businessSize_o, extBundleStats.showFlag_};
+}
+
+taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStatsSync(int32_t userId)
+{
+    if (userId < 0) {
+        taihe::set_error("GetAllExtBundleStatsSync::Invaild params.");
+        return taihe::array<ohos::file::storageStatistics::ExtBundleStats>::make(0,
+            ohos::file::storageStatistics::ExtBundleStats{});
+    }
+    uint32_t userId_i = static_cast<uint32_t>(userId);
+    std::vector<OHOS::StorageManager::ExtBundleStats> statsVec;
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetAllExtBundleStats(
+            userId_i, statsVec);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum),
+            "Failed to get all ext bundle stats");
+        return taihe::array<ohos::file::storageStatistics::ExtBundleStats>::make(0,
+            ohos::file::storageStatistics::ExtBundleStats{});
+    }
+    auto result = taihe::array<ohos::file::storageStatistics::ExtBundleStats>::
+        make(statsVec.size(), ohos::file::storageStatistics::ExtBundleStats{});
+    auto extBundleStatsTransformer = [](auto &stats) -> ohos::file::storageStatistics::ExtBundleStats {
+        return { stats.businessName_, stats.businessSize_, stats.showFlag_ };
+    };
+    std::transform(statsVec.begin(), statsVec.end(), result.begin(), extBundleStatsTransformer);
+    return taihe::array<ohos::file::storageStatistics::ExtBundleStats>(taihe::copy_data_t{},
+        result.data(), result.size());
+}
 } // namespace ANI::storageStatistics
 
 // Since these macros are auto-generate, lint will cause false positive.
@@ -100,4 +170,7 @@ TH_EXPORT_CPP_API_GetTotalSizeSync(ANI::StorageStatistics::GetTotalSizeSync);
 TH_EXPORT_CPP_API_GetCurrentBundleStatsSync(ANI::StorageStatistics::GetCurrentBundleStatsSync);
 TH_EXPORT_CPP_API_GetUserStorageStatsSync(ANI::StorageStatistics::GetUserStorageStatsSync);
 TH_EXPORT_CPP_API_GetUserStorageStatsByidSync(ANI::StorageStatistics::GetUserStorageStatsByidSync);
+TH_EXPORT_CPP_API_SetExtBundleStatsSync(ANI::StorageStatistics::SetExtBundleStatsSync);
+TH_EXPORT_CPP_API_GetExtBundleStatsSync(ANI::StorageStatistics::GetExtBundleStatsSync);
+TH_EXPORT_CPP_API_GetAllExtBundleStatsSync(ANI::StorageStatistics::GetAllExtBundleStatsSync);
 // NOLINTEND

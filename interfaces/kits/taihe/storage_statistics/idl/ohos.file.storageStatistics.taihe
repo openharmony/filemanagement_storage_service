@@ -53,3 +53,18 @@ function GetUserStorageStatsSync(): StorageStats;
 @gen_async("getUserStorageStats")
 @gen_promise("getUserStorageStats")
 function GetUserStorageStatsByidSync(userID: i64): StorageStats;
+
+struct ExtBundleStats {
+    businessName: String;
+    size: i64;
+    flag: bool;
+}
+
+@gen_promise("setExtBundleStats")
+function SetExtBundleStatsSync(userId: i32, stats: ExtBundleStats): void;
+
+@gen_promise("getExtBundleStats")
+function GetExtBundleStatsSync(userId: i32, businessName: String): ExtBundleStats;
+
+@gen_promise("getAllExtBundleStats")
+function GetAllExtBundleStatsSync(userId: i32): Array<ExtBundleStats>;
