@@ -2034,7 +2034,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ListUserdataDirInf
 
     int32_t result =
         storageDaemonProviderTest_->ListUserdataDirInfo(scanDirs);
-    EXPECT_NE(result, E_ERR);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ListUserdataDirInfo_001 end";
 }
 } // namespace StorageDaemon
