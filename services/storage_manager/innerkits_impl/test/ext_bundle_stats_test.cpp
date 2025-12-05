@@ -70,18 +70,18 @@ HWTEST_F(ExtBundleStatsTest, Ext_Bundle_Stats_Unmarshalling_0000, testing::ext::
     string businessName = "test_business_2";
     uint64_t businessSize = 2048 * 1024;
     bool showFlag = false;
-
     Parcel parcel;
     parcel.WriteString(businessName);
     parcel.WriteUint64(businessSize);
     parcel.WriteBool(showFlag);
-
-    ExtBundleStats res;
-    res = *ExtBundleStats::Unmarshalling(parcel);
-    EXPECT_EQ(res.businessName_, businessName);
-    EXPECT_EQ(res.businessSize_, businessSize);
-    EXPECT_EQ(res.showFlag_, showFlag);
-
+    auto result = ExtBundleStats::Unmarshalling(parcel);
+    EXPECT_NE(result, nullptr);
+    if (result != nullptr) {
+        ExtBundleStats res = *result;
+        EXPECT_EQ(res.businessName_, businessName);
+        EXPECT_EQ(res.businessSize_, businessSize);
+        EXPECT_EQ(res.showFlag_, showFlag);
+    }
     GTEST_LOG_(INFO) << "ExtBundleStatsTest-end Ext_Bundle_Stats_Unmarshalling_0000";
 }
 }

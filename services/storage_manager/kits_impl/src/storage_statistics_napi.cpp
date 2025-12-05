@@ -35,6 +35,9 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getFreeSize", GetFreeSize),
         DECLARE_NAPI_FUNCTION("getTotalSizeSync", GetTotalSizeSync),
         DECLARE_NAPI_FUNCTION("getFreeSizeSync", GetFreeSizeSync),
+        DECLARE_NAPI_FUNCTION("setExtBundleStats", SetExtBundleStats),
+        DECLARE_NAPI_FUNCTION("getExtBundleStats", GetExtBundleStats),
+        DECLARE_NAPI_FUNCTION("getAllExtBundleStats", GetAllExtBundleStats),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
