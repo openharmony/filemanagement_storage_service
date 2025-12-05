@@ -115,7 +115,7 @@ public:
          uint32_t tokenId, uint32_t flag);
     int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList);
 
-    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
+    int32_t SetBundleQuota(int32_t uid, const std::string &bundleDataDirPath,
          int32_t limitSizeMb);
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
 

@@ -59,6 +59,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
   ]
 
@@ -231,6 +232,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
   ]

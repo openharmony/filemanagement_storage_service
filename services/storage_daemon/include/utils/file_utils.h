@@ -77,6 +77,8 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList);
 bool RestoreconDir(const std::string &path);
 int32_t RedirectStdToPipe(int logpipe[2], size_t len);
 int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
+int32_t GetRmgDataSize(const std::string &rgmName, const std::string &path,
+    const std::vector<std::string> &ignorePaths, uint64_t &totalSize);
 int32_t GetSubFilesSize(const std::string &folder, std::queue<std::string> &dirTraverseQue,
     const std::vector<std::string> &ignorePaths, uint64_t &totalSize, int &fileCount);
 int32_t HandleStaticsDirError(int32_t oldErrno, int32_t newErrno);

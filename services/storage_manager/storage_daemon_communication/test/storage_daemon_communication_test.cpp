@@ -375,9 +375,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_001
 
     int32_t limitSizeMb = 100;
     int32_t uid = 100;
-    std::string bundleName = "testbundleName";
     std::string bundleDataDirPath = "testbundleDataDirPath";
-    int32_t ret = sdCommunication->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t ret = sdCommunication->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetBundleQuota_001 SUCCESS";

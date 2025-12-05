@@ -133,5 +133,83 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_tes
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0002 end";
 }
+
+/**
+* @tc.number: Storage_subscriber_OnReceiveEvent_test_0003
+* @tc.name: Storage_subscriber_OnReceiveEvent_test_0003
+* @tc.desc: Test function of OnReceiveEvent
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+*/
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0003, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0003 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    int32_t userId = 100;
+    std::string bundleName = "test";
+    want.SetParam("userId", userId);
+    want.SetParam("bundleName", bundleName);
+    testData.SetWant(want);
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0003 end";
+}
+
+/**
+* @tc.number: Storage_subscriber_UpdateDeviceState_test_0001
+* @tc.name: Storage_subscriber_UpdateDeviceState_test_0001
+* @tc.desc: Test function of UpdateDeviceState
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+*/
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_UpdateDeviceState_test_0001, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_UpdateDeviceState_test_0001 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, true));
+
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, false));
+    GTEST_LOG_(INFO) << "Storage_subscriber_UpdateDeviceState_test_0001 end";
+}
+
+/**
+* @tc.number: Storage_subscriber_CheckAndTriggerStatistic_test_0001
+* @tc.name: Storage_subscriber_CheckAndTriggerStatistic_test_0001
+* @tc.desc: Test function of CheckAndTriggerStatistic
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+*/
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_CheckAndTriggerStatistic_test_0001, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_CheckAndTriggerStatistic_test_0001 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    subscriberPtr_->deviceState_ = STATE_SCREEN_OFF;
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->CheckAndTriggerStatistic());
+
+    subscriberPtr_->deviceState_ = STATE_CHARGING_SCREEN_OFF;
+    subscriberPtr_->batteryCapacity_ = 15;
+    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->CheckAndTriggerStatistic());
+    GTEST_LOG_(INFO) << "Storage_subscriber_CheckAndTriggerStatistic_test_0001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

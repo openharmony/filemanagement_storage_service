@@ -27,6 +27,7 @@ ohos_unittest("crypto_manager_service_test") {
   sources = [
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
     "${storage_manager_path}/crypto/test/filesystem_crypto_test.cpp",
+    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
   ]

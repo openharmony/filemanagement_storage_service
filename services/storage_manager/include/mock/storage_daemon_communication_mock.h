@@ -31,6 +31,10 @@ public:
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     virtual int32_t QueryOccupiedSpaceForSa(std::string &storageStatus,
         const std::map<int32_t, std::string> &bundleNameAndUid);
+    virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
+    virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
+    virtual int32_t SetStopScanFlag(bool stop = false);
+    virtual int32_t GetAncoSizeData(std::string &outExtraData);
     static inline std::shared_ptr<IStorageDaemonCommunicationMock> storageDaemonCommunication = nullptr;
 };
 class StorageDaemonCommunicationMock : public IStorageDaemonCommunicationMock {
@@ -40,6 +44,10 @@ public:
     MOCK_METHOD(int32_t, GetFileEncryptStatus, (uint32_t, bool &, bool), (override));
     MOCK_METHOD(int32_t, QueryOccupiedSpaceForSa, (std::string &, (const std::map<int32_t, std::string> &)),
         (override));
+    MOCK_METHOD(int32_t, GetDqBlkSpacesByUids, (const std::vector<int32_t> &, std::vector<NextDqBlk> &));
+    MOCK_METHOD(int32_t, GetDirListSpace, (const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
+    MOCK_METHOD(int32_t, SetStopScanFlag, (bool));
+    MOCK_METHOD(int32_t, GetAncoSizeData, (std::string &));
 };
 } // StorageManager
 } // OHOS

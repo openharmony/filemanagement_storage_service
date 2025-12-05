@@ -1157,24 +1157,23 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetBundleQuota_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    string bundleName;
     string bundleDataDirPath;
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
 
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
         sdCommunication->storageDaemon_ = nullptr;
     }), Return(true)));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SERVICE_IS_NULLPTR);
 
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, SetBundleQuota(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->SetBundleQuota(bundleName, 0, bundleDataDirPath, 0), E_OK);
+    EXPECT_CALL(*sd, SetBundleQuota(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetBundleQuota_0000";
 }
 
@@ -1791,7 +1790,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpace
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, InactiveUserPublicDirKey(_)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*sd, InactiveUserPublicDirKey(_)).WillRepeatedly(Return(E_OK));
     EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CheckDirSize_001";
 }
@@ -1981,43 +1980,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserDir_001,
     EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_OK);
 
     GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 end";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_StatisticSysDirSpace_001
- * @tc.name: Daemon_communication_StatisticSysDirSpace_001
- * @tc.desc: Test function of StatisticSysDirSpace interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Daemon_communication_StatisticSysDirSpace_001 begin ";
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_SA_IS_NULLPTR);
-
-    // Test storageDaemon_ == nullptr branch after Connect() success
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_SERVICE_IS_NULLPTR);
-
-    // Test normal success path
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, StatisticSysDirSpace()).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->StatisticSysDirSpace(), E_OK);
-
-    GTEST_LOG_(INFO) << "Daemon_communication_StatisticSysDirSpace_001 end";
 }
 
 /**

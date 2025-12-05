@@ -216,7 +216,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const StorageFileR
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
+int32_t StorageDaemonProxy::SetBundleQuota(int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     return E_OK;
@@ -336,7 +336,23 @@ int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::StatisticSysDirSpace()
+int32_t StorageDaemonProxy::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+    std::vector<DirSpaceInfo> &outDirs)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::SetStopScanFlag(bool stop)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetAncoSizeData(std::string &outExtraData)
 {
     return E_OK;
 }

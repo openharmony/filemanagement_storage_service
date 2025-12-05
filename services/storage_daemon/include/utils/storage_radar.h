@@ -81,6 +81,7 @@ enum class BizStage : int32_t {
     BIZ_STAGE_PARTITION,
     BIZ_STAGE_FORMAT,
     BIZ_STAGE_SET_VOLUME_DESCRIPTION,
+    BIZ_STAGE_SET_BUNDLE_QUOTA,
     BIZ_STAGE_GET_ALL_VOLUMES,
 
     BIZ_STAGE_THRESHOLD_CLEAN_HIGH = 51,
@@ -149,6 +150,7 @@ public:
     static int64_t RecordCurrentTime();
     static void ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData);
+    static void ReportSetQuotaByBaseline(const std::string &funcName, const std::string &extraData);
 
 private:
     StorageRadar() = default;

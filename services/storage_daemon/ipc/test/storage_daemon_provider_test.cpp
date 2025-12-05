@@ -1191,12 +1191,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetBundleQuota_001
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetBundleQuota_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string bundleName = "com.example.app";
     std::string bundleDataDirPath = "/data/data/com.example.app";
     int32_t limitSizeMb = 100;
 
     int32_t result =
-        storageDaemonProviderTest_->SetBundleQuota(bundleName, StorageTest::USER_ID1, bundleDataDirPath, limitSizeMb);
+        storageDaemonProviderTest_->SetBundleQuota(StorageTest::USER_ID1, bundleDataDirPath, limitSizeMb);
     EXPECT_NE(result, E_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetBundleQuota_001 end";
 }
@@ -1561,21 +1560,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StorageRadarThd_00
     delete provider;
     SUCCEED();
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StorageRadarThd_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_StatisticSysDirSpace_001
- * @tc.desc: Verify the StatisticSysDirSpace function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StatisticSysDirSpace_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto ret = storageDaemonProviderTest_->StatisticSysDirSpace();
-    EXPECT_TRUE(ret == E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StatisticSysDirSpace_001 end";
 }
 
 /**

@@ -56,7 +56,7 @@ public:
     MOCK_METHOD4(CreateShareFile,
                  int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));
-    MOCK_METHOD4(SetBundleQuota, int32_t (const std::string&, int32_t, const std::string&, int32_t));
+    MOCK_METHOD3(SetBundleQuota, int32_t (int32_t, const std::string&, int32_t));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));
     MOCK_METHOD3(UnlockUserScreen, int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
@@ -90,7 +90,10 @@ public:
     MOCK_METHOD3(SetDirEncryptionPolicy, int32_t(uint32_t, const std::string &, uint32_t));
     MOCK_METHOD4(CreateUserDir, int32_t(const std::string &, mode_t, uid_t, gid_t));
     MOCK_METHOD1(DeleteUserDir, int32_t(const std::string &));
-    MOCK_METHOD0(StatisticSysDirSpace, int32_t(void));
+    MOCK_METHOD2(GetDqBlkSpacesByUids, int32_t(const std::vector<int32_t> &, std::vector<NextDqBlk> &));
+    MOCK_METHOD2(GetDirListSpace, int32_t(const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
+    MOCK_METHOD1(SetStopScanFlag, int32_t(bool));
+    MOCK_METHOD1(GetAncoSizeData, int32_t(std::string &));
     MOCK_METHOD1(ListUserdataDirInfo, int32_t(std::vector<UserdataDirInfo> &));
 
     MOCK_METHOD2(GetDataSizeByPath, int32_t(const std::string &, int64_t &));

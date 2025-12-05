@@ -85,7 +85,7 @@ public:
                                     std::vector<int32_t> &funcResult) override;
     virtual int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
-    virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
+    virtual int32_t SetBundleQuota(int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
@@ -115,7 +115,11 @@ public:
     virtual int32_t UnregisterUeceActivationCallback();
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     virtual int32_t DeleteUserDir(const std::string &path) override;
-    virtual int32_t StatisticSysDirSpace() override;
+    virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks) override;
+    virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+        std::vector<DirSpaceInfo> &outDirs) override;
+    virtual int32_t SetStopScanFlag(bool stop) override;
+    virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
 
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;

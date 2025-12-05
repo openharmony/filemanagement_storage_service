@@ -30,7 +30,6 @@
 #include "storage/storage_status_service.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
-#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
 #include "dfx_report/storage_dfx_reporter.h"
 
@@ -168,30 +167,6 @@ void StorageMonitorService::MonitorAndManageStorage()
         RefreshAllNotificationTimeStamp();
         hasNotifiedStorageEvent_ = false;
     }
-    if (!IsCurTimeNeedStatistic()) {
-        return;
-    }
-    StatisticSysDirSpace(freeSize);
-}
-
-void StorageMonitorService::StatisticSysDirSpace(int64_t &freeSize)
-{
-    if (freesizeCache > 0 && std::abs(freeSize - freesizeCache) < StorageService::TWO_G_BYTE) {
-        return;
-    }
-    freesizeCache = freeSize;
-    LOGI("storage monitor statistic start.");
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t ret = sdCommunication->StatisticSysDirSpace();
-    LOGI("storage monitor statistic end, ret is %{public}d.", ret);
-}
-
-bool StorageMonitorService::IsCurTimeNeedStatistic()
-{
-    std::time_t now = std::time(nullptr);
-    std::tm *localTime = std::localtime(&now);
-    return localTime->tm_hour == 1 && (localTime->tm_min == 0 || localTime->tm_min == 1);
 }
 
 std::string StorageMonitorService::GetStorageAlertCleanupParams()

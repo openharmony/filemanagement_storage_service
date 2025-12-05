@@ -16,12 +16,22 @@
 #define STORAGE_COMMON_EVENT_SUBSCRIBER_H
 
 #include <string>
+#include <atomic>
 
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "common_event_subscribe_info.h"
+#include "common_event_subscriber.h"
 
 namespace OHOS {
 namespace StorageManager {
+
+enum DeviceState : uint8_t {
+    STATE_SCREEN_OFF = 0x01,      // bit 0: 息屏标志
+    STATE_POWER_CONNECTED = 0x02, // bit 1: 充电标志
+    STATE_CHARGING_SCREEN_OFF = 0x03, // 0x01 | 0x02: 充电灭屏状态
+};
+
 class StorageCommonEventSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     StorageCommonEventSubscriber() = default;
@@ -30,6 +40,13 @@ public:
     static void SubscribeCommonEvent(void);
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
     static inline std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
+
+private:
+    void UpdateDeviceState(DeviceState state, bool set);
+    void HandleBatteryChangedEvent(int batteryCapacity);
+    void CheckAndTriggerStatistic();
+    std::atomic<uint8_t> deviceState_{0x00}; // 默认: 0x00 = 亮屏+断电
+    std::atomic<int> batteryCapacity_{0};
 };
 }  // namespace StorageManager
 }  // namespace OHOS

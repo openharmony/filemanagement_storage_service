@@ -21,12 +21,14 @@
 #include <vector>
 
 #include "config_policy_utils.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageManager {
+constexpr const char* QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char* PATH_CCM_CONFIG = "/etc/storage_statistic_baseline.json";
 constexpr const char* CCM_CONFIG_STORAGE_STATISTIC_BASELINE = "storage.statistic.baseline";
 constexpr const char* CCM_CONFIG_UID = "uid";
@@ -47,6 +49,29 @@ void StorageQuotaController::UpdateBaseLineByUid()
     if (ret != E_OK) {
         LOGE("ReadCcmConfigFile failed");
         return;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("StorageDaemonCommunication instance is nullptr");
+        return;
+    }
+
+    std::map<int32_t, int32_t> resultMap;
+    for (const auto &param : params) {
+        int32_t ret = sdCommunication->SetBundleQuota(param.uid, QUOTA_DEVICE_DATA_PATH,  param.baseline);
+        if (ret != E_OK) {
+            LOGE("SetBundleQuota failed for uid=%{public}d, baseline=%{public}d, ret=%{public}d",
+                param.uid, param.baseline, ret);
+            resultMap[param.uid] = param.baseline;
+        }
+    }
+    if (!resultMap.empty()) {
+        std::string errorInfo;
+        for (const auto &kv : resultMap) {
+            errorInfo += "uid=" + std::to_string(kv.first) + ",baseline=" + std::to_string(kv.second) + ";";
+        }
+        StorageService::StorageRadar::ReportSetQuotaByBaseline("SetQuotaByBaselineBatch", errorInfo);
     }
 }
 

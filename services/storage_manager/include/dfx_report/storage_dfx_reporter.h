@@ -24,6 +24,7 @@
 #include <thread>
 #include <atomic>
 #include "storage_stats.h"
+#include "statistic_info.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -38,6 +39,11 @@ public:
     void StartReportHapAndSaStorageStatus();
     void CheckAndTriggerHapAndSaStatistics();
 
+    int32_t StartReportDirStatus();
+    // Scan control methods
+    void StartScan();
+    void StopScan();
+
 private:
     StorageDfxReporter() = default;
     ~StorageDfxReporter();
@@ -50,7 +56,6 @@ private:
     void CollectMetadataAndAnco(std::ostringstream &extraData);
     int32_t CollectBundleStatistics(int32_t userId, std::ostringstream &extraData);
     void UpdateHapAndSaState();
-    int32_t UpdateScanState(int64_t totalSize);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
     bool CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
                                     int64_t timeIntervalHours, int64_t &hoursDiff);
@@ -71,6 +76,28 @@ private:
     int64_t lastHapAndSaFreeSize_ = 0;
     std::chrono::system_clock::time_point lastHapAndSaTime_;
     std::atomic<bool> isHapAndSaRunning_{false};
+
+    int32_t CheckSystemUidSize(const std::vector<NextDqBlk> &dqBlks, int64_t &totalSize,
+                               int64_t &rootSize, int64_t &systemSize, int64_t &foundationSize);
+    void CollectDirStatistics(int64_t rootSize, int64_t systemSize, int64_t foundationSize,
+                              std::ostringstream &extraData);
+    int32_t UpdateScanState(int64_t totalSize);
+    void AppendDirInfo(const std::vector<DirSpaceInfo> &dirs, std::ostringstream &extraData);
+    std::vector<DirSpaceInfo> GetRootDirList();
+    std::vector<DirSpaceInfo> GetSystemDirList();
+    std::vector<DirSpaceInfo> GetFoundationDirList();
+
+    // Scan control helper methods
+    bool CheckScanPreconditions();
+    void LaunchScanWorker();
+    std::mutex scanStateMutex_;
+    int64_t lastScanFreeSize_ = 0;
+    int64_t lastTotalSize_ = 0;
+    std::chrono::system_clock::time_point lastScanTime_;
+
+    // Scan control variables
+    std::atomic<bool> isScanRunning_{false};
+    std::mutex scanMutex_;
 };
 } // namespace StorageManager
 } // namespace OHOS

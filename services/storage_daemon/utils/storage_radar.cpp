@@ -436,5 +436,20 @@ std::string StorageRadar::ReportDuration(const std::string &funcName, int64_t st
     StorageRadar::GetInstance().RecordFuctionResult(param);
     return ret;
 }
+
+void StorageRadar::ReportSetQuotaByBaseline(const std::string &funcName, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_SET_BUNDLE_QUOTA,
+        .keyElxLevel = "NA",
+        .errorCode = E_SET_QUOTA_UID_FAILED,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
 } // namespace StorageService
 } // namespace OHOS
