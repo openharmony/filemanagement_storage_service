@@ -30,5 +30,8 @@ int64_t GetTotalSizeSync();
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync();
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userId);
+void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBundleStats stats);
+ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t userId, taihe::string_view businessName);
+taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStatsSync(int32_t userId);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H
