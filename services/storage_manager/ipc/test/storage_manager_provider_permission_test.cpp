@@ -1718,7 +1718,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirI
     std::vector<UserdataDirInfo> scanDirs;
     auto ret = storageManagerProviderTest_->ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_GE(scanDirs.size(), 0);
+    EXPECT_GT(scanDirs.size(), 0);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 end";
 }
 }
