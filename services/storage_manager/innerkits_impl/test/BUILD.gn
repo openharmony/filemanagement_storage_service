@@ -134,9 +134,11 @@ ohos_unittest("storage_stats_test") {
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/ext_bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
+    "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
     "ext_bundle_stats_test.cpp",
     "bundle_stats_test.cpp",
     "storage_stats_test.cpp",
+    "userdata_dir_info_test.cpp",
   ]
 
   include_dirs = [
