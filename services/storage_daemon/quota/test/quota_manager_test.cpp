@@ -745,7 +745,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_002, TestSize.Le
         GTEST_FAIL();
     }
     file.seekp(1 * 1024 * 1024 * 1024 + 1);
-    file.write("", 1);
+    file.write("a", 1);
     file.close();
 
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
@@ -754,6 +754,18 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_002, TestSize.Le
     EXPECT_GT(scanDirs.size(), 0);
     std::filesystem::remove(testFile);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_002 end";
+}
+
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ScanDirRecurse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ScanDirRecurse_001 start";
+
+    std::string testFile = "/data/test_file";
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    OHOS::StorageManager::UserdataDirInfo result = QuotaManager::GetInstance().ScanDirRecurse(testFile, scanDirs);
+    EXPECT_EQ(result.totalCnt_ , 0);
+    EXPECT_EQ(scanDirs.size(), 0);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ScanDirRecurse_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
