@@ -169,6 +169,7 @@ ohos_unittest("storage_monitor_service_test") {
   deps = [ "${storage_service_path}/services/storage_manager:storage_manager" ]
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",

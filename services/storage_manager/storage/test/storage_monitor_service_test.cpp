@@ -16,6 +16,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 
+#include "cJSON.h"
 #include "init_param.h"
 #include "storage/storage_monitor_service.h"
 #include "storage_service_errno.h"
@@ -27,12 +28,30 @@ class SystemUtil {
 public:
     virtual ~SystemUtil() = default;
     virtual std::string GetParameter(const std::string&, const std::string&) = 0;
+    virtual cJSON *cJSON_CreateObject() = 0;
+    virtual cJSON* cJSON_AddStringToObject(cJSON* object, const char* name, const char* string) = 0;
+    virtual cJSON *cJSON_CreateString(const char *string) = 0;
+    virtual cJSON *cJSON_CreateArray() = 0;
+    virtual cJSON_bool cJSON_AddItemToArray(cJSON *array, cJSON *item) = 0;
+    virtual cJSON_bool cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item) = 0;
+    virtual char *cJSON_Print(const cJSON *item) = 0;
+    virtual void cJSON_free(void *object) = 0;
+    virtual void cJSON_Delete(cJSON *item) = 0;
     static inline std::shared_ptr<SystemUtil> su = nullptr;
 };
 
 class SystemUtilMock : public SystemUtil {
 public:
     MOCK_METHOD(std::string, GetParameter, (const std::string&, const std::string&));
+    MOCK_METHOD(cJSON *, cJSON_CreateObject, (), (override));
+    MOCK_METHOD(cJSON *, cJSON_AddStringToObject, (cJSON*, const char*, const char*), (override));
+    MOCK_METHOD(cJSON *, cJSON_CreateString, (const char*), (override));
+    MOCK_METHOD(cJSON *, cJSON_CreateArray, (), (override));
+    MOCK_METHOD(cJSON_bool, cJSON_AddItemToArray, (cJSON*, cJSON*), (override));
+    MOCK_METHOD(cJSON_bool, cJSON_AddItemToObject, (cJSON*, const char*, cJSON*), (override));
+    MOCK_METHOD(char *, cJSON_Print, (const cJSON*), (override));
+    MOCK_METHOD(void, cJSON_free, (void*), (override));
+    MOCK_METHOD(void, cJSON_Delete, (cJSON*), (override));
 };
 }
 
@@ -68,6 +87,78 @@ std::string GetParameter(const std::string& key, const std::string& def)
 }
 } // namespace system
 } // namespace OHOS
+
+cJSON *cJSON_CreateObject()
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateObject();
+}
+
+cJSON* cJSON_AddStringToObject(cJSON* object, const char* name, const char* string)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddStringToObject(object, name, string);
+}
+
+cJSON *cJSON_CreateString(const char *string)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateString(string);
+}
+
+cJSON *cJSON_CreateArray(void)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateArray();
+}
+
+cJSON_bool cJSON_AddItemToArray(cJSON *array, cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return cJSON_False;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddItemToArray(array, item);
+}
+
+cJSON_bool cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return cJSON_False;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddItemToObject(object, string, item);
+}
+
+char *cJSON_Print(const cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_Print(item);
+}
+
+void cJSON_free(void *object)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return;
+    }
+    OHOS::StorageManager::SystemUtil::su->cJSON_free(object);
+}
+
+void cJSON_Delete(cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return;
+    }
+    OHOS::StorageManager::SystemUtil::su->cJSON_Delete(item);
+}
 
 namespace OHOS::StorageManager {
 using namespace std;
@@ -412,5 +503,57 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     mockRunner.reset();
 
     GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_GetJsonString_0001
+ * @tc.name: Storage_monitor_service_GetJsonString_0001
+ * @tc.desc: Test function of HapAndSaStatisticsThd interface with multiple calls.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetJsonString_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonString_0001 start";
+
+    const std::string faultDesc = "faultDesc";
+    const std::string faultSuggest = "faultSuggest";
+    bool isHighFreq = true;
+
+    std::string retString;
+    cJSON jsonObject = { 0 };
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateArray()).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateArray()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    isHighFreq = false;
+    char stringTemp[] = "{}";
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(stringTemp));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonString_0001 end";
 }
 }
