@@ -763,7 +763,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ScanDirRecurse_001, TestSize.Level1)
     std::string testFile = "/data/test_file";
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
     OHOS::StorageManager::UserdataDirInfo result = QuotaManager::GetInstance().ScanDirRecurse(testFile, scanDirs);
-    EXPECT_EQ(result.totalCnt_ , 0);
+    EXPECT_EQ(result.totalCnt_, 0);
     EXPECT_EQ(scanDirs.size(), 0);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ScanDirRecurse_001 end";
 }
