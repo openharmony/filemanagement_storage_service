@@ -53,110 +53,12 @@ constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
 constexpr int32_t BLOCK_BYTE = 512;
 constexpr int32_t TOP_SPACE_COUNT = 20;
-constexpr int32_t ROOT_UID = 0;
-constexpr int32_t SYSTEM_UID = 1000;
-constexpr int32_t FOUNDATION_UID = 5523;
 constexpr int32_t LINE_MAX_LEN = 32;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 #define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
 std::mutex cacheMutex_;
-
-static std::vector<DirSpaceInfo> GetRootDir()
-{
-    return {{"/data/app/el1/0/shader_cache", 0, 0},
-            {"/data/log/bbox", 0, 0},
-            {"/data/log/sysres", 0, 0},
-            {"/data/log/last_tee", 0, 0},
-            {"/data/log/security_guard", 0, 0},
-            {"/data/log/hiaudit/storageservice", 0, 0},
-            {"/data/app/el1/bundle/public", 0, 0},
-            {"/data/service/el1/public/udev", 0, 0},
-            {"/data/service/el1/public/i18n", 0, 0},
-            {"/data/service/el1/public/hosts_user", 0, 0},
-            {"/data/service/el1/public/usb/mode", 0, 0},
-            {"/data/service/el0/startup", 0, 0},
-            {"/data/service/el0/access_token", 0, 0},
-            {"/data/service/el0/storage_daemon", 0, 0},
-            {"/data/service/el0/public/for-all-app", 0, 0},
-            {"/data/service/el1/startup", 0, 0},
-            {"/data/service/el1/public/for-all-app", 0, 0},
-            {"/data/service/el1/public/startup", 0, 0},
-            {"/data/service/el1/public/storage_daemon", 0, 0},
-            {"/data/service/el1/public/hdc", 0, 0},
-            {"/data/service/el1/public/usb/mode", 0, 0},
-            {"/data/service/el1/public/udev", 0, 0},
-            {"/data/service/el1/public/i18n", 0, 0},
-            {"/data/service/el1/public/rgm_engine", 0, 0},
-            {"/data/service/el1/network", 0, 0},
-            {"/data/service/el1/0/hyperhold", 0, 0},
-            {"/data/log/hiaudit/storageservice", 0, 0},
-            {"/data/local/shader_cache", 0, 0},
-            {"/data/local/tmp", 0, 0},
-            {"/data/app/el1/0/aot_compiler", 0, 0},
-            {"/data/app/el1/0/base", 0, 0},
-            {"/data/app/el1/0/system_optimize", 0, 0},
-            {"/data/app/el1/public/aot_compiler", 0, 0},
-            {"/data/app/el1/public/shader_cache", 0, 0},
-            {"/data/app/el1/%d/aot_compiler", 0, 0},
-            {"/data/app/el1/%d/shader_cache", 0, 0},
-            {"/data/app/el1/%d/system_optimize", 0, 0},
-            {"/data/apr_dumplogs", 0, 0},
-            {"/data/misc/shared_relro", 0, 0},
-            {"/data/vendor/hyperhold", 0, 0},
-            {"/data/vendor/log/thplog", 0, 0},
-            {"/data/vendor/log/dfx_logs", 0, 0},
-            {"/data/vendor/log/wifi", 0, 0},
-            {"/data/vendor/log/hi110x", 0, 0},
-            {"/data/hisi_logs", 0, 0},
-            {"/data/uwb", 0, 0},
-            {"/data/log/tcpdump", 0, 0},
-            {"/data/virt_service", 0, 0},
-            {"/data/updater/log", 0, 0}};
-}
-
-static std::vector<DirSpaceInfo> GetSystemDir()
-{
-    return {{"/data/hmos4", 1000, 0},
-            {"/data/service/el1/public/for-all-app/framework_ark_cache", 1000, 0},
-            {"/data/service/el1/public/shader_cache", 1000, 0},
-            {"/data/service/el2/100/virt_service", 1000, 0},
-            {"/data/log/faultlog/temp", 1000, 0},
-            {"/data/log/hiview", 1000, 0},
-            {"/data/system/RTShaderCache", 1000, 0},
-            {"/data/local/shader_cache/local/system", 1000, 0},
-            {"/data/local/mtp_tmp", 1000, 0},
-            {"/data/virt_service", 1000, 0},
-            {"/data/misc", 1000, 0},
-            {"/data/vendor/log", 1000, 0},
-            {"/data/data", 1000, 0}};
-}
-
-static std::vector<DirSpaceInfo> GetFoundationDir()
-{
-    return {{"/data/service/el1/public/AbilityManagerService", 5523, 0},
-            {"/data/service/el1/public/database/bundle_manager_service", 5523, 0},
-            {"/data/service/el1/public/database/notification_service", 5523, 0},
-            {"/data/service/el1/public/database/form_storage", 5523, 0},
-            {"/data/service/el1/public/database/common_event_service", 5523, 0},
-            {"/data/service/el1/public/database/auto_startup_service", 5523, 0},
-            {"/data/service/el1/public/database/app_config_data", 5523, 0},
-            {"/data/service/el1/public/database/app_exit_reason", 5523, 0},
-            {"/data/service/el1/public/database/ability_manager_service", 5523, 0},
-            {"/data/service/el1/public/database/keep_alive_service", 5523, 0},
-            {"/data/service/el1/public/database/insight_intent", 5523, 0},
-            {"/data/service/el1/public/notification", 5523, 0},
-            {"/data/service/el1/public/window", 5523, 0},
-            {"/data/service/el1/public/ecological_rule_mgr_service", 5523, 0},
-            {"/data/service/el1/public/app_domain_verify_mgr_service", 5523, 0},
-            {"/data/service/el1/public/screenlock", 5523, 0},
-            {"/data/service/el1/public/bms/bundle_manager_service", 5523, 0},
-            {"/data/service/el1/public/bms/bundle_resources", 5523, 0},
-            {"/data/service/el1/0/utdtypes", 5523, 0},
-            {"/data/service/el1/%d/utdtypes", 5523, 0},
-            {"/data/log/eventlog/freeze", 5523, 0}};
-}
 
 QuotaManager &QuotaManager::GetInstance()
 {
@@ -512,7 +414,7 @@ void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t
     int32_t count = 0;
     std::map<int32_t, int64_t> userAppSizeMap;
     while (count < MAX_UID_COUNT) {
-        struct NextDqBlk dq;
+        NextDqBlk dq;
         if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
             LOGE("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
             break;
@@ -555,7 +457,7 @@ void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t
     LOGI("GetOccupiedSpaceForUidList end!");
 }
 
-void QuotaManager::AssembleSysAppVec(int32_t dqUid, const struct NextDqBlk &dq,
+void QuotaManager::AssembleSysAppVec(int32_t dqUid, const NextDqBlk &dq,
     std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec)
 {
     int32_t userId = StorageService::ZERO_USER;
@@ -749,141 +651,6 @@ uint32_t CheckOverLongPath(const std::string &path)
     return len;
 }
 
-int32_t QuotaManager::StatisticSysDirSpace()
-{
-    LOGI("statistic sys dir space start.");
-    if (!IsNeedScan()) {
-        LOGI("not need to statistic sys dir space.");
-        return E_OK;
-    }
-    std::ostringstream extraData;
-    GetCurrentTime(extraData);
-    if (CheckOccupation(extraData) != E_OK) {
-        LOGE("root + system + foundation change < 1G, statistic space end.");
-        return E_OK;
-    }
-
-    std::vector<int32_t> userIds;
-    GetAllUserIds(userIds);
-    if (userIds.empty()) {
-        userIds.push_back(StorageService::DEFAULT_USER_ID);
-    }
-    std::vector<DirSpaceInfo> dirs = GetRootDir();
-    std::string res = AddDirSpace(dirs, userIds);
-    extraData << res << std::endl;
-
-    dirs = GetSystemDir();
-    res = AddDirSpace(dirs, userIds);
-    extraData << res << std::endl;
-
-    dirs = GetFoundationDir();
-    res = AddDirSpace(dirs, userIds);
-    extraData << res << std::endl;
-    StorageService::StorageRadar::ReportSpaceRadar("StatisticSysDirSpace", E_SYS_DIR_SPACE_STATUS, extraData.str());
-    LOGI("statistic sys dir space end.");
-    return E_OK;
-}
-
-int32_t QuotaManager::CheckOccupation(std::ostringstream &extraData)
-{
-    int64_t foundationSize = 0;
-    int64_t systemSize = 0;
-    int64_t rootSize = 0;
-
-    auto ret = GetOccupiedSpaceForUid(FOUNDATION_UID, foundationSize);
-    if (ret != E_OK) {
-        LOGE("Get foundation size failed.");
-        return ret;
-    }
-
-    ret = GetOccupiedSpaceForUid(SYSTEM_UID, systemSize);
-    if (ret != E_OK) {
-        LOGE("Get system size failed.");
-        return ret;
-    }
-
-    ret = GetOccupiedSpaceForUid(ROOT_UID, rootSize);
-    if (ret != E_OK) {
-        LOGE("Get root size failed.");
-        return ret;
-    }
-
-    int64_t sumSize = foundationSize + systemSize + rootSize;
-
-    std::lock_guard<std::mutex> lock(cacheMutex_);
-    int64_t changeSize = sumSize - oldChangeSizeCache_;
-    bool shouldUpdate = (changeSize > StorageService::ONE_G_BYTE) || (changeSize < -StorageService::ONE_G_BYTE);
-
-    if (shouldUpdate) {
-        oldChangeSizeCache_ = sumSize;
-        extraData << "{root size is:" << ConvertBytesToMB(rootSize, ACCURACY_NUM) << "MB}" << std::endl;
-        extraData << "{system size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB}" << std::endl;
-        extraData << "{foundation size is:" << ConvertBytesToMB(foundationSize, ACCURACY_NUM) << "MB}" << std::endl;
-        return E_OK;
-    }
-    return E_ERR;
-}
-
-bool QuotaManager::IsNeedScan()
-{
-    for (auto &uid : SYS_UIDS) {
-        struct dqblk dq;
-        if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) != 0) {
-            int32_t errnoTmp = errno;
-            std::string extraData = "uid=" + std::to_string(uid) + ",kernelCode=" + std::to_string(errnoTmp);
-            StorageService::StorageRadar::ReportSpaceRadar("IsNeedScan", E_STATISTIC_QUOTA_UID_FAILED, extraData);
-            LOGE("failed to get quota, uid is %{public}d, errno is %{public}d", uid, errno);
-            return true;
-        }
-        int64_t size = static_cast<int64_t>(dq.dqb_curspace);
-        if (size > StorageService::TWO_G_BYTE) {
-            LOGI("sys uid bigger than two gb, uid is %{public}d.", uid);
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string QuotaManager::AddDirSpace(const std::vector<DirSpaceInfo> &dirs, const std::vector<int32_t> &userIds)
-{
-    std::vector<DirSpaceInfo> allPaths;
-    for (const auto &dirInfo : dirs) {
-        std::string path = dirInfo.path;
-        uid_t uid = dirInfo.uid;
-        if (path.find("%d") == std::string::npos) {
-            int64_t blks = 0;
-            AddBlksRecurse(path, blks, uid);
-            int64_t dirSize = blks * BLOCK_BYTE;
-            allPaths.push_back({path, uid, dirSize});
-            continue;
-        }
-        for (const int32_t userId : userIds) {
-            std::string userPath = StringPrintf(path.c_str(), userId);
-            int64_t blks = 0;
-            AddBlksRecurse(userPath, blks, uid);
-            int64_t dirSize = blks * BLOCK_BYTE;
-            allPaths.push_back({userPath, uid, dirSize});
-        }
-    }
-    std::sort(allPaths.begin(), allPaths.end(), [](const DirSpaceInfo& a, const DirSpaceInfo& b) {
-        return a.size > b.size;
-    });
-    std::ostringstream extraData;
-    int32_t count = 1;
-    for (const auto& info : allPaths) {
-        if (count > TOP_SPACE_COUNT) {
-            break;
-        }
-        extraData << "{path:" << info.path
-                  << ",uid:" << info.uid
-                  << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
-                  << "MB}" << std::endl;
-        count++;
-    }
-    LOGI("extraData is %{public}s", extraData.str().c_str());
-    return extraData.str();
-}
-
 int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid)
 {
     AddBlks(path, blks, uid);
@@ -924,6 +691,128 @@ int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
         blks += static_cast<int64_t>(st.st_blocks);
     }
     return E_OK;
+}
+
+int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks)
+{
+    LOGI("GetDqBlkSpacesByUids start, uids size: %{public}zu", uids.size());
+    dqBlks.clear();
+    for (auto &uid : uids) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDqBlkSpacesByUids stopped by stopScanFlg");
+            std::vector<NextDqBlk>().swap(dqBlks);
+            return E_ERR;
+        }
+        struct dqblk dq;
+#ifdef ENABLE_EMULATOR
+        return E_NOT_SUPPORT;
+#else
+        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char *>(&dq)) != 0) {
+            LOGE("get size by quota failed, size is %{public}s", std::to_string(dq.dqb_curspace).c_str());
+            std::vector<NextDqBlk>().swap(dqBlks);
+            return E_ERR;
+        }
+#endif
+        // 将 dqblk 转换为 NextDqBlk 对象
+        NextDqBlk nextDq(dq.dqb_bhardlimit, dq.dqb_bsoftlimit, dq.dqb_curspace, dq.dqb_ihardlimit, dq.dqb_isoftlimit,
+                         dq.dqb_curinodes, dq.dqb_btime, dq.dqb_itime, dq.dqb_valid,
+                         uid);
+        dqBlks.push_back(nextDq);
+    }
+    LOGI("GetDqBlkSpacesByUids end, dqBlks size: %{public}zu", dqBlks.size());
+    return E_OK;
+}
+
+void QuotaManager::ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs)
+{
+    std::string path = dirInfo.path;
+    uid_t uid = dirInfo.uid;
+    int64_t blks = 0;
+    AddBlksRecurse(path, blks, uid);
+    int64_t dirSize = blks * BLOCK_BYTE;
+    resultDirs.push_back({path, uid, dirSize});
+}
+
+void QuotaManager::ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
+    std::vector<DirSpaceInfo> &resultDirs)
+{
+    std::string path = dirInfo.path;
+    uid_t uid = dirInfo.uid;
+    for (const int32_t userId : userIds) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDirListSpace stopped by stopScanFlag, userIds");
+            std::vector<DirSpaceInfo>().swap(resultDirs);
+            return;
+        }
+        std::string userPath = StringPrintf(path.c_str(), userId);
+        int64_t blks = 0;
+        AddBlksRecurse(userPath, blks, uid);
+        int64_t dirSize = blks * BLOCK_BYTE;
+        resultDirs.push_back({userPath, uid, dirSize});
+    }
+}
+
+int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
+{
+    LOGI("GetDirListSpace start, input dirs size: %{public}zu", dirs.size());
+    std::vector<int32_t> userIds;
+    GetAllUserIds(userIds);
+    if (userIds.empty()) {
+        userIds.push_back(StorageService::DEFAULT_USER_ID);
+    }
+    std::vector<DirSpaceInfo> resultDirs;
+    for (const auto &dirInfo : dirs) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDirListSpace stopped by stopScanFlag, dirs");
+            std::vector<DirSpaceInfo>().swap(resultDirs);
+            return E_ERR;
+        }
+        if (dirInfo.path.find("%d") == std::string::npos) {
+            ProcessSingleDir(dirInfo, resultDirs);
+        } else {
+            ProcessDirWithUserId(dirInfo, userIds, resultDirs);
+        }
+    }
+    std::sort(resultDirs.begin(), resultDirs.end(), [](const DirSpaceInfo& a, const DirSpaceInfo& b) {
+        return a.size > b.size;
+    });
+    dirs = resultDirs;
+    LOGI("GetDirListSpace end, result dirs size: %{public}zu", dirs.size());
+    return E_OK;
+}
+
+void QuotaManager::SetStopScanFlag(bool stop)
+{
+    stopScanFlag_.store(stop);
+    LOGI("QuotaManager::SetStopScanFlag called with stop=%{public}d", stop);
+}
+
+void QuotaManager::GetAncoSizeData(std::string &extraData)
+{
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        LOGI("GetAncoSize stopped by stopScanFlg");
+        return;
+    }
+    LOGI("begin get Anco info.");
+    std::ostringstream oss;
+    uint64_t imageSize = 0;
+    GetRmgResourceSize("rgm_hmos", imageSize);
+    oss << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
+    std::vector<std::string> ignorePaths;
+    //data/virt_service/rgm_hmos/anco_hmos_data/media/0
+    ignorePaths.push_back("anco_hmos_data/media/0/Pictures/oh_pictures");
+    //未找到
+    ignorePaths.push_back("anco_hmos_data/media/0/oh_Docs");
+    //data/virt_service/rgm_hmos/anco_hmos_data/meda/0
+    ignorePaths.push_back("anco_hmos_data/media/0/我的手机(鸿蒙)");
+    //被quota 7758 统计目录
+    ignorePaths.push_back("anco_hmos_data/cota/anco");
+    uint64_t dirSize = 0;
+    GetRmgDataSize("rgm_hmos", "anco_hmos_data", ignorePaths, dirSize);
+    oss << "{anco dir size:" << ConvertBytesToMB(dirSize, ACCURACY_NUM) << "MB" << std::endl;
+    oss << "{anco total size:" << ConvertBytesToMB((imageSize + dirSize), ACCURACY_NUM) << "MB}" << std::endl;
+    extraData = oss.str();
+    LOGI("end get Anco info.");
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

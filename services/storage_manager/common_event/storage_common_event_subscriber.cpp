@@ -21,11 +21,14 @@
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
 #include "storage/storage_status_service.h"
+#include "dfx_report/storage_dfx_reporter.h"
 
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
 static constexpr int32_t WANT_DEFAULT_VALUE = -1;
+constexpr int32_t BATTERY_LEVEL_TEN = 10;
+constexpr const char* BATTERY_SOC_KEY = "soc";
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
 
@@ -35,6 +38,11 @@ void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
     if (subscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
@@ -60,6 +68,55 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
 #ifdef STORAGE_STATISTICS_MANAGER
         StorageStatusService::GetInstance().DelBundleExtStats(static_cast<uint32_t>(userId), bundleName);
 #endif
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
+        UpdateDeviceState(STATE_SCREEN_OFF, true);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON) {
+        UpdateDeviceState(STATE_SCREEN_OFF, false);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED) {
+        UpdateDeviceState(STATE_POWER_CONNECTED, true);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED) {
+        UpdateDeviceState(STATE_POWER_CONNECTED, false);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
+        int batteryCapacity = eventData.GetWant().GetIntParam(BATTERY_SOC_KEY, 0);
+        HandleBatteryChangedEvent(batteryCapacity);
+    }
+}
+
+void StorageCommonEventSubscriber::UpdateDeviceState(DeviceState state, bool set)
+{
+    uint8_t oldState = deviceState_.load();
+    uint8_t newState;
+    if (set) {
+        newState = oldState | state;
+    } else {
+        newState = oldState & ~state;
+    }
+    deviceState_.store(newState);
+    LOGI("UpdateDeviceState: state=0x%{public}02x, set=%{public}d, deviceState=0x%{public}02x",
+         state, set, newState);
+    CheckAndTriggerStatistic();
+}
+
+void StorageCommonEventSubscriber::HandleBatteryChangedEvent(int batteryCapacity)
+{
+    LOGI("Handle battery changed event, level=%{public}d", batteryCapacity);
+    batteryCapacity_.store(batteryCapacity);
+    CheckAndTriggerStatistic();
+}
+
+void StorageCommonEventSubscriber::CheckAndTriggerStatistic()
+{
+    uint8_t currentDeviceState = deviceState_.load();
+    int currentBatteryCapacity = batteryCapacity_.load();
+    bool isChargingScreenOff = (currentDeviceState == STATE_CHARGING_SCREEN_OFF);
+    LOGI("CheckAndTriggerStatistic: deviceState=0x%{public}02x, battery=%{public}d%%, isChargingScreenOff=%{public}d",
+         currentDeviceState, currentBatteryCapacity, isChargingScreenOff);
+
+    if (isChargingScreenOff && currentBatteryCapacity > BATTERY_LEVEL_TEN) {
+        LOGI("Trigger storage scan - device is charging, screen off, and battery > 10%%");
+        StorageDfxReporter::GetInstance().StartScan();
+    } else {
+        StorageDfxReporter::GetInstance().StopScan();
     }
 }
 }  // namespace StorageManager

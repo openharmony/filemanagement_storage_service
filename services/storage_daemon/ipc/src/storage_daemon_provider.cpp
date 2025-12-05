@@ -1009,9 +1009,29 @@ int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
     return UserManager::GetInstance().DeleteUserDir(path);
 }
 
-int32_t StorageDaemonProvider::StatisticSysDirSpace()
+int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
+    std::vector<NextDqBlk> &dqBlks)
 {
-    return QuotaManager::GetInstance().StatisticSysDirSpace();
+    return QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+}
+
+int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+    std::vector<DirSpaceInfo> &outDirs)
+{
+    outDirs = inDirs;
+    return QuotaManager::GetInstance().GetDirListSpace(outDirs);
+}
+
+int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
+{
+    QuotaManager::GetInstance().SetStopScanFlag(stop);
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
+{
+    QuotaManager::GetInstance().GetAncoSizeData(outExtraData);
+    return E_OK;
 }
 
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)

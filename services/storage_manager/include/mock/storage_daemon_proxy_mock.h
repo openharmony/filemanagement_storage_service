@@ -115,7 +115,11 @@ public:
     virtual int32_t UnregisterUeceActivationCallback();
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
     virtual int32_t DeleteUserDir(const std::string &path) override;
-    virtual int32_t StatisticSysDirSpace() override;
+    virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks) override;
+    virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
+        std::vector<DirSpaceInfo> &outDirs) override;
+    virtual int32_t SetStopScanFlag(bool stop) override;
+    virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
 
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;

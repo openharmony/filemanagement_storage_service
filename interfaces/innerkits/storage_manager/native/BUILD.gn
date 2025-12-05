@@ -96,6 +96,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
+    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 

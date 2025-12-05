@@ -40,7 +40,6 @@ ohos_unittest("dfx_report_test") {
     "LOG_DOMAIN = 0xD004300",
     "private = public",
   ]
-
   include_dirs = [
     "include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -51,7 +50,6 @@ ohos_unittest("dfx_report_test") {
     "${storage_manager_path}/include/storage",
     "${storage_service_path}/test/unittest/mock/include",
   ]
-
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",

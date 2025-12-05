@@ -234,7 +234,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DestroyDir_001, TestSize.Level1)
 
     std::ofstream file("/data/testFile.txt");
     file.close();
-    
     ret = DestroyDir("/data/testFile.txt", isPathEmpty);
     EXPECT_EQ(ret, E_OPENDIR_ERROR);
     std::filesystem::remove("/data/testFile.txt");
@@ -465,7 +464,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_KillProcess_001, TestSize.Level1)
     std::vector<ProcessInfo> processList;
     std::vector<ProcessInfo> killFailList;
     KillProcess(processList, killFailList);
-    
     ProcessInfo info1 {.name = "test1", .pid = 65300 };
     ProcessInfo info2 {.name = "test2", .pid = 65301 };
     processList.push_back(info1);
@@ -545,9 +543,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
 
     // Test the IsUsbFuse function basic functionality
     bool result = IsUsbFuse();
-    
     EXPECT_FALSE(result);
-    
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
 }
 
@@ -777,6 +773,46 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFolder_001, TestSize.Level1)
     EXPECT_TRUE(IsFolder(folder));
     EXPECT_FALSE(IsFolder("folder"));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFolder_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_GetRmgDataSize_001
+ * @tc.desc: Verify the FileUtilsTest_GetRmgDataSize_001 function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgDataSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_001 start";
+    std::string rgmName = "test";
+    std::string path = "";
+    std::vector<std::string> ignorePaths;
+    uint64_t totalSize;
+    int32_t ret = GetRmgDataSize(rgmName, path, ignorePaths, totalSize);
+    EXPECT_EQ(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_GetRmgDataSize_002
+ * @tc.desc: Verify the FileUtilsTest_GetRmgDataSize_002 function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgDataSize_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_002 start";
+    std::string rgmName = "rgm_hmos";
+    std::string path = "";
+    std::vector<std::string> ignorePaths;
+    uint64_t totalSize;
+    int32_t ret = GetRmgDataSize(rgmName, path, ignorePaths, totalSize);
+    EXPECT_NE(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
+
+    path = "invalid/path";
+    ret = GetRmgDataSize(rgmName, path, ignorePaths, totalSize);
+    EXPECT_NE(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
+    GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

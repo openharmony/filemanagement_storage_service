@@ -15,6 +15,8 @@
 
 #include <fstream>
 #include <gtest/gtest.h>
+#include <thread>
+#include <chrono>
 
 #include "quota/quota_manager.h"
 #include "storage_service_errno.h"
@@ -380,42 +382,6 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForU
 }
 
 /**
- * @tc.name: Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001
- * @tc.desc: Test whether StatisticSysDirSpace is called normally.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001 start";
-
-    EXPECT_EQ(QuotaManager::GetInstance().StatisticSysDirSpace(), E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StatisticSysDirSpace_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_QuotaManagerTest_AddDirSpace_001
- * @tc.desc: Test whether AddDirSpace is called normally.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_AddDirSpace_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddDirSpace_001 start";
-
-    std::vector<DirSpaceInfo> dirs = {
-        {"/data/app/el1/public", 0, 0},
-        {"/data/app/el1/%d/base", 0, 0}
-    };
-    std::vector<int32_t> userIds = {100};
-    std::string data = QuotaManager::GetInstance().AddDirSpace(dirs, userIds);
-    EXPECT_TRUE(!data.empty());
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_AddDirSpace_001 end";
-}
-
-/**
  * @tc.name: Storage_Service_QuotaManagerTest_AddBlksRecurse_001
  * @tc.desc: Test whether AddBlksRecurse is called normally.
  * @tc.type: FUNC
@@ -603,6 +569,158 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_StringToInt64_001, TestSize.Level1)
     result = quotaManager_.StringToInt64("-9223372036854775809", outValue);
     EXPECT_FALSE(result);
     GTEST_LOG_(INFO) << "QuotaManagerTest_StringToInt64_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDqBlkSpacesByUids_001
+ * @tc.desc: Test GetDqBlkSpacesByUids with empty uids vector.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDqBlkSpacesByUids_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_001 start";
+    std::vector<int32_t> uids = {1000, 1001};
+    std::vector<NextDqBlk> dqBlks;
+    QuotaManager::GetInstance().SetStopScanFlag(true);
+    int32_t result = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_EQ(result, E_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDqBlkSpacesByUids_003
+ * @tc.desc: Test GetDqBlkSpacesByUids with valid uids and non-emulator environment.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDqBlkSpacesByUids_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_003 start";
+    std::vector<int32_t> uids = {0, 1000, 20000000};
+    std::vector<NextDqBlk> dqBlks;
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    int32_t result = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_TRUE(result == E_OK || result == E_QUOTA_CTL_KERNEL_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_003 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDqBlkSpacesByUids_004
+ * @tc.desc: Test GetDqBlkSpacesByUids with invalid uids.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDqBlkSpacesByUids_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_004 start";
+    std::vector<int32_t> uids = {-1, 999999999};
+    std::vector<NextDqBlk> dqBlks;
+    int32_t result = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_EQ(result, E_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_004 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDqBlkSpacesByUids_005
+ * @tc.desc: Test GetDqBlkSpacesByUids with pre-populated dqBlks vector.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDqBlkSpacesByUids_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_005 start";
+    std::vector<int32_t> uids = {1000};
+    std::vector<NextDqBlk> dqBlks;
+    dqBlks.push_back(NextDqBlk(100, 50, 25, 1000, 500, 10, 0, 0, 1, 1000));
+    EXPECT_FALSE(dqBlks.empty());
+    int32_t result = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_TRUE(result == E_OK || result == E_QUOTA_CTL_KERNEL_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetDqBlkSpacesByUids_006
+ * @tc.desc: Test GetDqBlkSpacesByUids with mixed valid/invalid uids and stop flag toggled during processing.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDqBlkSpacesByUids_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_006 start";
+
+    std::vector<int32_t> uids = {0, 1000, -1, 20000000};
+    std::vector<NextDqBlk> dqBlks;
+    std::thread setStopFlag([]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        QuotaManager::GetInstance().SetStopScanFlag(true);
+    });
+    setStopFlag.detach();
+    int32_t result = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    EXPECT_TRUE(result == E_OK || result == E_ERR || result == E_QUOTA_CTL_KERNEL_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDqBlkSpacesByUids_006 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ProcessDirWithUserId_001
+ * @tc.desc: Test QuotaManager::ProcessDirWithUserId
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessDirWithUserId_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessDirWithUserId_001 start";
+    DirSpaceInfo dirInfo;
+    std::vector<int32_t> uids = {0, 1000, 20000000};
+    std::vector<DirSpaceInfo> resultDirs;
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    EXPECT_NO_FATAL_FAILURE(QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs));
+
+    QuotaManager::GetInstance().SetStopScanFlag(true);
+    EXPECT_NO_FATAL_FAILURE(QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs));
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessDirWithUserId_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDirListSpace_001
+ * @tc.desc: Test QuotaManager::GetDirListSpace
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_001 start";
+    std::vector<DirSpaceInfo> dirs;
+    QuotaManager quotaManager_;
+    for (int i = 0; i < 100; i++) {
+        if (i % 2 == 0) {
+            dirs.push_back({"/data/app/el%d/base/" + std::to_string(i), 1000 + i, 0});
+        } else {
+            dirs.push_back({"/proc/" + std::to_string(i), 0, 0});
+        }
+    }
+    quotaManager_.SetStopScanFlag(false);
+    int32_t result = quotaManager_.GetDirListSpace(dirs);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDirListSpace_002
+ * @tc.desc: Test GetDirListSpace with mixed paths (with and without %d).
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_002 start";
+    std::vector<DirSpaceInfo> dirs = {{"/etc", 0, 0}, {"/data/app/el%d/base", 1000, 0}, {"/proc", 0, 0}};
+
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    int32_t result = QuotaManager::GetInstance().GetDirListSpace(dirs);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

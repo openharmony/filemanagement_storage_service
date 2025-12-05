@@ -45,7 +45,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
-    "${storage_interface_path}/innerk/its/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   if (storage_service_storage_statistics_manager) {
@@ -121,6 +121,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
+    "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
     "${storage_manager_path}/ipc/src/storage_manager.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -135,7 +136,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/rdb_adapter",
     "${storage_manager_path}/include/storage",
-    "${storage_interface_path}/innerk/its/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   if (storage_service_storage_statistics_manager) {
