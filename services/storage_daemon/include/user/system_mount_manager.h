@@ -43,7 +43,6 @@ private:
     void UMountCloudForUsers(void);
     int32_t CloudMount(int32_t userId, const std::string &path);
     
-
     std::mutex mountMutex_;
     std::vector<int32_t> fuseToMountUsers_;
     std::vector<int32_t> fuseMountedUsers_;

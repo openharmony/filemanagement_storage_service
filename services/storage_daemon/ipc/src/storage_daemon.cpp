@@ -359,7 +359,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     auto result = UserManager::GetInstance().PrepareAllUserEl1Dirs();
     if (result != E_OK) {
         LOGE("PrepareAllUserEl1Dirs failed, please check");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAllUserEl1Dirs", GLOBAL_USER_ID, result, "EL1", "");
+        StorageRadar::ReportUserKeyResult("PrepareAllUserEl1Dirs", GLOBAL_USER_ID, result, "EL1", "");
     }
     result = MountManager::GetInstance().PrepareAppdataDir(GLOBAL_USER_ID);
     if (result != E_OK) {

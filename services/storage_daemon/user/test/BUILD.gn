@@ -194,9 +194,7 @@ ohos_unittest("user_path_resolver_test") {
     "user_path_resolver_test.cpp",
   ]
 
-  deps = [
-    #"$ROOT_DIR:storage_common_utils",
-  ]
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",

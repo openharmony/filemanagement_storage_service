@@ -33,7 +33,7 @@ namespace {
     const string EL2_BASE = "/data/storage/el2/base/";
     constexpr const char *STORAGE_ETC_PATH = "/etc/storage_daemon/";
     constexpr const char *STORAGE_USER_PATH = "storage_user_path.json";
-    // constexpr const char *STORAGE_MOUNT_INFO = "storage_mount_info.json";
+    constexpr const char *STORAGE_MOUNT_INFO = "storage_mount_info.json";
 }
 
 namespace OHOS {
@@ -132,6 +132,88 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_GetInstance_001, Test
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerTest_LocalMount_001
+ * @tc.desc: Verify the LocalMount function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_LocalMount_001, TestSize.Level1)
+{
+    int32_t userId = 100;
+    InfoList<MountNodeInfo> hmdfsMountNodeList;
+    UserPathResolver::GetHmdfsMountNodeList(userId, hmdfsMountNodeList.data);
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_MOUNT_HMDFS));
+    EXPECT_EQ(MountManager::GetInstance().LocalMount(userId, hmdfsMountNodeList.data), E_MOUNT_HMDFS);
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountHmdfs_001
+ * @tc.desc: Verify the MountHmdfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountHmdfs_001, TestSize.Level1)
+{
+    int32_t userId = 100;
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_MOUNT_HMDFS));
+    EXPECT_EQ(MountManager::GetInstance().MountHmdfs(userId), E_MOUNT_HMDFS);
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_CheckMountFileByUser_001
+ * @tc.desc: Verify the CheckMountFileByUser function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMountFileByUser_001, TestSize.Level1)
+{
+    int32_t userId = 100;
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+    EXPECT_FALSE(MountManager::GetInstance().CheckMountFileByUser(userId));
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_CreateVirtualDirs_001
+ * @tc.desc: Verify the CreateVirtualDirs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CreateVirtualDirs_001, TestSize.Level1)
+{
+    int32_t userId = 100;
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false)).WillRepeatedly(Return(true));
+    EXPECT_EQ(MountManager::GetInstance().CreateVirtualDirs(userId), E_CREATE_DIR_VIRTUAL);
+
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+    EXPECT_EQ(MountManager::GetInstance().CreateVirtualDirs(userId), E_OPEN_JSON_FILE_ERROR);
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountSharefs_001
+ * @tc.desc: Verify the MountSharefs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSharefs_001, TestSize.Level1)
+{
+    int32_t userId = 100;
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
+    EXPECT_EQ(MountManager::GetInstance().MountSharefs(userId), E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
+    EXPECT_EQ(MountManager::GetInstance().MountSharefs(userId), E_MOUNT_SHAREFS);
+    EXPECT_EQ(MountManager::GetInstance().MountSharefs(userId), E_OK);
+}
+
+/**
  * @tc.name: Storage_Daemon_MountManagerTest_CheckSymlink_001
  * @tc.desc: Verify the CheckSymlink function.
  * @tc.type: FUNC
@@ -172,7 +254,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
 
     CreateFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
     ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
+    EXPECT_EQ(ret, E_OPEN_JSON_FILE_ERROR);
     DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
+
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
+    ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
+    EXPECT_EQ(ret, E_OK);
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
 
@@ -297,7 +385,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_001,
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 start";
     std::string bundleName = "test";
-    std::string userId = "100";
+    uint32_t userId = 100;
     std::vector<MountNodeInfo> mountNodeInfoList {
         MountNodeInfo{.srcPath = "", .dstPath = "test"},
         MountNodeInfo{.srcPath = "", .dstPath = "test"}

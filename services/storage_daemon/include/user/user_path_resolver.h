@@ -60,7 +60,8 @@ void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo);
 template <typename T>
 class InfoList final {
 public:
-    ~InfoList() {
+    ~InfoList()
+    {
         std::vector<T>().swap(data);
     }
     std::vector<T> data;

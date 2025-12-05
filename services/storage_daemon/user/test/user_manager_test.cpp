@@ -430,9 +430,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestS
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMount_001 start";
 
     int32_t userId = 100;
-    // int32_t ret = MountManager::GetInstance().LocalMount(userId);
-    // EXPECT_EQ(ret, E_OK);
-
     auto ret = MountManager::GetInstance().LocalUMount(userId);
     EXPECT_EQ(ret, E_UMOUNT_LOCAL_CLOUD);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";

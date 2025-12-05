@@ -263,9 +263,7 @@ void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNode
         auto srcPath = nodeInfo.srcPath;
         ReplaceAndCount(srcPath, PACKAGE_NAME_FLAG, bundleName);
         auto ret = nodeInfo.MountDir(srcPath, dstPath);
-        if (ret == E_OK || ret == E_NON_EXIST) {
-            LOGI("mount success, ret=%{public}d, num:%{public}zu", ret, i);
-        } else {
+        if (ret != E_OK && ret != E_NON_EXIST) {
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountSandboxPath", userId, E_MOUNT_SANDBOX, extraData);
         }
@@ -330,13 +328,9 @@ int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::
     std::list<std::string> hmdfsList;
     std::list<std::string> hmfsList;
     std::list<std::string> sharefsList;
- 
- 
- 
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
         MountPointToList(hmdfsList, hmfsList, sharefsList, tmpLine, userId);
- 
     }
     inputStream.close();
     mountMap[MOUNT_POINT_TYPE_HMDFS] = hmdfsList;
@@ -418,7 +412,7 @@ int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &
     return result;
 }
 
-bool MountManager::IsSysMountPoint(int32_t userId, const std::string &path)
+bool MountManager::IsSysMountPoint(int32_t userId, std::string &path)
 {
     auto count = static_cast<int32_t>(SYS_PATH.size());
     for (int i = 0; i < count; i++) {
@@ -561,7 +555,6 @@ int32_t MountManager::MountFileSystem(int32_t userId)
 
 int32_t MountManager::MountHmdfs(int32_t userId)
 {
-    LOGE("[liuxiaowei debug] MountFileSystem2");
     InfoList<MountNodeInfo> hmdfsMountNodeList;
     auto ret = UserPathResolver::GetHmdfsMountNodeList(userId, hmdfsMountNodeList.data);
     if (ret != E_OK) return ret;
@@ -580,9 +573,7 @@ int32_t MountManager::MountHmdfs(int32_t userId)
         if (nodeInfo.MountDir() != E_OK) {
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountHmdfs", userId, E_MOUNT_HMDFS, extraData);
-            if (options.find("no_return") != options.end()) {
-                return E_MOUNT_HMDFS;
-            }
+            return E_MOUNT_HMDFS;
         }
     }
     return E_OK;
@@ -614,7 +605,6 @@ int32_t MountManager::MountSharefs(int32_t userId)
 
 int32_t MountManager::LocalUMount(int32_t userId)
 {
-    LOGE("[liuxiaowei debug] LocalUMount");
     InfoList<MountNodeInfo> hmdfsMountNodeList;
     auto ret = UserPathResolver::GetHmdfsMountNodeList(userId, hmdfsMountNodeList.data);
     if (ret != E_OK) {
@@ -930,11 +920,12 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
         return false;
     }
     for (const DirInfo &dir : dirInfoList.data) {
-        if (CloudAndFuseDirFlag(dir.path) || MediaFuseDirFlag(dir.path)) {
+        const auto &path = dir.path;
+        if (CloudAndFuseDirFlag(path) || MediaFuseDirFlag(path)) {
             continue;
         }
-        if (access(dir.path.c_str(), 0) != 0) {
-            LOGI("VirtualDir : %{public}s is not exists", dir.path.c_str());
+        if (access(path.c_str(), 0) != 0) {
+            LOGI("VirtualDir : %{public}s is not exists", path.c_str());
             return false;
         }
     }
@@ -1027,7 +1018,7 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
     auto ret = UserPathResolver::GetAppDataMountNodeList(userId, appdataMountNodeList.data);
     if (ret != E_OK) {
         return ret;
-     }
+    }
     for (const auto &nodeInfo : appdataMountNodeList.data) {
         const auto &options = nodeInfo.options;
         bool isBeforeStartupMountNode = (options.find("before_startup") != options.end());
