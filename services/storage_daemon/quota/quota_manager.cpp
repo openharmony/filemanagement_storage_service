@@ -853,8 +853,7 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
     if (lstat(path.c_str(), &statbuf) != 0) {
         LOGE(" lstat %{public}s failed, errno:%{public}d", path.c_str(), errno);
         StorageService::StorageRadar::ReportSpaceRadar("ScanDirRecurse", E_STATISTIC_STAT_FAILED,
-            "path:" + path + ",uid:" + std::to_string(statbuf.st_uid) + ",gid:" + std::to_string(statbuf.st_gid) +
-            ",errno:" + std::to_string(errno));
+            "path:" + path + ",errno:" + std::to_string(errno));
         return dirInfo;
     }
 
