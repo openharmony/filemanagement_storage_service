@@ -45,6 +45,7 @@
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
 #include "user/user_manager.h"
+#include "user/system_mount_manager.h"
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
@@ -560,11 +561,15 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
 #ifdef USER_CRYPTO_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
     if (ret != E_OK) {
         StorageService::StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain",
                                                         userId, ret, "");
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("MountCryptoPathAgain",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: MountCryptoPathAgain: delay time = %{public}s", delay.c_str());
     return ret;
 #else
     return E_OK;
@@ -918,7 +923,7 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbilit
     }
 #endif
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance().SetCloudState(true);
+        SystemMountManager::GetInstance().SetCloudState(true);
     }
 }
 
@@ -927,7 +932,7 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
 {
     LOGI("SystemAbilityId:%{public}d", systemAbilityId);
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance().SetCloudState(false);
+        SystemMountManager::GetInstance().SetCloudState(false);
     }
 }
 

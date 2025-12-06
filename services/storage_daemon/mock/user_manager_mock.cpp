@@ -17,10 +17,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-UserManager::UserManager()
-{
-}
-
 UserManager &UserManager::GetInstance()
 {
     static UserManager instance_;
@@ -47,5 +43,12 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
 {
 }
 
+int32_t UserManager::PrepareAllUserEl1Dirs()
+{
+    if (UserManagerMock::iUserManagerMock_ == nullptr) {
+        return -1;
+    }
+    return UserManagerMock::iUserManagerMock_->PrepareAllUserEl1Dirs();
+}
 } // namespace StorageDaemon
 } // namespace OHOS

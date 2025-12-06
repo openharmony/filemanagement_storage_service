@@ -126,6 +126,7 @@ ohos_executable("storage_daemon") {
     "user/src/mount_manager_ext.cpp",
     "user/src/user_manager.cpp",
     "user/src/user_path_resolver.cpp",
+    "user/src/system_mount_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
   ]

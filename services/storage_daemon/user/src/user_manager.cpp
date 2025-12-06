@@ -29,32 +29,16 @@
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
+#include "user/user_path_resolver.h"
+#include "quota/quota_manager.h"
+#ifdef USE_LIBRESTORECON
+#include "policycoreutils.h"
+#endif
+
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-UserManager::UserManager()
-    : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/data/chipset/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
-      el3DirEl4DirEl5DirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
-                     {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
-      subDirVec_{{"/data/app/%s/%d/base", MODE_0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/%s/%d/database", MODE_0711, OID_ROOT, OID_ROOT}},
-      el2DirVec_{{"/data/service/el2/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/backup_sa", MODE_0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/app/el2/%d/log", MODE_0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/el2/%d/sharefiles", MODE_0711, OID_ROOT, OID_ROOT}},
-      el1DirVec_{{"/data/service/el1/%d/distributeddata", MODE_0711, OID_DDMS, OID_DDMS},
-                 {"/data/service/el1/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el1/%d/utdtypes", MODE_0711, OID_FOUNDATION, OID_FOUNDATION},
-                 {"/data/app/el1/%d/aot_compiler", MODE_0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/el1/%d/aot_compiler/ark_profile", MODE_0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/el1/%d/shader_cache", MODE_0711, OID_ROOT, OID_ROOT}}
-{
-}
 
 UserManager &UserManager::GetInstance()
 {
@@ -71,6 +55,9 @@ int32_t UserManager::StartUser(int32_t userId)
         LOGE("UserManager::StartUser userId %{public}d out of range", userId);
         return err;
     }
+    uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
+        IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
+    CreateServiceDirs(userId, flags);
     return MountManager::GetInstance().MountByUser(userId);
 }
 
@@ -90,154 +77,120 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("prepare user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t err = CheckCrypto(userId, flags);
+
+    int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
+        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
         return err;
     }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
-        err = MountManager::GetInstance().PrepareHmdfsDirs(userId);
-        if (err != E_OK) {
-            LOGE("Prepare hmdfs dir error");
-            return err;
+
+    InfoList<DirInfo> dirInfoList;
+    auto ret = UserPathResolver::GetUserBasePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) {
+        return ret;
+    }
+    for (const auto &dirInfo : dirInfoList.data) {
+        ret = dirInfo.MakeDir();
+        if (ret != E_OK && dirInfo.path.find(EL1) == std::string::npos) {
+            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareUserDirs", userId, E_PREPARE_DIR, extraData);
+            return ret;
         }
-        err = MountManager::GetInstance().PrepareFileManagerDirs(userId);
-        if (err != E_OK) {
-            LOGE("Prepare fileManager dir error");
-            return err;
+        if (SetElDirFscryptPolicy(userId, dirInfo.path)) {
+            return E_SET_POLICY;
         }
     }
+    return CreateServiceDirs(userId, flags);
+}
 
-    return E_OK;
+int32_t UserManager::PrepareAllUserEl1Dirs()
+{
+    LOGI("start");
+    std::vector<int32_t> userIds {GLOBAL_USER_ID};
+    MountManager::GetInstance().GetAllUserId(userIds);
+    int32_t ret = E_OK;
+    for (const int32_t &item: userIds) {
+        auto err = PrepareUserDirs(item, IStorageDaemonEnum::CRYPTO_FLAG_EL1);
+        if (err != E_OK) {
+            LOGE("PrepareAllUserEl1Dirs fail, userId=%{public}d", item);
+            ret = err;
+        }
+    }
+    return ret;
+}
+
+int32_t UserManager::CreateServiceDirs(int32_t userId, uint32_t flags)
+{
+    InfoList<DirInfo> dirInfoList;
+    auto ret = UserPathResolver::GetUserServicePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) {
+        return ret;
+    }
+    for (auto &dirInfo : dirInfoList.data) {
+        dirInfo.UpdateDirUid(userId);
+        auto err = dirInfo.MakeDir();
+        if (err != E_OK) {
+            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("CreateServiceDirs", userId, E_PREPARE_DIR, extraData);
+            ret = err;
+        }
+        
+        auto it = dirInfo.options.find("set_prjId");
+        if (it != dirInfo.options.end()) {
+            int64_t prjId = 0;
+            ConvertStringToInt(it->second, prjId);
+            QuotaManager::GetInstance().SetQuotaPrjId(dirInfo.path, static_cast<int32_t>(prjId), true);
+        }
+    }
+    return ret;
 }
 
 int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("destroy user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("UserManager::DestroyUserDirs userId %{public}d out of range", userId);
-        return err;
-    }
-    int32_t ret = E_OK;
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
-        err = DestroyDirsFromIdAndLevel(userId, EL1);
-        ret = (err != E_OK) ? err : ret;
-
-        err = DestroyEl1BundleDir(userId);
-        ret = (err != E_OK) ? err : ret;
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
-        err = DestroyDirsFromIdAndLevel(userId, EL2);
-        ret = (err != E_OK) ? err : ret;
-
-        err = MountManager::GetInstance().DestroyFileManagerDirs(userId);
-        ret = (err != E_OK) ? err : ret;
-
-        err = MountManager::GetInstance().DestroyHmdfsDirs(userId);
-        ret = (err != E_OK) ? err : ret;
-
-        err = MountManager::GetInstance().DestroySystemServiceDirs(userId);
-        ret = (err != E_OK) ? err : ret;
-
-        err = DestroyEl2BackupDir(userId);
-        ret = (err != E_OK) ? err : ret;
-
-        err = DestroyEl1Dir(userId);
-        ret = (err != E_OK) ? err : ret;
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL3) {
-        err = DestroyDirsFromIdAndLevel(userId, EL3);
-        ret = (err != E_OK) ? err : ret;
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL4) {
-        err = DestroyDirsFromIdAndLevel(userId, EL4);
-        ret = (err != E_OK) ? err : ret;
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) {
-        err = DestroyDirsFromIdAndLevel(userId, EL5);
-        ret = (err != E_OK) ? err : ret;
-    }
-
-    return ret;
-}
-
-inline bool PrepareDirsFromVec(int32_t userId, const std::string &level, const std::vector<DirInfo> &vec)
-{
-    for (const DirInfo &dir : vec) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), level.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-inline bool DestroyDirsFromVec(int32_t userId, const std::string &level, const std::vector<DirInfo> &vec)
-{
-    bool err = true;
-
-    for (const DirInfo &dir : vec) {
-        if (IsEndWith(dir.path.c_str(), "%d")) {
-            err = RmDirRecurse(StringPrintf(dir.path.c_str(), level.c_str(), userId));
-        }
-    }
-
-    return err;
-}
-
-int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level)
-{
-    std::vector<FileList> list;
-    if (level != EL3 && level != EL4 && level != EL5) {
-        if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
-            LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
-            if (level != EL1) {
-                return E_PREPARE_DIR;
-            }
-        }
-        // set policy here
-        for (auto item : rootDirVec_) {
-            FileList temp;
-            temp.userId = static_cast<uint32_t>(userId);
-            temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
-            list.push_back(temp);
-        }
-    } else {
-        if (!PrepareDirsFromVec(userId, level, el3DirEl4DirEl5DirVec_)) {
-            LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
-            return E_PREPARE_DIR;
-        }
-        // set policy here
-        for (auto item : el3DirEl4DirEl5DirVec_) {
-            FileList temp;
-            temp.userId = static_cast<uint32_t>(userId);
-            temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
-            list.push_back(temp);
-        }
-    }
-    int ret = SetElDirFscryptPolicy(userId, level, list);
+    int32_t ret = CheckUserIdRange(userId);
     if (ret != E_OK) {
-        LOGE("Set el poilcy failed");
+        LOGE("UserManager::DestroyUserDirs userId %{public}d out of range", userId);
         return ret;
     }
 
-    if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
-        LOGE("failed to prepare %{public}s sub dirs for userid %{public}d", level.c_str(), userId);
-        return E_PREPARE_DIR;
+    InfoList<DirInfo> dirInfoList;
+    ret = UserPathResolver::GetUserServicePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) {
+        return ret;
     }
-
-    return E_OK;
+    for (auto dirInfo = dirInfoList.data.rbegin(); dirInfo != dirInfoList.data.rend(); ++dirInfo) {
+        auto err = dirInfo->RemoveDir();
+        ret = (err != E_OK) ? err : ret;
+    }
+  
+    std::vector<DirInfo>().swap(dirInfoList.data);
+    auto ret2 = UserPathResolver::GetUserBasePath(userId, flags, dirInfoList.data);
+    if (ret2 != E_OK) {
+        return ret2;
+    }
+    for (auto dirInfo = dirInfoList.data.rbegin(); dirInfo != dirInfoList.data.rend(); ++dirInfo) {
+        auto err = dirInfo->RemoveDir();
+        ret = (err != E_OK) ? err : ret;
+    }
+    return ret;
 }
 
 void UserManager::CheckDirsFromVec(int32_t userId)
 {
-    std::vector<std::string> levels = { EL1, EL2, EL3, EL4, EL5 };
+    uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
 
-    for (const std::string &level : levels) {
-        if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
-            LOGE("failed to prepare %{public}s sub dirs for userid %{public}d", level.c_str(), userId);
+    InfoList<DirInfo> dirInfoList;
+    auto ret = UserPathResolver::GetUserBasePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) return;
+    for (const auto &dirInfo : dirInfoList.data) {
+        const auto &options = dirInfo.options;
+        if (options.find("check_dir") == options.end()) {
+            continue;
         }
+        dirInfo.MakeDir();
     }
 }
 
@@ -295,110 +248,23 @@ int32_t UserManager::DeleteUserDir(const std::string &path)
     return ret;
 }
 
-int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level)
-{
-    if (level != EL3 && level != EL4 && level != EL5) {
-        if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
-            LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
-            return E_DESTROY_DIR;
-        }
-    } else {
-        if (!DestroyDirsFromVec(userId, level, el3DirEl4DirEl5DirVec_)) {
-            LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
-            return E_DESTROY_DIR;
-        }
-    }
-    return E_OK;
-}
-
-int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
-{
-    if (!PrepareDir(StringPrintf(bundle_, userId), MODE_0711, OID_ROOT, OID_ROOT)) {
-        return E_PREPARE_DIR;
-    }
-
-    // set policy here
-    std::vector<FileList> list;
-    FileList temp;
-    temp.userId = static_cast<uint32_t>(userId);
-    temp.path = StringPrintf(bundle_, userId);
-    list.push_back(temp);
-    int ret = SetElDirFscryptPolicy(userId, EL1, list);
-    if (ret != E_OK) {
-        LOGE("Set el1 poilcy failed");
-        return ret;
-    }
-
-    return E_OK;
-}
-
-int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
-{
-    if (!RmDirRecurse(StringPrintf(bundle_, userId))) {
-        return E_DESTROY_DIR;
-    }
-
-    return E_OK;
-}
-
-int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &level,
-                                           const std::vector<FileList> &list)
+int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &path)
 {
 #ifdef USER_CRYPTO_MANAGER
-    if (EL_DIR_MAP.find(level) == EL_DIR_MAP.end()) {
-        LOGE("el type error");
-        return E_SET_POLICY;
+    for (auto &level : EL_DIR_MAP) {
+        if (path.find(level.first) == std::string::npos) {
+            continue;
+        }
+        FileList temp{.userId = userId, .path = path};
+        if (KeyManager::GetInstance().SetDirectoryElPolicy(userId, level.second, {temp}) != E_OK) {
+            LOGE("Set user dir el1 policy error");
+            return E_SET_POLICY;
+        }
+        return E_OK;
     }
-    if (KeyManager::GetInstance().SetDirectoryElPolicy(userId, EL_DIR_MAP[level], list)) {
-        LOGE("Set user dir el1 policy error");
-        return E_SET_POLICY;
-    }
+    LOGE("Set user dir el1 policy error");
+    return E_SET_POLICY;
 #endif
-
-    return E_OK;
-}
-
-int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
-{
-    for (const DirInfo &dir : el2DirVec_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-            return E_PREPARE_DIR;
-        }
-    }
-
-    return E_OK;
-}
-
-int32_t UserManager::DestroyEl2BackupDir(int32_t userId)
-{
-    for (const DirInfo &dir : el2DirVec_) {
-        if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
-            return E_DESTROY_DIR;
-        }
-    }
-
-    return E_OK;
-}
-
-int32_t UserManager::PrepareEl1Dir(int32_t userId)
-{
-    for (const DirInfo &dir : el1DirVec_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-            return E_PREPARE_DIR;
-        }
-    }
-
-    return E_OK;
-}
-
-int32_t UserManager::DestroyEl1Dir(int32_t userId)
-{
-    for (const DirInfo &dir : el1DirVec_) {
-        if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
-            return E_DESTROY_DIR;
-        }
-    }
-
     return E_OK;
 }
 
@@ -427,55 +293,21 @@ int32_t UserManager::CheckUserIdRange(int32_t userId)
     return E_OK;
 }
 
-int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
+int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
 {
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
-        return err;
+#ifdef USE_LIBRESTORECON
+    uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
+        IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
+    InfoList<DirInfo> dirInfoList;
+    auto ret = UserPathResolver::GetUserServicePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) {
+        return ret;
     }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
-        err = PrepareDirsFromIdAndLevel(userId, EL1);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl1BundleDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-        int32_t errorCode = PrepareEl1Dir(userId);
-        if (errorCode != E_OK) {
-            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
-        }
+    for (const auto &dirInfo : dirInfoList.data) {
+        RestoreconRecurse(dirInfo.path.c_str());
+        LOGD("systemServiceDir_ RestoreconRecurse path is %{public}s ", dirInfo.path.c_str());
     }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
-        err = PrepareDirsFromIdAndLevel(userId, EL2);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl2BackupDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL3) {
-        err = PrepareDirsFromIdAndLevel(userId, EL3);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL4) {
-        err = PrepareDirsFromIdAndLevel(userId, EL4);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) {
-        err = PrepareDirsFromIdAndLevel(userId, EL5);
-        if (err != E_OK) {
-            return err;
-        }
-    }
+#endif
     return E_OK;
 }
 } // namespace StorageDaemon

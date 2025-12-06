@@ -26,14 +26,14 @@
 
 #include "istorage_daemon.h"
 #include "user/mount_constant.h"
-#include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "storage_service_constant.h"
 namespace OHOS {
 namespace StorageDaemon {
 namespace StorageTest {
 const std::string hmdfsTarget = "/storage/media/%d/local";
-static constexpr int MODE_0711 = 0711;
+constexpr uid_t OID_ROOT = 0;
+constexpr uid_t OID_SYSTEM = 1000;
 const std::vector<Dir> StorageTestUtils::gRootDirs = {
     {"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
     {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},

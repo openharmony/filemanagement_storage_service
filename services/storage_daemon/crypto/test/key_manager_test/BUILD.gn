@@ -57,6 +57,9 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
     "key_manager_test.cpp",
   ]
 
@@ -302,6 +305,9 @@ ohos_unittest("KeyManagerAnotherTest") {
     "${storage_daemon_path}/mock/mount_manager_mock.cpp",
     "key_manager_another_test.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
   ]
 
   deps = [

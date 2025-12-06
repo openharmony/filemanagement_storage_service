@@ -31,6 +31,8 @@ ohos_fuzztest("StorageDaemonProviderOnRemoteRequestFuzzTest") {
   ]
 
   sources = [
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovideronremoterequest_fuzzer/storagedaemonprovideronremoterequest_fuzzer.cpp",
   ]
 

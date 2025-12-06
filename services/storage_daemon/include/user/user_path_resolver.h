@@ -36,7 +36,7 @@ struct DirInfo {
     int32_t MakeDir() const;
     int32_t MakeDir(const std::string &createPath) const;
     int32_t RemoveDir() const;
-    void UpdateDirUid(uint32_t userId);
+    void UpdateDirUid(int32_t userId);
 };
 void from_json(const nlohmann::json &j, DirInfo &dirInfo);
 
@@ -57,24 +57,34 @@ struct MountNodeInfo {
 };
 void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo);
 
+template <typename T>
+class InfoList final {
+public:
+    ~InfoList()
+    {
+        std::vector<T>().swap(data);
+    }
+    std::vector<T> data;
+};
+
 class UserPathResolver final {
 public:
-    static int32_t GetUserBasePath(uint32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList);
-    static int32_t GetUserServicePath(uint32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList);
-    static int32_t GetAppdataPath(uint32_t userId, std::vector<DirInfo> &dirInfoList);
-    static int32_t GetVirtualPath(uint32_t userId, std::vector<DirInfo> &dirInfoList);
-    static int32_t GetAppDataMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList);
-    static int32_t GetHmdfsMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList);
-    static int32_t GetSandboxMountNodeList(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList);
+    static int32_t GetUserBasePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList);
+    static int32_t GetUserServicePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList);
+    static int32_t GetAppdataPath(int32_t userId, std::vector<DirInfo> &dirInfoList);
+    static int32_t GetVirtualPath(int32_t userId, std::vector<DirInfo> &dirInfoList);
+    static int32_t GetAppDataMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
+    static int32_t GetHmdfsMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
+    static int32_t GetSandboxMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
 
 private:
     template <typename T>
     static int32_t GetTListFromJson(const nlohmann::json &j, const std::vector<std::string> &pathKeys,
         std::vector<T> &tList);
-    static int32_t GetMountNodeList(uint32_t userId, const std::vector<std::string> &pathKeys,
+    static int32_t GetMountNodeList(int32_t userId, const std::vector<std::string> &pathKeys,
         std::vector<MountNodeInfo> &mountNodeList);
-    static int32_t ReplaceUserId(uint32_t userId, std::vector<DirInfo> &dirInfoList);
-    static int32_t ReplaceUserId(uint32_t userId, std::vector<MountNodeInfo> &mountNodeList);
+    static int32_t ReplaceUserId(int32_t userId, std::vector<DirInfo> &dirInfoList);
+    static int32_t ReplaceUserId(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
     static int32_t GetUserPath(uint32_t flags, const std::string &userType, std::vector<DirInfo> &dirInfoList);
     static int32_t OpenJsonFile(const std::string &filename, nlohmann::json &j);
 };
@@ -86,4 +96,4 @@ extern template int32_t UserPathResolver::GetTListFromJson<MountNodeInfo>(const 
 } // STORAGE_DAEMON
 } // OHOS
 
-#endif // OHOS_STORAGE_DAEMON_USER_PATH_RESOLVER_H
+#endif // OHOS_STORAGE_DAEMON_USER_PATH_RESOLVER_H

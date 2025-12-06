@@ -649,7 +649,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
 
 #endif
     EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillOnce(Return(E_OK));
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareAllUserEl1Dirs()).WillOnce(Return(E_OK));
     EXPECT_CALL(*mountManagerMock_, PrepareAppdataDir(_)).WillOnce(Return(E_OK));
 
     EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), E_OK);
@@ -696,7 +696,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_002, TestSize.L
 
 /**
  * @tc.name: StorageDaemonTest_InitGlobalUserKeys_003
- * @tc.desc: Verify the InitGlobalUserKeys when PrepareUserDirs or PrepareAppdataDir failed.
+ * @tc.desc: Verify the InitGlobalUserKeys when PrepareAllUserEl1Dirs or PrepareAppdataDir failed.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
@@ -715,7 +715,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_003, TestSize.L
 #endif
     EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillRepeatedly(Return(E_OK));
 #endif
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR))
+    EXPECT_CALL(*userManagerMock_, PrepareAllUserEl1Dirs()).WillOnce(Return(E_ERR))
         .WillOnce(Return(E_OK)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
     EXPECT_CALL(*mountManagerMock_, PrepareAppdataDir(_)).WillOnce(Return(E_ERR))
         .WillOnce(Return(E_ERR)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));

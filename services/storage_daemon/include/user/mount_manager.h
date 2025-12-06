@@ -23,47 +23,28 @@
 #include <set>
 
 #include "utils/file_utils.h"
+#include "user/user_path_resolver.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-struct DirInfo {
-    const std::string path;
-    mode_t mode;
-    uid_t uid;
-    gid_t gid;
-};
 
 class MountManager final {
 public:
     static MountManager &GetInstance();
-    MountManager();
-    virtual ~MountManager() = default;
-    static std::vector<DirInfo> InitHmdfsDirVec();
-    static std::vector<DirInfo> InitVirtualDir();
-    static std::vector<DirInfo> InitSystemServiceDir();
-    static std::vector<DirInfo> InitFileManagerDir();
-    static std::vector<DirInfo> InitAppdataDir();
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
-    int32_t PrepareHmdfsDirs(int32_t userId);
-    int32_t PrepareFileManagerDirs(int32_t userId);
-    int32_t PrepareAppdataDir(int32_t userId);
-    int32_t DestroyHmdfsDirs(int32_t userId);
-    int32_t DestroyFileManagerDirs(int32_t userId);
-    int32_t DestroySystemServiceDirs(int32_t userId);
-    int32_t CloudMount(int32_t userId, const std::string &path);
-    int32_t CloudTwiceMount(int32_t userId);
     int32_t MountCryptoPathAgain(uint32_t userId);
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+    void GetAllUserId(std::vector<int32_t> &userIds);
+    int32_t PrepareAppdataDir(int32_t userId);
+
     int32_t UMountAllPath(int32_t userId, std::list<std::string> &unMountFailList);
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList);
     int32_t UMountByListWithDetach(std::list<std::string> &list);
-    void SetCloudState(bool active);
     void SetMediaObserverState(bool active);
-    int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
@@ -71,8 +52,8 @@ public:
     bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
     bool PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList);
-    void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
-                          const std::string &bundleName, const std::string &userId);
+    void MountSandboxPath(uint32_t userId, const std::vector<MountNodeInfo> &sandboxMountNodeInfo,
+        const std::string &bundleName);
     bool CheckMountFileByUser(int32_t userId);
     bool CloudAndFuseDirFlag(const std::string &path);
     bool MediaFuseDirFlag(const std::string &path);
@@ -90,37 +71,25 @@ public:
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
 
 private:
+    MountManager() = default;
+    ~MountManager() = default;
+    int32_t MountHmdfs(int32_t userId);
+    int32_t MountSharefs(int32_t userId);
+
     bool SupportHmdfs();
     int32_t CreateVirtualDirs(int32_t userId);
-    int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
-    int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
-    int32_t SharefsMount(int32_t userId);
-    int32_t HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath,
-        bool isUseShared, const std::string &data);
-    int32_t LocalMount(int32_t userId);
+    int32_t LocalMount(int32_t userId, const std::vector<MountNodeInfo> &hmdfsMountNodeList);
     int32_t LocalUMount(int32_t userId);
-    int32_t SetFafQuotaProId(int32_t userId);
-    int32_t CreateSystemServiceDirs(int32_t userId);
-    void MountCloudForUsers(void);
-    void UMountCloudForUsers(void);
-    void PrepareFileManagerDir(int32_t userId);
-    int32_t CloudUMount(int32_t userId);
     bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
-    int32_t MountAppdataAndSharefs(int32_t userId);
-    int32_t MountAppdata(const std::string &userId);
+    int32_t MountAppdata(int32_t userId, bool beforeStartup);
     bool DirExist(const std::string &dir);
-    void GetAllUserId(std::vector<int32_t> &userIds);
     int32_t PrepareAppdataDirByUserId(int32_t userId);
-    int32_t MountSharefsAndNoSharefs(int32_t userId);
-    int32_t SharedMount(int32_t userId, const std::string &path);
-    int32_t BindAndRecMount(int32_t userId, std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
     int32_t UmountFileSystem(int32_t userId);
     int32_t MountFileSystem(int32_t userId);
     int32_t FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
-    int32_t BindMount(std::string &srcPath, std::string &dstPath);
     int32_t UMountHmdfsByList(int32_t userId, std::list<std::string> &list, std::list<std::string> &unMountFailList);
     bool IsSysMountPoint(int32_t userId, std::string &path);
     bool CheckSysFs(int32_t userId);
@@ -138,16 +107,7 @@ private:
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
-    const std::vector<DirInfo> hmdfsDirVec_;
-    const std::vector<DirInfo> virtualDir_;
-    const std::vector<DirInfo> systemServiceDir_;
-    const std::vector<DirInfo> fileManagerDir_;
-    const std::vector<DirInfo> appdataDir_;
-    std::mutex mountMutex_;
     std::mutex mountDisMutex_;
-    std::vector<int32_t> fuseToMountUsers_;
-    std::vector<int32_t> fuseMountedUsers_;
-    bool cloudReady_{false};
 };
 } // STORAGE_DAEMON
 } // OHOS
