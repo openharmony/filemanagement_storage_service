@@ -33,5 +33,6 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t 
 void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBundleStats stats);
 ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t userId, taihe::string_view businessName);
 taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStatsSync(int32_t userId);
+taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync();
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H

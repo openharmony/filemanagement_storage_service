@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ napi_value GetFreeSizeSync(napi_env env, napi_callback_info info);
 napi_value SetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetAllExtBundleStats(napi_env env, napi_callback_info info);
+napi_value ListUserdataDirInfo(napi_env env, napi_callback_info info);
 
 std::tuple<std::string, int32_t, uint32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info);
 } // namespace StorageManager

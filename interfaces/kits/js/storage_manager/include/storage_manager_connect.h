@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,6 +49,7 @@ public:
     int32_t SetVolumeDescription(std::string uuid, std::string description);
     int32_t Format(std::string volumeId, std::string fsType);
     int32_t Partition(std::string diskId, int32_t type);
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
 
     int32_t ResetProxy();
     int32_t DeactivateUserKey(uint32_t userId);

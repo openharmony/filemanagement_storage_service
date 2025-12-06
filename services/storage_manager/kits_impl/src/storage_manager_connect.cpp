@@ -79,6 +79,20 @@ int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &Bundl
     return storageManager_->GetBundleStats(pkgName, BundleStats, appIndex, statFlag);
 }
 
+int32_t StorageManagerConnect::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::ListUserdataDirInfo:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::ListUserdataDirInfo service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->ListUserdataDirInfo(scanDirs);
+}
+
 int32_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
 {
     int32_t err = Connect();
