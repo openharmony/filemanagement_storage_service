@@ -748,6 +748,11 @@ int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
     return QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
+int32_t StorageDaemonProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    return QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
+}
+
 int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     size = 0;

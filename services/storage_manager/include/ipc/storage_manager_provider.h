@@ -171,6 +171,8 @@ public:
     int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats) override;
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec) override;
 
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
+
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

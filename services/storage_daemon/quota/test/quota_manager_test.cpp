@@ -24,6 +24,7 @@
 #include "storage_service_constant.h"
 #include "test/common/help_utils.h"
 #include "utils/file_utils.h"
+#include "userdata_dir_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -721,6 +722,50 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_002, TestSize.Level1
     int32_t result = QuotaManager::GetInstance().GetDirListSpace(dirs);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_002 end";
+}
+
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_001 start";
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GT(scanDirs.size(), 0);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_001 end";
+}
+
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_002 start";
+
+    std::filesystem::path testFile = "/data/test_file";
+    std::ofstream file(testFile, std::ios::binary);
+    if (!file) {
+        GTEST_LOG_(ERROR) << "Failed to create test file: " << testFile;
+        GTEST_FAIL();
+    }
+    file.seekp(1 * 1024 * 1024 * 1024 + 1);
+    file.write("a", 1);
+    file.close();
+
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GT(scanDirs.size(), 0);
+    std::filesystem::remove(testFile);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_002 end";
+}
+
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ScanDirRecurse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ScanDirRecurse_001 start";
+
+    std::string testFile = "/data/test_file";
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    OHOS::StorageManager::UserdataDirInfo result = QuotaManager::GetInstance().ScanDirRecurse(testFile, scanDirs);
+    EXPECT_EQ(result.totalCnt_, 0);
+    EXPECT_EQ(scanDirs.size(), 0);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ScanDirRecurse_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

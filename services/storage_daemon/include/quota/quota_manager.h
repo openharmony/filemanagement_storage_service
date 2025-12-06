@@ -21,9 +21,12 @@
 #include <nocopyable.h>
 #include "statistic_info.h"
 #include <string>
+#include <vector>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <atomic>
+
+#include "userdata_dir_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -81,6 +84,7 @@ public:
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
     void SetStopScanFlag(bool stop);
     void GetAncoSizeData(std::string &extraData);
+    int32_t ListUserdataDirInfo(std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
@@ -105,6 +109,8 @@ private:
     void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
     void ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
         std::vector<DirSpaceInfo> &resultDirs);
+    OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
+        std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
     int64_t oldChangeSizeCache_ = 0;
     std::atomic<bool> stopScanFlag_{false};
 };

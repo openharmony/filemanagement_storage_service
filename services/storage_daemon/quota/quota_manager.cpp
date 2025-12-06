@@ -25,6 +25,7 @@
 #include <sys/quota.h>
 #include <thread>
 #include <unistd.h>
+#include <regex>
 
 #include "file_uri.h"
 #include "sandbox_helper.h"
@@ -37,6 +38,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+using OHOS::StorageManager::UserdataDirInfo;
 constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
@@ -53,6 +55,7 @@ constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
 constexpr int32_t BLOCK_BYTE = 512;
 constexpr int32_t TOP_SPACE_COUNT = 20;
+constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
@@ -813,6 +816,83 @@ void QuotaManager::GetAncoSizeData(std::string &extraData)
     oss << "{anco total size:" << ConvertBytesToMB((imageSize + dirSize), ACCURACY_NUM) << "MB}" << std::endl;
     extraData = oss.str();
     LOGI("end get Anco info.");
+}
+
+static std::string HumanReadableSize(long long size)
+{
+    if (size < BYTES_PRE_KB) {
+        return std::to_string(size) + "B";
+    } else if (size < BYTES_PRE_KB * BYTES_PRE_KB) {
+        return std::to_string(static_cast<double>(size) / BYTES_PRE_KB) + "K";
+    } else if (size < BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB) {
+        return std::to_string(static_cast<double>(size) / (BYTES_PRE_KB * BYTES_PRE_KB)) + "M";
+    } else {
+        return std::to_string(static_cast<double>(size) / (BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB)) + "G";
+    }
+}
+
+static bool IsExcludeDir(const char* path)
+{
+    return strcmp(path, "/data/app") == 0 || strcmp(path, "/data/hmos4") == 0 ||
+        strcmp(path, "/data/hwbackup") == 0 || strcmp(path, "/data/virt_service") == 0 ||
+        std::regex_match(path, std::regex(R"(/data/service/el2/\d+/hmdfs)"));
+}
+
+UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vector<UserdataDirInfo> &scanDirs)
+{
+    struct stat statbuf;
+    struct dirent *entry;
+    DIR *dir;
+    UserdataDirInfo dirInfo = {path, 0, 0};
+
+    if (IsExcludeDir(path.c_str())) {
+        LOGE("scan skip %{public}s", path.c_str());
+        return dirInfo;
+    }
+
+    if (lstat(path.c_str(), &statbuf) != 0) {
+        LOGE(" lstat %{public}s failed, errno:%{public}d", path.c_str(), errno);
+        StorageService::StorageRadar::ReportSpaceRadar("ScanDirRecurse", E_STATISTIC_STAT_FAILED,
+            "path:" + path + ",errno:" + std::to_string(errno));
+        return dirInfo;
+    }
+
+    dirInfo.totalSize_ = statbuf.st_blocks * BLOCK_BYTE;
+    dirInfo.totalCnt_ = 1;
+    if (!S_ISDIR(statbuf.st_mode)) {
+        return dirInfo;
+    }
+    dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        LOGE("opendir %{public}s failed, errno:%{public}d", path.c_str(), errno);
+        return dirInfo;
+    }
+
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        std::string fullPath = path + "/" + entry->d_name;
+        UserdataDirInfo subDirInfo = ScanDirRecurse(fullPath, scanDirs);
+        dirInfo.totalSize_ += subDirInfo.totalSize_;
+        dirInfo.totalCnt_ += subDirInfo.totalCnt_;
+    }
+
+    closedir(dir);
+
+    if (dirInfo.totalSize_ >= BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB) {
+        scanDirs.push_back(dirInfo);
+        std::string sizeStr = HumanReadableSize(dirInfo.totalSize_);
+        LOGE("%{public}s  %{public}d  %{public}s", sizeStr.c_str(), dirInfo.totalCnt_, path.c_str());
+    }
+    return dirInfo;
+}
+
+int32_t QuotaManager::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    ScanDirRecurse("/data", scanDirs);
+    return E_OK;
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

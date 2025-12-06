@@ -74,6 +74,7 @@ public:
     static int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy);
     static int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
+    static int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

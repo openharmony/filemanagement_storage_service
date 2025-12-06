@@ -21,6 +21,7 @@
 #include "istorage_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "userdata_dir_info.h"
 #include "help_utils.h"
 namespace OHOS {
 namespace StorageDaemon {
@@ -405,6 +406,17 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_IsFile
     int32_t ret = storageDaemonClient_->IsFileOccupied(path, input, output, isOccupy);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_IsFileOccupied_001 end";
+}
+
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    int32_t ret = storageDaemonClient_->ListUserdataDirInfo(scanDirs);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001 end";
 }
 }
 }

@@ -143,6 +143,7 @@ public:
     int32_t UnregisterUeceActivationCallback();
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level);
     int32_t CheckUserIdRange(int32_t userId);
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
     void NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType);
     std::mutex mutex_;
 private:

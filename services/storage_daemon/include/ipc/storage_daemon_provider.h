@@ -137,6 +137,7 @@ public:
         std::vector<DirSpaceInfo> &outDirs) override;
     virtual int32_t SetStopScanFlag(bool stop = false) override;
     virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
+    virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
 
     // stats api
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;

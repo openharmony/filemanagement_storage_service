@@ -1655,5 +1655,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleS
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_ListUserdataDirInfo_001
+ * @tc.desc: Verify the ListUserdataDirInfo function.
+ * @tc.type: FUNC
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::vector<UserdataDirInfo> scanDirs;
+    auto ret = storageManagerProviderTest_->ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

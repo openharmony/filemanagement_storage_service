@@ -41,6 +41,7 @@ ohos_unittest("quota_manager_test") {
     "${storage_daemon_path}/quota/test/quota_manager_test.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
+    "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
   ]
 
   deps = [

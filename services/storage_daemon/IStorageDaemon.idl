@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 rawdata OHOS.StorageManager.StorageFileRawData;
+sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
 import ../storage_manager/IUeceActivationCallback;
 sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
 sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
@@ -99,5 +100,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 65] void GetAncoSizeData([out] String outExtraData);
      [ipccode 66] void GetDataSizeByPath([in] String path, [out] long size);
      [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
-
+     [ipccode 68] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
 }

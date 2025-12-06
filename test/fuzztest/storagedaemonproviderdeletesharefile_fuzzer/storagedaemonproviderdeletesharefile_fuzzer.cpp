@@ -23,6 +23,7 @@
 #include "storage_daemon_stub.h"
 #include "storage_daemon_provider.h"
 #include "securec.h"
+#include "userdata_dir_info.h"
 #include "fuzzer/FuzzedDataProvider.h"
 
 using namespace OHOS::StorageDaemon;
