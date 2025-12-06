@@ -161,6 +161,35 @@ taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStats
     return taihe::array<ohos::file::storageStatistics::ExtBundleStats>(taihe::copy_data_t{},
         result.data(), result.size());
 }
+
+taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync()
+{
+    auto scanDirs = std::make_shared<std::vector<OHOS::StorageManager::UserdataDirInfo>>();
+
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instacne failed");
+        return taihe::array<ohos::file::storageStatistics::UserdataDirInfo>::make(0,
+            ohos::file::storageStatistics::UserdataDirInfo{});
+    }
+
+    int32_t errNum = instance->ListUserdataDirInfo(*scanDirs);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "ListUserdataDirInfoSync failed");
+        return taihe::array<ohos::file::storageStatistics::UserdataDirInfo>::make(0,
+            ohos::file::storageStatistics::UserdataDirInfo{});
+    }
+
+    auto result = taihe::array<ohos::file::storageStatistics::UserdataDirInfo>::
+        make(scanDirs->size(), ohos::file::storageStatistics::UserdataDirInfo{});
+    auto volumeTransformer = [](auto &dir) -> ohos::file::storageStatistics::UserdataDirInfo {
+        return {dir.path_, dir.totalSize_, dir.totalCnt_};
+    };
+    std::transform(scanDirs->begin(), scanDirs->end(), result.begin(), volumeTransformer);
+
+    return taihe::array<ohos::file::storageStatistics::UserdataDirInfo>(taihe::copy_data_t{},
+        result.data(), result.size());
+}
 } // namespace ANI::storageStatistics
 
 // Since these macros are auto-generate, lint will cause false positive.
@@ -173,4 +202,5 @@ TH_EXPORT_CPP_API_GetUserStorageStatsByidSync(ANI::StorageStatistics::GetUserSto
 TH_EXPORT_CPP_API_SetExtBundleStatsSync(ANI::StorageStatistics::SetExtBundleStatsSync);
 TH_EXPORT_CPP_API_GetExtBundleStatsSync(ANI::StorageStatistics::GetExtBundleStatsSync);
 TH_EXPORT_CPP_API_GetAllExtBundleStatsSync(ANI::StorageStatistics::GetAllExtBundleStatsSync);
+TH_EXPORT_CPP_API_ListUserdataDirInfoSync(ANI::StorageStatistics::ListUserdataDirInfoSync);
 // NOLINTEND

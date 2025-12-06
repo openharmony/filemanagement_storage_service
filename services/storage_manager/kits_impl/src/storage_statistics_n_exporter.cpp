@@ -214,6 +214,49 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
 }
 
+static NVal CreateScanDirsArray(napi_env env, const std::vector<UserdataDirInfo>& scanDirs)
+{
+    napi_value scanDirsArray = nullptr;
+    napi_status status = napi_create_array(env, &scanDirsArray);
+    if (status != napi_ok) {
+        return { env, NError(status).GetNapiErr(env) };
+    }
+
+    for (size_t i = 0; i < scanDirs.size(); i++) {
+        NVal scanDirsObject = NVal::CreateObject(env);
+        scanDirsObject.AddProp("path", NVal::CreateUTF8String(env, scanDirs[i].path_).val_);
+        scanDirsObject.AddProp("totalSize", NVal::CreateInt64(env, scanDirs[i].totalSize_).val_);
+        scanDirsObject.AddProp("totalCnt", NVal::CreateInt32(env, scanDirs[i].totalCnt_).val_);
+        status = napi_set_element(env, scanDirsArray, i, scanDirsObject.val_);
+        if (status != napi_ok) {
+            return { env, NError(status).GetNapiErr(env) };
+        }
+    }
+    return NVal(env, scanDirsArray);
+}
+
+napi_value ListUserdataDirInfo(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+
+    auto scanDirs = std::make_shared<std::vector<UserdataDirInfo>>();
+    auto cbExec = [scanDirs]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->ListUserdataDirInfo(*scanDirs);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [scanDirs](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return CreateScanDirsArray(env, *scanDirs);
+    };
+    NVal thisVar(env, funcArg.GetThisVar());
+    return NAsyncWorkPromise(env, thisVar).Schedule("ListUserdataDirInfo", cbExec, cbComplete).val_;
+}
+
 napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);

@@ -68,3 +68,12 @@ function GetExtBundleStatsSync(userId: i32, businessName: String): ExtBundleStat
 
 @gen_promise("getAllExtBundleStats")
 function GetAllExtBundleStatsSync(userId: i32): Array<ExtBundleStats>;
+
+struct UserdataDirInfo {
+    path: String;
+    totalSize: i64;
+    totalCnt: i32;
+}
+
+@gen_promise("listUserdataDirInfo")
+function ListUserdataDirInfoSync(): Array<UserdataDirInfo>;

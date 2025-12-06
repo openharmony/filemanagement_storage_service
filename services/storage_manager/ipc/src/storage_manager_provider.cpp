@@ -254,6 +254,10 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
 
 int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
 {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }

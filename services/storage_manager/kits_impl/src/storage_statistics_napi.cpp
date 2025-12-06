@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,6 +38,7 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("setExtBundleStats", SetExtBundleStats),
         DECLARE_NAPI_FUNCTION("getExtBundleStats", GetExtBundleStats),
         DECLARE_NAPI_FUNCTION("getAllExtBundleStats", GetAllExtBundleStats),
+        DECLARE_NAPI_FUNCTION("listUserdataDirInfo", ListUserdataDirInfo),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
