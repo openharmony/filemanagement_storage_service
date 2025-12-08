@@ -54,8 +54,7 @@ ohos_executable("mtpfs") {
     "hilog:libhilog",
   ]
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     sources = [
       "src/mtpfs_fuse.cpp",
       "src/mtpfs_libmtp.cpp",

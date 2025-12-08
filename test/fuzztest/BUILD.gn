@@ -210,8 +210,7 @@ group("storage_service_fuzztest") {
     "storagemanagerupdatememorypara_fuzzer:StorageManagerUpdateMemoryParaFuzzTest",
     "storagemanagerdeleteappkey_fuzzer:StorageManagerDeleteAppkeyFuzzTest",
   ]
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     deps += [
       "libmtpcheckspecificdevice_fuzzer:fuzztest",
       "libmtpcreatefolder_fuzzer:fuzztest",

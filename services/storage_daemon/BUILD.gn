@@ -242,8 +242,7 @@ ohos_executable("storage_daemon") {
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     defines += [ "SUPPORT_OPEN_SOURCE_MTP_DEVICE" ]
     sources += [
       "mtp/src/mtp_device_manager.cpp",
@@ -508,8 +507,7 @@ group("storage_daemon_unit_test") {
       "volume/test:storage_daemon_volume_test",
     ]
   }
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     deps += [
       "mtp/test:storage_daemon_mtp_test",
       "mtpfs/test:storage_daemon_mtpfs_test",

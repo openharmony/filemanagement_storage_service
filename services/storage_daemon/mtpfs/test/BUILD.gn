@@ -53,8 +53,7 @@ ohos_unittest("mtpfs_fuse_test") {
     "hilog:libhilog",
   ]
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     sources = [
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
@@ -119,8 +118,7 @@ ohos_unittest("mtpfs_libmtp_test") {
     "hilog:libhilog",
   ]
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     sources = [
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
@@ -185,8 +183,7 @@ ohos_unittest("mtpfs_mtp_device_test") {
     "hilog:libhilog",
   ]
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     sources = [
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
@@ -251,8 +248,7 @@ ohos_unittest("mtpfs_tmp_files_pool_test") {
     "hilog:libhilog",
   ]
 
-  if (support_open_source_libmtp &&
-      storage_service_external_storage_qos_trans) {
+  if (support_open_source_libmtp) {
     sources = [
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
