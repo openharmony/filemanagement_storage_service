@@ -112,7 +112,7 @@ ohos_shared_library("storage_manager") {
       "dfx_report/storage_dfx_reporter.cpp",
       "storage/src/bundle_manager_connector.cpp",
       "storage/src/storage_monitor_service.cpp",
-      "storage/src/storage_status_service.cpp",
+      "storage/src/storage_status_manager.cpp",
       "storage/src/storage_total_status_service.cpp",
       "storage/src/volume_storage_status_service.cpp",
       "storage/src/storage_quota_controller.cpp",

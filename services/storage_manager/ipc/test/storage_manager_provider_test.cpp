@@ -35,7 +35,7 @@
 #include <thread>
 #include <vector>
 #ifdef STORAGE_STATISTICS_MANAGER
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #endif
 namespace OHOS {
 namespace StorageManager {

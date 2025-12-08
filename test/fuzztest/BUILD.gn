@@ -193,7 +193,7 @@ group("storage_service_fuzztest") {
     "storagedaemonstub_fuzzer:fuzztest",
     "storagemanagerstub_fuzzer:fuzztest",
     "storagestats_fuzzer:fuzztest",
-    "storagestatusservice_fuzzer:fuzztest",
+    "storagestatusmanager_fuzzer:fuzztest",
     "stringutils_fuzzer:fuzztest",
     "sysparamdynamic_fuzzer:fuzztest",
     "sysparamstatic_fuzzer:fuzztest",

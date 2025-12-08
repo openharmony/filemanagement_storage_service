@@ -29,7 +29,7 @@ ohos_unittest("dfx_report_test") {
 
   sources = [
     "${storage_manager_path}/mock/storage_deamon_communication_mock.cpp",
-    "${storage_manager_path}/mock/storage_status_service_mock.cpp",
+    "${storage_manager_path}/mock/storage_status_manager_mock.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
     "${storage_service_path}/test/unittest/mock/src/storage_total_status_service_mock.cpp",
     "storage_dfx_reporter_test.cpp",

@@ -20,7 +20,7 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "dfx_report/storage_dfx_reporter.h"
 
 namespace OHOS {
@@ -66,7 +66,7 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
         std::string bundleName = want.GetStringParam(BUNDLE_NAME);
         LOGI("receive app remove action, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
 #ifdef STORAGE_STATISTICS_MANAGER
-        StorageStatusService::GetInstance().DelBundleExtStats(static_cast<uint32_t>(userId), bundleName);
+        StorageStatusManager::GetInstance().DelBundleExtStats(static_cast<uint32_t>(userId), bundleName);
 #endif
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
         UpdateDeviceState(STATE_SCREEN_OFF, true);

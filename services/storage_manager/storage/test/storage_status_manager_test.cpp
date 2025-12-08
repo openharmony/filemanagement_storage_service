@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,7 @@
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "storage_rdb_adapter.h"
 #include "storage_service_errno.h"
 
@@ -91,7 +91,7 @@ int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
     return E_OK;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &bundleName, int userId, BundleStats &bundleStats,
+int32_t StorageStatusManager::GetBundleStats(const std::string &bundleName, int userId, BundleStats &bundleStats,
     int32_t appIndex, uint32_t statFlag)
 {
     return g_getBundleStatsRet;
@@ -125,17 +125,13 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
 }
 }
 
-class StorageStatusServiceTest : public testing::Test {
+class StorageStatusManagerTest : public testing::Test {
 public:
     static void SetUpTestCase(){};
     static void TearDownTestCase(){};
     void SetUp(){};
     void TearDown(){};
 };
-
-// void StorageStatusServiceTest::SetUp()
-// {
-
 
 /**
  * @tc.number: SUB_STORAGE_Storage_status_GetAppSize_0001
@@ -146,10 +142,10 @@ public:
  * @tc.level Level 1
  * @tc.require: SR000H0371
  */
-HWTEST_F(StorageStatusServiceTest, Storage_status_GetAppSize_0001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_GetAppSize_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     int32_t userId = 100;
     int64_t appSize = 0;
     int32_t result = service->GetAppSize(userId, appSize);
@@ -168,10 +164,10 @@ HWTEST_F(StorageStatusServiceTest, Storage_status_GetAppSize_0001, testing::ext:
  * @tc.level Level 1
  * @tc.require: SR000H0371
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetMediaAndFileStorageStats_0001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0001";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
         StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
@@ -188,10 +184,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetMediaAndFileStorageStats_0001, tes
  * @tc.level Level 1
  * @tc.require: SR000H0371
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetMediaAndFileStorageStats_0002, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0002";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     str = "99";
@@ -209,7 +205,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetMediaAndFileStorageStats_0002, tes
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetCurrentBundleStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0001 start: bundleMgr is null";
     g_getNameIndexRet = ERR_OK;
@@ -217,7 +213,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0001, testing::
     g_bundleName = "com.test.app";
     g_getBundleStatsRet = E_OK;
 
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     BundleStats bundleStats;
     uint32_t statFlag = 0x1;
     int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
@@ -234,14 +230,14 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0001, testing::
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0002, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetCurrentBundleStats_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0002 start: bundleMgr is null";
     g_getNameIndexRet = ERR_APPEXECFWK_PARCEL_ERROR;
     g_appIndex = 1;
     g_bundleName = "";
 
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     BundleStats bundleStats;
     uint32_t statFlag = 0x1;
     int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
@@ -259,14 +255,14 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0002, testing::
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0003, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetCurrentBundleStats_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0003 start: bundleMgr is null";
     g_getNameIndexRet = ERR_OK;
     g_appIndex = 1;
     g_bundleName = "";
 
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     BundleStats bundleStats;
     uint32_t statFlag = 0x1;
     int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
@@ -284,7 +280,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0003, testing::
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetCurrentBundleStats_0004, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetCurrentBundleStats_0004 start: bundleMgr is null";
     g_getNameIndexRet = ERR_OK;
@@ -292,7 +288,7 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::
     g_bundleName = "com.test.app";
     g_getBundleStatsRet = E_BUNDLEMGR_ERROR;
 
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     BundleStats bundleStats;
     uint32_t statFlag = 0x1;
     int32_t result = service->GetCurrentBundleStats(bundleStats, statFlag);
@@ -310,10 +306,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetCurrentBundleStats_0004, testing::
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_SetExtBundleStats_00001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     auto &rdbAdapter = StorageRdbAdapter::GetInstance();
     rdbAdapter.UnInit();
     ExtBundleStats extBundleStats;
@@ -347,10 +343,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_SetExtBundleStats_00001, testing::ext
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     ExtBundleStats extBundleStats;
     uint32_t userId = 10;
     extBundleStats.businessName_ = "test";
@@ -376,10 +372,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00001, testing::ext
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_DelBundleExtStats_00001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     uint32_t userId = INT32_MAX;
     std::string bundleName;
     int32_t ret = service->DelBundleExtStats(userId, bundleName);
@@ -415,10 +411,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_DelBundleExtStats_00001, testing::ext
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00002, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     ExtBundleStats extBundleStats;
     uint32_t userId = 1000;
     extBundleStats.businessName_ = "test";
@@ -443,10 +439,10 @@ HWTEST_F(StorageStatusServiceTest, STORAGE_GetExtBundleStats_00002, testing::ext
  * @tc.level Level 1
  * @tc.require:
  */
-HWTEST_F(StorageStatusServiceTest, STORAGE_GetAllExtBundleStats_00001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 start";
-    auto service = DelayedSingleton<StorageStatusService>::GetInstance();
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
     ExtBundleStats extBundleStats;
     std::vector<ExtBundleStats> bundleStats;
     uint32_t userId = 10;

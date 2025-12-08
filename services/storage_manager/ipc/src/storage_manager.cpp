@@ -22,7 +22,7 @@
 #include "utils/storage_radar.h"
 #ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_monitor_service.h>
-#include <storage/storage_status_service.h>
+#include <storage/storage_status_manager.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
 #include "account_subscriber/account_subscriber.h"
@@ -132,10 +132,10 @@ int32_t StorageManager::GetBundleStats(const std::string &pkgName, BundleStats &
                                        int32_t appIndex, uint32_t statFlag)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    int32_t err = StorageStatusService::GetInstance().GetBundleStats(pkgName, bundleStats,
+    int32_t err = StorageStatusManager::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStats", DEFAULT_USERID, err,
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetBundleStats", DEFAULT_USERID, err,
             "setting");
     }
     return err;
@@ -193,9 +193,9 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(storageStats);
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(storageStats);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
     }
     return err;
@@ -208,9 +208,9 @@ int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storag
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(userId, storageStats);
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
     }
     return err;
@@ -223,9 +223,9 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetCurrentBundleStats start");
-    int32_t err = StorageStatusService::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
+    int32_t err = StorageStatusManager::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetCurrentBundleStats", DEFAULT_USERID, err,
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetCurrentBundleStats", DEFAULT_USERID, err,
             "setting");
     }
     return err;
@@ -722,10 +722,10 @@ int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStatsByType start");
-    int32_t err = StorageStatusService::GetInstance().GetUserStorageStatsByType(userId,
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStatsByType(userId,
         storageStats, type);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStatsByType", DEFAULT_USERID, err,
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStatsByType", DEFAULT_USERID, err,
             "setting");
     }
     return err;

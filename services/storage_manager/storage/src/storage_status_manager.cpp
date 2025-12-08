@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "accesstoken_kit.h"
 #include "os_account_manager.h"
 #include "ipc_skeleton.h"
@@ -60,14 +60,14 @@ const int32_t GET_DATA_SHARE_HELPER_TIMES = 5;
 #endif
 } // namespace
 
-StorageStatusService::StorageStatusService() {}
-StorageStatusService::~StorageStatusService() {}
+StorageStatusManager::StorageStatusManager() {}
+StorageStatusManager::~StorageStatusManager() {}
 
 #ifdef STORAGE_SERVICE_GRAPHIC
 void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &resultSet, StorageStats &storageStats)
 {
     if (resultSet == nullptr) {
-        LOGE("StorageStatusService::GetMediaTypeAndSize, input resultSet is nullptr.");
+        LOGE("StorageStatusManager::GetMediaTypeAndSize, input resultSet is nullptr.");
         return;
     }
     int thumbnailType = -1;
@@ -104,12 +104,12 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
-        LOGE("StorageStatusService::GetMediaStorageStats samgr == nullptr");
+        LOGE("StorageStatusManager::GetMediaStorageStats samgr == nullptr");
         return E_SA_IS_NULLPTR;
     }
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (remoteObj == nullptr) {
-        LOGE("StorageStatusService::GetMediaStorageStats remoteObj == nullptr");
+        LOGE("StorageStatusManager::GetMediaStorageStats remoteObj == nullptr");
         return E_REMOTE_IS_NULLPTR;
     }
     int32_t tryCount = 1;
@@ -159,7 +159,7 @@ int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
     return err;
 }
 
-int StorageStatusService::GetCurrentUserId()
+int StorageStatusManager::GetCurrentUserId()
 {
     int uid = -1;
     uid = IPCSkeleton::GetCallingUid();
@@ -167,7 +167,7 @@ int StorageStatusService::GetCurrentUserId()
     return userId;
 }
 
-std::string StorageStatusService::GetCallingPkgName()
+std::string StorageStatusManager::GetCallingPkgName()
 {
     uint32_t pid = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::HapTokenInfo tokenInfo = Security::AccessToken::HapTokenInfo();
@@ -175,20 +175,20 @@ std::string StorageStatusService::GetCallingPkgName()
     return tokenInfo.bundleName;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
+int32_t StorageStatusManager::GetBundleStats(const std::string &pkgName,
     BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag)
 {
     int userId = GetCurrentUserId();
     return GetBundleStats(pkgName, userId, bundleStats, appIndex, statFlag);
 }
 
-int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
+int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 {
     int userId = GetCurrentUserId();
     return GetUserStorageStats(userId, storageStats);
 }
 
-int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
+int32_t StorageStatusManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     bool isCeEncrypt = false;
     auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -202,16 +202,16 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int64_t totalSize = 0;
     int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
+        LOGE("StorageStatusManager::GetUserStorageStats getTotalSize failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, err, GetCallingPkgName());
         return err;
     }
     // appSize
-    LOGD("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
+    LOGD("StorageStatusManager::GetUserStorageStats userId is %{public}d", userId);
     int64_t appSize = 0;
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
+        LOGE("StorageStatusManager::GetUserStorageStats getAppSize failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetAppSize", userId, err, GetCallingPkgName());
         return err;
     }
@@ -221,7 +221,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
 
     err = GetMediaAndFileStorageStats(userId, storageStats, isSchedule);
 
-    LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
+    LOGE("StorageStatusManager::GetUserStorageStats success for userId=%{public}d, "
         "totalSize=%{public}lld, appSize=%{public}lld, videoSize=%{public}lld, audioSize=%{public}lld, "
         "imageSize=%{public}lld, fileSize=%{public}lld",
         userId, static_cast<long long>(storageStats.total_), static_cast<long long>(storageStats.app_),
@@ -230,12 +230,12 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     return err;
 }
 
-int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
+int32_t StorageStatusManager::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     // mediaSize
     auto err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats GetMediaStorageStats failed");
+        LOGE("StorageStatusManager::GetUserStorageStats GetMediaStorageStats failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, err,
             GetCallingPkgName());
         return err;
@@ -243,7 +243,7 @@ int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, Storag
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
+        LOGE("StorageStatusManager::GetUserStorageStats GetFileStorageStats failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetFileStorageStats", userId, err,
             GetCallingPkgName());
         return err;
@@ -251,14 +251,14 @@ int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, Storag
     return err;
 }
 
-std::string StorageStatusService::ConvertBytesToMB(int64_t bytes)
+std::string StorageStatusManager::ConvertBytesToMB(int64_t bytes)
 {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(DECIMAL_PLACE) << static_cast<double>(bytes) / TO_MB << "MB";
     return oss.str();
 }
 
-int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid)
+int32_t StorageStatusManager::GetBundleNameAndUid(int32_t userId, std::map<int32_t, std::string> &bundleNameAndUid)
 {
     LOGI("begin getBundleNameAndUid.");
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
@@ -288,9 +288,9 @@ int32_t StorageStatusService::GetBundleNameAndUid(int32_t userId, std::map<int32
     return E_OK;
 }
 
-int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
+int32_t StorageStatusManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
-    LOGD("StorageStatusService::GetCurrentBundleStats start");
+    LOGD("StorageStatusManager::GetCurrentBundleStats start");
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
@@ -325,29 +325,29 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, ui
     return ret;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,
+int32_t StorageStatusManager::GetBundleStats(const std::string &pkgName, int32_t userId,
     BundleStats &pkgStats, int32_t appIndex, uint32_t statFlag)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
-        LOGE("StorageStatusService::GetBundleStats connect bundlemgr failed");
+        LOGE("StorageStatusManager::GetBundleStats connect bundlemgr failed");
         return E_SERVICE_IS_NULLPTR;
     }
 
     if (userId < 0 || userId > StorageService::MAX_USER_ID) {
-        LOGE("StorageStatusService::Invaild userId.");
+        LOGE("StorageStatusManager::Invaild userId.");
         return E_USERID_RANGE;
     }
 
     if (appIndex < 0 || appIndex > StorageService::MAX_APP_INDEX) {
-        LOGE("StorageStatusService::Invalid appIndex: %{public}d", appIndex);
+        LOGE("StorageStatusManager::Invalid appIndex: %{public}d", appIndex);
         return E_APPINDEX_RANGE;
     }
     vector<int64_t> bundleStats;
     bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats, appIndex, statFlag);
     if (!res || bundleStats.size() != dataDir.size()) {
-        LOGE("StorageStatusService::An error occurred in querying bundle stats.");
+        LOGE("StorageStatusManager::An error occurred in querying bundle stats.");
         std::string extraData = "bundleStats size=" + std::to_string(bundleStats.size())
             + ", dataDir size=" + std::to_string(dataDir.size());
         StorageRadar::ReportBundleMgrResult("GetBundleStats", res, userId, extraData);
@@ -355,34 +355,34 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     }
     for (uint i = 0; i < bundleStats.size(); i++) {
         if (bundleStats[i] == E_ERR) {
-            LOGE("StorageStatusService::Failed to query %{public}s data.", dataDir[i].c_str());
+            LOGE("StorageStatusManager::Failed to query %{public}s data.", dataDir[i].c_str());
             bundleStats[i] = 0;
         }
     }
     pkgStats.appSize_ = bundleStats[APP];
     pkgStats.cacheSize_ = bundleStats[CACHE];
     pkgStats.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
-    LOGE("StorageStatusService::GetBundleStats success for pkgName=%{public}s, userId=%{public}d, appIndex=%{public}d"
+    LOGE("StorageStatusManager::GetBundleStats success for pkgName=%{public}s, userId=%{public}d, appIndex=%{public}d"
         ", appSize=%{public}lld, cacheSize=%{public}lld, dataSize=%{public}lld",
         pkgName.c_str(), userId, appIndex, static_cast<long long>(pkgStats.appSize_),
         static_cast<long long>(pkgStats.cacheSize_), static_cast<long long>(pkgStats.dataSize_));
     return E_OK;
 }
 
-int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
+int32_t StorageStatusManager::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("StorageStatusService::GetAppSize start");
+    LOGD("StorageStatusManager::GetAppSize start");
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
-        LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
+        LOGE("StorageStatusManager::GetUserStorageStats connect bundlemgr failed");
         return E_SERVICE_IS_NULLPTR;
     }
 
     vector<int64_t> bundleStats;
     bool res = bundleMgr->GetAllBundleStats(userId, bundleStats);
     if (!res || bundleStats.size() != dataDir.size()) {
-        LOGE("StorageStatusService::GetAllBundleStats fail. res %{public}d, bundleStats.size %{public}zu",
+        LOGE("StorageStatusManager::GetAllBundleStats fail. res %{public}d, bundleStats.size %{public}zu",
              res, bundleStats.size());
         std::string extraData = "bundleStats size=" + std::to_string(bundleStats.size())
             + ", dataDir size=" + std::to_string(dataDir.size());
@@ -396,11 +396,11 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
         }
         appSize += bundleStats[i];
     }
-    LOGD("StorageStatusService::GetAppSize end");
+    LOGD("StorageStatusManager::GetAppSize end");
     return E_OK;
 }
 
-int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+int32_t StorageStatusManager::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
 {
     storageStats.video_ = 0;
     storageStats.image_ = 0;
@@ -446,7 +446,7 @@ int32_t ConvertToExtBundleStat(std::shared_ptr<NativeRdb::ResultSet> &resultSet,
     return E_OK;
 }
 
-int32_t StorageStatusService::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
+int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
 {
     std::string callingBundleName = GetCallingBundleName();
     if (callingBundleName.empty()) {
@@ -472,7 +472,7 @@ int32_t StorageStatusService::SetExtBundleStats(uint32_t userId, const ExtBundle
     }
 }
 
-int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
+int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     std::string sql = SELECT_BUNDLE_EXT_SQL;
@@ -509,7 +509,7 @@ int32_t StorageStatusService::GetExtBundleStats(uint32_t userId, ExtBundleStats 
     return E_OK;
 }
 
-std::string StorageStatusService::GetCallingBundleName()
+std::string StorageStatusManager::GetCallingBundleName()
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
@@ -534,7 +534,7 @@ std::string StorageStatusService::GetCallingBundleName()
     return "";
 }
 
-int32_t StorageStatusService::GetBundleNameFromDB(uint32_t userId, const std::string &businessName,
+int32_t StorageStatusManager::GetBundleNameFromDB(uint32_t userId, const std::string &businessName,
     std::string &dbBundleName, int32_t &rowCount)
 {
     std::string sql = SELECT_BUNDLE_EXT_SQL;
@@ -575,7 +575,7 @@ int32_t StorageStatusService::GetBundleNameFromDB(uint32_t userId, const std::st
     return E_OK;
 }
 
-int32_t StorageStatusService::UpdateExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
+int32_t StorageStatusManager::UpdateExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
     std::string callingBundleName)
 {
     std::string table = BUNDLE_EXT_STATS_TABLE;
@@ -602,7 +602,7 @@ int32_t StorageStatusService::UpdateExtBundleStats(uint32_t userId, const ExtBun
     return E_OK;
 }
 
-int32_t StorageStatusService::InsertExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
+int32_t StorageStatusManager::InsertExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
     std::string callingBundleName)
 {
     std::string table = BUNDLE_EXT_STATS_TABLE;
@@ -627,7 +627,7 @@ int32_t StorageStatusService::InsertExtBundleStats(uint32_t userId, const ExtBun
     return E_OK;
 }
 
-int32_t StorageStatusService::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
+int32_t StorageStatusManager::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
 {
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     statsVec.clear();
@@ -653,7 +653,7 @@ int32_t StorageStatusService::GetAllExtBundleStats(uint32_t userId, std::vector<
     return E_OK;
 }
 
-int32_t StorageStatusService::DelBundleExtStats(uint32_t userId, const std::string &bundleName)
+int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::string &bundleName)
 {
     if (userId > TOP_USER_ID || bundleName.empty()) {
         LOGE("invalid params, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
