@@ -20,9 +20,10 @@
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
 #include "taihe/runtime.hpp"
+#include "storage_service_log.h"
 
 namespace ANI::VolumeManager {
 ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid);
 taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync();
 } // namespace ANI::VolumeManager
-#endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H
+#endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H

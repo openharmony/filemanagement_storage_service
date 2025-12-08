@@ -63,10 +63,164 @@ taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 
     return taihe::array<ohos::file::volumeManager::Volume>(taihe::copy_data_t{}, result.data(), result.size());
 }
+
+void FormatSync(::taihe::string_view volumeId, ::taihe::string_view fsType)
+{
+    std::string volumeIdString = std::string(volumeId);
+    std::string fsTypeString = std::string(fsType);
+    if (volumeIdString.empty() || fsTypeString.empty()) {
+        LOGE("Invalid parameter, is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        return;
+    }
+    if (!OHOS::StorageManager::IsSystemApp()) {
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        return;
+    }
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+    int32_t result = instance->Format(volumeIdString, fsTypeString);
+    if (result != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(result), "Format failed");
+        return;
+    }
+}
+
+void GetVolumeByIdSync(::taihe::string_view volumeId)
+{
+    std::string volumeIdString = std::string(volumeId);
+    if (volumeIdString.empty()) {
+        LOGE("Invalid volumeId parameter, volumeId is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        return;
+    }
+
+    auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+
+    int32_t errNum = instance->GetVolumeById(volumeIdString, *volumeInfo);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeById failed");
+        return;
+    }
+}
+
+void MountSync(::taihe::string_view volumeId)
+{
+    std::string volumeIdString = std::string(volumeId);
+    if (volumeIdString.empty()) {
+        LOGE("Invalid volumeId parameter, volumeId is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        return;
+    }
+    if (!OHOS::StorageManager::IsSystemApp()) {
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        return;
+    }
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+
+    int32_t errNum = instance->Mount(volumeIdString);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Mount failed");
+        return;
+    }
+}
+
+void UnmountSync(::taihe::string_view volumeId)
+{
+    std::string volumeIdString = std::string(volumeId);
+    if (volumeIdString.empty()) {
+        LOGE("Invalid volumeId parameter, volumeId is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        return;
+    }
+    if (!OHOS::StorageManager::IsSystemApp()) {
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        return;
+    }
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+
+    int32_t errNum = instance->Unmount(volumeIdString);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Unmount failed");
+        return;
+    }
+}
+
+void PartitionSync(::taihe::string_view diskId, int32_t type)
+{
+    std::string diskIdString = std::string(diskId);
+    if (diskIdString.empty()) {
+        LOGE("Invalid parameter, parameter is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        return;
+    }
+    if (!OHOS::StorageManager::IsSystemApp()) {
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        return;
+    }
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+    int32_t errNum = instance->Partition(diskIdString, type);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Partition failed");
+        return;
+    }
+}
+
+void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view description)
+{
+    std::string uuidString = std::string(uuid);
+    std::string descStr = std::string(description);
+    if (uuidString.empty() || descStr.empty()) {
+        LOGE("Invalid parameter, parameter is empty");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        return;
+    }
+    if (!OHOS::StorageManager::IsSystemApp()) {
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        return;
+    }
+
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        taihe::set_error("StorageManagerConnect instance failed");
+        return;
+    }
+    int32_t errNum = instance->SetVolumeDescription(uuidString, descStr);
+    if (errNum != OHOS::E_OK) {
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "SetVolumeDescription failed");
+        return;
+    }
+}
 } // namespace ANI::VolumeManager
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN
 TH_EXPORT_CPP_API_GetVolumeByUuidSync(ANI::VolumeManager::GetVolumeByUuidSync);
 TH_EXPORT_CPP_API_GetAllVolumesSync(ANI::VolumeManager::GetAllVolumesSync);
+TH_EXPORT_CPP_API_FormatSync(ANI::VolumeManager::FormatSync);
+TH_EXPORT_CPP_API_GetVolumeByIdSync(ANI::VolumeManager::GetVolumeByIdSync);
+TH_EXPORT_CPP_API_MountSync(ANI::VolumeManager::MountSync);
+TH_EXPORT_CPP_API_UnmountSync(ANI::VolumeManager::UnmountSync);
+TH_EXPORT_CPP_API_PartitionSync(ANI::VolumeManager::PartitionSync);
+TH_EXPORT_CPP_API_SetVolumeDescriptionSync(ANI::VolumeManager::SetVolumeDescriptionSync);
 // NOLINTEND
