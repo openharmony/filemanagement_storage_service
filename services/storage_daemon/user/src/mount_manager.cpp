@@ -576,6 +576,14 @@ int32_t MountManager::MountHmdfs(int32_t userId)
             return E_MOUNT_HMDFS;
         }
     }
+
+    for (auto relativePath : HMDFS_SUFFIX) {
+        Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
+        ret = chown(hmdfsMntArgs.GetCtrlPath().c_str(), OID_DFS, OID_SYSTEM);
+        if (ret != 0) {
+            LOGE("failed to chown hmdfs sysfs node, err %{public}d", errno);
+        }
+    }
     return E_OK;
 }
 
