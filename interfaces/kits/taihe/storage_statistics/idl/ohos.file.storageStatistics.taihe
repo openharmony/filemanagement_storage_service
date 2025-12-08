@@ -15,17 +15,19 @@
 
 @!namespace("@ohos.file.storageStatistics", "storageStatistics")
 
+@!sts_inject_into_module("import { AsyncCallback } from '@ohos.base';")
+
 @!sts_inject("""
 static { loadLibrary("storage_statistics_taihe.z"); }
 """)
 
 @gen_async("getFreeSize")
 @gen_promise("getFreeSize")
-function GetFreeSizeSync(): i64;
+function GetFreeSizeAsync(): i64;
 
 @gen_async("getTotalSize")
 @gen_promise("getTotalSize")
-function GetTotalSizeSync(): i64;
+function GetTotalSizeAsync(): i64;
 
 struct BundleStats {
     dataSize: i64;
@@ -77,3 +79,23 @@ struct UserdataDirInfo {
 
 @gen_promise("listUserdataDirInfo")
 function ListUserdataDirInfoSync(): Array<UserdataDirInfo>;
+
+@gen_async("getFreeSizeOfVolume")
+@gen_promise("getFreeSizeOfVolume")
+function GetFreeSizeOfVolumeSync(volumeUuid: String): i64;
+
+@gen_async("getSystemSize")
+@gen_promise("getSystemSize")
+function GetSystemSizeSync(): i64;
+
+@gen_async("getTotalSizeOfVolume")
+@gen_promise("getTotalSizeOfVolume")
+function GetTotalSizeOfVolumeSync(volumeUuid: String): i64;
+
+@gen_async("getBundleStats")
+@gen_promise("getBundleStats")
+function GetBundleStatsSync(packageName: String, index: Optional<i32>): BundleStats;
+
+function GetFreeSizeSync(): i64;
+
+function GetTotalSizeSync(): i64;

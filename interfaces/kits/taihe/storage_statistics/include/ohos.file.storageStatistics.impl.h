@@ -26,6 +26,11 @@
 namespace ANI::StorageStatistics {
 int64_t GetFreeSizeSync();
 int64_t GetTotalSizeSync();
+int64_t GetFreeSizeOfVolumeSync(::taihe::string_view volumeUuid);
+int64_t GetSystemSizeSync();
+int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid);
+int64_t GetFreeSizeAsync();
+int64_t GetTotalSizeAsync();
 
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync();
@@ -34,5 +39,7 @@ void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBun
 ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t userId, taihe::string_view businessName);
 taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStatsSync(int32_t userId);
 taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync();
+::ohos::file::storageStatistics::BundleStats GetBundleStatsSync(::taihe::string_view packageName,
+    ::taihe::optional_view<int32_t> index);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H
