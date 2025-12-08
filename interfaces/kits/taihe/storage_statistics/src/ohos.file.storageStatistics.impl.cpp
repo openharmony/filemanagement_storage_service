@@ -180,34 +180,28 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
     return { (*bundleStats).dataSize_, (*bundleStats).cacheSize_, (*bundleStats).appSize_} ;
 }
 
-::ohos::file::storageStatistics::BundleStats GetBundleStatsSync(::taihe::string_view packageName,
-    ::taihe::optional_view<int32_t> index)
+int64_t GetFreeSizeSync()
 {
-    std::string nameString = std::string(packageName);
-    if (nameString.empty()) {
-        LOGE("packageName is empty!");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
-    int32_t indexVelue = 0;
-    if (index.has_value()) {
-        indexVelue = static_cast<int32_t>(index.value());
-    }
-    uint32_t statFlag = 0;
-    auto bundleStats = std::make_shared<OHOS::StorageManager::BundleStats>();
-    auto errNum =
-        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
-            *bundleStats, indexVelue, statFlag);
+    auto resultSize = std::make_shared<int64_t>();
+    int32_t errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetFreeSize(
+        *resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
+        return DEFAULTSIZE;
     }
+    return *resultSize;
+}
 
-    return { (*bundleStats).dataSize_, (*bundleStats).cacheSize_, (*bundleStats).appSize_} ;
+int64_t GetTotalSizeSync()
+{
+    auto resultSize = std::make_shared<int64_t>();
+    int32_t errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetTotalSize(
+        *resultSize);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return DEFAULTSIZE;
+    }
+    return *resultSize;
 }
 
 void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBundleStats stats)
