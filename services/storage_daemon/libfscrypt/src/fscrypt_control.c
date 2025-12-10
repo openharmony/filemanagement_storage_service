@@ -24,11 +24,14 @@
 
 #include "fscrypt_log.h"
 #include "fscrypt_sysparam.h"
-#include "fscrypt_enable.h"
 #include "init_utils.h"
 #include "key_control.h"
 #include "securec.h"
 #include <sys/ioctl.h>
+
+#ifdef SUPPORT_RECOVERY_KEY_SERVICE
+#include "fscrypt_enable.h"
+#endif
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
 #define SAFE_FREE_PTR(ptr) do { \
@@ -492,10 +495,12 @@ int SetGlobalEl1DirPolicy(const char *dir)
         LOGI("Fscrypt have not enabled");
         return 0;
     }
+#ifdef SUPPORT_RECOVERY_KEY_SERVICE
     if (!IsFsCryptEnableByOemInfo()) {
         LOGI("Fscrypt have not enabled by oeminfo");
         return 0;
     }
+#endif
     for (size_t i = 0; i < ARRAY_LEN(GLOBAL_FSCRYPT_DIR); i++) {
         size_t tmpLen = strlen(GLOBAL_FSCRYPT_DIR[i]);
         if ((strncmp(dir, GLOBAL_FSCRYPT_DIR[i], tmpLen) == 0) && (strlen(dir) == tmpLen)) {

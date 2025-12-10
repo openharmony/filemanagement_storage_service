@@ -55,13 +55,19 @@ ohos_static_library("libfscryptutils") {
   output_name = "libfscryptutils"
   sources = [
     "src/fscrypt_control.c",
-    "src/fscrypt_enable.cpp",
     "src/fscrypt_utils.c",
     "src/init_utils.c",
     "src/key_control.c",
     "src/storage_radar_c.c",
     "src/sysparam_dynamic.c",
   ]
+
+  if (storage_service_external_storage_qos_trans) {
+    sources += [
+      "src/fscrypt_enable.cpp",
+      "src/fscrypt_enable.h",
+    ]
+  }
 
   if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
@@ -74,13 +80,20 @@ ohos_static_library("libfscryptutils") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
+  if (storage_service_external_storage_qos_trans) {
+    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
+  }
+
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_factory:libfactory_proxy_1.1",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
+
+  if (storage_service_external_storage_qos_trans) {
+    external_deps += [ "drivers_interface_factory:libfactory_proxy_1.1" ]
+  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
@@ -100,15 +113,25 @@ ohos_static_library("libfscryptutils_static") {
   output_name = "libfscryptutils_static"
   sources = [
     "src/fscrypt_control.c",
-    "src/fscrypt_enable.cpp",
     "src/fscrypt_utils.c",
     "src/key_control.c",
     "src/storage_radar_c.c",
     "src/sysparam_static.c",
   ]
 
+  if (storage_service_external_storage_qos_trans) {
+    sources += [
+      "src/fscrypt_enable.cpp",
+      "src/fscrypt_enable.h",
+    ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_qos_trans) {
+    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
   }
 
   configs = [ ":fscrypt_utils_config" ]
@@ -121,12 +144,15 @@ ohos_static_library("libfscryptutils_static") {
 
   external_deps = [
     "bounds_checking_function:libsec_static",
-    "drivers_interface_factory:libfactory_proxy_1.1",
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
+
+  if (storage_service_external_storage_qos_trans) {
+    external_deps += [ "drivers_interface_factory:libfactory_proxy_1.1" ]
+  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
