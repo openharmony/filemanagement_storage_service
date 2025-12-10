@@ -81,7 +81,9 @@
         "qos_manager",
         "usb_manager",
         "runtime_core",
-        "json"
+        "json",
+        "usb_manager",
+        "drivers_interface_factory"
       ],
       "third_party": [
         "e2fsprogs",
