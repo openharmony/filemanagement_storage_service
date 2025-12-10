@@ -56,7 +56,6 @@ ohos_static_library("libfscryptutils") {
   sources = [
     "src/fscrypt_control.c",
     "src/fscrypt_enable.cpp",
-    "src/fscrypt_enable.h",
     "src/fscrypt_utils.c",
     "src/init_utils.c",
     "src/key_control.c",
@@ -102,7 +101,6 @@ ohos_static_library("libfscryptutils_static") {
   sources = [
     "src/fscrypt_control.c",
     "src/fscrypt_enable.cpp",
-    "src/fscrypt_enable.h",
     "src/fscrypt_utils.c",
     "src/key_control.c",
     "src/storage_radar_c.c",
