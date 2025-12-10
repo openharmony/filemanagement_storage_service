@@ -21,6 +21,8 @@
 static { loadLibrary("storage_statistics_taihe.z"); }
 """)
 
+@!sts_inject_into_module("import { BusinessError, AsyncCallback } from '@ohos.base';")
+
 @gen_async("getFreeSize")
 @gen_promise("getFreeSize")
 function GetFreeSizeAsync(): i64;
@@ -92,9 +94,36 @@ function GetSystemSizeSync(): i64;
 @gen_promise("getTotalSizeOfVolume")
 function GetTotalSizeOfVolumeSync(volumeUuid: String): i64;
 
-@gen_async("getBundleStats")
-@gen_promise("getBundleStats")
 function GetBundleStatsSync(packageName: String, index: Optional<i32>): BundleStats;
+
+@!sts_inject("""
+export function getBundleStats(packageName: string, index?: int): Promise<BundleStats> {
+    return new Promise<BundleStats>((resolve, reject): void => {
+        taskpool.execute((): BundleStats => {
+            return getBundleStatsSync(packageName, index);
+        })
+        .then((ret: NullishType): void => {
+            resolve(ret as BundleStats);
+        })
+        .catch((ret: NullishType): void => {
+            reject(ret as Error);
+        });
+    });
+}
+
+export function getBundleStats(packageName: string, callback: AsyncCallback<BundleStats>, index?: int): void {
+    taskpool.execute((): BundleStats => {
+        return getBundleStatsSync(packageName, index);
+    })
+    .then((ret: NullishType): void => {
+        callback(new BusinessError(), ret as BundleStats);
+    })
+    .catch((ret: NullishType): void => {
+        let data: BundleStats;
+        callback(ret as BusinessError, data);
+    });
+}
+""")
 
 function GetFreeSizeSync(): i64;
 

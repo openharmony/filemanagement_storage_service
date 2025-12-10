@@ -57,7 +57,8 @@ std::string StorageTaiheError::ToMessage(const int errCode)
     }
 }
 
-void StorageTaiheError::SetStorageTaiheError(const int error_code) {
+void StorageTaiheError::SetStorageTaiheError(const int error_code)
+{
     taihe::set_business_error(
         Convert(OHOS::StorageManager::Convert2JsErrNum(error_code)),
         ToMessage(OHOS::StorageManager::Convert2JsErrNum(error_code)));
