@@ -55,6 +55,8 @@ ohos_static_library("libfscryptutils") {
   output_name = "libfscryptutils"
   sources = [
     "src/fscrypt_control.c",
+    "src/fscrypt_enable.cpp",
+    "src/fscrypt_enable.h",
     "src/fscrypt_utils.c",
     "src/init_utils.c",
     "src/key_control.c",
@@ -75,6 +77,7 @@ ohos_static_library("libfscryptutils") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_factory:libfactory_proxy_1.1",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
@@ -98,6 +101,8 @@ ohos_static_library("libfscryptutils_static") {
   output_name = "libfscryptutils_static"
   sources = [
     "src/fscrypt_control.c",
+    "src/fscrypt_enable.cpp",
+    "src/fscrypt_enable.h",
     "src/fscrypt_utils.c",
     "src/key_control.c",
     "src/storage_radar_c.c",
@@ -118,6 +123,7 @@ ohos_static_library("libfscryptutils_static") {
 
   external_deps = [
     "bounds_checking_function:libsec_static",
+    "drivers_interface_factory:libfactory_proxy_1.1",
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",

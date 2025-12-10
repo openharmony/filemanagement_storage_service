@@ -24,6 +24,7 @@
 
 #include "fscrypt_log.h"
 #include "fscrypt_sysparam.h"
+#include "fscrypt_enable.h"
 #include "init_utils.h"
 #include "key_control.h"
 #include "securec.h"
@@ -489,6 +490,10 @@ int SetGlobalEl1DirPolicy(const char *dir)
 {
     if (!g_fscryptEnabled) {
         LOGI("Fscrypt have not enabled");
+        return 0;
+    }
+    if (!IsFsCryptEnableByOemInfo()) {
+        LOGI("Fscrypt have not enabled by oeminfo");
         return 0;
     }
     for (size_t i = 0; i < ARRAY_LEN(GLOBAL_FSCRYPT_DIR); i++) {
