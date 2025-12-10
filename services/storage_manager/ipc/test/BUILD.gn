@@ -50,7 +50,7 @@ ohos_unittest("storage_manager_provider_test") {
 
   if (storage_service_storage_statistics_manager) {
     sources += [
-    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
@@ -141,7 +141,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
 
   if (storage_service_storage_statistics_manager) {
     sources += [
-      "${storage_manager_path}/storage/src/storage_status_service.cpp",
+      "${storage_manager_path}/storage/src/storage_status_manager.cpp",
       "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
@@ -218,7 +218,7 @@ sources = [
     "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
-    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",

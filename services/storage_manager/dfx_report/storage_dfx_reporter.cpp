@@ -25,7 +25,7 @@
 #include "storage_radar.h"
 #include "storage_service_constant.h"
 #include "storage/storage_total_status_service.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "storage_stats.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
@@ -220,7 +220,7 @@ int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostring
         return E_ERR;
     }
     std::map<int32_t, std::string> bundleNameAndUid;
-    int32_t ret = StorageStatusService::GetInstance().GetBundleNameAndUid(userId, bundleNameAndUid);
+    int32_t ret = StorageStatusManager::GetInstance().GetBundleNameAndUid(userId, bundleNameAndUid);
     if (ret != E_OK) {
         LOGE("GetBundleNameAndUid failed, ret=%{public}d", ret);
     }
@@ -266,7 +266,7 @@ int32_t StorageDfxReporter::GetStorageStatsInfo(int32_t userId, StorageStats &st
 {
     LOGI("GetStorageStatsInfo start, userId=%{public}d", userId);
 
-    int32_t ret = StorageStatusService::GetInstance().GetUserStorageStats(userId, storageStats, true);
+    int32_t ret = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats, true);
     if (ret != E_OK) {
         LOGE("GetUserStorageStats failed, userId=%{public}d, ret=%{public}d", userId, ret);
         return ret;

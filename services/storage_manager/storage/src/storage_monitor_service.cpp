@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,7 @@
 #include "storage_service_log.h"
 #include "storage_stats.h"
 #include "storage/storage_quota_controller.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_constant.h"

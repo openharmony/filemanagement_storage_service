@@ -20,7 +20,7 @@
 #include "storage/storage_monitor_service.h"
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 
 namespace OHOS::StorageManager {
 class SystemUtil {
@@ -78,7 +78,7 @@ constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
 int g_storageFlag = 0;
 
-int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
+int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 {
     return g_storageFlag;
 }

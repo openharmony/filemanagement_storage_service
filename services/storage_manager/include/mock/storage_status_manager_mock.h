@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
-#ifndef STORAGE_STATUS_SERVICE_MOCK_H
-#define STORAGE_STATUS_SERVICE_MOCK_H
+#ifndef STORAGE_STATUS_MANAGER_MOCK_H
+#define STORAGE_STATUS_MANAGER_MOCK_H
 
 #include <gmock/gmock.h>
 
 #include "ext_bundle_stats.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 
 namespace OHOS {
 namespace StorageManager {
 
-class IStorageStatusServiceMock {
+class IStorageStatusManagerMock {
 public:
-    virtual ~IStorageStatusServiceMock() = default;
+    virtual ~IStorageStatusManagerMock() = default;
     virtual int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex,
         uint32_t statFlag);
     virtual int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule = false);
@@ -40,10 +40,10 @@ public:
     virtual int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats);
     virtual int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
     virtual int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
-    static inline std::shared_ptr<IStorageStatusServiceMock> storageStatusService = nullptr;
+    static inline std::shared_ptr<IStorageStatusManagerMock> storageStatusManager = nullptr;
 };
 
-class StorageStatusServiceMock : public IStorageStatusServiceMock {
+class StorageStatusManagerMock : public IStorageStatusManagerMock {
 public:
     MOCK_METHOD(int32_t, GetBundleStats, (const std::string &, BundleStats &, int32_t, uint32_t));
     MOCK_METHOD(int32_t, GetUserStorageStats, (int32_t, StorageStats &, bool));
@@ -60,4 +60,4 @@ public:
 } // StorageManager
 } // OHOS
 
-#endif // STORAGE_STATUS_SERVICE_MOCK_H
+#endif // STORAGE_STATUS_MANAGER_MOCK_H

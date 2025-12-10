@@ -17,7 +17,7 @@
 
 #include "dfx_report/storage_dfx_reporter.h"
 #include "mock/storage_daemon_communication_mock.h"
-#include "mock/storage_status_service_mock.h"
+#include "mock/storage_status_manager_mock.h"
 #include "statistic_info.h"
 #include "storage_total_status_service_mock.h"
 

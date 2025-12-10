@@ -20,7 +20,7 @@
 #include <singleton.h>
 #ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_monitor_service.h>
-#include <storage/storage_status_service.h>
+#include <storage/storage_status_manager.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
 #include "storage_rdb_adapter.h"
@@ -1043,7 +1043,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("SetExtBundleStats start");
-    int32_t ret = StorageStatusService::GetInstance().SetExtBundleStats(userId, stats);
+    int32_t ret = StorageStatusManager::GetInstance().SetExtBundleStats(userId, stats);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_SET_EXT_BUNDLE_STATS_ERROR, extraData);
@@ -1070,7 +1070,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("GetExtBundleStats start");
-    int32_t ret = StorageStatusService::GetInstance().GetExtBundleStats(userId, stats);
+    int32_t ret = StorageStatusManager::GetInstance().GetExtBundleStats(userId, stats);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("GetExtBundleStats", E_GET_EXT_BUNDLE_STATS_ERROR, extraData);
@@ -1097,7 +1097,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("GetAllExtBundleStats start");
-    int32_t ret = StorageStatusService::GetInstance().GetAllExtBundleStats(userId, statsVec);
+    int32_t ret = StorageStatusManager::GetInstance().GetAllExtBundleStats(userId, statsVec);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("GetAllExtBundleStats", E_GET_ALL_EXT_BUNDLE_STATS_ERROR, extraData);

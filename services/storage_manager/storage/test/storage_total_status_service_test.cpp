@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,7 @@
 #include "nativetoken_kit.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_monitor_service.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"
 #include "token_setproc.h"
@@ -167,7 +167,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_0000, t
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetBundleStats_0000";
-    StorageStatusService& service = StorageStatusService::GetInstance();
+    StorageStatusManager &service = StorageStatusManager::GetInstance();
     string pkgName = "com.test";
     BundleStats bundleStats;
     int32_t result = service.GetBundleStats(pkgName, bundleStats, 0, 0);
@@ -187,7 +187,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, test
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetBundleStats_0001";
-    StorageStatusService& service = StorageStatusService::GetInstance();
+    StorageStatusManager &service = StorageStatusManager::GetInstance();
     int userId = 100;
     string pkgName = "com.test";
     BundleStats bundleStats;
@@ -208,7 +208,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, test
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetCurrentBundleStats_0000";
-    StorageStatusService& service = StorageStatusService::GetInstance();
+    StorageStatusManager &service = StorageStatusManager::GetInstance();
     BundleStats bundleStats;
     int32_t result = service.GetCurrentBundleStats(bundleStats, 0);
     EXPECT_EQ(result, E_GET_BUNDLE_NAME_FAILED);

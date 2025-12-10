@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -107,7 +107,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
         typeStr = "used space";
     }
-    LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
+    LOGI("StorageStatusManager::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
         path, typeStr.c_str(), static_cast<long long>(size));
     return E_OK;
 }

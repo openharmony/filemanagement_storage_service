@@ -15,10 +15,10 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageStatusServiceFuzzTest") {
+ohos_fuzztest("StorageStatusManagerFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file =
-      "${storage_service_path}/test/fuzztest/storagestatusservice_fuzzer"
+      "${storage_service_path}/test/fuzztest/storagestatusmanager_fuzzer"
   include_dirs = [
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
@@ -32,9 +32,12 @@ ohos_fuzztest("StorageStatusServiceFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "storagestatusservice_fuzzer.cpp" ]
+  sources = [ "storagestatusmanager_fuzzer.cpp" ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
-  deps = [ "${storage_service_path}/services/storage_manager:storage_manager" ]
+  deps = [
+    "${storage_service_path}/services/storage_manager:storage_manager",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
@@ -44,11 +47,10 @@ ohos_fuzztest("StorageStatusServiceFuzzTest") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
-    "storage_service:storage_manager_sa_proxy",
   ]
 }
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageStatusServiceFuzzTest" ]
+  deps = [ ":StorageStatusManagerFuzzTest" ]
 }

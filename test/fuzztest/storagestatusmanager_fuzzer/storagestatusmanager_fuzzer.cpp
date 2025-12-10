@@ -12,20 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagestatusservice_fuzzer.h"
+#include "storagestatusmanager_fuzzer.h"
 #include "storage/bundle_manager_connector.h"
-#include "storage/storage_status_service.h"
+#include "storage/storage_status_manager.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageManager {
-bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
+bool StorageStatusManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t) + sizeof(int64_t))) {
         return false;
     }
-    StorageStatusService& service = StorageStatusService::GetInstance();
+    StorageStatusManager &service = StorageStatusManager::GetInstance();
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data + sizeof(int32_t)));
     int32_t pos = sizeof(int32_t) + sizeof(int64_t);
@@ -59,6 +59,6 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::StorageManager::StorageStatusServiceFuzzTest(data, size);
+    OHOS::StorageManager::StorageStatusManagerFuzzTest(data, size);
     return 0;
 }
