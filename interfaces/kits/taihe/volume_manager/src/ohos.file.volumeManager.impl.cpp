@@ -14,6 +14,8 @@
  */
 
 #include "ohos.file.volumeManager.impl.h"
+#include "storageStatistics_taihe_error.h"
+#include "storage_service_log.h"
 
 namespace ANI::VolumeManager {
 
