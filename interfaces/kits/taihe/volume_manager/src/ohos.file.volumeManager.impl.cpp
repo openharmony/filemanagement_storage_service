@@ -70,11 +70,11 @@ void FormatSync(::taihe::string_view volumeId, ::taihe::string_view fsType)
     std::string fsTypeString = std::string(fsType);
     if (volumeIdString.empty() || fsTypeString.empty()) {
         LOGE("Invalid parameter, is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     if (!OHOS::StorageManager::IsSystemApp()) {
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -84,7 +84,7 @@ void FormatSync(::taihe::string_view volumeId, ::taihe::string_view fsType)
     }
     int32_t result = instance->Format(volumeIdString, fsTypeString);
     if (result != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(result), "Format failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(result);
         return;
     }
 }
@@ -94,7 +94,7 @@ void GetVolumeByIdSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
 
@@ -107,7 +107,7 @@ void GetVolumeByIdSync(::taihe::string_view volumeId)
 
     int32_t errNum = instance->GetVolumeById(volumeIdString, *volumeInfo);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeById failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }
@@ -117,11 +117,11 @@ void MountSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     if (!OHOS::StorageManager::IsSystemApp()) {
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -132,7 +132,7 @@ void MountSync(::taihe::string_view volumeId)
 
     int32_t errNum = instance->Mount(volumeIdString);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Mount failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }
@@ -142,11 +142,11 @@ void UnmountSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "VolumeId cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     if (!OHOS::StorageManager::IsSystemApp()) {
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -157,7 +157,7 @@ void UnmountSync(::taihe::string_view volumeId)
 
     int32_t errNum = instance->Unmount(volumeIdString);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Unmount failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }
@@ -167,11 +167,11 @@ void PartitionSync(::taihe::string_view diskId, int32_t type)
     std::string diskIdString = std::string(diskId);
     if (diskIdString.empty()) {
         LOGE("Invalid parameter, parameter is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     if (!OHOS::StorageManager::IsSystemApp()) {
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -181,7 +181,7 @@ void PartitionSync(::taihe::string_view diskId, int32_t type)
     }
     int32_t errNum = instance->Partition(diskIdString, type);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Partition failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }
@@ -192,11 +192,11 @@ void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view de
     std::string descStr = std::string(description);
     if (uuidString.empty() || descStr.empty()) {
         LOGE("Invalid parameter, parameter is empty");
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "parameter cannot be empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
     if (!OHOS::StorageManager::IsSystemApp()) {
-        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
         return;
     }
 
@@ -207,7 +207,7 @@ void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view de
     }
     int32_t errNum = instance->SetVolumeDescription(uuidString, descStr);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "SetVolumeDescription failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }
