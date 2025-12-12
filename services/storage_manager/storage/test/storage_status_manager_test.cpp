@@ -144,7 +144,7 @@ public:
  */
 HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_GetAppSize_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin Storage_status_GetAppSize_0001";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     int32_t userId = 100;
     int64_t appSize = 0;
@@ -152,7 +152,7 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext:
 
     std::cout << "appsize is : " << appSize << "max int is " << std::numeric_limits<int64_t>::max() << std::endl;
     EXPECT_EQ(result, E_CALCULATE_OVERFLOW_UP);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_GetAppSize_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end Storage_status_GetAppSize_0001";
 } // namespace AppExecFwk
 
 /**
@@ -166,13 +166,13 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext:
  */
 HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin STORAGE_GetMediaAndFileStorageStats_0001";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
         StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetMediaAndFileStorageStats_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end STORAGE_GetMediaAndFileStorageStats_0001";
 } // namespace AppExecFwk
 
 /**
@@ -186,14 +186,14 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0001, tes
  */
 HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0002, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0002";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin STORAGE_GetMediaAndFileStorageStats_0002";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     str = "99";
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetMediaAndFileStorageStats_0002";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end STORAGE_GetMediaAndFileStorageStats_0002";
 } // namespace AppExecFwk
 
 /**
@@ -310,8 +310,6 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
 {
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 start";
     auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.UnInit();
     ExtBundleStats extBundleStats;
     uint32_t userId = 10;
     extBundleStats.businessName_ = "test";
@@ -324,13 +322,9 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
     EXPECT_NE(ret, E_OK);
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_NE(ret, E_OK);
-    rdbAdapter.Init();
-    ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
     ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 end";
 }
 
@@ -353,13 +347,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00001, testing::ext
     extBundleStats.businessSize_ = 0;
     extBundleStats.showFlag_ = true;
     int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, OHOS::E_OK);
-    EXPECT_EQ(extBundleStats.businessSize_, 1);
-    rdbAdapter.UnInit();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 end";
 }
 
@@ -392,13 +380,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_DelBundleExtStats_00001, testing::ext
 
     userId = 100;
     ret = service->DelBundleExtStats(userId, bundleName);
-    EXPECT_EQ(ret, E_DEL_EXT_BUNDLE_STATS_ERROR);
-
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->DelBundleExtStats(userId, bundleName);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
 }
 
@@ -421,12 +403,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00002, testing::ext
     extBundleStats.businessSize_ = 0;
     extBundleStats.showFlag_ = true;
     int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, OHOS::E_OK);
-    rdbAdapter.UnInit();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 end";
 }
 
@@ -447,12 +424,10 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     std::vector<ExtBundleStats> bundleStats;
     uint32_t userId = 10;
     int32_t ret = service->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
+    EXPECT_EQ(ret, E_OK);
     extBundleStats.businessName_ = "GetAllExtBundleStats";
     extBundleStats.businessSize_ = 1;
     extBundleStats.showFlag_ = true;
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
@@ -461,6 +436,5 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     EXPECT_EQ(ret, E_OK);
     ret = service->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 end";
 }

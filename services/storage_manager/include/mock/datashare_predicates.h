@@ -26,4 +26,4 @@ public:
 };
 } // namespace OHOS
 } // namespace DataShare
-#endif // DATASHARE_HELPER_H
+#endif // DATASHARE_PREDICATES_H
