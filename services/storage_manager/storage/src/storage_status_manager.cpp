@@ -457,15 +457,15 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
     int32_t rowCount = ROWCOUNT_INIT;
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     {
-        StorageManager::StorageRdbAdapter::GetInstance().Init();
+        StorageRdbAdapter::GetInstance().Init();
         int32_t ret = GetBundleNameFromDB(userId, stats.businessName_, dbBundleName, rowCount);
         if (ret != E_OK) {
-            StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+            StorageRdbAdapter::GetInstance().UnInit();
             return ret;
         }
         if (rowCount == ROWCOUNT_INIT) {
             ret = InsertExtBundleStats(userId, stats, callingBundleName);
-            StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+            StorageRdbAdapter::GetInstance().UnInit();
             return ret;
         }
         if (callingBundleName != dbBundleName) {
@@ -473,7 +473,7 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
             StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_CALL_AND_DB_NAME_ERROR, extraData);
         }
         ret = UpdateExtBundleStats(userId, stats, callingBundleName);
-        StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+        StorageRdbAdapter::GetInstance().UnInit();
         return ret;
     }
 }
@@ -485,9 +485,9 @@ int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats 
     std::vector<NativeRdb::ValueObject> bindArgs;
     bindArgs.emplace_back(NativeRdb::ValueObject(stats.businessName_));
     bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    StorageManager::StorageRdbAdapter::GetInstance().Init();
+    StorageRdbAdapter::GetInstance().Init();
     auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+    StorageRdbAdapter::GetInstance().UnInit();
     if (resultSet == nullptr) {
         LOGE("get businessSize failed");
         return E_TB_GET_ERROR;
@@ -642,9 +642,9 @@ int32_t StorageStatusManager::GetAllExtBundleStats(uint32_t userId, std::vector<
     std::string sql = SELECT_ALL_BUNDLE_EXT_SQL;
     std::vector<NativeRdb::ValueObject> bindArgs;
     bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    StorageManager::StorageRdbAdapter::GetInstance().Init();
+    StorageRdbAdapter::GetInstance().Init();
     auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+    StorageRdbAdapter::GetInstance().UnInit();
     if (resultSet == nullptr) {
         LOGE("get result set failed for get all ext bundle stats");
         return E_TB_GET_ERROR;
@@ -674,9 +674,9 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
     values.emplace_back(NativeRdb::ValueObject(bundleName));
     values.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
     int32_t deleteRows = ROWCOUNT_INIT;
-    StorageManager::StorageRdbAdapter::GetInstance().Init();
+    StorageRdbAdapter::GetInstance().Init();
     int32_t ret = StorageRdbAdapter::GetInstance().Delete(deleteRows, BUNDLE_EXT_STATS_TABLE, WHERE_CLAUSE, values);
-    StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+    StorageRdbAdapter::GetInstance().UnInit();
     if (ret != E_OK) {
         LOGE("DelBundleExtStats failed.");
         std::string extraData = "errCode=" + std::to_string(ret);
