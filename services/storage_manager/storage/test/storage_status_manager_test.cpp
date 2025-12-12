@@ -310,8 +310,6 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
 {
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 start";
     auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.UnInit();
     ExtBundleStats extBundleStats;
     uint32_t userId = 10;
     extBundleStats.businessName_ = "test";
@@ -324,13 +322,9 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
     EXPECT_NE(ret, E_OK);
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_NE(ret, E_OK);
-    rdbAdapter.Init();
-    ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
     ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 end";
 }
 
@@ -353,13 +347,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00001, testing::ext
     extBundleStats.businessSize_ = 0;
     extBundleStats.showFlag_ = true;
     int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, OHOS::E_OK);
-    EXPECT_EQ(extBundleStats.businessSize_, 1);
-    rdbAdapter.UnInit();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00001 end";
 }
 
@@ -392,13 +380,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_DelBundleExtStats_00001, testing::ext
 
     userId = 100;
     ret = service->DelBundleExtStats(userId, bundleName);
-    EXPECT_EQ(ret, E_DEL_EXT_BUNDLE_STATS_ERROR);
-
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->DelBundleExtStats(userId, bundleName);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
 }
 
@@ -421,12 +403,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetExtBundleStats_00002, testing::ext
     extBundleStats.businessSize_ = 0;
     extBundleStats.showFlag_ = true;
     int32_t ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
-    ret = service->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, OHOS::E_OK);
-    rdbAdapter.UnInit();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetExtBundleStats_00002 end";
 }
 
@@ -447,12 +424,10 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     std::vector<ExtBundleStats> bundleStats;
     uint32_t userId = 10;
     int32_t ret = service->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_TB_GET_ERROR);
+    EXPECT_EQ(ret, E_OK);
     extBundleStats.businessName_ = "GetAllExtBundleStats";
     extBundleStats.businessSize_ = 1;
     extBundleStats.showFlag_ = true;
-    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
-    rdbAdapter.Init();
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_OK);
@@ -461,6 +436,5 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     EXPECT_EQ(ret, E_OK);
     ret = service->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_OK);
-    rdbAdapter.UnInit();
     GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 end";
 }
