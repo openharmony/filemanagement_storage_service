@@ -18,23 +18,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-enum FS_CRYPT_ENABLE_STATUS { UNDEFINED = -1, DISABLE = 0, ENABLE = 1 };
 /**
  * @brief Checks whether the file system encryption (FS Crypt) is enabled
  *        based on the OEM information read from the factory interface.
  *
- * @details This function reads the encryption status from the OEMInfo database
- *          via the factory interface service. The result is cached in a static
- *          variable to avoid repeated reads.
+ * @details This function reads the encryption status from the OEMInfo.
  *
- * @return int One of the following values:
- *         - @b -1: The status is undefined or couldn't be determined.
- *         - @b  0: File system encryption is disabled.
- *         - @b  1: File system encryption is enabled.
- *
- * @see enum FS_CRYPT_ENABLE_STATUS for status definitions.
+ * @return true for crypt, false for not
  */
-int IsFsCryptEnableByOemInfo();
+bool IsFsCryptEnableByOemInfo();
 #ifdef __cplusplus
 }
 #endif

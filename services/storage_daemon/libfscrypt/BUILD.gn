@@ -91,10 +91,6 @@ ohos_static_library("libfscryptutils") {
     "init:libbegetutil",
   ]
 
-  if (storage_service_external_storage_qos_trans) {
-    external_deps += [ "drivers_interface_factory:libfactory_proxy_1.1" ]
-  }
-
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 }
@@ -149,10 +145,6 @@ ohos_static_library("libfscryptutils_static") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
-
-  if (storage_service_external_storage_qos_trans) {
-    external_deps += [ "drivers_interface_factory:libfactory_proxy_1.1" ]
-  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"

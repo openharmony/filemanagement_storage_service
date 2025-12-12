@@ -14,50 +14,49 @@
  */
 
 #include "fscrypt_enable.h"
-#include "v1_1/ifactory_interface.h"
-
+#include "fscrypt_log.h"
+#include <fstream>
 #include <string>
 
-constexpr int RETRY_TIMES = 3;
+constexpr const char *CRYPTED_DISABLE = "false";
+constexpr const char *CRYPTED_NOT_ENABLE = "0";
+constexpr const char *CRYPTED_FORCE_DISABLE = "2";
 
-constexpr int OEMINFO_FILE_ENCRYPTION_SIZE = 5;
-constexpr int OEMINFO_FILE_ENCRYPTION_STATUS_MAIN_ID = 211;
-constexpr int OEMINFO_FILE_ENCRYPTION_STATUS_SUB_ID = 24;
+const std::string PARAM_FILE = "/proc/cmdline";
+const std::string PARAM_NAME = "ohos.boot.fileEncryption=";
+const size_t PARAM_SIZE = PARAM_NAME.size();
+constexpr char SPLIT_CHAR = ' ';
 
-std::string CRYPTED_DISABLE = "false";
-std::string CRYPTED_NOT_ENABLE = "0";
-std::string CRYPTED_FORCE_DISABLE = "2";
-
-static FS_CRYPT_ENABLE_STATUS fsCryptEnable = UNDEFINED;
 extern "C" {
-int IsFsCryptEnableByOemInfo()
+bool IsFsCryptEnableByOemInfo()
 {
-    if (fsCryptEnable != UNDEFINED) {
-        return fsCryptEnable;
+    std::ifstream file(PARAM_FILE);
+    if (!file.is_open()) {
+        LOGE("Open %{public}s failed. ", PARAM_FILE.c_str());
+        return true;
+    }
+    std::string cmdline;
+    std::getline(file, cmdline);
+    file.close();
+
+    size_t pos = cmdline.find(PARAM_NAME);
+    if (pos == std::string::npos) {
+        LOGE("Not config PARAM_NAME.");
+        return true;
     }
 
-    int retryTime = RETRY_TIMES;
-    while (fsCryptEnable == UNDEFINED && retryTime > 0) {
-        retryTime--;
-        OHOS::sptr<OHOS::HDI::Factory::V1_0::IFactoryInterface> factoryInterfaceImpl =
-            OHOS::HDI::Factory::V1_1::IFactoryInterface::Get("factory_interface_service", true);
-        if (factoryInterfaceImpl == nullptr) {
-            fsCryptEnable = UNDEFINED;
-            continue;
-        }
-        std::string readData;
-        int readRet = factoryInterfaceImpl->OeminfoReadReused(OEMINFO_FILE_ENCRYPTION_STATUS_MAIN_ID,
-            OEMINFO_FILE_ENCRYPTION_STATUS_SUB_ID,
-            OEMINFO_FILE_ENCRYPTION_SIZE,
-            readData);
-        if (readRet == 0) {
-            if (readData == CRYPTED_DISABLE || readData == CRYPTED_NOT_ENABLE || readData == CRYPTED_FORCE_DISABLE) {
-                fsCryptEnable = DISABLE;
-            } else {
-                fsCryptEnable = ENABLE;
-            }
-        }
+    size_t start = pos + PARAM_SIZE;
+    size_t end = cmdline.find(SPLIT_CHAR, start);
+    if (end == std::string::npos) {
+        end = cmdline.size();
     }
-    return fsCryptEnable;
+    std::string paramValue = cmdline.substr(start, end - start);
+    if (paramValue == CRYPTED_DISABLE || paramValue == CRYPTED_NOT_ENABLE || paramValue == CRYPTED_FORCE_DISABLE) {
+        LOGI("config not crypted");
+        return false;
+    } else {
+        LOGI("config crypted");
+        return true;
+    }
 }
 }
