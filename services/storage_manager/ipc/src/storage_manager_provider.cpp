@@ -19,10 +19,10 @@
 #include "utils/storage_radar.h"
 #include <singleton.h>
 #ifdef STORAGE_STATISTICS_MANAGER
-#include <storage/storage_monitor_service.h>
-#include <storage/storage_status_manager.h>
-#include <storage/storage_total_status_service.h>
-#include <storage/volume_storage_status_service.h>
+#include "storage/storage_monitor_service.h"
+#include "storage/storage_status_manager.h"
+#include "storage/storage_total_status_service.h"
+#include "storage/volume_storage_status_service.h"
 #include "storage_rdb_adapter.h"
 #endif
 
@@ -146,7 +146,10 @@ void StorageManagerProvider::OnStart()
     (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     StorageMonitorService::GetInstance().StartStorageMonitorTask();
-    std::thread([]() { OHOS::StorageManager::StorageRdbAdapter::GetInstance().Init(); }).detach();
+    std::thread([]() {
+        OHOS::StorageManager::StorageRdbAdapter::GetInstance().Init();
+        OHOS::StorageManager::StorageRdbAdapter::GetInstance().UnInit();
+    }).detach();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }

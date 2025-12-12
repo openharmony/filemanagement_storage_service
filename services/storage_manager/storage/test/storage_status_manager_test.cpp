@@ -144,7 +144,7 @@ public:
  */
 HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_GetAppSize_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin Storage_status_GetAppSize_0001";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     int32_t userId = 100;
     int64_t appSize = 0;
@@ -152,7 +152,7 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext:
 
     std::cout << "appsize is : " << appSize << "max int is " << std::numeric_limits<int64_t>::max() << std::endl;
     EXPECT_EQ(result, E_CALCULATE_OVERFLOW_UP);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_GetAppSize_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end Storage_status_GetAppSize_0001";
 } // namespace AppExecFwk
 
 /**
@@ -166,13 +166,13 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext:
  */
 HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin STORAGE_GetMediaAndFileStorageStats_0001";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
         StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetMediaAndFileStorageStats_0001";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end STORAGE_GetMediaAndFileStorageStats_0001";
 } // namespace AppExecFwk
 
 /**
@@ -186,14 +186,14 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0001, tes
  */
 HWTEST_F(StorageStatusManagerTest, STORAGE_GetMediaAndFileStorageStats_0002, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin STORAGE_GetMediaAndFileStorageStats_0002";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin STORAGE_GetMediaAndFileStorageStats_0002";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
     StorageStats storageStats = {0, 0, 0, 0, 0, 0};
     int userId = 0;
     str = "99";
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end STORAGE_GetMediaAndFileStorageStats_0002";
+    GTEST_LOG_(INFO) << "StorageStatusManagerTest-end STORAGE_GetMediaAndFileStorageStats_0002";
 } // namespace AppExecFwk
 
 /**
