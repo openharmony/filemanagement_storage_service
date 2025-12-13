@@ -46,7 +46,7 @@ public:
 
 private:
     StorageDfxReporter() = default;
-    ~StorageDfxReporter();
+    ~StorageDfxReporter() = default;
     StorageDfxReporter(const StorageDfxReporter&) = delete;
     StorageDfxReporter& operator=(const StorageDfxReporter&) = delete;
 
@@ -71,8 +71,8 @@ private:
     void GetAncoDataSize(std::ostringstream &extraData);
 
     // hap and sa statistics state
+    std::mutex hapAndSaMutex_;
     std::mutex hapAndSaStateMutex_;
-    std::thread hapAndSaThread_;
     int64_t lastHapAndSaFreeSize_ = 0;
     std::chrono::system_clock::time_point lastHapAndSaTime_;
     std::atomic<bool> isHapAndSaRunning_{false};

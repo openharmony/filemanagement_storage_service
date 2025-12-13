@@ -149,25 +149,29 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_tes
     ASSERT_TRUE(subscriberPtr_ != nullptr);
     EventFwk::CommonEventData testData;
     AAFwk::Want want;
-    int32_t userId = 100;
-    std::string bundleName = "test";
-    want.SetParam("userId", userId);
-    want.SetParam("bundleName", bundleName);
-    testData.SetWant(want);
+
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
 
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->OnReceiveEvent(testData));
+    want.SetParam("soc", 5);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+
+    EXPECT_EQ(subscriberPtr_->batteryCapacity_.load(), 5);
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0003 end";
 }
 
@@ -184,9 +188,18 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_UpdateDeviceState_
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_UpdateDeviceState_test_0001 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, true));
 
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, false));
+    subscriberPtr_->batteryCapacity_.store(5);
+    uint8_t oldState = subscriberPtr_->deviceState_.load();
+    subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, true);
+    uint8_t newState = subscriberPtr_->deviceState_.load();
+    EXPECT_EQ(newState, oldState | STATE_SCREEN_OFF);
+
+    oldState = subscriberPtr_->deviceState_.load();
+    subscriberPtr_->UpdateDeviceState(STATE_SCREEN_OFF, false);
+    newState = subscriberPtr_->deviceState_.load();
+    EXPECT_EQ(newState, oldState & ~STATE_SCREEN_OFF);
+
     GTEST_LOG_(INFO) << "Storage_subscriber_UpdateDeviceState_test_0001 end";
 }
 
@@ -203,12 +216,21 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_CheckAndTriggerSta
 {
     GTEST_LOG_(INFO) << "Storage_subscriber_CheckAndTriggerStatistic_test_0001 begin";
     ASSERT_TRUE(subscriberPtr_ != nullptr);
+
     subscriberPtr_->deviceState_ = STATE_SCREEN_OFF;
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->CheckAndTriggerStatistic());
+    subscriberPtr_->batteryCapacity_ = 15;
+    uint8_t stateBefore = subscriberPtr_->deviceState_.load();
+    subscriberPtr_->CheckAndTriggerStatistic();
+    uint8_t stateAfter = subscriberPtr_->deviceState_.load();
+    EXPECT_EQ(stateBefore, stateAfter);
 
     subscriberPtr_->deviceState_ = STATE_CHARGING_SCREEN_OFF;
-    subscriberPtr_->batteryCapacity_ = 15;
-    EXPECT_NO_FATAL_FAILURE(subscriberPtr_->CheckAndTriggerStatistic());
+    subscriberPtr_->batteryCapacity_ = 5;
+    stateBefore = subscriberPtr_->deviceState_.load();
+    subscriberPtr_->CheckAndTriggerStatistic();
+    stateAfter = subscriberPtr_->deviceState_.load();
+    EXPECT_EQ(stateBefore, stateAfter);
+
     GTEST_LOG_(INFO) << "Storage_subscriber_CheckAndTriggerStatistic_test_0001 end";
 }
 } // namespace StorageManager

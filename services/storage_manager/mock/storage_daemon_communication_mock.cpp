@@ -45,5 +45,22 @@ int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)
 {
     return StorageDaemonCommunicationMock::storageDaemonCommunication->GetAncoSizeData(outExtraData);
 }
+
+int32_t StorageDaemonCommunication::GetDataSizeByPath(const std::string &path, int64_t &size)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetDataSizeByPath(path, size);
+}
+
+int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetRmgResourceSize(rgmName, totalSize);
+}
+
+int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storageStatus,
+    const std::map<int32_t, std::string> &bundleNameAndUid)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->QueryOccupiedSpaceForSa(storageStatus,
+        bundleNameAndUid);
+}
 }
 }

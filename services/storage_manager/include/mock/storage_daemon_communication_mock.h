@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef STORAGE_DEAMON_COMMUNICATION_MOCK_H
-#define STORAGE_DEAMON_COMMUNICATION_MOCK_H
+#ifndef STORAGE_DAEMON_COMMUNICATION_MOCK_H
+#define STORAGE_DAEMON_COMMUNICATION_MOCK_H
 
 #include <gmock/gmock.h>
 
@@ -52,4 +52,4 @@ public:
 } // StorageManager
 } // OHOS
 
-#endif // STORAGE_DEAMON_COMMUNICATION_MOCK_H
+#endif // STORAGE_DAEMON_COMMUNICATION_MOCK_H

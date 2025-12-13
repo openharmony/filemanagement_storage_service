@@ -53,34 +53,17 @@ constexpr int32_t SYSTEM_UID = 1000;
 constexpr int32_t FOUNDATION_UID = 5523;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 
-StorageDfxReporter::~StorageDfxReporter()
-{
-    LOGI("StorageDfxReporter destructor called.");
-    if (hapAndSaThread_.joinable()) {
-        LOGI("Waiting for hapAndSaThread to finish...");
-        hapAndSaThread_.join();
-    }
-    LOGI("StorageDfxReporter destructor completed.");
-}
-
 void StorageDfxReporter::StartReportHapAndSaStorageStatus()
 {
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus start.");
-    if (isHapAndSaRunning_.load()) {
-        LOGI("Hap and Sa statistics task is already running, ignoring this request.");
-        return;
-    }
-    if (hapAndSaThread_.joinable()) {
-        LOGI("Previous Hap and Sa thread is still joinable, joining it.");
-        hapAndSaThread_.join();
-    }
+
     isHapAndSaRunning_.store(true);
     int32_t userId = StorageService::DEFAULT_USERID;
-    hapAndSaThread_ = std::thread([this, userId]() {
+    std::thread([this, userId]() {
         pthread_setname_np(pthread_self(), "hap_sa_stats_task");
         ExecuteHapAndSaStatistics(userId);
-    });
-    LOGI("StartReportHapAndSaStorageStatus launched async task successfully.");
+    }).detach();
+    LOGI("StartReportHapAndSaStorageStatus launched detached task successfully.");
 }
 
 bool StorageDfxReporter::CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
@@ -117,7 +100,11 @@ bool StorageDfxReporter::CheckValueChangeTriggered(int64_t currentValue, int64_t
 void StorageDfxReporter::CheckAndTriggerHapAndSaStatistics()
 {
     LOGI("CheckAndTriggerHapAndSaStatistics start.");
-
+    std::lock_guard<std::mutex> lock(hapAndSaMutex_);
+    if (isHapAndSaRunning_.load()) {
+        LOGI("Hap and Sa statistics task is already running, ignoring this request.");
+        return;
+    }
     int64_t lastFreeSize = 0;
     std::chrono::system_clock::time_point lastTime;
     {
@@ -172,6 +159,7 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     }
     CollectMetadataAndAnco(extraData);
     ret = CollectBundleStatistics(userId, extraData);
+    LOGI("extraData is %{public}s", extraData.str().c_str());
     StorageService::StorageRadar::ReportSpaceRadar("StartReportHapAndSaStorageStatus",
         E_STORAGE_STATUS, extraData.str());
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus end.");
