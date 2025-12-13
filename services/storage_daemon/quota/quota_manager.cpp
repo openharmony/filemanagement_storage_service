@@ -175,7 +175,6 @@ void QuotaManager::GetUidStorageStats(std::string &storageStatus,
         extraData << "{otherAppVec data is null}" << std::endl;
     }
     storageStatus = extraData.str();
-    LOGI("extraData is %{public}s", extraData.str().c_str());
     LOGI("GetUidStorageStats end!");
 }
 
@@ -415,7 +414,7 @@ void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t
     int32_t count = 0;
     std::map<int32_t, int64_t> userAppSizeMap;
     while (count < MAX_UID_COUNT) {
-        NextDqBlk dq;
+        KernelNextDqBlk dq;
         if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
             LOGE("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
             break;
@@ -458,7 +457,7 @@ void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t
     LOGI("GetOccupiedSpaceForUidList end!");
 }
 
-void QuotaManager::AssembleSysAppVec(int32_t dqUid, const NextDqBlk &dq,
+void QuotaManager::AssembleSysAppVec(int32_t dqUid, const KernelNextDqBlk &dq,
     std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec)
 {
     int32_t userId = StorageService::ZERO_USER;

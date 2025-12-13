@@ -673,13 +673,29 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessDirWithUserId_001, TestSize.L
 {
     GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessDirWithUserId_001 start";
     DirSpaceInfo dirInfo;
-    std::vector<int32_t> uids = {0, 1000, 20000000};
+    dirInfo.path = "/data/%d";
+    dirInfo.uid = 0;
+    std::vector<int32_t> uids = {0, 1000};
     std::vector<DirSpaceInfo> resultDirs;
-    QuotaManager::GetInstance().SetStopScanFlag(false);
-    EXPECT_NO_FATAL_FAILURE(QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs));
 
+    // Test case 1: Normal processing with stopScanFlag = false
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs);
+    EXPECT_EQ(resultDirs.size(), uids.size());
+    for (size_t i = 0; i < resultDirs.size(); i++) {
+        EXPECT_EQ(resultDirs[i].uid, 0);
+        EXPECT_GE(resultDirs[i].size, 0);
+    }
+
+    // Test case 2: Processing should stop when stopScanFlag = true
+    resultDirs.clear();
     QuotaManager::GetInstance().SetStopScanFlag(true);
-    EXPECT_NO_FATAL_FAILURE(QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs));
+    QuotaManager::GetInstance().ProcessDirWithUserId(dirInfo, uids, resultDirs);
+    EXPECT_EQ(resultDirs.size(), 0);  // resultDirs should be cleared when stopped
+
+    // Reset flag for next test
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+
     GTEST_LOG_(INFO) << "QuotaManagerTest_ProcessDirWithUserId_001 end";
 }
 

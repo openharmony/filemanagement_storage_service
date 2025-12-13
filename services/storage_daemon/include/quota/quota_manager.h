@@ -61,6 +61,19 @@ struct UidSaInfo {
 using NextDqBlk = OHOS::StorageManager::NextDqBlk;
 using DirSpaceInfo = OHOS::StorageManager::DirSpaceInfo;
 
+struct KernelNextDqBlk {
+    uint64_t dqbHardLimit = 0;
+    uint64_t dqbBSoftLimit = 0;
+    uint64_t dqbCurSpace = 0;
+    uint64_t dqbIHardLimit = 0;
+    uint64_t dqbISoftLimit = 0;
+    uint64_t dqbCurInodes = 0;
+    uint64_t dqbBTime = 0;
+    uint64_t dqbITime = 0;
+    uint32_t dqbValid = 0;
+    uint32_t dqbId = 0;
+};
+
 struct AllAppVec {
     std::vector<struct UidSaInfo> sysSaVec;
     std::vector<struct UidSaInfo> sysAppVec;
@@ -103,7 +116,7 @@ private:
     void GetMetaData(std::ostringstream &extraData);
     bool StringToInt64(const std::string& str, int64_t& out_value);
     void GetCurrentTime(std::ostringstream &extraData);
-    void AssembleSysAppVec(int32_t dqUid, const NextDqBlk &dq,
+    void AssembleSysAppVec(int32_t dqUid, const KernelNextDqBlk &dq,
         std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec);
     void GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec);
     void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
@@ -111,7 +124,6 @@ private:
         std::vector<DirSpaceInfo> &resultDirs);
     OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
         std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
-    int64_t oldChangeSizeCache_ = 0;
     std::atomic<bool> stopScanFlag_{false};
 };
 } // STORAGE_DAEMON
