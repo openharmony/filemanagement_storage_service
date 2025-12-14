@@ -38,6 +38,7 @@ namespace StorageManager {
 namespace {
 typedef int32_t (*FuncMount)(int, const std::string&, const std::string&);
 typedef int32_t (*FuncUMount)(const std::string&);
+typedef int32_t (*FuncUsbFuseByType)(const std::string&, bool&);
 }
  
 VolumeManagerServiceExt::VolumeManagerServiceExt()
@@ -105,6 +106,24 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseUmount(const std::string &volumeId
         LOGE("NotifyUsbFuseUmount fail");
         return E_NOTIFY_FAILED;
     }
+    return E_OK;
+}
+
+int32_t VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
+{
+    LOGI("IsUsbFuseByType in");
+    if (handler_ == nullptr) {
+        LOGE("Handler is nullptr");
+        return E_NOTIFY_FAILED;
+    }
+    FuncUsbFuseByType funcUsbFuseByType = (FuncUsbFuseByType)dlsym(handler_, "IsUsbFuseByType");
+    if (funcUsbFuseByType == nullptr) {
+        LOGE("Failed to get function pointer for IsUsbFuseByType");
+        return E_NOTIFY_FAILED;
+    }
+    bool enabled = false;
+    funcUsbFuseByType(fsType, enabled);
+    LOGI("funcUsbFuseByType. fsType: %{public}s, enabled: %{public}d", fsType.c_str(), enabled);
     return E_OK;
 }
 } // StorageManager

@@ -18,6 +18,7 @@
 
 #include "disk.h"
 #include "disk/disk_manager_service.h"
+#include "parameters.h"
 #include "safe_map.h"
 #include "securec.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -27,6 +28,7 @@
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #include "utils/file_utils.h"
+#include "utils/disk_utils.h"
 #include "utils/string_utils.h"
 #include "volume/notification.h"
 
@@ -35,6 +37,8 @@ using namespace OHOS::StorageService;
 const int32_t MTP_DEVICE_NAME_LEN = 512;
 namespace OHOS {
 namespace StorageManager {
+constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+
 VolumeManagerService::VolumeManagerService() {}
 VolumeManagerService::~VolumeManagerService() {}
 
@@ -165,7 +169,9 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         return result;
     }
     std::string mountUsbFusePath = StorageDaemon::StringPrintf("/mnt/data/external/%s", volumePtr->GetUuid().c_str());
-    if (StorageDaemon::IsUsbFuse() && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
+    LOGI("VolumeManagerService::Mount. fsType: %{public}s", volumePtr->VolumeCore::GetFsType().c_str());
+    bool isUsbFuseByType = IsUsbFuseByType(volumePtr->VolumeCore::GetFsType());
+    if (isUsbFuseByType && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
         result = MountUsbFuse(volumeId);
         if (result != E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -178,6 +184,19 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         volumePtr->SetState(VolumeState::UNMOUNTED);
     }
     return result;
+}
+
+int32_t VolumeManagerService::IsUsbFuseByType(const std::string &fsType, bool &enabled);
+{
+    LOGI("VolumeManagerService::IsUsbFuseByType in");
+    bool enabledByCcm = system.GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    bool enabledByType = true;
+    if (enabledByCcm) {
+        enabledByType = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
+    }
+    LOGI("VolumeManagerService::IsUsbFuseByType. enabledByCcm: %{public}d, enabledByType: %{public}d", enabledByCcm,
+         enabledByType);
+    return enabledByCcm && enabledByType;
 }
 
 int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
@@ -373,7 +392,8 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
         return result;
     }
 
-    if (StorageDaemon::IsUsbFuse()) {
+    bool isUsbFuseByType = IsUsbFuseByType(volumePtr->VolumeCore::GetFsType());
+    if (isUsbFuseByType {
         result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseUmount(volumeId);
     }
     return result;

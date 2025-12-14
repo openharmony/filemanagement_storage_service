@@ -339,6 +339,11 @@ int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::
     return E_OK;
 }
 
+int32_t StorageManagerProxy::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
     return E_OK;

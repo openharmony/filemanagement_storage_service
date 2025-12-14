@@ -119,4 +119,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 81] void EraseAllUserEncryptedKeys();
     [ipccode 82] void GetAllExtBundleStats([in] unsigned int userId, [out] List<ExtBundleStats> statsVec);
     [ipccode 83] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
+    [ipccode 84] void IsUsbFuseByType([in] String fsType， [out] boolean enabled);
 }

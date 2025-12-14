@@ -768,6 +768,15 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
     return StorageManager::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
 }
 
+int32_t StorageManagerProvider::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().IsUsbFuseByType(fsType, enabled);
+}
+
+
 int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {

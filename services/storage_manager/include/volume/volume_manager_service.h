@@ -31,6 +31,7 @@ public:
     int32_t Mount(std::string volumeId);
     int32_t Unmount(std::string volumeId);
     int32_t MountUsbFuse(const std::string &volumeId);
+    bool IsUsbFuseByType(const std::string &fsType);
     int32_t TryToFix(std::string volumeId);
     void OnVolumeCreated(VolumeCore vc);
     void OnVolumeMounted(const VolumeInfoStr &volumeInfoStr);

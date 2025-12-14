@@ -34,6 +34,15 @@ VolumeCore::VolumeCore(std::string id, int type, std::string diskId, int32_t sta
     state_ = state;
 }
 
+VolumeCore::VolumeCore(std::string id, int type, std::string diskId, int32_t state, std::string fsType)
+{
+    id_ = id;
+    type_ = type;
+    diskId_ = diskId;
+    state_ = state;
+    fsType_ = fsType;
+}
+
 void VolumeCore::SetState(int32_t state)
 {
     state_ = state;
@@ -59,6 +68,11 @@ int32_t VolumeCore::GetState()
     return state_;
 }
 
+std::string VolumeCore::GetFsType() const
+{
+    return fsType_;
+}
+
 bool VolumeCore::Marshalling(Parcel &parcel) const
 {
     if (!parcel.WriteString(id_)) {
@@ -78,6 +92,10 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
     }
 
     if (!parcel.WriteBool(errorFlag_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(fsType_)) {
         return false;
     }
 
@@ -124,6 +142,7 @@ VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
     obj->diskId_ = parcel.ReadString();
     obj->state_ = parcel.ReadInt32();
     obj->errorFlag_ = parcel.ReadBool();
+    obj->fsType_ = parcel.ReadString();
     return obj;
 }
 
