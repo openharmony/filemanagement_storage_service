@@ -46,7 +46,6 @@ constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr int32_t MAX_STATISTICS_FILES_NUMBER = 5120000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
-constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 #define RGM_MANAGER_PATH_DEF  "/data/service/el1/public/rgm_manager/data"
 #define RGM_STATE_PRE_DEF "virt_service.rgm_state."
 const std::string CONTAINER_HMOS = "rgm_hmos";
@@ -195,13 +194,6 @@ bool IsFile(const std::string &path)
         return false;
     }
     return S_ISREG(buf.st_mode);
-}
-
-bool IsUsbFuse()
-{
-    bool ret = system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
-    LOGI("IsUsbFuse result: %{public}s.", ret ? "true" : "false");
-    return ret;
 }
 
 bool MkDirRecurse(const std::string& path, mode_t mode)

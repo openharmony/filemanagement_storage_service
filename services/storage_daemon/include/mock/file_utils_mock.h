@@ -47,7 +47,6 @@ public:
     virtual bool DeleteFile(const std::string &path) = 0;
     virtual std::vector<std::string> Split(std::string str, const std::string &pattern) = 0;
     virtual bool IsPathMounted(std::string &path) = 0;
-    virtual bool IsUsbFuse() = 0;
     virtual bool CreateFolder(const std::string &path) = 0;
     virtual bool DelFolder(const std::string &path) = 0;
     virtual std::string ProcessToString(std::vector<ProcessInfo> &processList) = 0;

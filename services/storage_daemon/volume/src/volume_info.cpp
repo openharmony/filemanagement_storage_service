@@ -45,6 +45,8 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     isDamaged_ = false;
 
     int32_t err = DoCreate(device);
+    fsTypeBase_ = GetFsTypeByDev(device);
+    LOGI("VolumeInfo::Create fsTypeBase_: %{public}s", fsTypeBase_.c_str());
     if (err) {
         return err;
     }
@@ -74,6 +76,11 @@ int32_t VolumeInfo::GetState()
 bool VolumeInfo::GetIsUserdata()
 {
     return isUserdata_;
+}
+
+std::string VolumeInfo::GetFsTypeBase()
+{
+    return fsTypeBase_;
 }
 
 int32_t VolumeInfo::Destroy()
@@ -133,17 +140,15 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    if (!StorageDaemon::IsUsbFuse()) {
-        std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
-        int handle = static_cast<int>(FindParameter(key.c_str()));
-        if (handle != -1) {
-            char rdOnlyEnable[RD_ENABLE_LENGTH] = {"false"};
-            auto res = GetParameterValue(handle, rdOnlyEnable, RD_ENABLE_LENGTH);
-            if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
-                mountFlags_ |= MS_RDONLY;
-            } else {
-                mountFlags_ &= ~MS_RDONLY;
-            }
+    std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
+    int handle = static_cast<int>(FindParameter(key.c_str()));
+    if (handle != -1) {
+        char rdOnlyEnable[RD_ENABLE_LENGTH] = {"false"};
+        auto res = GetParameterValue(handle, rdOnlyEnable, RD_ENABLE_LENGTH);
+        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
+            mountFlags_ |= MS_RDONLY;
+        } else {
+            mountFlags_ &= ~MS_RDONLY;
         }
     }
 

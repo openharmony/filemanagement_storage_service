@@ -91,8 +91,10 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
         return E_PARAMS_INVALID;
     }
 
+    LOGI("NotifyVolumeCreated::NotifyVolumeCreated fsType = %{public}s", info->GetFsTypeBase().c_str());
+
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
-                                  info->GetDiskId(), info->GetState());
+                                  info->GetDiskId(), info->GetState(), info->GetFsTypeBase());
     storageManager_->NotifyVolumeCreated(vc);
 
     return E_OK;
@@ -186,6 +188,18 @@ int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const st
     }
     if (storageManager_ != nullptr) {
         storageManager_->NotifyMtpUnmounted(id, path, isBadRemove);
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+    LOGI("IsUsbFuseByType: fsType = %{public}s, enabled = %{public}d", fsType.c_str(), enabled));
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ != nullptr) {
+        storageManager_->IsUsbFuseByType(fsType, enabled);
     }
     return E_OK;
 }

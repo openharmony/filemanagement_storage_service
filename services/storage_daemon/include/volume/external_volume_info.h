@@ -44,6 +44,7 @@ protected:
     virtual int32_t DoCheck() override;
     virtual int32_t DoFormat(std::string type) override;
     virtual int32_t DoSetVolDesc(std::string description) override;
+    virtual std::string GetFsTypeByDev(dev_t dev) override;
 
 private:
     std::string devPath_;

@@ -37,7 +37,6 @@ int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
 bool IsFile(const std::string &path);
-bool IsUsbFuse();
 int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 int32_t DestroyDir(const std::string &path, bool &isPathEmpty);

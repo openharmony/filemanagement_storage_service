@@ -22,7 +22,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <filesystem>
+#include <sys/sysmacros.h>
 
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
@@ -95,6 +97,18 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
         LOGE("External volume DoCreate error.");
         return E_ERR;
     }
+    return E_OK;
+}
+
+std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
+{
+    std::string volId = StringPrintf("vol-%u-%u", major(dev), minor(dev));
+    std::string devPath = "/dev/block" + volId;
+    std::string fsType;
+    std::string uuid;
+    std::string label;
+    OHOS::StorageDaemon::ReadMetadata(devPath, uuid, fsType, label);
+    LOGI("GetFsTypeByDev. devPath: %{public}s,fsType: %{public}s", devPath.c_str(), fsType.c_str());
     return E_OK;
 }
 
@@ -323,7 +337,10 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    if (IsUsbFuse()) {
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
+    if (isUsbFuseByType) {
         ret = CreateFuseMountPath();
     } else {
         ret = CreateMountPath();
@@ -385,7 +402,10 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
-    if (force && !IsUsbFuse()) {
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
+    if (force && !isUsbFuseByType) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
         ps.UpdatePidByPath();
@@ -395,7 +415,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGI("External volume force to unmount success.");
         return E_OK;
     }
-    if (IsUsbFuse()) {
+    if (isUsbFuseByType) {
         mountPath_ = mountUsbFusePath_;
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
@@ -541,7 +561,10 @@ int32_t ExternalVolumeInfo::DoCheck()
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     int32_t err = 0;
-    if (IsUsbFuse() && IsPathMounted(mountPath_)) {
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
+    if (isUsbFuseByType && IsPathMounted(mountPath_)) {
         err = DoUMountUsbFuse();
     }
     if (err != E_OK) {

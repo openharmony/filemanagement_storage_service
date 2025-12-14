@@ -65,11 +65,13 @@ public:
     VolumeCore();
     VolumeCore(std::string id, int32_t type, std::string diskId);
     VolumeCore(std::string id, int32_t type, std::string diskId, int32_t state);
+    VolumeCore(std::string id, int32_t type, std::string diskId, int32_t state, std::string fsType);
 
     std::string GetId() const;
     int32_t GetType();
     std::string GetDiskId();
     int32_t GetState();
+    std::string GetFsType() const;
     void SetState(int32_t state);
 
     bool Marshalling(Parcel &parcel) const override;
@@ -80,6 +82,7 @@ private:
     std::string diskId_;
     int32_t state_ = UNMOUNTED;
     bool errorFlag_ = false;
+    std::string fsType_;
 };
 } // StorageManager
 } // OHOS
