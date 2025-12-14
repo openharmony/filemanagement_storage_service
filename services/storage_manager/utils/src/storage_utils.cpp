@@ -15,6 +15,7 @@
 
 #include "utils/storage_utils.h"
 
+
 namespace OHOS {
 namespace StorageManager {
 int64_t GetRoundSize(int64_t size)
