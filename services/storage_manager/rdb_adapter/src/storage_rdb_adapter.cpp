@@ -39,12 +39,12 @@ StorageRdbAdapter &StorageRdbAdapter::GetInstance()
 int32_t StorageRdbAdapter::Init()
 {
     LOGI("rdb init start");
-    int32_t retryTimes = 0;
-    while (retryTimes < RDB_INIT_MAX_TIMES) {
+    int32_t retryTimes = RDB_INIT_MAX_TIMES;
+    while (retryTimes > 0) {
         std::error_code errorCode;
         if (!std::filesystem::exists(STORAGE_MANAGER_RDB_PATH, errorCode)) {
             usleep(RDB_INIT_INTERVAL_TIME);
-            retryTimes++;
+            retryTimes--;
             continue;
         }
         if (GetRDBPtr() == E_OK) {
@@ -52,7 +52,7 @@ int32_t StorageRdbAdapter::Init()
             return E_OK;
         }
         usleep(RDB_INIT_INTERVAL_TIME);
-        retryTimes++;
+        retryTimes--;
     }
     LOGE("rdb init failed");
     return E_RDB_INIT_ERROR;
