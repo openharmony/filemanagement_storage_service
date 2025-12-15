@@ -91,6 +91,9 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderupdateuserauth_fuzzer:fuzztest",
     "storagedaemonprovideractiveuserkey_fuzzer:fuzztest",
     "storagedaemonprovidererasealluserencryptedkeys_fuzzer:fuzztest",
+    "storagedaemonprovidergetancosizedata_fuzzer:fuzztest",
+    "storagedaemonprovidergetdirlistspace_fuzzer:fuzztest",
+    "storagedaemonprovidersetstopscanflag_fuzzer:fuzztest",
   ]
 }
 
