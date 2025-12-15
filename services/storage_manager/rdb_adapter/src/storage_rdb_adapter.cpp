@@ -45,6 +45,7 @@ int32_t StorageRdbAdapter::Init()
         attemptedTimes++;
         std::error_code errorCode;
         if (!std::filesystem::exists(STORAGE_MANAGER_RDB_PATH, errorCode)) {
+            retryTimes--;
             continue;
         }
         if (GetRDBPtr() == E_OK) {
