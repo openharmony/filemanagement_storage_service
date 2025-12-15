@@ -114,6 +114,7 @@ public:
     bool IsCurrentUserReadOnly();
     void SetCurrentUid(int32_t uid);
     void SetMtpClientWriteMap(uid_t first, bool second);
+    MtpFsTmpFilesPool* GetTempFilesPool();
 
 private:
     MtpFileSystem();
@@ -123,7 +124,7 @@ private:
     bool ParseOptionsInner();
     int GetFriendlyName(const char *in, char *out, size_t size);
     int HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo);
-    int ProcessFileOrDirAttributes(const char *path, struct stat *buf);
+    int SetupFileAttributes(const char *path, const MtpFsTypeFile *file, struct stat *buf);
     struct fuse_args args_;
     struct fuse_operations fuseOperations_;
     MtpFsTmpFilesPool tmpFilesPool_;

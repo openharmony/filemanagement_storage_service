@@ -766,11 +766,6 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
         buf->st_nlink = ST_NLINK_TWO;
         return 0;
     }
-    return ProcessFileOrDirAttributes(path, buf);
-}
-
-int MtpFileSystem::ProcessFileOrDirAttributes(const char *path, struct stat *buf)
-{
     std::string tmpPath(SmtpfsDirName(path));
     std::string mtpFile(SmtpfsBaseName(path));
     const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
@@ -780,31 +775,46 @@ int MtpFileSystem::ProcessFileOrDirAttributes(const char *path, struct stat *buf
             E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
-    
+
     const MtpFsTypeDir *dir = content->Dir(mtpFile);
     if (dir != nullptr) {
         buf->st_ino = dir->Id();
         buf->st_mode = S_IFDIR | PERMISSION_ONE;
         buf->st_nlink = ST_NLINK_TWO;
         buf->st_mtime = dir->ModificationDate();
-    } else {
-        const MtpFsTypeFile *file = content->File(mtpFile);
-        if (file != nullptr) {
-            buf->st_ino = file->Id();
-            buf->st_size = static_cast<ssize_t>(file->Size());
-            buf->st_blocks = static_cast<ssize_t>(file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
-            buf->st_nlink = 1;
-            buf->st_mode = S_IFREG | PERMISSION_TWO;
-            buf->st_mtime = file->ModificationDate();
-            buf->st_ctime = buf->st_mtime;
-            buf->st_atime = buf->st_mtime;
-        } else {
-            LOGE("MtpFileSystem: GetAttr error, content dir is null");
-            OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Content", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
-            return -ENOENT;
+        return 0;
+    }
+    const MtpFsTypeFile *file = content->File(mtpFile);
+    if (file != nullptr) {
+        return SetupFileAttributes(path, file, buf);
+    }
+    
+    LOGE("MtpFileSystem: GetAttr error, content dir is null");
+    OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Content", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+    return -ENOENT;
+}
+
+int MtpFileSystem::SetupFileAttributes(const char *path, const MtpFsTypeFile *file, struct stat *buf)
+{
+    buf->st_ino = file->Id();
+    uint64_t size = file->Size();
+
+    const MtpFsTypeTmpFile *tmpFile = tmpFilesPool_.GetFile(std::string(path));
+    if (tmpFile != nullptr) {
+        struct stat tmpStat;
+        if (stat(tmpFile->PathTmp().c_str(), &tmpStat) == 0) {
+            size  = (size  == 0) ? static_cast<uint64_t>(tmpStat.st_size) : size;
         }
     }
-    LOGI("MtpFileSystem: GetAttr success");
+
+    buf->st_size = size;
+    buf->st_blocks = (size / FILE_SIZE) + (size % FILE_SIZE > 0 ? 1 : 0);
+    buf->st_nlink = 1;
+    buf->st_mode = S_IFREG | PERMISSION_TWO;
+    buf->st_mtime = file->ModificationDate();
+    buf->st_ctime = buf->st_mtime;
+    buf->st_atime = buf->st_mtime;
+
     return 0;
 }
 
@@ -1131,6 +1141,14 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
         OHOS::StorageService::StorageRadar::ReportMtpResult("Write::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
+    off_t currentOffset = offset + size;
+    uint64_t freeSize = device_.StorageFreeSize();
+    if ((uint64_t)currentOffset > freeSize) {
+        LOGE("Write would exceed available space!");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("Write::Storage", ENOSPC, "NA");
+        return -ENOSPC;
+    }
+
     int rval = 0;
     if (HasSendPartialSupport()) {
         const std::string stdPath(path);
@@ -1196,7 +1214,6 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     }
     const bool modIf = tmpFile->IsModified();
     const std::string tmpPath = tmpFile->PathTmp();
-    tmpFilesPool_.RemoveFile(stdPath);
     struct stat fileStat;
     stat(tmpPath.c_str(), &fileStat);
     if (modIf && fileStat.st_size != 0) {
@@ -1211,12 +1228,14 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
             OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
             device_.SetUploadRecord(stdPath, "fail");
             ::unlink(tmpPath.c_str());
+            tmpFilesPool_.RemoveFile(stdPath);
             return -rval;
         }
         LOGI("FilePush to mtp device success");
     }
     device_.SetUploadRecord(stdPath, "success");
     ::unlink(tmpPath.c_str());
+    tmpFilesPool_.RemoveFile(stdPath);
     LOGI("MtpFileSystem: Release success");
     return 0;
 }
@@ -1494,6 +1513,11 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
 void MtpFileSystem::HandleRemove(uint32_t handleId)
 {
     std::thread([this, handleId]() { device_.HandleRemoveEvent(handleId); }).detach();
+}
+
+MtpFsTmpFilesPool* MtpFileSystem::GetTempFilesPool()
+{
+    return &tmpFilesPool_;
 }
 
 void MtpFileSystem::InitCurrentUidAndCacheMap()

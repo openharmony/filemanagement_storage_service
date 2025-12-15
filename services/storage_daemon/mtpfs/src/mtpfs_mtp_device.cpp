@@ -32,6 +32,7 @@ const uint32_t DEFAULT_COUNT = 100;
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
 constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
+constexpr uint64_t MAX_PLAUSIBLE_STORAGE_SIZE = 1ULL * 1024 * 1024 * 1024 * 1024 * 1024;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
@@ -260,21 +261,54 @@ void MtpFsDevice::Disconnect()
     LOGI("Disconnected");
 }
 
-uint64_t MtpFsDevice::StorageTotalSize() const
+uint64_t MtpFsDevice::StorageTotalSize()
 {
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+    if (device_ != nullptr) {
+        int ret = LIBMTP_Get_Storage(device_, 0);
+        if (ret < 0) {
+            LOGE("Failed to refresh storage");
+            StorageRadar::ReportMtpResult("StorageTotalSize::LIBMTP_Get_Storage", GetMainMtpErrorCode(), "NA");
+            DumpLibMtpErrorStack();
+            return 0;
+        }
+    }
+    if (device_->storage == nullptr) {
+        LOGW("No storage available after refresh");
+        return 0;
+    }
     uint64_t total = 0;
     for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
         total += s->MaxCapacity;
     }
+    if (total > MAX_PLAUSIBLE_STORAGE_SIZE) {
+        LOGE("Invalid total space size");
+        return 0;
+    }
+    LOGI("Mtp device totalsize: %{public}llu bytes", total);
     return total;
 }
 
-uint64_t MtpFsDevice::StorageFreeSize() const
+uint64_t MtpFsDevice::StorageFreeSize()
 {
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+    if (device_ == nullptr) {
+        LOGE("Device is null");
+        return 0;
+    }
+    if (device_->storage == nullptr) {
+        LOGW("No storage available after refresh");
+        return 0;
+    }
     uint64_t freeSize = 0;
     for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
         freeSize += s->FreeSpaceInBytes;
     }
+    if (freeSize > MAX_PLAUSIBLE_STORAGE_SIZE) {
+        LOGE("Invalid free space size");
+        return 0;
+    }
+    LOGI("Mtp device freesize: %{public}llu bytes", freeSize);
     return freeSize;
 }
 
@@ -931,11 +965,13 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
 int MtpFsDevice::FilePushAsync(const std::string src, const std::string dst)
 {
     LOGI("FilePushAsync enter");
-
-    std::thread([this, src, dst]() {
+    MtpFileSystem& mtpFs = MtpFileSystem::GetInstance();
+    MtpFsTmpFilesPool* filesPool = mtpFs.GetTempFilesPool();
+    std::thread([this, src, dst, filesPool]() {
         LOGI("Start async push to mtp device.");
         int ret = FilePush(src, dst);
         SetUploadRecord(dst, (ret == E_OK) ? "success" : "fail");
+        filesPool->RemoveFile(dst);
         ::unlink(src.c_str());
         }).detach();
 
