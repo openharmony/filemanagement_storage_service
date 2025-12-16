@@ -53,33 +53,25 @@ using namespace testing;
 namespace OHOS::StorageDaemon {
 class RecoveryManagerTest : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
     void SetUp();
     void TearDown();
     static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
 };
 
-void RecoveryManagerTest::SetUpTestCase(void)
-{
-    keyControlMock_ = make_shared<KeyControlMoc>();
-    KeyControlMoc::keyControlMoc = keyControlMock_;
-}
-
-void RecoveryManagerTest::TearDownTestCase(void)
-{
-    KeyControlMoc::keyControlMoc = nullptr;
-    keyControlMock_ = nullptr;
-}
-
 void RecoveryManagerTest::SetUp(void)
 {
     // input testcase setup step, setup invoked before each testcases
+    keyControlMock_ = make_shared<KeyControlMoc>();
+    KeyControlMoc::keyControlMoc = keyControlMock_;
 }
 
 void RecoveryManagerTest::TearDown(void)
 {
     // input testcase teardown step, teardown invoked after each testcases
+    KeyControlMoc::keyControlMoc = nullptr;
+    keyControlMock_ = nullptr;
 }
 
 /**
@@ -150,16 +142,16 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_ResetSecretWithRecoveryKey_001, Te
     RecoveryManager::GetInstance().isSessionOpened = true;
     g_invokeCommand = TEEC_SUCCESS;
 
-    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).Times(6).WillOnce(Return(0));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).Times(15).WillOnce(Return(0));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).Times(6).WillOnce(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).Times(6).WillRepeatedly(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).Times(12).WillRepeatedly(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).Times(6).WillRepeatedly(Return(0));
     ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
     EXPECT_EQ(ret, E_OK);
 
     RecoveryManager::GetInstance().isSessionOpened = true;
     g_invokeCommand = TEEC_SUCCESS;
 
-    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1)).WillOnce(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
 
     ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
@@ -226,8 +218,6 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallEceSece_001, TestSize.Level
     EncryptionKeySdp fskey;
     KeyBlob key2Blob;
     key2Blob.Alloc(sizeof(fskey.raw));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
     ret = RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc);
     EXPECT_NE(0, ret);
 

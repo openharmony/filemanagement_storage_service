@@ -58,31 +58,11 @@ const std::string GLOBAL_USER_EL1_PATH = std::string(USER_EL1_DIR) + "/" + std::
 void KeyMgrAnotherTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    recoveryMgrMock_ = make_shared<RecoveryMgrMock>();
-    RecoveryMgrMock::recoveryMgrMock = recoveryMgrMock_;
-    baseKeyMock_ = make_shared<BaseKeyMoc>();
-    BaseKeyMoc::baseKeyMoc = baseKeyMock_;
-    fscryptControlMock_ = make_shared<FscryptControlMoc>();
-    FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
-    keyControlMock_ = make_shared<KeyControlMoc>();
-    KeyControlMoc::keyControlMoc = keyControlMock_;
-    osAccountManagerMock_ = make_shared<OsAccountManagerMock>();
-    IOsAccountManager::osAccountManagerMock = osAccountManagerMock_;
 }
 
 void KeyMgrAnotherTest::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
-    RecoveryMgrMock::recoveryMgrMock = nullptr;
-    recoveryMgrMock_ = nullptr;
-    BaseKeyMoc::baseKeyMoc = nullptr;
-    baseKeyMock_ = nullptr;
-    FscryptControlMoc::fscryptControlMoc = nullptr;
-    fscryptControlMock_ = nullptr;
-    KeyControlMoc::keyControlMoc = nullptr;
-    keyControlMock_ = nullptr;
-    IOsAccountManager::osAccountManagerMock = nullptr;
-    osAccountManagerMock_ = nullptr;
 }
 
 void KeyMgrAnotherTest::SetUp(void)
@@ -97,6 +77,16 @@ void KeyMgrAnotherTest::SetUp(void)
         deviceEl1DirFlag = false;
         OHOS::ForceCreateDirectory(DEVICE_EL1_DIR);
     }
+    recoveryMgrMock_ = make_shared<RecoveryMgrMock>();
+    RecoveryMgrMock::recoveryMgrMock = recoveryMgrMock_;
+    baseKeyMock_ = make_shared<BaseKeyMoc>();
+    BaseKeyMoc::baseKeyMoc = baseKeyMock_;
+    fscryptControlMock_ = make_shared<FscryptControlMoc>();
+    FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
+    keyControlMock_ = make_shared<KeyControlMoc>();
+    KeyControlMoc::keyControlMoc = keyControlMock_;
+    osAccountManagerMock_ = make_shared<OsAccountManagerMock>();
+    IOsAccountManager::osAccountManagerMock = osAccountManagerMock_;
 }
 
 void KeyMgrAnotherTest::TearDown(void)
@@ -109,6 +99,16 @@ void KeyMgrAnotherTest::TearDown(void)
     if (!deviceEl1DirFlag) {
         OHOS::ForceRemoveDirectory(DEVICE_EL1_DIR);
     }
+    RecoveryMgrMock::recoveryMgrMock = nullptr;
+    recoveryMgrMock_ = nullptr;
+    BaseKeyMoc::baseKeyMoc = nullptr;
+    baseKeyMock_ = nullptr;
+    FscryptControlMoc::fscryptControlMoc = nullptr;
+    fscryptControlMock_ = nullptr;
+    KeyControlMoc::keyControlMoc = nullptr;
+    keyControlMock_ = nullptr;
+    IOsAccountManager::osAccountManagerMock = nullptr;
+    osAccountManagerMock_ = nullptr;
 }
 
 /**
@@ -323,7 +323,6 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_SetRecoverKey_001, TestSize.Level1)
 HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_GenerateAndInstallDeviceKey_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyMgrAnotherTest_GenerateAndInstallDeviceKey_001 Start";
-    EXPECT_CALL(*recoveryMgrMock_, IsEncryptionEnabled()).WillOnce(Return(false));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance().GenerateAndInstallDeviceKey("/data/test"), E_OK);
     GTEST_LOG_(INFO) << "KeyMgrAnotherTest_GenerateAndInstallDeviceKey_001 end";
@@ -630,6 +629,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_SetDirectoryElPolicy_001, TestSize
     EXPECT_EQ(ret, 0);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    EXPECT_CALL(*recoveryMgrMock_, IsEncryptionEnabled()).WillOnce(Return(false));
     ret = KeyManager::GetInstance().SetDirectoryElPolicy(userId, type, vec);
     EXPECT_EQ(ret, 0);
     
@@ -684,7 +684,6 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_LockUserScreen_001, TestSize.Level
     uint32_t userId = 178;
     KeyManager::GetInstance().userPinProtect.insert({userId, true});
     KeyManager::GetInstance().saveLockScreenStatus.insert({userId, true});
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     auto ret = KeyManager::GetInstance().LockUserScreen(userId);
     EXPECT_EQ(ret, 0);
 
@@ -710,7 +709,6 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_UnlockUserScreen_001, TestSize.Lev
     OHOS::ForceRemoveDirectory(keyDir);
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     KeyManager::GetInstance().saveLockScreenStatus.insert({userId, true});
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     auto ret = KeyManager::GetInstance().UnlockUserScreen(userId, token, secret);
     EXPECT_EQ(ret, 0);
 

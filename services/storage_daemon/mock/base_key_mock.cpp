@@ -191,8 +191,5 @@ bool BaseKey::GetHashKey(KeyBlob &hashKey)
 
 bool BaseKey::GenerateHashKey()
 {
-    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
-    }
-    return IBaseKeyMoc::baseKeyMoc->GenerateHashKey();
+    return true;
 }

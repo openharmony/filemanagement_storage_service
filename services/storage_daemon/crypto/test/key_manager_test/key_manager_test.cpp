@@ -59,6 +59,16 @@ public:
 void KeyManagerTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void KeyManagerTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void KeyManagerTest::SetUp(void)
+{
+    GTEST_LOG_(INFO) << "SetUp Start";
     fscryptControlMock_ = make_shared<FscryptControlMoc>();
     FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
     keyControlMock_ = make_shared<KeyControlMoc>();
@@ -69,9 +79,9 @@ void KeyManagerTest::SetUpTestCase(void)
     FscryptKeyV2Moc::fscryptKeyV2Moc = fscryptKeyMock_;
 }
 
-void KeyManagerTest::TearDownTestCase(void)
+void KeyManagerTest::TearDown(void)
 {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    GTEST_LOG_(INFO) << "TearDown Start";
     FscryptControlMoc::fscryptControlMoc = nullptr;
     fscryptControlMock_ = nullptr;
     KeyControlMoc::keyControlMoc = nullptr;
@@ -80,16 +90,6 @@ void KeyManagerTest::TearDownTestCase(void)
     baseKeyMock_ = nullptr;
     FscryptKeyV2Moc::fscryptKeyV2Moc = nullptr;
     fscryptKeyMock_ = nullptr;
-}
-
-void KeyManagerTest::SetUp(void)
-{
-    GTEST_LOG_(INFO) << "SetUp Start";
-}
-
-void KeyManagerTest::TearDown(void)
-{
-    GTEST_LOG_(INFO) << "TearDown Start";
 }
 
 /**

@@ -86,9 +86,9 @@ int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 class StorageMonitorServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
-    static void TearDownTestCase();
-    void SetUp() {};
-    void TearDown() {};
+    static void TearDownTestCase() {};
+    void SetUp();
+    void TearDown();
 public:
     static inline StorageMonitorService* service = nullptr;
     static inline shared_ptr<StorageTotalStatusServiceMock> stss = nullptr;
@@ -98,13 +98,17 @@ public:
 void StorageMonitorServiceTest::SetUpTestCase(void)
 {
     service = &StorageMonitorService::GetInstance();
+}
+
+void StorageMonitorServiceTest::SetUp(void)
+{
     stss = make_shared<StorageTotalStatusServiceMock>();
     StorageTotalStatusServiceMock::stss = stss;
     sum = make_shared<SystemUtilMock>();
     SystemUtilMock::su = sum;
 }
 
-void StorageMonitorServiceTest::TearDownTestCase()
+void StorageMonitorServiceTest::TearDown()
 {
     StorageTotalStatusServiceMock::stss = nullptr;
     stss = nullptr;
@@ -181,7 +185,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0
     service->CheckAndCleanCache(0, 20);
     EXPECT_TRUE(true);
 
-    EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return(""));
     service->CheckAndCleanCache(30, 20);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0000 end";
@@ -373,7 +376,7 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
 
     service->eventHandler_ = mockHandler;
-
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(Return(E_OK));
     service->HapAndSaStatisticsThd();
 
     EXPECT_TRUE(true);
@@ -401,7 +404,7 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
 
     service->eventHandler_ = mockHandler;
-
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(Return(E_OK));
     service->HapAndSaStatisticsThd();
     service->HapAndSaStatisticsThd();
 

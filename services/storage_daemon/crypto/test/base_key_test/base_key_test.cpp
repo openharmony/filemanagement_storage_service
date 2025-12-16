@@ -62,6 +62,16 @@ public:
 void BaseKeyTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void BaseKeyTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void BaseKeyTest::SetUp(void)
+{
+    // input testcase setup step，setup invoked before each testcases
     huksMasterMock_ = make_shared<HuksMasterMock>();
     HuksMasterMock::huksMasterMock = huksMasterMock_;
     opensslCryptoMock_ = make_shared<OpensslCryptoMock>();
@@ -74,9 +84,9 @@ void BaseKeyTest::SetUpTestCase(void)
     CommonUtilsMock::utils = commonUtilMoc_;
 }
 
-void BaseKeyTest::TearDownTestCase(void)
+void BaseKeyTest::TearDown(void)
 {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    // input testcase teardown step，teardown invoked after each testcases
     OpensslCryptoMock::opensslCryptoMock = nullptr;
     opensslCryptoMock_ = nullptr;
     HuksMasterMock::huksMasterMock = nullptr;
@@ -87,16 +97,6 @@ void BaseKeyTest::TearDownTestCase(void)
     fileUtilMoc_ = nullptr;
     CommonUtilsMock::utils = nullptr;
     commonUtilMoc_ = nullptr;
-}
-
-void BaseKeyTest::SetUp(void)
-{
-    // input testcase setup step，setup invoked before each testcases
-}
-
-void BaseKeyTest::TearDown(void)
-{
-    // input testcase teardown step，teardown invoked after each testcases
 }
 
 /**
@@ -790,7 +790,7 @@ HWTEST_F(BaseKeyTest, BaseKey_CheckAndUpdateVersion_001, TestSize.Level1)
     EXPECT_FALSE(elKey->BaseKey::CheckAndUpdateVersion());
 
     EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
-    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillRepeatedly(Return(false));
     EXPECT_TRUE(elKey->BaseKey::CheckAndUpdateVersion());
 
     elKey->dir_ = "el1/101";
@@ -799,7 +799,6 @@ HWTEST_F(BaseKeyTest, BaseKey_CheckAndUpdateVersion_001, TestSize.Level1)
 
     elKey->dir_ = "";
     EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_TRUE(elKey->BaseKey::CheckAndUpdateVersion());
     GTEST_LOG_(INFO) << "BaseKey_CheckAndUpdateVersion_001 end";
 }
@@ -883,11 +882,9 @@ HWTEST_F(BaseKeyTest, BaseKey_InitKeyContext_001, TestSize.Level1)
     elKey->dir_ = "el1/101";
     EXPECT_TRUE(OHOS::ForceCreateDirectory(elKey->GetDir() + PATH_LATEST));
     string path = elKey->GetDir() + PATH_LATEST + PATH_SHIELD;
-    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillRepeatedly(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(path, test, errMsg));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
-    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
-    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
     EXPECT_EQ(elKey->BaseKey::InitKeyContext(auth, keyPath, keyCtx), E_GENERATE_DISCARD_ERROR);
 
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(elKey->dir_));

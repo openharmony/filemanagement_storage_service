@@ -46,10 +46,10 @@ NextDqBlk dqBlkSmall(DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE, DEFAULT_VALUE,
 
 class StorageDfxReporterTest : public testing::Test {
 public:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
     void SetUp();
-    void TearDown(){};
+    void TearDown();
 
     static inline std::shared_ptr<StorageDaemonCommunicationMock> sdc = nullptr;
     static inline std::shared_ptr<StorageStatusManagerMock> sss = nullptr;
@@ -62,10 +62,6 @@ void StorageDfxReporterTest::SetUp()
     // Ensure no background threads are running
     StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
     StorageDfxReporter::GetInstance().isScanRunning_.store(false);
-}
-
-void StorageDfxReporterTest::SetUpTestCase()
-{
     sdc = std::make_shared<StorageDaemonCommunicationMock>();
     IStorageDaemonCommunicationMock::storageDaemonCommunication = sdc;
     sss = std::make_shared<StorageStatusManagerMock>();
@@ -74,7 +70,7 @@ void StorageDfxReporterTest::SetUpTestCase()
     StorageTotalStatusServiceBase::stss = stss;
 }
 
-void StorageDfxReporterTest::TearDownTestCase()
+void StorageDfxReporterTest::TearDown()
 {
     sdc = nullptr;
     IStorageDaemonCommunicationMock::storageDaemonCommunication = nullptr;
