@@ -37,3 +37,27 @@ function GetVolumeByUuidSync(uuid: String): Volume;
 @gen_async("getAllVolumes")
 @gen_promise("getAllVolumes")
 function GetAllVolumesSync(): Array<Volume>;
+
+@gen_async("format")
+@gen_promise("format")
+function FormatSync(volumeId: String, fsType: String): void;
+
+@gen_async("getVolumeById")
+@gen_promise("getVolumeById")
+function GetVolumeByIdSync(volumeId: String): void;
+
+@gen_async("mount")
+@gen_promise("mount")
+function MountSync(volumeId: String): void;
+
+@gen_async("unmount")
+@gen_promise("unmount")
+function UnmountSync(volumeId: String): void;
+
+@gen_async("partition")
+@gen_promise("partition")
+function PartitionSync(diskId: String, type: i32): void;
+
+@gen_async("setVolumeDescription")
+@gen_promise("setVolumeDescription")
+function SetVolumeDescriptionSync(uuid: String, description: String): void;

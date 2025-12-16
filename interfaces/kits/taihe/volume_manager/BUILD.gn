@@ -53,6 +53,7 @@ taihe_shared_library("volume_manager_taihe") {
     "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager/include",
+    "${storage_service_path}/interfaces/kits/taihe/storage_statistics/include",
     "${storage_service_path}/services/storage_manager/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
     "${storage_service_path}/services/common/include",
@@ -65,6 +66,7 @@ taihe_shared_library("volume_manager_taihe") {
 
   sources = get_target_outputs(":run_taihe")
   sources += [
+    "${storage_service_path}/interfaces/kits/taihe/storage_statistics/src/storageStatistics_taihe_error.cpp",
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
     "src/ani_constructor.cpp",
     "src/ohos.file.volumeManager.impl.cpp",
