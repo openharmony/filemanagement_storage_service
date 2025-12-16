@@ -62,6 +62,13 @@ ohos_static_library("libfscryptutils") {
     "src/sysparam_dynamic.c",
   ]
 
+  if (storage_service_external_storage_qos_trans) {
+    sources += [
+      "src/fscrypt_enable.cpp",
+      "src/fscrypt_enable.h",
+    ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
   }
@@ -72,6 +79,10 @@ ohos_static_library("libfscryptutils") {
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
   ]
+
+  if (storage_service_external_storage_qos_trans) {
+    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
+  }
 
   external_deps = [
     "c_utils:utils",
@@ -104,8 +115,19 @@ ohos_static_library("libfscryptutils_static") {
     "src/sysparam_static.c",
   ]
 
+  if (storage_service_external_storage_qos_trans) {
+    sources += [
+      "src/fscrypt_enable.cpp",
+      "src/fscrypt_enable.h",
+    ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_qos_trans) {
+    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
   }
 
   configs = [ ":fscrypt_utils_config" ]
