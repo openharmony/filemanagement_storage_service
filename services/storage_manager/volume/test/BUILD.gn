@@ -119,6 +119,10 @@ ohos_unittest("volume_manager_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 
   if (enable_screenlock_manager) {
@@ -183,6 +187,10 @@ ohos_unittest("volume_manager_service_ext_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 
   if (enable_screenlock_manager) {

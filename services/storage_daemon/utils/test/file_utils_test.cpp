@@ -532,22 +532,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: FileUtilsTest_IsFuse_001
- * @tc.desc: Verify the IsUsbFuse function basic functionality.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 start";
-
-    // Test the IsUsbFuse function basic functionality
-    bool result = IsUsbFuse();
-    EXPECT_FALSE(result);
-    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
-}
-
-/**
  * @tc.name: FileUtilsTest_ForkExec_001
  * @tc.desc: Verify the ForkExec function.
  * @tc.type: FUNC

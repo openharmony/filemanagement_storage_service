@@ -68,6 +68,7 @@ ohos_unittest("external_volume_info_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
   ]
 }
 
@@ -99,6 +100,7 @@ ohos_unittest("process_test") {
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/process_test.cpp",
+    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
   ]
 
   deps = [
@@ -160,6 +162,9 @@ ohos_unittest("volume_info_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
   ]
 }
 
@@ -215,6 +220,9 @@ ohos_unittest("volume_manager_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
   ]
 }
 
