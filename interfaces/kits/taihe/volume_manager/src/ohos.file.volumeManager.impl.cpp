@@ -71,17 +71,13 @@ void FormatSync(::taihe::string_view volumeId, ::taihe::string_view fsType)
     std::string volumeIdString = std::string(volumeId);
     std::string fsTypeString = std::string(fsType);
     if (volumeIdString.empty() || fsTypeString.empty()) {
-        LOGE("Invalid parameter, is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return;
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        LOGE("Invalid parameter, volumeId or fsType is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
     int32_t result = instance->Format(volumeIdString, fsTypeString);
@@ -96,14 +92,14 @@ void GetVolumeByIdSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
 
     auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
 
@@ -119,16 +115,12 @@ void MountSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return;
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
 
@@ -144,16 +136,12 @@ void UnmountSync(::taihe::string_view volumeId)
     std::string volumeIdString = std::string(volumeId);
     if (volumeIdString.empty()) {
         LOGE("Invalid volumeId parameter, volumeId is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return;
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
 
@@ -168,17 +156,13 @@ void PartitionSync(::taihe::string_view diskId, int32_t type)
 {
     std::string diskIdString = std::string(diskId);
     if (diskIdString.empty()) {
-        LOGE("Invalid parameter, parameter is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return;
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        LOGE("Invalid parameter, diskId is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
     int32_t errNum = instance->Partition(diskIdString, type);
@@ -193,18 +177,14 @@ void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view de
     std::string uuidString = std::string(uuid);
     std::string descStr = std::string(description);
     if (uuidString.empty() || descStr.empty()) {
-        LOGE("Invalid parameter, parameter is empty");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
-        return;
-    }
-    if (!OHOS::StorageManager::IsSystemApp()) {
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PERMISSION_SYS);
+        LOGE("Invalid parameter, uuid or description is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
     int32_t errNum = instance->SetVolumeDescription(uuidString, descStr);

@@ -29,8 +29,8 @@ int64_t GetTotalSizeSync();
 int64_t GetFreeSizeOfVolumeSync(::taihe::string_view volumeUuid);
 int64_t GetSystemSizeSync();
 int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid);
-int64_t GetFreeSizeAsync();
-int64_t GetTotalSizeAsync();
+int64_t GetFreeSizeSync2();
+int64_t GetTotalSizeSync2();
 
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync();
