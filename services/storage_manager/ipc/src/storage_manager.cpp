@@ -774,7 +774,6 @@ int32_t StorageManager::IsUsbFuseByType(const std::string &fsType, bool &enabled
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     enabled = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
-    LOGI("StorageManger::IsUsbFuseByType end, fsType: %{public}s, enabled: %{public}d", fsType.c_str(), enabled);
 #endif
     return E_OK;
 }

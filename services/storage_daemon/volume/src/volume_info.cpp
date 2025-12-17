@@ -46,7 +46,6 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
 
     int32_t err = DoCreate(device);
     fsTypeBase_ = GetFsTypeByDev(device);
-    LOGI("VolumeInfo::Create fsTypeBase_: %{public}s", fsTypeBase_.c_str());
     if (err) {
         return err;
     }

@@ -169,9 +169,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         return result;
     }
     std::string mountUsbFusePath = StorageDaemon::StringPrintf("/mnt/data/external/%s", volumePtr->GetUuid().c_str());
-    LOGI("VolumeManagerService::Mount. fsType: %{public}s", volumePtr->VolumeCore::GetFsType().c_str());
-    bool isUsbFuseByType = IsUsbFuseByType(volumePtr->VolumeCore::GetFsType());
-    if (isUsbFuseByType && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
+    if (IsUsbFuseByType(volumePtr->VolumeCore::GetFsType()) && !StorageDaemon::IsPathMounted(mountUsbFusePath)) {
         result = MountUsbFuse(volumeId);
         if (result != E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -391,9 +389,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     if (result != E_OK) {
         return result;
     }
-
-    bool isUsbFuseByType = IsUsbFuseByType(volumePtr->VolumeCore::GetFsType());
-    if (isUsbFuseByType) {
+    if (IsUsbFuseByType(volumePtr->VolumeCore::GetFsType())) {
         result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseUmount(volumeId);
     }
     return result;

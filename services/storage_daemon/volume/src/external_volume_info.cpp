@@ -104,12 +104,7 @@ std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 {
     std::string volId = StringPrintf("vol-%u-%u", major(dev), minor(dev));
     std::string devPath = "/dev/block" + volId;
-    std::string fsType;
-    std::string uuid;
-    std::string label;
-    OHOS::StorageDaemon::ReadMetadata(devPath, uuid, fsType, label);
-    LOGI("GetFsTypeByDev. devPath: %{public}s,fsType: %{public}s", devPath.c_str(), fsType.c_str());
-    return fsType;
+    return OHOS::StorageDaemon::GetBlkidData(devPath, "TYPE");
 }
 
 int32_t ExternalVolumeInfo::DoDestroy()
@@ -337,7 +332,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    if (IsUsbFuseByTypeClient(fsType_)) {
+    if (IsUsbFuseByType(fsType_)) {
         ret = CreateFuseMountPath();
     } else {
         ret = CreateMountPath();
@@ -382,7 +377,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     return E_OK;
 }
 
-bool ExternalVolumeInfo::IsUsbFuseByTypeClient(std::string fsType)
+bool ExternalVolumeInfo::IsUsbFuseByType(std::string fsType)
 {
     StorageManagerClient client;
     bool isUsbFuseByType = true;
@@ -407,9 +402,7 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
-    StorageManagerClient client;
-    bool isUsbFuseByType = true;
-    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
+    bool isUsbFuseByType = IsUsbFuseByType(fsType_);
     if (force && !isUsbFuseByType) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
@@ -566,10 +559,7 @@ int32_t ExternalVolumeInfo::DoCheck()
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     int32_t err = 0;
-    StorageManagerClient client;
-    bool isUsbFuseByType = true;
-    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
-    if (isUsbFuseByType && IsPathMounted(mountPath_)) {
+    if (IsUsbFuseByType(fsType_) && IsPathMounted(mountPath_)) {
         err = DoUMountUsbFuse();
     }
     if (err != E_OK) {
