@@ -382,7 +382,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     return E_OK;
 }
 
-bool ExternalVolumeInfo::IsUsbFuseByTypeClient(std：：string fsType)
+bool ExternalVolumeInfo::IsUsbFuseByTypeClient(std::string fsType)
 {
     StorageManagerClient client;
     bool isUsbFuseByType = true;
