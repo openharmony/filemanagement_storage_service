@@ -109,7 +109,7 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseUmount(const std::string &volumeId
     return E_OK;
 }
 
-int32_t VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
+bool VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
 {
     LOGI("IsUsbFuseByType in");
     if (handler_ == nullptr) {
@@ -124,7 +124,7 @@ int32_t VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
     bool enabled = false;
     funcUsbFuseByType(fsType, enabled);
     LOGI("funcUsbFuseByType. fsType: %{public}s, enabled: %{public}d", fsType.c_str(), enabled);
-    return E_OK;
+    return enabled;
 }
 } // StorageManager
 } // OHOS

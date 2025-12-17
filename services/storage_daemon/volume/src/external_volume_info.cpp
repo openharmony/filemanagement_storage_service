@@ -337,10 +337,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    StorageManagerClient client;
-    bool isUsbFuseByType = true;
-    client.IsUsbFuseByType(fsType_, isUsbFuseByType);
-    if (isUsbFuseByType) {
+    if (IsUsbFuseByTypeClient(fsType_)) {
         ret = CreateFuseMountPath();
     } else {
         ret = CreateMountPath();
@@ -383,6 +380,14 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     }
     mountPath_ = mountBackupPath_;
     return E_OK;
+}
+
+bool IsUsbFuseByTypeClient(std：：string fsType)
+{
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType, isUsbFuseByType);
+    return isUsbFuseByType;
 }
 
 int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
