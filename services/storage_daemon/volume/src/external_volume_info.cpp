@@ -109,7 +109,7 @@ std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
     std::string label;
     OHOS::StorageDaemon::ReadMetadata(devPath, uuid, fsType, label);
     LOGI("GetFsTypeByDev. devPath: %{public}s,fsType: %{public}s", devPath.c_str(), fsType.c_str());
-    return E_OK;
+    return fsType;
 }
 
 int32_t ExternalVolumeInfo::DoDestroy()

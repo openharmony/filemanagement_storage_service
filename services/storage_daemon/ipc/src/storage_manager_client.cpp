@@ -194,14 +194,14 @@ int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const st
 
 int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &enabled)
 {
-    LOGI("IsUsbFuseByType: fsType = %{public}s, enabled = %{public}d", fsType.c_str(), enabled));
+    LOGI("IsUsbFuseByType: fsType = %{public}s, enabled = %{public}d", fsType.c_str(), enabled);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
     if (storageManager_ != nullptr) {
-        storageManager_->IsUsbFuseByType(fsType, enabled);
+        return storageManager_->IsUsbFuseByType(fsType, enabled);
     }
-    return E_OK;
+    return E_SERVICE_IS_NULLPTR;
 }
 } // StorageDaemon
 } // OHOS
