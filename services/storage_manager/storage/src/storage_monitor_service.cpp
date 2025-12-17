@@ -341,7 +341,7 @@ std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
     std::string eventDataStr = "{}";
     cJSON *root = cJSON_CreateObject();
     if (root == nullptr) {
-        LOGE("Creat json failed.");
+        LOGE("Create json object failed.");
         return eventDataStr;
     }
     cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
@@ -349,13 +349,13 @@ std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
     if (isHighFreq) {
         cJSON *faultSuggestionParam = cJSON_CreateString("500M");
         if (faultSuggestionParam == nullptr) {
-            LOGE("Creat json failed.");
+            LOGE("Create json string failed.");
             cJSON_Delete(root);
             return eventDataStr;
         }
         cJSON *faultSuggestionArray = cJSON_CreateArray();
         if (faultSuggestionArray == nullptr) {
-            LOGE("Creat json failed.");
+            LOGE("Create json array failed.");
             cJSON_Delete(faultSuggestionParam);
             cJSON_Delete(root);
             return eventDataStr;
@@ -365,7 +365,7 @@ std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
     }
     char *json_string = cJSON_Print(root);
     if (json_string == nullptr) {
-        LOGE("JSON Print failed");
+        LOGE("Print json string failed.");
         cJSON_Delete(root);
         return eventDataStr;
     }
