@@ -189,7 +189,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
 int32_t VolumeManagerService::IsUsbFuseByType(const std::string &fsType, bool &enabled)
 {
     LOGI("VolumeManagerService::IsUsbFuseByType in");
-    bool enabledByCcm = OHOS::system.GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    bool enabledByCcm = system.GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     bool enabledByType = true;
     if (enabledByCcm) {
         enabledByType = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
