@@ -103,7 +103,7 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
 std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 {
     std::string volId = StringPrintf("vol-%u-%u", major(dev), minor(dev));
-    std::string devPath = "/dev/block" + volId;
+    std::string devPath = "/dev/block/" + volId;
     return OHOS::StorageDaemon::GetBlkidData(devPath, "TYPE");
 }
 
