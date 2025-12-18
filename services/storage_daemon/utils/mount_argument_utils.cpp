@@ -306,7 +306,7 @@ unsigned long MountArgument::GetFlags() const
 string MountArgument::GetFullMediaFuse() const
 {
     stringstream ss;
-    ss << TMPFS_MNT_DATA << userId_ << "/" << "media_fuse";
+    ss << TMPFS_MNT_DATA << userId_ << "/" << "media_fuse/Photo";
     return ss.str();
 }
 #endif
