@@ -58,6 +58,16 @@ public:
 void KeyManagerOtherTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void KeyManagerOtherTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void KeyManagerOtherTest::SetUp(void)
+{
+    GTEST_LOG_(INFO) << "SetUp Start";
     iamClientMoc_ = make_shared<IamClientMoc>();
     IamClientMoc::iamClientMoc = iamClientMoc_;
     fscryptControlMock_ = make_shared<FscryptControlMoc>();
@@ -70,9 +80,9 @@ void KeyManagerOtherTest::SetUpTestCase(void)
     BaseKeyMoc::baseKeyMoc = baseKeyMock_;
 }
 
-void KeyManagerOtherTest::TearDownTestCase(void)
+void KeyManagerOtherTest::TearDown(void)
 {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    GTEST_LOG_(INFO) << "TearDown Start";
     IamClientMoc::iamClientMoc = nullptr;
     iamClientMoc_ = nullptr;
     FscryptControlMoc::fscryptControlMoc = nullptr;
@@ -83,16 +93,6 @@ void KeyManagerOtherTest::TearDownTestCase(void)
     keyControlMock_ = nullptr;
     BaseKeyMoc::baseKeyMoc = nullptr;
     baseKeyMock_ = nullptr;
-}
-
-void KeyManagerOtherTest::SetUp(void)
-{
-    GTEST_LOG_(INFO) << "SetUp Start";
-}
-
-void KeyManagerOtherTest::TearDown(void)
-{
-    GTEST_LOG_(INFO) << "TearDown Start";
 }
 
 /**
@@ -144,9 +144,6 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_LockUserScreen_000, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance().saveLockScreenStatus[user], false);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance().LockUserScreen(user), E_NON_EXIST);
 
     KeyManager::GetInstance().userPinProtect[user] = false;
@@ -750,8 +747,6 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateKeyContext_003, TestSize.Level1)
     uint32_t userId = 100;
     string keyDir = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, EL5_KEY);
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(4).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(true));

@@ -29,35 +29,25 @@ using namespace std;
 namespace OHOS::StorageDaemon {
 class IamClientTest : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
     void SetUp();
     void TearDown();
     static inline shared_ptr<UserIdmClientMoc> userIdmClientImplMock_ = nullptr;
 };
 
-void IamClientTest::SetUpTestCase(void)
-{
-    GTEST_LOG_(INFO) << "SetUpTestCase";
-    userIdmClientImplMock_ = make_shared<UserIdmClientMoc>();
-    UserIdmClientMoc::userIdmClientMoc = userIdmClientImplMock_;
-}
-
-void IamClientTest::TearDownTestCase(void)
-{
-    GTEST_LOG_(INFO) << "TearDownTestCase";
-    UserIdmClientMoc::userIdmClientMoc = nullptr;
-    userIdmClientImplMock_ = nullptr;
-}
-
 void IamClientTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp";
+    userIdmClientImplMock_ = make_shared<UserIdmClientMoc>();
+    UserIdmClientMoc::userIdmClientMoc = userIdmClientImplMock_;
 }
 
 void IamClientTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown";
+    UserIdmClientMoc::userIdmClientMoc = nullptr;
+    userIdmClientImplMock_ = nullptr;
 }
 
 #ifdef USER_AUTH_FRAMEWORK

@@ -57,6 +57,16 @@ public:
 void KeyManagerSupTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void KeyManagerSupTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void KeyManagerSupTest::SetUp(void)
+{
+    GTEST_LOG_(INFO) << "SetUp Start";
     mountManagerMoc_ = make_shared<MountManagerMoc>();
     MountManagerMoc::mountManagerMoc = mountManagerMoc_;
     fscryptKeyMock_ = make_shared<FscryptKeyV2Moc>();
@@ -69,9 +79,9 @@ void KeyManagerSupTest::SetUpTestCase(void)
     BaseKeyMoc::baseKeyMoc = baseKeyMock_;
 }
 
-void KeyManagerSupTest::TearDownTestCase(void)
+void KeyManagerSupTest::TearDown(void)
 {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    GTEST_LOG_(INFO) << "TearDown Start";
     MountManagerMoc::mountManagerMoc = nullptr;
     mountManagerMoc_ = nullptr;
     FscryptKeyV2Moc::fscryptKeyV2Moc = nullptr;
@@ -82,16 +92,6 @@ void KeyManagerSupTest::TearDownTestCase(void)
     keyControlMock_ = nullptr;
     BaseKeyMoc::baseKeyMoc = nullptr;
     baseKeyMock_ = nullptr;
-}
-
-void KeyManagerSupTest::SetUp(void)
-{
-    GTEST_LOG_(INFO) << "SetUp Start";
-}
-
-void KeyManagerSupTest::TearDown(void)
-{
-    GTEST_LOG_(INFO) << "TearDown Start";
 }
 
 /**
@@ -425,10 +425,10 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserKeys_002, TestSize.Level1)
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
-        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+        .WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
-        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+        .WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance().DoDeleteUserKeys(user), 0);
@@ -458,6 +458,8 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockEceSece_001, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance().UnlockEceSece(user, token, secret), E_NON_EXIST);
 
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance().UnlockEceSece(user, token, secret), E_RESTORE_KEY_FAILED);
 

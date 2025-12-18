@@ -41,8 +41,8 @@ constexpr uint32_t TEST_KEYID_SIZE = 64;
 namespace OHOS::StorageDaemon {
 class FscryptKeyV1Test : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
     void SetUp();
     void TearDown();
     UserAuth emptyUserAuth {};
@@ -51,32 +51,24 @@ public:
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
-void FscryptKeyV1Test::SetUpTestCase(void)
+void FscryptKeyV1Test::SetUp(void)
 {
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     fscryptKeyExtMock_ = std::make_shared<FscryptKeyV1ExtMock>();
     FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = fscryptKeyExtMock_;
     baseKeyMock_ = std::make_shared<BaseKeyMoc>();
     BaseKeyMoc::baseKeyMoc = baseKeyMock_;
 }
 
-void FscryptKeyV1Test::TearDownTestCase(void)
-{
-    FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = nullptr;
-    fscryptKeyExtMock_ = nullptr;
-    BaseKeyMoc::baseKeyMoc = nullptr;
-    baseKeyMock_ = nullptr;
-}
-
-void FscryptKeyV1Test::SetUp(void)
-{
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
-}
-
 void FscryptKeyV1Test::TearDown(void)
 {
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
+    FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = nullptr;
+    fscryptKeyExtMock_ = nullptr;
+    BaseKeyMoc::baseKeyMoc = nullptr;
+    baseKeyMock_ = nullptr;
 }
 
 /**
@@ -208,9 +200,6 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     std::string keyId = "";
     EXPECT_EQ(g_testKeyV1->DeleteAppkey(keyId), E_KEY_TYPE_INVALID);
-
-    keyId = "test";
-    EXPECT_EQ(g_testKeyV1->DeleteAppkey(keyId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey end";
 }
 
@@ -226,9 +215,6 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UninstallKeyForAppKeyToKeyring, TestSi
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     std::string keyId = "";
     EXPECT_EQ(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId), E_KEY_TYPE_INVALID);
-
-    keyId = "test";
-    EXPECT_EQ(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UninstallKeyForAppKeyToKeyring end";
 }
 

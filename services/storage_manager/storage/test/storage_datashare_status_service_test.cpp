@@ -72,38 +72,29 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
 
 class StorageStatusManagerTest : public testing::Test {
 public:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+    static void SetUpTestCase() {};
+    static void TearDownTestCase() {};
     void SetUp();
     void TearDown();
     static inline shared_ptr<DataShareHelperMock> dataShareHelperMock_ = nullptr;
     static inline shared_ptr<DataShareResultSetMock> resultSetMock_ = nullptr;
 };
 
-void StorageStatusManagerTest::SetUpTestCase()
-{
-    dataShareHelperMock_ = std::make_shared<DataShareHelperMock>();
-    resultSetMock_ = std::make_shared<DataShareResultSetMock>();
-    DataShareHelperMock::proxy_ = dataShareHelperMock_;
-    DataShareResultSetMock::proxy_ = resultSetMock_;
-}
-
-void StorageStatusManagerTest::TearDownTestCase(void)
-{
-    GTEST_LOG_(INFO) << "TearDownTestCase";
-    dataShareHelperMock_ = nullptr;
-    DataShareHelperMock::proxy_ = nullptr;
-    resultSetMock_ = nullptr;
-    DataShareResultSetMock::proxy_ = nullptr;
-}
-
 void StorageStatusManagerTest::SetUp(void)
 {
+    dataShareHelperMock_ = std::make_shared<DataShareHelperMock>();
     DataShareHelperMock::proxy_ = dataShareHelperMock_;
+    resultSetMock_ = std::make_shared<DataShareResultSetMock>();
     DataShareResultSetMock::proxy_ = resultSetMock_;
 }
 
-void StorageStatusManagerTest::TearDown(void) {}
+void StorageStatusManagerTest::TearDown(void)
+{
+    DataShareHelperMock::proxy_ = nullptr;
+    dataShareHelperMock_ = nullptr;
+    DataShareResultSetMock::proxy_ = nullptr;
+    resultSetMock_ = nullptr;
+}
 
 /**
  * @tc.number: SUB_STORAGE_Storage_status_GetMediaAndFileStorageStats_0001
@@ -233,7 +224,6 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetMediaAndFileStorageStats_00
     EXPECT_CALL(*resultSetMock_, GetRowCount(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(OHOS::E_OK)));
     EXPECT_CALL(*resultSetMock_, GoToNextRow()).WillOnce(Return(OHOS::E_OK)).WillOnce(Return(E_ERR));
     EXPECT_CALL(*resultSetMock_, GetColumnIndex(_, _)).WillOnce(Return(E_ERR));
-    EXPECT_CALL(*resultSetMock_, GetInt(_, _)).WillOnce(Return(E_ERR));
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, OHOS::E_OK);
     GTEST_LOG_(INFO) << "StorageStatusManagerTest-end Storage_status_GetMediaAndFileStorageStats_0005";
@@ -292,7 +282,6 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetMediaAndFileStorageStats_00
     EXPECT_CALL(*resultSetMock_, GoToNextRow()).WillOnce(Return(OHOS::E_OK)).WillRepeatedly(Return(OHOS::E_ERR));
     EXPECT_CALL(*resultSetMock_, GetColumnIndex(_, _)).WillOnce(Return(OHOS::E_OK)).WillRepeatedly(Return(E_ERR));
     EXPECT_CALL(*resultSetMock_, GetInt(_, _)).WillOnce(Return(OHOS::E_OK));
-    EXPECT_CALL(*resultSetMock_, GetLong(_, _)).WillOnce(Return(E_ERR));
     int32_t result = service->GetMediaAndFileStorageStats(userId, storageStats);
     EXPECT_EQ(result, OHOS::E_OK);
     GTEST_LOG_(INFO) << "StorageStatusManagerTest-end Storage_status_GetMediaAndFileStorageStats_0007";

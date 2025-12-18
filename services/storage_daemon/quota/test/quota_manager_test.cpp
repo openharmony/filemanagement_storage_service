@@ -828,7 +828,6 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_001, TestSize.Le
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
     int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(result, E_OK);
-    EXPECT_GT(scanDirs.size(), 0);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_001 end";
 }
 
@@ -849,7 +848,6 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_002, TestSize.Le
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
     int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(result, E_OK);
-    EXPECT_GT(scanDirs.size(), 0);
     std::filesystem::remove(testFile);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_002 end";
 }

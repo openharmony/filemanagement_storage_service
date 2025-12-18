@@ -49,20 +49,18 @@ public:
 void ExternalVolumeInfoTestSub::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub SetUpTestCase";
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void ExternalVolumeInfoTestSub::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub TearDownTestCase";
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
 }
 
 void ExternalVolumeInfoTestSub::SetUp()
 {
     externalVolumeInfo_ = new ExternalVolumeInfo();
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void ExternalVolumeInfoTestSub::TearDown(void)
@@ -71,6 +69,8 @@ void ExternalVolumeInfoTestSub::TearDown(void)
         delete externalVolumeInfo_;
         externalVolumeInfo_ = nullptr;
     }
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
 }
 
 /**
@@ -133,7 +133,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     bool force = true;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).Times(2).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillRepeatedly(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001 end";

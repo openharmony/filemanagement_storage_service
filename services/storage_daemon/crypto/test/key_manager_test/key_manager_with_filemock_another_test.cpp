@@ -54,6 +54,16 @@ public:
 void KeyMgrWithFileMockAnotherTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void KeyMgrWithFileMockAnotherTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void KeyMgrWithFileMockAnotherTest::SetUp(void)
+{
+    GTEST_LOG_(INFO) << "SetUp Start";
     recoveryMgrMock_ = make_shared<RecoveryMgrMock>();
     RecoveryMgrMock::recoveryMgrMock = recoveryMgrMock_;
     baseKeyMock_ = make_shared<BaseKeyMoc>();
@@ -66,9 +76,9 @@ void KeyMgrWithFileMockAnotherTest::SetUpTestCase(void)
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
-void KeyMgrWithFileMockAnotherTest::TearDownTestCase(void)
+void KeyMgrWithFileMockAnotherTest::TearDown(void)
 {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    GTEST_LOG_(INFO) << "TearDown Start";
     RecoveryMgrMock::recoveryMgrMock = nullptr;
     recoveryMgrMock_ = nullptr;
     BaseKeyMoc::baseKeyMoc = nullptr;
@@ -79,16 +89,6 @@ void KeyMgrWithFileMockAnotherTest::TearDownTestCase(void)
     keyControlMock_ = nullptr;
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
-}
-
-void KeyMgrWithFileMockAnotherTest::SetUp(void)
-{
-    GTEST_LOG_(INFO) << "SetUp Start";
-}
-
-void KeyMgrWithFileMockAnotherTest::TearDown(void)
-{
-    GTEST_LOG_(INFO) << "TearDown Start";
 }
 
 /**
