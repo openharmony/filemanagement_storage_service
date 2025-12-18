@@ -397,7 +397,7 @@ HWTEST_F(RdbAdapterTest, OnCreate001, TestSize.Level1)
 HWTEST_F(RdbAdapterTest, OnCreate002, TestSize.Level1)
 {
     StorageManager::OpenCallback helper;
-    EXPECT_CALL(*mockStore, ExecuteSql(_, _)).WillOnce(Return(OHOS::E_OK));
+    EXPECT_CALL(*mockStore, ExecuteSql(_, _)).WillOnce(Return(OHOS::E_OK)).WillOnce(Return(OHOS::E_OK));
     auto ret = helper.OnCreate(*(RdbAdapterTest::mockStore));
     EXPECT_EQ(ret, OHOS::E_OK);
 }

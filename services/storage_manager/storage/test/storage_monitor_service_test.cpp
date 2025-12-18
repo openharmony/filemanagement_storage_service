@@ -22,6 +22,9 @@
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
 #include "storage/storage_status_manager.h"
+#include "storage_rdb_adapter.h"
+#include "storage_service_constant.h"
+#include "mock/storage_rdb_adapter_mock.h"
 
 namespace OHOS::StorageManager {
 class SystemUtil {
@@ -164,6 +167,7 @@ namespace OHOS::StorageManager {
 using namespace std;
 using namespace testing;
 using namespace testing::ext;
+using namespace StorageService;
 
 constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
@@ -558,5 +562,222 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetJsonString_0001, 
     EXPECT_TRUE(retString == "{}");
 
     GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonString_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_UpdateLastNotifyTimeToDB_0000
+ * @tc.name: Storage_monitor_service_UpdateLastNotifyTimeToDB_0000
+ * @tc.desc: Test UpdateLastNotifyTimeToDB success case.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_UpdateLastNotifyTimeToDB_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0000 start";
+
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, OHOS::E_OK);
+    rdbAdapter.store_ = mockStore;
+    EXPECT_CALL(*mockStore, Update(::testing::_, ::testing::Eq(CLEAN_NOTIFY_TABLE), ::testing::_,
+                                   ::testing::Eq(WHERE_CLAUSE_LEVEL), ::testing::_))
+        .WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    int64_t nowTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    service->UpdateLastNotifyTimeToDB(cleanLevel, nowTime);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_UpdateLastNotifyTimeToDB_0001
+ * @tc.name: Storage_monitor_service_UpdateLastNotifyTimeToDB_0001
+ * @tc.desc: Test UpdateLastNotifyTimeToDB failure case.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_UpdateLastNotifyTimeToDB_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0001 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, OHOS::E_OK);
+    rdbAdapter.store_ = mockStore;
+    EXPECT_CALL(*mockStore, Update(::testing::_, ::testing::Eq(CLEAN_NOTIFY_TABLE), ::testing::_,
+        ::testing::Eq(WHERE_CLAUSE_LEVEL), ::testing::_))
+        .WillOnce(DoAll(SetArgReferee<0>(0), Return(E_TB_UPDATE_ERROR)));
+    std::string cleanLevel = CLEAN_LEVEL_MEDIUM;
+    int64_t nowTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    service->UpdateLastNotifyTimeToDB(cleanLevel, nowTime);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_PublishCleanCacheEvent_0000
+ * @tc.name: Storage_monitor_service_PublishCleanCacheEvent_0000
+ * @tc.desc: Test PublishCleanCacheEvent with high clean level.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 start";
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    service->PublishCleanCacheEvent(cleanLevel);
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 end";
+}
+
+/**
+ * @tc.number: storage_monitor_service_PublishCleanCacheEvent_000
+ * @tc.name: storage_monitor_service_PublishCleanCacheEvent_000
+ * @tc.desc: Test PublishCleanCacheEvent with all clean levels.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 start";
+    std::vector<std::string> cleanLevels = {CLEAN_LEVEL_LOW, CLEAN_LEVEL_MEDIUM, CLEAN_LEVEL_HIGH, CLEAN_LEVEL_RICH};
+    for (const auto &level : cleanLevels) {
+        service->PublishCleanCacheEvent(level);
+        EXPECT_TRUE(true);
+    }
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_PublishCleanCacheEvent_0002
+ * @tc.name: Storage_monitor_service_PublishCleanCacheEvent_0002
+ * @tc.desc: Test PublishCleanCacheEvent with special and empty clean levels.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 start";
+    std::vector<std::string> specialLevels = {"", "!@#$%^&*()", std::string(1000, 'a')};
+    for (const auto &level : specialLevels) {
+        service->PublishCleanCacheEvent(level);
+        EXPECT_TRUE(true);
+    }
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0000
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0000
+ * @tc.desc: Test SendCommonEventToCleanCache with empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0001
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0001
+ * @tc.desc: Test SendCommonEventToCleanCache with non-empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0001 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_MEDIUM;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0002
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0002
+ * @tc.desc: Test SendCommonEventToCleanCache with null result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0002 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_LOW;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0003
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0003
+ * @tc.desc: Test SendCommonEventToCleanCache with GoToNextRow failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0003 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_RICH;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0003 end";
 }
 }

@@ -59,6 +59,13 @@ private:
     // stats
     void HapAndSaStatisticsThd();
 
+    void PutLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime);
+    void PublishCleanCacheEvent(const std::string &cleanLevel);
+    void UpdateLastNotifyTimeToDB(const std::string &cleanLevel, int64_t dbTime);
+    void SendCommonEventToCleanCache(const std::string &cleanLevel);
+    int32_t GetLastNotifyTimeFromDB(const std::string &cleanLevel, int64_t &lastNotifyTime, int32_t &rowCount);
+    std::mutex notifyCleanMtx_;
+
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
     std::thread eventThread_;
