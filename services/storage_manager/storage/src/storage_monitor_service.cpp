@@ -335,6 +335,46 @@ void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalS
     EventNotifyFreqHandlerForHigh();
 }
 
+std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
+    const std::string &faultSuggest, bool isHighFreq)
+{
+    std::string eventDataStr = "{}";
+    cJSON *root = cJSON_CreateObject();
+    if (root == nullptr) {
+        LOGE("Create json object failed.");
+        return eventDataStr;
+    }
+    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
+    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
+    if (isHighFreq) {
+        cJSON *faultSuggestionParam = cJSON_CreateString("500M");
+        if (faultSuggestionParam == nullptr) {
+            LOGE("Create json string failed.");
+            cJSON_Delete(root);
+            return eventDataStr;
+        }
+        cJSON *faultSuggestionArray = cJSON_CreateArray();
+        if (faultSuggestionArray == nullptr) {
+            LOGE("Create json array failed.");
+            cJSON_Delete(faultSuggestionParam);
+            cJSON_Delete(root);
+            return eventDataStr;
+        }
+        cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
+        cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
+    }
+    char *json_string = cJSON_Print(root);
+    if (json_string == nullptr) {
+        LOGE("Print json string failed.");
+        cJSON_Delete(root);
+        return eventDataStr;
+    }
+    eventDataStr = json_string;
+    cJSON_free(json_string);
+    cJSON_Delete(root);
+    return eventDataStr;
+}
+
 void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
                                                        const std::string &faultSuggest,
                                                        bool isHighFreq)
@@ -353,24 +393,12 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     EventFwk::CommonEventData eventData;
     eventData.SetWant(want);
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
-    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
-    if (isHighFreq) {
-        cJSON *faultSuggestionParam = cJSON_CreateString("500M");
-        cJSON *faultSuggestionArray = cJSON_CreateArray();
-        cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
-        cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
-    }
-    char *json_string = cJSON_Print(root);
-    std::string eventDataStr(json_string);
+    std::string eventDataStr = GetJsonString(faultDesc, faultSuggest, isHighFreq);
     eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\n'), eventDataStr.end());
     eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\t'), eventDataStr.end());
 
     LOGI("send message is %{public}s", eventDataStr.c_str());
     eventData.SetData(eventDataStr);
-    free(json_string);
-    cJSON_Delete(root);
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
 

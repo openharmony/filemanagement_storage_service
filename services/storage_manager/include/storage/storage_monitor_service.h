@@ -54,6 +54,7 @@ private:
     void ParseStorageParameters(int64_t totalSize);
     void UpdateBaseLineByUid();
     std::string GetStorageAlertCleanupParams();
+    std::string GetJsonString(const std::string &faultDesc, const std::string &faultSuggest, bool isHighFreq);
 
     // stats
     void HapAndSaStatisticsThd();
