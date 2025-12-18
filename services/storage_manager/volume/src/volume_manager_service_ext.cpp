@@ -114,12 +114,12 @@ bool VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
     LOGI("IsUsbFuseByType in");
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
-        return E_NOTIFY_FAILED;
+        return E_PARAMS_NULLPTR_ERR;
     }
     FuncUsbFuseByType funcUsbFuseByType = (FuncUsbFuseByType)dlsym(handler_, "IsUsbFuseByType");
     if (funcUsbFuseByType == nullptr) {
         LOGE("Failed to get function pointer for IsUsbFuseByType");
-        return E_NOTIFY_FAILED;
+        return E_PARAMS_NULLPTR_ERR;
     }
     bool enabled = false;
     funcUsbFuseByType(fsType, enabled);

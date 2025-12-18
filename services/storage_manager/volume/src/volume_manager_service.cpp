@@ -190,7 +190,7 @@ bool VolumeManagerService::IsUsbFuseByType(const std::string &fsType)
     bool enabledByCcm = system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     bool enabledByType = true;
     if (enabledByCcm) {
-        enabledByType = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
+        enabledByType = VolumeManagerServiceExt::GetInstance().IsUsbFuseByType(fsType);
     }
     LOGI("VolumeManagerService::IsUsbFuseByType. enabledByCcm: %{public}d, enabledByType: %{public}d", enabledByCcm,
          enabledByType);
