@@ -155,8 +155,14 @@ int32_t OpenCallback::CreateTable(NativeRdb::RdbStore &store)
     std::string sql = StorageService::CREATE_BUNDLE_EXT_STATS_TABLE_SQL;
     int32_t errCode = store.ExecuteSql(sql);
     if (errCode != E_OK) {
-        LOGE("rdb adapter create table failed, errCode is %{public}d", errCode);
+        LOGE("create ext bundle stats table failed, errCode is %{public}d", errCode);
         return E_DB_CREATE_BUNDLE_TABLE_ERROR;
+    }
+    sql = StorageService::CREATE_CLEAN_NOTIFY_TABLE_SQL;
+    errCode = store.ExecuteSql(sql);
+    if (errCode != E_OK) {
+        LOGE("create clean notify table failed, errCode is %{public}d", errCode);
+        return E_DB_CREATE_CLEAN_NOTIFY_TABLE_ERROR;
     }
     return E_OK;
 }
