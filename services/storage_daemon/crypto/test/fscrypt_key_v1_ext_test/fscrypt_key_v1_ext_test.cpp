@@ -46,8 +46,6 @@ public:
 void FscryptKeyV1ExtTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    fbexMock_ = make_shared<FbexMoc>();
-    FbexMoc::fbexMoc = fbexMock_;
     std::error_code errCode;
     if (std::filesystem::exists(NEED_RESTORE_PATH, errCode)) {
         fileExist = true;
@@ -57,8 +55,6 @@ void FscryptKeyV1ExtTest::SetUpTestCase(void)
 void FscryptKeyV1ExtTest::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
-    FbexMoc::fbexMoc = nullptr;
-    fbexMock_ = nullptr;
     if (!fileExist) {
         std::filesystem::remove_all(NEED_RESTORE_PATH);
     }
@@ -67,11 +63,15 @@ void FscryptKeyV1ExtTest::TearDownTestCase(void)
 void FscryptKeyV1ExtTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp Start";
+    fbexMock_ = make_shared<FbexMoc>();
+    FbexMoc::fbexMoc = fbexMock_;
 }
 
 void FscryptKeyV1ExtTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
+    FbexMoc::fbexMoc = nullptr;
+    fbexMock_ = nullptr;
 }
 
 /**
@@ -216,7 +216,7 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_002, TestSize.Level1)
     ext.userId_ = 219;
     ext.type_ = TYPE_EL3;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(el3Err)).WillOnce(Return(-1));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(el3Err));
     EXPECT_EQ(ext.ActiveKeyExt(0, iv, el3Type, {}), el3Err);
 
 

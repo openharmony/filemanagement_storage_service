@@ -93,17 +93,17 @@ constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
 
 class StorageDaemonClientTest : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
-    void SetUp() {};
-    void TearDown() {};
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
+    void SetUp();
+    void TearDown();
 public:
     static inline shared_ptr<SystemAbilityMock> sa = nullptr;
     static inline sptr<SystemAbilityManagerMock> sam = nullptr;
     static inline sptr<StorageDaemonStubMock> sd = nullptr;
 };
 
-void StorageDaemonClientTest::SetUpTestCase()
+void StorageDaemonClientTest::SetUp()
 {
     sa = make_shared<SystemAbilityMock>();
     SystemAbilityMock::sab = sa;
@@ -111,14 +111,13 @@ void StorageDaemonClientTest::SetUpTestCase()
     sd = sptr(new StorageDaemonStubMock());
 }
 
-void StorageDaemonClientTest::TearDownTestCase()
+void StorageDaemonClientTest::TearDown()
 {
     sam = nullptr;
     sd = nullptr;
     SystemAbilityMock::sab = nullptr;
     sa = nullptr;
 }
-
 
 /**
  * @tc.name: Storage_Service_StorageDaemonClientTest_GetStorageDaemonProxy_001

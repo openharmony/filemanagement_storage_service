@@ -523,21 +523,23 @@ void FscryptKeyV1::DropCachesIfNeed()
 {
     LOGE("drop cache if need enter");
     DIR *dir = opendir(MNT_DATA);
-    if (dir == nullptr) {
+    if (dir != nullptr) {
+        int fd = dirfd(dir);
+        LOGE("open /data dir fd success, syncfs start");
+        if (fd < 0 || syncfs(fd)) {
+            LOGE("fd < 0 or syncfs failed, sync start");
+            sync();
+            LOGE("sync success with syncfs failed.");
+        }
+        (void)closedir(dir);
+    } else {
         sync();
-    }
-    int fd = dirfd(dir);
-    LOGE("open /data dir fd success, syncfs start");
-    if (fd < 0 || syncfs(fd)) {
-        LOGE("fd < 0 or syncfs failed, sync start");
-        sync();
-        LOGE("sync success with syncfs failed.");
+        LOGE("Failed to open directory.");
     }
     LOGE("syncfs success, drop cache start.");
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
-    (void)closedir(dir);
     LOGE("drop cache success");
 }
 

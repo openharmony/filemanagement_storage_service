@@ -118,9 +118,9 @@ std::string StorageStatisticRadar::CreateJsonString(const std::map<uint32_t, Rad
         cJSON_Delete(jsonStorageObject);
         return "";
     }
-    cJSON_Delete(jsonStorageObject);
     std::string statisticJsonStr(jsonStr);
-    free(jsonStr);
+    cJSON_free(jsonStr);
+    cJSON_Delete(jsonStorageObject);
     return statisticJsonStr;
 }
 

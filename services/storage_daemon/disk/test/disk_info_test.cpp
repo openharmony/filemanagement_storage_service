@@ -35,30 +35,41 @@ using namespace testing::ext;
 
 class DiskInfoTest : public testing::Test {
 public:
-    static void SetUpTestCase(void)
-    {
-        GTEST_LOG_(INFO) << "SetUpTestCase Start";
-        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
-        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
-
-        fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-        FileUtilMoc::fileUtilMoc = fileUtilMoc_;
-    };
-
-    static void TearDownTestCase(void)
-    {
-        GTEST_LOG_(INFO) << "TearDownTestCase Start";
-        DiskUtilMoc::diskUtilMoc = nullptr;
-        diskUtilMoc_ = nullptr;
-
-        FileUtilMoc::fileUtilMoc = nullptr;
-        fileUtilMoc_ = nullptr;
-    };
-    void SetUp() {};
-    void TearDown() {};
+    static void SetUpTestCase(void);
+    static void TearDownTestCase(void);
+    void SetUp();
+    void TearDown();
     static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
+
+void DiskInfoTest::SetUpTestCase(void)
+{
+    GTEST_LOG_(INFO) << "SetUpTestCase Start";
+}
+
+void DiskInfoTest::TearDownTestCase(void)
+{
+    GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void DiskInfoTest::SetUp(void)
+{
+    diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+    DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void DiskInfoTest::TearDown(void)
+{
+    DiskUtilMoc::diskUtilMoc = nullptr;
+    diskUtilMoc_ = nullptr;
+
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+}
 
 /**
  * @tc.name: Storage_Service_DiskInfoTest_Create_001

@@ -30,21 +30,29 @@ class DiskManagerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase();
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void DiskManagerServiceTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void DiskManagerServiceTest::TearDownTestCase()
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void DiskManagerServiceTest::SetUp(void)
+{
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void DiskManagerServiceTest::TearDown()
+{
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
 }
@@ -264,6 +272,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     dmService.OnDiskCreated(disk);
     result = dmService.Partition(diskId, type);
     dmService.OnDiskDestroyed(diskId);

@@ -16,23 +16,45 @@
 #include <vector>
 #include <gtest/gtest.h>
 
+#include "cJSON.h"
 #include "init_param.h"
 #include "storage/storage_monitor_service.h"
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
 #include "storage/storage_status_manager.h"
+#include "storage_rdb_adapter.h"
+#include "storage_service_constant.h"
+#include "mock/storage_rdb_adapter_mock.h"
 
 namespace OHOS::StorageManager {
 class SystemUtil {
 public:
     virtual ~SystemUtil() = default;
     virtual std::string GetParameter(const std::string&, const std::string&) = 0;
+    virtual cJSON *cJSON_CreateObject() = 0;
+    virtual cJSON* cJSON_AddStringToObject(cJSON* object, const char* name, const char* string) = 0;
+    virtual cJSON *cJSON_CreateString(const char *string) = 0;
+    virtual cJSON *cJSON_CreateArray() = 0;
+    virtual cJSON_bool cJSON_AddItemToArray(cJSON *array, cJSON *item) = 0;
+    virtual cJSON_bool cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item) = 0;
+    virtual char *cJSON_Print(const cJSON *item) = 0;
+    virtual void cJSON_free(void *object) = 0;
+    virtual void cJSON_Delete(cJSON *item) = 0;
     static inline std::shared_ptr<SystemUtil> su = nullptr;
 };
 
 class SystemUtilMock : public SystemUtil {
 public:
     MOCK_METHOD(std::string, GetParameter, (const std::string&, const std::string&));
+    MOCK_METHOD(cJSON *, cJSON_CreateObject, (), (override));
+    MOCK_METHOD(cJSON *, cJSON_AddStringToObject, (cJSON*, const char*, const char*), (override));
+    MOCK_METHOD(cJSON *, cJSON_CreateString, (const char*), (override));
+    MOCK_METHOD(cJSON *, cJSON_CreateArray, (), (override));
+    MOCK_METHOD(cJSON_bool, cJSON_AddItemToArray, (cJSON*, cJSON*), (override));
+    MOCK_METHOD(cJSON_bool, cJSON_AddItemToObject, (cJSON*, const char*, cJSON*), (override));
+    MOCK_METHOD(char *, cJSON_Print, (const cJSON*), (override));
+    MOCK_METHOD(void, cJSON_free, (void*), (override));
+    MOCK_METHOD(void, cJSON_Delete, (cJSON*), (override));
 };
 }
 
@@ -69,10 +91,83 @@ std::string GetParameter(const std::string& key, const std::string& def)
 } // namespace system
 } // namespace OHOS
 
+cJSON *cJSON_CreateObject()
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateObject();
+}
+
+cJSON* cJSON_AddStringToObject(cJSON* object, const char* name, const char* string)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddStringToObject(object, name, string);
+}
+
+cJSON *cJSON_CreateString(const char *string)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateString(string);
+}
+
+cJSON *cJSON_CreateArray(void)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_CreateArray();
+}
+
+cJSON_bool cJSON_AddItemToArray(cJSON *array, cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return cJSON_False;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddItemToArray(array, item);
+}
+
+cJSON_bool cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return cJSON_False;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_AddItemToObject(object, string, item);
+}
+
+char *cJSON_Print(const cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return nullptr;
+    }
+    return OHOS::StorageManager::SystemUtil::su->cJSON_Print(item);
+}
+
+void cJSON_free(void *object)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return;
+    }
+    OHOS::StorageManager::SystemUtil::su->cJSON_free(object);
+}
+
+void cJSON_Delete(cJSON *item)
+{
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        return;
+    }
+    OHOS::StorageManager::SystemUtil::su->cJSON_Delete(item);
+}
+
 namespace OHOS::StorageManager {
 using namespace std;
 using namespace testing;
 using namespace testing::ext;
+using namespace StorageService;
 
 constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
@@ -86,9 +181,9 @@ int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 class StorageMonitorServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
-    static void TearDownTestCase();
-    void SetUp() {};
-    void TearDown() {};
+    static void TearDownTestCase() {};
+    void SetUp();
+    void TearDown();
 public:
     static inline StorageMonitorService* service = nullptr;
     static inline shared_ptr<StorageTotalStatusServiceMock> stss = nullptr;
@@ -98,13 +193,17 @@ public:
 void StorageMonitorServiceTest::SetUpTestCase(void)
 {
     service = &StorageMonitorService::GetInstance();
+}
+
+void StorageMonitorServiceTest::SetUp(void)
+{
     stss = make_shared<StorageTotalStatusServiceMock>();
     StorageTotalStatusServiceMock::stss = stss;
     sum = make_shared<SystemUtilMock>();
     SystemUtilMock::su = sum;
 }
 
-void StorageMonitorServiceTest::TearDownTestCase()
+void StorageMonitorServiceTest::TearDown()
 {
     StorageTotalStatusServiceMock::stss = nullptr;
     stss = nullptr;
@@ -181,7 +280,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0
     service->CheckAndCleanCache(0, 20);
     EXPECT_TRUE(true);
 
-    EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return(""));
     service->CheckAndCleanCache(30, 20);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0000 end";
@@ -373,7 +471,7 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
 
     service->eventHandler_ = mockHandler;
-
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(Return(E_OK));
     service->HapAndSaStatisticsThd();
 
     EXPECT_TRUE(true);
@@ -401,7 +499,7 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
 
     service->eventHandler_ = mockHandler;
-
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(Return(E_OK));
     service->HapAndSaStatisticsThd();
     service->HapAndSaStatisticsThd();
 
@@ -412,5 +510,274 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
     mockRunner.reset();
 
     GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_GetJsonString_0001
+ * @tc.name: Storage_monitor_service_GetJsonString_0001
+ * @tc.desc: Test function of HapAndSaStatisticsThd interface with multiple calls.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetJsonString_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonString_0001 start";
+
+    const std::string faultDesc = "faultDesc";
+    const std::string faultSuggest = "faultSuggest";
+    bool isHighFreq = true;
+
+    std::string retString;
+    cJSON jsonObject = { 0 };
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateArray()).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateString(_)).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_CreateArray()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    isHighFreq = false;
+    char stringTemp[] = "{}";
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(stringTemp));
+    retString = service->GetJsonString(faultDesc, faultSuggest, isHighFreq);
+    EXPECT_TRUE(retString == "{}");
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonString_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_UpdateLastNotifyTimeToDB_0000
+ * @tc.name: Storage_monitor_service_UpdateLastNotifyTimeToDB_0000
+ * @tc.desc: Test UpdateLastNotifyTimeToDB success case.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_UpdateLastNotifyTimeToDB_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0000 start";
+
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, OHOS::E_OK);
+    rdbAdapter.store_ = mockStore;
+    EXPECT_CALL(*mockStore, Update(::testing::_, ::testing::Eq(CLEAN_NOTIFY_TABLE), ::testing::_,
+                                   ::testing::Eq(WHERE_CLAUSE_LEVEL), ::testing::_))
+        .WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    int64_t nowTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    service->UpdateLastNotifyTimeToDB(cleanLevel, nowTime);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_UpdateLastNotifyTimeToDB_0001
+ * @tc.name: Storage_monitor_service_UpdateLastNotifyTimeToDB_0001
+ * @tc.desc: Test UpdateLastNotifyTimeToDB failure case.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_UpdateLastNotifyTimeToDB_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0001 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, OHOS::E_OK);
+    rdbAdapter.store_ = mockStore;
+    EXPECT_CALL(*mockStore, Update(::testing::_, ::testing::Eq(CLEAN_NOTIFY_TABLE), ::testing::_,
+        ::testing::Eq(WHERE_CLAUSE_LEVEL), ::testing::_))
+        .WillOnce(DoAll(SetArgReferee<0>(0), Return(E_TB_UPDATE_ERROR)));
+    std::string cleanLevel = CLEAN_LEVEL_MEDIUM;
+    int64_t nowTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    service->UpdateLastNotifyTimeToDB(cleanLevel, nowTime);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_UpdateLastNotifyTimeToDB_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_PublishCleanCacheEvent_0000
+ * @tc.name: Storage_monitor_service_PublishCleanCacheEvent_0000
+ * @tc.desc: Test PublishCleanCacheEvent with high clean level.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 start";
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    service->PublishCleanCacheEvent(cleanLevel);
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 end";
+}
+
+/**
+ * @tc.number: storage_monitor_service_PublishCleanCacheEvent_000
+ * @tc.name: storage_monitor_service_PublishCleanCacheEvent_000
+ * @tc.desc: Test PublishCleanCacheEvent with all clean levels.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 start";
+    std::vector<std::string> cleanLevels = {CLEAN_LEVEL_LOW, CLEAN_LEVEL_MEDIUM, CLEAN_LEVEL_HIGH, CLEAN_LEVEL_RICH};
+    for (const auto &level : cleanLevels) {
+        service->PublishCleanCacheEvent(level);
+        EXPECT_TRUE(true);
+    }
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_PublishCleanCacheEvent_0002
+ * @tc.name: Storage_monitor_service_PublishCleanCacheEvent_0002
+ * @tc.desc: Test PublishCleanCacheEvent with special and empty clean levels.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 start";
+    std::vector<std::string> specialLevels = {"", "!@#$%^&*()", std::string(1000, 'a')};
+    for (const auto &level : specialLevels) {
+        service->PublishCleanCacheEvent(level);
+        EXPECT_TRUE(true);
+    }
+    GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0000
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0000
+ * @tc.desc: Test SendCommonEventToCleanCache with empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_HIGH;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0001
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0001
+ * @tc.desc: Test SendCommonEventToCleanCache with non-empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0001 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_MEDIUM;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0002
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0002
+ * @tc.desc: Test SendCommonEventToCleanCache with null result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0002 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_LOW;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0002 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_SendCommonEventToCleanCache_0003
+ * @tc.name: Storage_monitor_service_SendCommonEventToCleanCache_0003
+ * @tc.desc: Test SendCommonEventToCleanCache with GoToNextRow failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0003 start";
+    auto &rdbAdapter = StorageRdbAdapter::GetInstance();
+    auto mockStore = std::make_shared<MockRdbStore>();
+    MockGetRdbStore(mockStore);
+    int32_t ret = rdbAdapter.Init();
+    ASSERT_EQ(ret, E_OK);
+    rdbAdapter.store_ = mockStore;
+    std::string cleanLevel = CLEAN_LEVEL_RICH;
+    service->SendCommonEventToCleanCache(cleanLevel);
+    rdbAdapter.UnInit();
+    MockSetRdbStore();
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0003 end";
 }
 }

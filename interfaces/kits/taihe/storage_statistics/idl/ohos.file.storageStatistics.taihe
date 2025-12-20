@@ -15,17 +15,21 @@
 
 @!namespace("@ohos.file.storageStatistics", "storageStatistics")
 
+@!sts_inject_into_module("import { AsyncCallback } from '@ohos.base';")
+
 @!sts_inject("""
 static { loadLibrary("storage_statistics_taihe.z"); }
 """)
 
+@!sts_inject_into_module("import { BusinessError, AsyncCallback } from '@ohos.base';")
+
 @gen_async("getFreeSize")
 @gen_promise("getFreeSize")
-function GetFreeSizeSync(): i64;
+function GetFreeSizeSync2(): i64;
 
 @gen_async("getTotalSize")
 @gen_promise("getTotalSize")
-function GetTotalSizeSync(): i64;
+function GetTotalSizeSync2(): i64;
 
 struct BundleStats {
     dataSize: i64;
@@ -77,3 +81,50 @@ struct UserdataDirInfo {
 
 @gen_promise("listUserdataDirInfo")
 function ListUserdataDirInfoSync(): Array<UserdataDirInfo>;
+
+@gen_async("getFreeSizeOfVolume")
+@gen_promise("getFreeSizeOfVolume")
+function GetFreeSizeOfVolumeSync(volumeUuid: String): i64;
+
+@gen_async("getSystemSize")
+@gen_promise("getSystemSize")
+function GetSystemSizeSync(): i64;
+
+@gen_async("getTotalSizeOfVolume")
+@gen_promise("getTotalSizeOfVolume")
+function GetTotalSizeOfVolumeSync(volumeUuid: String): i64;
+
+function GetBundleStatsSync(packageName: String, index: Optional<i32>): BundleStats;
+
+@!sts_inject("""
+export function getBundleStats(packageName: string, index?: int): Promise<BundleStats> {
+    return new Promise<BundleStats>((resolve, reject): void => {
+        taskpool.execute((): BundleStats => {
+            return getBundleStatsSync(packageName, index);
+        })
+        .then((ret: NullishType): void => {
+            resolve(ret as BundleStats);
+        })
+        .catch((ret: NullishType): void => {
+            reject(ret as Error);
+        });
+    });
+}
+
+export function getBundleStats(packageName: string, callback: AsyncCallback<BundleStats>, index?: int): void {
+    taskpool.execute((): BundleStats => {
+        return getBundleStatsSync(packageName, index);
+    })
+    .then((ret: NullishType): void => {
+        callback(new BusinessError(), ret as BundleStats);
+    })
+    .catch((ret: NullishType): void => {
+        let data: BundleStats = {dataSize: 0, cacheSize: 0, appSize: 0};
+        callback(ret as BusinessError, data);
+    });
+}
+""")
+
+function GetFreeSizeSync(): i64;
+
+function GetTotalSizeSync(): i64;

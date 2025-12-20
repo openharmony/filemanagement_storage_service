@@ -51,21 +51,29 @@ class VolumeManagerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase();
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void VolumeManagerServiceTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    fileUtilMoc_ = make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void VolumeManagerServiceTest::TearDownTestCase()
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void VolumeManagerServiceTest::SetUp(void)
+{
+    fileUtilMoc_ = make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+}
+
+void VolumeManagerServiceTest::TearDown()
+{
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
 }

@@ -91,10 +91,14 @@ using namespace StorageDaemon;
 
 class StorageDaemonCommunicationTest : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase();
-    void SetUp() {};
-    void TearDown() {};
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase() {};
+    void SetUp();
+    void TearDown();
+
+    void MockConnectFail();
+    void MockStorageDaemonNullptr();
+    void MockAllSuccess();
 public:
     static inline shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     static inline shared_ptr<SystemAbilityMock> sa = nullptr;
@@ -102,7 +106,7 @@ public:
     static inline sptr<StorageDaemonStubMock> sd = nullptr;
 };
 
-void StorageDaemonCommunicationTest::SetUpTestCase()
+void StorageDaemonCommunicationTest::SetUp()
 {
     sdCommunication = make_shared<StorageDaemonCommunication>();
     sa = make_shared<SystemAbilityMock>();
@@ -111,7 +115,7 @@ void StorageDaemonCommunicationTest::SetUpTestCase()
     sd = sptr(new StorageDaemonStubMock());
 }
 
-void StorageDaemonCommunicationTest::TearDownTestCase()
+void StorageDaemonCommunicationTest::TearDown()
 {
     sam = nullptr;
     sd = nullptr;
@@ -119,6 +123,33 @@ void StorageDaemonCommunicationTest::TearDownTestCase()
     sa = nullptr;
     sdCommunication->storageDaemon_ = nullptr;
     sdCommunication = nullptr;
+}
+
+void StorageDaemonCommunicationTest::MockConnectFail()
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+}
+
+void StorageDaemonCommunicationTest::MockStorageDaemonNullptr()
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+}
+
+void StorageDaemonCommunicationTest::MockAllSuccess()
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
 }
 
 /**
@@ -162,29 +193,21 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, Test
 HWTEST_F(StorageDaemonCommunicationTest, SUB_STORAGE_Daemon_communication_SetDirEncryptionPolicy_0000,
     testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin SetDirEncryptionPolicy_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
+
     std::string dirPath = "/data/service/test";
     uint32_t userId = 100;
     uint32_t type = 2;
     std::map<std::string, std::string> shareFiles;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->SetDirEncryptionPolicy(userId, dirPath, type), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->SetDirEncryptionPolicy(userId, dirPath, type), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->SetDirEncryptionPolicy(userId, dirPath, type), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end SetDirEncryptionPolicy_0000_SUCCESS";
 }
 
 /**
@@ -198,26 +221,17 @@ HWTEST_F(StorageDaemonCommunicationTest, SUB_STORAGE_Daemon_communication_SetDir
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_PrepareAddUser_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->PrepareAddUser(0, 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->PrepareAddUser(0, 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, PrepareUserDirs(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->PrepareAddUser(0, 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareAddUser_0000";
 }
 
 /**
@@ -231,26 +245,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_RemoveUser_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->RemoveUser(0, 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->RemoveUser(0, 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, DestroyUserDirs(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->RemoveUser(0, 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RemoveUser_0000";
 }
 
 /**
@@ -264,26 +269,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, T
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_PrepareStartUser_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->PrepareStartUser(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->PrepareStartUser(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, StartUser(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->PrepareStartUser(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareStartUser_0000";
 }
 
 /**
@@ -297,26 +293,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_StopUser_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->StopUser(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->StopUser(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, StopUser(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->StopUser(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000";
 }
 
 /**
@@ -330,26 +317,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, Tes
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CompleteAddUser_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->CompleteAddUser(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->CompleteAddUser(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, CompleteAddUser(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->CompleteAddUser(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CompleteAddUser_0000";
 }
 
 /**
@@ -363,26 +341,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Mount_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->Mount("", 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->Mount("", 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, Mount(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Mount("", 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000";
 }
 
 /**
@@ -396,26 +365,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, TestSi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Unmount_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->Unmount(""), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->Unmount(""), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UMount(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Unmount(""), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000";
 }
 
 /**
@@ -429,26 +389,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, Test
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_TryToFix_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->TryToFix("", 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->TryToFix("", 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, TryToFix(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->TryToFix("", 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_TryToFix_0000";
 }
 
 /**
@@ -462,26 +413,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, Tes
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Check_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->Check(""), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->Check(""), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, Check(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Check(""), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000";
 }
 
 /**
@@ -495,26 +437,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, TestSi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Partition_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->Partition("", 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->Partition("", 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, Partition(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Partition("", 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000";
 }
 
 /**
@@ -528,26 +461,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, Te
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->Format("", ""), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->Format("", ""), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, Format(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Format("", ""), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000";
 }
 
 /**
@@ -561,26 +485,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, TestS
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, SetVolumeDescription(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000";
 }
 
 /**
@@ -594,28 +509,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryUsbIsInUse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string diskPath;
     bool isInUse = false;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, QueryUsbIsInUse(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_QueryUsbIsInUse_0000";
 }
 
 /**
@@ -629,82 +535,38 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteUserKeys_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, DeleteUserKeys(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000";
 }
 
 /**
-* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0001
-* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for E_SA_IS_NULLPTR.
+* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0000
+* @tc.desc: Test function of EraseAllUserEncryptedKeys.
 * @tc.type: FUNC
 * @tc.require:
 */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0001, TestSize.Level1)
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0001";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_SA_IS_NULLPTR);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0001";
-}
 
-/**
-* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0002
-* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for E_SERVICE_IS_NULLPTR.
-* @tc.type: FUNC
-* @tc.require:
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0002";
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_SERVICE_IS_NULLPTR);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0002";
-}
 
-/**
-* @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0003
-* @tc.desc: Test function of EraseAllUserEncryptedKeys interface for SUCCESS.
-* @tc.type: FUNC
-* @tc.require:
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_EraseAllUserEncryptedKeys_0003";
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, EraseAllUserEncryptedKeys()).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_EraseAllUserEncryptedKeys_0003";
 }
 
 /**
@@ -718,29 +580,20 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryp
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserAuth_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> token;
     vector<uint8_t> oldSecret;
     vector<uint8_t> newSecret;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UpdateUserAuth(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000";
 }
 
 /**
@@ -754,30 +607,21 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithRecoveryKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUseAuthWithRecoveryKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> authToken;
     vector<uint8_t> newSecret;
     vector<std::vector<uint8_t>> plainText;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(
         sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUseAuthWithRecoveryKey_0000";
 }
 
 /**
@@ -791,28 +635,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithR
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ActiveUserKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> token;
     vector<uint8_t> secret;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, ActiveUserKey(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ActiveUserKey_0000";
 }
 
 /**
@@ -826,26 +661,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_InactiveUserKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, InactiveUserKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserKey_0000";
 }
 
 /**
@@ -859,26 +685,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_LockUserScreen_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_LockUserScreen_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->LockUserScreen(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->LockUserScreen(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, LockUserScreen(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->LockUserScreen(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_LockUserScreen_0000";
 }
 
 /**
@@ -892,27 +709,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_LockUserScreen_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStatus_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetFileEncryptStatus_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     bool isEncrypted = false;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetFileEncryptStatus(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetFileEncryptStatus_0000";
 }
 
 /**
@@ -926,27 +734,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStat
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveStatus_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetUserNeedActiveStatus_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     bool needActive = false;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetUserNeedActiveStatus(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetUserNeedActiveStatus_0000";
 }
 
 /**
@@ -960,28 +759,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveS
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UnlockUserScreen_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> token;
     vector<uint8_t> secret;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UnlockUserScreen(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UnlockUserScreen_0000";
 }
 
 /**
@@ -995,27 +785,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatus_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetLockScreenStatus_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     bool lockScreenStatus = false;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetLockScreenStatus(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetLockScreenStatus_0000";
 }
 
 /**
@@ -1029,26 +810,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatu
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateKeyContext_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UpdateKeyContext(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000";
 }
 
 /**
@@ -1062,7 +834,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ResetSdProxy_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     sdCommunication->storageDaemon_ = nullptr;
@@ -1071,7 +842,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_0000,
     sdCommunication->storageDaemon_ = sd;
     EXPECT_CALL(*sd, RemoveDeathRecipient(_)).WillOnce(Return(true));
     EXPECT_EQ(sdCommunication->ResetSdProxy(), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ResetSdProxy_0000";
 }
 
 /**
@@ -1085,28 +855,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateShareFile_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     StorageFileRawData uriList;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->CreateShareFile(uriList, 0, 0)[0], E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
-    EXPECT_EQ(sdCommunication->CreateShareFile(uriList, 0, 0)[0], 0);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->CreateShareFile(uriList, 0, 0)[0], E_OK);
 
     vector<int32_t> funcResult;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, CreateShareFile(_, _, _, _)).WillOnce(DoAll(SetArgReferee<3>(funcResult), Return(E_OK)));
     EXPECT_EQ(sdCommunication->CreateShareFile(uriList, 0, 0).size(), 0);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateShareFile_0000";
 }
 
 /**
@@ -1120,27 +881,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteShareFile_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     StorageFileRawData uriList;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->DeleteShareFile(0, uriList), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->DeleteShareFile(0, uriList), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, DeleteShareFile(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->DeleteShareFile(0, uriList), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteShareFile_0000";
 }
 
 /**
@@ -1154,27 +906,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetBundleQuota_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string bundleDataDirPath;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, SetBundleQuota(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->SetBundleQuota(0, bundleDataDirPath, 0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetBundleQuota_0000";
 }
 
 /**
@@ -1188,27 +931,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOccupiedSpace_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     int64_t size = 0;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetOccupiedSpace(0, 0, size), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetOccupiedSpace(0, 0, size), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetOccupiedSpace(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetOccupiedSpace(0, 0, size), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOccupiedSpace_0000";
 }
 
 /**
@@ -1222,26 +956,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAgain_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountCryptoPathAgain_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountCryptoPathAgain(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCryptoPathAgain_0000";
 }
 
 /**
@@ -1255,27 +980,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAga
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GenerateAppkey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string keyId;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GenerateAppkey(0, 0, keyId), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GenerateAppkey(0, 0, keyId), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GenerateAppkey(0, 0, keyId), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GenerateAppkey_0000";
 }
 
 /**
@@ -1289,26 +1005,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteAppkey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->DeleteAppkey(0, ""), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->DeleteAppkey(0, ""), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, DeleteAppkey(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->DeleteAppkey(0, ""), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteAppkey_0000";
 }
 
 /**
@@ -1322,28 +1029,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateRecoverKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> token;
     vector<uint8_t> secret;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->CreateRecoverKey(0, 0, token, secret), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->CreateRecoverKey(0, 0, token, secret), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, CreateRecoverKey(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->CreateRecoverKey(0, 0, token, secret), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateRecoverKey_0000";
 }
 
 /**
@@ -1357,27 +1055,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetRecoverKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     vector<uint8_t> key;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->SetRecoverKey(key), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->SetRecoverKey(key), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, SetRecoverKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->SetRecoverKey(key), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetRecoverKey_0000";
 }
 
 /**
@@ -1391,27 +1080,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateMemoryPara_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     int32_t oldSize;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UpdateMemoryPara(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateMemoryPara_0000";
 }
 
 /**
@@ -1425,29 +1105,20 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountDfsDocs_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string relativePath;
     string networkId;
     string deviceId;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountDfsDocs(0, relativePath, networkId, deviceId), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountDfsDocs(0, relativePath, networkId, deviceId), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountDfsDocs(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountDfsDocs(0, relativePath, networkId, deviceId), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDfsDocs_0000";
 }
 
 /**
@@ -1461,29 +1132,20 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDfsDocs_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string relativePath;
     string networkId;
     string deviceId;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UMountDfsDocs(0, relativePath, networkId, deviceId), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UMountDfsDocs(0, relativePath, networkId, deviceId), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UMountDfsDocs(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UMountDfsDocs(0, relativePath, networkId, deviceId), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDfsDocs_0000";
 }
 
 /**
@@ -1497,29 +1159,20 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountMediaFuse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountMediaFuse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     int32_t devFd = 0;
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountMediaFuse(0, devFd), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountMediaFuse(0, devFd), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountMediaFuse(_, _)).WillOnce(Return(E_OK));
 #endif
     EXPECT_EQ(sdCommunication->MountMediaFuse(0, devFd), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountMediaFuse_0000";
 }
 
 /**
@@ -1533,28 +1186,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountMediaFuse_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountMediaFuse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UMountMediaFuse(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UMountMediaFuse(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UMountMediaFuse(_)).WillOnce(Return(E_OK));
 #endif
     EXPECT_EQ(sdCommunication->UMountMediaFuse(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountMediaFuse_0000";
 }
 
 /**
@@ -1568,28 +1212,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountFileMgrFuse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string path;
     int32_t fuseFd = 0;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountFileMgrFuse(0, path, fuseFd), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountFileMgrFuse(0, path, fuseFd), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountFileMgrFuse(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountFileMgrFuse(0, path, fuseFd), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountFileMgrFuse_0000";
 }
 
 /**
@@ -1603,27 +1238,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountFileMgrFuse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     string path;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UMountFileMgrFuse(0, path), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UMountFileMgrFuse(0, path), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UMountFileMgrFuse(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UMountFileMgrFuse(0, path), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountFileMgrFuse_0000";
 }
 
 /**
@@ -1637,27 +1263,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDisShareFile_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountDisShareFile_0001 SUCCESS";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     std::map<std::string, std::string> shareFiles;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountDisShareFile(0, shareFiles), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountDisShareFile(0, shareFiles), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountDisShareFile(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountDisShareFile(0, shareFiles), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDisShareFile_0001 SUCCESS";
 }
 
 /**
@@ -1671,27 +1288,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDisShareFile_
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDisShareFile_0001 SUCCESS";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     std::string networkId;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UMountDisShareFile(0, networkId), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UMountDisShareFile(0, networkId), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UMountDisShareFile(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UMountDisShareFile(0, networkId), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDisShareFile_0001 SUCCESS";
 }
 
 /**
@@ -1705,26 +1313,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserPublicDirKey_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_InactiveUserPublicDirKey_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->InactiveUserPublicDirKey(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->InactiveUserPublicDirKey(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, InactiveUserPublicDirKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->InactiveUserPublicDirKey(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserPublicDirKey_0000";
 }
 
 /**
@@ -1738,26 +1337,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserPublic
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserPublicDirPolicy_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserPublicDirPolicy_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UpdateUserPublicDirPolicy(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UpdateUserPublicDirPolicy(0), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserPublicDirPolicy_0000";
 }
 
 /**
@@ -1771,28 +1361,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserPublicDi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpaceForSa_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryOccupiedSpaceForSa_001";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
     std::string str;
     std::map<int32_t, std::string> bundleNameAndUid;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, InactiveUserPublicDirKey(_)).WillRepeatedly(Return(E_OK));
+    MockAllSuccess();
+    EXPECT_CALL(*sd, QueryOccupiedSpaceForSa(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CheckDirSize_001";
 }
 
 /**
@@ -1806,39 +1387,20 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpace
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountUsbFuse_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     std::string volumeId = "vol-usb-001";
     int fuseFd = -1;
     std::string fsUuid;
-
-    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_SA_IS_NULLPTR);
 
-    // Test Connect() failure branch - GetSystemAbility returns nullptr
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_REMOTE_IS_NULLPTR);
-
-    // Test storageDaemon_ == nullptr branch after Connect() success
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_SERVICE_IS_NULLPTR);
 
-    // Test normal success path
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, MountUsbFuse(volumeId, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
 }
 
 /**
@@ -1852,27 +1414,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActivationCallback_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_RegisterUeceActivationCallback_001";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, RegisterUeceActivationCallback(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RegisterUeceActivationCallback_001";
 }
 
 /**
@@ -1886,26 +1439,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActiva
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActivationCallback_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 begin";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, UnregisterUeceActivationCallback()).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_OK);
-    GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 end";
 }
 
 /**
@@ -1919,30 +1463,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Daemon_communication_CreateUserDir_001 begin ";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_SA_IS_NULLPTR);
 
-    // Test storageDaemon_ == nullptr branch after Connect() success
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_SERVICE_IS_NULLPTR);
 
-    // Test normal success path
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, CreateUserDir(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->CreateUserDir("", 0, 0, 0), E_OK);
-
-    GTEST_LOG_(INFO) << "Daemon_communication_CreateUserDir_001 end";
 }
 
 /**
@@ -1956,30 +1487,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001,
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserDir_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 begin ";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_SA_IS_NULLPTR);
 
-    // Test storageDaemon_ == nullptr branch after Connect() success
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_SERVICE_IS_NULLPTR);
 
-    // Test normal success path
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, DeleteUserDir(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->DeleteUserDir(""), E_OK);
-
-    GTEST_LOG_(INFO) << "Daemon_communication_DeleteUserDir_001 end";
 }
 
 /**
@@ -1993,24 +1511,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserDir_001,
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSecretWithRecoveryKey_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Daemon_communication_ResetSecretWithRecoveryKey_001 begin ";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     uint32_t userId = 100;
     uint32_t rkType = 100;
-
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, {}), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, {}), E_SERVICE_IS_NULLPTR);
 
-    GTEST_LOG_(INFO) << "Daemon_communication_ResetSecretWithRecoveryKey_001 end";
+    MockAllSuccess();
+    EXPECT_CALL(*sd, ResetSecretWithRecoveryKey(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, {}), E_OK);
 }
 
 /**
@@ -2024,22 +1537,21 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSecretWithRec
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Daemon_communication_IsFileOccupied_001 begin ";
     ASSERT_TRUE(sdCommunication != nullptr);
 
     const std::string path = "test_file.txt";
     const std::vector<std::string> inputList = {"unrelated_process_1", "unrelated_process_2"};
     std::vector<std::string> outputList;
     bool status = true;
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_SERVICE_IS_NULLPTR);
 
-    GTEST_LOG_(INFO) << "Daemon_communication_VerifyAncoUserDirs_001 end";
+    MockAllSuccess();
+    EXPECT_CALL(*sd, IsFileOccupied(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->IsFileOccupied(path, inputList, outputList, status), E_OK);
 }
 
 /**
@@ -2053,40 +1565,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDataSizeByPath_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDataSizeByPath_001";
     ASSERT_TRUE(sdCommunication != nullptr);
+
     std::string path = "/data/test/path";
     int64_t size = 0;
-
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_REMOTE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, GetDataSizeByPath(_, _)).WillOnce(DoAll(testing::SetArgReferee<1>(1024), Return(E_OK)));
-    EXPECT_EQ(sdCommunication->GetDataSizeByPath(path, size), E_OK);
-    EXPECT_EQ(size, 1024);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetDataSizeByPath(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetDataSizeByPath("", size), E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDataSizeByPath_001";
 }
 
 /**
@@ -2102,34 +1593,16 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize
 {
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetRmgResourceSize_001";
     ASSERT_TRUE(sdCommunication != nullptr);
+
     std::string rgmName = "rgm_hmos";
     uint64_t totalSize = 0;
-
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    MockConnectFail();
     EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_SA_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
-    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_REMOTE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
+    MockStorageDaemonNullptr();
     EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_SERVICE_IS_NULLPTR);
 
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, GetRmgResourceSize(_, _)).WillOnce(DoAll(testing::SetArgReferee<1>(2048), Return(E_OK)));
-    EXPECT_EQ(sdCommunication->GetRmgResourceSize(rgmName, totalSize), E_OK);
-    EXPECT_EQ(totalSize, 2048);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    MockAllSuccess();
     EXPECT_CALL(*sd, GetRmgResourceSize(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetRmgResourceSize("", totalSize), E_OK);
 

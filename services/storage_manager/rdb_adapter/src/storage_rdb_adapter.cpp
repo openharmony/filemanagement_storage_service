@@ -40,15 +40,15 @@ int32_t StorageRdbAdapter::Init()
 {
     LOGI("rdb init start");
     int32_t retryTimes = RDB_INIT_MAX_TIMES;
-    uint32_t attemptedTimes = 0;
     while (retryTimes > 0) {
-        attemptedTimes++;
         std::error_code errorCode;
         if (!std::filesystem::exists(STORAGE_MANAGER_RDB_PATH, errorCode)) {
+            usleep(RDB_INIT_INTERVAL_TIME);
+            retryTimes--;
             continue;
         }
         if (GetRDBPtr() == E_OK) {
-            LOGI("rdb init success, attempted times: %{public}u", attemptedTimes);
+            LOGI("rdb init success");
             return E_OK;
         }
         usleep(RDB_INIT_INTERVAL_TIME);
@@ -155,8 +155,14 @@ int32_t OpenCallback::CreateTable(NativeRdb::RdbStore &store)
     std::string sql = StorageService::CREATE_BUNDLE_EXT_STATS_TABLE_SQL;
     int32_t errCode = store.ExecuteSql(sql);
     if (errCode != E_OK) {
-        LOGE("rdb adapter create table failed, errCode is %{public}d", errCode);
+        LOGE("create ext bundle stats table failed, errCode is %{public}d", errCode);
         return E_DB_CREATE_BUNDLE_TABLE_ERROR;
+    }
+    sql = StorageService::CREATE_CLEAN_NOTIFY_TABLE_SQL;
+    errCode = store.ExecuteSql(sql);
+    if (errCode != E_OK) {
+        LOGE("create clean notify table failed, errCode is %{public}d", errCode);
+        return E_DB_CREATE_CLEAN_NOTIFY_TABLE_ERROR;
     }
     return E_OK;
 }

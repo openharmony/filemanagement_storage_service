@@ -54,9 +54,17 @@ private:
     void ParseStorageParameters(int64_t totalSize);
     void UpdateBaseLineByUid();
     std::string GetStorageAlertCleanupParams();
+    std::string GetJsonString(const std::string &faultDesc, const std::string &faultSuggest, bool isHighFreq);
 
     // stats
     void HapAndSaStatisticsThd();
+
+    void PutLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime);
+    void PublishCleanCacheEvent(const std::string &cleanLevel);
+    void UpdateLastNotifyTimeToDB(const std::string &cleanLevel, int64_t dbTime);
+    void SendCommonEventToCleanCache(const std::string &cleanLevel);
+    int32_t GetLastNotifyTimeFromDB(const std::string &cleanLevel, int64_t &lastNotifyTime, int32_t &rowCount);
+    std::mutex notifyCleanMtx_;
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;

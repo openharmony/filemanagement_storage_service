@@ -154,6 +154,7 @@ ohos_unittest("storage_monitor_service_test") {
 
   sources = [
     "${storage_service_path}/test/unittest/mock/src/storage_total_status_service_mock.cpp",
+    "${storage_manager_path}/mock/storage_rdb_adapter_mock.cpp",
     "storage_monitor_service_test.cpp",
   ]
 
@@ -162,6 +163,9 @@ ohos_unittest("storage_monitor_service_test") {
     "${storage_manager_path}/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
     "${storage_service_path}/test/unittest/mock/include",
+    "${storage_manager_path}/include/mock/",
+    "${storage_manager_path}/include/rdb_adapter/",
+    "${storage_service_common_path}/include/",
   ]
 
   defines = [
@@ -173,12 +177,14 @@ ohos_unittest("storage_monitor_service_test") {
   deps = [ "${storage_service_path}/services/storage_manager:storage_manager" ]
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "relational_store:native_rdb",
   ]
 }
 
@@ -189,6 +195,7 @@ ohos_unittest("storage_status_manager_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_manager"
 

@@ -49,20 +49,18 @@ public:
 void ExternalVolumeInfoTestSub::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub SetUpTestCase";
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void ExternalVolumeInfoTestSub::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "ExternalVolumeInfoTestSub TearDownTestCase";
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
 }
 
 void ExternalVolumeInfoTestSub::SetUp()
 {
     externalVolumeInfo_ = new ExternalVolumeInfo();
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
 
 void ExternalVolumeInfoTestSub::TearDown(void)
@@ -71,6 +69,8 @@ void ExternalVolumeInfoTestSub::TearDown(void)
         delete externalVolumeInfo_;
         externalVolumeInfo_ = nullptr;
     }
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
 }
 
 /**

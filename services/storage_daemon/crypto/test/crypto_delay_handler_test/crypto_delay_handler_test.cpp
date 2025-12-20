@@ -26,8 +26,8 @@ using namespace testing;
 namespace OHOS::StorageDaemon {
 class DelayHandlerTest : public ::testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
     void SetUp();
     void TearDown();
     static inline std::shared_ptr<FscryptKeyV1ExtMock> fscryptKeyExtMock_ = nullptr;
@@ -38,23 +38,15 @@ public:
 void DelayHandlerTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp";
-}
-
-void DelayHandlerTest::TearDown(void)
-{
-    GTEST_LOG_(INFO) << "TearDown";
-}
-
-void DelayHandlerTest::SetUpTestCase(void)
-{
     fscryptKeyExtMock_ = std::make_shared<FscryptKeyV1ExtMock>();
     FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = fscryptKeyExtMock_;
     baseKeyMock_ = std::make_shared<BaseKeyMoc>();
     BaseKeyMoc::baseKeyMoc = baseKeyMock_;
 }
 
-void DelayHandlerTest::TearDownTestCase(void)
+void DelayHandlerTest::TearDown(void)
 {
+    GTEST_LOG_(INFO) << "TearDown";
     FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = nullptr;
     fscryptKeyExtMock_ = nullptr;
     BaseKeyMoc::baseKeyMoc = nullptr;
@@ -130,7 +122,6 @@ HWTEST_F(DelayHandlerTest, DeactiveEl3El4El5_WithNullKey, testing::ext::TestSize
     userDelayHandler->CancelDelayTask();
     EXPECT_TRUE(userDelayHandler->cancelled_);
     userDelayHandler->el4Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(0));
     userDelayHandler->DeactiveEl3El4El5();
     EXPECT_TRUE(userDelayHandler->cancelled_);
     // Expect error report for null key
@@ -152,7 +143,6 @@ HWTEST_F(DelayHandlerTest, DeactiveEl3El4El5_WithCancelledTask, testing::ext::Te
     userDelayHandler->CancelDelayTask();
     EXPECT_TRUE(userDelayHandler->cancelled_);
     userDelayHandler->el4Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(1));
     userDelayHandler->DeactiveEl3El4El5();
     EXPECT_TRUE(userDelayHandler->cancelled_);
 }

@@ -49,6 +49,11 @@ const std::string CREATE_BUNDLE_EXT_STATS_TABLE_SQL = "CREATE TABLE IF NOT EXIST
     showFlag                   INTEGER NOT NULL, \
     PRIMARY KEY (businessName, userId) \
 );";
+const std::string CREATE_CLEAN_NOTIFY_TABLE_SQL = "CREATE TABLE IF NOT EXISTS clean_notify_table  \
+( \
+    cleanLevelName             TEXT NOT NULL, \
+    lastCleanNotifyTime        INTEGER NOT NULL DEFAULT 0 \
+);";
 const std::string BUSINESS_NAME = "businessName";
 const std::string BUSINESS_SIZE = "businessSize";
 const std::string USER_ID = "userId";
@@ -61,6 +66,22 @@ const std::string SELECT_BUNDLE_EXT_SQL = "SELECT * FROM bundle_ext_stats_table 
     "WHERE businessName = ? AND userId = ? LIMIT 1";
 const std::string SELECT_ALL_BUNDLE_EXT_SQL = "SELECT * FROM bundle_ext_stats_table "
     "WHERE userId = ?";
+
+const std::string CLEAN_LEVEL = "clean_level";
+const std::string LEVEL_NAME = "cleanLevelName";
+const std::string LAST_CLEAN_NOTIFY_TIME = "lastCleanNotifyTime";
+const std::string CLEAN_NOTIFY_TABLE = "clean_notify_table ";
+const std::string WHERE_CLAUSE_LEVEL = "cleanLevelName = ?";
+const std::string SELECT_CLEAN_NOTIFY_SQL =
+    "SELECT * FROM `clean_notify_table` WHERE `cleanLevelName` = ?";
+static const std::string CLEAN_LEVEL_LOW = "clean_level_low";
+static const std::string CLEAN_LEVEL_MEDIUM = "clean_level_medium";
+static const std::string CLEAN_LEVEL_HIGH = "clean_level_high";
+static const std::string CLEAN_LEVEL_RICH = "clean_level_rich";
+constexpr int32_t CLEAN_LOW_TIME = 1 * 60; // min
+constexpr int32_t CLEAN_MEDIUM_TIME = 24 * 60 * 60; // day
+constexpr int32_t CLEAN_HIGH_TIME = 7 * 24 * 60 * 60; // week
+constexpr int32_t CLEAN_RICH_TIME = 7 * 24 * 60 * 60; // week
 }
 
 namespace StorageDaemon {

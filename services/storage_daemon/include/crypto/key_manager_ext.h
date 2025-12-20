@@ -69,7 +69,6 @@ private:
     int DoInactiveUserKey(uint32_t userId);
     int GenerateAndInstallUserKey(uint32_t userId);
     bool IsServiceExtSoLoaded() { return service_ != nullptr; }
-    void SetMockService(UserkeyExtInterface* mockService) { service_ = mockService; }
 
     std::mutex keyMutex_;
     UserkeyExtInterface* service_ = nullptr;

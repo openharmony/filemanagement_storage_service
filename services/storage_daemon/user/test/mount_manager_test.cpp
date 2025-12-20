@@ -55,8 +55,8 @@ class MountManagerTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
 
     void CreateFile(const std::string &path, std::string data = "");
     void DeleteFile(const std::string &path);
@@ -69,23 +69,27 @@ public:
 void MountManagerTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    fileUtilMoc_ = make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
-    libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
-    LibraryFuncMock::libraryFunc_ = libraryFuncMock_;
-    paramMoc_ = std::make_shared<ParamMoc>();
-    ParamMoc::paramMoc_ = paramMoc_;
 }
 
 void MountManagerTest::TearDownTestCase()
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
+}
+
+void MountManagerTest::SetUp(void)
+{
+    fileUtilMoc_ = make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
+    LibraryFuncMock::libraryFunc_ = libraryFuncMock_;
+}
+
+void MountManagerTest::TearDown()
+{
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
     LibraryFuncMock::libraryFunc_ = nullptr;
     libraryFuncMock_ = nullptr;
-    ParamMoc::paramMoc_ = nullptr;
-    paramMoc_ = nullptr;
 }
 
 void MountManagerTest::CreateFile(const std::string &path, std::string data)
@@ -649,8 +653,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EBUSY;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
@@ -658,16 +660,12 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EEXIST;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 end";
@@ -689,30 +687,21 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, Te
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EBUSY;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EEXIST;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     errno = EEXIST;
-    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
     ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
@@ -781,14 +770,14 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountDisShareFile_
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
  
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
 
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_OK);
@@ -806,7 +795,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001 start";
     int32_t userId = 100;
     std::string networkId = "/storage/cloud/100/files/Docs";
-    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(1));
     errno = 5;
     auto ret = MountManager::GetInstance().UMountDisShareFile(userId, networkId);
     EXPECT_EQ(ret, E_OK);

@@ -104,7 +104,8 @@ char **SplitStringExt(char *buffer, const char *del, int *returnCount, int maxIt
         itemCounts = defaultItemCounts;
     }
     char **items = (char **)malloc(sizeof(char*) * itemCounts);
-    FSCRYPT_ERROR_CHECK(items != NULL, return NULL, "No enough memory to store items");
+    FSCRYPT_ERROR_CHECK(items != NULL, free(items);
+        return NULL, "No enough memory to store items");
     char *rest = NULL;
     char *p = strtok_r(buffer, del, &rest);
     int count = 0;

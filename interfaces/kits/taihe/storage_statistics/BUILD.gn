@@ -68,6 +68,7 @@ taihe_shared_library("storage_statistics_taihe") {
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
     "src/ani_constructor.cpp",
     "src/ohos.file.storageStatistics.impl.cpp",
+    "src/storageStatistics_taihe_error.cpp",
   ]
 
   deps = [

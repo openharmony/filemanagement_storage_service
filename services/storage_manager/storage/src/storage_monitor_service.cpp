@@ -32,6 +32,8 @@
 #include "storage/storage_total_status_service.h"
 #include "storage_service_constant.h"
 #include "dfx_report/storage_dfx_reporter.h"
+#include "storage_service_constant.h"
+#include "storage_rdb_adapter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -155,6 +157,8 @@ void StorageMonitorService::MonitorAndManageStorage()
          static_cast<long long>(thresholds["clean_h"]));
     if (freeSize < thresholds["clean_h"]) {
         CheckAndCleanCache(freeSize, totalSize);
+    } else {
+        SendCommonEventToCleanCache(CLEAN_LEVEL_RICH);
     }
 
     LOGI("notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
@@ -249,6 +253,7 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     std::string storageUsage = "storage usage not enough:freeSize = " + freeSizeStr + ", totalSize = " + totalSizeStr +
                                ", lowThreshold = " + lowThresholdStr;
     if (freeSize < lowThreshold) {
+        SendCommonEventToCleanCache(CLEAN_LEVEL_LOW);
         CleanBundleCache(lowThreshold);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_LOW, storageUsage);
         LOGI("Device running out of storage");
@@ -256,9 +261,11 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     }
 
     if (freeSize > thresholds["clean_m"]) {
+        SendCommonEventToCleanCache(CLEAN_LEVEL_HIGH);
         CleanBundleCacheByInterval(TIMESTAMP_WEEK, lowThreshold, CLEAN_CACHE_WEEK);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_HIGH, storageUsage);
     } else {
+        SendCommonEventToCleanCache(CLEAN_LEVEL_MEDIUM);
         CleanBundleCacheByInterval(TIMESTAMP_DAY, lowThreshold, SEND_EVENT_INTERVAL);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_MEDIUM, storageUsage);
     }
@@ -335,6 +342,46 @@ void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalS
     EventNotifyFreqHandlerForHigh();
 }
 
+std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
+    const std::string &faultSuggest, bool isHighFreq)
+{
+    std::string eventDataStr = "{}";
+    cJSON *root = cJSON_CreateObject();
+    if (root == nullptr) {
+        LOGE("Create json object failed.");
+        return eventDataStr;
+    }
+    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
+    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
+    if (isHighFreq) {
+        cJSON *faultSuggestionParam = cJSON_CreateString("500M");
+        if (faultSuggestionParam == nullptr) {
+            LOGE("Create json string failed.");
+            cJSON_Delete(root);
+            return eventDataStr;
+        }
+        cJSON *faultSuggestionArray = cJSON_CreateArray();
+        if (faultSuggestionArray == nullptr) {
+            LOGE("Create json array failed.");
+            cJSON_Delete(faultSuggestionParam);
+            cJSON_Delete(root);
+            return eventDataStr;
+        }
+        cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
+        cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
+    }
+    char *json_string = cJSON_Print(root);
+    if (json_string == nullptr) {
+        LOGE("Print json string failed.");
+        cJSON_Delete(root);
+        return eventDataStr;
+    }
+    eventDataStr = json_string;
+    cJSON_free(json_string);
+    cJSON_Delete(root);
+    return eventDataStr;
+}
+
 void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
                                                        const std::string &faultSuggest,
                                                        bool isHighFreq)
@@ -353,24 +400,12 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     EventFwk::CommonEventData eventData;
     eventData.SetWant(want);
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
-    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
-    if (isHighFreq) {
-        cJSON *faultSuggestionParam = cJSON_CreateString("500M");
-        cJSON *faultSuggestionArray = cJSON_CreateArray();
-        cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
-        cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
-    }
-    char *json_string = cJSON_Print(root);
-    std::string eventDataStr(json_string);
+    std::string eventDataStr = GetJsonString(faultDesc, faultSuggest, isHighFreq);
     eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\n'), eventDataStr.end());
     eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\t'), eventDataStr.end());
 
     LOGI("send message is %{public}s", eventDataStr.c_str());
     eventData.SetData(eventDataStr);
-    free(json_string);
-    cJSON_Delete(root);
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
 
@@ -450,6 +485,127 @@ void StorageMonitorService::HapAndSaStatisticsThd()
     StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
     auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
     eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
+}
+
+void StorageMonitorService::SendCommonEventToCleanCache(const std::string &cleanLevel)
+{
+    if (cleanLevel.empty()) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(notifyCleanMtx_);
+    time_t now = std::time(nullptr);
+    if (now == static_cast<time_t>(E_ERR)) {
+        LOGE("get sys time failed, errno is %{public}d", errno);
+        return;
+    }
+    int64_t curTime = static_cast<int64_t>(now);
+    StorageRdbAdapter::GetInstance().Init();
+    int64_t lastNotifyTime;
+    int32_t rowCount = ROWCOUNT_INIT;
+    int32_t ret = GetLastNotifyTimeFromDB(cleanLevel, lastNotifyTime, rowCount);
+    if (ret != E_OK) {
+        StorageRdbAdapter::GetInstance().UnInit();
+        std::string extraData = "errcode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("SendCommonEventToCleanCache", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
+        LOGE("get last notify time failed, ret is %{public}d", ret);
+        return;
+    }
+    if (rowCount == 0) {
+        PublishCleanCacheEvent(cleanLevel);
+        PutLastNotifyTimeToDB(cleanLevel, curTime);
+        StorageRdbAdapter::GetInstance().UnInit();
+        return;
+    }
+    int64_t interval = curTime - lastNotifyTime;
+    if ((cleanLevel == CLEAN_LEVEL_LOW && interval < CLEAN_LOW_TIME) ||
+        (cleanLevel == CLEAN_LEVEL_MEDIUM && interval < CLEAN_MEDIUM_TIME) ||
+        (cleanLevel == CLEAN_LEVEL_HIGH && interval < CLEAN_HIGH_TIME) ||
+        (cleanLevel == CLEAN_LEVEL_RICH && interval < CLEAN_RICH_TIME)) {
+        StorageRdbAdapter::GetInstance().UnInit();
+        return;
+    }
+    PublishCleanCacheEvent(cleanLevel);
+    UpdateLastNotifyTimeToDB(cleanLevel, curTime);
+    StorageRdbAdapter::GetInstance().UnInit();
+    return;
+}
+
+int32_t StorageMonitorService::GetLastNotifyTimeFromDB(const std::string &cleanLevel, int64_t &lastNotifyTime,
+    int32_t &rowCount)
+{
+    std::string sql = SELECT_CLEAN_NOTIFY_SQL;
+    std::vector<NativeRdb::ValueObject> bindArgs;
+    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<std::string>(cleanLevel)));
+    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
+    if (resultSet == nullptr) {
+        LOGE("result set is nullptr");
+        return E_ERR;
+    }
+    resultSet->GetRowCount(rowCount);
+    if (rowCount == 0) {
+        resultSet->Close();
+        return E_OK;
+    }
+    int32_t ret = resultSet->GoToNextRow();
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("go to next row failed, ret is %{public}d", ret);
+        return E_ERR;
+    }
+    NativeRdb::RowEntity rowEntity;
+    ret = resultSet->GetRow(rowEntity);
+    if (ret != E_OK) {
+        resultSet->Close();
+        LOGE("get row failed, ret is %{public}d.", ret);
+        return E_ERR;
+    }
+    lastNotifyTime = rowEntity.Get(LAST_CLEAN_NOTIFY_TIME);
+    resultSet->Close();
+    return E_OK;
+}
+
+void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel)
+{
+    AAFwk::Want want;
+    want.SetAction("usual.event.DEVICE_STORAGE_LOW");
+    EventFwk::CommonEventData commonData{want};
+    want.SetParam(CLEAN_LEVEL, static_cast<std::string>(cleanLevel));
+    EventFwk::CommonEventManager::PublishCommonEvent(commonData);
+    LOGI("Send usual.event.DEVICE_STORAGE_LOW event success, type is %{public}s.", cleanLevel.c_str());
+}
+
+void StorageMonitorService::PutLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime)
+{
+    LOGI("put last notify time start, type is %{public}s.", cleanLevel.c_str());
+    std::string table = CLEAN_NOTIFY_TABLE;
+    NativeRdb::ValuesBucket insertValues;
+    insertValues.PutString(LEVEL_NAME, cleanLevel);
+    insertValues.PutLong(LAST_CLEAN_NOTIFY_TIME, curTime);
+    int64_t insertRowId = ROWCOUNT_INIT;
+    int32_t ret = StorageRdbAdapter::GetInstance().Put(insertRowId, table, insertValues);
+    if (ret != E_OK) {
+        std::string extraData = "errcode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("PutLastNotifyTimeToDB", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
+        LOGE("put last notify time failed, ret is %{public}d.", ret);
+    }
+}
+
+void StorageMonitorService::UpdateLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime)
+{
+    LOGI("update last notify time start, type is %{public}s.", cleanLevel.c_str());
+    std::string table = CLEAN_NOTIFY_TABLE;
+    std::vector<NativeRdb::ValueObject> bindArgs;
+    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<std::string>(cleanLevel)));
+    NativeRdb::ValuesBucket updateValues;
+    updateValues.PutLong(LAST_CLEAN_NOTIFY_TIME, curTime);
+    int32_t rowCount = ROWCOUNT_INIT;
+    std::string whereClause = WHERE_CLAUSE_LEVEL;
+    int32_t ret = StorageRdbAdapter::GetInstance().Update(rowCount, table, updateValues, whereClause, bindArgs);
+    if (ret != E_OK) {
+        std::string extraData = "errcode=" + std::to_string(ret);
+        StorageRadar::ReportSpaceRadar("UpdateLastNotifyTimeToDB", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
+        LOGE("update last notify time failed, ret is %{public}d", ret);
+    }
 }
 } // StorageManager
 } // OHOS

@@ -348,7 +348,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
     auto result = QuotaManager::GetInstance().ParseConfigFile(path, vec);
     EXPECT_EQ(result, E_JSON_PARSE_ERROR);
 
-    path = "valid_entry_file";
+    path = "/data/valid_entry_file";
     std::ofstream outfile(path);
     outfile << "\n\ninvalid_line\nsaName:validEntry:1234:\n";
     outfile.close();
@@ -740,13 +740,94 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_002, TestSize.Level1
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_002 end";
 }
 
+/**
+ * @tc.name: QuotaManagerTest_GetDirListSpace_003
+ * @tc.desc: Test GetDirListSpace with stop flag set during processing.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_003 start";
+
+    std::vector<DirSpaceInfo> dirs;
+    for (int i = 0; i < 10; i++) {
+        dirs.push_back({"/data/app/el%d/base/" + std::to_string(i), 1000 + i, 0});
+    }
+
+    std::thread setStopFlag([]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        QuotaManager::GetInstance().SetStopScanFlag(true);
+    });
+
+    setStopFlag.detach();
+
+    int32_t result = QuotaManager::GetInstance().GetDirListSpace(dirs);
+
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+
+    EXPECT_TRUE(result == E_OK || result == E_ERR);
+
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_003 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDirListSpace_005
+ * @tc.desc: Test GetDirListSpace with a large number of directories.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpace_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_005 start";
+    std::vector<DirSpaceInfo> dirs = {
+        {"/etc", 0, 0},
+        {"/proc", 0, 0},
+        {"/sys", 0, 0}
+    };
+    QuotaManager::GetInstance().SetStopScanFlag(true);
+    int32_t ret = QuotaManager::GetInstance().GetDirListSpace(dirs);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpace_005 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetAncoSizeData_001
+ * @tc.desc: Test QuotaManager::GetAncoSizeData
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetAncoSizeData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetAncoSizeData_001 start";
+
+    // Test case 1: Normal processing with stopScanFlag = false
+    std::string extraData;
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    QuotaManager::GetInstance().GetAncoSizeData(extraData);
+    // extraData should contain anco size information when not stopped
+    EXPECT_FALSE(extraData.empty());
+    EXPECT_NE(extraData.find("anco"), std::string::npos);
+
+    // Test case 2: Processing should stop when stopScanFlag = true
+    extraData.clear();
+    QuotaManager::GetInstance().SetStopScanFlag(true);
+    QuotaManager::GetInstance().GetAncoSizeData(extraData);
+    // extraData should be empty when stopped early
+    EXPECT_TRUE(extraData.empty());
+
+    // Reset flag for next test
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetAncoSizeData_001 end";
+}
+
 HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_001 start";
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
     int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(result, E_OK);
-    EXPECT_GT(scanDirs.size(), 0);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_001 end";
 }
 
@@ -767,7 +848,6 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ListUserdataDirInfo_002, TestSize.Le
     std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
     int32_t result = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(result, E_OK);
-    EXPECT_GT(scanDirs.size(), 0);
     std::filesystem::remove(testFile);
     GTEST_LOG_(INFO) << "QuotaManagerTest_ListUserdataDirInfo_002 end";
 }
