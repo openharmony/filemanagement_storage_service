@@ -112,18 +112,20 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseUmount(const std::string &volumeId
 bool VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
 {
     LOGI("IsUsbFuseByType in");
+    bool enabled = true;
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
+        return enabled;
     }
     FuncUsbFuseByType funcUsbFuseByType = (FuncUsbFuseByType)dlsym(handler_, "IsUsbFuseByType");
     if (funcUsbFuseByType == nullptr) {
         LOGE("Failed to get function pointer for IsUsbFuseByType");
-        return E_PARAMS_NULLPTR_ERR;
+        return enabled;
     }
-    bool enabled = false;
-    funcUsbFuseByType(fsType, enabled);
-    LOGI("funcUsbFuseByType. fsType: %{public}s, enabled: %{public}d", fsType.c_str(), enabled);
+    if (funcUsbFuseByType(fsType, enabled) != E_OK) {
+        LOGE("IsUsbFuseByType fail");
+        return enabled;
+    }
     return enabled;
 }
 } // StorageManager

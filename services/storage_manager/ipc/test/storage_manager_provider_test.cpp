@@ -1671,5 +1671,23 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirI
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_IsUsbFuseByType_001
+ * @tc.desc: Verify the IsUsbFuseByType function.
+ * @tc.type: FUNC
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsUsbFuseByType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsUsbFuseByType_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string fsType = "f2fs";
+    auto enabled = true;
+    auto ret = storageManagerProviderTest_->IsUsbFuseByType(fsType, enabled);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_FALSE(enabled);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsUsbFuseByType_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

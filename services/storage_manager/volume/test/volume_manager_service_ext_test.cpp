@@ -175,4 +175,45 @@ HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_NotifyUsbFuseUm
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_NotifyUsbFuseUmount_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_ext_IsUsbFuseByType_0000
+ * @tc.name: Volume_manager_service_ext_IsUsbFuseByType_0000
+ * @tc.desc: Test function of IsUsbFuseByType for UNSUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_IsUsbFuseByType_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_IsUsbFuseByType_0000";
+    auto &vmServiceExt = VolumeManagerServiceExt::GetInstance();
+    int32_t num = 0;
+    vmServiceExt.handler_ = (void *)&num;
+    std::string fsType = "f2fs";
+    auto enabled = vmServiceExt.IsUsbFuseByType(fsType);
+    EXPECT_TRUE(enabled);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_IsUsbFuseByType_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_ext_IsUsbFuseByType_0001
+ * @tc.name: Volume_manager_service_ext_IsUsbFuseByType_0001
+ * @tc.desc: Test function of IsUsbFuseByType for UNSUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceExtTest, Volume_manager_service_ext_IsUsbFuseByType_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-begin Volume_manager_service_ext_IsUsbFuseByType_0001";
+    auto &vmServiceExt = VolumeManagerServiceExt::GetInstance();
+    vmServiceExt.handler_ = nullptr;
+    std::string fsType = "f2fs";
+    auto enabled = vmServiceExt.IsUsbFuseByType(fsType);
+    EXPECT_TRUE(enabled);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceExtTest-end Volume_manager_service_ext_IsUsbFuseByType_0001";
+}
 } // namespace
