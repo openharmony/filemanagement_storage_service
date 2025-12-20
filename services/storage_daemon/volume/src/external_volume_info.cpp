@@ -323,11 +323,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    if (IsUsbFuse()) {
-        ret = CreateFuseMountPath();
-    } else {
-        ret = CreateMountPath();
-    }
+    ret = IsUsbFuse() ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
         return ret;
     }
@@ -355,6 +351,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("Mount timed out");
         remove(mountPath_.c_str());
         mountThread.detach();
+        mountPath_ = mountBackupPath_;
         return E_TIMEOUT_MOUNT;
     }
     ret = future.get();
@@ -362,6 +359,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
+        mountPath_ = mountBackupPath_;
         return ret;
     }
     mountPath_ = mountBackupPath_;
