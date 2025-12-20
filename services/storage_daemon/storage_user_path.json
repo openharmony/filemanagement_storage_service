@@ -823,6 +823,12 @@
             "gid": 1008
         },
         {
+            "path": "/mnt/data/<userId>/media_fuse/Photo",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
             "path": "/mnt/data/<userId>/userExternal",
             "mode": "02771",
             "uid": 1006,
