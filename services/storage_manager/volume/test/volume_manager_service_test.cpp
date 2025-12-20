@@ -107,7 +107,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0001";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-2";
@@ -132,7 +131,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0002";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -158,7 +156,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0003";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -187,7 +184,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0004";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -216,7 +212,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0005";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -245,7 +240,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0006";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -701,7 +695,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
     vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid(fsUuid);
@@ -730,7 +723,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, t
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
     vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
     VolumeExternal ve;
@@ -771,7 +763,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0002, t
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0003";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-8";
     int32_t fsType = 5;
@@ -801,7 +792,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0000, tes
     int32_t fsType = 1;
     std::string diskId = "disk-1-8";
     VolumeCore vc(volumeId, fsType, diskId);
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
     VolumeExternal ve;
     int32_t result = vmService.GetVolumeById(volumeId, ve);
@@ -846,7 +836,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
     int32_t fsType = 1;
     std::string diskId = "disk-1-10";
     VolumeCore vc(volumeId, fsType, diskId);
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     vmService.OnVolumeCreated(vc);
     std::string fsUuid = "uuid-2";
     std::string description = "description-1";
@@ -867,7 +856,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_SetVolumeDescription_0001";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-11";
     int32_t fsType = 1;
@@ -920,7 +908,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_Format_0001";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-12";
     int fsType = 1;
@@ -948,7 +935,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Format_0002";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).Times(2).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId;
     int fsType = 1;
@@ -1044,7 +1030,6 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0003, testin
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Format_0003";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-11";
     string fsTypes = "fs-1";
