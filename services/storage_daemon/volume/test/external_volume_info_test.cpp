@@ -380,7 +380,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_004 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*storageManagerClientMock_, IsUsbFuseByType(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_RMDIR_MOUNT);
@@ -397,7 +396,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_005 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*storageManagerClientMock_, IsUsbFuseByType(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -416,7 +414,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_006 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*storageManagerClientMock_, IsUsbFuseByType(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     auto ret = vol.DoFormat("exfat");
@@ -434,7 +431,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_007 start";
 
     ExternalVolumeInfo vol;
-    EXPECT_CALL(*storageManagerClientMock_, IsUsbFuseByType(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).Times(4).WillOnce(testing::Return(E_WEXITSTATUS));
     auto ret = vol.DoFormat("exfat");

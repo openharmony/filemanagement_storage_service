@@ -444,7 +444,9 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
     int32_t result = VolumeManager::Instance().SetVolumeDescription(volId, description);
     EXPECT_EQ(result, E_NOT_SUPPORT);
 
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
     VolumeManager::Instance().DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_001 end";

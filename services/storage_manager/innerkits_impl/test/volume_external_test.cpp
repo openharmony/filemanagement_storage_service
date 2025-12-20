@@ -136,6 +136,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     int type = 2;
     std::string diskId = "300";
     int32_t state = UNMOUNTED;
+    std::string fsTypeStr = "f2fs";
     bool errorFlag = false;
     int32_t fsType = 1;
     std::string fsUuid = "300";
@@ -147,6 +148,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     parcel.WriteString(diskId);
     parcel.WriteInt32(state);
     parcel.WriteBool(errorFlag);
+    parcel.WriteString(fsTypeStr);
     parcel.WriteInt32(flags);
     parcel.WriteInt32(fsType);
     parcel.WriteString(fsUuid);
@@ -166,6 +168,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetPath(), path);
     EXPECT_EQ(result->GetDescription(), description);
     EXPECT_EQ(result->GetFsTypeString(), FS_TYPE_MAP[fsType]);
+    EXPECT_EQ(result->VolumeCore::GetFsType(), FS_TYPE_MAP[fsType]);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
 }

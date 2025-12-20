@@ -1685,8 +1685,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsUsbFuseByType_
     std::string fsType = "f2fs";
     auto enabled = true;
     auto ret = storageManagerProviderTest_->IsUsbFuseByType(fsType, enabled);
-    EXPECT_TRUE(ret == E_OK);
-    EXPECT_FALSE(enabled);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsUsbFuseByType_001 end";
 }
 } // namespace StorageManager

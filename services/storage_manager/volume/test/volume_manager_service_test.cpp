@@ -1054,6 +1054,25 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0003, testing::
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_IsUsbFuseByType_0001
+ * @tc.name: Volume_manager_service_IsUsbFuseByType_0001
+ * @tc.desc: Test function of IsUsbFuseByType interface for E_NOT_SUPPORT.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_IsUsbFuseByType_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_IsUsbFuseByType_0001";
+    auto &vmService =VolumeManagerService::GetInstance();
+    std::string fsType = "f2fs";
+    auto enabled = vmService.IsUsbFuseByType(fsType);
+    EXPECT_FALSE(enabled);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_IsUsbFuseByType_Format_0001";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_MountUsbFuse_0001
  * @tc.name: Volume_manager_service_MountUsbFuse_0001
  * @tc.desc: Test function of MountUsbFuse interface for volume state is not unmounted.

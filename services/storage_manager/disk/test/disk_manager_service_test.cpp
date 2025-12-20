@@ -319,7 +319,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::e
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     result = dmService.Partition(diskId, type);
-    EXPECT_EQ(result, E_NOT_SUPPORT);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0002";
 }
 

@@ -228,9 +228,9 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_IsUsbFuseByType_001,
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     auto enabled = true;
-    auto ret = storageManagerClient_->IsUsbFuseByType("f2fs", enabled);
+    auto ret = storageManagerClient_->IsUsbFuseByType("exfat", enabled);
     EXPECT_TRUE(ret == E_OK);
-    EXPECT_FALSE(enabled);
+    EXPECT_TRUE(enabled);
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_IsUsbFuseByType_001 end";
 }
