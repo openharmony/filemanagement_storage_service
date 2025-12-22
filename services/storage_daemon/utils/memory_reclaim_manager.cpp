@@ -24,8 +24,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr const char *RECLIAM_FILEPAGE_STRING_FOR_HM = "1";
-constexpr const char *RECLIAM_FILEPAGE_STRING_FOR_LINUX = "file";
+constexpr const char *RECLAIM_FILEPAGE_STRING_FOR_HM = "1";
+constexpr const char *RECLAIM_FILEPAGE_STRING_FOR_LINUX = "file";
 constexpr const char *KERNEL_PARAM_KEY = "ohos.boot.kernel";
 constexpr const char *KERNEL_TYPE_HM = "hongmeng";
 
@@ -47,7 +47,7 @@ bool MemoryReclaimManager::IsHarmonyKernel()
 
 std::string MemoryReclaimManager::GetReclaimContent()
 {
-    return IsHarmonyKernel() ? RECLIAM_FILEPAGE_STRING_FOR_HM : RECLIAM_FILEPAGE_STRING_FOR_LINUX;
+    return IsHarmonyKernel() ? RECLAIM_FILEPAGE_STRING_FOR_HM : RECLAIM_FILEPAGE_STRING_FOR_LINUX;
 }
 
 bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::string &content)
