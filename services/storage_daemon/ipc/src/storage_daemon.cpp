@@ -15,6 +15,7 @@
 
 #include "ipc/storage_daemon.h"
 #include "file_ex.h"
+#include "utils/memory_reclaim_manager.h"
 #include "utils/storage_radar.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
@@ -804,6 +805,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     }
 #endif
     LOGW("Active user key for userId=%{public}d success.", userId);
+    MemoryReclaimManager::ScheduleReclaimCurrentProcess(ACTIVE_USER_KEY_DELAY_SECOND);
     return ret;
 }
 
@@ -1046,6 +1048,7 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
             LOGE("KeyManagerExt InActiveUserKey failed, error = %{public}d, userId %{public}u", result, userId);
         }
     }
+    MemoryReclaimManager::ScheduleReclaimCurrentProcess(LOCK_USER_SCREEN_DELAY_SECOND);
     return ret;
 #else
     return E_OK;

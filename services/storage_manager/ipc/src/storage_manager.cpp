@@ -20,6 +20,7 @@
 
 #include <singleton.h>
 #include "utils/storage_radar.h"
+#include "utils/memory_reclaim_manager.h"
 #ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_monitor_service.h>
 #include <storage/storage_status_manager.h>
@@ -48,6 +49,7 @@ constexpr bool DECRYPTED = false;
 constexpr bool ENCRYPTED = true;
 
 using namespace OHOS::StorageService;
+using namespace OHOS::StorageDaemon;
 namespace OHOS {
 namespace StorageManager {
 
@@ -547,6 +549,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
         LOGE("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, ret);
         StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, ret, "EL2-EL5");
     }
+    MemoryReclaimManager::ScheduleReclaimCurrentProcess(ACTIVE_USER_KEY_DELAY_SECOND);
     return err;
 #else
     return E_OK;
@@ -575,6 +578,7 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
+    MemoryReclaimManager::ScheduleReclaimCurrentProcess(LOCK_USER_SCREEN_DELAY_SECOND);
     return FileSystemCrypto::GetInstance().LockUserScreen(userId);
 #else
     return E_OK;

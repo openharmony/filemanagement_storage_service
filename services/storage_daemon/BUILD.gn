@@ -393,6 +393,7 @@ ohos_shared_library("storage_common_utils") {
     "utils/storage_statistics_radar.cpp",
     "utils/storage_xcollie.cpp",
     "utils/string_utils.cpp",
+    "utils/memory_reclaim_manager.cpp",
   ]
 
   external_deps = [
