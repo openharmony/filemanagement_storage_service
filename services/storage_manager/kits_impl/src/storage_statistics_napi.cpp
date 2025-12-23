@@ -16,6 +16,7 @@
 #include "storage_statistics_napi.h"
 
 #include "storage_statistics_n_exporter.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -40,7 +41,7 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getAllExtBundleStats", GetAllExtBundleStats),
         DECLARE_NAPI_FUNCTION("listUserdataDirInfo", ListUserdataDirInfo),
     };
-    NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
+    FILEMGMT_CALL(napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
 }
 

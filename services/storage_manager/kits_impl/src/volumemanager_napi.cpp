@@ -19,6 +19,7 @@
 #include "napi_module_dfs_service.h"
 #endif
 #include "volumemanager_n_exporter.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -48,7 +49,7 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("off", DfsService::DeviceOffline),
         #endif
     };
-    NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
+    FILEMGMT_CALL(napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
 }
 

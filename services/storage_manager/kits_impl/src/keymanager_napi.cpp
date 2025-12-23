@@ -16,6 +16,7 @@
 #include "keymanager_napi.h"
 
 #include "keymanager_n_exporter.h"
+#include "storage_service_log.h"
  
 namespace OHOS {
 namespace StorageManager {
@@ -27,7 +28,7 @@ namespace StorageManager {
     static napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("deactivateUserKey", DeactivateUserKey),
     };
-    NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
+    FILEMGMT_CALL(napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
 }
  

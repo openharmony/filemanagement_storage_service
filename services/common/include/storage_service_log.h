@@ -65,4 +65,12 @@ static constexpr OHOS::HiviewDFX::HiLogLabel KLOG_LABEL = { LOG_KMSG, LOG_DOMAIN
 #endif
 } // OHOS
 
+#define FILEMGMT_CALL_BASE(theCall, retVal)                                 \
+    do {                                                                    \
+        if ((theCall) != napi_ok) {                                         \
+            LOGE("napi call failed, theCall: %{public}s", #theCall);        \
+            return retVal;                                                  \
+        }                                                                   \
+    } while (0)
+#define FILEMGMT_CALL(theCall)             FILEMGMT_CALL_BASE(theCall, nullptr)
 #endif // STORAGE_SERVICE_UTILS_LOG_H
