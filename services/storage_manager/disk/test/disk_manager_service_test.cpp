@@ -275,12 +275,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
-<<<<<<< HEAD
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
-=======
     system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
->>>>>>> 97f5f8fe (daemon代码)
     dmService.OnDiskCreated(disk);
     result = dmService.Partition(diskId, type);
     dmService.OnDiskDestroyed(diskId);
