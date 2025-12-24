@@ -29,7 +29,7 @@ const int32_t MTP_MAX_LEN = 512;
 const int32_t CNT_ZERO = 0;
 const int32_t CNT_ONE = 1;
 const int32_t CNT_TWO = 2;
-const std::string *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+const std::string FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
 ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
 {
