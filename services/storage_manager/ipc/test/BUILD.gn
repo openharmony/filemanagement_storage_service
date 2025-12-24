@@ -25,6 +25,7 @@ ohos_unittest("storage_manager_provider_test") {
 
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
@@ -118,6 +119,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
 
   sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",
@@ -209,6 +211,7 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
 
 sources = [
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",

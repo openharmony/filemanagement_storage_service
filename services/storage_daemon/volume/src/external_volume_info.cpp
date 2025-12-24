@@ -364,6 +364,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("Mount timed out");
         remove(mountPath_.c_str());
         mountThread.detach();
+        mountPath_ = mountBackupPath_;
         return E_TIMEOUT_MOUNT;
     }
     ret = future.get();
@@ -371,6 +372,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
+        mountPath_ = mountBackupPath_;
         return ret;
     }
     mountPath_ = mountBackupPath_;

@@ -102,10 +102,10 @@ export function getBundleStats(packageName: string, index?: int): Promise<Bundle
         taskpool.execute((): BundleStats => {
             return getBundleStatsSync(packageName, index);
         })
-        .then((ret: NullishType): void => {
+        .then((ret: Any): void => {
             resolve(ret as BundleStats);
         })
-        .catch((ret: NullishType): void => {
+        .catch((ret: Any): void => {
             reject(ret as Error);
         });
     });
@@ -115,10 +115,10 @@ export function getBundleStats(packageName: string, callback: AsyncCallback<Bund
     taskpool.execute((): BundleStats => {
         return getBundleStatsSync(packageName, index);
     })
-    .then((ret: NullishType): void => {
+    .then((ret: Any): void => {
         callback(new BusinessError(), ret as BundleStats);
     })
-    .catch((ret: NullishType): void => {
+    .catch((ret: Any): void => {
         let data: BundleStats = {dataSize: 0, cacheSize: 0, appSize: 0};
         callback(ret as BusinessError, data);
     });
