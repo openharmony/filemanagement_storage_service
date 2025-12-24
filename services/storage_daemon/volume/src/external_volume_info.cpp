@@ -332,11 +332,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    if (IsUsbFuseByType(fsType_)) {
-        ret = CreateFuseMountPath();
-    } else {
-        ret = CreateMountPath();
-    }
+    ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
         return ret;
     }
