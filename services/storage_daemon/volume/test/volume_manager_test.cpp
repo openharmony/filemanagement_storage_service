@@ -271,7 +271,9 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
     std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     int32_t result = VolumeManager::Instance().Check(volId);
     EXPECT_EQ(result, E_CHECK);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
     VolumeManager::Instance().DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_001 end";

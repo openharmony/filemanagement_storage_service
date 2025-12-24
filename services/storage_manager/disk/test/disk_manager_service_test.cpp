@@ -20,12 +20,15 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "mock/file_utils_mock.h"
+#include "mock/mock_parameters.h"
 
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
 using namespace StorageDaemon;
+const std::string *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+
 class DiskManagerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -272,7 +275,12 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     int32_t type = 1;
     int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+<<<<<<< HEAD
     EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
+=======
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+>>>>>>> 97f5f8fe (daemon代码)
     dmService.OnDiskCreated(disk);
     result = dmService.Partition(diskId, type);
     dmService.OnDiskDestroyed(diskId);
@@ -300,6 +308,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::e
     int32_t flag = 1;
     int32_t type = 1;
     int32_t result = E_OK;
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     result = dmService.Partition(diskId, type);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -326,6 +336,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0002, testing::e
     int32_t flag = 1;
     int32_t type = 1;
     int32_t result = E_OK;
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     result = dmService.Partition(diskId, type);
     EXPECT_EQ(result, E_NON_EXIST);

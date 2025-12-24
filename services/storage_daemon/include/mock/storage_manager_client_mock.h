@@ -29,7 +29,6 @@ public:
     virtual int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info) = 0;
     virtual int32_t IsUsbFuseByType(std::string fsType, bool enabled) = 0;
 
-
 public:
     static inline std::shared_ptr<IStorageManagerClientMock> iStorageManagerClientMock_ = nullptr;
 };

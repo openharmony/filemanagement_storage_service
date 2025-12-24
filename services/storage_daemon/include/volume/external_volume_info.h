@@ -34,7 +34,6 @@ public:
     bool GetDamagedFlag();
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
-    bool IsUsbFuseByType(std::string fsType);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) override;

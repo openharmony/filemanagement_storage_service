@@ -32,6 +32,7 @@ namespace StorageDaemon {
 constexpr int32_t TRUE_LEN = 5;
 constexpr int32_t RD_ENABLE_LENGTH = 255;
 constexpr const char *PERSIST_FILEMANAGEMENT_USB_READONLY = "persist.filemanagement.usb.readonly";
+const std::string UNDEFINED_FS_TYPE = "undefined";
 
 int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata)
 {
@@ -139,15 +140,17 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
-    int handle = static_cast<int>(FindParameter(key.c_str()));
-    if (handle != -1) {
-        char rdOnlyEnable[RD_ENABLE_LENGTH] = {"false"};
-        auto res = GetParameterValue(handle, rdOnlyEnable, RD_ENABLE_LENGTH);
-        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
-            mountFlags_ |= MS_RDONLY;
-        } else {
-            mountFlags_ &= ~MS_RDONLY;
+    if (!IsUsbFuseByType(UNDEFINED_FS_TYPE)) {
+        std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
+        int handle = static_cast<int>(FindParameter(key.c_str()));
+        if (handle != -1) {
+            char rdOnlyEnable[RD_ENABLE_LENGTH] = {"false"};
+            auto res = GetParameterValue(handle, rdOnlyEnable, RD_ENABLE_LENGTH);
+            if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
+                mountFlags_ |= MS_RDONLY;
+            } else {
+                mountFlags_ &= ~MS_RDONLY;
+            }
         }
     }
 
@@ -284,6 +287,14 @@ int32_t VolumeInfo::SetVolumeDescription(const std::string description)
         StorageRadar::ReportVolumeOperation("VolumeInfo::DoSetVolDesc", err);
     }
     return err;
+}
+
+bool ExternalVolumeInfo::IsUsbFuseByType(std::string fsType)
+{
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType, isUsbFuseByType);
+    return isUsbFuseByType;
 }
 } // StorageDaemon
 } // OHOS

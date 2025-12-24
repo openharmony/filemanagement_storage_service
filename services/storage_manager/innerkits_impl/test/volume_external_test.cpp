@@ -168,7 +168,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetPath(), path);
     EXPECT_EQ(result->GetDescription(), description);
     EXPECT_EQ(result->GetFsTypeString(), FS_TYPE_MAP[fsType]);
-    EXPECT_EQ(result->VolumeCore::GetFsType(), FS_TYPE_MAP[fsType]);
+    EXPECT_EQ(result->VolumeCore::GetFsType(), fsTypeStr);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
 }

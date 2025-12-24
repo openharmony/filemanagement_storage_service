@@ -73,6 +73,7 @@ protected:
     virtual int32_t DoTryToCheck() = 0;
     virtual int32_t DoTryToFix() = 0;
     virtual std::string GetFsTypeByDev(dev_t dev) = 0;
+    virtual bool IsUsbFuseByType(std::string fsType);
 
 private:
     std::string id_;
