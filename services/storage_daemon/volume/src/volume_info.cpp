@@ -289,7 +289,7 @@ int32_t VolumeInfo::SetVolumeDescription(const std::string description)
     return err;
 }
 
-bool ExternalVolumeInfo::IsUsbFuseByType(std::string fsType)
+bool VolumeInfo::IsUsbFuseByType(std::string fsType)
 {
     StorageManagerClient client;
     bool isUsbFuseByType = true;
