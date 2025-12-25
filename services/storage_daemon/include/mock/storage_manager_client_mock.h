@@ -27,6 +27,7 @@ public:
 public:
     virtual int32_t NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state) = 0;
     virtual int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info) = 0;
+    virtual int32_t IsUsbFuseByType(std::string fsType, bool enabled) = 0;
 
 public:
     static inline std::shared_ptr<IStorageManagerClientMock> iStorageManagerClientMock_ = nullptr;
@@ -36,7 +37,8 @@ class StorageManagerClientMock : public IStorageManagerClientMock {
 public:
     MOCK_METHOD(int32_t, NotifyVolumeStateChanged, (std::string, StorageManager::VolumeState));
     MOCK_METHOD(int32_t, NotifyVolumeCreated, (std::shared_ptr<VolumeInfo>));
+    MOCK_METHOD(int32_t, IsUsbFuseByType, (std::string, bool));
 };
 }
 }
-#endif // STORAGE_DAEMON_STORAGE_MANAGER_CLIENT_MOCK_H
+#endif // STORAGE_DAEMON_STORAGE_MANAGER_CLIENT_MOCK_H

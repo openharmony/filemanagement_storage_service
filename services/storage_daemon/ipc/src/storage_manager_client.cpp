@@ -90,9 +90,8 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
     if (info == nullptr) {
         return E_PARAMS_INVALID;
     }
-
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
-                                  info->GetDiskId(), info->GetState());
+                                  info->GetDiskId(), info->GetState(), info->GetFsTypeBase());
     storageManager_->NotifyVolumeCreated(vc);
 
     return E_OK;
@@ -188,6 +187,17 @@ int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const st
         storageManager_->NotifyMtpUnmounted(id, path, isBadRemove);
     }
     return E_OK;
+}
+
+int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ != nullptr) {
+        return storageManager_->IsUsbFuseByType(fsType, enabled);
+    }
+    return E_SERVICE_IS_NULLPTR;
 }
 } // StorageDaemon
 } // OHOS

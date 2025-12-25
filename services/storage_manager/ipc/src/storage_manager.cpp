@@ -774,6 +774,14 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
     return E_OK;
 }
 
+int32_t StorageManager::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    enabled = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
+#endif
+    return E_OK;
+}
+
 int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER

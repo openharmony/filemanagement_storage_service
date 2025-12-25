@@ -20,6 +20,7 @@
 #include "volume/volume_manager_service.h"
 #include "disk/disk_manager_service.h"
 #include "mock/file_utils_mock.h"
+#include "mock/mock_parameters.h"
 #include "volume_core.h"
 #include "storage_service_errno.h"
 
@@ -28,6 +29,8 @@ const int32_t MTP_MAX_LEN = 512;
 const int32_t CNT_ZERO = 0;
 const int32_t CNT_ONE = 1;
 const int32_t CNT_TWO = 2;
+const std::string FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+
 ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
 {
     if (strcmp(name, "user.getfriendlyname") == 0 && g_cnt == CNT_ZERO) {
@@ -162,7 +165,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0003";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
@@ -191,7 +195,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0004";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
@@ -219,7 +225,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0005";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
@@ -247,7 +254,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0006";
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
@@ -1043,6 +1051,27 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0003, testing::
     int32_t result = vmService.Format(volumeId, fsTypes);
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Format_0003";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_IsUsbFuseByType_0001
+ * @tc.name: Volume_manager_service_IsUsbFuseByType_0001
+ * @tc.desc: Test function of IsUsbFuseByType interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_IsUsbFuseByType_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_IsUsbFuseByType_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string fsType = "exfat";
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    auto enabled = vmService.IsUsbFuseByType(fsType);
+    EXPECT_TRUE(enabled);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_IsUsbFuseByType_Format_0001";
 }
 
 /**

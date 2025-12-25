@@ -230,6 +230,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
     EXPECT_TRUE(ret == E_OK);
 
     uint32_t mountFlags = 0;
+    EXPECT_CALL(mock, IsUsbFuseByType(testing::_)).WillOnce(Return(false));
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_VOL_MOUNT_ERR);
 
@@ -642,6 +643,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(mock, IsUsbFuseByType(testing::_)).WillOnce(Return(false));
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 

@@ -38,6 +38,8 @@ public:
                              const std::string &uuid);
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
 
+    int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);
+
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);
 

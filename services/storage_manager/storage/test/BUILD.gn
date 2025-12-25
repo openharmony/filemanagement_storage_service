@@ -134,6 +134,10 @@ ohos_unittest("volume_storage_status_service_test") {
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
     "relational_store:native_rdb",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 }
 

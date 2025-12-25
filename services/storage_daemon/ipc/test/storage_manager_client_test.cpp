@@ -214,5 +214,25 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyMtpUnmounted_0
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerClientTest_IsUsbFuseByType_001
+ * @tc.desc: Verify the IsUsbFuseByType function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_IsUsbFuseByType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_IsUsbFuseByType_001 start";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    auto enabled = true;
+    auto ret = storageManagerClient_->IsUsbFuseByType("exfat", enabled);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(enabled);
+
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_IsUsbFuseByType_001 end";
+}
 } // StorageDaemon
 } // OHOS

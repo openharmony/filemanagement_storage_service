@@ -30,8 +30,13 @@ ohos_unittest("disk_manager_service_test") {
   sources = [
     "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    "${storage_manager_path}/mock/mock_parameters.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "disk_manager_service_test.cpp",
+    "${storage_daemon_path}/mock/storage_manager_client_mock.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
+    "${storage_manager_path}/volume/src/notification.cpp", 
   ]
 
   include_dirs = [
@@ -58,7 +63,6 @@ ohos_unittest("disk_manager_service_test") {
     "ability_base:base",
     "ability_base:want",
     "c_utils:utils",
-    "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
@@ -69,6 +73,10 @@ ohos_unittest("disk_manager_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 
   if (enable_screenlock_manager) {

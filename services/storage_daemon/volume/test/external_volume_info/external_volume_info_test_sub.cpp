@@ -85,7 +85,6 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     g_readMetadata = 0;
     vol.fsType_ = "f2fs";
     vol.fsUuid_ = "A001";
@@ -109,7 +108,6 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     g_readMetadata = 0;
     vol.fsType_ = "f2fs";
     vol.fsUuid_ = "A001";
@@ -133,7 +131,6 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     bool force = true;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillRepeatedly(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001 end";
@@ -151,7 +148,6 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     bool force = false;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(true));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002 end";
@@ -169,7 +165,6 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
 
     ExternalVolumeInfo vol;
     bool force = false;
-    EXPECT_CALL(*fileUtilMoc_, IsUsbFuse()).WillOnce(testing::Return(false));
     auto ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003 end";

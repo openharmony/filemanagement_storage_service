@@ -38,6 +38,7 @@ namespace StorageManager {
 namespace {
 typedef int32_t (*FuncMount)(int, const std::string&, const std::string&);
 typedef int32_t (*FuncUMount)(const std::string&);
+typedef int32_t (*FuncUsbFuseByType)(const std::string&, bool&);
 }
  
 VolumeManagerServiceExt::VolumeManagerServiceExt()
@@ -106,6 +107,26 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseUmount(const std::string &volumeId
         return E_NOTIFY_FAILED;
     }
     return E_OK;
+}
+
+bool VolumeManagerServiceExt::IsUsbFuseByType(const std::string &fsType)
+{
+    LOGI("IsUsbFuseByType in");
+    bool enabled = true;
+    if (handler_ == nullptr) {
+        LOGE("Handler is nullptr");
+        return enabled;
+    }
+    FuncUsbFuseByType funcUsbFuseByType = (FuncUsbFuseByType)dlsym(handler_, "IsUsbFuseByType");
+    if (funcUsbFuseByType == nullptr) {
+        LOGE("Failed to get function pointer for IsUsbFuseByType");
+        return enabled;
+    }
+    if (funcUsbFuseByType(fsType, enabled) != E_OK) {
+        LOGE("IsUsbFuseByType fail");
+        return enabled;
+    }
+    return enabled;
 }
 } // StorageManager
 } // OHOS

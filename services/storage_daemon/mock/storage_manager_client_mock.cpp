@@ -68,5 +68,10 @@ int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const st
 {
     return 0;
 }
+
+int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &enabled)
+{
+    return 0;
+}
 } // StorageDaemon
 } // OHOS

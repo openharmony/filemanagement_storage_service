@@ -32,6 +32,7 @@ namespace StorageDaemon {
 constexpr int32_t TRUE_LEN = 5;
 constexpr int32_t RD_ENABLE_LENGTH = 255;
 constexpr const char *PERSIST_FILEMANAGEMENT_USB_READONLY = "persist.filemanagement.usb.readonly";
+const std::string UNDEFINED_FS_TYPE = "undefined";
 
 int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata)
 {
@@ -45,6 +46,7 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     isDamaged_ = false;
 
     int32_t err = DoCreate(device);
+    fsTypeBase_ = GetFsTypeByDev(device);
     if (err) {
         return err;
     }
@@ -74,6 +76,11 @@ int32_t VolumeInfo::GetState()
 bool VolumeInfo::GetIsUserdata()
 {
     return isUserdata_;
+}
+
+std::string VolumeInfo::GetFsTypeBase()
+{
+    return fsTypeBase_;
 }
 
 int32_t VolumeInfo::Destroy()
@@ -133,7 +140,7 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    if (!StorageDaemon::IsUsbFuse()) {
+    if (!IsUsbFuseByType(UNDEFINED_FS_TYPE)) {
         std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
         int handle = static_cast<int>(FindParameter(key.c_str()));
         if (handle != -1) {
@@ -280,6 +287,14 @@ int32_t VolumeInfo::SetVolumeDescription(const std::string description)
         StorageRadar::ReportVolumeOperation("VolumeInfo::DoSetVolDesc", err);
     }
     return err;
+}
+
+bool VolumeInfo::IsUsbFuseByType(std::string fsType)
+{
+    StorageManagerClient client;
+    bool isUsbFuseByType = true;
+    client.IsUsbFuseByType(fsType, isUsbFuseByType);
+    return isUsbFuseByType;
 }
 } // StorageDaemon
 } // OHOS

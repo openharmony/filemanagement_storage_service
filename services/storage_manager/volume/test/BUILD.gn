@@ -75,6 +75,7 @@ ohos_unittest("volume_manager_service_test") {
   sources = [
     "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    "${storage_manager_path}/mock/mock_parameters.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
@@ -119,6 +120,10 @@ ohos_unittest("volume_manager_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 
   if (enable_screenlock_manager) {
@@ -183,6 +188,10 @@ ohos_unittest("volume_manager_service_ext_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
   ]
 
   if (enable_screenlock_manager) {

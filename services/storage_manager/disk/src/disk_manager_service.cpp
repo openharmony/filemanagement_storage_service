@@ -20,11 +20,14 @@
 #include "storage_service_log.h"
 #include "utils/storage_utils.h"
 #include "utils/file_utils.h"
+#include "volume/volume_manager_service.h"
+
 namespace OHOS {
 namespace StorageManager {
 DiskManagerService::DiskManagerService() {}
 DiskManagerService::~DiskManagerService() {}
 
+const std::string UNDEFINED_FS_TYPE = "undefined";
 std::shared_ptr<Disk> DiskManagerService::GetDiskById(std::string diskId)
 {
     if (!diskMap_.Contains(diskId)) {
@@ -55,7 +58,8 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
 
 int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 {
-    if (StorageDaemon::IsUsbFuse()) {
+    bool isUsbFuseByType = VolumeManagerService::GetInstance().IsUsbFuseByType(UNDEFINED_FS_TYPE);
+    if (isUsbFuseByType) {
         LOGE("DiskManagerService::The disk %{public}s is fuse, not support", GetAnonyString(diskId).c_str());
         return E_NOT_SUPPORT;
     }

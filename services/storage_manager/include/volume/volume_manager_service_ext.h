@@ -27,6 +27,7 @@ public:
     virtual ~FuseExtInterface() = default;
     virtual bool NotifyExternalVolumeFuseMount(int fd, std::string volumeId, std::string fsUuid) = 0;
     virtual bool NotifyExternalVolumeFuseUMount(std::string volumeId) = 0;
+    virtual bool IsUsbFuseByType(std::string fsType, bool enabled) = 0;
 };
  
 class VolumeManagerServiceExt {
@@ -39,7 +40,8 @@ public:
  
     int32_t NotifyUsbFuseMount(int fuseFd, const std::string &volumeId, const std::string &fsUuid);
     int32_t NotifyUsbFuseUmount(const std::string &volumeId);
- 
+    bool IsUsbFuseByType(const std::string &fsType);
+    
 private:
     VolumeManagerServiceExt();
     ~VolumeManagerServiceExt();

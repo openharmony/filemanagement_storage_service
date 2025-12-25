@@ -95,9 +95,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     if (ret) {
         return ret;
     }
-    if (IsUsbFuse()) {
-        destroyNode->DestroyUsbFuse();
-    }
+    destroyNode->DestroyUsbFuse();
 
     volumes_.Erase(volId);
     destroyNode.reset();

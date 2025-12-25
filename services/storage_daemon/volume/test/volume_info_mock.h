@@ -22,6 +22,8 @@ namespace OHOS {
 namespace StorageDaemon {
 class VolumeInfoMock : public VolumeInfo {
 public:
+    static inline std::shared_ptr<VolumeInfoMock> volumeInfoMock_ = nullptr;
+public:
     VolumeInfoMock() {}
     virtual ~VolumeInfoMock() {}
 
@@ -35,6 +37,8 @@ public:
     MOCK_METHOD1(DoSetVolDesc, int32_t(std::string));
     MOCK_METHOD0(DoTryToCheck, int32_t());
     MOCK_METHOD0(DoTryToFix, int32_t());
+    MOCK_METHOD1(GetFsTypeByDev, std::string(dev_t));
+    MOCK_METHOD1(IsUsbFuseByType, bool(std::string));
 };
 } // namespace StorageDaemon
 } // namespace OHOS

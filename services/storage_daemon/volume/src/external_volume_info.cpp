@@ -22,7 +22,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <filesystem>
+#include <sys/sysmacros.h>
 
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
@@ -96,6 +98,13 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
         return E_ERR;
     }
     return E_OK;
+}
+
+std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
+{
+    std::string volId = StringPrintf("vol-%u-%u", major(dev), minor(dev));
+    std::string devPath = "/dev/block/" + volId;
+    return OHOS::StorageDaemon::GetBlkidData(devPath, "TYPE");
 }
 
 int32_t ExternalVolumeInfo::DoDestroy()
@@ -323,7 +332,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_DOCHECK_MOUNT;
     }
-    ret = IsUsbFuse() ? CreateFuseMountPath() : CreateMountPath();
+    ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
         return ret;
     }
@@ -383,7 +392,8 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
-    if (force && !IsUsbFuse()) {
+    bool isUsbFuseByType = IsUsbFuseByType(fsType_);
+    if (force && !isUsbFuseByType) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
         ps.UpdatePidByPath();
@@ -393,7 +403,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGI("External volume force to unmount success.");
         return E_OK;
     }
-    if (IsUsbFuse()) {
+    if (isUsbFuseByType) {
         mountPath_ = mountUsbFusePath_;
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
@@ -539,7 +549,7 @@ int32_t ExternalVolumeInfo::DoCheck()
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     int32_t err = 0;
-    if (IsUsbFuse() && IsPathMounted(mountPath_)) {
+    if (IsUsbFuseByType(fsType_) && IsPathMounted(mountPath_)) {
         err = DoUMountUsbFuse();
     }
     if (err != E_OK) {

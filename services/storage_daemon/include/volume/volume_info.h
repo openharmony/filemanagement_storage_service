@@ -59,6 +59,7 @@ public:
     std::string GetDiskId();
     int32_t GetState();
     bool GetIsUserdata();
+    std::string GetFsTypeBase();
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -71,6 +72,8 @@ protected:
     virtual int32_t DoSetVolDesc(std::string description) = 0;
     virtual int32_t DoTryToCheck() = 0;
     virtual int32_t DoTryToFix() = 0;
+    virtual std::string GetFsTypeByDev(dev_t dev) = 0;
+    virtual bool IsUsbFuseByType(std::string fsType);
 
 private:
     std::string id_;
@@ -80,6 +83,7 @@ private:
     uint32_t mountFlags_;
     int32_t userIdOwner_;
     bool isUserdata_;
+    std::string fsTypeBase_;
 protected:
     bool isDamaged_ = false;
 };
