@@ -28,7 +28,6 @@ using namespace OHOS;
 using namespace StorageManager;
 using namespace StorageDaemon;
 const std::string FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
-
 class DiskManagerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
