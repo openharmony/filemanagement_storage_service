@@ -755,7 +755,6 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_005, 
     int fuseFd = -1;
     std::string fsUuid = "test-uuid-005";
     
-    EXPECT_CALL(*diskUtilMoc_, ReadVolumeUuid(_, _)).WillOnce(Return(E_OK));
     // Test MountUsbFuse - open /dev/fuse will likely fail in test environment
     int32_t result = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     

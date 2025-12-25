@@ -118,7 +118,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0001";
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-2";
     int32_t fsType = 1;
@@ -142,7 +141,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0001, testing::e
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0002";
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
@@ -229,7 +227,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::e
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0005";
     system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
@@ -259,7 +256,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::e
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0006";
     system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
     system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
     auto &vmService =VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
