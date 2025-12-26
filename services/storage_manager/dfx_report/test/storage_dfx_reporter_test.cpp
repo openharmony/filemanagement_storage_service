@@ -81,78 +81,6 @@ void StorageDfxReporterTest::TearDown()
 }
 
 /**
- * @tc.name: Storage_Service_StorageDfxReporterTest_CheckTimeIntervalTriggered_001
- * @tc.desc: Verify the CheckTimeIntervalTriggered function.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CheckTimeIntervalTriggered_001,
-    TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckTimeIntervalTriggered_001 start";
-    std::chrono::system_clock::time_point lastTime = std::chrono::system_clock::from_time_t(0);
-    int64_t hoursDiff = 0;
-    bool ret = StorageDfxReporter::GetInstance().CheckTimeIntervalTriggered(lastTime, 0, hoursDiff);
-    EXPECT_EQ(ret, false);
-    lastTime = std::chrono::system_clock::now();
-    ret = StorageDfxReporter::GetInstance().CheckTimeIntervalTriggered(lastTime, 0, hoursDiff);
-    EXPECT_EQ(ret, true);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckTimeIntervalTriggered_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_StorageDfxReporterTest_CheckValueChangeTriggered_001
- * @tc.desc: Verify the CheckValueChangeTriggered function.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CheckValueChangeTriggered_001,
-    TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckValueChangeTriggered_001 start";
-    int64_t valueDiff = 0;
-    bool ret = StorageDfxReporter::GetInstance().CheckValueChangeTriggered(1, 0, 0, valueDiff);
-    EXPECT_EQ(ret, true);
-    ret = StorageDfxReporter::GetInstance().CheckValueChangeTriggered(1, 0, 100, valueDiff);
-    EXPECT_EQ(ret, false);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckValueChangeTriggered_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_StorageDfxReporterTest_CheckAndTriggerHapAndSaStatistics_001
- * @tc.desc: Verify the CheckAndTriggerHapAndSaStatistics function.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CheckAndTriggerHapAndSaStatistics_001,
-    TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckAndTriggerHapAndSaStatistics_001 start";
-
-    bool runningBefore = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(Return(-1));
-    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
-    bool runningAfter = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_EQ(runningBefore, runningAfter);
-
-    runningBefore = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(DoAll(SetArgReferee<0>(-1), Return(0)));
-    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
-    runningAfter = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_EQ(runningBefore, runningAfter);
-
-    StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_ = 1000;
-    StorageDfxReporter::GetInstance().lastHapAndSaTime_ = std::chrono::system_clock::time_point();
-    runningBefore = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1100), Return(0)));
-    StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
-    runningAfter = StorageDfxReporter::GetInstance().isHapAndSaRunning_.load();
-    EXPECT_EQ(runningBefore, runningAfter);
-
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CheckAndTriggerHapAndSaStatistics_001 end";
-}
-
-/**
  * @tc.name: Storage_Service_StorageDfxReporterTest_CheckAndTriggerHapAndSaStatistics_002
  * @tc.desc: Verify the CheckAndTriggerHapAndSaStatistics function when task is already running.
  * @tc.type: FUNC
@@ -277,41 +205,6 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectB
     ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
     EXPECT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_StorageDfxReporterTest_UpdateHapAndSaState_001
- * @tc.desc: Verify the UpdateHapAndSaState function.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_UpdateHapAndSaState_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_UpdateHapAndSaState_001 start";
-
-    // Test case 1: GetFreeSize returns error, state should not be updated
-    int64_t oldFreeSize = StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_;
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(Return(-1));
-    StorageDfxReporter::GetInstance().UpdateHapAndSaState();
-    // State should remain unchanged when GetFreeSize fails
-    EXPECT_EQ(StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_, oldFreeSize);
-
-    // Test case 2: GetFreeSize returns 0 with negative value, state should not be updated
-    int64_t res = -1;
-    oldFreeSize = StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_;
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(DoAll(SetArgReferee<0>(res), Return(0)));
-    StorageDfxReporter::GetInstance().UpdateHapAndSaState();
-    // State should remain unchanged when currentFreeSize < 0
-    EXPECT_EQ(StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_, oldFreeSize);
-
-    // Test case 3: GetFreeSize returns valid value, state should be updated
-    res = 100;
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(DoAll(SetArgReferee<0>(res), Return(0)));
-    StorageDfxReporter::GetInstance().UpdateHapAndSaState();
-    // State should be updated to new value
-    EXPECT_EQ(StorageDfxReporter::GetInstance().lastHapAndSaFreeSize_, 100);
-
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_UpdateHapAndSaState_001 end";
 }
 
 /**

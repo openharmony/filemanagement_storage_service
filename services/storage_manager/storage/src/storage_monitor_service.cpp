@@ -49,7 +49,11 @@ constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 constexpr int32_t STORAGE_PARAMS_PATH_LEN = 128;
 constexpr int32_t STORAGE_STATIC_BEGIN_INTERVAL = 10 * 60 * 1000; //10min
-constexpr int32_t STORAGE_STATIC_INTERVAL = 480 * 60 * 1000; //8h
+constexpr int32_t STORAGE_FIRST_STATIC_HOUR = 0;
+constexpr int32_t STORAGE_SECOND_STATIC_HOUR = 8;
+constexpr int32_t STORAGE_THIRD_STATIC_HOUR = 16;
+constexpr int32_t STORAGE_FIRST_STATIC_MINUTE = 0;
+constexpr int32_t STORAGE_SECOND_STATIC_MINUTE = 1;
 constexpr const char *STORAGE_ALERT_CLEANUP_PARAMETER = "const.storage_service.storage_alert_policy";
 constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
@@ -97,9 +101,6 @@ void StorageMonitorService::StartStorageMonitorTask()
 
     auto executeUpdateBaseLineByUid = [this] { UpdateBaseLineByUid(); };
     eventHandler_->PostTask(executeUpdateBaseLineByUid, STORAGE_STATIC_BEGIN_INTERVAL);
-
-    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
-    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_BEGIN_INTERVAL);
 }
 
 void StorageMonitorService::StartEventHandler()
@@ -125,6 +126,7 @@ void StorageMonitorService::Execute()
         return;
     }
     MonitorAndManageStorage();
+    HapAndSaStatisticsThd();
     auto executeFunc = [this] { Execute(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
@@ -477,14 +479,21 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
 
 void StorageMonitorService::HapAndSaStatisticsThd()
 {
-    LOGI("begin hap and sa statistic scheduled task.");
-    if (eventHandler_ == nullptr) {
-        LOGE("event handler is nullptr.");
+    // 当前时间是0:00 || 8:00: || 16:00 打印
+    std::time_t now = std::time(nullptr);
+    std::tm *localTime = std::localtime(&now);
+    if (localTime == nullptr) {
+        LOGE("cur time parse failed, errno is %{public}d.", errno);
+        return;
+    }
+    if ((localTime->tm_min != STORAGE_FIRST_STATIC_MINUTE &&
+        localTime->tm_min != STORAGE_SECOND_STATIC_MINUTE) ||
+        (localTime->tm_hour != STORAGE_FIRST_STATIC_HOUR &&
+         localTime->tm_hour != STORAGE_SECOND_STATIC_HOUR &&
+         localTime->tm_hour != STORAGE_THIRD_STATIC_HOUR)) {
         return;
     }
     StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
-    auto executeHapAndSaStatistics = [this] { HapAndSaStatisticsThd(); };
-    eventHandler_->PostTask(executeHapAndSaStatistics, STORAGE_STATIC_INTERVAL);
 }
 
 void StorageMonitorService::SendCommonEventToCleanCache(const std::string &cleanLevel)
