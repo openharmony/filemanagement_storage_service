@@ -149,7 +149,7 @@ private:
     int UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret);
     bool ResetESecret(unsigned int user, std::shared_ptr<BaseKey> &elKey);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
-    std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
+    std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type, bool isSave = true);
     bool IsNeedClearKeyFile(std::string file);
     bool CheckDir(KeyType type, std::string keyDir, unsigned int user);
     int ActiveUece(unsigned int user,
