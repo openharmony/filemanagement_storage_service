@@ -120,4 +120,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 82] void GetAllExtBundleStats([in] unsigned int userId, [out] List<ExtBundleStats> statsVec);
     [ipccode 83] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
     [ipccode 84] void IsUsbFuseByType([in] String fsType, [out] boolean enabled);
+    [ipccode 85] void NotifyCreateBundleDataDirWithEl([in] unsigned int userId, [in] unsigned char elx);
 }

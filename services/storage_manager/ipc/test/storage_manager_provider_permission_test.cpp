@@ -30,6 +30,7 @@
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
 #include "user/multi_user_manager_service.h"
+#include "bundle_mgr_client.h"
 #include "volume_core.h"
 #include <cstdlib>
 #include <cstring>
@@ -87,6 +88,13 @@ uint32_t IPCSkeleton::GetCallingTokenID()
     return callingTokenID;
 }
 }
+
+namespace OHOS::AppExecFwk {
+ErrCode BundleMgrClient::CreateBundleDataDirWithEl(int32_t userId, DataDirEl dirEl)
+{
+    return 0;
+}
+} // namespace OHOS::AppExecFwk
 
 namespace OHOS {
 namespace StorageManager {
@@ -1740,6 +1748,32 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirI
     EXPECT_NE(ret, E_OK);
     EXPECT_EQ(scanDirs.size(), 0);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 end";
+}
+
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001
+ * @tc.desc: Verify the NotifyCreateBundleDataDirWithEl function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    uint8_t elx = 1;
+
+    g_testCallingUid = 1;
+    EXPECT_EQ(storageManagerProviderTest_->NotifyCreateBundleDataDirWithEl(userId, elx), E_PERMISSION_DENIED);
+
+    g_testCallingUid = 0;
+    EXPECT_EQ(storageManagerProviderTest_->NotifyCreateBundleDataDirWithEl(userId, elx), E_ERR);
+
+    elx = 2;
+    EXPECT_EQ(storageManagerProviderTest_->NotifyCreateBundleDataDirWithEl(userId, elx), 0);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001 end";
 }
 }
 }

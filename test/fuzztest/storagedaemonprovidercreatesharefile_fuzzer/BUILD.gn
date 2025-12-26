@@ -57,7 +57,10 @@ ohos_fuzztest("StorageDaemonProviderCreateShareFileFuzzTest") {
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
+
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
     "ability_base:zuri",

@@ -36,7 +36,6 @@
 #include "disk/disk_manager.h"
 #include "volume/volume_manager.h"
 #endif
-#include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
 #include "storage_service_errno.h"
@@ -72,9 +71,6 @@ constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/st
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 constexpr const char *NEW_DOUBLE_2_SINGLE = "2";
 #endif
-
-typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
-typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
 
 int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
 {

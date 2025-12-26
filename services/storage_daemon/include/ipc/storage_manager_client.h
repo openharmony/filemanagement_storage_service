@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,6 +39,7 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
 
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);
+    int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

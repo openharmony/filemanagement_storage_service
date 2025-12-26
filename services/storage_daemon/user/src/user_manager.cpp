@@ -14,7 +14,6 @@
  */
 
 #include "user/user_manager.h"
-#include "bundle_mgr_client.h"
 
 #include <sys/stat.h>
 
@@ -28,6 +27,7 @@
 #include "user/mount_constant.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "ipc/storage_manager_client.h"
 
 #include "user/user_path_resolver.h"
 #include "quota/quota_manager.h"
@@ -275,9 +275,8 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
         LOGW("CreateElxBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx);
         return;
     }
-    OHOS::AppExecFwk::BundleMgrClient client;
-    auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
-    LOGI("CreateElxBundleDataDir end: userId %{public}u, elx is %{public}d, ret %{public}d", userId, elx, ret);
+    StorageManagerClient client;
+    auto ret = client.NotifyCreateBundleDataDirWithEl(userId, elx);
     if (ret != E_OK) {
         StorageRadar::ReportBundleMgrResult("CreateElxBundleDataDir", ret, userId, std::to_string(elx));
     }
