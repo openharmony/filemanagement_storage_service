@@ -67,6 +67,7 @@ group("storage_manager_provider_fuzztest") {
 group("storage_daemon_provider_fuzztest") {
   testonly = true
   deps = [
+    "storagedaemonprovider_fuzzer:fuzztest",
     "storagedaemonprovidercheck_fuzzer:fuzztest",
     "storagedaemonprovidercreaterecoverkey_fuzzer:fuzztest",
     "storagedaemonprovidercreatesharefile_fuzzer:fuzztest",

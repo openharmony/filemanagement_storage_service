@@ -205,10 +205,11 @@ bool DetectRawDevicesTest(const uint8_t *data, size_t size)
         .bus_location = 0,
         .devnum = 0
     };
-    int pos = ConstructRawDevice(data, size, &entry, device);
+    int pos = ConstructRawDevice(data, size, &entry, &device);
     int numdevs = TypeCast<int>(data + pos);
 
-    LIBMTP_error_number_t result = LIBMTP_Detect_Raw_Devices(&device, &numdevs);
+    LIBMTP_raw_device_t* device_list = &device;
+    LIBMTP_error_number_t result = LIBMTP_Detect_Raw_Devices(&device_list, &numdevs);
     if (result != 0) {
         return false;
     }
