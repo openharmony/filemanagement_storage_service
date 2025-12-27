@@ -37,14 +37,10 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
-    "-fno-sanitize-minimal-runtime",
-    "-fno-emulated-tls",
-    "--coverage"
   ]
-  ldflags = [
-    "--coverage"
-  ]
+
   sources = [
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/disk/src/disk_config.cpp",
     "${storage_daemon_path}/disk/src/disk_info.cpp",
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
