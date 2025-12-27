@@ -1213,7 +1213,7 @@ void KeyManager::SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<
     }
 }
 
-std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type)
+std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type, bool isSave)
 {
     bool isNeedGenerateBaseKey = false;
     std::shared_ptr<BaseKey> elKey = nullptr;
@@ -1230,11 +1230,13 @@ std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType typ
         }
         isNeedGenerateBaseKey = true;
         LOGI("Generate new baseKey type: %{public}u", type);
+    } else {
+        elKey = userElKeys_[user][type];
     }
-    if (isNeedGenerateBaseKey) {
+    if (isSave && isNeedGenerateBaseKey) {
         SaveUserElKey(user, type, elKey);
     }
-    return userElKeys_[user][type];
+    return elKey;
 }
 
 int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
@@ -1877,12 +1879,12 @@ int KeyManager::LockUserScreen(uint32_t user)
             saveLockScreenStatus[user]);
         return 0;
     }
-    auto el5Key = GetUserElKey(user, EL5_KEY);
+    auto el5Key = GetUserElKey(user, EL5_KEY, false);
     saveESecretStatus[user] = true;
     if (el5Key != nullptr && el5Key->LockUece(saveESecretStatus[user]) != E_OK) {
         LOGE("lock user %{public}u el5 key failed !", user);
     }
-    auto el4Key = GetUserElKey(user, EL4_KEY);
+    auto el4Key = GetUserElKey(user, EL4_KEY, false);
     if (el4Key == nullptr) {
         LOGE("Have not found user %{public}u el3 or el4", user);
         StorageRadar::ReportUpdateUserAuth("LockUserScreen::GetUserElKey", user, E_NON_EXIST, "EL4", "not found key");

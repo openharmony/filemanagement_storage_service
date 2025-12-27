@@ -1032,7 +1032,7 @@ HWTEST_F(KeyManagerTest, KeyManager_SaveUserElKey_001, TestSize.Level1)
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_NE(KeyManager::GetInstance().GetUserElKey(user, EL1_KEY), nullptr);
-    EXPECT_NE(KeyManager::GetInstance().GetUserElKey(user, EL1_KEY), nullptr);
+    EXPECT_NE(KeyManager::GetInstance().GetUserElKey(user, EL1_KEY, false), nullptr);
 
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(keyDir));
     KeyManager::GetInstance().DeleteElKey(user, EL1_KEY);
