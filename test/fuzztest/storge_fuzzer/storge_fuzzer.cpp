@@ -26,6 +26,11 @@
 namespace OHOS {
 namespace StorageDaemon {
 
+// Number of test segments for data splitting
+constexpr size_t FUZZ_SEGMENT_COUNT = 3;
+// Segment index for directory operations test
+constexpr size_t FUZZ_DIR_OPS_SEGMENT_INDEX = 2;
+
 /**
  * @brief Type cast helper for extracting typed data from fuzz input
  */
@@ -200,7 +205,7 @@ void ComprehensiveFuzzTest(const uint8_t *data, size_t size)
     }
 
     // Split data into multiple segments for different tests
-    size_t segmentSize = size / 3;
+    size_t segmentSize = size / FUZZ_SEGMENT_COUNT;
     if (segmentSize == 0) {
         segmentSize = size;
     }
@@ -214,8 +219,9 @@ void ComprehensiveFuzzTest(const uint8_t *data, size_t size)
     }
 
     // Test directory operations
-    if (size > segmentSize * 2) {
-        DirectoryOpsFuzzTest(data + segmentSize * 2, size - segmentSize * 2);
+    if (size > segmentSize * FUZZ_DIR_OPS_SEGMENT_INDEX) {
+        DirectoryOpsFuzzTest(data + segmentSize * FUZZ_DIR_OPS_SEGMENT_INDEX,
+            size - segmentSize * FUZZ_DIR_OPS_SEGMENT_INDEX);
     }
 }
 
