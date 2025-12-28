@@ -166,7 +166,8 @@
         "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_unit_test",
         "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager_unit_test",
         "//foundation/filemanagement/storage_service/test/fuzztest:storage_service_fuzztest",
-        "//foundation/filemanagement/storage_service/test/fuzztest/cjstoragestatusservice_fuzzer:fuzztest"
+        "//foundation/filemanagement/storage_service/test/fuzztest/cjstoragestatusservice_fuzzer:fuzztest",
+        "//foundation/filemanagement/storage_service/test/fuzztest/storge_fuzzer:fuzztest"
       ]
     }
   }
