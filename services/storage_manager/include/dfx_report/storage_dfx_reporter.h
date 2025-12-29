@@ -55,26 +55,12 @@ private:
     int32_t CollectStorageStats(int32_t userId, std::ostringstream &extraData);
     void CollectMetadataAndAnco(std::ostringstream &extraData);
     int32_t CollectBundleStatistics(int32_t userId, std::ostringstream &extraData);
-    void UpdateHapAndSaState();
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
-    bool CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
-                                    int64_t timeIntervalHours, int64_t &hoursDiff);
-    bool CheckValueChangeTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
-                                   int64_t &valueDiff);
-    bool CheckThresholdTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
-                                 const std::chrono::system_clock::time_point &lastTime,
-                                 int64_t timeIntervalHours,
-                                 bool &timeTriggered, bool &valueTriggered);
 
     int32_t GetStorageStatsInfo(int32_t userId, StorageStats &storageStats);
     void GetMetaDataSize(std::ostringstream &extraData);
     void GetAncoDataSize(std::ostringstream &extraData);
 
-    // hap and sa statistics state
-    std::mutex hapAndSaMutex_;
-    std::mutex hapAndSaStateMutex_;
-    int64_t lastHapAndSaFreeSize_ = 0;
-    std::chrono::system_clock::time_point lastHapAndSaTime_;
     std::atomic<bool> isHapAndSaRunning_{false};
 
     int32_t CheckSystemUidSize(const std::vector<NextDqBlk> &dqBlks, int64_t &totalSize,

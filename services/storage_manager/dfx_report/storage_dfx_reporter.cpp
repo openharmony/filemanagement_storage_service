@@ -46,7 +46,6 @@ constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char *OVP_CHUNKS = "/ovp_chunks";
 constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t BLOCK_COUNT = 512;
-constexpr int32_t SEVEN_DAYS_IN_HOURS = 7 * 24;
 
 constexpr int32_t ROOT_UID = 0;
 constexpr int32_t SYSTEM_UID = 1000;
@@ -62,75 +61,19 @@ void StorageDfxReporter::StartReportHapAndSaStorageStatus()
     std::thread([this, userId]() {
         pthread_setname_np(pthread_self(), "hap_sa_stats_task");
         ExecuteHapAndSaStatistics(userId);
+        isHapAndSaRunning_.store(false);
     }).detach();
     LOGI("StartReportHapAndSaStorageStatus launched detached task successfully.");
-}
-
-bool StorageDfxReporter::CheckTimeIntervalTriggered(const std::chrono::system_clock::time_point &lastTime,
-    int64_t timeIntervalHours, int64_t &hoursDiff)
-{
-    if (lastTime.time_since_epoch().count() == 0) {
-        hoursDiff = 0;
-        return false;
-    }
-    auto currentTime = std::chrono::system_clock::now();
-    hoursDiff = std::chrono::duration_cast<std::chrono::hours>(
-        currentTime - lastTime).count();
-    bool triggered = hoursDiff >= timeIntervalHours;
-    if (triggered) {
-        LOGI("Time interval >= %{public}lld hours, hours: %{public}lld",
-             static_cast<long long>(timeIntervalHours), static_cast<long long>(hoursDiff));
-    }
-    return triggered;
-}
-
-bool StorageDfxReporter::CheckValueChangeTriggered(int64_t currentValue, int64_t lastValue, int64_t threshold,
-    int64_t &valueDiff)
-{
-    valueDiff = std::abs(currentValue - lastValue);
-    bool triggered = valueDiff >= threshold;
-    if (triggered) {
-        LOGI("Free size diff >= %{public}lld bytes, diff: %{public}lld bytes",
-             static_cast<long long>(threshold), static_cast<long long>(valueDiff));
-    }
-
-    return triggered;
 }
 
 void StorageDfxReporter::CheckAndTriggerHapAndSaStatistics()
 {
     LOGI("CheckAndTriggerHapAndSaStatistics start.");
-    std::lock_guard<std::mutex> lock(hapAndSaMutex_);
     if (isHapAndSaRunning_.load()) {
         LOGI("Hap and Sa statistics task is already running, ignoring this request.");
         return;
     }
-    int64_t lastFreeSize = 0;
-    std::chrono::system_clock::time_point lastTime;
-    {
-        std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
-        lastFreeSize = lastHapAndSaFreeSize_;
-        lastTime = lastHapAndSaTime_;
-    }
-    int64_t currentFreeSize = 0;
-    if (StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize) != E_OK || currentFreeSize < 0) {
-        LOGE("Get current free size failed");
-        return;
-    }
-    int64_t hoursDiff = 0;
-    int64_t sizeDiff = 0;
-    bool timeTriggered = CheckTimeIntervalTriggered(lastTime, SEVEN_DAYS_IN_HOURS, hoursDiff);
-    bool sizeTriggered = CheckValueChangeTriggered(currentFreeSize, lastFreeSize, StorageService::TWO_G_BYTE,
-        sizeDiff);
-    if (timeTriggered || sizeTriggered) {
-        LOGI("Trigger statistic - reason: %{public}s, current: %{public}lld, last: %{public}lld",
-             timeTriggered ? "time >= 7d" : "size >= 2GB",
-             static_cast<long long>(currentFreeSize), static_cast<long long>(lastFreeSize));
-        StartReportHapAndSaStorageStatus();
-    } else {
-        LOGI("Skip statistic - time: %{public}lld hrs, size: %{public}lld bytes",
-             static_cast<long long>(hoursDiff), static_cast<long long>(sizeDiff));
-    }
+    StartReportHapAndSaStorageStatus();
 }
 
 void StorageDfxReporter::GetCurrentTime(std::ostringstream &extraData)
@@ -154,7 +97,6 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     GetCurrentTime(extraData);
     int32_t ret = CollectStorageStats(userId, extraData);
     if (ret != E_OK) {
-        isHapAndSaRunning_.store(false);
         return;
     }
     CollectMetadataAndAnco(extraData);
@@ -163,8 +105,6 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     StorageService::StorageRadar::ReportSpaceRadar("StartReportHapAndSaStorageStatus",
         E_STORAGE_STATUS, extraData.str());
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus end.");
-    UpdateHapAndSaState();
-    isHapAndSaRunning_.store(false);
     LOGI("Hap and Sa statistics thread completed.");
 }
 
@@ -187,7 +127,7 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     extraData << ",image size is:" << ConvertBytesToMB(storageStatsInfo.image_, ACCURACY_NUM) << "MB";
     extraData << ",video size is:" << ConvertBytesToMB(storageStatsInfo.video_, ACCURACY_NUM) << "MB";
     extraData << ",file size is:" << ConvertBytesToMB(storageStatsInfo.file_, ACCURACY_NUM) << "MB";
-    extraData << ",total size is:" << ConvertBytesToMB(storageStatsInfo.total_, ACCURACY_NUM) << "MB";
+    extraData << ",total size is:" << std::to_string(ConvertBytesToMB(storageStatsInfo.total_, ACCURACY_NUM)) << "MB";
     extraData << ",sys size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB";
     extraData << ",free size is:" << ConvertBytesToMB(freeSize, ACCURACY_NUM) << "MB}" << std::endl;
     return E_OK;
@@ -219,18 +159,6 @@ int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostring
     }
     extraData << "{bundleCount:" << bundleNameAndUid.size() << "}" << std::endl;
     return E_OK;
-}
-
-void StorageDfxReporter::UpdateHapAndSaState()
-{
-    std::lock_guard<std::mutex> lock(hapAndSaStateMutex_);
-    int64_t currentFreeSize = 0;
-    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(currentFreeSize);
-    if (err == E_OK && currentFreeSize >= 0) {
-        lastHapAndSaFreeSize_ = currentFreeSize;
-        lastHapAndSaTime_ = std::chrono::system_clock::now();
-        LOGI("Updated Hap and Sa state: freeSize=%{public}lld", static_cast<long long>(lastHapAndSaFreeSize_));
-    }
 }
 
 double StorageDfxReporter::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)

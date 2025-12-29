@@ -169,6 +169,9 @@ using namespace testing;
 using namespace testing::ext;
 using namespace StorageService;
 
+constexpr int32_t THREE_TIME = 3;
+constexpr int32_t FOUR_TIME = 4;
+constexpr int32_t ZERO_TIME = 0;
 constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
 int g_storageFlag = 0;
@@ -176,6 +179,43 @@ int g_storageFlag = 0;
 int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 {
     return g_storageFlag;
+}
+
+enum class LocalTimeStubMode {
+    NORMAL_MATCH,      // 返回满足条件的时间
+    NORMAL_NOT_MATCH,  // 返回不满足条件的时间
+    RETURN_NULL        // 返回 nullptr
+};
+static LocalTimeStubMode g_localTimeStubMode = LocalTimeStubMode::NORMAL_MATCH;
+static std::tm g_fakeTm {};
+static std::mutex g_stubMutex;
+void SetLocalTimeStubMode(LocalTimeStubMode mode)
+{
+    std::lock_guard<std::mutex> lock(g_stubMutex);
+    g_localTimeStubMode = mode;
+}
+// C 接口桩，std::localtime 通常会调用它
+extern "C" std::tm *localtime(const std::time_t *timer)
+{
+    (void)timer; // UT 里不关心真正的 time_t
+    std::lock_guard<std::mutex> lock(g_stubMutex);
+    switch (g_localTimeStubMode) {
+        case LocalTimeStubMode::RETURN_NULL:
+            return nullptr;
+        case LocalTimeStubMode::NORMAL_NOT_MATCH:
+            // 构造一个“不匹配”的时间
+            g_fakeTm = {};
+            g_fakeTm.tm_min  = THREE_TIME;
+            g_fakeTm.tm_hour = FOUR_TIME;
+            return &g_fakeTm;
+        case LocalTimeStubMode::NORMAL_MATCH:
+        default:
+            // 构造一个“匹配”的时间，例如 0:00
+            g_fakeTm = {};
+            g_fakeTm.tm_min  = ZERO_TIME;   // 合法分钟
+            g_fakeTm.tm_hour = ZERO_TIME;     // 合法小时
+            return &g_fakeTm;
+    }
 }
 
 class StorageMonitorServiceTest : public testing::Test {
@@ -455,64 +495,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsTh
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_HapAndSaStatisticsThd_0001
- * @tc.name: Storage_monitor_service_HapAndSaStatisticsThd_0001
- * @tc.desc: Test function of HapAndSaStatisticsThd interface when eventHandler_ is not nullptr.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issues2344
- */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsThd_0001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0001 start";
-
-    auto mockRunner = AppExecFwk::EventRunner::Create("testRunner");
-    auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
-
-    service->eventHandler_ = mockHandler;
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(Return(E_OK));
-    service->HapAndSaStatisticsThd();
-
-    EXPECT_TRUE(true);
-
-    mockHandler.reset();
-    mockRunner.reset();
-
-    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0001 end";
-}
-
-/**
- * @tc.number: SUB_STORAGE_storage_monitor_service_HapAndSaStatisticsThd_0002
- * @tc.name: Storage_monitor_service_HapAndSaStatisticsThd_0002
- * @tc.desc: Test function of HapAndSaStatisticsThd interface with multiple calls.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issues2344
- */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsThd_0002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 start";
-
-    auto mockRunner = AppExecFwk::EventRunner::Create("testRunner");
-    auto mockHandler = std::make_shared<AppExecFwk::EventHandler>(mockRunner);
-
-    service->eventHandler_ = mockHandler;
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(Return(E_OK));
-    service->HapAndSaStatisticsThd();
-    service->HapAndSaStatisticsThd();
-
-
-    EXPECT_TRUE(true);
-
-    mockHandler.reset();
-    mockRunner.reset();
-
-    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 end";
-}
-
-/**
  * @tc.number: SUB_STORAGE_storage_monitor_service_GetJsonString_0001
  * @tc.name: Storage_monitor_service_GetJsonString_0001
  * @tc.desc: Test function of HapAndSaStatisticsThd interface with multiple calls.
@@ -779,5 +761,34 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCle
     rdbAdapter.UnInit();
     MockSetRdbStore();
     GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0003 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_HapAndSaStatisticsThd_0003
+ * @tc.name: Storage_monitor_service_HapAndSaStatisticsThd_0003
+ * @tc.desc: localTime 为空时直接返回
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level: Level 1
+ * @tc.require: issuesXXXX
+ */
+HWTEST_F(StorageMonitorServiceTest,
+    storage_monitor_service_HapAndSaStatisticsThd_0003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HapAndSaStatisticsThd_0003 start";
+    SetLocalTimeStubMode(LocalTimeStubMode::RETURN_NULL);
+    // 没有崩溃即可，localTime 为 nullptr 走第一条 return
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+ 
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_NOT_MATCH);
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+ 
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_MATCH);
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+ 
+    GTEST_LOG_(INFO) << "HapAndSaStatisticsThd_0003 end";
 }
 }
