@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build/config/components/idl_tool/idl.gni")
 import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
@@ -26,7 +27,10 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/include/quota",
     "${storage_daemon_path}/include/user",
     "${storage_daemon_path}/include/utils",
+    "${storage_daemon_path}/include/anco",
     "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_manager_path}/include",
+    "${target_gen_dir}"
   ]
   cflags = [
     "-g",
@@ -34,17 +38,33 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
+
   sources = [
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/disk/src/disk_config.cpp",
+    "${storage_daemon_path}/disk/src/disk_info.cpp",
+    "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
+    "${storage_daemon_path}/netlink/src/netlink_data.cpp",
+    "${storage_daemon_path}/netlink/src/netlink_handler.cpp",
+    "${storage_daemon_path}/netlink/src/netlink_listener.cpp",
+    "${storage_daemon_path}/netlink/src/netlink_manager.cpp",
+    "${storage_daemon_path}/observer/appstate_observer.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/utils/disk_utils.cpp",
+    "${storage_daemon_path}/utils/mount_argument_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
-    "${storage_daemon_path}/observer/appstate_observer.cpp",
-    "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
+    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
+    "${storage_daemon_path}/volume/src/process.cpp",
+    "${storage_daemon_path}/volume/src/volume_info.cpp",
+    "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
   ]
@@ -52,12 +72,21 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
     "STORAGE_DAEMON_FUZZ_TEST",
+    "EXTERNAL_STORAGE_MANAGER",
+    "USER_CRYPTO_MANAGER",
+    "USER_CRYPTO_MIGRATE_KEY",
+    "DFS_SERVICE",
+    "STORAGE_SERVICE_MEDIA_FUSE",
+    "EL5_FILEKEY_MANAGER"
   ]
   deps = [
+    "${storage_daemon_path}:sdc",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    # "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_ipc_native"
   ]
 
   external_deps = [
@@ -76,9 +105,13 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
+    "crypto_framework:crypto_framework_lib",
+    "access_token:el5_filekey_manager_sdk",
+    "ability_runtime:app_manager",
+    "os_account:os_account_innerkits",
   ]
 
   if (storage_service_cloud_fuse) {
