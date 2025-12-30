@@ -30,21 +30,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-struct FileStat {
-    std::string filePath;
-    int64_t fileSize;
-    int64_t lastUpdateTime;
-    int32_t mode;
-    bool isDir;
-    bool isIncre;
-};
-struct BundleStatsParas {
-    uint32_t userId;
-    std::string &bundleName;
-    int64_t lastBackupTime;
-    int64_t fileSizeSum;
-    int64_t incFileSizeSum;
-};
 
 struct UidSaInfo {
     int32_t uid;
@@ -81,7 +66,6 @@ struct AllAppVec {
     std::vector<struct UidSaInfo> otherAppVec;
 };
 
-uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
 public:
     virtual ~QuotaManager() = default;

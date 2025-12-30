@@ -1688,5 +1688,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsUsbFuseByType_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsUsbFuseByType_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001
+ * @tc.desc: Verify the NotifyCreateBundleDataDirWithEl function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 100;
+    uint8_t elx = 1;
+    EXPECT_EQ(storageManagerProviderTest_->NotifyCreateBundleDataDirWithEl(userId, elx), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

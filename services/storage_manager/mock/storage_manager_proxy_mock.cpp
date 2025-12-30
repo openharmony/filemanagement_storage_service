@@ -439,5 +439,10 @@ int32_t StorageManagerProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &s
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

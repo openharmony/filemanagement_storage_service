@@ -60,6 +60,7 @@ constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
 constexpr pid_t AOCO_UID = 7558;
+constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
@@ -1121,5 +1122,14 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
 #endif
 }
 
+int32_t StorageManagerProvider::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
+{
+    pid_t callingUid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || callingUid != ROOT_UID) {
+        LOGE("NotifyCreateBundleDataDirWithEl permission denied ! uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance().NotifyCreateBundleDataDirWithEl(userId, elx);
+}
 } // namespace StorageManager
 } // namespace OHOS

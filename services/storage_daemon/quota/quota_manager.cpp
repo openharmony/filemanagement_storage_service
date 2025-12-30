@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,7 +45,6 @@ constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1000.0 * 1000.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ONE_MS = 1000;
@@ -638,17 +637,6 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     }
     (void)fclose(f);
     return E_OK;
-}
-
-uint32_t CheckOverLongPath(const std::string &path)
-{
-    uint32_t len = path.length();
-    if (len >= PATH_MAX_LEN) {
-        size_t found = path.find_last_of('/');
-        std::string sub = path.substr(found + 1);
-        LOGE("Path over long, length:%{public}d, fileName:%{public}s.", len, sub.c_str());
-    }
-    return len;
 }
 
 int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid)

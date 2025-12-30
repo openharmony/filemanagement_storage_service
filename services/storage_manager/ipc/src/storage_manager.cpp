@@ -44,6 +44,8 @@
 #include "system_ability_definition.h"
 #include "utils/storage_utils.h"
 #include "user/multi_user_manager_service.h"
+#include "bundle_mgr_client.h"
+#include "storage_service_constant.h"
 
 constexpr bool DECRYPTED = false;
 constexpr bool ENCRYPTED = true;
@@ -919,6 +921,19 @@ void StorageManager::NotifyUserChangedEvent(uint32_t userId, StorageService::Use
     return;
 #endif
     LOGI("NotifyUserChangedEvent Not support !");
+}
+
+int32_t StorageManager::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
+{
+    LOGI("CreateElxBundleDataDir start: userId %{public}u, elx is %{public}d", userId, elx);
+    if (elx == StorageDaemon::EL1_KEY) {
+        LOGW("CreateElxBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx);
+        return E_ERR;
+    }
+    OHOS::AppExecFwk::BundleMgrClient client;
+    auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
+    LOGI("CreateElxBundleDataDir end ret %{public}d", ret);
+    return ret;
 }
 }
 }

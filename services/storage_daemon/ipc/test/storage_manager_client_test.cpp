@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Huawei Device Co., Ltd.
+* Copyright (c) 2024-2025 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -233,6 +233,26 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_IsUsbFuseByType_001,
     EXPECT_TRUE(enabled);
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_IsUsbFuseByType_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerClientTest_NotifyCreateBundleDataDirWithEl_001
+ * @tc.desc: Verify the NotifyCreateBundleDataDirWithEl function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyCreateBundleDataDirWithEl_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 start";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    uint32_t userId = 100;
+    uint8_t elx = 1;
+    auto ret = storageManagerClient_->NotifyCreateBundleDataDirWithEl(userId, elx);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 end";
 }
 } // StorageDaemon
 } // OHOS

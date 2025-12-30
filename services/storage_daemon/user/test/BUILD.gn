@@ -54,12 +54,17 @@ ohos_unittest("user_manager_test") {
     "$ROOT_DIR/user/test/user_manager_test.cpp",
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
+    "$ROOT_DIR/mock/storage_manager_client_mock.cpp",
   ]
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
+
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
     "ability_base:zuri",

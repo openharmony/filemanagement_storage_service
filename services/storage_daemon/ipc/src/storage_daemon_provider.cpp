@@ -41,7 +41,6 @@
 #include "crypto/key_crypto_utils.h"
 #include "crypto/key_manager.h"
 #endif
-#include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
 #include "user/user_manager.h"
@@ -726,11 +725,28 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
     if (ret != E_OK) {
-        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        LOGE("RawDataToStringVec failed, ret is %{public}d", ret);
         return ret;
     }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
-    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+
+    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
+    if (dlhandler == NULL) {
+        LOGE("CreateShareFile cannot open so, errno = %{public}s", dlerror());
+        return E_DLOPEN_ERROR;
+    }
+
+    typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string>&, uint32_t, uint32_t, std::vector<int32_t>&);
+    CreateShareFileFunc createShareFile = nullptr;
+    createShareFile = reinterpret_cast<CreateShareFileFunc>(dlsym(dlhandler, "CreateShareFile"));
+    if (createShareFile == nullptr) {
+        LOGE("CreateShareFile dlsym failed, errno = %{public}s", dlerror());
+        dlclose(dlhandler);
+        return E_DLSYM_ERROR;
+    }
+    createShareFile(uriList, tokenId, flag, funcResult);
+    dlclose(dlhandler);
+
     LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
     return E_OK;
 }
@@ -740,10 +756,28 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFi
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
     if (ret != E_OK) {
-        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        LOGE("RawDataToStringVec failed, ret is %{public}d", ret);
         return ret;
     }
-    return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
+
+    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
+    if (dlhandler == NULL) {
+        LOGE("DeleteShareFile cannot open so, errno = %{public}s", dlerror());
+        return E_DLOPEN_ERROR;
+    }
+
+    typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
+    DeleteShareFileFunc deleteShareFile = nullptr;
+    deleteShareFile = reinterpret_cast<DeleteShareFileFunc>(dlsym(dlhandler, "DeleteShareFile"));
+    if (deleteShareFile == nullptr) {
+        LOGE("DeleteShareFile dlsym failed, errno = %{public}s", dlerror());
+        dlclose(dlhandler);
+        return E_DLSYM_ERROR;
+    }
+
+    ret = deleteShareFile(tokenId, uriList);
+    dlclose(dlhandler);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,

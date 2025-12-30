@@ -73,5 +73,10 @@ int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &e
 {
     return 0;
 }
+
+int32_t StorageManagerClient::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
+{
+    return 0;
+}
 } // StorageDaemon
 } // OHOS

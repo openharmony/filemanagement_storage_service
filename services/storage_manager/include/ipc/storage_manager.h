@@ -147,6 +147,7 @@ public:
     int32_t CheckUserIdRange(int32_t userId);
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
     void NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType);
+    int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);
     std::mutex mutex_;
 private:
     StorageManager() = default;

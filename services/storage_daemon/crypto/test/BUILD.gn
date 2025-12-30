@@ -48,12 +48,16 @@ ohos_moduletest("CryptoSubTest") {
     defines += [ "CRYPTO_TEST" ]
   }
 
-  configs = [ ":module_private_config" ]
+  configs = [
+    ":module_private_config",
+    "${storage_daemon_path}:storage_daemon_config",
+  ]
 
   deps = [
     "${storage_daemon_path}:storage_daemon_header",
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
   external_deps = [
     "bundle_framework:appexecfwk_core",
