@@ -20,7 +20,6 @@
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
-#include "ipc/storage_manager.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -56,4 +55,4 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
     GetAllVolumesFuzzTest(data, size);
     return 0;
-}
+}

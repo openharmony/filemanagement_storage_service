@@ -29,7 +29,6 @@
 #ifdef USER_CRYPTO_MANAGER
 #include "account_subscriber/account_subscriber.h"
 #include "appspawn.h"
-#include "crypto/filesystem_crypto.h"
 #include "utils/storage_radar.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
@@ -37,16 +36,18 @@
 #include "volume/volume_manager_service.h"
 #endif
 #include "ipc/storage_manager_provider.h"
+#include "os_account_manager.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "common_event/storage_common_event_subscriber.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
-#include "user/multi_user_manager_service.h"
+#include "utils/memory_reclaim_manager.h"
 #include "utils/storage_utils.h"
 
 #include "accesstoken_kit.h"
+#include "bundle_mgr_client.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
 
@@ -63,6 +64,8 @@ constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
+constexpr bool DECRYPTED = false;
+constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -187,13 +190,50 @@ void StorageManagerProvider::SetPriority()
     LOGW("set storage_manager priority: %{public}d", tid);
 }
 
+OHOS::StorageManager::VolumeState UintToState(uint32_t state)
+{
+    switch (state) {
+        case UNMOUNTED:
+            return OHOS::StorageManager::VolumeState::UNMOUNTED;
+        case CHECKING:
+            return OHOS::StorageManager::VolumeState::CHECKING;
+        case MOUNTED:
+            return OHOS::StorageManager::VolumeState::MOUNTED;
+        case EJECTING:
+            return OHOS::StorageManager::VolumeState::EJECTING;
+        case REMOVED:
+            return OHOS::StorageManager::VolumeState::REMOVED;
+        case BAD_REMOVAL:
+            return OHOS::StorageManager::VolumeState::BAD_REMOVAL;
+        case FUSE_REMOVED:
+            return OHOS::StorageManager::VolumeState::FUSE_REMOVED;
+        case DAMAGED_MOUNTED:
+            return OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED;
+        case DAMAGED:
+            return OHOS::StorageManager::VolumeState::DAMAGED;
+        default:
+            return OHOS::StorageManager::VolumeState::UNMOUNTED;
+    }
+}
+
 int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().PrepareAddUser(userId, flags);
+    LOGI("StorageManagerProvider::PrepareAddUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::PrepareAddUser userId %{public}d out of range", userId);
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareAddUser::CheckUserIdRange", userId, err, extraData);
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->PrepareAddUser(userId, flags);
+    return err;
 }
 
 int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
@@ -202,7 +242,18 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().RemoveUser(userId, flags);
+    LOGI("StorageManagerProvider::RemoveUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::RemoveUser userId %{public}d out of range", userId);
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("RemoveUser::CheckUserIdRange", userId, err, extraData);
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->RemoveUser(userId, flags);
+    return err;
 }
 
 int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
@@ -210,7 +261,17 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().PrepareStartUser(userId);
+    LOGI("StorageManagerProvider::PrepareStartUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::PrepareStartUser userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("PrepareStartUser::CheckUserIdRange", userId, err, "");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->PrepareStartUser(userId);
+    return err;
 }
 
 int32_t StorageManagerProvider::StopUser(int32_t userId)
@@ -218,7 +279,20 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().StopUser(userId);
+    LOGI("StorageManagerProvider::StopUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::StopUser userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("StopUser::CheckUserIdRange", userId, err, "");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->StopUser(userId);
+    if (err != E_USERID_RANGE) {
+        ResetUserEventRecord(userId);
+    }
+    return err;
 }
 
 int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
@@ -226,7 +300,16 @@ int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().CompleteAddUser(userId);
+    LOGI("StorageManagerProvider::CompleteAddUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::CompleteAddUser userId %{public}d out of range", userId);
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->CompleteAddUser(userId);
+    return err;
 }
 
 int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
@@ -234,7 +317,19 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetFreeSizeOfVolume(volumeUuid, freeSize);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::getFreeSizeOfVolume start, volumeUuid: %{public}s",
+        GetAnonyString(volumeUuid).c_str());
+    VolumeStorageStatusService& volumeStatsManager = VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetFreeSizeOfVolume(volumeUuid, freeSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetFreeSizeOfVolume", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
@@ -242,7 +337,19 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetTotalSizeOfVolume(volumeUuid, totalSize);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::getTotalSizeOfVolume start, volumeUuid: %{public}s",
+        GetAnonyString(volumeUuid).c_str());
+    VolumeStorageStatusService& volumeStatsManager = VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetTotalSizeOfVolume(volumeUuid, totalSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetTotalSizeOfVolume", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
@@ -253,7 +360,17 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
+#ifdef STORAGE_STATISTICS_MANAGER
+    int32_t err = StorageStatusManager::GetInstance().GetBundleStats(pkgName, bundleStats,
+        appIndex, statFlag);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetBundleStats", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
@@ -261,7 +378,9 @@ int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo>
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().ListUserdataDirInfo(scanDirs);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->ListUserdataDirInfo(scanDirs);
 }
 
 int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
@@ -272,7 +391,20 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
     if (IsFilePathInvalid(dirPath)) {
         return E_PARAMS_INVALID;
     }
-    return StorageManager::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("StorageManagerProvider::SetDirEncryptionPolicy start");
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetSystemSize(int64_t &systemSize)
@@ -280,17 +412,47 @@ int32_t StorageManagerProvider::GetSystemSize(int64_t &systemSize)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetSystemSize(systemSize);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::getSystemSize start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetSystemSize", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::GetTotalSize(int64_t &totalSize)
 {
-    return StorageManager::GetInstance().GetTotalSize(totalSize);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::getTotalSize start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalSize", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
 {
-    return StorageManager::GetInstance().GetFreeSize(freeSize);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::getFreeSize start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
@@ -298,7 +460,17 @@ int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetUserStorageStats(storageStats);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::GetUserStorageStats start");
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(storageStats);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
@@ -306,12 +478,32 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetUserStorageStats(userId, storageStats);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::GetUserStorageStats start");
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
-    return StorageManager::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGD("StorageManagerProvider::GetCurrentBundleStats start");
+    int32_t err = StorageStatusManager::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetCurrentBundleStats", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
@@ -319,7 +511,11 @@ int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeCreated(vc);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
+    VolumeManagerService::GetInstance().OnVolumeCreated(vc);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr)
@@ -327,7 +523,11 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const VolumeInfoStr &volumeI
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeMounted(volumeInfoStr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyVolumeMounted start, fsType is %{public}s.", volumeInfoStr.fsTypeStr.c_str());
+    VolumeManagerService::GetInstance().OnVolumeMounted(volumeInfoStr);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
@@ -335,7 +535,12 @@ int32_t StorageManagerProvider::NotifyVolumeDamaged(const VolumeInfoStr &volumeI
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeDamaged(volumeInfoStr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.",
+        volumeInfoStr.fsTypeStr.c_str(), volumeInfoStr.fsUuid.c_str());
+    VolumeManagerService::GetInstance().OnVolumeDamaged(volumeInfoStr);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)
@@ -343,7 +548,12 @@ int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volu
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyVolumeStateChanged(volumeId, state);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyVolumeStateChanged start");
+    OHOS::StorageManager::VolumeState stateService = UintToState(state);
+    VolumeManagerService::GetInstance().OnVolumeStateChanged(volumeId, stateService);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::Mount(const std::string &volumeId)
@@ -351,7 +561,16 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().Mount(volumeId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Mount start");
+    int result = VolumeManagerService::GetInstance().Mount(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Mount", result);
+    }
+    return result;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
@@ -359,7 +578,16 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().Unmount(volumeId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Unmount start");
+    int result = VolumeManagerService::GetInstance().Unmount(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
+    }
+    return result;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
@@ -367,7 +595,16 @@ int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().TryToFix(volumeId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::TryToFix start");
+    int result = VolumeManagerService::GetInstance().TryToFix(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
+    }
+    return result;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
@@ -375,7 +612,11 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetAllVolumes(vecOfVol);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetAllVolumes start");
+    vecOfVol = VolumeManagerService::GetInstance().GetAllVolumes();
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
@@ -383,7 +624,12 @@ int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyDiskCreated(disk);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskCreated(disk);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
@@ -391,7 +637,12 @@ int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyDiskDestroyed(diskId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskDestroyed(diskId);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t type)
@@ -399,7 +650,17 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().Partition(diskId, type);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Partition start, diskId: %{public}s", diskId.c_str());
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    int32_t err = diskManager.Partition(diskId, type);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
@@ -407,7 +668,11 @@ int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetAllDisks(vecOfDisk);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetAllDisks start");
+    vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc)
@@ -415,7 +680,17 @@ int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, Volum
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetVolumeByUuid(fsUuid, vc);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetVolumeByUuid start, uuid: %{public}s",
+        GetAnonyString(fsUuid).c_str());
+    int32_t err = VolumeManagerService::GetInstance().GetVolumeByUuid(fsUuid, vc);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeByUuid", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, VolumeExternal &vc)
@@ -423,7 +698,16 @@ int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, Volum
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetVolumeById(volumeId, vc);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetVolumeById start, volId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().GetVolumeById(volumeId, vc);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeById", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, const std::string &description)
@@ -431,7 +715,17 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().SetVolumeDescription(fsUuid, description);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::SetVolumeDescription start, uuid: %{public}s",
+        GetAnonyString(fsUuid).c_str());
+    int32_t err = VolumeManagerService::GetInstance().SetVolumeDescription(fsUuid, description);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::SetVolumeDescription", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::string &fsType)
@@ -439,7 +733,17 @@ int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::s
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().Format(volumeId, fsType);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(),
+        fsType.c_str());
+    int32_t err = VolumeManagerService::GetInstance().Format(volumeId, fsType);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Format", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &disk)
@@ -447,7 +751,16 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetDiskById(diskId, disk);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetDiskById start, diskId: %{public}s", diskId.c_str());
+    int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
@@ -460,7 +773,14 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
         return E_PARAMS_INVALID;
     }
     isInUse = true;
-    return StorageManager::GetInstance().QueryUsbIsInUse(diskPath, isInUse);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->QueryUsbIsInUse(diskPath, isInUse);
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
@@ -468,7 +788,20 @@ int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().DeleteUserKeys(userId);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+        int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->DeleteUserKeys(userId);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
@@ -478,13 +811,18 @@ int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-
     auto callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid != UPDATE_SERVICE_UID) {
         LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().EraseAllUserEncryptedKeys();
+#ifdef USER_CRYPTO_MANAGER
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->EraseAllUserEncryptedKeys();
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
@@ -496,7 +834,20 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
@@ -508,8 +859,20 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
-        userId, plainText);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    return err;
+    #else
+        return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
@@ -520,7 +883,30 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().ActiveUserKey(userId, token, secret);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->ActiveUserKey(userId, token, secret);
+    if (err == E_OK) {
+        int32_t ret = -1;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            ret = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
+        }
+        LOGE("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, ret);
+        StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, ret, "EL2-EL5");
+    }
+    StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::ACTIVE_USER_KEY_DELAY_SECOND);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
@@ -528,7 +914,27 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().InactiveUserKey(userId);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->InactiveUserKey(userId);
+    int32_t ret = -1;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        ret = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
+    }
+    LOGE("send encrypted status: userId: %{public}d, err is %{public}d", userId, ret);
+    StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:ENCRYPT", userId, ret, "EL2-EL5");
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
@@ -555,7 +961,20 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().LockUserScreen(userId);
+#ifdef USER_CRYPTO_MANAGER
+    StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::LOCK_USER_SCREEN_DELAY_SECOND);
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->LockUserScreen(userId);
+#else
+    return E_OK;
+#endif
 }
 
 bool StorageManagerProvider::IsFilePathInvalid(const std::string &filePath)
@@ -581,7 +1000,19 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
         return E_PERMISSION_DENIED;
     }
     isEncrypted = true;
-    return StorageManager::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
@@ -590,7 +1021,19 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
         return E_PERMISSION_DENIED;
     }
     needActive = false;
-    return StorageManager::GetInstance().GetUserNeedActiveStatus(userId, needActive);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GetUserNeedActiveStatus(userId, needActive);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
@@ -600,7 +1043,19 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UnlockUserScreen(userId, token, secret);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UnlockUserScreen(userId, token, secret);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
@@ -609,7 +1064,19 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
         return E_PERMISSION_DENIED;
     }
     lockScreenStatus = false;
-    return StorageManager::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
@@ -617,7 +1084,19 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GenerateAppkey(hashId, userId, keyId, needReSet);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("hashId: %{public}u", hashId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
@@ -625,7 +1104,28 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().DeleteAppkey(keyId);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("keyId :  %{public}s", keyId.c_str());
+    std::vector<int32_t> ids;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != 0 || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("DeleteAppkey::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
+        return ret;
+    }
+    int32_t userId = ids[0];
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->DeleteAppkey(userId, keyId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
@@ -636,7 +1136,19 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().CreateRecoverKey(userId, userType, token, secret);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId :  %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->CreateRecoverKey(userId, userType, token, secret);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
@@ -644,7 +1156,28 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().SetRecoverKey(key);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("SetRecoverKey enter");
+    std::vector<int32_t> ids;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != 0 || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("SetRecoverKey::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
+        return ret;
+    }
+    int32_t userId = ids[0];
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetRecoverKey(key);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
@@ -652,7 +1185,20 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateKeyContext(userId, needRemoveTmpKey);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawData,
@@ -663,9 +1209,9 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-
-    funcResult = StorageManager::GetInstance().CreateShareFile(rawData, tokenId, flag);
-    LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    funcResult = sdCommunication->CreateShareFile(rawData, tokenId, flag);
     return E_OK;
 }
 
@@ -674,7 +1220,9 @@ int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageF
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().DeleteShareFile(tokenId, rawData);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
@@ -688,7 +1236,9 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
@@ -699,7 +1249,18 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
         LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().GetUserStorageStatsByType(userId, storageStats, type);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetUserStorageStatsByType start");
+    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStatsByType(userId,
+        storageStats, type);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStatsByType", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
@@ -709,7 +1270,9 @@ int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
         return E_PERMISSION_DENIED;
     }
     oldSize = 0;
-    return StorageManager::GetInstance().UpdateMemoryPara(size, oldSize);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UpdateMemoryPara(size, oldSize);
 }
 
 int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
@@ -732,7 +1295,10 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
              IPCSkeleton::GetCallingUid(), DFS_UID);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
+    LOGI("StorageManagerProvider::MountDfsDocs start.");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
@@ -755,7 +1321,10 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
              IPCSkeleton::GetCallingUid(), DFS_UID);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    LOGI("StorageManagerProvider::UMountDfsDocs start.");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
@@ -766,7 +1335,12 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s",
+        id.c_str(), path.c_str(), GetAnonyString(uuid).c_str());
+    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::IsUsbFuseByType(const std::string &fsType, bool &enabled)
@@ -774,16 +1348,23 @@ int32_t StorageManagerProvider::IsUsbFuseByType(const std::string &fsType, bool 
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().IsUsbFuseByType(fsType, enabled);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    enabled = VolumeManagerService::GetInstance().IsUsbFuseByType(fsType);
+#endif
+    return E_OK;
 }
-
 
 int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(),
+        path.c_str());
+    VolumeManagerService::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
+#endif
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
@@ -814,7 +1395,9 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
         return E_PERMISSION_DENIED;
     }
     devFd = -1;
-    return StorageManager::GetInstance().MountMediaFuse(userId, devFd);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountMediaFuse(userId, devFd);
 #endif
     return E_OK;
 }
@@ -846,7 +1429,9 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
              MEDIALIBRARY_BUNDLE_NAME.c_str());
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UMountMediaFuse(userId);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountMediaFuse(userId);
 #endif
     return E_OK;
 }
@@ -867,7 +1452,9 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         return E_PARAMS_INVALID;
     }
     fuseFd = -1;
-    return StorageManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
 }
 
 int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
@@ -885,7 +1472,9 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
-    return StorageManager::GetInstance().UMountFileMgrFuse(userId, path);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountFileMgrFuse(userId, path);
 }
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
@@ -901,7 +1490,9 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
         return E_PARAMS_INVALID;
     }
     isOccupy = false;
-    return StorageManager::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
 int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
@@ -911,7 +1502,20 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("ResetSecretWithRecoveryKey UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
@@ -921,7 +1525,19 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
         LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().MountDisShareFile(userId, shareFiles);
+    if (userId <= 0) {
+        LOGE("mount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    for (const auto &item : shareFiles) {
+        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
+            LOGE("mount share file, shareFiles is invalid.");
+            return E_PARAMS_INVALID;
+        }
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountDisShareFile(userId, shareFiles);
 }
 
 int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
@@ -931,7 +1547,17 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UMountDisShareFile(userId, networkId);
+    if (userId <= 0) {
+        LOGE("umount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    if (networkId.find("..") != std::string::npos) {
+        LOGE("umount share file, networkId is invalid.");
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountDisShareFile(userId, networkId);
 }
 
 int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
@@ -940,7 +1566,21 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
 		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().InactiveUserPublicDirKey(userId);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->InactiveUserPublicDirKey(userId);
+    LOGI("inactive user public dir key, userId: %{public}d, err: %{public}d", userId, err);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
@@ -949,7 +1589,21 @@ int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
 		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UpdateUserPublicDirPolicy(userId);
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateUserPublicDirPolicy(userId);
+    LOGI("Update policy userId: %{public}u, err: %{public}d", userId, err);
+    return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
@@ -958,7 +1612,14 @@ int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceA
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().RegisterUeceActivationCallback(ueceCallback);
+    LOGI("Enter RegisterUeceActivationCallback");
+    if (ueceCallback == nullptr) {
+        LOGE("callback is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
@@ -967,7 +1628,10 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().UnregisterUeceActivationCallback();
+    LOGI("Enter UnregisterUeceActivationCallback");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UnregisterUeceActivationCallback();
 }
 
 int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
@@ -988,7 +1652,9 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
         return E_PARAMS_INVALID;
     }
 
-    auto ret = MultiUserManagerService::GetInstance().CreateUserDir(path, mode, uid, gid);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    auto ret = sdCommunication->CreateUserDir(path, mode, uid, gid);
     LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
@@ -1015,9 +1681,10 @@ int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
         return E_PARAMS_INVALID;
     }
 
-    auto ret = MultiUserManagerService::GetInstance().DeleteUserDir(path);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    auto ret = sdCommunication->DeleteUserDir(path);
     LOGE("DeleteUserDir end, path: %{public}s, uid: %{public}d, ret: %{public}d", path.c_str(), callingUid, ret);
-
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
     StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
     return ret;
@@ -1036,7 +1703,11 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
         LOGE("NotifyUserChangedEvent event type invalid ! type: %{public}u", eventType);
         return E_PARAMS_INVALID;
     }
-    StorageManager::GetInstance().NotifyUserChangedEvent(userId, enumType);
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("NotifyUserChangedEvent UserId: %{public}u, type: %{public}d", userId, enumType);
+    AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, enumType);
+#endif
+    LOGI("NotifyUserChangedEvent Not support !");
     return E_OK;
 }
 
@@ -1129,7 +1800,15 @@ int32_t StorageManagerProvider::NotifyCreateBundleDataDirWithEl(uint32_t userId,
         LOGE("NotifyCreateBundleDataDirWithEl permission denied ! uid: %{public}d", callingUid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance().NotifyCreateBundleDataDirWithEl(userId, elx);
+    LOGI("CreateElxBundleDataDir start: userId %{public}u, elx is %{public}d", userId, elx);
+    if (elx == StorageDaemon::EL1_KEY) {
+        LOGW("CreateElxBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx);
+        return E_ERR;
+    }
+    OHOS::AppExecFwk::BundleMgrClient client;
+    auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
+    LOGI("CreateElxBundleDataDir end ret %{public}d", ret);
+    return ret;
 }
 } // namespace StorageManager
 } // namespace OHOS

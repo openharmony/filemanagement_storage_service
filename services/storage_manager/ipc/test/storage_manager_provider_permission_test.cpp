@@ -24,12 +24,10 @@
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
-#include "storage_manager.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
-#include "user/multi_user_manager_service.h"
 #include "bundle_mgr_client.h"
 #include "volume_core.h"
 #include <cstdlib>
@@ -185,6 +183,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
 
     auto ret = storageManagerProviderTest_->PrepareAddUser(userId, flags);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->PrepareAddUser(userId, flags);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareAddUser_002 end";
 }
 
@@ -203,6 +204,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_002, 
 
     auto ret = storageManagerProviderTest_->RemoveUser(userId, flags);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->RemoveUser(userId, flags);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_RemoveUser_002 end";
 }
 
@@ -220,6 +224,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser
 
     auto ret = storageManagerProviderTest_->PrepareStartUser(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->PrepareStartUser(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareStartUser_002 end";
 }
 
@@ -237,6 +244,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_002, Te
 
     auto ret = storageManagerProviderTest_->StopUser(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->StopUser(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_StopUser_002 end";
 }
 
@@ -254,6 +264,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_
 
     auto ret = storageManagerProviderTest_->CompleteAddUser(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->CompleteAddUser(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CompleteAddUser_002 end";
 }
 
@@ -341,6 +354,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryption
     uint32_t type = 2;
     auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 end";
 }
 
@@ -450,40 +466,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStat
     auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_003
- * @tc.desc: Verify the NotifyVolumeStateChanged function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_003 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    uint32_t state = DAMAGED_MOUNTED;
-    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_003 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_004
- * @tc.desc: Verify the NotifyVolumeStateChanged function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_004 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    uint32_t state = DAMAGED;
-    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_004 end";
 }
 
 /**
@@ -652,7 +634,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescrip
 
 /**
  * @tc.name: StorageManagerProviderTest_Format_002
- * @tc.desc: Verify the SetVolumeDescription function.
+ * @tc.desc: Verify the Format function.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
@@ -714,6 +696,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_0
     uint32_t userId = 1012;
     auto ret = storageManagerProviderTest_->DeleteUserKeys(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;;
+    ret = storageManagerProviderTest_->DeleteUserKeys(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_002 end";
 }
 
@@ -765,6 +750,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_0
     std::vector<uint8_t> newSecret = {9, 10, 11, 12};
     auto ret = storageManagerProviderTest_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    uint32_t result = storageManagerProviderTest_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserAuth_002 end";
 }
 
@@ -786,6 +774,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWit
     auto ret =
         storageManagerProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_002 end";
 }
 
@@ -804,6 +795,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_00
     std::vector<uint8_t> secret = {5, 6, 7, 8};
     auto ret = storageManagerProviderTest_->ActiveUserKey(userId, token, secret);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->ActiveUserKey(userId, token, secret);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ActiveUserKey_002 end";
 }
 
@@ -820,6 +814,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_
     uint32_t userId = 1012;
     auto ret = storageManagerProviderTest_->InactiveUserKey(userId);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->InactiveUserKey(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserKey_002 end";
 }
 
@@ -838,6 +835,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptSt
     bool needCheckDirMount = true;
     auto ret = storageManagerProviderTest_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFileEncryptStatus_002 end";
 }
 
@@ -855,6 +855,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiv
     bool needActive = false;
     auto ret = storageManagerProviderTest_->GetUserNeedActiveStatus(userId, needActive);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->GetUserNeedActiveStatus(userId, needActive);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserNeedActiveStatus_002 end";
 }
 
@@ -873,6 +876,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen
     std::vector<uint8_t> secret = {0x04, 0x05, 0x06};
     auto ret = storageManagerProviderTest_->UnlockUserScreen(userId, token, secret);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->UnlockUserScreen(userId, token, secret);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnlockUserScreen_002 end";
 }
 
@@ -928,6 +934,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenSta
     bool needActive = false;
     auto ret = storageManagerProviderTest_->GetLockScreenStatus(userId, needActive);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->GetLockScreenStatus(userId, needActive);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetLockScreenStatus_002 end";
 }
 
@@ -947,6 +956,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_0
     bool needReSet = false;
     auto ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateAppkey_002 end";
 }
 
@@ -982,6 +994,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey
     std::vector<uint8_t> secret = {0xAA, 0xBB, 0xCC};
     auto ret = storageManagerProviderTest_->CreateRecoverKey(userId, userType, token, secret);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->CreateRecoverKey(userId, userType, token, secret);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateRecoverKey_002 end";
 }
 
@@ -1015,6 +1030,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext
     bool needRemoveTmpKey = true;
     auto ret = storageManagerProviderTest_->UpdateKeyContext(userId, needRemoveTmpKey);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->UpdateKeyContext(userId, needRemoveTmpKey);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateKeyContext_002 end";
 }
 
@@ -1144,6 +1162,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithR
     std::vector<uint8_t> key = {0x01, 0x02, 0x03};
     auto ret = storageManagerProviderTest_->ResetSecretWithRecoveryKey(userId, rkType, key);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    userId = TOP_USER_ID + 1;
+    ret = storageManagerProviderTest_->ResetSecretWithRecoveryKey(userId, rkType, key);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetSecretWithRecoveryKey_002 end";
 }
 
@@ -1515,35 +1536,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, Te
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_TryToFix_002
- * @tc.desc: Verify the TryToFix function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(1009);
-    std::string volId = "vol-8-1";
-    std::string fsTypeStr = "exfat";
-    std::string uuid = "uuid-1";
-    std::string path = "/";
-    std::string description = "My Disk";
-
-    auto ret = storageManagerProviderTest_->TryToFix(volId);
-    EXPECT_EQ(ret, E_OK);
-
-    int32_t fsType = 1;
-    std::string diskId = "disk-1-6";
-    VolumeCore vc(volId, fsType, diskId);
-    storageManagerProviderTest_->NotifyVolumeCreated(vc);
-    ret = storageManagerProviderTest_->TryToFix(volId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_002 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_RegisterUeceActivationCallback_001
  * @tc.desc: Verify the RegisterUeceActivationCallback function.
  * @tc.type: FUNC
@@ -1551,7 +1543,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_002, Te
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActivationCallback_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
 
     sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());

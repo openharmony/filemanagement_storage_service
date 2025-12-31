@@ -19,12 +19,10 @@
 #include "disk.h"
 #include "ext_bundle_stats.h"
 #include "message_parcel.h"
-#include "storage_manager.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
-#include "user/multi_user_manager_service.h"
 #include "volume_core.h"
 #include <cstdlib>
 #include <cstring>
@@ -34,6 +32,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include "storage_service_constants.h"
+#include "account_subscriber/account_subscriber.h"
 #ifdef STORAGE_STATISTICS_MANAGER
 #include "storage/storage_status_manager.h"
 #endif

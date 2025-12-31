@@ -46,10 +46,8 @@ ohos_shared_library("storage_manager") {
 
   sources = [
     "common_event/storage_common_event_subscriber.cpp",
-    "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_provider.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "user/src/multi_user_manager_service.cpp",
     "utils/src/storage_utils.cpp",
     "rdb_adapter/src/storage_rdb_adapter.cpp",
   ]
@@ -61,7 +59,6 @@ ohos_shared_library("storage_manager") {
 
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
-    sources += [ "crypto/filesystem_crypto.cpp" ]
   }
 
   if (storage_service_external_storage_manager) {
@@ -175,14 +172,9 @@ group("storage_manager_unit_test") {
     "innerkits_impl/test:storage_manager_innerkits_test",
     "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
-    "user/test:storage_manager_user_test",
     "rdb_adapter/test:storage_manager_rdb_test",
     "common_event/test:storage_common_event_test",
   ]
-
-  if (storage_service_user_crypto_manager) {
-    deps += [ "crypto/test:storage_manager_crypto_test" ]
-  }
 
   if (storage_service_storage_statistics_manager) {
     deps += [ "storage/test:storage_manager_storage_test" ]
