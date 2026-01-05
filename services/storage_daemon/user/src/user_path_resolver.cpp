@@ -188,8 +188,8 @@ int32_t DirInfo::RemoveDir() const
 
 void DirInfo::UpdateDirUid(int32_t userId)
 {
-    if (options.find(OPTIONS_UPDATE_UID) != options.end()) {
-        uid = USER_ID_BASE * userId + uid;
+    if (userId >= 0 && options.find(OPTIONS_UPDATE_UID) != options.end()) {
+        uid = USER_ID_BASE * static_cast<uid_t>(userId) + uid;
     }
 }
 

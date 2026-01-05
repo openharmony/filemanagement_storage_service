@@ -55,6 +55,52 @@ HWTEST_F(MemoryReclaimManagerTest, WriteToProcFile_FileNotFound, TestSize.Level1
     GTEST_LOG_(INFO) << "WriteToProcFile_FileNotFound end";
 }
 
+/**
+ * @tc.name: MemoryReclaimManagerTest_WriteToProcFile_AllScenarios
+ * @tc.desc: Test WriteToProcFile all scenarios in one case:
+ *           1) open fail (fd == -1) using nonexistent path under /data/service
+ *           2) success path (return true) using normal file under /data/service
+ *           3) write fail after open success (written < 0) using symlink under /data/service -> /dev/full (if exists)
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(MemoryReclaimManagerTest, WriteToProcFile_AllScenarios, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios start";
+ 
+    const std::string baseDir = "/data/service";
+ 
+    // 1) open fail: file doesn't exist (covers if(fd == -1))
+    const std::string notExistPath = baseDir + "/nonexistent_file_xyz_123456";
+    EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(notExistPath, "test content"));
+ 
+    // 2) success: create a writable file then write (covers return true)
+    const std::string okPath = baseDir + "/memory_reclaim_manager_write_test.txt";
+    const std::string content = "hello_ut_content";
+    FILE *fp = fopen(okPath.c_str(), "w");
+    ASSERT_NE(fp, nullptr);
+    fclose(fp);
+    EXPECT_TRUE(MemoryReclaimManager::WriteToProcFile(okPath, content));
+    (void)remove(okPath.c_str());
+ 
+    // 3) write fail after open success (covers written < 0)
+    //    Use /data/service symlink -> /dev/full (common on Linux: open ok, write fails with ENOSPC)
+    const std::string devFull = "/dev/full";
+    const std::string linkPath = baseDir + "/dev_full_link_for_ut";
+    if (access(devFull.c_str(), F_OK) != 0) {
+        GTEST_LOG_(INFO) << "/dev/full not exist, skip write-fail sub-scenario";
+        GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
+        return;
+    }
+ 
+    (void)unlink(linkPath.c_str());
+    int ret = symlink(devFull.c_str(), linkPath.c_str());
+    ASSERT_EQ(ret, 0);
+    EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(linkPath, "test content"));
+    (void)unlink(linkPath.c_str());
+ 
+    GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
+}
 } // namespace Test
 } // namespace StorageDaemon
 } // namespace OHOS

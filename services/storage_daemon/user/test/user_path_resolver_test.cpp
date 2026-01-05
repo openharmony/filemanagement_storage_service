@@ -233,6 +233,43 @@ HWTEST_F(UserPathResolverTest, UserPathResolverTest_UpdateDirUid_001, TestSize.L
 }
 
 /**
+ * @tc.name: UserPathResolverTest_UpdateDirUid_002
+ * @tc.desc: Verify the UpdateDirUid.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(UserPathResolverTest, UserPathResolverTest_UpdateDirUid_002, TestSize.Level1)
+{
+    DirInfo dirInfo1 {};
+    dirInfo1.uid = 100;
+    std::string str = "update_uid";
+    dirInfo1.options.emplace(str, "");
+    const auto oldUid1 = dirInfo1.uid;
+    const int32_t userId1 = 10;
+    dirInfo1.UpdateDirUid(userId1);
+    EXPECT_EQ(dirInfo1.uid, USER_ID_BASE * static_cast<uid_t>(userId1) + oldUid1);
+    DirInfo dirInfo2 {};
+    dirInfo2.uid = 100;
+    dirInfo2.options.clear();
+    const auto oldUid2 = dirInfo2.uid;
+    dirInfo2.UpdateDirUid(10);
+    EXPECT_EQ(dirInfo2.uid, oldUid2);
+    DirInfo dirInfo3 {};
+    dirInfo3.uid = 100;
+    dirInfo3.options.emplace(str, "");
+    const auto oldUid3 = dirInfo3.uid;
+    dirInfo3.UpdateDirUid(-1);
+    EXPECT_EQ(dirInfo3.uid, oldUid3);
+    DirInfo dirInfo4 {};
+    dirInfo4.uid = 123;
+    dirInfo4.options.emplace(str, "");
+    const auto oldUid4 = dirInfo4.uid;
+    dirInfo4.UpdateDirUid(0);
+    EXPECT_EQ(dirInfo4.uid, USER_ID_BASE * static_cast<uid_t>(0) + oldUid4);
+    EXPECT_EQ(dirInfo4.uid, oldUid4);
+}
+
+/**
  * @tc.name: UserPathResolverTest_MountDir_001
  * @tc.desc: Verify the MountDir when srcPath not exist.
  * @tc.type: FUNC
