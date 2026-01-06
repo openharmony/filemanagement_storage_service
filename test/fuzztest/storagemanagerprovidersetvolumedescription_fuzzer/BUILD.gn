@@ -60,7 +60,6 @@ ohos_fuzztest("StorageManagerProviderSetVolumeDescriptionFuzzTest") {
   ]
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
-    sources += [ "${storage_manager_path}/crypto/filesystem_crypto.cpp" ]
     external_deps += [ "data_share:datashare_consumer" ]
   }
 

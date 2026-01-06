@@ -132,22 +132,6 @@ group("storage_daemon_proxy_fuzztest") {
   ]
 }
 
-group("filesystem_crypto_fuzztest") {
-  testonly = true
-  deps = [
-    "filesystemcryptoactiveuserkey_fuzzer:fuzztest",
-    "filesystemcryptodeleteappkey_fuzzer:fuzztest",
-    "filesystemcryptodeleteuserkey_fuzzer:fuzztest",
-    "filesystemcryptogenerateappkey_fuzzer:fuzztest",
-    "filesystemcryptogetlockscreenstatus_fuzzer:fuzztest",
-    "filesystemcryptoinactiveuserkey_fuzzer:fuzztest",
-    "filesystemcryptolockuserscreen_fuzzer:fuzztest",
-    "filesystemcryptounlockuserscreen_fuzzer:fuzztest",
-    "filesystemcryptoupdatekeycontext_fuzzer:fuzztest",
-    "filesystemcryptoupdateuserauth_fuzzer:fuzztest",
-  ]
-}
-
 group("keycontrol_fuzztest") {
   testonly = true
   deps = [
@@ -181,7 +165,6 @@ group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
-    ":filesystem_crypto_fuzztest",
     ":keycontrol_fuzztest",
     ":storage_daemon_provider_fuzztest",
     ":storage_daemon_proxy_fuzztest",

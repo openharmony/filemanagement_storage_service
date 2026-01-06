@@ -16,7 +16,6 @@
 #ifndef OHOS_STORAGEMANAGERPROXYMOCK_H
 #define OHOS_STORAGEMANAGERPROXYMOCK_H
 
-#include "storage_manager.h"
 #include "storage_service_errno.h"
 
 namespace OHOS {

@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_MANAGER_STORAGE_MANAGER_PROVIDER_H
 
 #include "istorage_manager.h"
-#include "storage_manager.h"
 #include "storage_manager_stub.h"
 #include "system_ability.h"
 #include "storage_file_raw_data.h"
@@ -31,8 +30,7 @@ public:
     const std::string PATH_INVALID_FLAG2 = "/..";
     const uint32_t PATH_INVALID_FLAG_LEN = 3;
     const char FILE_SEPARATOR_CHAR = '/';
-    StorageManagerProvider(int32_t saID, bool runOnCreate = true)
-        : SystemAbility(saID, runOnCreate), manager_(StorageManager::GetInstance()) {};
+    StorageManagerProvider(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate) {};
     ~StorageManagerProvider() = default;
 
     void OnStart() override;
@@ -180,7 +178,6 @@ private:
     void SetPriority();
     bool IsFilePathInvalid(const std::string &filePath);
     static sptr<StorageManagerProvider> instance_;
-    std::reference_wrapper<StorageManager> manager_;
     static std::mutex instanceLock_;
     std::mutex mutex_;
 };
