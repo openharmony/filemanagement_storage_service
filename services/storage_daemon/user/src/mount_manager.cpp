@@ -138,11 +138,15 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
         return false;
     }
     std::stringstream ss(line);
-    std::string pid;
-    ss >> pid;
+    std::string pidStr;
+    ss >> pidStr;
+    int32_t pid;
+    if (!ConvertStringToInt32(pidStr, pid)) {
+        return false;
+    }
+    info.pid = pid;
     std::string processName;
     ss >> processName;
-    info.pid = std::atoi(pid.c_str());
     info.name = processName;
     inputStream.close();
     return true;
@@ -802,15 +806,23 @@ int32_t MountManager::CheckProcessUserId(int32_t userId, std::vector<ProcessInfo
         }
         std::string line;
         std::string uidKey = "Uid:";
+        bool foundFlag = false;
         while (std::getline(inputStream, line)) {
             if (line.find(uidKey) == 0) {
+                foundFlag = true;
                 break;
             }
         }
+        if (!foundFlag) {
+            continue;
+        }
         std::stringstream ss(line);
-        std::string key;
+        std::string uidStr;
+        ss >> uidStr >> uidStr;
         int32_t uid;
-        ss >> key >> uid;
+        if (!ConvertStringToUid(uidStr, uid)) {
+            continue;
+        }
         int32_t procUserId = uid / USER_ID_BASE;
         if (procUserId == userId) {
             processKillInfos.push_back(proInfo);

@@ -15,6 +15,7 @@
 
 #include "utils/file_utils.h"
 
+#include <cstdint>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
@@ -346,12 +347,14 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 bool RmDirRecurse(const std::string &path)
 {
     LOGD("rm dir %{public}s", path.c_str());
+    if (!IsDir(path)) {
+        return false;
+    }
     DIR *dir = opendir(path.c_str());
     if (!dir) {
         if (errno == ENOENT) {
             return true;
         }
-
         LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
     }
@@ -432,8 +435,10 @@ bool StringToUint32(const std::string &str, uint32_t &num)
         LOGE("String to int convert failed");
         return false;
     }
+    if (value < 0 || value >= INT32_MAX) {
+        return false;
+    }
     num = static_cast<uint32_t>(value);
-
     return true;
 }
 

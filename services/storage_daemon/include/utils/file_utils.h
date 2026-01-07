@@ -29,7 +29,7 @@ struct FileList {
 };
 
 struct ProcessInfo {
-    int pid;
+    int32_t pid;
     std::string name;
 };
 
