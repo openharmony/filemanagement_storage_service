@@ -400,6 +400,98 @@ ohos_unittest("KeyManagerWithFileMockAnotherTest") {
     "${storage_daemon_path}/mock/mount_manager_mock.cpp",
     "key_manager_with_filemock_another_test.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
+  external_deps = [
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "huks:libhukssdk",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
+    "samgr:samgr_proxy",
+    "bundle_framework:appexecfwk_core",
+  ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+}
+
+ohos_unittest("KeyManagerWithNotEncryptedAnotherTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "USER_CRYPTO_MIGRATE_KEY",
+    "private = public",
+    "SUPPORT_RECOVERY_KEY_SERVICE",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/crypto/test/mock",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/libfscrypt",
+    "${storage_daemon_path}/include/mock",
+    "${storage_daemon_path}/include/user",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [
+    "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
+    "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
+    "${storage_daemon_path}/crypto/src/key_backup.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/crypto/test/mock/recover_manager_mock.cpp",
+    "${storage_daemon_path}/mock/base_key_mock.cpp",
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
+    "${storage_daemon_path}/mock/iam_client_mock.cpp",
+    "${storage_daemon_path}/mock/key_control_mock.cpp",
+    "${storage_daemon_path}/mock/mount_manager_mock.cpp",
+    "key_manager_with_not_encrypted_another_test.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
   ]
 
   deps = [
@@ -529,6 +621,7 @@ group("key_manager_test") {
   deps = [
     ":KeyManagerAnotherTest",
     ":KeyManagerWithFileMockAnotherTest",
+    ":KeyManagerWithNotEncryptedAnotherTest",
     ":KeyManagerOtherTest",
     ":KeyManagerSupTest",
     ":KeyManagerTest",

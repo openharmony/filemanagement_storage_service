@@ -26,6 +26,7 @@
 
 #include "base_key_mock.h"
 #include "key_control_mock.h"
+#include "file_utils_mock.h"
 #include "fscrypt_control_mock.h"
 #include "fscrypt_key_v1.h"
 #include "os_account_manager_mock.h"
@@ -135,6 +136,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_ResetSecretWithRecoveryKey_000, TestSize.
     OHOS::ForceCreateDirectory(el3Path);
     OHOS::ForceCreateDirectory(el4Path);
     
+    EXPECT_CALL(*recoveryMgrMock_, IsEncryptionEnabled()).WillOnce(Return(true));
     EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key),
               E_RESET_SECRET_WITH_RECOVERY_KEY_ERR);
@@ -610,30 +612,6 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_InActiveUserKey_001, TestSize.Leve
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance().InActiveUserKey(userId), 0);
     GTEST_LOG_(INFO) << "KeyMgrAnotherTest_InActiveUserKey_001 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_SetDirectoryElPolicy_001
- * @tc.desc: Verify the KeyManager SetDirectoryElPolicy function.
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_SetDirectoryElPolicy_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_SetDirectoryElPolicy_001 start";
-    uint32_t userId = 124;
-    KeyType type = EL1_KEY;
-    std::vector<FileList> vec;
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    auto ret = KeyManager::GetInstance().SetDirectoryElPolicy(userId, type, vec);
-    EXPECT_EQ(ret, 0);
-
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*recoveryMgrMock_, IsEncryptionEnabled()).WillOnce(Return(false));
-    ret = KeyManager::GetInstance().SetDirectoryElPolicy(userId, type, vec);
-    EXPECT_EQ(ret, 0);
-    
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_SetDirectoryElPolicy_001 end";
 }
 
 /**

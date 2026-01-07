@@ -99,6 +99,7 @@ static const std::string EL4 = "el4";
 static const std::string EL5 = "el5";
 
 enum KeyType {
+    EL0_KEY = 0,
     EL1_KEY = 1,
     EL2_KEY = 2,
     EL3_KEY = 3,
