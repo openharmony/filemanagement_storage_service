@@ -48,6 +48,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+using namespace StorageService;
 constexpr unsigned int LOCAL_TIME_OUT_SECONDS = 10;
 constexpr unsigned int INACTIVE_USER_KEY_OUT_SECONDS = 25;
 constexpr unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
@@ -443,9 +444,11 @@ int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 int32_t StorageDaemonProvider::InitGlobalKey()
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    StorageRadar::ReportFucBehavior("InitGlobalKey", DEFAULT_USERID, "InitGlobalKey Begin", E_OK);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().InitGlobalKey();
     SetUserStatistics(USER0ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
+    StorageRadar::ReportFucBehavior("InitGlobalKey", DEFAULT_USERID, "InitGlobalKey End", err);
     return err;
 }
 
@@ -453,9 +456,11 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
     std::lock_guard<std::mutex> lock(mutex_);
+    StorageRadar::ReportFucBehavior("InitGlobalUserKeys", DEFAULT_USERID, "InitGlobalUserKeys Begin", E_OK);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().InitGlobalUserKeys();
     SetUserStatistics(USER100ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
+    StorageRadar::ReportFucBehavior("InitGlobalUserKeys", DEFAULT_USERID, "InitGlobalUserKeys End", err);
     return err;
 }
 
@@ -559,6 +564,7 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
 int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
+    StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain Begin", E_OK);
 #ifdef USER_CRYPTO_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
@@ -569,6 +575,7 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
     auto delay = StorageService::StorageRadar::ReportDuration("MountCryptoPathAgain",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: MountCryptoPathAgain: delay time = %{public}s", delay.c_str());
+    StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain End", ret);
     return ret;
 #else
     return E_OK;

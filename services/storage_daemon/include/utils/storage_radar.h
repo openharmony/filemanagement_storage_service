@@ -151,6 +151,8 @@ public:
     static void ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSetQuotaByBaseline(const std::string &funcName, const std::string &extraData);
+    static void ReportFucBehavior(const std::string &funcName, uint32_t userId, const std::string &extraData,
+        int32_t ret);
 
 private:
     StorageRadar() = default;
