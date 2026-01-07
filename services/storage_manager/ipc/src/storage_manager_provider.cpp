@@ -234,7 +234,7 @@ int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->PrepareAddUser(userId, flags);
-	StorageRadar::ReportFucBehavior("PrepareAddUser", userId, "PrepareAddUser End", err);
+    StorageRadar::ReportFucBehavior("PrepareAddUser", userId, "PrepareAddUser End", err);
     return err;
 }
 
@@ -256,7 +256,7 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->RemoveUser(userId, flags);
-	StorageRadar::ReportFucBehavior("RemoveUser", userId, "RemoveUser End", err);
+    StorageRadar::ReportFucBehavior("RemoveUser", userId, "RemoveUser End", err);
     return err;
 }
 
@@ -276,7 +276,7 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->PrepareStartUser(userId);
-	StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser End", err);
+    StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser End", err);
     return err;
 }
 
@@ -296,7 +296,7 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->StopUser(userId);
-	StorageRadar::ReportFucBehavior("StopUser", userId, "StopUser End", err);
+    StorageRadar::ReportFucBehavior("StopUser", userId, "StopUser End", err);
     if (err != E_USERID_RANGE) {
         ResetUserEventRecord(userId);
     }
@@ -318,7 +318,7 @@ int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->CompleteAddUser(userId);
-	StorageRadar::ReportFucBehavior("CompleteAddUser", userId, "CompleteAddUser End", err);
+    StorageRadar::ReportFucBehavior("CompleteAddUser", userId, "CompleteAddUser End", err);
     return err;
 }
 
@@ -391,8 +391,8 @@ int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo>
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->ListUserdataDirInfo(scanDirs)
-	StorageRadar::ReportFucBehavior("ListUserdataDirInfo", DEFAULT_USERID, "ListUserdataDirInfo End", err);
+    int32_t err = sdCommunication->ListUserdataDirInfo(scanDirs);
+    StorageRadar::ReportFucBehavior("ListUserdataDirInfo", DEFAULT_USERID, "ListUserdataDirInfo End", err);
     return err;
 }
 
@@ -415,8 +415,8 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
     
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level)
-	StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy End", err);
+    err = sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level);
+    StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy End", err);
     return err;
 #else
     return E_OK;
@@ -531,7 +531,7 @@ int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
     VolumeManagerService::GetInstance().OnVolumeCreated(vc);
-	StorageRadar::ReportFucBehavior("NotifyVolumeCreated", DEFAULT_USERID, "NotifyVolumeCreated End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyVolumeCreated", DEFAULT_USERID, "NotifyVolumeCreated End", E_OK);
 #endif
     return E_OK;
 }
@@ -545,7 +545,7 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const VolumeInfoStr &volumeI
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::NotifyVolumeMounted start, fsType is %{public}s.", volumeInfoStr.fsTypeStr.c_str());
     VolumeManagerService::GetInstance().OnVolumeMounted(volumeInfoStr);
-	StorageRadar::ReportFucBehavior("NotifyVolumeMounted", DEFAULT_USERID, "NotifyVolumeMounted End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyVolumeMounted", DEFAULT_USERID, "NotifyVolumeMounted End", E_OK);
 #endif
     return E_OK;
 }
@@ -560,7 +560,7 @@ int32_t StorageManagerProvider::NotifyVolumeDamaged(const VolumeInfoStr &volumeI
     LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.",
         volumeInfoStr.fsTypeStr.c_str(), volumeInfoStr.fsUuid.c_str());
     VolumeManagerService::GetInstance().OnVolumeDamaged(volumeInfoStr);
-	StorageRadar::ReportFucBehavior("NotifyVolumeDamaged", DEFAULT_USERID, "NotifyVolumeDamaged End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyVolumeDamaged", DEFAULT_USERID, "NotifyVolumeDamaged End", E_OK);
 #endif
     return E_OK;
 }
@@ -575,7 +575,7 @@ int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volu
     LOGI("StorageManagerProvider::NotifyVolumeStateChanged start");
     OHOS::StorageManager::VolumeState stateService = UintToState(state);
     VolumeManagerService::GetInstance().OnVolumeStateChanged(volumeId, stateService);
-	StorageRadar::ReportFucBehavior("NotifyVolumeStateChanged", DEFAULT_USERID, "NotifyVolumeStateChanged End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyVolumeStateChanged", DEFAULT_USERID, "NotifyVolumeStateChanged End", E_OK);
 #endif
     return E_OK;
 }
@@ -589,7 +589,7 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Mount start");
     int result = VolumeManagerService::GetInstance().Mount(volumeId);
-	StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, "Mount End", result);
+    StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, "Mount End", result);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Mount", result);
     }
@@ -608,7 +608,7 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Unmount start");
     int result = VolumeManagerService::GetInstance().Unmount(volumeId);
-	StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, "Unmount End", result);
+    StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, "Unmount End", result);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
     }
@@ -627,7 +627,7 @@ int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::TryToFix start");
     int result = VolumeManagerService::GetInstance().TryToFix(volumeId);
-	StorageRadar::ReportFucBehavior("TryToFix", DEFAULT_USERID, "TryToFix End", result);
+    StorageRadar::ReportFucBehavior("TryToFix", DEFAULT_USERID, "TryToFix End", result);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
     }
@@ -659,7 +659,7 @@ int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
     LOGI("StorageManagerProvider::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
     DiskManagerService& diskManager = DiskManagerService::GetInstance();
     diskManager.OnDiskCreated(disk);
-	StorageRadar::ReportFucBehavior("NotifyDiskCreated", DEFAULT_USERID, "NotifyDiskCreated End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyDiskCreated", DEFAULT_USERID, "NotifyDiskCreated End", E_OK);
 #endif
     return E_OK;
 }
@@ -674,7 +674,7 @@ int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
     LOGI("StorageManagerProvider::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
     DiskManagerService& diskManager = DiskManagerService::GetInstance();
     diskManager.OnDiskDestroyed(diskId);
-	StorageRadar::ReportFucBehavior("NotifyDiskDestroyed", DEFAULT_USERID, "NotifyDiskDestroyed End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyDiskDestroyed", DEFAULT_USERID, "NotifyDiskDestroyed End", E_OK);
 #endif
     return E_OK;
 }
@@ -689,7 +689,7 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
     LOGI("StorageManagerProvider::Partition start, diskId: %{public}s", diskId.c_str());
     DiskManagerService& diskManager = DiskManagerService::GetInstance();
     int32_t err = diskManager.Partition(diskId, type);
-	StorageRadar::ReportFucBehavior("Partition", DEFAULT_USERID, "Partition End", err);
+    StorageRadar::ReportFucBehavior("Partition", DEFAULT_USERID, "Partition End", err);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
     }
@@ -756,7 +756,7 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
     LOGI("StorageManagerProvider::SetVolumeDescription start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
     int32_t err = VolumeManagerService::GetInstance().SetVolumeDescription(fsUuid, description);
-	StorageRadar::ReportFucBehavior("SetVolumeDescription", DEFAULT_USERID, "SetVolumeDescription End", err);
+    StorageRadar::ReportFucBehavior("SetVolumeDescription", DEFAULT_USERID, "SetVolumeDescription End", err);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::SetVolumeDescription", err);
     }
@@ -776,7 +776,7 @@ int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::s
     LOGI("StorageManagerProvider::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(),
         fsType.c_str());
     int32_t err = VolumeManagerService::GetInstance().Format(volumeId, fsType);
-	StorageRadar::ReportFucBehavior("Format", DEFAULT_USERID, "Format End", err);
+    StorageRadar::ReportFucBehavior("Format", DEFAULT_USERID, "Format End", err);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Format", err);
     }
@@ -818,8 +818,8 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
     LOGI("StorageManagerProvider::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->QueryUsbIsInUse(diskPath, isInUse)
-	StorageRadar::ReportFucBehavior("QueryUsbIsInUse", DEFAULT_USERID, "QueryUsbIsInUse End", err);
+    int32_t err = sdCommunication->QueryUsbIsInUse(diskPath, isInUse);
+    StorageRadar::ReportFucBehavior("QueryUsbIsInUse", DEFAULT_USERID, "QueryUsbIsInUse End", err);
     return err;
 #else
     return E_NOT_SUPPORT;
@@ -864,8 +864,8 @@ int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
 #ifdef USER_CRYPTO_MANAGER
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->EraseAllUserEncryptedKeys()
-	StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys End", err);
+    int32_t err = sdCommunication->EraseAllUserEncryptedKeys();
+    StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys End", err);
     return err;
 #else
     return E_OK;
@@ -892,7 +892,7 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
-	StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, "UpdateUserAuth End", err);
+    StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, "UpdateUserAuth End", err);
     return err;
 #else
     return E_OK;
@@ -919,7 +919,7 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
-	StorageRadar::ReportFucBehavior("UpdateUseAuthWithRecoveryKey", userId, "UpdateUseAuthWithRecoveryKey End", err);
+    StorageRadar::ReportFucBehavior("UpdateUseAuthWithRecoveryKey", userId, "UpdateUseAuthWithRecoveryKey End", err);
     return err;
     #else
         return E_OK;
@@ -945,7 +945,7 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->ActiveUserKey(userId, token, secret);
-	StorageRadar::ReportFucBehavior("ActiveUserKey", userId, "ActiveUserKey End", err);
+    StorageRadar::ReportFucBehavior("ActiveUserKey", userId, "ActiveUserKey End", err);
     if (err == E_OK) {
         int32_t ret = -1;
         {
@@ -978,7 +978,7 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->InactiveUserKey(userId);
-	StorageRadar::ReportFucBehavior("InactiveUserKey", userId, "InactiveUserKey End", err);
+    StorageRadar::ReportFucBehavior("InactiveUserKey", userId, "InactiveUserKey End", err);
     int32_t ret = -1;
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -1027,8 +1027,8 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->LockUserScreen(userId);
-	StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen End", err);
+    err = sdCommunication->LockUserScreen(userId);
+    StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen End", err);
     return err;
 #else
     return E_OK;
@@ -1068,8 +1068,8 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
-	StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, "GetFileEncryptStatus End", err);
+    err = sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, "GetFileEncryptStatus End", err);
     return err;
 #else
     return E_OK;
@@ -1092,8 +1092,8 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->GetUserNeedActiveStatus(userId, needActive);
-	StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, "GetUserNeedActiveStatus End", err);
+    err = sdCommunication->GetUserNeedActiveStatus(userId, needActive);
+    StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, "GetUserNeedActiveStatus End", err);
     return err;
 #else
     return E_OK;
@@ -1117,8 +1117,8 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->UnlockUserScreen(userId, token, secret);
-	StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen End", err);
+    err = sdCommunication->UnlockUserScreen(userId, token, secret);
+    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen End", err);
     return err;
 #else
     return E_OK;
@@ -1141,8 +1141,8 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
-	StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, "GetLockScreenStatus End", err);
+    err = sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
+    StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, "GetLockScreenStatus End", err);
     return err;
 #else
     return E_OK;
@@ -1164,8 +1164,8 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
-	StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "GenerateAppkey End", err);
+    err = sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
+    StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "GenerateAppkey End", err);
     return err;
 #else
     return E_OK;
@@ -1196,8 +1196,8 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->DeleteAppkey(userId, keyId);
-	StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, "DeleteAppkey End", err);
+    err = sdCommunication->DeleteAppkey(userId, keyId);
+    StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, "DeleteAppkey End", err);
     return err;
 #else
     return E_OK;
@@ -1222,8 +1222,8 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->CreateRecoverKey(userId, userType, token, secret);
-	StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, "CreateRecoverKey End", err);
+    err = sdCommunication->CreateRecoverKey(userId, userType, token, secret);
+    StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, "CreateRecoverKey End", err);
     return err;
 #else
     return E_OK;
@@ -1254,8 +1254,8 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->SetRecoverKey(key);
-	StorageRadar::ReportFucBehavior("SetRecoverKey", DEFAULT_USERID, "SetRecoverKey End", err);
+    err = sdCommunication->SetRecoverKey(key);
+    StorageRadar::ReportFucBehavior("SetRecoverKey", DEFAULT_USERID, "SetRecoverKey End", err);
     return err;
 #else
     return E_OK;
@@ -1278,7 +1278,7 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UpdateKeyContext(userId, needRemoveTmpKey);
-	StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, "UpdateKeyContext End", err);
+    StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, "UpdateKeyContext End", err);
     return err;
 #else
     return E_OK;
@@ -1297,7 +1297,7 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     funcResult = sdCommunication->CreateShareFile(rawData, tokenId, flag);
-	StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", E_OK);
+    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", E_OK);
     return E_OK;
 }
 
@@ -1309,8 +1309,8 @@ int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageF
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->DeleteShareFile(tokenId, rawData);
-	StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", err);
+    int32_t err = sdCommunication->DeleteShareFile(tokenId, rawData);
+    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", err);
     return err;
 }
 
@@ -1328,8 +1328,8 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
-	StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, "SetBundleQuota End", err);
+    int32_t err = sdCommunication->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, "SetBundleQuota End", err);
     return err;
 }
 
@@ -1365,8 +1365,8 @@ int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
     oldSize = 0;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->UpdateMemoryPara(size, oldSize);
-	StorageRadar::ReportFucBehavior("UpdateMemoryPara", DEFAULT_USERID, "UpdateMemoryPara End", err);
+    int32_t err = sdCommunication->UpdateMemoryPara(size, oldSize);
+    StorageRadar::ReportFucBehavior("UpdateMemoryPara", DEFAULT_USERID, "UpdateMemoryPara End", err);
     return err;
 }
 
@@ -1394,8 +1394,8 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
     LOGI("StorageManagerProvider::MountDfsDocs start.");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
-	StorageRadar::ReportFucBehavior("MountDfsDocs", userId, "MountDfsDocs End", err);
+    err = sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    StorageRadar::ReportFucBehavior("MountDfsDocs", userId, "MountDfsDocs End", err);
     return err;
 }
 
@@ -1423,8 +1423,8 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
     LOGI("StorageManagerProvider::UMountDfsDocs start.");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-	StorageRadar::ReportFucBehavior("UMountDfsDocs", userId, "UMountDfsDocs End", err);
+    err = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    StorageRadar::ReportFucBehavior("UMountDfsDocs", userId, "UMountDfsDocs End", err);
     return err;
 }
 
@@ -1441,7 +1441,7 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
     LOGI("StorageManagerProvider::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s",
         id.c_str(), path.c_str(), GetAnonyString(uuid).c_str());
     VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
-	StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted End", E_OK);
 #endif
     return E_OK;
 }
@@ -1467,7 +1467,7 @@ int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const 
     LOGI("StorageManagerProvider::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(),
         path.c_str());
     VolumeManagerService::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
-	StorageRadar::ReportFucBehavior("NotifyMtpUnmounted", DEFAULT_USERID, "NotifyMtpUnmounted End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyMtpUnmounted", DEFAULT_USERID, "NotifyMtpUnmounted End", E_OK);
 #endif
     return E_OK;
 }
@@ -1503,8 +1503,8 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
     devFd = -1;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->MountMediaFuse(userId, devFd);
-	StorageRadar::ReportFucBehavior("MountMediaFuse", userId, "MountMediaFuse End", err);
+    err = sdCommunication->MountMediaFuse(userId, devFd);
+    StorageRadar::ReportFucBehavior("MountMediaFuse", userId, "MountMediaFuse End", err);
     return err;
 #endif
     return E_OK;
@@ -1540,8 +1540,8 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->UMountMediaFuse(userId);
-	StorageRadar::ReportFucBehavior("UMountMediaFuse", userId, "UMountMediaFuse End", err);
+    err = sdCommunication->UMountMediaFuse(userId);
+    StorageRadar::ReportFucBehavior("UMountMediaFuse", userId, "UMountMediaFuse End", err);
     return err;
 #endif
     return E_OK;
@@ -1566,8 +1566,8 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
     fuseFd = -1;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
-	StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, "MountFileMgrFuse End", err);
+    err = sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
+    StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, "MountFileMgrFuse End", err);
     return err;
 }
 
@@ -1589,8 +1589,8 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	err = sdCommunication->UMountFileMgrFuse(userId, path);
-	StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
+    err = sdCommunication->UMountFileMgrFuse(userId, path);
+    StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
 
@@ -1610,8 +1610,8 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
     isOccupy = false;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
-	StorageRadar::ReportFucBehavior("IsFileOccupied", DEFAULT_USERID, "IsFileOccupied End", err);
+    int32_t err = sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
+    StorageRadar::ReportFucBehavior("IsFileOccupied", DEFAULT_USERID, "IsFileOccupied End", err);
     return err;
 }
 
@@ -1633,7 +1633,7 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, key);
-	StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, "ResetSecretWithRecoveryKey End", err);
+    StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, "ResetSecretWithRecoveryKey End", err);
     return err;
 #else
     return E_OK;
@@ -1660,8 +1660,8 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->MountDisShareFile(userId, shareFiles);
-	StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile End", err);
+    int32_t err = sdCommunication->MountDisShareFile(userId, shareFiles);
+    StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile End", err);
     return err;
 }
 
@@ -1683,8 +1683,8 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->UMountDisShareFile(userId, networkId);
-	StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile End", err);
+    int32_t err = sdCommunication->UMountDisShareFile(userId, networkId);
+    StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile End", err);
     return err;
 }
 
@@ -1706,7 +1706,7 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->InactiveUserPublicDirKey(userId);
     LOGI("inactive user public dir key, userId: %{public}d, err: %{public}d", userId, err);
-	StorageRadar::ReportFucBehavior("InactiveUserPublicDirKey", userId, "InactiveUserPublicDirKey End", err);
+    StorageRadar::ReportFucBehavior("InactiveUserPublicDirKey", userId, "InactiveUserPublicDirKey End", err);
     return err;
 #else
     return E_OK;
@@ -1731,7 +1731,7 @@ int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UpdateUserPublicDirPolicy(userId);
     LOGI("Update policy userId: %{public}u, err: %{public}d", userId, err);
-	StorageRadar::ReportFucBehavior("UpdateUserPublicDirPolicy", userId, "UpdateUserPublicDirPolicy End", err);
+    StorageRadar::ReportFucBehavior("UpdateUserPublicDirPolicy", userId, "UpdateUserPublicDirPolicy End", err);
     return err;
 #else
     return E_OK;
@@ -1753,7 +1753,7 @@ int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceA
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->RegisterUeceActivationCallback(ueceCallback);
+    int32_t err = sdCommunication->RegisterUeceActivationCallback(ueceCallback);
     StorageRadar::ReportFucBehavior("RegisterUeceActivationCallback", DEFAULT_USERID,
                                     "RegisterUeceActivationCallback End", err);
     return err;
@@ -1770,7 +1770,7 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
     LOGI("Enter UnregisterUeceActivationCallback");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-	int32_t err = sdCommunication->UnregisterUeceActivationCallback();
+    int32_t err = sdCommunication->UnregisterUeceActivationCallback();
     StorageRadar::ReportFucBehavior("UnregisterUeceActivationCallback", DEFAULT_USERID,
                                     "UnregisterUeceActivationCallback End", err);
     return err;
@@ -1851,7 +1851,7 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("NotifyUserChangedEvent UserId: %{public}u, type: %{public}d", userId, enumType);
     AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, enumType);
-	StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent End", E_OK);
+    StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent End", E_OK);
 #endif
     LOGI("NotifyUserChangedEvent Not support !");
     return E_OK;
@@ -1875,7 +1875,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("SetExtBundleStats start");
     int32_t ret = StorageStatusManager::GetInstance().SetExtBundleStats(userId, stats);
-	StorageRadar::ReportFucBehavior("SetExtBundleStats", userId, "SetExtBundleStats End", ret);
+    StorageRadar::ReportFucBehavior("SetExtBundleStats", userId, "SetExtBundleStats End", ret);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_SET_EXT_BUNDLE_STATS_ERROR, extraData);
