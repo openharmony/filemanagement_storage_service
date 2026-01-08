@@ -367,12 +367,14 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
                                                int32_t appIndex,
                                                uint32_t statFlag)
 {
+    StorageRadar::ReportFucBehavior("GetBundleStats", DEFAULT_USERID, "GetBundleStats Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     int32_t err = StorageStatusManager::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
+    StorageRadar::ReportFucBehavior("GetBundleStats", DEFAULT_USERID, "GetBundleStats End", err);    
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetBundleStats", DEFAULT_USERID, err,
             "setting");
@@ -473,12 +475,14 @@ int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
 
 int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
 {
+    StorageRadar::ReportFucBehavior("GetUserStorageStats", DEFAULT_USERID, "GetUserStorageStats Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManagerProvider::GetUserStorageStats start");
     int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(storageStats);
+    StorageRadar::ReportFucBehavior("GetUserStorageStats", DEFAULT_USERID, "GetUserStorageStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -491,12 +495,14 @@ int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
 
 int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    StorageRadar::ReportFucBehavior("GetUserStorageStats", userId, "GetUserStorageStats Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManagerProvider::GetUserStorageStats start");
     int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
+    StorageRadar::ReportFucBehavior("GetUserStorageStats", userId, "GetUserStorageStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -510,8 +516,10 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
 int32_t StorageManagerProvider::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
+    StorageRadar::ReportFucBehavior("GetCurrentBundleStats", DEFAULT_USERID, "GetCurrentBundleStats Begin", E_OK);
     LOGD("StorageManagerProvider::GetCurrentBundleStats start");
     int32_t err = StorageStatusManager::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
+    StorageRadar::ReportFucBehavior("GetCurrentBundleStats", DEFAULT_USERID, "GetCurrentBundleStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetCurrentBundleStats", DEFAULT_USERID, err,
             "setting");
@@ -1337,6 +1345,7 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
                                                           StorageStats &storageStats,
                                                           const std::string &type)
 {
+    StorageRadar::ReportFucBehavior("GetUserStorageStatsByType", userId, "GetUserStorageStatsByType Begin", E_OK);
     if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
         LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
         return E_PERMISSION_DENIED;
@@ -1345,6 +1354,7 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
     LOGI("StorageManagerProvider::GetUserStorageStatsByType start");
     int32_t err = StorageStatusManager::GetInstance().GetUserStorageStatsByType(userId,
         storageStats, type);
+    StorageRadar::ReportFucBehavior("GetUserStorageStatsByType", userId, "GetUserStorageStatsByType End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStatsByType", DEFAULT_USERID, err,
             "setting");
@@ -1889,6 +1899,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
 
 int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
+    StorageRadar::ReportFucBehavior("GetExtBundleStats", userId, "GetExtBundleStats Begin", E_OK);
     if (!IsSystemApp()) {
         LOGE("the caller is not sysapp");
         return E_SYS_APP_PERMISSION_DENIED;
@@ -1903,6 +1914,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("GetExtBundleStats start");
     int32_t ret = StorageStatusManager::GetInstance().GetExtBundleStats(userId, stats);
+    StorageRadar::ReportFucBehavior("GetExtBundleStats", userId, "GetExtBundleStats End", ret);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("GetExtBundleStats", E_GET_EXT_BUNDLE_STATS_ERROR, extraData);
@@ -1916,6 +1928,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
 
 int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
 {
+    StorageRadar::ReportFucBehavior("GetAllExtBundleStats", userId, "GetAllExtBundleStats Begin", E_OK);
     if (!IsSystemApp()) {
         LOGE("the caller is not sysapp");
         return E_SYS_APP_PERMISSION_DENIED;
@@ -1930,6 +1943,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("GetAllExtBundleStats start");
     int32_t ret = StorageStatusManager::GetInstance().GetAllExtBundleStats(userId, statsVec);
+    StorageRadar::ReportFucBehavior("GetAllExtBundleStats", userId, "GetAllExtBundleStats Begin", ret);
     if (ret != E_OK) {
         std::string extraData = "errCode=" + std::to_string(ret);
         StorageRadar::ReportSpaceRadar("GetAllExtBundleStats", E_GET_ALL_EXT_BUNDLE_STATS_ERROR, extraData);
