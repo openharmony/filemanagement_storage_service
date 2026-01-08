@@ -1303,14 +1303,14 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
 
 int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
-    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile Begin", E_OK);
+    StorageRadar::ReportFucBehavior("DeleteShareFile", DEFAULT_USERID, "DeleteShareFile Begin", E_OK);
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t err = sdCommunication->DeleteShareFile(tokenId, rawData);
-    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", err);
+    StorageRadar::ReportFucBehavior("DeleteShareFile", DEFAULT_USERID, "DeleteShareFile End", err);
     return err;
 }
 
