@@ -455,8 +455,8 @@ int32_t StorageDaemonProvider::InitGlobalKey()
 int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
-    std::lock_guard<std::mutex> lock(mutex_);
     StorageRadar::ReportFucBehavior("InitGlobalUserKeys", DEFAULT_USERID, "InitGlobalUserKeys Begin", E_OK);
+    std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().InitGlobalUserKeys();
     SetUserStatistics(USER100ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
