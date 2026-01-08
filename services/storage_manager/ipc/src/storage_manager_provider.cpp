@@ -374,7 +374,7 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
 #ifdef STORAGE_STATISTICS_MANAGER
     int32_t err = StorageStatusManager::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
-    StorageRadar::ReportFucBehavior("GetBundleStats", DEFAULT_USERID, "GetBundleStats End", err);    
+    StorageRadar::ReportFucBehavior("GetBundleStats", DEFAULT_USERID, "GetBundleStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetBundleStats", DEFAULT_USERID, err,
             "setting");
