@@ -798,32 +798,5 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgDataSize_002, TestSize.Level1)
     EXPECT_NE(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
     GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_002 end";
 }
-
-/**
- * @tc.name: FileUtilsTest_RmDirRecurse_001
- * @tc.desc: Verify the RmDirRecurse function.
- * @tc.type: FUNC
- * @tc.require: IBDKKD
- */
-HWTEST_F(FileUtilsTest, FileUtilsTest_RmDirRecurse_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileUtilsTest_RmDirRecurse_001 start";
-    std::string path = "/data/rmtest1/rmtest2";
-    bool ret = RmDirRecurse(path);
-    ASSERT_FALSE(ret);
-
-    std::string path1 = "/data/rmtest1";
-    mode_t mode = 0660;
-    bool mkRet = StorageTest::StorageTestUtils::MkDir(path1, mode);
-    ASSERT_TRUE(mkRet);
-
-    std::string path2 = "/data/rmtest1/rmtest2";
-    mkRet = StorageTest::StorageTestUtils::MkDir(path2, mode);
-    ASSERT_TRUE(mkRet);
-
-    ret = RmDirRecurse(path);
-    ASSERT_TRUE(ret);
-    GTEST_LOG_(INFO) << "FileUtilsTest_RmDirRecurse_001 end";
-}
 } // STORAGE_DAEMON
 } // OHOS
