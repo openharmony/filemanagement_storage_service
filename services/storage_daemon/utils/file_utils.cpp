@@ -347,9 +347,6 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 bool RmDirRecurse(const std::string &path)
 {
     LOGD("rm dir %{public}s", path.c_str());
-    if (!IsDir(path)) {
-        return false;
-    }
     DIR *dir = opendir(path.c_str());
     if (!dir) {
         if (errno == ENOENT) {
