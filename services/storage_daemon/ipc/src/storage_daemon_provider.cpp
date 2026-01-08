@@ -443,8 +443,8 @@ int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 
 int32_t StorageDaemonProvider::InitGlobalKey()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     StorageRadar::ReportFucBehavior("InitGlobalKey", DEFAULT_USERID, "InitGlobalKey Begin", E_OK);
+    std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().InitGlobalKey();
     SetUserStatistics(USER0ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
