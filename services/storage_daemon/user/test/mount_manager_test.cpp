@@ -1189,5 +1189,76 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_HandleDisDstPath_0
     }
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_HandleDisDstPath_007 end";
 }
+
+/**
+ * @tc.name: MountManagerTest_GetProcessInfo_001
+ * @tc.desc: Verify the GetProcessInfo.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_GetProcessInfo_001 start";
+    std::string fileName;
+    ProcessInfo processInfo;
+    bool ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
+    ASSERT_FALSE(ret);
+
+    fileName = "/proc/99999/stat";
+    ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
+    ASSERT_FALSE(ret);
+
+    std::ofstream file1("/data/test_stat");
+    file1 << "test test" << std::endl;
+    file1.close();
+    fileName = "/data/test_stat";
+    ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
+    ASSERT_FALSE(ret);
+    std::filesystem::remove("/data/test_stat");
+
+    std::ofstream file2("/data/test_stat");
+    file2 << "1 root" << std::endl;
+    file2.close();
+    ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
+    ASSERT_TRUE(ret);
+    std::filesystem::remove("/data/test_stat");
+    GTEST_LOG_(INFO) << "MountManagerTest_GetProcessInfo_001 end";
+}
+
+/**
+ * @tc.name: MountManagerTest_CheckProcessUserId_003
+ * @tc.desc: Verify the CheckProcessUserId function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_CheckProcessUserId_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 start";
+    int32_t userId = 100;
+    vector<ProcessInfo> proInfos = {{99999, "testproc1"}};
+    vector<ProcessInfo> processKillInfos;
+    std::ofstream file1("/proc/99999/status");
+    file1 << "test test" << std::endl;
+    file1.close();
+    int32_t ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+    std::filesystem::remove("/proc/99999/status");
+
+    std::ofstream file2("/proc/99999/status");
+    file2 << "Uid: test" << std::endl;
+    file2.close();
+    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+    std::filesystem::remove("/proc/99999/status");
+
+    std::ofstream file3("/proc/99999/status");
+    file3 << "Uid: 1" << std::endl;
+    file3.close();
+    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
+    EXPECT_EQ(ret, E_OK);
+    std::filesystem::remove("/proc/99999/status");
+
+    GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

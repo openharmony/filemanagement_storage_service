@@ -820,7 +820,7 @@ int32_t MountManager::CheckProcessUserId(int32_t userId, std::vector<ProcessInfo
         std::string uidStr;
         ss >> uidStr >> uidStr;
         int32_t uid;
-        if (!ConvertStringToUid(uidStr, uid)) {
+        if (!ConvertStringToInt32(uidStr, uid)) {
             continue;
         }
         int32_t procUserId = uid / USER_ID_BASE;
