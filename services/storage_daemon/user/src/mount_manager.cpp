@@ -140,11 +140,9 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     std::stringstream ss(line);
     std::string pidStr;
     ss >> pidStr;
-    int32_t pid;
-    if (!ConvertStringToInt32(pidStr, pid)) {
+    if (!ConvertStringToInt32(pidStr, info.pid)) {
         return false;
     }
-    info.pid = pid;
     std::string processName;
     ss >> processName;
     info.name = processName;

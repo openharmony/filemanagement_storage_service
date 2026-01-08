@@ -1209,7 +1209,6 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
     ASSERT_FALSE(ret);
 
     std::ofstream file1("/data/test_stat");
-    file1 << "test test" << std::endl;
     file1.close();
     fileName = "/data/test_stat";
     ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
@@ -1217,8 +1216,15 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
     std::filesystem::remove("/data/test_stat");
 
     std::ofstream file2("/data/test_stat");
-    file2 << "1 root" << std::endl;
+    file2 << "test test" << std::endl;
     file2.close();
+    ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
+    ASSERT_FALSE(ret);
+    std::filesystem::remove("/data/test_stat");
+
+    std::ofstream file3("/data/test_stat");
+    file3 << "1 root" << std::endl;
+    file3.close();
     ret = MountManager::GetInstance().GetProcessInfo(fileName, processInfo);
     ASSERT_TRUE(ret);
     std::filesystem::remove("/data/test_stat");
@@ -1235,6 +1241,10 @@ HWTEST_F(MountManagerTest, MountManagerTest_CheckProcessUserId_003, TestSize.Lev
 {
     GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 start";
     int32_t userId = 100;
+    std::string procTestPath = "/proc/99999";
+    std::error_code ec;
+    std::filesystem::create_directories(procTestPath, ec);
+
     vector<ProcessInfo> proInfos = {{99999, "testproc1"}};
     vector<ProcessInfo> processKillInfos;
     std::ofstream file1("/proc/99999/status");
@@ -1258,6 +1268,10 @@ HWTEST_F(MountManagerTest, MountManagerTest_CheckProcessUserId_003, TestSize.Lev
     EXPECT_EQ(ret, E_OK);
     std::filesystem::remove("/proc/99999/status");
 
+    std::filesystem::remove_all(procTestPath, ec);
+    if (ec && ec != std::errc::no_such_file_or_directory) {
+        GTEST_LOG_(WARNING) << "Cleanup failed: " << ec.message();
+    }
     GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 end";
 }
 } // STORAGE_DAEMON
