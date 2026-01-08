@@ -127,19 +127,19 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_ConvertStringToInt32_001, TestSize.Lev
     GTEST_LOG_(INFO) << "StringUtilsTest_ConvertStringToInt32_001 start";
     int32_t value = 0;
     std::string context;
-    bool ret = ConvertStringToInt(context, value);
+    bool ret = ConvertStringToInt32(context, value);
     ASSERT_FALSE(ret);
 
     context = "test";
-    ret = ConvertStringToInt(context, value);
+    ret = ConvertStringToInt32(context, value);
     ASSERT_FALSE(ret);
 
     context = "9999999999";
-    ret = ConvertStringToInt(context, value);
+    ret = ConvertStringToInt32(context, value);
     ASSERT_FALSE(ret);
 
     context = "20000000";
-    ret = ConvertStringToInt(context, value);
+    ret = ConvertStringToInt32(context, value);
     ASSERT_TRUE(ret);
     GTEST_LOG_(INFO) << "StringUtilsTest_ConvertStringToInt32_001 end";
 }
