@@ -86,7 +86,6 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    # "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_ipc_native"
   ]
 
   external_deps = [
