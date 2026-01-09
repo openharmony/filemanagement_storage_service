@@ -115,6 +115,34 @@ HWTEST_F(StringUtilsTest, UserPathResolverTest_ReplaceAndCount_001, TestSize.Lev
         EXPECT_EQ(str, test.second.first);
     }
 }
+
+/**
+ * @tc.name: StringUtilsTest_ConvertStringToInt32_001
+ * @tc.desc: Verify the ConvertStringToInt32.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_ConvertStringToInt32_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_ConvertStringToInt32_001 start";
+    int32_t value = 0;
+    std::string context;
+    bool ret = ConvertStringToInt32(context, value);
+    ASSERT_FALSE(ret);
+
+    context = "test";
+    ret = ConvertStringToInt32(context, value);
+    ASSERT_FALSE(ret);
+
+    context = "9999999999";
+    ret = ConvertStringToInt32(context, value);
+    ASSERT_FALSE(ret);
+
+    context = "20000000";
+    ret = ConvertStringToInt32(context, value);
+    ASSERT_TRUE(ret);
+    GTEST_LOG_(INFO) << "StringUtilsTest_ConvertStringToInt32_001 end";
+}
 } // Test
 } // STORAGE_DAEMON
-} // OHOS
+} // OHOS

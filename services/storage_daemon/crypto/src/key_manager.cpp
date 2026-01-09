@@ -351,6 +351,7 @@ int32_t KeyManager::ClearAppCloneUserNeedRestore(unsigned int userId, std::strin
     std::error_code errCode;
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
         LOGI("need_restore don't exist, not need to delete.");
+        return E_OK;
     }
     (void)remove(elNeedRestorePath.c_str());
     LOGI("Complete delete need_restore.");

@@ -269,5 +269,27 @@ int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::
     
     return count;
 }
+
+bool ConvertStringToInt32(const std::string &context, int32_t &value)
+{
+    if (context.empty()) {
+        return false;
+    }
+    std::regex pattern(R"(^([1-9]\d{0,9})$)");
+    if (!std::regex_match(context, pattern)) {
+        return false;
+    }
+    char *endptr;
+    errno = 0;
+    int64_t tollRes = strtoll(context.c_str(), &endptr, BASE_DECIMAL);
+    if (errno != 0 || endptr != context.c_str() + context.size()) {
+        return false;
+    }
+    if (tollRes <= 0 || tollRes >= INT32_MAX) {
+        return false;
+    }
+    value = static_cast<int32_t>(tollRes);
+    return true;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

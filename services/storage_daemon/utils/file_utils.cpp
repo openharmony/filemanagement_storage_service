@@ -15,6 +15,7 @@
 
 #include "utils/file_utils.h"
 
+#include <cstdint>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
@@ -351,7 +352,6 @@ bool RmDirRecurse(const std::string &path)
         if (errno == ENOENT) {
             return true;
         }
-
         LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
     }
@@ -432,8 +432,10 @@ bool StringToUint32(const std::string &str, uint32_t &num)
         LOGE("String to int convert failed");
         return false;
     }
+    if (value < 0 || value >= INT32_MAX) {
+        return false;
+    }
     num = static_cast<uint32_t>(value);
-
     return true;
 }
 
