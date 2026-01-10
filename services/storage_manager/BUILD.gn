@@ -22,7 +22,7 @@ config("storage_manager_config") {
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_manager_path}/include/storage",
   ]
 
@@ -48,8 +48,8 @@ ohos_shared_library("storage_manager") {
     "common_event/storage_common_event_subscriber.cpp",
     "ipc/src/storage_manager_provider.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "utils/src/file_cache_adapter.cpp",
     "utils/src/storage_utils.cpp",
-    "rdb_adapter/src/storage_rdb_adapter.cpp",
   ]
 
   defines = [
@@ -96,10 +96,10 @@ ohos_shared_library("storage_manager") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
   ]
 
   if (storage_service_storage_statistics_manager) {
@@ -123,7 +123,6 @@ ohos_shared_library("storage_manager") {
       "data_share:datashare_consumer",
       "eventhandler:libeventhandler",
       "init:libbegetutil",
-      "relational_store:native_rdb",
     ]
     deps += [ ":storage_manager_monitor_config" ]
 
@@ -172,7 +171,7 @@ group("storage_manager_unit_test") {
     "innerkits_impl/test:storage_manager_innerkits_test",
     "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
-    "rdb_adapter/test:storage_manager_rdb_test",
+    "utils/test:storage_manager_utils_test",
     "common_event/test:storage_common_event_test",
   ]
 

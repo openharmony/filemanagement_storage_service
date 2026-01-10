@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_unittest("storage_rdb_adapter_mock_test") {
+ohos_unittest("file_cache_adapter_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -26,18 +26,16 @@ ohos_unittest("storage_rdb_adapter_mock_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
-    "storage_rdb_adapter_mock_test.cpp",
-    "${storage_manager_path}/mock/storage_rdb_adapter_mock.cpp",
+    "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
+    "file_cache_adapter_test.cpp",
   ]
 
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
-    "${storage_manager_path}/include/mock/",
     "${storage_manager_path}/common/include/",
-    "${storage_manager_path}/include/rdb_adapter/",
+    "${storage_manager_path}/include/utils/",
     "${storage_service_common_path}/include/",
   ]
 
@@ -64,72 +62,16 @@ ohos_unittest("storage_rdb_adapter_mock_test") {
     "common_event_service:cesfwk_innerkits",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
   ]
 }
 
-ohos_unittest("storage_rdb_adapter_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_service/storage_manager"
-
-  sources = [
-    "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
-    "storage_rdb_adapter_test.cpp",
-  ]
-
-  include_dirs = [
-    "${storage_daemon_path}/include",
-    "${storage_manager_path}/include",
-    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
-    "${storage_manager_path}/common/include/",
-    "${storage_manager_path}/include/rdb_adapter/",
-    "${storage_service_common_path}/include/",
-  ]
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-    "private=public",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "eventhandler:libeventhandler",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "init:libbegetutil",
-    "ability_base:base",
-    "ability_base:want",
-    "ability_base:zuri",
-    "ability_runtime:extensionkit_native",
-    "access_token:libaccesstoken_sdk",
-    "appspawn:appspawn_client",
-    "cJSON:cjson",
-    "common_event_service:cesfwk_innerkits",
-    "hitrace:hitrace_meter",
-    "ipc:ipc_single",
-    "os_account:os_account_innerkits",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "relational_store:native_rdb",
-  ]
-}
-
-group("storage_manager_rdb_test") {
+group("storage_manager_utils_test") {
   testonly = true
   deps = [
-    ":storage_rdb_adapter_mock_test",
-    ":storage_rdb_adapter_test",
+    ":file_cache_adapter_test",
   ]
 }

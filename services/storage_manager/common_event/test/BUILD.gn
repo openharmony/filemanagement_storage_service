@@ -73,8 +73,8 @@ ohos_unittest("storage_common_event_subscriber_test") {
       "hisysevent:libhisysevent",
       "hitrace:hitrace_meter",
       "ipc:ipc_single",
+      "json:nlohmann_json_static",
       "os_account:os_account_innerkits",
-      "relational_store:native_rdb",
       "safwk:system_ability_fwk",
       "samgr:samgr_proxy",
     ]
