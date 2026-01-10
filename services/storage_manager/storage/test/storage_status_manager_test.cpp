@@ -21,10 +21,10 @@
 #include "bundle_mgr_interface.h"
 #include "bundle_mgr_proxy.h"
 #include "ext_bundle_stats.h"
+#include "file_cache_adapter.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_status_manager.h"
-#include "storage_rdb_adapter.h"
 #include "storage_service_errno.h"
 
 namespace {

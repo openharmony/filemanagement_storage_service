@@ -24,7 +24,7 @@ ohos_fuzztest("StorageManagerProviderGetAllExtBundleStatsFuzzTest") {
     "${storage_manager_path}/include",
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
@@ -57,11 +57,11 @@ ohos_fuzztest("StorageManagerProviderGetAllExtBundleStatsFuzzTest") {
     "hisysevent:libhisysevent",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
-    "relational_store:native_rdb",
     "ability_runtime:abilitykit_native",
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
     "cJSON:cjson",
+    "json:nlohmann_json_static",
   ]
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]

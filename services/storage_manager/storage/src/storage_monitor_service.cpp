@@ -15,25 +15,24 @@
 
 #include "storage/storage_monitor_service.h"
 
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "cJSON.h"
 #include "common_event_manager.h"
+#include "dfx_report/storage_dfx_reporter.h"
+#include "file_cache_adapter.h"
 #include "init_param.h"
 #include "parameter.h"
 #include "parameters.h"
+#include "storage/bundle_manager_connector.h"
+#include "storage/storage_quota_controller.h"
+#include "storage/storage_status_manager.h"
+#include "storage/storage_total_status_service.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_stats.h"
-#include "storage/storage_quota_controller.h"
-#include "storage/storage_status_manager.h"
-#include "storage/bundle_manager_connector.h"
-#include "storage/storage_total_status_service.h"
-#include "storage_service_constant.h"
-#include "dfx_report/storage_dfx_reporter.h"
-#include "storage_service_constant.h"
-#include "storage_rdb_adapter.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -508,21 +507,11 @@ void StorageMonitorService::SendCommonEventToCleanCache(const std::string &clean
         return;
     }
     int64_t curTime = static_cast<int64_t>(now);
-    StorageRdbAdapter::GetInstance().Init();
-    int64_t lastNotifyTime;
-    int32_t rowCount = ROWCOUNT_INIT;
-    int32_t ret = GetLastNotifyTimeFromDB(cleanLevel, lastNotifyTime, rowCount);
+    int64_t lastNotifyTime = 0;
+    int32_t ret = GetLastNotifyTime(cleanLevel, lastNotifyTime);
     if (ret != E_OK) {
-        StorageRdbAdapter::GetInstance().UnInit();
-        std::string extraData = "errcode=" + std::to_string(ret);
-        StorageRadar::ReportSpaceRadar("SendCommonEventToCleanCache", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
-        LOGE("get last notify time failed, ret is %{public}d", ret);
-        return;
-    }
-    if (rowCount == 0) {
-        PublishCleanCacheEvent(cleanLevel);
-        PutLastNotifyTimeToDB(cleanLevel, curTime);
-        StorageRdbAdapter::GetInstance().UnInit();
+        LOGW("GetLastNotifyTime failed, insert a new value.");
+        SetLastNotifyTime(cleanLevel, curTime);
         return;
     }
     int64_t interval = curTime - lastNotifyTime;
@@ -530,47 +519,11 @@ void StorageMonitorService::SendCommonEventToCleanCache(const std::string &clean
         (cleanLevel == CLEAN_LEVEL_MEDIUM && interval < CLEAN_MEDIUM_TIME) ||
         (cleanLevel == CLEAN_LEVEL_HIGH && interval < CLEAN_HIGH_TIME) ||
         (cleanLevel == CLEAN_LEVEL_RICH && interval < CLEAN_RICH_TIME)) {
-        StorageRdbAdapter::GetInstance().UnInit();
         return;
     }
     PublishCleanCacheEvent(cleanLevel);
-    UpdateLastNotifyTimeToDB(cleanLevel, curTime);
-    StorageRdbAdapter::GetInstance().UnInit();
+    SetLastNotifyTime(cleanLevel, curTime);
     return;
-}
-
-int32_t StorageMonitorService::GetLastNotifyTimeFromDB(const std::string &cleanLevel, int64_t &lastNotifyTime,
-    int32_t &rowCount)
-{
-    std::string sql = SELECT_CLEAN_NOTIFY_SQL;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<std::string>(cleanLevel)));
-    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    if (resultSet == nullptr) {
-        LOGE("result set is nullptr");
-        return E_ERR;
-    }
-    resultSet->GetRowCount(rowCount);
-    if (rowCount == 0) {
-        resultSet->Close();
-        return E_OK;
-    }
-    int32_t ret = resultSet->GoToNextRow();
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("go to next row failed, ret is %{public}d", ret);
-        return E_ERR;
-    }
-    NativeRdb::RowEntity rowEntity;
-    ret = resultSet->GetRow(rowEntity);
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("get row failed, ret is %{public}d.", ret);
-        return E_ERR;
-    }
-    lastNotifyTime = rowEntity.Get(LAST_CLEAN_NOTIFY_TIME);
-    resultSet->Close();
-    return E_OK;
 }
 
 void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel)
@@ -583,38 +536,26 @@ void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel
     LOGI("Send usual.event.DEVICE_STORAGE_LOW event success, type is %{public}s.", cleanLevel.c_str());
 }
 
-void StorageMonitorService::PutLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime)
+int32_t StorageMonitorService::GetLastNotifyTime(const std::string &cleanLevel, int64_t &lastNotifyTime)
 {
-    LOGI("put last notify time start, type is %{public}s.", cleanLevel.c_str());
-    std::string table = CLEAN_NOTIFY_TABLE;
-    NativeRdb::ValuesBucket insertValues;
-    insertValues.PutString(LEVEL_NAME, cleanLevel);
-    insertValues.PutLong(LAST_CLEAN_NOTIFY_TIME, curTime);
-    int64_t insertRowId = ROWCOUNT_INIT;
-    int32_t ret = StorageRdbAdapter::GetInstance().Put(insertRowId, table, insertValues);
-    if (ret != E_OK) {
-        std::string extraData = "errcode=" + std::to_string(ret);
-        StorageRadar::ReportSpaceRadar("PutLastNotifyTimeToDB", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
-        LOGE("put last notify time failed, ret is %{public}d.", ret);
+    auto notifyPtr = FileCacheAdapter::GetInstance().GetCleanNotify(cleanLevel);
+    if (notifyPtr == nullptr) {
+        lastNotifyTime = 0;
+        return E_NON_EXIST;
     }
+
+    lastNotifyTime = notifyPtr->lastCleanNotifyTime;
+    return E_OK;
 }
 
-void StorageMonitorService::UpdateLastNotifyTimeToDB(const std::string &cleanLevel, int64_t curTime)
+int32_t StorageMonitorService::SetLastNotifyTime(const std::string &cleanLevel, int64_t curTime)
 {
-    LOGI("update last notify time start, type is %{public}s.", cleanLevel.c_str());
-    std::string table = CLEAN_NOTIFY_TABLE;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<std::string>(cleanLevel)));
-    NativeRdb::ValuesBucket updateValues;
-    updateValues.PutLong(LAST_CLEAN_NOTIFY_TIME, curTime);
-    int32_t rowCount = ROWCOUNT_INIT;
-    std::string whereClause = WHERE_CLAUSE_LEVEL;
-    int32_t ret = StorageRdbAdapter::GetInstance().Update(rowCount, table, updateValues, whereClause, bindArgs);
-    if (ret != E_OK) {
-        std::string extraData = "errcode=" + std::to_string(ret);
-        StorageRadar::ReportSpaceRadar("UpdateLastNotifyTimeToDB", E_SEND_EVENT_TO_CLEAN_CACHE_ERROR, extraData);
-        LOGE("update last notify time failed, ret is %{public}d", ret);
-    }
+    CleanNotify notify;
+    notify.cleanLevelName = cleanLevel;
+    notify.lastCleanNotifyTime = curTime;
+
+    return FileCacheAdapter::GetInstance().InsertOrUpdateCleanNotify(notify);
 }
+
 } // StorageManager
 } // OHOS

@@ -41,7 +41,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
@@ -49,7 +49,7 @@ ohos_unittest("storage_manager_provider_test") {
   if (storage_service_storage_statistics_manager) {
     sources += [
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
-    "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+    "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
@@ -83,10 +83,10 @@ ohos_unittest("storage_manager_provider_test") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
     "ability_runtime:abilitykit_native",
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
@@ -130,7 +130,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
@@ -141,7 +141,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
       "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
-      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+      "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     ]
   }
 
@@ -172,10 +172,10 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
     "ability_runtime:abilitykit_native",
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
@@ -224,7 +224,7 @@ sources = [
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
@@ -262,7 +262,7 @@ sources = [
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
-      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+      "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     ]
   }
 
@@ -287,10 +287,10 @@ sources = [
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
     "ability_runtime:abilitykit_native",
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
@@ -336,7 +336,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
     "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/rdb_adapter",
+    "${storage_manager_path}/include/utils",
     "${storage_manager_path}/include/storage",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
@@ -347,7 +347,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
       "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
-      "${storage_manager_path}/rdb_adapter/src/storage_rdb_adapter.cpp",
+      "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     ]
   }
 
@@ -378,10 +378,10 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "relational_store:native_rdb",
     "ability_runtime:abilitykit_native",
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",

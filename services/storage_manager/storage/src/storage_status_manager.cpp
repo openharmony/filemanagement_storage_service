@@ -15,23 +15,20 @@
 
 #include "storage/storage_status_manager.h"
 #include "accesstoken_kit.h"
-#include "os_account_manager.h"
-#include "ipc_skeleton.h"
+#include "file_cache_adapter.h"
 #include "hitrace_meter.h"
+#include "ipc_skeleton.h"
+#include "iservice_registry.h"
+#include "os_account_manager.h"
+#include "storage/bundle_manager_connector.h"
+#include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "storage_rdb_adapter.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage/bundle_manager_connector.h"
-#include "storage/storage_total_status_service.h"
-#include "iservice_registry.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
-#include "utils/storage_utils.h"
-#include "value_object.h"
-#include "values_bucket.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "datashare_abs_result_set.h"
 #include "datashare_helper.h"
@@ -425,27 +422,6 @@ int32_t StorageStatusManager::GetUserStorageStatsByType(int32_t userId, StorageS
     return err;
 }
 
-int32_t ConvertToExtBundleStat(std::shared_ptr<NativeRdb::ResultSet> &resultSet, ExtBundleStats &curStats)
-{
-    if (resultSet == nullptr) {
-        LOGE("resultSet is nullptr");
-        return E_ERR;
-    }
-    NativeRdb::RowEntity rowEntity;
-    int32_t ret = resultSet->GetRow(rowEntity);
-    if (ret != E_OK) {
-        LOGE("get row failed for convert, ret: %{public}d.", ret);
-        return E_ERR;
-    }
-    std::string businessName = rowEntity.Get(BUSINESS_NAME);
-    curStats.businessName_ = businessName;
-    int64_t businessSize = rowEntity.Get(BUSINESS_SIZE);
-    curStats.businessSize_ = static_cast<uint64_t>(businessSize);
-    int32_t showFlag = rowEntity.Get(SHOW_FLAG);
-    curStats.showFlag_ = (showFlag == 1);
-    return E_OK;
-}
-
 int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats)
 {
     std::string callingBundleName = GetCallingBundleName();
@@ -453,67 +429,39 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
         LOGE("GetCallingBundleName is empty");
         return E_GET_CALL_BUNDLE_NAME_ERROR;
     }
-    std::string dbBundleName;
-    int32_t rowCount = ROWCOUNT_INIT;
     std::lock_guard<std::mutex> lock(extBundleMtx_);
-    {
-        StorageRdbAdapter::GetInstance().Init();
-        int32_t ret = GetBundleNameFromDB(userId, stats.businessName_, dbBundleName, rowCount);
-        if (ret != E_OK) {
-            StorageRdbAdapter::GetInstance().UnInit();
-            return ret;
-        }
-        if (rowCount == ROWCOUNT_INIT) {
-            ret = InsertExtBundleStats(userId, stats, callingBundleName);
-            StorageRdbAdapter::GetInstance().UnInit();
-            return ret;
-        }
-        if (callingBundleName != dbBundleName) {
-            std::string extraData = "callingBundleName=" + callingBundleName + "dbBundleName=" + dbBundleName;
-            StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_CALL_AND_DB_NAME_ERROR, extraData);
-        }
-        ret = UpdateExtBundleStats(userId, stats, callingBundleName);
-        StorageRdbAdapter::GetInstance().UnInit();
-        return ret;
+    auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
+    if (bundleStats == nullptr) {
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
+              stats.businessName_.c_str(), userId);
+        return InsertOrUpdateExtBundleStats(userId, stats, callingBundleName);
     }
+    if (callingBundleName != bundleStats->bundleName) {
+        std::string extraData = "callingBundleName=" + callingBundleName + "dbBundleName=" + bundleStats->bundleName;
+        StorageRadar::ReportSpaceRadar("SetExtBundleStats", E_CALL_AND_DB_NAME_ERROR, extraData);
+    }
+    return InsertOrUpdateExtBundleStats(userId, stats, callingBundleName);
 }
 
 int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats &stats)
 {
     std::lock_guard<std::mutex> lock(extBundleMtx_);
-    std::string sql = SELECT_BUNDLE_EXT_SQL;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(stats.businessName_));
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    StorageRdbAdapter::GetInstance().Init();
-    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    StorageRdbAdapter::GetInstance().UnInit();
-    if (resultSet == nullptr) {
-        LOGE("get businessSize failed");
-        return E_TB_GET_ERROR;
-    }
-    int32_t rowCount = ROWCOUNT_INIT;
-    resultSet->GetRowCount(rowCount);
-    if (rowCount == 0) {
+    LOGI("GetExtBundleStats, userId: %{public}u", userId);
+    // 调用存储适配器获取数据（注意：这里直接传递stats.businessName_和userId）
+    auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
+    if (bundleStats == nullptr) {
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
+              stats.businessName_.c_str(), userId);
         stats.businessSize_ = 0;
-        resultSet->Close();
-        LOGI("the required business size is not found");
         return E_OK;
     }
-    int32_t ret = resultSet->GoToNextRow();
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("go to next row failed, ret: %{public}d", ret);
-        return ret;
-    }
-    ret = ConvertToExtBundleStat(resultSet, stats);
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("convert to ext bundle stat failed");
-        return ret;
-    }
-    resultSet->Close();
-    LOGI("get size success, size: %{public}lld", static_cast<long long>(stats.businessSize_));
+
+    stats.businessName_ = bundleStats->businessName;
+    stats.businessSize_ = bundleStats->businessSize;
+    stats.showFlag_ = bundleStats->showFlag;
+
+    LOGI("GetExtBundleStats success, business: %{public}s, size: %{public}llu, showFlag: %{public}d",
+         stats.businessName_.c_str(), static_cast<unsigned long long>(stats.businessSize_), stats.showFlag_);
     return E_OK;
 }
 
@@ -542,148 +490,112 @@ std::string StorageStatusManager::GetCallingBundleName()
     return "";
 }
 
-int32_t StorageStatusManager::GetBundleNameFromDB(uint32_t userId, const std::string &businessName,
-    std::string &dbBundleName, int32_t &rowCount)
+int32_t StorageStatusManager::GetBundleName(uint32_t userId,
+                                                  const std::string &businessName,
+                                                  std::string &dbBundleName)
 {
-    std::string sql = SELECT_BUNDLE_EXT_SQL;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(businessName));
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    if (resultSet == nullptr) {
-        LOGE("query bundleName failed");
-        return E_TB_GET_ERROR;
+    LOGI("GetBundleName, userId: %{public}u, business: %{public}s", userId, businessName.c_str());
+
+    // 清空输出参数
+    dbBundleName.clear();
+
+    // 直接调用 FileCacheAdapter
+    auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(businessName, userId);
+    if (bundleStats == nullptr) {
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u", businessName.c_str(), userId);
+        return E_NON_EXIST; // 返回记录不存在的错误码
     }
-    int32_t ret = resultSet->GetRowCount(rowCount);
-    if (ret != E_OK || rowCount == ROWCOUNT_INIT) {
-        resultSet->Close();
-        LOGE("get row count failed, ret: %{public}d, rowCount: %{public}d", ret, rowCount);
-        return ret;
-    }
-    ret = resultSet->GoToFirstRow();
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("go to firstrow failed, ret: %{public}d", ret);
-        return ret;
-    }
-    int32_t colIndex = COLINDEX_INIT;
-    ret = resultSet->GetColumnIndex(BUNDLE_NAME.c_str(), colIndex);
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("get column index failed, ret: %{public}d", ret);
-        return ret;
-    }
-    ret = resultSet->GetString(colIndex, dbBundleName);
-    if (ret != E_OK) {
-        resultSet->Close();
-        LOGE("get string failed, ret: %{public}d", ret);
-        return ret;
-    }
-    resultSet->Close();
+
+    // 获取 bundleName 字段
+    dbBundleName = bundleStats->bundleName;
+
+    LOGI("GetBundleName success, business: %{public}s, bundleName: %{public}s", businessName.c_str(),
+         dbBundleName.c_str());
     return E_OK;
 }
 
-int32_t StorageStatusManager::UpdateExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
-    std::string callingBundleName)
+static uint64_t GetCurrentTimeSeconds()
 {
-    std::string table = BUNDLE_EXT_STATS_TABLE;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(stats.businessName_));
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    NativeRdb::ValuesBucket updateValues;
-    updateValues.PutLong(BUSINESS_SIZE, static_cast<int64_t>(stats.businessSize_));
-    updateValues.PutString(BUNDLE_NAME, callingBundleName);
-    updateValues.PutInt(SHOW_FLAG, stats.showFlag_ ? 1 : 0);
-    time_t now = time(nullptr);
-    if (now != static_cast<time_t>(E_ERR)) {
-        updateValues.PutLong(LAST_MODIFY_TIME, static_cast<int64_t>(now));
-    }
-    int32_t rowCount = ROWCOUNT_INIT;
-    std::string whereClause = WHERE_CLAUSE;
-    int32_t ret = StorageRdbAdapter::GetInstance().Update(rowCount, table, updateValues, whereClause, bindArgs);
-    if (ret != E_OK) {
-        LOGE("update failed, ret: %{public}d", ret);
-        return ret;
-    }
-    LOGI("update success, userId: %{public}d, name: %{public}s, flag: %{public}d, size: %{public}lld", userId,
-        stats.businessName_.c_str(), stats.showFlag_, static_cast<long long>(stats.businessSize_));
-    return E_OK;
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    return static_cast<uint64_t>(seconds.count());
 }
 
-int32_t StorageStatusManager::InsertExtBundleStats(uint32_t userId, const ExtBundleStats &stats,
-    std::string callingBundleName)
+int32_t StorageStatusManager::InsertOrUpdateExtBundleStats(uint32_t userId,
+                                                           const ExtBundleStats &stats,
+                                                           std::string callingBundleName)
 {
-    std::string table = BUNDLE_EXT_STATS_TABLE;
-    NativeRdb::ValuesBucket insertValues;
-    insertValues.PutString(BUSINESS_NAME, stats.businessName_);
-    insertValues.PutLong(BUSINESS_SIZE, static_cast<int64_t>(stats.businessSize_));
-    insertValues.PutInt(USER_ID, static_cast<int32_t>(userId));
-    insertValues.PutString(BUNDLE_NAME, callingBundleName);
-    insertValues.PutInt(SHOW_FLAG, stats.showFlag_ ? 1 : 0);
-    int64_t rowCount = ROWCOUNT_INIT;
-    time_t now = time(nullptr);
-    if (now != static_cast<time_t>(E_ERR)) {
-        insertValues.PutLong(LAST_MODIFY_TIME, static_cast<int64_t>(now));
-    }
-    int32_t ret = StorageRdbAdapter::GetInstance().Put(rowCount, table, insertValues);
+    LOGI("InsertOrUpdateExtBundleStats, userId: %{public}u, business: %{public}s", userId, stats.businessName_.c_str());
+
+    // 转换为存储格式 - 不再需要类型转换
+    BundleExtStats bundleStat;
+    bundleStat.businessName = stats.businessName_;
+    bundleStat.businessSize = stats.businessSize_;
+    bundleStat.userId = userId;
+    bundleStat.showFlag = stats.showFlag_;
+    bundleStat.bundleName = callingBundleName;
+    bundleStat.lastModifyTime = GetCurrentTimeSeconds();
+
+    // 调用存储适配器
+    int32_t ret = FileCacheAdapter::GetInstance().InsertOrUpdateBundleExtStats(bundleStat);
     if (ret != E_OK) {
-        LOGE("insert extBundle stats failed, ret: %{public}d", ret);
+        LOGE("InsertOrUpdateExtBundleStats failed, ret: %{public}d, business: %{public}s", ret,
+             stats.businessName_.c_str());
         return ret;
     }
-    LOGI("insert success, userId: %{public}d, name: %{public}s, flag: %{public}d, size: %{public}lld", userId,
-        stats.businessName_.c_str(), stats.showFlag_, static_cast<long long>(stats.businessSize_));
+
+    LOGI("InsertOrUpdateExtBundleStats success, business: %{public}s", stats.businessName_.c_str());
     return E_OK;
 }
 
 int32_t StorageStatusManager::GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec)
 {
     std::lock_guard<std::mutex> lock(extBundleMtx_);
+    LOGI("GetAllExtBundleStats, userId: %{public}u", userId);
+
+    // 清空输出向量
     statsVec.clear();
-    std::string sql = SELECT_ALL_BUNDLE_EXT_SQL;
-    std::vector<NativeRdb::ValueObject> bindArgs;
-    bindArgs.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    StorageRdbAdapter::GetInstance().Init();
-    auto resultSet = StorageRdbAdapter::GetInstance().Get(sql, bindArgs);
-    StorageRdbAdapter::GetInstance().UnInit();
-    if (resultSet == nullptr) {
-        LOGE("get result set failed for get all ext bundle stats");
-        return E_TB_GET_ERROR;
-    }
-    while (resultSet->GoToNextRow() == E_OK) {
-        ExtBundleStats curStats;
-        int32_t ret = ConvertToExtBundleStat(resultSet, curStats);
-        if (ret != E_OK) {
-            LOGE("convert to ext bundle stat failed");
-            continue;
+
+    // 获取所有记录
+    auto allBundleStats = FileCacheAdapter::GetInstance().GetAllBundleExtStats();
+
+    // 筛选指定userId的记录并直接赋值（不需要类型转换）
+    for (const auto &bundleStat : allBundleStats) {
+        if (bundleStat.userId == userId) { // 直接比较，都是uint32_t
+            ExtBundleStats extStat;
+            extStat.businessName_ = bundleStat.businessName;
+            extStat.businessSize_ = bundleStat.businessSize; // 直接赋值，都是uint64_t
+            extStat.showFlag_ = bundleStat.showFlag;         // 直接赋值，都是bool
+            statsVec.push_back(extStat);
         }
-        statsVec.push_back(curStats);
     }
-    resultSet->Close();
-    LOGI("get all success, size: %{public}zu", statsVec.size());
+
+    LOGI("GetAllExtBundleStats success, found %{public}zu records for userId: %{public}u", statsVec.size(), userId);
     return E_OK;
 }
 
 int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::string &bundleName)
 {
     if (userId > TOP_USER_ID || bundleName.empty()) {
-        LOGE("invalid params, userId: %{public}d, bundleName: %{public}s", userId, bundleName.c_str());
+        LOGE("invalid params, userId: %{public}u, bundleName: %{public}s", userId, bundleName.c_str());
         return E_PARAMS_INVALID;
     }
+
     std::lock_guard<std::mutex> lock(extBundleMtx_);
-    std::vector<NativeRdb::ValueObject> values;
-    values.emplace_back(NativeRdb::ValueObject(bundleName));
-    values.emplace_back(NativeRdb::ValueObject(static_cast<int32_t>(userId)));
-    int32_t deleteRows = ROWCOUNT_INIT;
-    StorageRdbAdapter::GetInstance().Init();
-    int32_t ret = StorageRdbAdapter::GetInstance().Delete(deleteRows, BUNDLE_EXT_STATS_TABLE, WHERE_CLAUSE, values);
-    StorageRdbAdapter::GetInstance().UnInit();
+    int32_t ret = FileCacheAdapter::GetInstance().DeleteBundleExtStats(bundleName, userId);
+
     if (ret != E_OK) {
-        LOGE("DelBundleExtStats failed.");
-        std::string extraData = "errCode=" + std::to_string(ret);
+        LOGE("DelBundleExtStats failed, ret: %{public}d, userId: %{public}u, bundleName: %{public}s", ret, userId,
+             bundleName.c_str());
+        std::string extraData =
+            "errCode=" + std::to_string(ret) + ",userId=" + std::to_string(userId) + ",bundleName=" + bundleName;
         StorageRadar::ReportSpaceRadar("DelBundleExtStats", E_DEL_EXT_BUNDLE_STATS_ERROR, extraData);
+
         return E_DEL_EXT_BUNDLE_STATS_ERROR;
     }
-    LOGI("del bundle ext stats success, userId: %{public}d, bundleName: %{public}s.", userId, bundleName.c_str());
+
+    LOGI("DelBundleExtStats success, userId: %{public}u, bundleName: %{public}s", userId, bundleName.c_str());
     return E_OK;
 }
 } // StorageManager

@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Huawei Device Co., Ltd.
+# Copyright (C) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,12 +14,10 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_unittest("dfx_report_test") {
+ohos_unittest("file_cache_adapter_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
     debug = false
@@ -28,38 +26,32 @@ ohos_unittest("dfx_report_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "${storage_manager_path}/mock/storage_daemon_communication_mock.cpp",
-    "${storage_manager_path}/mock/storage_status_manager_mock.cpp",
-    "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
-    "${storage_service_path}/test/unittest/mock/src/storage_total_status_service_mock.cpp",
-    "storage_dfx_reporter_test.cpp",
+    "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
+    "file_cache_adapter_test.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
+    "${storage_manager_path}/common/include/",
+    "${storage_manager_path}/include/utils/",
+    "${storage_service_common_path}/include/",
   ]
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
-    "private = public",
-  ]
-
-  include_dirs = [
-    "include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_daemon_path}/include",
-    "${storage_service_common_path}/include",
-    "${storage_manager_path}/include/common_event",
-    "${storage_manager_path}/include/utils",
-    "${storage_manager_path}/include/storage",
-    "${storage_service_path}/test/unittest/mock/include",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_ipc",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "${storage_manager_path}:storage_manager",
+    "private=public",
   ]
 
   external_deps = [
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
     "ability_base:base",
     "ability_base:want",
     "ability_base:zuri",
@@ -67,11 +59,7 @@ ohos_unittest("dfx_report_test") {
     "access_token:libaccesstoken_sdk",
     "appspawn:appspawn_client",
     "cJSON:cjson",
-    "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
     "json:nlohmann_json_static",
@@ -81,7 +69,9 @@ ohos_unittest("dfx_report_test") {
   ]
 }
 
-group("storage_manager_dfx_report_test") {
+group("storage_manager_utils_test") {
   testonly = true
-  deps = [ ":dfx_report_test" ]
+  deps = [
+    ":file_cache_adapter_test",
+  ]
 }
