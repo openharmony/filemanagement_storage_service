@@ -154,7 +154,6 @@ ohos_unittest("storage_monitor_service_test") {
 
   sources = [
     "${storage_service_path}/test/unittest/mock/src/storage_total_status_service_mock.cpp",
-    "${storage_manager_path}/mock/storage_rdb_adapter_mock.cpp",
     "storage_monitor_service_test.cpp",
   ]
 

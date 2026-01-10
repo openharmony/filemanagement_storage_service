@@ -156,9 +156,6 @@ void StorageManagerProvider::OnStart()
 
 void StorageManagerProvider::OnStop()
 {
-#ifdef STORAGE_STATISTICS_MANAGER
-    OHOS::StorageManager::StorageRdbAdapter::GetInstance().UnInit();
-#endif
     LOGI("StorageManager::OnStop Done");
 }
 

@@ -432,8 +432,8 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
-        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
-              stats.businessName_.c_str(), userId);
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u", stats.businessName_.c_str(),
+             userId);
         return InsertOrUpdateExtBundleStats(userId, stats, callingBundleName);
     }
     if (callingBundleName != bundleStats->bundleName) {
@@ -450,8 +450,8 @@ int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats 
     // 调用存储适配器获取数据（注意：这里直接传递stats.businessName_和userId）
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
-        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
-              stats.businessName_.c_str(), userId);
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u", stats.businessName_.c_str(),
+             userId);
         stats.businessSize_ = 0;
         return E_OK;
     }
@@ -490,9 +490,7 @@ std::string StorageStatusManager::GetCallingBundleName()
     return "";
 }
 
-int32_t StorageStatusManager::GetBundleName(uint32_t userId,
-                                                  const std::string &businessName,
-                                                  std::string &dbBundleName)
+int32_t StorageStatusManager::GetBundleName(uint32_t userId, const std::string &businessName, std::string &dbBundleName)
 {
     LOGI("GetBundleName, userId: %{public}u, business: %{public}s", userId, businessName.c_str());
 
