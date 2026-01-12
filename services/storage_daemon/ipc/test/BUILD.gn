@@ -222,7 +222,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
-    "${storage_daemon_path}/observer/appstate_observer.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",

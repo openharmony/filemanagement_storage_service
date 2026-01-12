@@ -949,46 +949,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountPointToList_0
 }
 
 /**
- * @tc.name: Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001
- * @tc.desc: Verify the CheckProcessUserId function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001 start";
-    int32_t userId = 100;
-    vector<ProcessInfo> proInfos = {{1234, "testproc1"}, {5678, "testproc2"}};
-    vector<ProcessInfo> processKillInfos;
-    auto ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002
- * @tc.desc: Verify the CheckProcessUserId function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002 start";
-    int32_t userId = 100;
-    vector<ProcessInfo> proInfos = {{1, "testproc1"}};
-    vector<ProcessInfo> processKillInfos;
-    auto ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-
-    userId = 0;
-    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_CheckProcessUserId_002 end";
-}
-
-/**
  * @tc.name: Storage_Daemon_MountManagerExtTest_CloudAndFuseDirFlag_001
  * @tc.desc: Verify the CloudAndFuseDirFlag function.
  * @tc.type: FUNC
@@ -1231,48 +1191,5 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MountManagerTest_GetProcessInfo_001 end";
 }
 
-/**
- * @tc.name: MountManagerTest_CheckProcessUserId_003
- * @tc.desc: Verify the CheckProcessUserId function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, MountManagerTest_CheckProcessUserId_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 start";
-    int32_t userId = 100;
-    std::string procTestPath = "/proc/99999";
-    std::error_code ec;
-    std::filesystem::create_directories(procTestPath, ec);
-
-    vector<ProcessInfo> proInfos = {{99999, "testproc1"}};
-    vector<ProcessInfo> processKillInfos;
-    std::ofstream file1("/proc/99999/status");
-    file1 << "test test" << std::endl;
-    file1.close();
-    int32_t ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-    std::filesystem::remove("/proc/99999/status");
-
-    std::ofstream file2("/proc/99999/status");
-    file2 << "Uid: test" << std::endl;
-    file2.close();
-    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-    std::filesystem::remove("/proc/99999/status");
-
-    std::ofstream file3("/proc/99999/status");
-    file3 << "Uid: 1" << std::endl;
-    file3.close();
-    ret = MountManager::GetInstance().CheckProcessUserId(userId, proInfos, processKillInfos);
-    EXPECT_EQ(ret, E_OK);
-    std::filesystem::remove("/proc/99999/status");
-
-    std::filesystem::remove_all(procTestPath, ec);
-    if (ec && ec != std::errc::no_such_file_or_directory) {
-        GTEST_LOG_(WARNING) << "Cleanup failed: " << ec.message();
-    }
-    GTEST_LOG_(INFO) << "MountManagerTest_CheckProcessUserId_003 end";
-}
 } // STORAGE_DAEMON
 } // OHOS

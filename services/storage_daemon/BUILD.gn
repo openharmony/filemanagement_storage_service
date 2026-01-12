@@ -120,7 +120,6 @@ ohos_executable("storage_daemon") {
     "ipc/src/storage_daemon_provider.cpp",
     "ipc/src/storage_manager_client.cpp",
     "main.cpp",
-    "observer/appstate_observer.cpp",
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/mount_manager_ext.cpp",
@@ -256,7 +255,6 @@ ohos_executable("storage_daemon") {
 
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
-    external_deps += [ "ability_runtime:app_manager" ]
   }
 
   if (enable_huks_hdi) {
