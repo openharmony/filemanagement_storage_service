@@ -187,6 +187,7 @@ ohos_executable("storage_daemon") {
 
   external_deps = [
     "ability_base:base",
+    "ability_base:configuration",
     "ability_base:want",
     "ability_base:zuri",
     "bounds_checking_function:libsec_shared",
