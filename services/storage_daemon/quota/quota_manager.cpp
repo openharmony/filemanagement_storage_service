@@ -147,7 +147,7 @@ void QuotaManager::GetUidStorageStats(std::string &storageStatus,
         LOGE("parsePasswd File failed.");
         return;
     }
-    uint64_t iNodes;
+    uint64_t iNodes = 0;
     GetOccupiedSpaceForUidList(allVec, iNodes);
 
     std::ostringstream extraData;

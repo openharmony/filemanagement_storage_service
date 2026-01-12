@@ -61,7 +61,7 @@ bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::s
     ssize_t written = write(fd, content.c_str(), content.length());
     close(fd);
 
-    if (written != content.length()) {
+    if (written < 0 || static_cast<size_t>(written) != content.size()) {
         LOGE("Failed to write to %{public}s", path.c_str());
         return false;
     }
