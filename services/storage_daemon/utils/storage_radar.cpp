@@ -334,7 +334,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::FAULT,
             "ORG_PKG", parRes.orgPkg,
             "USER_ID", parRes.userId,
             "FUNC", parRes.funcName,
@@ -448,6 +448,25 @@ void StorageRadar::ReportSetQuotaByBaseline(const std::string &funcName, const s
         .keyElxLevel = "NA",
         .errorCode = E_SET_QUOTA_UID_FAILED,
         .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportFucBehavior(const std::string &funcName,
+                                     uint32_t userId,
+                                     const std::string &extraData,
+                                     int32_t ret)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::STORAGE_START,
+        .bizStage = BizStage::BIZ_STAGE_SA_START,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData,
+        .toCallPkg = "NA"
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
