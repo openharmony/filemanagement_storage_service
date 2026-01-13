@@ -303,8 +303,22 @@ int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
         return ret;
     }
     for (const auto &dirInfo : dirInfoList.data) {
+        auto it = dirInfo.options.find("restorecon");
+        if (it == dirInfo.options.end()) {
+            continue;
+        }
+        int64_t restoreFlag = 0;
+        if (!ConvertStringToInt(it->second, restoreFlag)) {
+            continue;
+        }
+        if (!restoreFlag) {
+            continue;
+        }
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         RestoreconRecurse(dirInfo.path.c_str());
-        LOGD("systemServiceDir_ RestoreconRecurse path is %{public}s ", dirInfo.path.c_str());
+        auto delay = StorageService::StorageRadar::ReportDuration("RestoreconRecurse", startTime,
+            StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USER_ID);
+        LOGI("delay = %{public}s, path = %{public}s ", delay.c_str(), dirInfo.path.c_str());
     }
 #endif
     return E_OK;
