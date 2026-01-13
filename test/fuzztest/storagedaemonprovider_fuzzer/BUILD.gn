@@ -51,7 +51,6 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/netlink/src/netlink_handler.cpp",
     "${storage_daemon_path}/netlink/src/netlink_listener.cpp",
     "${storage_daemon_path}/netlink/src/netlink_manager.cpp",
-    "${storage_daemon_path}/observer/appstate_observer.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
