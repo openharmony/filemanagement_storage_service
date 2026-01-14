@@ -307,13 +307,6 @@ int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
         if (it == dirInfo.options.end()) {
             continue;
         }
-        int64_t restoreFlag = 0;
-        if (!ConvertStringToInt(it->second, restoreFlag)) {
-            continue;
-        }
-        if (!restoreFlag) {
-            continue;
-        }
         auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         RestoreconRecurse(dirInfo.path.c_str());
         auto delay = StorageService::StorageRadar::ReportDuration("RestoreconRecurse", startTime,
