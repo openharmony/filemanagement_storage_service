@@ -129,15 +129,15 @@ void StorageDaemonCommunicationTest::MockConnectFail()
 {
     ASSERT_TRUE(sdCommunication != nullptr);
     sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).Times(AnyNumber()).WillRepeatedly(Return(nullptr));
 }
 
 void StorageDaemonCommunicationTest::MockStorageDaemonNullptr()
 {
     ASSERT_TRUE(sdCommunication != nullptr);
     sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).Times(AnyNumber()).WillRepeatedly(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).Times(AnyNumber()).WillRepeatedly(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
         sdCommunication->storageDaemon_ = nullptr;
     }), Return(true)));
@@ -147,8 +147,8 @@ void StorageDaemonCommunicationTest::MockAllSuccess()
 {
     ASSERT_TRUE(sdCommunication != nullptr);
     sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).Times(AnyNumber()).WillRepeatedly(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).Times(AnyNumber()).WillRepeatedly(Return(sd));
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
 }
 
@@ -525,30 +525,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_00
 }
 
 /**
-* @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserKeys_0000
-* @tc.name: Daemon_communication_DeleteUserKeys_0000
-* @tc.desc: Test function of DeleteUserKeys interface for SUCCESS.
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_0000, TestSize.Level1)
-{
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    MockConnectFail();
-    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SA_IS_NULLPTR);
-
-    MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SERVICE_IS_NULLPTR);
-
-    MockAllSuccess();
-    EXPECT_CALL(*sd, DeleteUserKeys(_)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_OK);
-}
-
-/**
 * @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0000
 * @tc.desc: Test function of EraseAllUserEncryptedKeys.
 * @tc.type: FUNC
@@ -565,7 +541,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryp
     EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->EraseAllUserEncryptedKeys(), E_OK);
 }
 
@@ -1067,31 +1043,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000
     MockAllSuccess();
     EXPECT_CALL(*sd, SetRecoverKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->SetRecoverKey(key), E_OK);
-}
-
-/**
-* @tc.number: SUB_STORAGE_Daemon_communication_UpdateMemoryPara_0000
-* @tc.name: Daemon_communication_UpdateMemoryPara_0000
-* @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_0000, TestSize.Level1)
-{
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    int32_t oldSize;
-    MockConnectFail();
-    EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_SA_IS_NULLPTR);
-
-    MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_SERVICE_IS_NULLPTR);
-
-    MockAllSuccess();
-    EXPECT_CALL(*sd, UpdateMemoryPara(_, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->UpdateMemoryPara(0, oldSize), E_OK);
 }
 
 /**

@@ -42,8 +42,7 @@ public:
 
     MOCK_METHOD0(InitGlobalKey, int32_t(void));
     MOCK_METHOD0(InitGlobalUserKeys, int32_t(void));
-    MOCK_METHOD1(DeleteUserKeys, int32_t(uint32_t));
-    MOCK_METHOD0(EraseAllUserEncryptedKeys, int32_t(void));
+    MOCK_METHOD1(EraseAllUserEncryptedKeys, int32_t(const std::vector<int32_t> &));
     MOCK_METHOD5(UpdateUserAuth,  int32_t(uint32_t, uint64_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD5(UpdateUseAuthWithRecoveryKey, int32_t(const std::vector<uint8_t> &,
@@ -63,7 +62,6 @@ public:
     MOCK_METHOD2(GetLockScreenStatus, int32_t (uint32_t, bool &));
     MOCK_METHOD4(MountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD4(UMountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));
-    MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
     MOCK_METHOD4(GenerateAppkey, int32_t (uint32_t, uint32_t, std::string &, bool));
     MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string &));
     MOCK_METHOD3(GetFileEncryptStatus, int32_t (uint32_t, bool &, bool));

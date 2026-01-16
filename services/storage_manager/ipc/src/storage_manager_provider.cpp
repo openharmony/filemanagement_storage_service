@@ -827,27 +827,6 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
 #endif
 }
 
-int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
-{
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-#ifdef USER_CRYPTO_MANAGER
-    LOGI("UserId: %{public}u", userId);
-        int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("User ID out of range");
-        return err;
-    }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->DeleteUserKeys(userId);
-    return err;
-#else
-    return E_OK;
-#endif
-}
-
 int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
 {
     StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys Begin",
@@ -910,7 +889,7 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -953,7 +932,7 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
             std::lock_guard<std::mutex> lock(mutex_);
             ret = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
         }
-        LOGE("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, ret);
+        LOGI("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, ret);
         StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, ret, "EL2-EL5");
     }
     StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::ACTIVE_USER_KEY_DELAY_SECOND);
@@ -1214,7 +1193,7 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("UserId :  %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -1237,7 +1216,7 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("SetRecoverKey enter");
     std::vector<int32_t> ids;
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
@@ -1356,21 +1335,6 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
 #else
     return E_OK;
 #endif
-}
-
-int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
-{
-    StorageRadar::ReportFucBehavior("UpdateMemoryPara", DEFAULT_USERID, "UpdateMemoryPara Begin", E_OK);
-    if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
-        LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
-        return E_PERMISSION_DENIED;
-    }
-    oldSize = 0;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UpdateMemoryPara(size, oldSize);
-    StorageRadar::ReportFucBehavior("UpdateMemoryPara", DEFAULT_USERID, "UpdateMemoryPara End", err);
-    return err;
 }
 
 int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
@@ -1626,7 +1590,7 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("ResetSecretWithRecoveryKey UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -1698,7 +1662,7 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
 		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -1723,7 +1687,7 @@ int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
 		IPCSkeleton::GetCallingUid() != SPACE_ABILITY_SERVICE_UID) {
         return E_PERMISSION_DENIED;
     }
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -1964,6 +1928,26 @@ int32_t StorageManagerProvider::NotifyCreateBundleDataDirWithEl(uint32_t userId,
     auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
     LOGI("CreateElxBundleDataDir end ret %{public}d", ret);
     return ret;
+}
+
+int32_t StorageManagerProvider::QueryActiveOsAccountIds(std::vector<int32_t> &ids)
+{
+    pid_t callingUid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || callingUid != ROOT_UID) {
+        LOGE("QueryActiveOsAccountIds permission denied ! uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+    return AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+}
+
+int32_t StorageManagerProvider::IsOsAccountExists(unsigned int userId, bool &isOsAccountExists)
+{
+    pid_t callingUid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || callingUid != ROOT_UID) {
+        LOGE("IsOsAccountExists permission denied ! uid: %{public}d", callingUid);
+        return E_PERMISSION_DENIED;
+    }
+    return AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -24,16 +24,22 @@ ohos_unittest("CryptoTest") {
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/ipc",
     "${storage_daemon_path}/include/crypto",
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
-  sources = [ "crypto_test.cpp" ]
+  sources = [
+    "crypto_test.cpp",
+    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
+  ]
 
   deps = [
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   external_deps = [
@@ -44,6 +50,10 @@ ohos_unittest("CryptoTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "os_account:os_account_innerkits",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 
   if (enable_screenlock_manager) {

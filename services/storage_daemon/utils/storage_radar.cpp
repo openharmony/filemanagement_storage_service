@@ -29,6 +29,9 @@ constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
 constexpr int32_t GLOBAL_USER_ID = 0;
+constexpr int32_t PARAMS_LEN = 12;
+constexpr int32_t STAGE_FAIL_INDEX = 9;
+constexpr int32_t ERROR_CODE_INDEX = 11;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
@@ -330,39 +333,41 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
 bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
 {
     int32_t res = E_OK;
+    const char* DISK_VOLUME_INFO_STR = "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}";
+    HiSysEventParam params[PARAMS_LEN] = {
+        {.name = "ORG_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.orgPkg.c_str() }, .arraySize = 0, },
+        {.name = "USER_ID", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.userId }, .arraySize = 0, },
+        {.name = "FUNC", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.funcName.c_str() }, .arraySize = 0, },
+        {.name = "BIZ_SCENE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(parRes.bizScene) },
+            .arraySize = 0, },
+        {.name = "BIZ_STAGE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(parRes.bizStage) },
+            .arraySize = 0, },
+        {.name = "kEY_ELX_LEVEL", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.keyElxLevel.c_str() },
+            .arraySize = 0, },
+        {.name = "TO_CALL_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.toCallPkg.c_str() },
+            .arraySize = 0, },
+        {.name = "DISK_VOLUME_INFO", .t = HISYSEVENT_STRING, .v = { .s = (char *)DISK_VOLUME_INFO_STR },
+            .arraySize = 0, },
+        {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
+            .arraySize = 0, },
+        {.name = "STAGE_RES", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_SUCC) },
+            .arraySize = 0, },
+        {.name = "BIZ_STATE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) },
+            .arraySize = 0, },
+        {},
+    };
+    size_t len = 11;
     if (parRes.errorCode == E_OK) {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", parRes.orgPkg,
-            "USER_ID", parRes.userId,
-            "FUNC", parRes.funcName,
-            "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
-            "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
-            "kEY_ELX_LEVEL", parRes.keyElxLevel,
-            "TO_CALL_PKG", parRes.toCallPkg,
-            "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
-            "FILE_STATUS", parRes.extraData,
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_SUCC),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_START));
+        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
+            HISYSEVENT_BEHAVIOR, params, len);
     } else {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", parRes.orgPkg,
-            "USER_ID", parRes.userId,
-            "FUNC", parRes.funcName,
-            "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
-            "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
-            "kEY_ELX_LEVEL", parRes.keyElxLevel,
-            "TO_CALL_PKG", parRes.toCallPkg,
-            "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
-            "FILE_STATUS", parRes.extraData,
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_START),
-            "ERROR_CODE", parRes.errorCode);
+        const int32_t stageFail = static_cast<int32_t>(StageRes::STAGE_FAIL);
+        params[STAGE_FAIL_INDEX].v.i32 = stageFail;
+        params[ERROR_CODE_INDEX] = {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode },
+            .arraySize = 0 };
+        len++;
+        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
+            HISYSEVENT_FAULT, params, len);
     }
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
@@ -384,24 +389,38 @@ static std::string GetCurrentTime()
 
 void StorageRadar::ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo)
 {
-    int32_t res = HiSysEventWrite(
-        STORAGESERVICE_DOAMIN,
-        FILE_STORAGE_MANAGER_STATISTIC,
-        HiviewDFX::HiSysEvent::EventType::STATISTIC,
-        "USER_ID", userId,
-        "TIME", GetCurrentTime(),
-        "KEY_LOAD_SUCC_CNT", radarInfo.keyLoadSuccCount,
-        "KEY_LOAD_FAIL_CNT", radarInfo.keyLoadFailCount,
-        "KEY_UNLOAD_SUCC_CNT", radarInfo.keyUnloadSuccCount,
-        "KEY_UNLOAD_FAIL_CNT", radarInfo.keyUnloadFailCount,
-        "USER_ADD_SUCC_CNT", radarInfo.userAddSuccCount,
-        "USER_ADD_FAIL_CNT", radarInfo.userAddFailCount,
-        "USER_REMOVE_SUCC_CNT", radarInfo.userRemoveSuccCount,
-        "USER_REMOVE_FAIL_CNT", radarInfo.userRemoveFailCount,
-        "USER_START_SUCC_CNT", radarInfo.userStartSuccCount,
-        "USER_START_FAIL_CNT", radarInfo.userStartFailCount,
-        "USER_STOP_SUCC_CNT", radarInfo.userStopSuccCount,
-        "USER_STOP_FAIL_CNT", radarInfo.userStopFailCount);
+    std::string timeStr = GetCurrentTime();
+    HiSysEventParam params[] = {
+        {.name = "USER_ID", .t = HISYSEVENT_UINT32, .v = { .ui32 = userId }, .arraySize = 0, },
+        {.name = "TIME", .t = HISYSEVENT_STRING, .v = { .s = (char *)timeStr.c_str() }, .arraySize = 0, },
+        {.name = "KEY_LOAD_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.keyLoadSuccCount },
+            .arraySize = 0, },
+        {.name = "KEY_LOAD_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.keyLoadFailCount },
+            .arraySize = 0, },
+        {.name = "KEY_UNLOAD_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.keyUnloadSuccCount },
+            .arraySize = 0, },
+        {.name = "KEY_UNLOAD_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.keyUnloadFailCount },
+            .arraySize = 0, },
+        {.name = "USER_ADD_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userAddSuccCount },
+            .arraySize = 0, },
+        {.name = "USER_ADD_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userAddFailCount },
+            .arraySize = 0, },
+        {.name = "USER_REMOVE_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userRemoveSuccCount },
+            .arraySize = 0, },
+        {.name = "USER_REMOVE_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userRemoveFailCount },
+            .arraySize = 0, },
+        {.name = "USER_START_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userStartSuccCount },
+            .arraySize = 0, },
+        {.name = "USER_START_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userStartFailCount },
+            .arraySize = 0, },
+        {.name = "USER_STOP_SUCC_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userStopSuccCount },
+            .arraySize = 0, },
+        {.name = "USER_STOP_FAIL_CNT", .t = HISYSEVENT_UINT64, .v = { .ui64 = radarInfo.userStopFailCount },
+            .arraySize = 0, },
+    };
+    size_t len = sizeof(params) / sizeof(params[0]);
+    int32_t res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_STATISTIC,
+        HISYSEVENT_STATISTIC, params, len);
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
     }

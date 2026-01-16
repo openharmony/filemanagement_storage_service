@@ -61,6 +61,10 @@ ohos_shared_library("storage_manager") {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
 
+  if (pc_device_enable) {
+    defines += [ "PC_USER_MANAGER" ]
+  }
+
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [

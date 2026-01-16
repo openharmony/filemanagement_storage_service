@@ -39,6 +39,7 @@ ohos_fuzztest("StorageDaemonProxyFormatFuzzTest") {
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "storagedaemonproxyformat_fuzzer.cpp",
   ]
 

@@ -34,7 +34,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      // fscrypt api
      [ipccode 13] void InitGlobalKey();
      [ipccode 14] void InitGlobalUserKeys();
-     [ipccode 17] void DeleteUserKeys([in] unsigned int userId);
      [ipccode 18] void UpdateUserAuth([in] unsigned int userId, [in] unsigned long secureUid,
           [in] unsigned char[] token,[in] unsigned char[] oldSecret,[in] unsigned char[] newSecret);
      [ipccode 19] void UpdateUseAuthWithRecoveryKey([in] unsigned char[] authToken,
@@ -62,7 +61,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 29] void SetBundleQuota([in] int uid, [in] String bundleDataDirPath,
                                       [in] int limitSizeMb);
      [ipccode 30] void GetOccupiedSpace([in] int idType, [in] int id, [out] long size);
-     [ipccode 31] void UpdateMemoryPara([in] int size, [out] int oldSize);
      [ipccode 35] void MountDfsDocs([in] int userId, [in] String relativePath,
           [in] String networkId, [in] String deviceId);
      [ipccode 36] void UMountDfsDocs([in] int userId, [in] String relativePath,
@@ -94,7 +92,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 59] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int level);
      [ipccode 60] void UpdateUserPublicDirPolicy([in] unsigned int userId);
      [ipccode 61] void GetDqBlkSpacesByUids([in] int[] uids, [out] NextDqBlk[] dqBlks);
-     [ipccode 62] void EraseAllUserEncryptedKeys();
+     [ipccode 62] void EraseAllUserEncryptedKeys([in] int[] localIdList);
      [ipccode 63] void GetDirListSpace([in] DirSpaceInfo[] inDirs, [out] DirSpaceInfo[] outDirs);
      [ipccode 64] void SetStopScanFlag([in] boolean stop);
      [ipccode 65] void GetAncoSizeData([out] String outExtraData);

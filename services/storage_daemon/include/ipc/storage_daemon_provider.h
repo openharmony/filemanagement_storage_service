@@ -51,8 +51,7 @@ public:
     // fscrypt api, add fs mutex in KeyManager
     virtual int32_t InitGlobalKey(void) override;
     virtual int32_t InitGlobalUserKeys(void) override;
-    virtual int32_t DeleteUserKeys(uint32_t userId) override;
-    virtual int32_t EraseAllUserEncryptedKeys() override;
+    virtual int32_t EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList) override;
     virtual int32_t UpdateUserAuth(uint32_t userId,
                                    uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
@@ -94,7 +93,6 @@ public:
                                    const std::string &bundleDataDirPath,
                                    int32_t limitSizeMb) override;
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
-    virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
     virtual int32_t MountDfsDocs(int32_t userId,
                                  const std::string &relativePath,
                                  const std::string &networkId,

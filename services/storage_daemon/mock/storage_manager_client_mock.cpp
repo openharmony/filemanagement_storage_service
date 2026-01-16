@@ -78,5 +78,21 @@ int32_t StorageManagerClient::NotifyCreateBundleDataDirWithEl(uint32_t userId, u
 {
     return 0;
 }
+
+int32_t StorageManagerClient::QueryActiveOsAccountIds(std::vector<int32_t> &ids)
+{
+    if (IStorageManagerClientMock::iStorageManagerClientMock_ == nullptr) {
+        return -1;
+    }
+    return IStorageManagerClientMock::iStorageManagerClientMock_->QueryActiveOsAccountIds(ids);
+}
+
+int32_t StorageManagerClient::IsOsAccountExists(unsigned int userId, bool &isOsAccountExists)
+{
+    if (IStorageManagerClientMock::iStorageManagerClientMock_ == nullptr) {
+        return -1;
+    }
+    return IStorageManagerClientMock::iStorageManagerClientMock_->IsOsAccountExists(userId, isOsAccountExists);
+}
 } // StorageDaemon
 } // OHOS

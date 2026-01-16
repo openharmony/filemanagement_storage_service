@@ -17,7 +17,6 @@
 
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
-
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
@@ -210,6 +209,30 @@ int32_t StorageManagerClient::NotifyCreateBundleDataDirWithEl(uint32_t userId, u
         return E_SERVICE_IS_NULLPTR;
     }
     return storageManager_->NotifyCreateBundleDataDirWithEl(userId, elx);
+}
+
+int32_t StorageManagerClient::QueryActiveOsAccountIds(std::vector<int32_t> &ids)
+{
+    LOGI("start");
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ == nullptr) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->QueryActiveOsAccountIds(ids);
+}
+
+int32_t StorageManagerClient::IsOsAccountExists(unsigned int userId, bool &isOsAccountExists)
+{
+    LOGI("start");
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ == nullptr) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->IsOsAccountExists(userId, isOsAccountExists);
 }
 } // StorageDaemon
 } // OHOS

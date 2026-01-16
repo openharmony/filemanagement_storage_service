@@ -454,30 +454,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_001, 
 }
 
 /**
- * @tc.number: SUB_STORAGE_Daemon_communication_UpdateMemoryPara_001
- * @tc.name: Daemon_communication_UpdateMemoryPara_001
- * @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateMemoryPara_001 SUCCESS";
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
-            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    int32_t size = 100;
-    int32_t oldsize = 100;
-    int32_t ret = sdCommunication->UpdateMemoryPara(size, oldsize);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateMemoryPara_001 SUCCESS";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Daemon_communication_CompleteAddUser_000
  * @tc.name: Daemon_communication_CompleteAddUser_000
  * @tc.desc: Test function of CompleteAddUser interface for SUCCESS.
@@ -692,29 +668,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_00
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserKeys_0000
- * @tc.name: Daemon_communication_DeleteUserKeys_0000
- * @tc.desc: Test function of DeleteUserKeys interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000H0F7I
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteUserKeys_0000 SUCCESS";
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
-        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result = -1;
-    int32_t userId = 107;
-    if (sdCommunication != nullptr) {
-        result = sdCommunication->DeleteUserKeys(userId);
-    }
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000 SUCCESS";
-}
-
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_EraseAllUserEncryptedKeys_0000
  * @tc.name: Daemon_communication_EraseAllUserEncryptedKeys_0000

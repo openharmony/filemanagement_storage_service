@@ -592,22 +592,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryUsbIsInUse_
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_DeleteUserKeys_001
- * @tc.desc: Verify the DeleteUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = 1001;
-    auto ret = storageManagerProviderTest_->DeleteUserKeys(userId);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_001
  * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
  * @tc.type: FUNC
@@ -953,24 +937,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     auto ret = storageManagerProviderTest_->GetUserStorageStatsByType(userId, storageStats, type);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStatsByType_001 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_UpdateMemoryPara_001
- * @tc.desc: Verify the UpdateMemoryPara function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateMemoryPara_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateMemoryPara_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    int32_t size = 1024;
-    int32_t oldSize = 0;
-    auto ret = storageManagerProviderTest_->UpdateMemoryPara(size, oldSize);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    EXPECT_EQ(oldSize, 0);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateMemoryPara_001 end";
 }
 
 /**
@@ -1704,5 +1670,37 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyCreateBund
     EXPECT_EQ(storageManagerProviderTest_->NotifyCreateBundleDataDirWithEl(userId, elx), E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_QueryActiveOsAccountIds_001
+ * @tc.desc: Verify the QueryActiveOsAccountIds function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryActiveOsAccountIds_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_QueryActiveOsAccountIds_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::vector<int32_t> ids;
+    EXPECT_EQ(storageManagerProviderTest_->QueryActiveOsAccountIds(ids), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_QueryActiveOsAccountIds_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_IsOsAccountExists_001
+ * @tc.desc: Verify the IsOsAccountExists function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExists_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    unsigned int userId = 0;
+    bool isOsAccountExists = true;
+    EXPECT_EQ(storageManagerProviderTest_->IsOsAccountExists(userId, isOsAccountExists), E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_001 end";
+}
+
 } // namespace StorageManager
 } // namespace OHOS

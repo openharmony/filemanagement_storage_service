@@ -53,7 +53,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->StopUser(metaData2);
     proxy->Mount(metaData);
     proxy->Unmount(metaData);
-    proxy->DeleteUserKeys(metaData3);
     proxy->NotifyDiskCreated(disk);
     proxy->InactiveUserKey(metaData3);
     proxy->UpdateKeyContext(metaData3);

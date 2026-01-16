@@ -55,12 +55,12 @@ int32_t KeyManager::DeleteUserKeys(unsigned int user)
     return KeyManagerMock::iKeyManagerMock_->DeleteUserKeys(user);
 }
 
-int32_t KeyManager::EraseAllUserEncryptedKeys()
+int32_t KeyManager::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;
     }
-    return KeyManagerMock::iKeyManagerMock_->EraseAllUserEncryptedKeys();
+    return KeyManagerMock::iKeyManagerMock_->EraseAllUserEncryptedKeys(localIdList);
 }
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,

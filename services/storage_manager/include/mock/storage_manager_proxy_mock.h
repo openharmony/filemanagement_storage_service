@@ -64,7 +64,6 @@ public:
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
 
     // fscrypt api
-    int32_t DeleteUserKeys(uint32_t userId) override;
     int32_t EraseAllUserEncryptedKeys() override;
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,
@@ -114,8 +113,6 @@ public:
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb) override;
-    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
-
     // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
@@ -139,6 +136,8 @@ public:
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec) override;
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx) override;
+    int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
+    int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

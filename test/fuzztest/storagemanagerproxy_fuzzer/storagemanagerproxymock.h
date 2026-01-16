@@ -197,11 +197,6 @@ public:
         return E_OK;
     }
 
-    int32_t DeleteUserKeys(uint32_t userId) override
-    {
-        return E_OK;
-    }
-
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
@@ -299,11 +294,6 @@ public:
     }
 
     int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList) override
-    {
-        return E_OK;
-    }
-
-    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override
     {
         return E_OK;
     }

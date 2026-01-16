@@ -48,6 +48,19 @@ taihe_shared_library("key_manager_taihe") {
     debug = false
   }
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
+  ]
+  ldflags = [ "-flto" ]
+
   include_dirs = [
     "include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native",

@@ -65,18 +65,6 @@ int32_t StorageManagerClient::RemoveUser(uint32_t userId, uint32_t flags)
     return client->RemoveUser(userId, flags);
 }
 
-int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
-{
-    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    sptr<IStorageManager> client = GetStorageManagerProxy();
-    if (client == nullptr) {
-        LOGE("get storage manager service failed");
-        return E_SA_IS_NULLPTR;
-    }
-
-    return client->DeleteUserKeys(userId);
-}
-
 int32_t StorageManagerClient::EraseAllUserEncryptedKeys()
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);

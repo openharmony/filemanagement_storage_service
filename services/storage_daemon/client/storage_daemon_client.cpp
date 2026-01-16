@@ -273,27 +273,9 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
     return client->InitGlobalUserKeys();
 }
 
-int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
+int32_t StorageDaemonClient::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
-    LOGI("StorageDaemonClient::DeleteUserKeys, userId: %{public}u", userId);
-    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
-    if (status != E_OK) {
-        LOGE("service check failed");
-        return status;
-    }
-
-    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
-    if (client == nullptr) {
-        LOGE("get storage daemon service failed");
-        return E_SA_IS_NULLPTR;
-    }
-
-    return client->DeleteUserKeys(userId);
-}
-
-int32_t StorageDaemonClient::EraseAllUserEncryptedKeys()
-{
-    LOGI("StorageDaemonClient::EraseAllUserEncryptedKeys");
+    LOGI("StorageDaemonClient::EraseAllUserEncryptedKeys, localIdList:%{public}d", localIdList.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -309,7 +291,7 @@ int32_t StorageDaemonClient::EraseAllUserEncryptedKeys()
         return E_SA_IS_NULLPTR;
     }
 
-    return client->EraseAllUserEncryptedKeys();
+    return client->EraseAllUserEncryptedKeys(localIdList);
 }
 
 int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,

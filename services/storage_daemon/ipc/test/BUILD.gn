@@ -100,6 +100,7 @@ ohos_unittest("storage_daemon_test") {
     defines += [
       "USER_CRYPTO_MANAGER",
       "USER_CRYPTO_MIGRATE_KEY",
+      "PC_USER_MANAGER",
     ]
     deps += [
       "$ROOT_DIR/libfscrypt:libfscryptutils",
@@ -232,6 +233,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",

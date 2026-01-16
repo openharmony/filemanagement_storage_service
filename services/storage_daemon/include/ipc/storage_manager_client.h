@@ -40,6 +40,8 @@ public:
 
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);
+    int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids);
+    int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

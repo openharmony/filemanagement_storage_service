@@ -29,6 +29,7 @@
 #include "fscrypt_control_mock.h"
 #include "fscrypt_key_v1.h"
 #include "os_account_manager_mock.h"
+#include "storage_manager_client_mock.h"
 #include "recover_manager_mock.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
@@ -49,6 +50,7 @@ public:
     static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
     static inline shared_ptr<FscryptControlMoc> fscryptControlMock_ = nullptr;
     static inline shared_ptr<OsAccountManagerMock> osAccountManagerMock_ = nullptr;
+    static inline shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
     bool globalUserEl1PathFlag = true;
     bool deviceEl1DirFlag = true;
 };
@@ -87,6 +89,8 @@ void KeyMgrAnotherTest::SetUp(void)
     KeyControlMoc::keyControlMoc = keyControlMock_;
     osAccountManagerMock_ = make_shared<OsAccountManagerMock>();
     IOsAccountManager::osAccountManagerMock = osAccountManagerMock_;
+    storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
+    StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
 }
 
 void KeyMgrAnotherTest::TearDown(void)
@@ -109,6 +113,8 @@ void KeyMgrAnotherTest::TearDown(void)
     keyControlMock_ = nullptr;
     IOsAccountManager::osAccountManagerMock = nullptr;
     osAccountManagerMock_ = nullptr;
+    StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
+    storageManagerClientMock_ = nullptr;
 }
 
 /**
@@ -400,144 +406,12 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_DeleteUserKeys_001, TestSize.Level
 HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_001 start";
-
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(Return(-1));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_OK);
-
+    std::vector<int32_t> localIdList;
+    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList), E_OK);
+    int32_t localId = 1;
+    localIdList.push_back(localId);
+    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList), E_OK);
     GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_001 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_EraseAllUserEncryptedKeys_002
- * @tc.desc: Verify KeyManager EraseAllUserEncryptedKeys when OsAccounts isCreateCompleted false.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_002 start";
-    uint32_t userId = 135;
-    AccountSA::OsAccountInfo osAccountInfo;
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos = {osAccountInfo};
-    osAccountInfos[0].SetLocalId(userId);
-    osAccountInfos[0].SetIsCreateCompleted(false);
-    osAccountInfos[0].SetToBeRemoved(true);
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(DoAll(
-        SetArgReferee<0>(osAccountInfos),
-        Return(ERR_OK)
-    ));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_OK);
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_002 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_EraseAllUserEncryptedKeys_003
- * @tc.desc: Verify KeyManager EraseAllUserEncryptedKeys when OsAccounts toBeRemoved false.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_003 start";
-    uint32_t userId = 135;
-    AccountSA::OsAccountInfo osAccountInfo;
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos = {osAccountInfo};
-    osAccountInfos[0].SetLocalId(userId);
-    osAccountInfos[0].SetIsCreateCompleted(true);
-    osAccountInfos[0].SetToBeRemoved(false);
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(DoAll(
-        SetArgReferee<0>(osAccountInfos),
-        Return(ERR_OK)
-    ));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_OK);
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_003 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_EraseAllUserEncryptedKeys_004
- * @tc.desc: Verify KeyManager EraseAllUserEncryptedKeys when OsAccounts isCreateCompleted toBeRemoved false.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_004 start";
-    uint32_t userId = 135;
-    AccountSA::OsAccountInfo osAccountInfo;
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos = {osAccountInfo};
-    osAccountInfos[0].SetLocalId(userId);
-    osAccountInfos[0].SetIsCreateCompleted(false);
-    osAccountInfos[0].SetToBeRemoved(false);
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(DoAll(
-        SetArgReferee<0>(osAccountInfos),
-        Return(ERR_OK)
-    ));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_OK);
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_004 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_EraseAllUserEncryptedKeys_005
- * @tc.desc: Verify KeyManager EraseAllUserEncryptedKeys DeleteGlobalDeviceKey.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_005 start";
-    uint32_t userId = 135;
-    AccountSA::OsAccountInfo osAccountInfo;
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos = {osAccountInfo};
-    osAccountInfos[0].SetLocalId(userId);
-    osAccountInfos[0].SetIsCreateCompleted(true);
-    osAccountInfos[0].SetToBeRemoved(true);
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(false));
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(DoAll(
-        SetArgReferee<0>(osAccountInfos),
-        Return(ERR_OK)
-    ));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_OK);
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_005 end";
-}
-
-/**
- * @tc.name: KeyMgrAnotherTest_EraseAllUserEncryptedKeys_006
- * @tc.desc: Verify KeyManager EraseAllUserEncryptedKeys when userId  is error.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_EraseAllUserEncryptedKeys_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_006 start";
-    uint32_t userId = 135;
-    AccountSA::OsAccountInfo osAccountInfo;
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos = {osAccountInfo};
-    osAccountInfos[0].SetLocalId(userId);
-    osAccountInfos[0].SetIsCreateCompleted(true);
-    osAccountInfos[0].SetToBeRemoved(true);
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
-    EXPECT_CALL(*osAccountManagerMock_, QueryAllCreatedOsAccounts(_)).WillOnce(DoAll(
-        SetArgReferee<0>(osAccountInfos),
-        Return(ERR_OK)
-    ));
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(FSCRYPT_V2));
-    EXPECT_EQ(KeyManager::GetInstance().EraseAllUserEncryptedKeys(), E_ERASE_USER_KEY_ERROR);
-    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_EraseAllUserEncryptedKeys_006 end";
 }
 
 /**
