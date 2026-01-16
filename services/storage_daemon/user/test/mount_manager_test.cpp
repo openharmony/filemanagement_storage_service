@@ -20,7 +20,6 @@
 #include "directory_ex.h"
 
 #include "file_utils_mock.h"
-#include "library_func_mock.h"
 #include "os_account_manager.h"
 #include "parameter_mock.h"
 #include "storage_service_errno.h"
@@ -61,7 +60,6 @@ public:
     void CreateFile(const std::string &path, std::string data = "");
     void DeleteFile(const std::string &path);
 
-    static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
     static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
     static inline shared_ptr<ParamMoc> paramMoc_ = nullptr;
 };
@@ -80,16 +78,12 @@ void MountManagerTest::SetUp(void)
 {
     fileUtilMoc_ = make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
-    libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
-    LibraryFuncMock::libraryFunc_ = libraryFuncMock_;
 }
 
 void MountManagerTest::TearDown()
 {
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
-    LibraryFuncMock::libraryFunc_ = nullptr;
-    libraryFuncMock_ = nullptr;
 }
 
 void MountManagerTest::CreateFile(const std::string &path, std::string data)

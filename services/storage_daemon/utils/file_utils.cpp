@@ -959,18 +959,21 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
     return result;
 }
 
-bool DeleteFile(const std::string &path)
+void DeleteFile(const std::string &path)
 {
     DIR *dir;
     struct dirent *dirinfo;
     struct stat statbuf;
-    lstat(path.c_str(), &statbuf);
+    if (lstat(path.c_str(), &statbuf) != 0) {
+        LOGE(" lstat failed, errno:%{public}d", errno);
+        return;
+    }
 
     if (S_ISREG(statbuf.st_mode)) {
         remove(path.c_str());
     } else if (S_ISDIR(statbuf.st_mode)) {
         if ((dir = opendir(path.c_str())) == NULL)
-            return 1;
+            return;
         while ((dirinfo = readdir(dir)) != NULL) {
             std::string filepath;
             filepath.append(path).append("/").append(dirinfo->d_name);
@@ -982,7 +985,7 @@ bool DeleteFile(const std::string &path)
         }
         closedir(dir);
     }
-    return 0;
+    return;
 }
 
 bool IsTempFolder(const std::string &path, const std::string &sub)
@@ -1021,29 +1024,6 @@ void DelTemp(const std::string &path)
             closedir(dir);
         }
     }
-}
-
-bool CreateFolder(const std::string &path)
-{
-    if (!access(path.c_str(), F_OK) || path == "") {
-        return true;
-    }
-
-    size_t pos = path.rfind("/");
-    if (pos == std::string::npos) {
-        return false;
-    }
-
-    std::string upperPath = path.substr(0, pos);
-    if (CreateFolder(upperPath)) {
-        if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO)) {
-            if (errno != EEXIST) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
 }
 
 bool DelFolder(const std::string &path)

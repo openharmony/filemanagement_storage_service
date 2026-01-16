@@ -64,7 +64,7 @@ int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std:
     return 0;
 }
 
-int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
+int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const bool isBadRemove)
 {
     return 0;
 }

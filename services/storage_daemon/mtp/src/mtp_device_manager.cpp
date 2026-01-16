@@ -117,30 +117,42 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
     LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
     if (isBadRemove) {
         LOGI("force to umount mtp device");
-        umount2(device.path.c_str(), MNT_DETACH);
-        remove(device.path.c_str());
-        LOGI("Mtp device force to unmount success");
+        int ret = umount2(device.path.c_str(), MNT_DETACH);
+        if (ret != 0) {
+            LOGW("umount2 failed in force mode, errno %{public}d", errno);
+            if (needNotify) {
+                StorageManagerClient client;
+                client.NotifyMtpUnmounted(device.id, isBadRemove);
+            }
+            return E_OK;
+        }
+        ret = remove(device.path.c_str());
+        if (ret != 0) {
+            LOGW("remove failed in force mode, errno %{public}d", errno);
+        }
         if (needNotify) {
             StorageManagerClient client;
-            client.NotifyMtpUnmounted(device.id, device.path, isBadRemove);
+            client.NotifyMtpUnmounted(device.id, isBadRemove);
         }
+
         DelFolder(device.path);
         return E_OK;
     }
+
     int ret = umount(device.path.c_str());
-    int err = remove(device.path.c_str());
-    if (err && ret) {
-        LOGE("umount mtp device error.");
+    if (ret != E_OK) {
+        LOGE("umount failed errno %{public}d", errno);
         return E_MTP_UMOUNT_FAILED;
     }
-    if (err) {
+    int err = remove(device.path.c_str());
+    if (err != E_OK) {
         LOGE("failed to call remove(%{public}s) error, errno=%{public}d", device.path.c_str(), errno);
         return E_SYS_KERNEL_ERR;
     }
     LOGI("Mtp device unmount success.");
     if (needNotify) {
         StorageManagerClient client;
-        client.NotifyMtpUnmounted(device.id, device.path, isBadRemove);
+        client.NotifyMtpUnmounted(device.id, isBadRemove);
     }
     DelFolder(device.path);
     return E_OK;

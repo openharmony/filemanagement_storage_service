@@ -78,6 +78,7 @@ private:
     int32_t CreateFuseMountPath();
     std::string GetVolDescByNtfsLabel(std::vector<std::string> &cmd);
     std::string SplitOutputIntoLines(std::vector<std::string> &output);
+    int32_t ExecuteAsyncMount(uint32_t mountFlags);
 };
 } // STORAGE_DAEMON
 } // OHOS
