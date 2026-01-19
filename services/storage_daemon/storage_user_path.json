@@ -602,15 +602,15 @@
             "uid": 1006,
             "gid": 1006,
             "options": "set_prjId=0,update_uid"
-        }
-      ],
-      "el3": [
+        },
         {
-            "path": "/data/service/el3/<userId>/device_standby",
+            "path": "/data/service/el2/<userId>/device_standby",
             "mode": "0711",
             "uid": 1096,
             "gid": 1096
         }
+      ],
+      "el3": [
       ],
       "el4": [
         {
