@@ -37,6 +37,9 @@
 constexpr uid_t FILE_MANAGER_UID = 1006;
 constexpr gid_t FILE_MANAGER_GID = 1006;
 constexpr const char *NTFS_LABEL_DESC_PREFIX = "Volume label :  ";
+constexpr const char* MNT_EXTERNAL_FILE_CONTEXT = "context=u:object_r:mnt_external_file:s0";
+constexpr const char* MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS =
+    "context=u:object_r:mnt_external_file:s0,errors=continue";
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -93,7 +96,7 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
     devPath_ = StringPrintf(devPathDir_.c_str(), (id).c_str());
 
     ret = mknod(devPath_.c_str(), S_IFBLK, dev);
-    if (ret) {
+    if (ret != E_OK) {
         LOGE("External volume DoCreate error.");
         return E_ERR;
     }
@@ -110,8 +113,8 @@ std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 int32_t ExternalVolumeInfo::DoDestroy()
 {
     int err = remove(devPath_.c_str());
-    if (err) {
-        LOGE("External volume DoDestroy error.");
+    if (err != E_OK) {
+        LOGE("External volume DoDestroy, errno %{public}d", errno);
         return E_ERR;
     }
     return E_OK;
@@ -120,7 +123,7 @@ int32_t ExternalVolumeInfo::DoDestroy()
 int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
 {
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
-    if (ret) {
+    if (ret != E_OK) {
         return E_EXT_MOUNT;
     }
     return ret;
@@ -129,9 +132,9 @@ int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 {
     const char *fsType = "hmfs";
-    auto mountData = StringPrintf("context=u:object_r:mnt_external_file:s0,errors=continue");
+    auto mountData = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
-    if (!ret) {
+    if (ret == E_OK) {
         StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
     } else {
         LOGE("initial mount failed errno %{public}d", errno);
@@ -144,7 +147,7 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
         return ret;
     }
  
-    auto mountDataWithoutOpt = StringPrintf("context=u:object_r:mnt_external_file:s0");
+    auto mountDataWithoutOpt = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT);
     ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountDataWithoutOpt.c_str());
     if (ret != E_OK) {
         LOGE("mount read only failed errno %{public}d", errno);
@@ -308,7 +311,7 @@ int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
     mountFlags |= MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
-    if (ret) {
+    if (ret != E_OK) {
         return E_OTHER_MOUNT;
     }
     return ret;
@@ -319,7 +322,8 @@ int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
     mountFlags |= MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
-    if (ret) {
+    if (ret != E_OK) {
+        LOGE("do mount for vfat failed, errno is %{public}d.", errno);
         return E_FAT_MOUNT;
     }
     return ret;
@@ -327,52 +331,75 @@ int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
-    int32_t ret = DoCheck();
-    if (ret != E_OK) {
-        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
-        return E_DOCHECK_MOUNT;
-    }
-    ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
+    int32_t ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
         return ret;
+    }
+    ret = DoCheck();
+    if (ret != E_OK) {
+        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        mountPath_ = mountBackupPath_;
+        return E_DOCHECK_MOUNT;
     }
     if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
         ret = DoMount4Hmfs(mountFlags);
     }
-    if (ret) {
-        LOGE("External volume DoMount error, errno = %{public}d", errno);
-        remove(mountPath_.c_str());
+    if (ret != E_OK) {
+        if (remove(mountPath_.c_str()) != 0) {
+            LOGE("remove failed errno: %{public}d", errno);
+        }
         return E_HMFS_MOUNT;
     }
+
+    ret = ExecuteAsyncMount(mountFlags);
+    if (ret != E_OK) {
+        if (remove(mountPath_.c_str()) != 0) {
+            LOGE("remove failed errno: %{public}d", errno);
+        }
+    }
+    mountPath_ = mountBackupPath_;
+    
+    return ret;
+}
+
+int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
+{
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread mountThread ([this, mountFlags, p = std::move(promise)]() mutable {
-        LOGI("Ready to mount: volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
+    
+    std::thread mountThread([this, mountFlags, p = std::move(promise)]() mutable {
+        LOGI("Ready to mount: volume fstype is %{public}s, mountflag is %{public}d",
+             fsType_.c_str(), mountFlags);
+        
         int retValue = E_OK;
-        if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
-        else if (fsType_ == "exfat") retValue = DoMount4Exfat(mountFlags);
-        else if (fsType_ == "vfat" || fsType_ == "fat32") retValue = DoMount4Vfat(mountFlags);
-        else if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) retValue = E_OK;
-        else retValue = E_OTHER_MOUNT;
+        if (fsType_ == "ntfs") {
+            retValue = DoMount4Ntfs(mountFlags);
+        } else if (fsType_ == "exfat") {
+            retValue = DoMount4Exfat(mountFlags);
+        } else if (fsType_ == "vfat" || fsType_ == "fat32") {
+            retValue = DoMount4Vfat(mountFlags);
+        } else if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
+            retValue = E_OK;
+        } else {
+            retValue = E_OTHER_MOUNT;
+        }
+        
         p.set_value(retValue);
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("Mount timed out");
-        remove(mountPath_.c_str());
         mountThread.detach();
-        mountPath_ = mountBackupPath_;
         return E_TIMEOUT_MOUNT;
     }
-    ret = future.get();
+    
+    int32_t ret = future.get();
     mountThread.join();
-    if (ret) {
+    
+    if (ret != E_OK) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
-        remove(mountPath_.c_str());
-        mountPath_ = mountBackupPath_;
-        return ret;
     }
-    mountPath_ = mountBackupPath_;
-    return E_OK;
+    
+    return ret;
 }
 
 int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
@@ -398,8 +425,16 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         Process ps(mountPath_);
         ps.UpdatePidByPath();
         ps.KillProcess(SIGKILL);
-        umount2(mountPath_.c_str(), MNT_DETACH);
-        remove(mountPath_.c_str());
+        int ret = umount2(mountPath_.c_str(), MNT_DETACH);
+        if (ret != 0) {
+            LOGW("umount2 failed in force mode, errno %{public}d", errno);
+            return E_OK;
+        }
+        ret = remove(mountPath_.c_str());
+        if (ret != 0) {
+            LOGW("remove failed in force mode, errno %{public}d", errno);
+            return E_OK;
+        }
         LOGI("External volume force to unmount success.");
         return E_OK;
     }
@@ -416,20 +451,16 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
 
     LOGI("External volume start to unmount mountPath: %{public}s.", GetAnonyString(mountPath_).c_str());
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
-    if (ret != E_OK) {
-        LOGE("umount2 failed errno %{public}d", errno);
-    }
     if (fd >= 0) {
         IsUsbInUse(fd);
         close(fd);
     }
-
-    int err = remove(mountPath_.c_str());
-    if (err && ret) {
-        LOGE("External volume DoUmount error.");
+    if (ret != E_OK) {
+        LOGE("umount2 failed errno %{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
-    if (err && errno != FILE_NOT_EXIST) {
+    int err = remove(mountPath_.c_str());
+    if (err != E_OK && errno != FILE_NOT_EXIST) {
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", GetAnonyString(mountPath_).c_str(), errno);
         return E_RMDIR_MOUNT;
     }
@@ -445,10 +476,11 @@ int32_t ExternalVolumeInfo::DoUMountUsbFuse()
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (ret != E_OK) {
         LOGE("umount2 mountUsbFusePath failed errno %{public}d", errno);
+        return E_VOL_UMOUNT_ERR;
     }
  
     int err = rmdir(mountPath_.c_str());
-    if (err) {
+    if (err != E_OK) {
         LOGE("External volume DoUMountUsbFuse error: rmdir failed, errno %{public}d", errno);
         return E_RMDIR_MOUNT;
     }
@@ -474,9 +506,13 @@ int32_t ExternalVolumeInfo::DoTryToCheck()
     std::thread mountThread ([this, p = std::move(promise)]() mutable {
         LOGI("Ready to DoTryToCheck: volume fstype is %{public}s", fsType_.c_str());
         int retValue = E_OK;
-        if (fsType_ == "ntfs") retValue = DoCheck4Ntfs();
-        else if (fsType_ == "exfat") retValue = DoCheck4Exfat();
-        else retValue = E_VOL_FIX_NOT_SUPPORT;
+        if (fsType_ == "ntfs") {
+            retValue = DoCheck4Ntfs();
+        } else if (fsType_ == "exfat") {
+            retValue = DoCheck4Exfat();
+        } else {
+            retValue = E_VOL_FIX_NOT_SUPPORT;
+        }
         LOGI("DoTryToCheck cmdRet:%{public}d", retValue);
         p.set_value(retValue);
     });
@@ -512,8 +548,11 @@ int32_t ExternalVolumeInfo::DoTryToFix()
     std::thread mountThread ([this, p = std::move(promise)]() mutable {
         LOGI("Ready to mount: volume fstype is %{public}s", fsType_.c_str());
         int retValue = E_OK;
-        if (fsType_ == "ntfs") retValue = DoFix4Ntfs();
-        else if (fsType_ == "exfat") retValue = DoFix4Exfat();
+        if (fsType_ == "ntfs") {
+            retValue = DoFix4Ntfs();
+        } else if (fsType_ == "exfat") {
+            retValue = DoFix4Exfat();
+        }
         p.set_value(retValue);
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
@@ -531,7 +570,7 @@ int32_t ExternalVolumeInfo::DoTryToFix()
 int32_t ExternalVolumeInfo::DoCheck()
 {
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
-    if (ret) {
+    if (ret != E_OK) {
         LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_CHECK;
     }
@@ -643,8 +682,10 @@ int32_t ExternalVolumeInfo::CreateFuseMountPath()
  
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
-        remove(mountUsbFusePath_.c_str());
-        return E_SYS_KERNEL_ERR;
+        if (remove(mountUsbFusePath_.c_str()) != 0) {
+            LOGE("remove failed errno: %{public}d", errno);
+            return E_SYS_KERNEL_ERR;
+        }
     }
     ret = PrepareDir(mountUsbFusePath_, S_IRWXU | S_IRWXG | S_IXOTH, FILE_MANAGER_UID, FILE_MANAGER_GID);
     if (!ret) {
@@ -659,18 +700,25 @@ int32_t ExternalVolumeInfo::CreateFuseMountPath()
 int32_t ExternalVolumeInfo::CreateMountPath()
 {
     struct stat statbuf;
+    int err;
     mountBackupPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
-    if (!lstat(mountBackupPath_.c_str(), &statbuf)) {
+    
+    err = lstat(mountBackupPath_.c_str(), &statbuf);
+    if (err == 0) {
         LOGE("volume mount path %{public}s exists, please remove first", mountBackupPath_.c_str());
-        remove(mountBackupPath_.c_str());
-        return E_SYS_KERNEL_ERR;
+        if (remove(mountBackupPath_.c_str()) != 0) {
+            LOGE("remove failed errno: %{public}d", errno);
+            return E_SYS_KERNEL_ERR;
+        }
     }
     mode_t originalUmask = umask(0);
-    if (mkdir(mountBackupPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
-        LOGE("the volume %{public}s create path %{public}s failed", GetVolumeId().c_str(), mountBackupPath_.c_str());
+    err = mkdir(mountBackupPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    umask(originalUmask);
+    if (err != 0) {
+        LOGE("the volume %{public}s create path %{public}s failed, errno: %{public}d",
+             GetVolumeId().c_str(), mountBackupPath_.c_str(), errno);
         return E_MKDIR_MOUNT;
     }
-    umask(originalUmask);
     mountPath_ = mountBackupPath_;
     return E_OK;
 }

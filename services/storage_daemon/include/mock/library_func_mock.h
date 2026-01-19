@@ -17,7 +17,9 @@
 #define FILEMANAGEMENT_APP_FILE_SERVICE_LIBRARY_FUNC_MOCK_H
 
 #include <gmock/gmock.h>
+#include <unistd.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -27,6 +29,8 @@ public:
     virtual int mount(const char *, const char *, const char *, unsigned long int, const void *) = 0;
     virtual int umount(const char *specialFile) = 0;
     virtual int umount2(const char *specialFile, int flags) = 0;
+    virtual int remove(const char *pathname) = 0;
+    virtual int lstat(const char *path, struct stat *buf) = 0;
 public:
     static inline std::shared_ptr<LibraryFunc> libraryFunc_ = nullptr;
 };
@@ -36,6 +40,8 @@ public:
     MOCK_METHOD5(mount, int(const char *, const char *, const char *, unsigned long int, const void *));
     MOCK_METHOD1(umount, int(const char *specialFile));
     MOCK_METHOD2(umount2, int(const char *specialFile, int flags));
+    MOCK_METHOD1(remove, int(const char *pathname));
+    MOCK_METHOD2(lstat, int(const char *path, struct stat *buf));
 };
 }
 }

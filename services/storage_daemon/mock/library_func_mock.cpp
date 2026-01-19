@@ -40,3 +40,19 @@ int umount2(const char *specialFile, int flags)
     }
     return LibraryFunc::libraryFunc_->umount2(specialFile, flags);
 }
+
+int remove(const char *pathname)
+{
+    if (LibraryFunc::libraryFunc_ == nullptr) {
+        return -1;
+    }
+    return LibraryFunc::libraryFunc_->remove(pathname);
+}
+
+int lstat(const char *path, struct stat *buf)
+{
+    if (LibraryFunc::libraryFunc_ == nullptr) {
+        return -1;
+    }
+    return LibraryFunc::libraryFunc_->lstat(path, buf);
+}

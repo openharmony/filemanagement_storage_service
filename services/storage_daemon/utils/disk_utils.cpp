@@ -29,6 +29,8 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t NODE_PERM = 0660;
+constexpr int32_t MIN_UUID_LENGTH = 1;
+constexpr int32_t MAX_UUID_LENGTH = 40;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
 
 int CreateDiskNode(const std::string &path, dev_t dev)
@@ -90,6 +92,28 @@ int GetMaxVolume(dev_t device)
     }
 }
 
+static bool IsAcceptableUuid(const std::string &uuid)
+{
+    if (uuid.empty()) {
+        return false;
+    }
+    
+    static const std::string forbidden = "/\\";
+    if (uuid.find_first_of(forbidden) != std::string::npos) {
+        return false;
+    }
+
+    if (uuid.length() < MIN_UUID_LENGTH || uuid.length() > MAX_UUID_LENGTH) {
+        return false;
+    }
+
+    if (uuid == "." || uuid == "..") {
+        return false;
+    }
+
+    return true;
+}
+
 int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string &type, std::string &label)
 {
     uuid = GetBlkidData(devPath, "UUID");
@@ -97,7 +121,7 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
     label = GetBlkidData(devPath, "LABEL");
     LOGI("ReadMetadata, fsUuid=%{public}s, fsType=%{public}s, fsLabel=%{public}s.", GetAnonyString(uuid).c_str(),
         type.c_str(), label.c_str());
-    if (uuid.empty() || type.empty()) {
+    if (type.empty() || !IsAcceptableUuid(uuid)) {
         LOGE("External volume ReadMetadata error.");
         return E_READMETADATA;
     }

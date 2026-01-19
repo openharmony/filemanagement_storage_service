@@ -177,14 +177,14 @@ int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std:
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
+int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const bool isBadRemove)
 {
-    LOGI("NotifyMtpUnmounted: id = %{public}s, path = %{public}s", id.c_str(), path.c_str());
+    LOGI("NotifyMtpUnmounted: id = %{public}s", id.c_str());
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
     if (storageManager_ != nullptr) {
-        storageManager_->NotifyMtpUnmounted(id, path, isBadRemove);
+        storageManager_->NotifyMtpUnmounted(id, isBadRemove);
     }
     return E_OK;
 }

@@ -429,7 +429,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }
 
-void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
+void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const bool isBadRemove)
 {
     LOGI("VolumeManagerService NotifyMtpUnmounted");
     if (!volumeMap_.Contains(id)) {

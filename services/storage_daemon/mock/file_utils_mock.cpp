@@ -129,9 +129,9 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
     return IFileUtilMoc::fileUtilMoc->Split(str, pattern);
 }
 
-bool DeleteFile(const std::string &path)
+void DeleteFile(const std::string &path)
 {
-    return IFileUtilMoc::fileUtilMoc->DeleteFile(path);
+    return;
 }
 
 bool IsTempFolder(const std::string &path, const std::string &sub)
@@ -147,11 +147,6 @@ void DelTemp(const std::string &path)
 bool IsPathMounted(std::string &path)
 {
     return IFileUtilMoc::fileUtilMoc->IsPathMounted(path);
-}
-
-bool CreateFolder(const std::string &path)
-{
-    return IFileUtilMoc::fileUtilMoc->CreateFolder(path);
 }
 
 bool DelFolder(const std::string &path)
