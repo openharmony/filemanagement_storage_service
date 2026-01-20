@@ -1424,16 +1424,15 @@ int32_t StorageManagerProvider::IsUsbFuseByType(const std::string &fsType, bool 
     return E_OK;
 }
 
-int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
+int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, bool isBadRemove)
 {
     StorageRadar::ReportFucBehavior("NotifyMtpUnmounted", DEFAULT_USERID, "NotifyMtpUnmounted Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManagerProvider::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(),
-        path.c_str());
-    VolumeManagerService::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
+    LOGI("StorageManagerProvider::NotifyMtpUnmounted start, id: %{public}s", id.c_str());
+    VolumeManagerService::GetInstance().NotifyMtpUnmounted(id, isBadRemove);
     StorageRadar::ReportFucBehavior("NotifyMtpUnmounted", DEFAULT_USERID, "NotifyMtpUnmounted End", E_OK);
 #endif
     return E_OK;

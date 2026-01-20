@@ -1707,6 +1707,7 @@ int32_t KeyManager::FileBasedEncryptfsMount()
 {
     std::string srcPath = FILE_BASED_ENCRYPT_SRC_PATH;
     std::string dstPath = FILE_BASED_ENCRYPT_DST_PATH;
+    errno = 0;
     int32_t ret = UMount(dstPath);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount file based encrypt fs, err %{public}d", errno);
@@ -1714,6 +1715,7 @@ int32_t KeyManager::FileBasedEncryptfsMount()
         StorageRadar::ReportUserManager("FileBasedEncryptfsMount", DEFAULT_REPAIR_USERID, E_UMOUNT_FBE, extraData);
         return E_UMOUNT_FBE;
     }
+    errno = 0;
     ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != E_OK && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount file based encrypt fs, err %{public}d", errno);
@@ -1724,12 +1726,55 @@ int32_t KeyManager::FileBasedEncryptfsMount()
     LOGI("bind mount file based encrypt fs success, err %{public}d", errno);
     return E_OK;
 }
+
+int32_t KeyManager::InstallEmptyUserKeyForRecovery(uint32_t userId)
+{
+    LOGI("enter userId=%{public}d", userId);
+    int32_t ret = E_OK;
+    if (userId == KEY_RECOVERY_USER_ID) {
+        ret = GenerateElxAndInstallUserKey(userId);
+        LOGI("InstallEmptyUserKeyForRecovery for KEY_RECOVERY_USER, ret=%{public}d", ret);
+        ret = FileBasedEncryptfsMount();
+        if (ret != E_OK) {
+            LOGE("mount file based encrypt fs failed for recovery, ret:%{public}d!", ret);
+            return ret;
+        }
+        // Since the EL1_KEY corresponding to GLOBAL_USER_ID has already been cached during boot - pointing to the key
+        // path under `/data` - attempting to regenerate the key to point to `/mnt/data_old` will be intercepted.
+        // Therefore, the cache must be cleared first.
+        // In recovery mode, the key pointing to `/data` is actually located in the ramdisk. This has no impact on
+        // normal system operation after recovery.
+        ret = GenerateAndInstallUserKey(userId, MAINTAIN_DEVICE_EL1_DIR, NULL_KEY_AUTH, EL0_KEY);
+        LOGI("InstallEmptyUserKeyForRecovery elxDir=%{public}s, ret=%{public}d", MAINTAIN_DEVICE_EL1_DIR, ret);
+        DeleteElKey(GLOBAL_USER_ID, EL1_KEY);
+        std::string globalUserEl1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
+        ret = GenerateAndInstallUserKey(GLOBAL_USER_ID, globalUserEl1Path, NULL_KEY_AUTH, EL1_KEY);
+        LOGI("InstallEmptyUserKeyForRecovery elxDir=%{public}s, ret=%{public}d", globalUserEl1Path.c_str(), ret);
+        return ret;
+    }
+    
+    std::string el1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(userId);
+    std::string el2Path = std::string(MAINTAIN_USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(MAINTAIN_USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(MAINTAIN_USER_EL4_DIR) + "/" + std::to_string(userId);
+
+    const std::vector<std::pair<std::string, KeyType>> keyDirType = {
+        {el1Path, EL1_KEY}, {el2Path, EL2_KEY}, {el3Path, EL3_KEY}, {el4Path, EL4_KEY}};
+    for (const auto &[elxDir, elxType] : keyDirType) {
+        ret = GenerateAndInstallUserKey(userId, elxDir, NULL_KEY_AUTH, elxType);
+        LOGI("InstallEmptyUserKeyForRecovery elxDir=%{public}s, ret=%{public}d", elxDir.c_str(), ret);
+    }
+    return ret;
+}
 #endif
 
 int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
 {
-    LOGI("enter");
+    LOGI("enter ResetSecretWithRecoveryKey start, user:%{public}d", userId);
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    if (!IsEncryption()) {
+        return InstallEmptyUserKeyForRecovery(userId);
+    }
     std::vector<KeyBlob> originIvs;
     auto ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key, originIvs);
     if (ret != E_OK) {
@@ -1737,7 +1782,6 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
         return E_RESET_SECRET_WITH_RECOVERY_KEY_ERR;
     }
 
-    LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
     std::string globalUserEl1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
     std::string el1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(userId);
     std::string el2Path = std::string(MAINTAIN_USER_EL2_DIR) + "/" + std::to_string(userId);

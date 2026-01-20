@@ -43,6 +43,7 @@ ohos_unittest("external_volume_info_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/storage_daemon/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/storage_daemon/mock/library_func_mock.cpp",
     "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",

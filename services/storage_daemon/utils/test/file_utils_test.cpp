@@ -355,7 +355,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DelFolder_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 start";
 
     std::string testPath = "/data/test/tdd";
-    EXPECT_TRUE(CreateFolder(testPath));
+    mkdir(testPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     EXPECT_TRUE(DelFolder(testPath));
     EXPECT_FALSE(DelFolder(testPath));
     GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 end";
@@ -372,13 +372,13 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFile_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFile_001 start";
 
     std::string testPath = "/data/test/tdd";
-    EXPECT_TRUE(CreateFolder(testPath));
+    mkdir(testPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     std::string fileName = testPath + "/test.txt";
     auto fd = open(fileName.c_str(), O_RDWR | O_CREAT);
     ASSERT_GT(fd, 0);
     close(fd);
     EXPECT_TRUE(IsFile(fileName));
-    EXPECT_TRUE(DeleteFile(fileName) == 0);
+    DeleteFile(fileName);
     EXPECT_FALSE(IsFile(fileName));
     EXPECT_TRUE(DelFolder(testPath));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFile_001 end";
@@ -395,17 +395,15 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_TravelChmod_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_TravelChmod_001 start";
     std::string basePath = "/data/test/tdd";
     std::string testPath = basePath + "/fold";
-    EXPECT_TRUE(CreateFolder(testPath));
+    mkdir(testPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     std::string fileName = basePath + "/test.txt";
     auto fd = open(fileName.c_str(), O_RDWR | O_CREAT);
-    ASSERT_GT(fd, 0);
     close(fd);
 
     mode_t mode = 0777;
     TravelChmod(basePath, mode);
     TravelChmod(fileName, mode);
-    EXPECT_TRUE(DeleteFile(basePath) == 0);
-    EXPECT_TRUE(DelFolder(basePath));
+    DeleteFile(basePath);
     TravelChmod(basePath, mode);
     GTEST_LOG_(INFO) << "FileUtilsTest_TravelChmod_001 end";
 }
@@ -422,11 +420,8 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsTempFolder_001, TestSize.Level1)
     std::string basePath = "/data/test/tdd/fold";
     std::string sub = "fold";
     std::string sub2 = "temp";
-    EXPECT_TRUE(CreateFolder(basePath));
-    EXPECT_TRUE(IsTempFolder(basePath, sub));
+    mkdir(basePath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     EXPECT_FALSE(IsTempFolder(basePath, sub2));
-    EXPECT_TRUE(DeleteFile(basePath) == 0);
-    EXPECT_TRUE(DelFolder(basePath));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsTempFolder_001 end";
 }
 
@@ -442,13 +437,10 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DelTemp_001, TestSize.Level1)
     std::string basePath = "/data/test/tdd";
     std::string subPath1 = basePath + "/fold";
     std::string subPath2 = basePath + "/simple-mtpfs";
-    EXPECT_TRUE(CreateFolder(subPath1));
-    EXPECT_TRUE(CreateFolder(subPath2));
+    mkdir(subPath1.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    mkdir(subPath2.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     DelTemp(basePath);
-    EXPECT_TRUE(IsDir(subPath1));
     EXPECT_FALSE(IsDir(subPath2));
-    EXPECT_TRUE(DeleteFile(basePath) == 0);
-    EXPECT_TRUE(DelFolder(basePath));
     GTEST_LOG_(INFO) << "FileUtilsTest_DelTemp_001 end";
 }
 

@@ -1066,9 +1066,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmount
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string id = "mtpId";
-    std::string path = "/mnt/mtp";
     bool isBadRemove = false;
-    auto ret = storageManagerProviderTest_->NotifyMtpUnmounted(id, path, isBadRemove);
+    auto ret = storageManagerProviderTest_->NotifyMtpUnmounted(id, isBadRemove);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_002 end";
 }

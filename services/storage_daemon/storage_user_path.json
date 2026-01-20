@@ -395,6 +395,12 @@
             "options": "restorecon"
         },
         {
+            "path": "/data/service/el2/<userId>/secure_access_fence",
+            "mode": "0711",
+            "uid": 7771,
+            "gid": 7771
+        },
+        {
             "path": "/data/service/el2/<userId>/parentcontrol",
             "mode": "0711",
             "uid": 7007,

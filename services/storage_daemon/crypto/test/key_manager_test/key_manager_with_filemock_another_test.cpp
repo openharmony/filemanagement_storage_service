@@ -104,6 +104,7 @@ HWTEST_F(KeyMgrWithFileMockAnotherTest, KeyManager_ResetSecretWithRecoveryKey_00
     uint32_t rkType = 0;
     std::vector<uint8_t> key;
     rkType = 6;
+    EXPECT_CALL(*recoveryMgrMock_, IsEncryptionEnabled()).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));

@@ -36,7 +36,7 @@ public:
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid);
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
+    int32_t NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
 
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);

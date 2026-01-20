@@ -1099,7 +1099,11 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
     }
     std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
-    ::close(fd);
+    if (fd >= 0) {
+        ::close(fd);
+    } else {
+        LOGD("Temp file creat failed errno = %{public}d", errno);
+    }
 
     unsigned int flags = static_cast<unsigned int>(fileInfo->flags);
     if (flags & O_WRONLY) {

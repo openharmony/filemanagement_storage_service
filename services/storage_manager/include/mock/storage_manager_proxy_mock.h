@@ -97,7 +97,7 @@ public:
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
+    int32_t NotifyMtpUnmounted(const std::string &id, bool isBadRemove) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
     int32_t UnregisterUeceActivationCallback() override;
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
