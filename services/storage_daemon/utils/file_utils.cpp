@@ -265,7 +265,7 @@ int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
 int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
     LOGI("prepare for %{public}s", path.c_str());
-    if (MkDir(path, mode)) {
+    if (MkDir(path, mode) != 0) {
         if (errno == EEXIST) {
             LOGE("The path: %{public}s already exists.", path.c_str());
             return E_CREATE_USER_DIR_EXIST;
@@ -273,12 +273,12 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
         LOGE("failed to mkdir, errno %{public}d", errno);
         return E_MKDIR_ERROR;
     }
-    if (ChMod(path, mode)) {
+    if (ChMod(path, mode) != 0) {
         LOGE("failed to chmod, errno %{public}d", errno);
         return E_CHMOD_ERROR;
     }
 
-    if (ChOwn(path, uid, gid)) {
+    if (ChOwn(path, uid, gid) != 0) {
         LOGE("failed to chown, errno %{public}d", errno);
         return E_CHOWN_ERROR;
     }
@@ -327,17 +327,17 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
         return true;
     }
     mode_t mask = umask(0);
-    if (MkDir(path, mode)) {
+    if (MkDir(path, mode) != 0) {
         LOGE("failed to mkdir, errno %{public}d", errno);
         umask(mask);
         return false;
     }
     umask(mask);
-    if (ChMod(path, mode)) {
+    if (ChMod(path, mode) != 0) {
         LOGE("failed to chmod, errno %{public}d", errno);
         return false;
     }
-    if (ChOwn(path, uid, gid)) {
+    if (ChOwn(path, uid, gid) != 0) {
         LOGE("failed to chown, errno %{public}d", errno);
         return false;
     }
