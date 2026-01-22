@@ -92,7 +92,7 @@ public:
     int OpenFile(const char *path, struct fuse_file_info *fileInfo);
     int ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
     int OpenThumb(const char *path, struct fuse_file_info *fileInfo);
-    int ReadThumb(const std::string &path, char *buf);
+    int ReadThumb(const std::string &path, char *buf, size_t size);
     int Write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
     int Statfs(const char *path, struct statvfs *statInfo);
     int Flush(const char *path, struct fuse_file_info *fileInfo);

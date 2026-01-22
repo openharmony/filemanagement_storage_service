@@ -388,16 +388,15 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_PerformUploadTest_001, TestSize.Level1
 }
 
 /**
- * @tc.name: MtpfsDeviceTest_GetThumbnailTest_001
- * @tc.desc: 测试当目录内容为 nullptr 时,GetThumbnail 应返回 -ENOENT
+ * @tc.name: MtpfsDeviceTest_GetThumbnailSizeTest_001
+ * @tc.desc: 测试当目录内容为 nullptr 时,GetThumbnailSize 应返回 -ENOENT
  * @tc.type: FUNC
  */
-HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_GetThumbnailTest_001, TestSize.Level1) {
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_GetThumbnailSizeTest_001, TestSize.Level1) {
     std::string path = "/invalid/path";
-    char buf[1024];
-
+    size_t size = 1024;
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    int result = mtpfsdevice->GetThumbnail(path, buf);
+    int result = mtpfsdevice->GetThumbnailSize(path, size);
     EXPECT_EQ(result, -ENOENT);
 }
 

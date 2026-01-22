@@ -322,8 +322,8 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
         .enableCloudDisk_ = false,
         .enableFixupOwnerShip_ = false,
         .enableOfflineStash_ = true,
-        .relativePath_ = relativePath,
         .isSecurityMode_ = false,
+        .relativePath_ = relativePath,
     };
     return mountArgument;
 }

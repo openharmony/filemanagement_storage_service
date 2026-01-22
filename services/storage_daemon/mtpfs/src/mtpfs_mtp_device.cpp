@@ -461,7 +461,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         StorageRadar::ReportMtpResult("CheckDirChildren::Dir", E_PARAMS_INVALID, "NA");
         return;
     }
-    uint32_t *out;
+    uint32_t *out = nullptr;
     int32_t childrenNum = 0;
     {
         std::unique_lock<std::mutex> lock(deviceMutex_);
@@ -472,7 +472,6 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         LOGE("LIBMTP_Get_Children fail");
         StorageRadar::ReportMtpResult("CheckDirChildren::LIBMTP_Get_Children", GetMainMtpErrorCode(), "NA");
         DumpLibMtpErrorStack();
-        free(out);
         return;
     }
     auto diffFdMap = FindDifferenceFds(out, childrenNum, dir->objHandles->handler, dir->objHandles->num);
@@ -481,7 +480,6 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         dir->objHandles->num = 0;
         dir->objHandles->offset = 0;
         LOGI("childrenNum is 0");
-        free(out);
         return;
     }
     if (!diffFdMap.empty()) {
@@ -912,6 +910,7 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
         return -ENOENT;
     }
     SetTransferValue(true);
+    AddUploadRecord(dst, "sending");
     if (fileToFetch->Size() == 0) {
         int fd = ::creat(dst.c_str(), S_IRUSR | S_IWUSR);
         ::close(fd);
@@ -924,9 +923,11 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
             StorageRadar::ReportMtpResult("FilePull::LIBMTP_Get_File_To_File", rval, "NA");
             SetTransferValue(false);
             DumpLibMtpErrorStack();
+            RemoveUploadRecord(dst);
             return -ENOENT;
         }
     }
+    RemoveUploadRecord(dst);
     SetTransferValue(false);
     LOGI("File fetched");
     return 0;
@@ -982,7 +983,10 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
                                const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName)
 {
     struct stat fileStat;
-    stat(src.c_str(), &fileStat);
+    if (stat(src.c_str(), &fileStat) != 0) {
+        LOGE("Failed to stat file %{public}d", errno);
+        return -EINVAL;
+    }
     MtpFsTypeFile fileToUpload(0, dirParent->Id(), dirParent->StorageId(), dstBaseName,
         static_cast<uint64_t>(fileStat.st_size), 0);
     LIBMTP_file_t *f = fileToUpload.ToLIBMTPFile();
@@ -1086,44 +1090,90 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
     return 0;
 }
 
-int MtpFsDevice::GetThumbnail(const std::string &path, char *buf)
+int MtpFsDevice::GetThumbnailSize(const std::string &path, size_t &size)
 {
-    LOGI("MtpFsDevice: GetThumbnail enter");
     const std::string tmpDirName(SmtpfsDirName(path));
     const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     if (dirParent == nullptr) {
-        LOGE("GetThumbnail failed, dirParent is nullptr");
-        StorageRadar::ReportMtpResult("GetThumbnail::ReadDirFetchContent", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+        LOGE("GetThumbnailSize failed, dirParent is nullptr");
+        StorageRadar::ReportMtpResult("GetThumbnailSize::ReadDirFetchContent", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
     const std::string tmpBaseName(SmtpfsBaseName(path));
     const MtpFsTypeFile *tmpFile = dirParent->File(tmpBaseName);
     if (tmpFile == nullptr) {
-        LOGE("GetThumbnail failed, tmpFile is null");
-        StorageRadar::ReportMtpResult("GetThumbnail::TmpFile", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+        LOGE("GetThumbnailSize failed, tmpFile is null");
+        StorageRadar::ReportMtpResult("GetThumbnailSize::TmpFile", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
-    unsigned int tmpSize;
-    unsigned char *tmpBuf;
+    unsigned int tmpSize = 0;
+    unsigned char *tmpBuf = nullptr;
     std::unique_lock<std::mutex> lock(deviceMutex_);
+    
     int ret = LIBMTP_Get_Thumbnail(device_, tmpFile->Id(), &tmpBuf, &tmpSize);
     if (ret != 0) {
-        LOGE("GetThumbnail failed, LIBMTP_Get_Thumbnail error.");
-        StorageRadar::ReportMtpResult("GetThumbnail::LIBMTP_Get_Thumbnail", GetMainMtpErrorCode(), "NA");
+        LOGE("GetThumbnailSize failed, LIBMTP_Get_Thumbnail error.");
+        StorageRadar::ReportMtpResult("GetThumbnailSize::LIBMTP_Get_Thumbnail", GetMainMtpErrorCode(), "NA");
         DumpLibMtpErrorStack();
         tmpBuf = nullptr;
         return -EIO;
     }
-    if ((buf != nullptr) && (memcpy_s(buf, tmpSize, tmpBuf, tmpSize) != EOK)) {
-        LOGE("GetThumbnail failed, memcpy_s thumbnail buffer error, errno=%{public}d.", errno);
-        StorageRadar::ReportMtpResult("GetThumbnail::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
+    if (tmpBuf) {
+        free(tmpBuf);
+    }
+    size = tmpSize;
+    LOGI("MtpFsDevice: GetThumbnailSize success, size=%{public}", tmpSize);
+    return 0;
+}
+
+int MtpFsDevice::GetThumbnailData(const std::string &path, char *buf, size_t size)
+{
+    const std::string tmpDirName(SmtpfsDirName(path));
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
+    if (dirParent == nullptr) {
+        LOGE("GetThumbnailData failed, dirParent is nullptr");
+        StorageRadar::ReportMtpResult("GetThumbnailData::ReadDirFetchContent", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+        return -ENOENT;
+    }
+    const std::string tmpBaseName(SmtpfsBaseName(path));
+    const MtpFsTypeFile *tmpFile = dirParent->File(tmpBaseName);
+    if (tmpFile == nullptr) {
+        LOGE("GetThumbnailData failed, tmpFile is null");
+        StorageRadar::ReportMtpResult("GetThumbnailData::TmpFile", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
+        return -ENOENT;
+    }
+
+    unsigned int tmpSize = 0;
+    unsigned char *tmpBuf = nullptr;
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+
+    int ret = LIBMTP_Get_Thumbnail(device_, tmpFile->Id(), &tmpBuf, &tmpSize);
+    if (ret != 0) {
+        LOGE("GetThumbnailData failed, LIBMTP_Get_Thumbnail error.");
+        StorageRadar::ReportMtpResult("GetThumbnailData::LIBMTP_Get_Thumbnail", GetMainMtpErrorCode(), "NA");
+        DumpLibMtpErrorStack();
+        tmpBuf = nullptr;
+        return -EIO;
+    }
+
+    if (size < tmpSize) {
         free(tmpBuf);
         tmpBuf = nullptr;
         return -ENOMEM;
     }
+
+    if ((buf != nullptr) && (memcpy_s(buf, size, tmpBuf, tmpSize) != EOK)) {
+        LOGE("GetThumbnailData failed, memcpy_s thumbnail buffer error, errno=%{public}d.", errno);
+        StorageRadar::ReportMtpResult("GetThumbnailData::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
+        free(tmpBuf);
+        tmpBuf = nullptr;
+        return -ENOMEM;
+    }
+    
     free(tmpBuf);
     tmpBuf = nullptr;
-    LOGI("MtpFsDevice: GetThumbnail success, size=%{public}u", tmpSize);
+    
+    LOGI("MtpFsDevice: GetThumbnailData success, size=%{public}u", tmpSize);
     return tmpSize;
 }
 
