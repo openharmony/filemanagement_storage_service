@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
             LOGE("BundleMgrConnector::GetBundleMgrProxy samgr == nullptr");
             return nullptr;
         }
-        sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+        sptr<IRemoteObject> remoteObject = sam->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
         if (!remoteObject) {
             LOGE("BundleMgrConnector::GetBundleMgrProxy remoteObj == nullptr");
             return nullptr;
