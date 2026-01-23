@@ -662,6 +662,10 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_GetData_0003, 
     EXPECT_EQ(ret, true);
     EXPECT_NE(buffer, nullptr);
 
+    if (buffer != nullptr) {
+        free(buffer);
+    }
+
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetData_0003 End";
 }
 } // namespace OHOS::StorageManager::Test
