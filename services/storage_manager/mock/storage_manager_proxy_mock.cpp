@@ -48,11 +48,6 @@ int32_t StorageManagerProxy::SetDirEncryptionPolicy(uint32_t userId, const std::
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::EraseAllUserEncryptedKeys()
 {
     return E_OK;
@@ -294,11 +289,6 @@ int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32
     return E_OK;
 }
 
-int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -441,6 +431,16 @@ int32_t StorageManagerProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &s
 }
 
 int32_t StorageManagerProxy::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::QueryActiveOsAccountIds(std::vector<int32_t> &ids)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::IsOsAccountExists(unsigned int userId, bool &isOsAccountExists)
 {
     return E_OK;
 }

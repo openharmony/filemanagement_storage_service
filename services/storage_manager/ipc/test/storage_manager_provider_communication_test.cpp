@@ -257,21 +257,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_DeleteUserKeys_003
- * @tc.desc: Verify the DeleteUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserKeys_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_003 start";
-    uint32_t userId = 109;
-    auto ret = storageManagerProviderTest_->DeleteUserKeys(userId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserKeys_003 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_EraseAllUserEncryptedKeys_003
  * @tc.desc: Verify the EraseAllUserEncryptedKeys when service is nullptr.
  * @tc.type: FUNC
@@ -298,7 +283,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_0
     uint32_t userId = 110;
     auto ret = storageManagerProviderTest_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_EQ(ret, E_OK);
-    storageManagerProviderTest_->DeleteUserKeys(userId);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateUserAuth_003 E_USERID_RANGE end";
 }
 
@@ -334,7 +318,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_00
     uint32_t userId = 111;
     auto ret = storageManagerProviderTest_->ActiveUserKey(userId, {}, {});
     EXPECT_EQ(ret, E_OK);
-    storageManagerProviderTest_->DeleteUserKeys(userId);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ActiveUserKey_003 end";
 }
 
@@ -348,7 +331,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserKey_003 start";
     uint32_t userId = 112;
-    auto ret = storageManagerProviderTest_->ActiveUserKey(userId, {}, {});
+    auto ret = storageManagerProviderTest_->InactiveUserKey(userId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserKey_003 end";
 }
@@ -476,7 +459,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext
     uint32_t userId = 113;
     auto ret = storageManagerProviderTest_->UpdateKeyContext(userId);
     EXPECT_EQ(ret, E_OK);
-    storageManagerProviderTest_->DeleteUserKeys(userId);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateKeyContext_003 end";
 }
 

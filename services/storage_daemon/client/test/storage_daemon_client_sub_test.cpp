@@ -417,36 +417,6 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_InitGl
 }
 
 /**
-* @tc.name: Storage_Service_StorageDaemonClientTest_DeleteUserKeys_001
-* @tc.desc: Verify the DeleteUserKeys function.
-* @tc.type: FUNC
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_DeleteUserKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteUserKeys_001 start";
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
-    auto ret = StorageDaemonClient::DeleteUserKeys(0);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
-        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
-    ret = StorageDaemonClient::DeleteUserKeys(0);
-    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
-        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, DeleteUserKeys(_)).WillOnce(Return(E_OK));
-    ret = StorageDaemonClient::DeleteUserKeys(0);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteUserKeys_001 end";
-}
-
-/**
 * @tc.name: StorageDaemonClientTest_EraseAllUserEncryptedKeys_001
 * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
 * @tc.type: FUNC
@@ -457,7 +427,8 @@ HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedK
     GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_001 start";
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
     EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
-    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    std::vector<int32_t> localIdList;
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys(localIdList);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_001 end";
 }
@@ -474,7 +445,8 @@ HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedK
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
     EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
         .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
-    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    std::vector<int32_t> localIdList;
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys(localIdList);
     EXPECT_EQ(ret, E_SA_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_002 end";
 }
@@ -492,8 +464,9 @@ HWTEST_F(StorageDaemonClientTest, StorageDaemonClientTest_EraseAllUserEncryptedK
     EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
         .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys()).WillOnce(Return(E_OK));
-    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys();
+    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys(_)).WillOnce(Return(E_OK));
+    std::vector<int32_t> localIdList;
+    auto ret = StorageDaemonClient::EraseAllUserEncryptedKeys(localIdList);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonClientTest_EraseAllUserEncryptedKeys_003 end";
 }

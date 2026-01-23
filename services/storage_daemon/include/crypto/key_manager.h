@@ -53,7 +53,7 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
-    int EraseAllUserEncryptedKeys();
+    int EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList);
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,

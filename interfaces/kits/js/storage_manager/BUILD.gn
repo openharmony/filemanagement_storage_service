@@ -44,7 +44,15 @@ ohos_shared_library("storagestatistics") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
   ]
+  ldflags = [ "-flto" ]
 
   sources = [
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
@@ -92,7 +100,15 @@ ohos_shared_library("volumemanager") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
   ]
+  ldflags = [ "-flto" ]
 
   sources = [
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
@@ -158,7 +174,15 @@ ohos_shared_library("keymanager") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
   ]
+  ldflags = [ "-flto" ]
 
   sources = [
     "${storage_service_path}/services/storage_manager/kits_impl/src/keymanager_n_exporter.cpp",

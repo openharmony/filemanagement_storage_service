@@ -254,5 +254,38 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyCreateBundleDa
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerClientTest_QueryActiveOsAccountIds_001
+ * @tc.desc: Verify the QueryActiveOsAccountIds function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_QueryActiveOsAccountIds_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_QueryActiveOsAccountIds_001 start";
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+    std::vector<int32_t> ids;
+    auto ret = storageManagerClient_->QueryActiveOsAccountIds(ids);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_QueryActiveOsAccountIds_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerClientTest_IsOsAccountExists_001
+ * @tc.desc: Verify the IsOsAccountExists function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_IsOsAccountExists_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_IsOsAccountExists_001 start";
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+    unsigned int userId = 0;
+    bool isOsAccountExists = true;
+    auto ret = storageManagerClient_->IsOsAccountExists(userId, isOsAccountExists);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_IsOsAccountExists_001 end";
+}
 } // StorageDaemon
 } // OHOS

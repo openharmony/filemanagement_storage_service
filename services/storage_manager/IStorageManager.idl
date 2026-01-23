@@ -54,7 +54,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 41] void Format([in] String volumeId, [in] String fsType);
     [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid);
     [ipccode 55] void NotifyMtpUnmounted([in] String id, [in] boolean isBadRemove);
-    [ipccode 29] void DeleteUserKeys([in] unsigned int userId);
     [ipccode 30] void UpdateUserAuth([in] unsigned int userId,
                                      [in] unsigned long secureUid,
                                      [in] List<unsigned char> token,
@@ -81,7 +80,6 @@ interface OHOS.StorageManager.IStorageManager {
     [oneway, ipccode 44] void DeleteShareFile([in] unsigned int  tokenId, [in] StorageFileRawData rawData);
     [ipccode 45] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath,
                                      [in] int limitSizeMb);
-    [ipccode 47] void UpdateMemoryPara([in] int size, [out] int oldSize);
     [ipccode 20] void MountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId,
                                     [in] String deviceId);
     [ipccode 21] void UMountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId,
@@ -121,4 +119,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 83] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
     [ipccode 84] void IsUsbFuseByType([in] String fsType, [out] boolean enabled);
     [ipccode 85] void NotifyCreateBundleDataDirWithEl([in] unsigned int userId, [in] unsigned char elx);
+    [ipccode 86] void QueryActiveOsAccountIds([out] int[] ids);
+    [ipccode 87] void IsOsAccountExists([in] unsigned int userId, [out] boolean isOsAccountExists);
 }

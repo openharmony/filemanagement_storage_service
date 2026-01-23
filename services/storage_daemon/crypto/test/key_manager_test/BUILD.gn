@@ -119,6 +119,7 @@ ohos_unittest("KeyManagerSupTest") {
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/ipc",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/libfscrypt",
     "${storage_daemon_path}/include/mock",
@@ -141,12 +142,15 @@ ohos_unittest("KeyManagerSupTest") {
     "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
     "${storage_daemon_path}/mock/key_control_mock.cpp",
     "${storage_daemon_path}/mock/mount_manager_mock.cpp",
+    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "key_manager_sup_test.cpp",
   ]
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
 
     #"${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
@@ -164,6 +168,7 @@ ohos_unittest("KeyManagerSupTest") {
     "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
+    "safwk:system_ability_fwk",
   ]
 
   if (enable_user_auth_framework) {
@@ -283,6 +288,7 @@ ohos_unittest("KeyManagerAnotherTest") {
   include_dirs = [
     "${storage_daemon_path}/crypto/test/mock",
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/ipc",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/libfscrypt",
     "${storage_daemon_path}/include/mock",
@@ -311,6 +317,8 @@ ohos_unittest("KeyManagerAnotherTest") {
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
+    "${storage_daemon_path}/mock/storage_manager_client_mock.cpp",
   ]
 
   deps = [

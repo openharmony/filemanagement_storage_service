@@ -442,11 +442,6 @@ static void HandleGlobalKeyOps(FuzzedDataProvider& provider,
         case FUNC_GENERATE_USER_KEYS: {
             break;
         }
-        case FUNC_DELETE_USER_KEYS: {
-            uint32_t userId = provider.ConsumeIntegral<uint32_t>();
-            providerObj->DeleteUserKeys(userId);
-            break;
-        }
         default: break;
     }
 }
@@ -661,12 +656,6 @@ static void HandleQuotaMemoryOps(FuzzedDataProvider& provider,
             std::string value(reinterpret_cast<const char*>(dataPtr + valueOffset), valueLength);
             std::map<int32_t, std::string> bundleNameAndUid{{key, value}};
             providerObj->QueryOccupiedSpaceForSa(storageStatus, bundleNameAndUid);
-            break;
-        }
-        case FUNC_UPDATE_MEMORY_PARA: {
-            int32_t memorySize = provider.ConsumeIntegral<int32_t>();
-            int32_t oldSize;
-            providerObj->UpdateMemoryPara(memorySize, oldSize);
             break;
         }
         default: break;

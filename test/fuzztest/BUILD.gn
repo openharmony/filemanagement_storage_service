@@ -62,6 +62,8 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidererasealluserencryptedkeys_fuzzer:fuzztest",
     "storagemanagerprovidergetallextbundlestats_fuzzer:fuzztest",
     "storagemanagerprovidernotifycreatebundledatadirwithel_fuzzer:fuzztest",
+    "storagemanagerproviderqueryactiveosaccountids_fuzzer:fuzztest",
+    "storagemanagerproviderisosaccountexists_fuzzer:fuzztest",
   ]
 }
 
@@ -85,11 +87,9 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderstopuser_fuzzer:fuzztest",
     "storagedaemonproviderumount_fuzzer:fuzztest",
     "storagedaemonproviderumountmediafuse_fuzzer:fuzztest",
-    "storagedaemonproviderupdatememorypara_fuzzer:fuzztest",
     "storagedaemonproviderusermanager_fuzzer:fuzztest",
     "storagedaemonproviderformat_fuzzer:fuzztest",
     "storagedaemonprovidersetbundlequota_fuzzer:fuzztest",
-    "storagedaemonproviderdeleteuserkeys_fuzzer:fuzztest",
     "storagedaemonproviderupdateuserauth_fuzzer:fuzztest",
     "storagedaemonprovideractiveuserkey_fuzzer:fuzztest",
     "storagedaemonprovidererasealluserencryptedkeys_fuzzer:fuzztest",
@@ -109,7 +109,6 @@ group("storage_daemon_proxy_fuzztest") {
     "storagedaemonproxytrytofix_fuzzer:fuzztest",
     "storagedaemonproxyactiveuserkey_fuzzer:fuzztest",
     "storagedaemonproxycompleteadduser_fuzzer:fuzztest",
-    "storagedaemonproxydeleteuserkeys_fuzzer:fuzztest",
     "storagedaemonproxyformat_fuzzer:fuzztest",
     "storagedaemonproxygenerateappkey_fuzzer:fuzztest",
     "storagedaemonproxymount_fuzzer:fuzztest",
@@ -128,7 +127,6 @@ group("storage_daemon_proxy_fuzztest") {
     "storagedaemonproxymountdfsdocs_fuzzer:fuzztest",
     "storagedaemonproxysetbundlequota_fuzzer:fuzztest",
     "storagedaemonproxysetrecoverkey_fuzzer:fuzztest",
-    "storagedaemonproxyupdatememorypara_fuzzer:fuzztest",
   ]
 }
 
@@ -187,7 +185,6 @@ group("storage_service_fuzztest") {
     "sysparamstatic_fuzzer:fuzztest",
     "volumecore_fuzzer:fuzztest",
     "volumeexternal_fuzzer:fuzztest",
-    "storagemanagerdeleteuserkeys_fuzzer:StorageManagerQueryUsbIsInUseFuzzTest",
     "storagemanagerupdateuserauth_fuzzer:StorageManagerUpdateUserAuthFuzzTest",
     "storagemanageractiveuserkey_fuzzer:StorageManagerActiveUserKeyFuzzTest",
     "storagemanagerinactiveuserkey_fuzzer:StorageManagerInactiveUserKeyFuzzTest",
@@ -195,7 +192,6 @@ group("storage_service_fuzztest") {
     "storagemanagerunlockuserscreen_fuzzer:StorageManagerUnlockUserScreenFuzzTest",
     "storagemanagerupdatekeycontext_fuzzer:StorageManagerUpdateKeyContextFuzzTest",
     "storagemanagersetbundlequota_fuzzer:StorageManagerSetBundleQuotaFuzzTest",
-    "storagemanagerupdatememorypara_fuzzer:StorageManagerUpdateMemoryParaFuzzTest",
     "storagemanagerdeleteappkey_fuzzer:StorageManagerDeleteAppkeyFuzzTest",
   ]
   if (support_open_source_libmtp) {

@@ -106,12 +106,7 @@ int32_t StorageDaemonProxy::SetDirEncryptionPolicy(uint32_t userId, const std::s
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::EraseAllUserEncryptedKeys()
+int32_t StorageDaemonProxy::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
     return E_OK;
 }
@@ -235,11 +230,6 @@ int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &rela
 
 int32_t StorageDaemonProxy::UMountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     return E_OK;
 }

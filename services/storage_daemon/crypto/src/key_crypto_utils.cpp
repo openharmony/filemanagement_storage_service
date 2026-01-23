@@ -14,13 +14,12 @@
  */
 
 #include "key_crypto_utils.h"
-
-#include "os_account_manager.h"
 #ifdef ENABLE_SCREENLOCK_MANAGER
 #include "screenlock_manager.h"
 #endif
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
+#include "storage_manager_client.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -29,8 +28,9 @@ void KeyCryptoUtils::ForceLockUserScreen()
 {
     LOGI("KeyCryptoUtils::ForceLockUserScreen");
 #ifdef ENABLE_SCREENLOCK_MANAGER
+    StorageDaemon::StorageManagerClient client;
     std::vector<int32_t> ids;
-    int32_t ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    auto ret = client.QueryActiveOsAccountIds(ids);
     if (ret != ERR_OK || ids.empty()) {
         LOGE("Query active userid failed, ret = %{public}u", ret);
         StorageRadar::ReportOsAccountResult("ForceLockUserScreen::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
@@ -57,7 +57,8 @@ int32_t KeyCryptoUtils::CheckAccountExists(unsigned int userId, bool &isOsAccoun
 {
     LOGW("CheckAccountExists");
 #ifdef ENABLE_SCREENLOCK_MANAGER
-    int32_t ret = AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
+    StorageDaemon::StorageManagerClient client;
+    int32_t ret = client.IsOsAccountExists(userId, isOsAccountExists);
     if (ret != ERR_OK) {
         LOGE("Check userId failed, ret = %{public}u", ret);
         StorageRadar::ReportOsAccountResult("CheckAccountExists::IsOsAccountExists", ret, userId);

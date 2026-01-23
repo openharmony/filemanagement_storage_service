@@ -29,7 +29,7 @@ public:
     virtual int RestoreUserKey(uint32_t userId, KeyType type) = 0;
     virtual int32_t GenerateUserKeys(unsigned int user, uint32_t flags) = 0;
     virtual int32_t DeleteUserKeys(unsigned int user) = 0;
-    virtual int32_t EraseAllUserEncryptedKeys() = 0;
+    virtual int32_t EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList) = 0;
     virtual int32_t InitGlobalUserKeys() = 0;
     virtual int32_t InitGlobalDeviceKey() = 0;
     virtual int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret) = 0;
@@ -63,7 +63,7 @@ public:
     MOCK_METHOD(int, RestoreUserKey, (uint32_t, KeyType));
     MOCK_METHOD(int32_t, GenerateUserKeys, (unsigned int, uint32_t));
     MOCK_METHOD(int32_t, DeleteUserKeys, (unsigned int));
-    MOCK_METHOD(int32_t, EraseAllUserEncryptedKeys, ());
+    MOCK_METHOD(int32_t, EraseAllUserEncryptedKeys, (const std::vector<int32_t> &));
     MOCK_METHOD(int32_t, InitGlobalUserKeys, ());
     MOCK_METHOD(int32_t, InitGlobalDeviceKey, ());
     MOCK_METHOD(int, UpdateUserAuth, (unsigned int, struct UserTokenSecret &));

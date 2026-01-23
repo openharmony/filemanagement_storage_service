@@ -54,3 +54,9 @@ storage_interface_path =
 storage_service_common_path =
     "//foundation/filemanagement/storage_service/services/common"
 storage_service_path = "//foundation/filemanagement/storage_service"
+
+if ("${target_platform}" == "pc" || "${target_platform}" == "2in1") {
+  pc_device_enable = true
+} else {
+  pc_device_enable = false
+}

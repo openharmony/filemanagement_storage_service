@@ -33,6 +33,8 @@ ohos_unittest("KeyCryptUtilsTest") {
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/ipc",
+    "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/crypto",
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -41,9 +43,13 @@ ohos_unittest("KeyCryptUtilsTest") {
   sources = [
     "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
     "key_crypto_utils_test.cpp",
+    "${storage_daemon_path}/mock/storage_manager_client_mock.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
 
   external_deps = [
     "c_utils:utils",

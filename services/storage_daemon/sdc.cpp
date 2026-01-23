@@ -29,7 +29,6 @@ constexpr size_t INDEX_1 = 1;
 constexpr size_t INDEX_2 = 2;
 
 #ifdef SDC_TEST_ENABLE
-constexpr int32_t ARG_CNT_3 = 3;
 constexpr int32_t ARG_CNT_4 = 4;
 constexpr int32_t ARG_CNT_5 = 5;
 constexpr int32_t ARG_CNT_6 = 6;
@@ -66,21 +65,6 @@ static int32_t PrepareUserSpace(const std::vector<std::string> &args)
         return -EINVAL;
     }
     return OHOS::StorageDaemon::StorageDaemonClient::PrepareUserDirs(userId, flags);
-}
-
-static int32_t DeleteUserKeys(const std::vector<std::string> &args)
-{
-    if (args.size() < ARG_CNT_4) {
-        LOGE("Parameter nums is less than 4, please retry");
-        return -EINVAL;
-    }
-    uint32_t userId;
-    // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
-        LOGE("Parameter input error, please retry");
-        return -EINVAL;
-    }
-    return OHOS::StorageDaemon::StorageDaemonClient::DeleteUserKeys(userId);
 }
 
 static int32_t DestroyUserSpace(const std::vector<std::string> &args)
@@ -342,11 +326,12 @@ static int32_t StartUser(const std::vector<std::string> &args)
 
 static int32_t EraseAllUserEncryptedKeys(const std::vector<std::string> &args)
 {
-    if (args.size() < ARG_CNT_3) {
-        LOGE("Parameter nums is less than 3, please retry");
+    if (args.size() < ARG_CNT_4) {
+        LOGE("EraseAllUserEncryptedKeys Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageDaemon::StorageDaemonClient::EraseAllUserEncryptedKeys();
+    std::vector<int32_t> localIdList(args[INDEX_3].begin(), args[INDEX_3].end());
+    return OHOS::StorageDaemon::StorageDaemonClient::EraseAllUserEncryptedKeys(localIdList);
 }
 #endif
 
@@ -356,7 +341,6 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"init_main_user", InitMainUser},
 #ifdef SDC_TEST_ENABLE
     {"prepare_user_space", PrepareUserSpace},
-    {"delete_user_keys", DeleteUserKeys},
     {"destroy_user_space", DestroyUserSpace},
     {"update_user_auth", UpdateUserAuth},
     {"active_user_key", ActiveUserKey},

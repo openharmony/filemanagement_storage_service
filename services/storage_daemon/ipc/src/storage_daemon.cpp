@@ -366,39 +366,10 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     return result;
 }
 
-int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
+int32_t StorageDaemon::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance().DeleteUserKeys(userId);
-    if (ret != E_OK) {
-        LOGE("DeleteUserKeys failed, please check");
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "DeleteUserKeys",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_DELETE_USER_KEYS,
-            .keyElxLevel = "EL1",
-            .errorCode = ret
-        };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-    }
-    if (ret == E_OK) {
-        int32_t result = KeyManagerExt::GetInstance().DeleteUserKeys(userId);
-        if (result != E_OK) {
-            LOGE("KeyManagerExt DeleteUserKeys failed, error = %{public}d, userId %{public}u", result, userId);
-        }
-    }
-    return ret;
-#else
-    return E_OK;
-#endif
-}
-
-int32_t StorageDaemon::EraseAllUserEncryptedKeys()
-{
-#ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys();
+    int32_t ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList);
     LOGI("EraseAllUserEncryptedKeys result, ret: %{public}d", ret);
     StorageRadar::ReportUserKeyResult("StorageDaemon::EraseAllUserEncryptedKeys", DEFAULT_USERID, ret, "ELx", "");
     return ret;
@@ -1126,7 +1097,7 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
                                         const std::vector<uint8_t> &secret)
 {
     LOGI("begin to CreateRecoverKey");
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     return KeyManager::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
@@ -1136,7 +1107,7 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("begin to SetRecoverKey");
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     return KeyManager::GetInstance().SetRecoverKey(key);
 #else
     return E_OK;
@@ -1146,7 +1117,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 int32_t StorageDaemon::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
 {
     LOGI("begin to ResetSecretWithRecoveryKey");
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     return KeyManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 #else
     return E_OK;
@@ -1253,7 +1224,7 @@ void StorageDaemon::SetPriority()
 int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
 {
     int32_t ret = E_OK;
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     ret = KeyManagerExt::GetInstance().InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InactiveUserPublicDirKey failed, error = %{public}d, userId %{public}u", ret, userId);
@@ -1265,7 +1236,7 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
 int32_t StorageDaemon::UpdateUserPublicDirPolicy(uint32_t userId)
 {
     int32_t ret = E_OK;
-#ifdef USER_CRYPTO_MANAGER
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
     ret = KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(userId);
     if (ret != E_OK) {
         LOGE("UpdateUserPublicDirPolicy failed, error = %{public}d, userId %{public}u", ret, userId);

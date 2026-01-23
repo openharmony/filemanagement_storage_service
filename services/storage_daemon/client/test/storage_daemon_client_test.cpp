@@ -207,8 +207,6 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Active
 
     ret = storageDaemonClient_->InactiveUserKey(userid);
     EXPECT_TRUE(ret == E_OK);
-
-    storageDaemonClient_->DeleteUserKeys(userid);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ActiveUserKey_001 end";
 }
 
@@ -256,8 +254,6 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
 
     ret = storageDaemonClient_->UpdateKeyContext(userid);
     EXPECT_TRUE(ret == E_OK);
-
-    storageDaemonClient_->DeleteUserKeys(userid);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001 end";
 }
 

@@ -30,6 +30,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -120,6 +121,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "storage_manager_provider_permission_test.cpp",
@@ -187,7 +189,10 @@ ohos_unittest("storage_manager_provider_permission_test") {
   }
 
   if (storage_service_user_crypto_manager) {
-    defines += [ "USER_CRYPTO_MANAGER" ]
+    defines += [
+      "USER_CRYPTO_MANAGER",
+      "PC_USER_MANAGER",
+    ]
   }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]
@@ -210,6 +215,7 @@ sources = [
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
@@ -328,6 +334,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "storage_manager_provider_communication_test.cpp",
   ]
 

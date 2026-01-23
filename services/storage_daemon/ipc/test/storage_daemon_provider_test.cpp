@@ -536,21 +536,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InitGlobalUserKeys
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_DeleteUserKeys_001
- * @tc.desc: Verify the DeleteUserKeys function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteUserKeys_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteUserKeys_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto ret = storageDaemonProviderTest_->DeleteUserKeys(StorageTest::USER_ID1);
-    EXPECT_TRUE(ret == E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteUserKeys_001 end";
-}
-
-/**
  * @tc.name: StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001
  * @tc.desc: Verify the EraseAllUserEncryptedKeys function.
  * @tc.type: FUNC
@@ -560,7 +545,8 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EraseAllUserEncryp
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys();
+    std::vector<int32_t> localIdList;
+    auto ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys(localIdList);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001 end";
 }
@@ -1217,23 +1203,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOccupiedSpace_0
     int32_t result = storageDaemonProviderTest_->GetOccupiedSpace(idType, id, size);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOccupiedSpace_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_UpdateMemoryPara_001
- * @tc.desc: Verify the UpdateMemoryPara function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateMemoryPara_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateMemoryPara_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t size = 1;
-    int32_t oldSize = 2;
-    int32_t result = storageDaemonProviderTest_->UpdateMemoryPara(size, oldSize);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateMemoryPara_001 end";
 }
 
 /**

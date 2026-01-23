@@ -32,6 +32,7 @@ ohos_unittest("HuksMasterTest") {
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/ipc",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
@@ -47,6 +48,7 @@ ohos_unittest("HuksMasterTest") {
   deps = [
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   external_deps = [

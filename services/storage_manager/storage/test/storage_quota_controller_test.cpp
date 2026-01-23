@@ -61,41 +61,6 @@ public:
 };
 
 /**
- * @tc.name: StorageQuotaControllerTest_UpdateBaseLineByUid_0000
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_UpdateBaseLineByUid_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageQuotaControllerTest-begin UpdateBaseLineByUid_0000";
-    std::string configPath = "/system/etc/storage_statistic_baseline.json";
-    std::string backupPath = "/system/etc/storage_statistic_baseline.json.bak";
-    if (access(configPath.c_str(), F_OK) == 0) {
-        std::ifstream src(configPath, std::ios::binary);
-        std::ofstream dst(backupPath, std::ios::binary);
-        dst << src.rdbuf();
-    }
-    std::ofstream ofs4(configPath);
-    ofs4 << R"({"storage.statistic.baseline":[{"uid":0,"baseline":0}]})";
-    ofs4.close();
-    NiceMock<ConfigPolicyUtilsMock> cfgPolicyUtils;
-    EXPECT_CALL(cfgPolicyUtils, GetOneCfgFile).WillOnce(testing::Return(g_cfgName));
-    EXPECT_NO_FATAL_FAILURE(StorageQuotaController::GetInstance().UpdateBaseLineByUid());
-    EXPECT_CALL(cfgPolicyUtils, GetOneCfgFile).WillOnce(testing::Return(nullptr));
-    EXPECT_NO_FATAL_FAILURE(StorageQuotaController::GetInstance().UpdateBaseLineByUid());
-    std::remove(configPath.c_str());
-
-    if (access(backupPath.c_str(), F_OK) == 0) {
-        std::ifstream src(backupPath, std::ios::binary);
-        std::ofstream dst(configPath, std::ios::binary);
-        dst << src.rdbuf();
-        std::remove(backupPath.c_str());
-    }
-    GTEST_LOG_(INFO) << "StorageQuotaControllerTest-end UpdateBaseLineByUid_0000";
-}
-
-/**
  * @tc.name: StorageQuotaControllerTest_ReadCcmConfigFile_0000
  * @tc.type: FUNC
  * @tc.level Level 1

@@ -63,6 +63,19 @@ taihe_shared_library("storage_statistics_taihe") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
+  ]
+  ldflags = [ "-flto" ]
+
   sources = get_target_outputs(":run_taihe")
   sources += [
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",

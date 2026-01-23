@@ -39,6 +39,7 @@ ohos_fuzztest("StorageDaemonProxyTryToFixFuzzTest") {
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonproxytrytofix_fuzzer/storagedaemonproxytrytofix_fuzzer.cpp",
   ]
 

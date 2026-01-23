@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Copyright (c) 2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,16 +15,15 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageManagerQueryUsbIsInUseFuzzTest") {
-  module_out_path = "storage_service/storage_service"
+ohos_fuzztest("StorageManagerProviderQueryActiveOsAccountIdsFuzzTest") {
+  module_out_path = "storage_service/storage_service/storage_manager"
   fuzz_config_file =
-      "${storage_service_path}/test/fuzztest/storagemanagerdeleteuserkeys_fuzzer"
+      "${storage_service_path}/test/fuzztest/storagemanagerproviderqueryactiveosaccountids_fuzzer"
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include",
     "${storage_manager_path}/include/ipc",
     "${storage_daemon_path}/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
@@ -33,7 +32,7 @@ ohos_fuzztest("StorageManagerQueryUsbIsInUseFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "storagemanagerdeleteuserkeys_fuzzer.cpp" ]
+  sources = [ "storagemanagerproviderqueryactiveosaccountids_fuzzer.cpp" ]
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
@@ -42,7 +41,6 @@ ohos_fuzztest("StorageManagerQueryUsbIsInUseFuzzTest") {
   deps = [
     "${storage_daemon_path}:storage_daemon_header",
     "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_header",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
@@ -70,5 +68,5 @@ ohos_fuzztest("StorageManagerQueryUsbIsInUseFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageManagerQueryUsbIsInUseFuzzTest" ]
+  deps = [ ":StorageManagerProviderQueryActiveOsAccountIdsFuzzTest" ]
 }

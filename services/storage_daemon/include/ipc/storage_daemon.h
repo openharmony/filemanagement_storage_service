@@ -44,8 +44,7 @@ public:
     // fscrypt api, add fs mutex in KeyManager
     int32_t InitGlobalKey(void);
     int32_t InitGlobalUserKeys(void);
-    int32_t DeleteUserKeys(uint32_t userId);
-    int32_t EraseAllUserEncryptedKeys();
+    int32_t EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList);
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,

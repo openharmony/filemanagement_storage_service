@@ -150,19 +150,6 @@ bool SetBundleQuotaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const ui
     return true;
 }
 
-bool UpdateMemoryParaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < sizeof(int32_t) + sizeof(int32_t)) {
-        return true;
-    }
-
-    int pos = 0;
-    int32_t sz = TypeCast<int32_t>(data, &pos);
-    int32_t oldSize = TypeCast<uint32_t>(data + pos, &pos);
-    proxy->UpdateMemoryPara(sz, oldSize);
-    return true;
-}
-
 bool MountDfsDocsFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
     if (data == nullptr || size < sizeof(int32_t)) {
@@ -284,7 +271,6 @@ void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, cons
     SetRecoverKeyFuzzTest(proxy, data, size);
     CreateShareFileFuzzTest(proxy, data, size);
     SetBundleQuotaFuzzTest(proxy, data, size);
-    UpdateMemoryParaFuzzTest(proxy, data, size);
     MountDfsDocsFuzzTest(proxy, data, size);
     GetFileEncryptStatusFuzzTest(proxy, data, size);
     MountMediaFuseFuzzTest(proxy, data, size);

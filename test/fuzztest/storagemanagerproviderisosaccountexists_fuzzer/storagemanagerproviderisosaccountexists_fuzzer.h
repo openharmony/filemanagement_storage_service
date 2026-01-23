@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef STORAGEMANAGERDELETEUSERKEYS_FUZZER_H
-#define STORAGEMANAGERDELETEUSERKEYS_FUZZER_H
+#ifndef STORAGEMANAGER_FUZZER_H
+#define STORAGEMANAGER_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "storagemanagerdeleteuserkeys_fuzzer"
+#define FUZZ_PROJECT_NAME "storagemanagerproviderisosaccountexists_fuzzer"
 
 #endif

@@ -59,6 +59,19 @@ taihe_shared_library("volume_manager_taihe") {
     "${storage_service_path}/services/common/include",
   ]
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
+  ]
+  ldflags = [ "-flto" ]
+
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",

@@ -135,6 +135,7 @@ ohos_unittest("mount_manager_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/storage_radar.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
   ]
 
   deps = [

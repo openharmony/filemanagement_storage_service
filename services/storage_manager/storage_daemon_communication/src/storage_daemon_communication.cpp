@@ -286,21 +286,6 @@ int32_t StorageDaemonCommunication::QueryUsbIsInUse(const std::string &diskPath,
     return storageDaemon_->QueryUsbIsInUse(diskPath, isInUse);
 }
 
-int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
-{
-    LOGD("enter");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->DeleteUserKeys(userId);
-}
-
 int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
 {
     LOGD("enter");
@@ -313,7 +298,18 @@ int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->EraseAllUserEncryptedKeys();
+    std::vector<AccountSA::OsAccountInfo> OsAccountInfo;
+    err = AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(OsAccountInfo);
+    if (err != ERR_OK || OsAccountInfo.empty()) {
+        LOGE("Query userid failed, err = %{public}u", err);
+        StorageRadar::ReportOsAccountResult("QueryAllCreatedOsAccounts", err, DEFAULT_USERID);
+    }
+    std::vector<int32_t> localIdList;
+    for (const auto &info : OsAccountInfo) {
+        LOGI("Collecting key info for user: %{public}u", info.GetLocalId());
+        localIdList.push_back(info.GetLocalId());
+    }
+    return storageDaemon_->EraseAllUserEncryptedKeys(localIdList);
 }
 
 int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -697,21 +693,6 @@ int32_t StorageDaemonCommunication::ResetSecretWithRecoveryKey(uint32_t userId,
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key);
-}
-
-int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldSize)
-{
-    LOGI("StorageDaemonCommunication::UpdateMemoryPara");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->UpdateMemoryPara(size, oldSize);
 }
 
 int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::string &relativePath,

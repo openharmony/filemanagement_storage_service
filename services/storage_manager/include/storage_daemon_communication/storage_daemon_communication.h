@@ -44,7 +44,6 @@ public:
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
     // fscrypt api
-    int32_t DeleteUserKeys(uint32_t userId);
     int32_t EraseAllUserEncryptedKeys();
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                            const std::vector<uint8_t> &token,
@@ -88,7 +87,6 @@ public:
     int32_t SetBundleQuota(int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
-    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
 
     // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,

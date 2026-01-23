@@ -23,7 +23,6 @@
 #include "parameter.h"
 #include "parameters.h"
 #include "quota/quota_manager.h"
-#include "os_account_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/mount_constant.h"

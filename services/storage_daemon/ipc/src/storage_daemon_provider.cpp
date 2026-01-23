@@ -464,17 +464,9 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
     return err;
 }
 
-int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
+int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
-    int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
-    int err = StorageDaemon::GetInstance().DeleteUserKeys(userId);
-    StorageXCollie::CancelTimer(timerId);
-    return err;
-}
-
-int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys()
-{
-    return StorageDaemon::GetInstance().EraseAllUserEncryptedKeys();
+    return StorageDaemon::GetInstance().EraseAllUserEncryptedKeys(localIdList);
 }
 
 int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
@@ -803,12 +795,6 @@ int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int6
 {
     size = 0;
     return QuotaManager::GetInstance().GetOccupiedSpace(idType, id, size);
-}
-
-int32_t StorageDaemonProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
-{
-    oldSize = 0;
-    return E_OK;
 }
 
 int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,

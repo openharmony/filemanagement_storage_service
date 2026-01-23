@@ -49,6 +49,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemoncreatesharefile_fuzzer/storagedaemoncreatesharefile_fuzzer.cpp",
   ]
 

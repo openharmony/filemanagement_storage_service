@@ -128,6 +128,7 @@ ohos_executable("storage_daemon") {
     "user/src/system_mount_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
+    "utils/storage_xcollie.cpp",
   ]
 
   defines = [
@@ -135,6 +136,9 @@ ohos_executable("storage_daemon") {
     "LOG_DOMAIN = 0xD004301",
     "KMSG_LOG",
   ]
+  if (pc_device_enable) {
+    defines += [ "PC_USER_MANAGER" ]
+  }
 
   cflags = [
     "-fstack-protector-strong",
@@ -198,7 +202,6 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "json:nlohmann_json_static",
@@ -385,15 +388,14 @@ ohos_shared_library("storage_common_utils") {
     "utils/mount_argument_utils.cpp",
     "utils/storage_radar.cpp",
     "utils/storage_statistics_radar.cpp",
-    "utils/storage_xcollie.cpp",
     "utils/string_utils.cpp",
     "utils/memory_reclaim_manager.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
   ]
 
   external_deps = [
     "cJSON:cjson",
     "c_utils:utils",
-    "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
