@@ -635,7 +635,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_GetData_0002, 
 
     void* buffer = nullptr;
     const size_t size = Constants::MAX_PARCEL_CAPACITY + 1; // Exceeds max
-    char data[Constants::MAX_PARCEL_CAPACITY + 1] = {0};
+    char data[1024] = {0};
 
     auto ret = proxy_->GetData(buffer, size, data);
     EXPECT_EQ(ret, false);
