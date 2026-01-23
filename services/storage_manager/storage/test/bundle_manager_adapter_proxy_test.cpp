@@ -462,7 +462,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_GetAllBundleSt
  * @tc.type: FUNC
  * @tc.require: I7TDJK
  */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0000, TestSize.Level0)
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0000 Start";
 
@@ -484,7 +484,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVector
  * @tc.type: FUNC
  * @tc.require: I7TDJK
  */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0001, TestSize.Level0)
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0001, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0001 Start";
 
@@ -508,7 +508,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVector
  * @tc.type: FUNC
  * @tc.require: I7TDJK
  */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0002, TestSize.Level0)
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0002, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0002 Start";
 
@@ -530,7 +530,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVector
  * @tc.type: FUNC
  * @tc.require: I7TDJK
  */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0003, TestSize.Level0)
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0003, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0003 Start";
 
@@ -562,7 +562,7 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVector
  * @tc.type: FUNC
  * @tc.require: I7TDJK
  */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0004, TestSize.Level0)
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0004, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_0004 Start";
 
