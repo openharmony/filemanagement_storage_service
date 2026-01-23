@@ -9,4 +9,6 @@ sysPattern /devices/platform/hisi_usb/efc00000.dwc3/* label disk flag 0
 sysPattern /devices/platform/hiusb/hiusb_port/* label disk flag 0
 sysPattern /devices/platform/hisi_usb/f8400000.dwc3/* label disk flag 0
 sysPattern /devices/platform/soc/25100000.usb3/25100000.dwc3/* label disk flag 0
-
+sysPattern /devices/platform/usbdrd3_1/fc400000.usb/* label disk flag 0
+sysPattern /devices/platform/fc800000.usb/* label disk flag 0
+sysPattern /devices/platform/fe210000.sata/* label disk flag 0
