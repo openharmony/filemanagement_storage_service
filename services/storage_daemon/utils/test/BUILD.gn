@@ -227,7 +227,6 @@ ohos_unittest("memory_reclaim_manager_test") {
 group("storage_daemon_utils_test") {
   testonly = true
   deps = [
-    ":disk_utils_test",
     ":file_utils_test",
     ":storage_statistics_radar_test",
     ":string_utils_test",

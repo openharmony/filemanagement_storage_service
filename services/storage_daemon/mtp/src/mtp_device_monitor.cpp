@@ -269,22 +269,23 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 {
     std::lock_guard<std::mutex> lock(listMutex_);
     LOGI("MtpDeviceMonitor::Umount detached mtp device, devNum=%{public}d, busLoc=%{public}d.", devNum, busLoc);
-
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
-        LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
-        if (iter->devNum != devNum || iter->busLocation != busLoc) {
-            LOGI("not this mtp device");
-            return;
-        }
-        int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, true);
-        if (ret == E_OK) {
-            iter = lastestMtpDevList_.erase(iter);
-        } else {
-            LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
-            StorageService::StorageRadar::ReportMtpResult("UmountDetachedMtpDevice::UmountDevice", ret, "NA");
-            iter++;
-        }
-    }
+    
+    auto newEnd = std::remove_if(lastestMtpDevList_.begin(), lastestMtpDevList_.end(),
+        [devNum, busLoc, this](const MtpDeviceInfo& device) {
+            if (device.devNum == devNum && device.busLocation == busLoc) {
+                int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(device, true, true);
+                if (ret == E_OK) {
+                    LOGI("Successfully unmounted device, path=%{public}s", device.path.c_str());
+                    return true;
+                } else {
+                    LOGE("Umount mtp device failed, path=%{public}s, ret=%{public}d", device.path.c_str(), ret);
+                    StorageService::StorageRadar::ReportMtpResult("UmountDetachedMtpDevice::UmountDevice", ret, "NA");
+                    return false;
+                }
+            }
+            return false;
+        });
+    lastestMtpDevList_.erase(newEnd, lastestMtpDevList_.end());
 }
 
 int32_t MtpDeviceMonitor::Mount(const std::string &id)

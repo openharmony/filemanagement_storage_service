@@ -81,7 +81,8 @@ public:
     const MtpFsTypeDir *DirFetchContent(std::string path);
     int FileMove(const std::string &oldPath, const std::string &newPath);
     int ReName(const std::string &oldPath, const std::string &newPath);
-    int GetThumbnail(const std::string &path, char *buf);
+    int GetThumbnailSize(const std::string &path, size_t &size);
+    int GetThumbnailData(const std::string &path, char *buf, size_t size);
     int FileRead(const std::string &path, char *buf, size_t size, off_t offset);
     int FileWrite(const std::string &path, const char *buf, size_t size, off_t offset);
     int FilePull(const std::string &src, const std::string &dst);

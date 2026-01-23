@@ -57,6 +57,10 @@ public:
     KeyBlob(KeyBlob const &blob)
     {
         Alloc(blob.size);
+        if (!blob.data) {
+            Clear();
+            return;
+        }
         auto ret = memcpy_s(data.get(), size, blob.data.get(), blob.size);
         if (ret != EOK) {
             Clear();

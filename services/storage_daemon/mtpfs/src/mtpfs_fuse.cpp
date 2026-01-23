@@ -231,7 +231,7 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
     }
     int ret = E_OK;
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
-        ret = MtpFileSystem::GetInstance().ReadThumb(std::string(path), buf);
+        ret = MtpFileSystem::GetInstance().ReadThumb(std::string(path), buf, size);
     } else {
         ret = MtpFileSystem::GetInstance().ReadFile(path, buf, size, offset, fileInfo);
     }
@@ -807,7 +807,7 @@ int MtpFileSystem::SetupFileAttributes(const char *path, const MtpFsTypeFile *fi
         }
     }
 
-    buf->st_size = size;
+    buf->st_size = static_cast<ssize_t>(size);
     buf->st_blocks = (size / FILE_SIZE) + (size % FILE_SIZE > 0 ? 1 : 0);
     buf->st_nlink = 1;
     buf->st_mode = S_IFREG | PERMISSION_TWO;
@@ -829,17 +829,17 @@ int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
         OHOS::StorageService::StorageRadar::ReportMtpResult("GetThumbAttr::GetAttr", ret, "NA");
         return ret;
     }
-    char *data = nullptr;
-    int bufSize = device_.GetThumbnail(realPath, data);
-    if (bufSize <= 0) {
+    size_t thumbSize = 0;
+    ret = device_.GetThumbnailSize(realPath, thumbSize);
+    if (ret != 0) {
         LOGE("GetThumbAttr failed, bufSize invalid.");
-        OHOS::StorageService::StorageRadar::ReportMtpResult("GetThumbAttr::GetThumbnail", bufSize, "NA");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("GetThumbAttr::GetThumbnail", thumbSize, "NA");
         return -EIO;
     }
-    buf->st_size = static_cast<ssize_t>(bufSize);
-    buf->st_blocks = static_cast<ssize_t>(bufSize / FILE_SIZE) + (bufSize % FILE_SIZE > 0 ? 1 : 0);
+    buf->st_size = static_cast<ssize_t>(thumbSize);
+    buf->st_blocks = static_cast<ssize_t>(thumbSize / FILE_SIZE) + (thumbSize % FILE_SIZE > 0 ? 1 : 0);
 
-    LOGI("MtpFileSystem: GetThumbAttr success, bufSize=%{public}d.", bufSize);
+    LOGI("MtpFileSystem: GetThumbAttr success, bufSize=%{public}d.", thumbSize);
     return E_OK;
 }
 
@@ -1128,11 +1128,11 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
     return E_OK;
 }
 
-int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
+int MtpFileSystem::ReadThumb(const std::string &path, char *buf, size_t size)
 {
     LOGI("MtpFileSystem: ReadThumb enter");
     std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
-    return device_.GetThumbnail(realPath, buf);
+    return device_.GetThumbnailData(realPath, buf, size);
 }
 
 int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t offset,
@@ -1145,7 +1145,7 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
         OHOS::StorageService::StorageRadar::ReportMtpResult("Write::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
-    off_t currentOffset = offset + size;
+    off_t currentOffset = offset + static_cast<off_t>(size);
     uint64_t freeSize = device_.StorageFreeSize();
     if ((uint64_t)currentOffset > freeSize) {
         LOGE("Write would exceed available space!");
@@ -1219,7 +1219,10 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     const bool modIf = tmpFile->IsModified();
     const std::string tmpPath = tmpFile->PathTmp();
     struct stat fileStat;
-    stat(tmpPath.c_str(), &fileStat);
+    if (stat(tmpPath.c_str(), &fileStat) != 0) {
+        LOGE("Failed to stat file %{public}d", errno);
+        return -EINVAL;
+    }
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
         if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
