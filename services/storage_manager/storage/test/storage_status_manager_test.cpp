@@ -19,7 +19,7 @@
 
 #include "accesstoken_kit.h"
 #include "bundle_mgr_interface.h"
-#include "bundle_mgr_proxy.h"
+#include "bundle_manager_adapter_proxy.h"
 #include "ext_bundle_stats.h"
 #include "file_cache_adapter.h"
 #include "ipc_skeleton.h"
