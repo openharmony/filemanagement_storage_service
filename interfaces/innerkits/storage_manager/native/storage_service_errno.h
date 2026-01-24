@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -254,6 +254,8 @@ enum ErrNo {
     E_VOL_FIX_FAILED = STORAGE_SERVICE_SYS_CAP_TAG + 1731,
     E_NOTIFY_FAILED = STORAGE_SERVICE_SYS_CAP_TAG + 1732,
     E_MTP_LIBMTP_INTERFACE_ERROR = STORAGE_SERVICE_SYS_CAP_TAG + 1733,
+    E_UDF_MOUNT = STORAGE_SERVICE_SYS_CAP_TAG + 1734,
+    E_ISO9660_MOUNT = STORAGE_SERVICE_SYS_CAP_TAG + 1735,
 
     // 文件分享/分布式文件/备份扫描等 13602201 ~
     E_CREATE_SHARE_FILE_FAILED = STORAGE_SERVICE_SYS_CAP_TAG + 2201,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -58,6 +58,9 @@ int32_t ExternalVolumeInfo::ReadMetadata()
             devPath_
         };
         fsLabel_ = GetVolDescByNtfsLabel(cmd);
+    } else if (fsType_ == "udf" || fsType_ == "iso9660") {
+        fsUuid_ = GenerateRandomUuid();
+        return E_OK;
     }
     return ret;
 }
@@ -221,6 +224,44 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 #endif
 }
 
+int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
+{
+    std::vector<std::string> cmd = {
+        "mount",
+        "-t",
+        fsType_.c_str(),
+        "-o",
+        "ro",
+        devPath_,
+        mountPath_,
+    };
+    std::vector<std::string> output;
+
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec mount for udf failed, errno is %{public}d.", errno);
+        return E_UDF_MOUNT;
+    }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
+{
+    std::vector<std::string> cmd = {
+        "mount",
+        "-t",
+        fsType_.c_str(),
+        devPath_,
+        mountPath_,
+    };
+    std::vector<std::string> output;
+
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec mount for iso9660 failed, errno is %{public}d.", errno);
+        return E_ISO9660_MOUNT;
+    }
+    return E_OK;
+}
+
 int32_t ExternalVolumeInfo::DoCheck4Exfat()
 {
     std::vector<std::string> cmd = {
@@ -378,6 +419,10 @@ int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
             retValue = DoMount4Exfat(mountFlags);
         } else if (fsType_ == "vfat" || fsType_ == "fat32") {
             retValue = DoMount4Vfat(mountFlags);
+        } else if (fsType_ == "udf") {
+            retValue = DoMount4Udf(mountFlags);
+        } else if (fsType_ == "iso9660") {
+            retValue = DoMount4Iso9660(mountFlags);
         } else if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
             retValue = E_OK;
         } else {
