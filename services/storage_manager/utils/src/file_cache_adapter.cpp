@@ -216,9 +216,7 @@ int32_t FileCacheAdapter::InsertOrUpdateBundleExtStats(const BundleExtStats &sta
 
     bundleExtStatsMap_[key] = stats;
     bundleDirty_ = true;
-
     ret = SaveBundleData();
-
     // 保存失败则恢复
     if (ret != E_OK) {
         if (!oldNode.empty()) {
@@ -324,9 +322,7 @@ int32_t FileCacheAdapter::InsertOrUpdateCleanNotify(const CleanNotify &notify)
 
     cleanNotifyMap_[key] = notify;
     cleanDirty_ = true;
-
     ret = SaveCleanData();
-
     // 保存失败则恢复
     if (ret != E_OK) {
         if (!oldNode.empty()) {

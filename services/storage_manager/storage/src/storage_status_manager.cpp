@@ -579,10 +579,8 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
         LOGE("invalid params, userId: %{public}u, bundleName: %{public}s", userId, bundleName.c_str());
         return E_PARAMS_INVALID;
     }
-
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     int32_t ret = FileCacheAdapter::GetInstance().DeleteBundleExtStats(bundleName, userId);
-
     if (ret != E_OK) {
         LOGE("DelBundleExtStats failed, ret: %{public}d, userId: %{public}u, bundleName: %{public}s", ret, userId,
              bundleName.c_str());
