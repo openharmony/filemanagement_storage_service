@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -47,7 +47,6 @@
 #include "utils/storage_utils.h"
 
 #include "accesstoken_kit.h"
-#include "bundle_mgr_client.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
 
@@ -1923,8 +1922,12 @@ int32_t StorageManagerProvider::NotifyCreateBundleDataDirWithEl(uint32_t userId,
         LOGW("CreateElxBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx);
         return E_ERR;
     }
-    OHOS::AppExecFwk::BundleMgrClient client;
-    auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = bundleMgr->CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
     LOGI("CreateElxBundleDataDir end ret %{public}d", ret);
     return ret;
 }

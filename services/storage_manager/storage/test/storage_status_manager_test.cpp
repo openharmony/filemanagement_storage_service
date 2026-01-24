@@ -19,7 +19,7 @@
 
 #include "accesstoken_kit.h"
 #include "bundle_mgr_interface.h"
-#include "bundle_mgr_proxy.h"
+#include "bundle_manager_adapter_proxy.h"
 #include "ext_bundle_stats.h"
 #include "file_cache_adapter.h"
 #include "ipc_skeleton.h"
@@ -32,7 +32,6 @@ using namespace OHOS;
 using namespace OHOS::StorageManager;
 const std::vector<int64_t> bundleStatsInfo = {0, 1, std::numeric_limits<int64_t>::max() - 8, 10, 0};
 int g_flag = 1;
-int g_bundleUid = 0;
 int g_bundleFlag  = 1;
 int g_sysFlag = 1;
 int64_t free_size = 0;
@@ -43,31 +42,26 @@ int32_t g_getBundleStatsRet = E_OK;
 int32_t accessTokenType = -1;
 } // namespace
 std::string str = "settings";
-namespace OHOS::AppExecFwk {
-bool BundleMgrProxy::GetAllBundleStats(int32_t userId, std::vector<int64_t> &bundleStats)
+namespace OHOS::StorageManager {
+bool BundleManagerAdapterProxy::GetAllBundleStats(int32_t userId, std::vector<int64_t> &bundleStats)
 {
     bundleStats = bundleStatsInfo;
     return true;
 }
 
-bool BundleMgrProxy::GetBundleNameForUid(const int uid, std::string &bundleName)
+bool BundleManagerAdapterProxy::GetBundleNameForUid(const int uid, std::string &bundleName)
 {
     bundleName = str;
     return g_bundleFlag ;
 }
 
-int BundleMgrProxy::GetUidByBundleName(const std::string &bundleName, const int userId)
-{
-    return g_bundleUid;
-}
-
-ErrCode BundleMgrProxy::GetNameAndIndexForUid(int32_t uid, std::string &bundleName, int32_t &appIndex)
+ErrCode BundleManagerAdapterProxy::GetNameAndIndexForUid(int32_t uid, std::string &bundleName, int32_t &appIndex)
 {
     bundleName = g_bundleName;
     appIndex = g_appIndex;
     return g_getNameIndexRet;
 }
-} // namespace OHOS::AppExecFwk
+} // namespace OHOS::StorageManager
 
 namespace OHOS::StorageManager {
 int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
