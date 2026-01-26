@@ -27,9 +27,14 @@ static int ConvertUVCode2ErrCode(int errCode)
     if (errCode >= 0) {
         return errCode;
     }
-    auto uvCode = std::string_view(uv_err_name(errCode));
-    if (FileManagement::LibN::uvCode2ErrCodeTable.find(uvCode) != FileManagement::LibN::uvCode2ErrCodeTable.end()) {
-        return FileManagement::LibN::uvCode2ErrCodeTable.at(uvCode);
+    const char* name = uv_err_name(errCode);
+    if (name == nullptr) {
+        return FileManagement::LibN::UNKROWN_ERR;
+    }
+    std::string_view uvCode{name};
+    auto it = FileManagement::LibN::uvCode2ErrCodeTable.find(uvCode);
+    if (it != FileManagement::LibN::uvCode2ErrCodeTable.end()) {
+        return it->second;
     }
     return FileManagement::LibN::UNKROWN_ERR;
 }

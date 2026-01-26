@@ -310,18 +310,22 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
 {
     LOGI("MtpDeviceMonitor: start umount mtp device by id=%{public}s", id.c_str());
     std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
+
+    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         if (iter->id != id) {
+            ++iter;
             continue;
         }
+
         int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, false);
         if (ret == E_OK) {
-            lastestMtpDevList_.erase(iter);
+            iter = lastestMtpDevList_.erase(iter);
         } else {
-            LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
+            LOGE("Umount mtp device failed, path=%{public}s", iter->path.c_str());
         }
         return ret;
     }
+
     LOGE("the volume id %{public}s does not exist.", id.c_str());
     return E_NON_EXIST;
 }
