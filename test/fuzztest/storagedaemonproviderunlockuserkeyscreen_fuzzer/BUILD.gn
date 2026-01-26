@@ -33,6 +33,7 @@ ohos_fuzztest("StorageDaemonProviderUnlockUserKeyScreenFuzzTest") {
   sources = [
     "${storage_service_path}/test/fuzztest/storagedaemonproviderunlockuserkeyscreen_fuzzer/storagedaemonproviderunlockuserkeyscreen_fuzzer.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
   ]
 
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
