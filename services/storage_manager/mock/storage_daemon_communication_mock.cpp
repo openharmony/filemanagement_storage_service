@@ -62,5 +62,10 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storage
     return StorageDaemonCommunicationMock::storageDaemonCommunication->QueryOccupiedSpaceForSa(storageStatus,
         bundleNameAndUid);
 }
+
+int32_t StorageDaemonCommunication::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->UMountCryptoPathAgain(userId, bundleName);
+}
 }
 }

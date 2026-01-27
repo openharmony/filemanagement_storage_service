@@ -1701,5 +1701,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExist
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_001 end";
 }
 
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCryptoPathAgain_001
+ * @tc.desc: Verify the UMountCryptoPathAgain function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCryptoPathAgain_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    std::string bundleName;
+    auto ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleName);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCryptoPathAgain_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

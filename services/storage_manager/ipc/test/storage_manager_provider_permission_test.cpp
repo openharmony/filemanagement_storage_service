@@ -1765,5 +1765,33 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExist
     EXPECT_NE(storageManagerProviderTest_->IsOsAccountExists(userId, isOsAccountExists), E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_002 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCryptoPathAgain_001
+ * @tc.desc: Verify the UMountCryptoPathAgain function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCryptoPathAgain_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    std::string bundleName;
+    g_testCallingUid = 0;
+    EXPECT_EQ(storageManagerProviderTest_->UMountCryptoPathAgain(userId, bundleName), E_PERMISSION_DENIED);
+
+    g_testCallingUid = 401;
+    userId = 10739;
+    EXPECT_EQ(storageManagerProviderTest_->UMountCryptoPathAgain(userId, bundleName), E_PARAMS_INVALID);
+
+    userId = 100;
+    bundleName = "test";
+    EXPECT_EQ(storageManagerProviderTest_->UMountCryptoPathAgain(userId, bundleName), E_PARAMS_INVALID);
+
+    bundleName = "com.test.demo";
+    EXPECT_EQ(storageManagerProviderTest_->UMountCryptoPathAgain(userId, bundleName), E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCryptoPathAgain_001 end";
+}
 }
 }

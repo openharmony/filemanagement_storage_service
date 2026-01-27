@@ -35,6 +35,7 @@ public:
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
     virtual int32_t SetStopScanFlag(bool stop = false);
     virtual int32_t GetAncoSizeData(std::string &outExtraData);
+    virtual int32_t UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName);
     static inline std::shared_ptr<IStorageDaemonCommunicationMock> storageDaemonCommunication = nullptr;
 };
 class StorageDaemonCommunicationMock : public IStorageDaemonCommunicationMock {
@@ -48,6 +49,7 @@ public:
     MOCK_METHOD(int32_t, GetDirListSpace, (const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
     MOCK_METHOD(int32_t, SetStopScanFlag, (bool));
     MOCK_METHOD(int32_t, GetAncoSizeData, (std::string &));
+    MOCK_METHOD(int32_t, UMountCryptoPathAgain, (uint32_t, const std::string &));
 };
 } // StorageManager
 } // OHOS

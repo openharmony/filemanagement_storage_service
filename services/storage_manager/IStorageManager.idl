@@ -121,4 +121,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 85] void NotifyCreateBundleDataDirWithEl([in] unsigned int userId, [in] unsigned char elx);
     [ipccode 86] void QueryActiveOsAccountIds([out] int[] ids);
     [ipccode 87] void IsOsAccountExists([in] unsigned int userId, [out] boolean isOsAccountExists);
+    [ipccode 88] void UMountCryptoPathAgain([in] unsigned int userId, [in] String bundleName);
 }

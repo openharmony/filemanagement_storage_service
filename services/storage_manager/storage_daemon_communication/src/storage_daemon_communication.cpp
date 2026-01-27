@@ -1049,5 +1049,19 @@ int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmNam
     }
     return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
 }
+
+int32_t StorageDaemonCommunication::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountCryptoPathAgain(userId, bundleName);
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -99,4 +99,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 66] void GetDataSizeByPath([in] String path, [out] long size);
      [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
      [ipccode 68] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
+     [ipccode 69] void UMountCryptoPathAgain([in] unsigned int userId, [in] String bundleName);
 }

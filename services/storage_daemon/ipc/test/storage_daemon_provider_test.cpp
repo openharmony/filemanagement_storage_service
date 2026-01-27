@@ -2006,5 +2006,23 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ListUserdataDirInf
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ListUserdataDirInfo_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountCryptoPathAgain_001
+ * @tc.desc: Verify the UMountCryptoPathAgain function.
+ * @tc.type: FUNC
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCryptoPathAgain_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+
+    uint32_t userId = 0;
+    std::string bundleName;
+    int32_t ret = storageDaemonProviderTest_->UMountCryptoPathAgain(userId, bundleName);
+    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCryptoPathAgain_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -69,6 +69,7 @@ public:
         std::vector<std::string> &outputList, bool &isOccupy);
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
+    int32_t UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName);
 
 private:
     MountManager() = default;

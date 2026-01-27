@@ -1185,5 +1185,33 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MountManagerTest_GetProcessInfo_001 end";
 }
 
+/**
+ * @tc.name: MountManagerTest_UMountCryptoPathAgain_001
+ * @tc.desc: Verify the UMountCryptoPathAgain.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_UMountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_UMountCryptoPathAgain_001 start";
+    uint32_t userId = 0
+    std::string bundleName;
+    int32_t ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
+
+    bundleName = "test";
+    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
+    errno = 5;
+    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
+
+    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(0));
+    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "MountManagerTest_UMountCryptoPathAgain_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

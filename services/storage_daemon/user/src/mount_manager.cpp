@@ -1317,5 +1317,34 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
         CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
     }
 }
+
+int32_t MountManager::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+{
+    LOGI("UMountCryptoPathAgain start, userId is %{public}d, bundleName is %{public}s.", userId, bundleName.c_str());
+    if (bundleName.empty()) {
+        return E_UMOUNT_SANDBOX;
+    }
+    InfoList<MountNodeInfo> sandboxMountNodeList;
+    auto ret = UserPathResolver::GetSandboxMountNodeList(static_cast<int32_t>(userId), sandboxMountNodeList.data);
+    if (ret != E_OK) {
+        return ret;
+    }
+    std::vector<MountNodeInfo> mountNodeInfos = sandboxMountNodeList.data;
+    std::string sandboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
+    for (const auto &mountNodeInfo: mountNodeInfos) {
+        std::string path = sandboxRootPath + mountNodeInfo.dstPath;
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+        int32_t res = UMount(path);
+        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
+            std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("UMountCryptoPathAgain", userId, E_UMOUNT_SANDBOX, extraData);
+            LOGE("failed to unmount path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+            return E_UMOUNT_SANDBOX;
+        }
+        auto delay = StorageService::StorageRadar::ReportDuration("UMountCryptoPathAgain", startTime, userId);
+        LOGI("SD_DURATION: umount success, path is %{public}s, delayTime is %{public}s.", path.c_str(), delay.c_str());
+    }
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

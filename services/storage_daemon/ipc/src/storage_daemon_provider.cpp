@@ -1080,5 +1080,10 @@ int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, ui
 {
     return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
 }
+
+int32_t StorageDaemonProvider::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+{
+    return MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

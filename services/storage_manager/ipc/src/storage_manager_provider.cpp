@@ -18,6 +18,7 @@
 
 #include "utils/storage_radar.h"
 #include <singleton.h>
+#include <regex>
 #ifdef STORAGE_STATISTICS_MANAGER
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_manager.h"
@@ -63,6 +64,7 @@ constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
+constexpr pid_t BMS_UID = 401;
 constexpr bool DECRYPTED = false;
 constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
@@ -1950,6 +1952,31 @@ int32_t StorageManagerProvider::IsOsAccountExists(unsigned int userId, bool &isO
         return E_PERMISSION_DENIED;
     }
     return AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
+}
+
+int32_t StorageManagerProvider::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+{
+    StorageRadar::ReportFucBehavior("UMountCryptoPathAgain", userId, "UMountCryptoPathAgain Begin", E_OK);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || uid != BMS_UID) {
+        LOGE("UMountCryptoPathAgain permission denied, uid: %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    if (userId > TOP_USER_ID) {
+        LOGE("invalid params, userId: %{public}d.", userId);
+        return E_PARAMS_INVALID;
+    }
+    std::string bundlePattern = R"((?:[a-zA-Z](?:\w*[0-9a-zA-Z])?)(?:\.[0-9a-zA-Z](?:\w*[0-9a-zA-Z])?){2,})";
+    std::regex bundleRegex(bundlePattern);
+    if (!std::regex_match(bundleName, bundleRegex)) {
+        LOGE("invalid params, bundleName: %{public}d.", userId);
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->UMountCryptoPathAgain(userId, bundleName);
+    StorageRadar::ReportFucBehavior("UMountCryptoPathAgain", userId, "UMountCryptoPathAgain Begin", err);
+    return err;
 }
 } // namespace StorageManager
 } // namespace OHOS

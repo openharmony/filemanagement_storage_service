@@ -1559,4 +1559,31 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetRmgResourceSize_001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountCryptoPathAgain_001
+ * @tc.name: Daemon_communication_UMountCryptoPathAgain_001
+ * @tc.desc: Test function of UMountCryptoPathAgain interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountCryptoPathAgain_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+    uint32_t userId = 100;
+    std::string bundleName = "test"
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SA_IS_NULLPTR);
+
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SERVICE_IS_NULLPTR);
+
+    MockAllSuccess();
+    EXPECT_CALL(*sd, UMountCryptoPathAgain(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountCryptoPathAgain_001";
+}
 }
