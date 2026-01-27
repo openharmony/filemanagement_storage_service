@@ -33,6 +33,7 @@ ohos_fuzztest("StorageDaemonProxyCreateShareFileFuzzTest") {
   sources = [
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
