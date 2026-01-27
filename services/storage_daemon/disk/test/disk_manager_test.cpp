@@ -399,6 +399,40 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_003, TestS
 }
 
 /**
+ * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_004
+ * @tc.desc: Verify the MatchConfig function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_004 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_004 end";
+}
+
+/**
  * @tc.name: Storage_Service_DiskManagerTest_HandlePartition_001
  * @tc.desc: Verify the HandlePartition function.
  * @tc.type: FUNC

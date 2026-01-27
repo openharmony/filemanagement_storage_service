@@ -20,6 +20,7 @@
 #include "disk/disk_info.h"
 #include "mock/disk_utils_mock.h"
 #include "mock/file_utils_mock.h"
+#include "mock/storage_manager_client_mock.h"
 #include "disk_info_test_mock.h"
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
@@ -28,9 +29,11 @@
 #include "utils/string_utils.h"
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
+#include "volume/volume_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace testing;
 using namespace testing::ext;
 
 class DiskInfoTest : public testing::Test {
@@ -41,6 +44,7 @@ public:
     void TearDown();
     static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<StorageManagerClientMock> storageManagerClientMock_ = nullptr;
 };
 
 void DiskInfoTest::SetUpTestCase(void)
@@ -60,6 +64,9 @@ void DiskInfoTest::SetUp(void)
 
     fileUtilMoc_ = std::make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+
+    storageManagerClientMock_ = std::make_shared<StorageManagerClientMock>();
+    StorageManagerClientMock::iStorageManagerClientMock_ = storageManagerClientMock_;
 }
 
 void DiskInfoTest::TearDown(void)
@@ -69,6 +76,9 @@ void DiskInfoTest::TearDown(void)
 
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
+
+    StorageManagerClientMock::iStorageManagerClientMock_ = nullptr;
+    storageManagerClientMock_ = nullptr;
 }
 
 /**
@@ -1059,6 +1069,334 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.
     ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_004
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_004 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    int ret = diskInfo->ReadPartition("1");
+    EXPECT_TRUE(ret == E_ERR);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_005
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_005 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    int ret = diskInfo->ReadPartition("1");
+    EXPECT_TRUE(ret == E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_006
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+    VolumeManager::Instance().DestroyVolume(volId);
+    int ret = diskInfo->ReadPartition("1");
+    EXPECT_TRUE(ret != E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_007
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_007 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    int ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_007 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_008
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_008 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1)
+        .WillRepeatedly([&](std::vector<std::string>& cmd,
+                           std::vector<std::string>* output,
+                           int* exitStatus) {
+            if (output) {
+                *output = {"550e8400-e29b-41d4-a716-446655440000\n"};
+            }
+            if (exitStatus) {
+                *exitStatus = 0;
+            }
+            return E_OK;
+        });
+    int ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_009
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_009 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1)
+        .WillRepeatedly([&](std::vector<std::string>& cmd,
+                           std::vector<std::string>* output,
+                           int* exitStatus) {
+            if (output) {
+                *output = {"550e8400-e29b-41d4-a716-446655440000\n"};
+            }
+            if (exitStatus) {
+                *exitStatus = 0;
+            }
+            return E_ERR;
+        });
+    int ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_009 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_010
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_010 start";
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    int ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_010 end";
 }
 
 /**

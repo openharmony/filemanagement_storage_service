@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -220,7 +220,57 @@ bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
     return true;
 }
 
-int DiskInfo::ReadPartition()
+int DiskInfo::ReadPartition(const std::string &ejectStatus)
+{
+    int ret = 0;
+    if (major(device_) == DISK_CD_MAJOR) {
+        ret = ReadPartitionCD(ejectStatus);
+    } else {
+        ret = ReadPartitionUSB();
+    }
+    return ret;
+}
+
+int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
+{
+    std::string volumeId = StringPrintf("vol-%u-%u", major(device_), minor(device_));
+    if (ejectStatus == "1") {
+        auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
+        if (ret != E_OK) {
+            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            return ret;
+        }
+        auto res = Eject(devPath_);
+        if (res != E_OK) {
+            LOGE("eject failed, %{public}d", res);
+            return res;
+        }
+        LOGE("Eject E_OK");
+        return E_OK;
+    }
+
+    bool isExistCD = false;
+    IsExistCD(devPath_, isExistCD);
+    if (!isExistCD) {
+        auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
+        if (ret != E_OK) {
+            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+        }
+        LOGE("DestroyVolume E_OK");
+        return E_OK;
+    } else {
+        LOGI("ejectStatus is %{public}s", ejectStatus.c_str());
+        dev_t partitionDev = makedev(major(device_), minor(device_));
+        auto res = CreateVolume(partitionDev);
+        if (res != E_OK) {
+            LOGE("CreateVolume failed");
+            return res;
+        }
+    }
+    return E_OK;
+}
+
+int DiskInfo::ReadPartitionUSB()
 {
     int maxVolumes = GetMaxVolume(device_);
     if (maxVolumes < 0) {

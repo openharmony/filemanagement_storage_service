@@ -16,8 +16,14 @@
 #include <gtest/gtest.h>
 
 #include "mock/file_utils_mock.h"
+#include "mock/disk_func_mock.h"
 #include "utils/disk_utils.h"
 #include "storage_service_errno.h"
+#include "securec.h"
+
+#include "disk_func_define.h"
+#include "disk_utils.cpp"
+#include "disk_func_undef.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -31,22 +37,29 @@ public:
     void SetUp();
     void TearDown();
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<DiskFuncMock> diskFuncMock_ = nullptr;
 };
 
 void DiskUtilsTest::SetUpTestCase(void)
 {
     GTEST_LOG_(INFO) << "SetUpTestCase Start";
+    diskFuncMock_ = std::make_shared<DiskFuncMock>();
+    DiskFuncMock::diskFunc_ = diskFuncMock_;
 }
 
 void DiskUtilsTest::TearDownTestCase(void)
 {
     GTEST_LOG_(INFO) << "TearDownTestCase Start";
+    DiskFuncMock::diskFunc_ = nullptr;
+    diskFuncMock_ = nullptr;
 }
 
 void DiskUtilsTest::SetUp(void)
 {
     fileUtilMoc_ = std::make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    diskFuncMock_ = std::make_shared<DiskFuncMock>();
+    DiskFuncMock::diskFunc_ = diskFuncMock_;
 }
 
 void DiskUtilsTest::TearDown(void)
@@ -54,8 +67,13 @@ void DiskUtilsTest::TearDown(void)
     if (fileUtilMoc_) {
         Mock::VerifyAndClearExpectations(fileUtilMoc_.get());
     }
+    if (diskFuncMock_) {
+        Mock::VerifyAndClearExpectations(diskFuncMock_.get());
+    }
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
+    DiskFuncMock::diskFunc_ = nullptr;
+    diskFuncMock_ = nullptr;
 }
 
 /**
@@ -603,6 +621,108 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadMetadata_012, TestSize.Level1)
     EXPECT_EQ(resultUuid, uuid);
     
     GTEST_LOG_(INFO) << "DiskUtilsTest_ReadMetadata_012 end";
+}
+
+
+/**
+ * @tc.name: DiskUtilsTest_IsBlankCD_01
+ * @tc.desc: Verify ReadMetadata with valid UUID containing hyphens and underscores.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_01, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_01 start";
+
+    std::string diskBlock = "/dev/test/sr01";
+    bool isBlankCD = false;
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(nullptr));
+    int32_t result = IsBlankCD(diskBlock, isBlankCD);
+    EXPECT_EQ(result, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_01 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_IsBlankCD_02
+ * @tc.desc: Verify ReadMetadata with valid UUID containing hyphens and underscores.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_02, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_02 start";
+
+    std::string diskBlock = "/dev/test/sr02";
+    bool isBlankCD = false;
+    FILE * tmpFile = tmpfile();
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
+    EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(-1));
+    int32_t result = IsBlankCD(diskBlock, isBlankCD);
+    EXPECT_EQ(result, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_02 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_IsBlankCD_03
+ * @tc.desc: Verify ReadMetadata with valid UUID containing hyphens and underscores.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_03, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_03 start";
+
+    std::string diskBlock = "/dev/test/sr03";
+    bool isBlankCD = false;
+    FILE * tmpFile = tmpfile();
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
+    EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(-1));
+    int32_t result = IsBlankCD(diskBlock, isBlankCD);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_03 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_IsBlankCD_04
+ * @tc.desc: Verify ReadMetadata with valid UUID containing hyphens and underscores.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_04, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_04 start";
+
+    std::string diskBlock = "/dev/test/sr04";
+    bool isBlankCD = false;
+    FILE * tmpFile = tmpfile();
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
+    EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(0));
+    int32_t result = IsBlankCD(diskBlock, isBlankCD);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_04 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_IsBlankCD_05
+ * @tc.desc: Verify ReadMetadata with valid UUID containing hyphens and underscores.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_05, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_05 start";
+
+    std::string diskBlock = "/dev/test/sr06";
+    bool isBlankCD = false;
+    FILE * tmpFile = tmpfile();
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
+    EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
+
+    int32_t result = IsBlankCD(diskBlock, isBlankCD);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_05 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

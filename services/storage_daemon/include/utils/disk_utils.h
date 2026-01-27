@@ -23,6 +23,10 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr int DISK_MMC_MAJOR = 179;
 constexpr int MAX_SCSI_VOLUMES = 15;
+constexpr int DISK_CD_MAJOR = 11;
+constexpr int DISC_STATUS_BYTE_INDEX = 2;
+constexpr uint8_t DISC_STATUS_MASK = 0x03;
+constexpr int MAX_BUF = 4096;
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);

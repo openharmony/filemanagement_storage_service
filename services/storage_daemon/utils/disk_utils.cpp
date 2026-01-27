@@ -215,5 +215,107 @@ std::string GetAnonyString(const std::string &value)
 
     return res;
 }
+
+int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
+{
+    sg_io_hdr_t ioHdr;
+    uint8_t sense[SENSE_BUFF_LEN];
+    if (memset_s(&ioHdr, sizeof(ioHdr), 0, sizeof(ioHdr)) != 0) {
+        LOGE("ioHdr memset_s used failed.");
+        return E_ERR;
+    }
+    if (memset_s(sense, sizeof(sense), 0, sizeof(sense)) != 0) {
+        LOGE("sense memset_s used failed.");
+        return E_ERR;
+    }
+    ioHdr.interface_id = 'S';
+    ioHdr.dxfer_direction = SG_DXFER_FROM_DEV;
+    ioHdr.cmdp = cdb;
+    ioHdr.cmd_len = cdbLen;
+    ioHdr.dxferp = dxferp;
+    ioHdr.dxfer_len = dxferLen;
+    ioHdr.mx_sb_len = sizeof(sense);
+    ioHdr.sbp = sense;
+    ioHdr.timeout = DEF_TIMEOUT;
+    if (ioctl(fd, SG_IO, &ioHdr) < 0) {
+        return E_ERR;
+    }
+    if ((ioHdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
+        return E_ERR;
+    }
+    return E_OK;
+}
+
+int ReadDiscInfo(int fd, uint8_t *buf, int len)
+{
+    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = {READ_DISC_INFO_OPCODE};
+    cdb[0] = READ_DISC_INFO_OPCODE;
+    cdb[CDB_ALLOCATION_LENGTH_HIGH] = (uint8_t)(len >> CDB_ALLOCATION_LENGTH_LOW);
+    cdb[CDB_ALLOCATION_LENGTH_LOW] = (uint8_t)(len & MAX_ALLOC_LEN);
+    return SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
+}
+
+void IsExistCD(const std::string &diskBlock, bool &isExistCD)
+{
+    std::vector<std::string> cmd;
+    cmd = {
+        "dd",
+        "if=" + diskBlock,
+        "of=/dev/null",
+        "bs=2048",
+        "count=1",
+        "status=none"
+    };
+    std::vector<std::string> output;
+    int32_t err = ForkExec(cmd, &output);
+    if (err != 0 || !output.empty()) {
+        isExistCD = false;
+        return;
+    }
+    isExistCD = true;
+    return;
+}
+
+int IsBlankCD(const std::string &diskBlock, bool &isBlankCD)
+{
+    uint8_t buf[MAX_BUF];
+    FILE* file = fopen(diskBlock.c_str(), "rb");
+    if (file == nullptr) {
+        LOGE("fopen errno: %{public}d", errno);
+        return E_ERR;
+    }
+    int fd = fileno(file);
+    if (fd < 0) {
+        LOGE("fileno error: %{public}d", errno);
+        fclose(file);
+        return E_ERR;
+    }
+    if (ReadDiscInfo(fd, buf, sizeof(buf)) == 0) {
+        uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
+        isBlankCD = (discStatus == 0);
+        fclose(file);
+        return E_OK;
+    } else {
+        LOGE("Unable to read disc information.");
+    }
+    fclose(file);
+    return E_OK;
+}
+
+int Eject(const std::string devPath)
+{
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {
+        "eject",
+        "-s",
+        devPath
+    };
+    int res = ForkExec(cmd, &output);
+    if (res != E_OK) {
+        LOGE("ForkExec eject failed, %{public}d", res);
+        return res;
+    }
+    return E_OK;
+}
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

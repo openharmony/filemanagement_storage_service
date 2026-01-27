@@ -103,9 +103,9 @@ ohos_unittest("disk_info_test") {
   sources = [
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/test/disk_info_test.cpp",
-    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/storage_manager_client_mock.cpp",
     "$ROOT_DIR/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
