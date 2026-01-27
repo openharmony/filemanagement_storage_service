@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,9 @@
 
 #include "utils/disk_utils.h"
 
+#include <iomanip>
+#include <random>
+#include <sstream>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
@@ -32,6 +35,11 @@ constexpr int32_t NODE_PERM = 0660;
 constexpr int32_t MIN_UUID_LENGTH = 1;
 constexpr int32_t MAX_UUID_LENGTH = 40;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
+constexpr int32_t UUID_HEX_LENGTH = 8;
+constexpr uint32_t UUID_RANDOM_MASK = 0xFFFFFFFF;
+constexpr size_t INT32_SHORT_ID_LENGTH = 20;
+constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
+constexpr size_t INT32_MIN_ID_LENGTH = 3;
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {
@@ -174,11 +182,20 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     return "";
 }
 
+std::string GenerateRandomUuid()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint32_t> dist(0, UUID_RANDOM_MASK);
+    uint32_t randomValue = dist(gen);
+
+    std::ostringstream oss;
+    oss << std::hex << std::setw(UUID_HEX_LENGTH) << std::setfill('0') << std::uppercase << randomValue;
+    return oss.str();
+}
+
 std::string GetAnonyString(const std::string &value)
 {
-    constexpr size_t INT32_SHORT_ID_LENGTH = 20;
-    constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
-    constexpr size_t INT32_MIN_ID_LENGTH = 3;
     std::string res;
     std::string tmpStr("******");
     size_t strLen = value.length();

@@ -423,6 +423,54 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_008
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_008 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+
+    vol.fsType_ = "udf";
+    vol.isUserdata_ = true;
+    int32_t ret = vol.DoMount(mountFlags);
+    EXPECT_EQ(ret, E_UDF_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_009
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_009 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    int32_t ret = vol.DoMount(mountFlags);
+    EXPECT_EQ(ret, E_ISO9660_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_009 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_001
  * @tc.desc: Verify ExecuteAsyncMount function.
  * @tc.type: FUNC
@@ -588,6 +636,94 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_009 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0010
+ * @tc.desc: Verify ExecuteAsyncMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0010 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "udf";
+    vol.isUserdata_ = true;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(testing::Return(E_OK));
+    int32_t ret = vol.ExecuteAsyncMount(mountFlags);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0010 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0011
+ * @tc.desc: Verify ExecuteAsyncMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0011, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0011 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "udf";
+    vol.isUserdata_ = true;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    int32_t ret = vol.ExecuteAsyncMount(mountFlags);
+    EXPECT_EQ(ret, E_UDF_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0011 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0012
+ * @tc.desc: Verify ExecuteAsyncMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0012, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0012 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(testing::Return(E_OK));
+    int32_t ret = vol.ExecuteAsyncMount(mountFlags);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0012 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013
+ * @tc.desc: Verify ExecuteAsyncMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    int32_t ret = vol.ExecuteAsyncMount(mountFlags);
+    EXPECT_EQ(ret, E_ISO9660_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 end";
 }
 
 /**

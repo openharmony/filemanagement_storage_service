@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,7 +60,7 @@ private:
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/data/external/%s";
     const std::string mountFusePathDir_ = "/mnt/data/external_fuse/%s";
-    std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs" };
+    std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs", "udf", "iso9660"};
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
     int32_t ReadMetadata();
@@ -68,6 +68,8 @@ private:
     int32_t DoMount4Hmfs(uint32_t mountFlags);
     int32_t DoMount4Ntfs(uint32_t mountFlags);
     int32_t DoMount4Exfat(uint32_t mountFlags);
+    int32_t DoMount4Udf(uint32_t mountFlags);
+    int32_t DoMount4Iso9660(uint32_t mountFlags);
     int32_t DoFix4Ntfs();
     int32_t DoFix4Exfat();
     int32_t DoMount4OtherType(uint32_t mountFlags);

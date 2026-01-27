@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,9 @@ enum FsType {
     VFAT,
     HMFS,
     F2FS,
-    MTP
+    MTP,
+    UDF,
+    ISO9660
 };
 
 static std::map<int32_t, std::string> FS_TYPE_MAP = {
@@ -38,6 +40,8 @@ static std::map<int32_t, std::string> FS_TYPE_MAP = {
     {HMFS, "hmfs"},
     {F2FS, "f2fs"},
     {MTP, "mtp"},
+    {UDF, "udf"},
+    {ISO9660, "iso9660"},
 };
 
 class VolumeExternal : public VolumeCore {

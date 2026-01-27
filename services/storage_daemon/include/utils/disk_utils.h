@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,6 +33,7 @@ int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
+std::string GenerateRandomUuid();
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 
