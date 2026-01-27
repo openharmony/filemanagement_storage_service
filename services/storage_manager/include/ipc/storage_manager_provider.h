@@ -171,6 +171,7 @@ public:
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx) override;
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
+    int32_t UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName) override;
 
 private:
     StorageManagerProvider();

@@ -1194,7 +1194,7 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
 HWTEST_F(MountManagerTest, MountManagerTest_UMountCryptoPathAgain_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MountManagerTest_UMountCryptoPathAgain_001 start";
-    uint32_t userId = 0
+    uint32_t userId = 0;
     std::string bundleName;
     int32_t ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);

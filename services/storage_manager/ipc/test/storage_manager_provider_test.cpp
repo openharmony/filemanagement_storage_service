@@ -1713,7 +1713,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCryptoPath
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     uint32_t userId = 0;
     std::string bundleName;
-    auto ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleName);
+    auto ret = storageManagerProviderTest_->UMountCryptoPathAgain(userId, bundleName);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCryptoPathAgain_001 end";
 }

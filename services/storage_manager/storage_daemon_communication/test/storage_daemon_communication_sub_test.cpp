@@ -1574,7 +1574,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCryptoPathAg
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountCryptoPathAgain_001";
     ASSERT_TRUE(sdCommunication != nullptr);
     uint32_t userId = 100;
-    std::string bundleName = "test"
+    std::string bundleName = "test";
     MockConnectFail();
     EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SA_IS_NULLPTR);
 
@@ -1582,7 +1582,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCryptoPathAg
     EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, UMountCryptoPathAgain(_)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*sd, UMountCryptoPathAgain(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountCryptoPathAgain_001";
 }

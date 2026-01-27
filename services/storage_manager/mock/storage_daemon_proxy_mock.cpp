@@ -197,7 +197,7 @@ int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::UMountCryptoPathAgain(uint32_t userId, const std::string bundleName)
+int32_t StorageDaemonProxy::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
 {
     return E_OK;
 }
