@@ -13,27 +13,35 @@
  * limitations under the License.
  */
 
-#include "utils/disk_utils.h"
-
 #include <iomanip>
 #include <random>
 #include <sstream>
+#include <scsi/sg.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
 
+#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 
-using namespace std;
-using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
+using namespace std;
+using namespace OHOS::StorageService;
 constexpr int32_t NODE_PERM = 0660;
 constexpr int32_t MIN_UUID_LENGTH = 1;
 constexpr int32_t MAX_UUID_LENGTH = 40;
+constexpr int32_t DEF_TIMEOUT = 120000;
+constexpr int32_t SENSE_BUFF_LEN = 64;
+constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
+constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
+constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
+constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
+constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
 constexpr int32_t UUID_HEX_LENGTH = 8;
 constexpr uint32_t UUID_RANDOM_MASK = 0xFFFFFFFF;
