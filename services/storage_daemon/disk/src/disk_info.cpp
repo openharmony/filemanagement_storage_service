@@ -245,7 +245,6 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
             LOGE("eject failed, %{public}d", res);
             return res;
         }
-        LOGE("Eject E_OK");
         return E_OK;
     }
 
@@ -256,7 +255,6 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
         if (ret != E_OK) {
             LOGE("Destroy volume %{public}s failed", volumeId.c_str());
         }
-        LOGE("DestroyVolume E_OK");
         return E_OK;
     } else {
         LOGI("ejectStatus is %{public}s", ejectStatus.c_str());
