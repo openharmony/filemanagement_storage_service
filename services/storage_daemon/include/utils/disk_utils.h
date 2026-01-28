@@ -38,6 +38,11 @@ std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
 std::string GenerateRandomUuid();
+int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
+int ReadDiscInfo(int fd, uint8_t *buf, int len);
+void IsExistCD(const std::string &diskBlock, bool &isExistCD);
+int IsBlankCD(const std::string &diskBlock, bool &isBlankCD);
+int Eject(const std::string devPath);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 
