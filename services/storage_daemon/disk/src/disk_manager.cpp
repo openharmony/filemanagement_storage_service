@@ -129,7 +129,7 @@ void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
         for (auto &diskInfo : disk_) {
             if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
                 diskInfo->ReadMetadata();
-                diskInfo->ReadPartition();
+                diskInfo->ReadPartition(data->GetEjectRequest());
                 return;
             }
         }
