@@ -310,7 +310,7 @@ int IsBlankCD(const std::string &diskBlock, bool &isBlankCD)
     return E_OK;
 }
 
-int Eject(const std::string devPath)
+int Eject(const std::string &devPath)
 {
     std::vector<std::string> output;
     std::vector<std::string> cmd = {
