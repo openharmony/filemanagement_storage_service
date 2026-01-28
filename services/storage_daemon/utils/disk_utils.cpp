@@ -258,8 +258,8 @@ int ReadDiscInfo(int fd, uint8_t *buf, int len)
 {
     uint8_t cdb[READ_DISC_INFO_CDB_LEN] = {READ_DISC_INFO_OPCODE};
     cdb[0] = READ_DISC_INFO_OPCODE;
-    cdb[CDB_ALLOCATION_LENGTH_HIGH] = (uint8_t)(len >> CDB_ALLOCATION_LENGTH_LOW);
-    cdb[CDB_ALLOCATION_LENGTH_LOW] = (uint8_t)(len & MAX_ALLOC_LEN);
+    cdb[CDB_ALLOCATION_LENGTH_HIGH] = static_cast<uint8_t>(len >> CDB_ALLOCATION_LENGTH_LOW);
+    cdb[CDB_ALLOCATION_LENGTH_LOW] = static_cast<uint8_t>(len & MAX_ALLOC_LEN);
     return SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
 }
 
