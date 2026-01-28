@@ -287,18 +287,18 @@ int IsBlankCD(const std::string &diskBlock, bool &isBlankCD)
     int fd = fileno(file);
     if (fd < 0) {
         LOGE("fileno error: %{public}d", errno);
-        fclose(file);
+        (void)fclose(file);
         return E_ERR;
     }
     if (ReadDiscInfo(fd, buf, sizeof(buf)) == 0) {
         uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
         isBlankCD = (discStatus == 0);
-        fclose(file);
+        (void)fclose(file);
         return E_OK;
     } else {
         LOGE("Unable to read disc information.");
     }
-    fclose(file);
+    (void)fclose(file);
     return E_OK;
 }
 
