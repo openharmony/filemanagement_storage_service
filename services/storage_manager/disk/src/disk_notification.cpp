@@ -45,7 +45,6 @@ void DiskNotification::NotifyDiskChange(StorageDaemon::DiskInfo::DiskState notif
     switch (notifyCode) {
         case StorageDaemon::DiskInfo::DiskState::REMOVED:
             LOGI("notifycode: REMOVED");
-            wantParams.SetParam("diskId", AAFwk::String::Box(disk->GetDiskId()));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_REMOVED);
             break;
         case StorageDaemon::DiskInfo::DiskState::MOUNTED:
