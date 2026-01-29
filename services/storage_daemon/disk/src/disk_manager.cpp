@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -92,6 +92,8 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
             uint32_t flag = static_cast<uint32_t>(config->GetFlag());
             if (major == DISK_MMC_MAJOR) {
                 flag |= DiskInfo::DeviceFlag::SD_FLAG;
+            } else if (major == DISK_CD_MAJOR) {
+                flag |= DiskInfo::DeviceFlag::CD_FLAG;
             } else {
                 flag |= DiskInfo::DeviceFlag::USB_FLAG;
             }
@@ -127,7 +129,7 @@ void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
         for (auto &diskInfo : disk_) {
             if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
                 diskInfo->ReadMetadata();
-                diskInfo->ReadPartition();
+                diskInfo->ReadPartition(data->GetEjectRequest());
                 return;
             }
         }

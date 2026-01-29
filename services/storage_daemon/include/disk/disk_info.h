@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,6 +29,7 @@ public:
     enum DeviceFlag {
         SD_FLAG = 1,
         USB_FLAG = 2,
+        CD_FLAG = 3,
     };
     enum class Table {
         UNKNOWN,
@@ -41,7 +42,9 @@ public:
     int Create();
     int Destroy();
     void ReadMetadata();
-    int ReadPartition();
+    int ReadPartition(const std::string &ejectStatus = "");
+    int ReadPartitionCD(const std::string &ejectStatus);
+    int ReadPartitionUSB();
     int CreateVolume(dev_t dev);
     int Partition();
     dev_t GetDevice() const;

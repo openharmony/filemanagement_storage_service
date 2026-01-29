@@ -76,12 +76,13 @@ ohos_unittest("disk_utils_test") {
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include/mock",
+    "${storage_daemon_path}/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
     "common/help_utils.cpp",
-    "${storage_daemon_path}/utils/disk_utils.cpp",
+    "${storage_daemon_path}/mock/disk_func_mock.cpp",
     "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "disk_utils_test.cpp",
   ]

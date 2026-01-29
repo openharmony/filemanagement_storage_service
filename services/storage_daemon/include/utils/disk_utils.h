@@ -23,6 +23,10 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr int DISK_MMC_MAJOR = 179;
 constexpr int MAX_SCSI_VOLUMES = 15;
+constexpr int DISK_CD_MAJOR = 11;
+constexpr int DISC_STATUS_BYTE_INDEX = 2;
+constexpr uint8_t DISC_STATUS_MASK = 0x03;
+constexpr int MAX_BUF = 4096;
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
@@ -34,6 +38,11 @@ std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
 std::string GenerateRandomUuid();
+int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
+int ReadDiscInfo(int fd, uint8_t *buf, int len);
+void IsExistCD(const std::string &diskBlock, bool &isExistCD);
+int IsBlankCD(const std::string &diskBlock, bool &isBlankCD);
+int Eject(const std::string &devPath);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 
