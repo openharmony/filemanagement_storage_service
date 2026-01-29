@@ -305,7 +305,7 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
     int fd = fileno(file);
     if (fd < 0) {
         LOGE("fileno error: %{public}d", errno);
-        fclose(file);
+        (void)fclose(file);
         return E_ERR;
     }
     uint8_t cdb[READ_DISC_INFO_CDB_LEN] = { cmdIndex };
@@ -315,10 +315,10 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
     int ret = SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
     if (ret != 0) {
         LOGE("SendScsiCmd faild: %{public}d", ret);
-        fclose(file);
+        (void)fclose(file);
         return ret;
     }
-    fclose(file);
+    (void)fclose(file);
     return E_OK;
 }
 
