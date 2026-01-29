@@ -59,7 +59,12 @@ int32_t ExternalVolumeInfo::ReadMetadata()
         };
         fsLabel_ = GetVolDescByNtfsLabel(cmd);
     } else if (fsType_ == "udf" || fsType_ == "iso9660") {
-        fsUuid_ = GenerateRandomUuid();
+        if (fsUuid_.empty()) {
+            fsUuid_ = GenerateRandomUuid(devPath_);
+        }
+        if (fsLabel_.empty()) {
+            fsLabel_ = GetCDType(devPath_);
+        }
         return E_OK;
     }
     return ret;
@@ -622,6 +627,7 @@ int32_t ExternalVolumeInfo::DoCheck()
 
     // check fstype
     for (std::string item : supportMountType_) {
+        LOGE("Check item type is %{public}s, currentType is %{public}s", item.c_str(), fsType_.c_str());
         if (item == fsType_) {
             return E_OK;
         }

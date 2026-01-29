@@ -69,6 +69,7 @@ ohos_shared_library("storage_manager") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [
       "disk/src/disk_manager_service.cpp",
+      "disk/src/disk_notification.cpp",
       "volume/src/notification.cpp",
       "volume/src/volume_manager_service.cpp",
       "volume/src/volume_manager_service_ext.cpp",

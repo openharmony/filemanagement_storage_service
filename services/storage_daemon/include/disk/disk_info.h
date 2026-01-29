@@ -36,6 +36,10 @@ public:
         MBR,
         GPT,
     };
+    enum DiskState {
+        MOUNTED,
+        REMOVED,
+    };
 
     DiskInfo(std::string &sysPath_, std::string &devPath_, dev_t device, int flag);
     virtual ~DiskInfo();

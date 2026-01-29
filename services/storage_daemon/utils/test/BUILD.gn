@@ -100,6 +100,7 @@ ohos_unittest("disk_utils_test") {
     "ipc:ipc_single",
     "ipc:libdbinder",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 

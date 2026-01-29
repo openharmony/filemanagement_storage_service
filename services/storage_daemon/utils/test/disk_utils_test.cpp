@@ -638,7 +638,7 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_01, TestSize.Level1)
     bool isBlankCD = false;
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(nullptr));
     int32_t result = IsBlankCD(diskBlock, isBlankCD);
-    EXPECT_EQ(result, E_ERR);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_01 end";
 }
 
@@ -658,7 +658,7 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_02, TestSize.Level1)
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(-1));
     int32_t result = IsBlankCD(diskBlock, isBlankCD);
-    EXPECT_EQ(result, E_ERR);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_02 end";
 }
 
@@ -723,6 +723,97 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_05, TestSize.Level1)
     int32_t result = IsBlankCD(diskBlock, isBlankCD);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "DiskUtilsTest_IsBlankCD_05 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_DiskType2Str_01
+ * @tc.desc: the DiskType2Str function to convert code for various CD types has been verified.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_DiskType2Str_01, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_DiskType2Str_01 start";
+
+    std::string str = DiskType2Str(0x08); // 0x08 is CD-ROM
+    EXPECT_EQ(str, "CD-ROM");
+
+    str = DiskType2Str(0x09); // 0x09 is CD-R
+    EXPECT_EQ(str, "CD-R");
+
+    str = DiskType2Str(0x0A); // 0x0A is CD-RW
+    EXPECT_EQ(str, "CD-RW");
+
+    str = DiskType2Str(0x10); // 0x10 is DVD-ROM
+    EXPECT_EQ(str, "DVD-ROM");
+
+    str = DiskType2Str(0x11); // 0x11 is DVD-R
+    EXPECT_EQ(str, "DVD-R");
+
+    str = DiskType2Str(0x12); // 0x12 is DVD-RAM
+    EXPECT_EQ(str, "DVD-RAM");
+
+    str = DiskType2Str(0x13); // 0x13 is DVD-RW
+    EXPECT_EQ(str, "DVD-RW");
+
+    str = DiskType2Str(0x14); // 0x14 is DVD-RW
+    EXPECT_EQ(str, "DVD-RW");
+
+    str = DiskType2Str(0x1A); // 0x1A is DVD+RW
+    EXPECT_EQ(str, "DVD+RW");
+
+    str = DiskType2Str(0x1B); // 0x1B is DVD+R
+    EXPECT_EQ(str, "DVD+R");
+
+    str = DiskType2Str(0x1C); // 0x1C is DVD+R
+    EXPECT_EQ(str, "DVD+R");
+
+    str = DiskType2Str(0x1D); // 0x1D is DVD+RW
+    EXPECT_EQ(str, "DVD+RW");
+
+    str = DiskType2Str(0x01); // 0x01 is default
+    EXPECT_EQ(str, "");
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_DiskType2Str_01 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCDType_01
+ * @tc.desc:
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_01, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_01 start";
+
+    std::string diskPath = "/dev/test/getcdtype01";
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(nullptr));
+
+    std::string str = GetCDType(diskPath);
+    EXPECT_EQ(str, "");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_01 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCDType_02
+ * @tc.desc:
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_02, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_02 start";
+
+    std::string diskPath = "/dev/test/getcdtype02";
+    FILE * tmpFile = tmpfile();
+    EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
+    EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(0));
+
+    std::string str = GetCDType(diskPath);
+    EXPECT_EQ(str, "");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_02 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -30,6 +30,7 @@ ohos_unittest("disk_manager_service_test") {
   sources = [
     "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    "${storage_manager_path}/disk/src/disk_notification.cpp",
     "${storage_manager_path}/mock/mock_parameters.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "disk_manager_service_test.cpp",
@@ -85,7 +86,74 @@ ohos_unittest("disk_manager_service_test") {
   }
 }
 
+ohos_unittest("disk_notification_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
+    "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    "${storage_manager_path}/disk/src/disk_notification.cpp",
+    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
+    "${storage_manager_path}/volume/src/notification.cpp",
+    "disk_notification_test.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/mock",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
+    "include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "cJSON:cjson",
+    "hicollie:libhicollie",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+  ]
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
+  }
+}
+
 group("storage_manager_disk_test") {
   testonly = true
-  deps = [ ":disk_manager_service_test" ]
+  deps = [
+    ":disk_manager_service_test",
+    ":disk_notification_test",
+  ]
 }

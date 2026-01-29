@@ -22,7 +22,8 @@ namespace OHOS {
 namespace StorageManager {
 enum {
     SD_FLAG = 1,
-    USB_FLAG
+    USB_FLAG = 2,
+    CD_FLAG = 3,
 };
 class Disk : public Parcelable {
 public:

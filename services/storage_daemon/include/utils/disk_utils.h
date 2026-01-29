@@ -37,12 +37,14 @@ int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
-std::string GenerateRandomUuid();
+std::string DiskType2Str(uint8_t diskType);
+std::string GetCDType(const std::string &diskPath);
+std::string GenerateRandomUuid(const std::string &diskPath);
+int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len);
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
-int ReadDiscInfo(int fd, uint8_t *buf, int len);
-void IsExistCD(const std::string &diskBlock, bool &isExistCD);
-int IsBlankCD(const std::string &diskBlock, bool &isBlankCD);
+int IsBlankCD(const std::string &diskPath, bool &isBlankCD);
 int Eject(const std::string &devPath);
+void IsExistCD(const std::string &diskPath, bool &isExistCD);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 
