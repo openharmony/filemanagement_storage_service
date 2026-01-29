@@ -34,7 +34,7 @@ void DiskNotification::NotifyDiskChange(StorageDaemon::DiskInfo::DiskState notif
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
     if (disk == nullptr) {
-        LOGE("DiskManagerService::NotifyDiskChange volume is nullptr");
+        LOGE("DiskManagerService::NotifyDiskChange disk is nullptr");
         return;
     }
     wantParams.SetParam("diskId", AAFwk::String::Box(disk->GetDiskId()));
