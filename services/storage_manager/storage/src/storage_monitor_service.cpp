@@ -530,8 +530,8 @@ void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel
 {
     AAFwk::Want want;
     want.SetAction("usual.event.DEVICE_STORAGE_LOW");
-    EventFwk::CommonEventData commonData{want};
     want.SetParam(CLEAN_LEVEL, static_cast<std::string>(cleanLevel));
+    EventFwk::CommonEventData commonData{want};
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);
     LOGI("Send usual.event.DEVICE_STORAGE_LOW event success, type is %{public}s.", cleanLevel.c_str());
 }
