@@ -242,7 +242,7 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
         mountPath_,
     };
     std::vector<std::string> output;
- 
+
     if (ForkExec(cmd, &output) != E_OK) {
         LOGE("exec mount for udf failed, errno is %{public}d.", errno);
         return E_UDF_MOUNT;
