@@ -142,6 +142,7 @@ int DiskInfo::Destroy()
         auto ret = volume.DestroyVolume(volumeId);
         if (ret != E_OK) {
             LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            return E_ERR;
         }
     }
     status = S_DESTROY;
