@@ -41,7 +41,6 @@ constexpr int32_t ONE_MB = 1024 * 1024;
 constexpr int32_t ONE_GB = 1024 * 1024 * 1024;
 constexpr int32_t CONST_NUM_TWO = 2;
 constexpr int32_t CONST_NUM_ONE_HUNDRED = 100;
-constexpr int32_t CLEAN_CACHE_WEEK = 7 * 24; // week
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
@@ -54,7 +53,10 @@ constexpr int32_t STORAGE_THIRD_STATIC_HOUR = 16;
 constexpr int32_t STORAGE_FIRST_STATIC_MINUTE = 0;
 constexpr int32_t STORAGE_SECOND_STATIC_MINUTE = 1;
 constexpr const char *STORAGE_ALERT_CLEANUP_PARAMETER = "const.storage_service.storage_alert_policy";
-constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
+constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:12%";
+constexpr const char *STORAGE_ALERT_INODE_CLEANUP_PARAMETER = "const.storage_service.inode_alert_policy";
+constexpr const char *INODE_DEFAULT_PARAMS =
+    "notify_l:25000/notify_m:100000/notify_h:10%/clean_l:37500/clean_m:5%/clean_h:12%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
 const std::string TIMESTAMP_DAY = "persist.storage_manager.timestamp.day";
@@ -63,7 +65,15 @@ const std::string FAULT_ID_ONE = "845010021";
 const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
 const std::string FAULT_SUGGEST_THREE = "545010023";
-constexpr int RETRY_MAX_TIMES = 3;
+const std::string FAULT_ID_INODE_HIGH = "845010008";
+const std::string FAULT_ID_INODE_MEDIUM = "845010009";
+const std::string FAULT_ID_INODE_LOW = "845010010";
+const std::string FAULT_INODE_SUGGEST_HIGH = "545010008";
+const std::string FAULT_INODE_SUGGEST_MEDIUM = "545010009";
+const std::string FAULT_INODE_SUGGEST_LOW = "545010010";
+const std::string CLEAN_TYPE = "type";
+const std::string CLEAN_FREE = "free";
+const std::string CLEAN_TOTAL = "total";
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -151,22 +161,41 @@ void StorageMonitorService::MonitorAndManageStorage()
         LOGE("Get device free size failed.");
         return;
     }
-    ParseStorageParameters(totalSize);
 
-    LOGI("clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
-         static_cast<long long>(thresholds["clean_l"]), static_cast<long long>(thresholds["clean_m"]),
-         static_cast<long long>(thresholds["clean_h"]));
-    if (freeSize < thresholds["clean_h"]) {
-        CheckAndCleanCache(freeSize, totalSize);
-    } else {
-        SendCommonEventToCleanCache(CLEAN_LEVEL_RICH);
+    int64_t totalInode;
+    err = StorageTotalStatusService::GetInstance().GetTotalInodes(totalInode);
+    if ((err != E_OK) || (totalInode <= 0)) {
+        LOGE("Get device total inode fail");
+        return;
     }
 
-    LOGI("notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
+    int64_t freeInode;
+    err = StorageTotalStatusService::GetInstance().GetFreeInodes(freeInode);
+    if ((err != E_OK) || (freeInode < 0)) {
+        LOGE("Get device free inode fail");
+        return;
+    }
+
+    ParseStorageParameters(totalSize, totalInode);
+    struct SizeInfo sizeInfo = {freeSize, totalSize, 0, 0};
+    LOGI("space clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
+         static_cast<long long>(thresholds["clean_l"]), static_cast<long long>(thresholds["clean_m"]),
+         static_cast<long long>(thresholds["clean_h"]));
+    LOGI("Inode clean_l, size=%{public}" PRId64 ", clean_m, size=%{public}" PRId64 ", clean_h, size=%{public}" PRId64,
+         inodeThresholds_["clean_l"], inodeThresholds_["clean_m"], inodeThresholds_["clean_h"]);
+    if (freeSize < thresholds["clean_h"] || freeInode < inodeThresholds_["clean_h"]) {
+        CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
+    } else {
+        SendCommonEventToCleanCache(CLEAN_LEVEL_RICH, sizeInfo, true);
+    }
+
+    LOGI("space notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
         static_cast<long long>(thresholds["notify_l"]), static_cast<long long>(thresholds["notify_m"]),
         static_cast<long long>(thresholds["notify_h"]));
-    if (freeSize < thresholds["notify_h"]) {
-        CheckAndEventNotify(freeSize, totalSize);
+    LOGI("Inode notify_l, size=%{public}" PRId64 ", notify_m, size=%{public}" PRId64 ", notify_h,size=%{public}" PRId64,
+         inodeThresholds_["notify_l"], inodeThresholds_["notify_m"], inodeThresholds_["notify_h"]);
+    if (freeSize < thresholds["notify_h"] || freeInode < inodeThresholds_["notify_h"]) {
+        CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
         hasNotifiedStorageEvent_ = true;
     } else if (hasNotifiedStorageEvent_) {
         RefreshAllNotificationTimeStamp();
@@ -183,15 +212,71 @@ std::string StorageMonitorService::GetStorageAlertCleanupParams()
     if (ret <= 0) {
         LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
              STORAGE_ALERT_CLEANUP_PARAMETER, ret);
+        std::string extraData = "Get param for storage_alert_policy, ret = " + std::to_string(ret);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_GET_CCM_PARA, extraData);
         return DEFAULT_PARAMS;
     }
 
     return tmpBuffer;
 }
 
-void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
+std::string StorageMonitorService::GetStorageAlertInodeCleanupParams()
 {
-    std::string storageParams = GetStorageAlertCleanupParams();
+    char tmpBuffer[STORAGE_PARAMS_PATH_LEN] = {0};
+    int ret = GetParameter(STORAGE_ALERT_INODE_CLEANUP_PARAMETER, INODE_DEFAULT_PARAMS, tmpBuffer,
+                           STORAGE_PARAMS_PATH_LEN);
+    if (ret <= 0) {
+        LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
+             STORAGE_ALERT_INODE_CLEANUP_PARAMETER, ret);
+        std::string extraData = "Get param for inode_alert_policy, ret = " + std::to_string(ret);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_GET_CCM_PARA, extraData);
+        return INODE_DEFAULT_PARAMS;
+    }
+    return tmpBuffer;
+}
+
+bool StorageMonitorService::isNumberString(const std::string &str)
+{
+    return !str.empty() && std::all_of(str.begin(), str.end(),
+        [](unsigned char c) { return std::isdigit(c); });
+}
+
+void StorageMonitorService::ParseStorageInodeParameters(int64_t totalInode, const std::string storageInodeParams)
+{
+    std::istringstream inodeParamsStream(storageInodeParams);
+    std::string item;
+    while (std::getline(inodeParamsStream, item, '/')) {
+        std::string key;
+        std::string value;
+
+        size_t pos = item.find(':');
+        if (pos != std::string::npos) {
+            key = item.substr(0, pos);
+            value = item.substr(pos + 1);
+        } else {
+            LOGE("Invalid parameter format, item=%{public}s", item.c_str());
+            continue;
+        }
+
+        if (value.length() > 1 && value.substr(value.length() - 1) == "%") {
+            int32_t percentage = std::atoi(value.substr(0, value.length() - 1).c_str());
+            if (percentage < 0 || percentage > CONST_NUM_ONE_HUNDRED) {
+                LOGE("Invalid percentage value, percentage=%{public}d", percentage);
+            } else {
+                int64_t inodeSize = (totalInode * percentage) / CONST_NUM_ONE_HUNDRED;
+                inodeThresholds_[key] = static_cast<int64_t>(inodeSize);
+            }
+        } else if (value.length() > 0 && isNumberString(value)) {
+            int64_t inodeSize = std::atoi(value.c_str());
+            inodeThresholds_[key] = inodeSize;
+        } else {
+            LOGE("parameter value format is invalid, value=%{public}s", value.c_str());
+        }
+    }
+}
+
+void StorageMonitorService::ParseStorageSizeParameters(int64_t totalSize, const std::string storageParams)
+{
     std::istringstream storageParamsStream(storageParams);
     std::string item;
     while (std::getline(storageParamsStream, item, '/')) {
@@ -237,60 +322,77 @@ void StorageMonitorService::ParseStorageParameters(int64_t totalSize)
     }
 }
 
-void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSize)
+void StorageMonitorService::ParseStorageParameters(int64_t totalSize, int64_t totalInode)
+{
+    std::string storageParams = GetStorageAlertCleanupParams();
+    std::string storageInodeParams = GetStorageAlertInodeCleanupParams();
+    ParseStorageSizeParameters(totalSize, storageParams);
+    ParseStorageInodeParameters(totalInode, storageInodeParams);
+}
+
+void StorageMonitorService::HandleEventAndClean(const std::string &cleanLevel, struct SizeInfo &sizeInfo)
 {
     int64_t lowThreshold = thresholds["clean_l"];
-    if (lowThreshold <= 0) {
+    int64_t lowInodeThreshold = inodeThresholds_["clean_l"];
+    bool isCleanSpace = true;
+    if (cleanLevel == CLEAN_LEVEL_LOW) {
+        isCleanSpace = sizeInfo.freeSize < lowThreshold ? true : false;
+    } else if (cleanLevel == CLEAN_LEVEL_MEDIUM) {
+        isCleanSpace = sizeInfo.freeSize < thresholds["clean_m"] ? true : false;
+    } else {
+        isCleanSpace = sizeInfo.freeSize < thresholds["clean_h"] ? true : false;
+    }
+
+    int32_t ret = SendCommonEventToCleanCache(cleanLevel, sizeInfo, isCleanSpace);
+    if (ret == E_CLEAN_TIME_INTERVAL_NOT_ENOUGH) {
+        return;
+    }
+    CleanBundleCache(lowThreshold, lowInodeThreshold, isCleanSpace, cleanLevel);
+}
+
+void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSize, int64_t freeInode,
+                                               int64_t totalInode)
+{
+    int64_t lowThreshold = thresholds["clean_l"];
+    int64_t lowInodeThreshold = inodeThresholds_["clean_l"];
+    if (lowThreshold <= 0 || lowInodeThreshold <= 0) {
         LOGE("Lower threshold value is invalid.");
         return;
     }
-
-    LOGI("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
-         static_cast<long long>(lowThreshold));
+    LOGI("Device storage or inode not enough, freeSize=%{public}lld, freeInode=%{public}lld",
+         static_cast<long long>(freeSize), static_cast<long long>(freeInode));
 
     std::string freeSizeStr = std::to_string(freeSize);
     std::string totalSizeStr = std::to_string(totalSize);
     std::string lowThresholdStr = std::to_string(lowThreshold);
+    std::string freeInodeStr = std::to_string(freeInode);
+    std::string totalInodeStr = std::to_string(totalInode);
+    std::string lowInodeThresholdStr = std::to_string(lowInodeThreshold);
     std::string storageUsage = "storage usage not enough:freeSize = " + freeSizeStr + ", totalSize = " + totalSizeStr +
-                               ", lowThreshold = " + lowThresholdStr;
-    if (freeSize < lowThreshold) {
-        SendCommonEventToCleanCache(CLEAN_LEVEL_LOW);
-        CleanBundleCache(lowThreshold);
+                               ", lowThreshold = " + lowThresholdStr + ", freeInode = " + freeInodeStr +
+                               ", totalInode = " + totalInodeStr + ", lowInodeThreshold = " + lowInodeThresholdStr;
+
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = freeSize;
+    sizeInfo.totalSize = totalSize;
+    sizeInfo.freeInode = freeInode;
+    sizeInfo.totalInode = totalInode;
+    if (freeSize < lowThreshold || freeInode < lowInodeThreshold) {
+        HandleEventAndClean(CLEAN_LEVEL_LOW, sizeInfo);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_LOW, storageUsage);
-        LOGI("Device running out of storage");
+        LOGI("Device running is lower than low threshold");
         return;
     }
-
-    if (freeSize > thresholds["clean_m"]) {
-        SendCommonEventToCleanCache(CLEAN_LEVEL_HIGH);
-        CleanBundleCacheByInterval(TIMESTAMP_WEEK, lowThreshold, CLEAN_CACHE_WEEK);
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_HIGH, storageUsage);
-    } else {
-        SendCommonEventToCleanCache(CLEAN_LEVEL_MEDIUM);
-        CleanBundleCacheByInterval(TIMESTAMP_DAY, lowThreshold, SEND_EVENT_INTERVAL);
+    if (freeSize < thresholds["clean_m"] || freeInode < inodeThresholds_["clean_m"]) {
+        HandleEventAndClean(CLEAN_LEVEL_MEDIUM, sizeInfo);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_MEDIUM, storageUsage);
+        LOGI("Device running is lower than medium threshold");
+    } else {
+        HandleEventAndClean(CLEAN_LEVEL_HIGH, sizeInfo);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_HIGH, storageUsage);
+        LOGI("Device running is lower than high threshold");
     }
-}
-
-void StorageMonitorService::CleanBundleCacheByInterval(const std::string &timestamp,
-                                                       int64_t lowThreshold, int32_t checkInterval)
-{
-    auto currentTime = std::chrono::system_clock::now();
-    auto curTimePoint =
-            std::chrono::time_point_cast<std::chrono::hours>(currentTime).time_since_epoch().count();
-    std::string param = system::GetParameter(timestamp, "");
-    if (param.empty()) {
-        LOGI("Not found timestamp from system parameter");
-        return;
-    }
-    uint64_t lastCleanCacheTime = static_cast<uint64_t>(std::atoll(param.c_str()));
-    auto duration = std::chrono::duration_cast<std::chrono::hours>(currentTime -
-            std::chrono::system_clock::time_point(std::chrono::hours(lastCleanCacheTime))).count();
-    LOGI("CleanBundleCache timestamp is %{public}s, duration is %{public}ld", timestamp.c_str(), duration);
-    if (duration >= checkInterval) {
-        CleanBundleCache(lowThreshold);
-        system::SetParameter(timestamp, std::to_string(curTimePoint));
-    }
+    cleanLowLevelTime_.store(CLEAN_LOW_LEVEL_TIME);
 }
 
 void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData)
@@ -299,7 +401,8 @@ void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStag
     StorageService::StorageRadar::ReportStorageUsage(stage, extraData);
 }
 
-void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
+void StorageMonitorService::CleanBundleCache(int64_t lowThreshold, int64_t lowInodeThreshold, bool isCleanSpace,
+                                             const std::string &cleanLevel)
 {
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
@@ -307,40 +410,110 @@ void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
         return;
     }
     LOGI("Device storage free size not enough, start clean bundle cache files automatic.");
-    int32_t ret = E_OK;
-    int retryCount = 0;
-    do {
-        ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
-        if (ret == ERR_OK) {
-            LOGI("Invoke bundleMgr interface to clean bundle cache files automatic success.");
-            return;
+    int32_t ret = ERR_OK;
+    std::optional<uint64_t> cleanedSize = 0;
+    if (isCleanSpace) {
+        ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO,
+            static_cast<OHOS::AppExecFwk::CleanType>(CleanType::CACHE_SPACE), cleanedSize);
+    } else {
+        ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowInodeThreshold * CONST_NUM_TWO,
+            static_cast<OHOS::AppExecFwk::CleanType>(CleanType::CACHE_INODE), cleanedSize);
+    }
+    if (ret != ERR_OK) {
+        LOGE("Invoke bundleMgr interface to clean bundle cache automatic fail, ret=%{public}d", ret);
+        StorageRadar::ReportBundleMgrResult("CleanBundleCacheFilesAutomatic", ret, DEFAULT_USERID, "");
+        return;
+    }
+    if (!cleanedSize.has_value()) {
+        LOGW("bundleMgr cleanedSize is empty");
+    }
+    if (cleanLevel == CLEAN_LEVEL_LOW) {
+        if (isCleanSpace && cleanedSize < static_cast<uint64_t>(lowThreshold * CONST_NUM_TWO)) {
+            LOGW("space cleanedSize did not meet expectations, cleanedSize=%{public}" PRIu64, cleanedSize.value_or(0));
+            cleanLowLevelTime_.store(CLEAN_LOW_TIME_ONE_HOUR);
+        } else if (!isCleanSpace && cleanedSize < static_cast<uint64_t>(lowInodeThreshold * CONST_NUM_TWO)) {
+            LOGW("inode cleanedSize did not meet expectations, cleanedSize=%{public}" PRIu64, cleanedSize.value_or(0));
+            cleanLowLevelTime_.store(CLEAN_LOW_TIME_ONE_HOUR);
         }
-        retryCount ++;
-        LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed. Retry.");
-    } while (retryCount < RETRY_MAX_TIMES);
-    StorageRadar::ReportBundleMgrResult("CleanBundleCacheFilesAutomatic", ret, DEFAULT_USERID, "");
+    }
+    LOGI("Invoke bundleMgr interface to clean bundle cache files automatic success. cleanedSize=%{public}" PRIu64,
+         cleanedSize.value_or(0));
 }
 
-void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize)
+void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize, int64_t freeInode,
+                                                int64_t totalInode)
 {
-    LOGI("StorageMonitorService, start CheckAndEventNotify.");
+    LOGI("Device storage or inode not enough, start to check and notify, freeSize=%{public}" PRId64
+         ", freeInode=%{public}" PRId64, freeSize, freeInode);
     std::string freeSizeStr = std::to_string(freeSize);
     std::string totalSizeStr = std::to_string(totalSize);
+    std::string freeInodeStr = std::to_string(freeInode);
+    std::string totalInodeStr = std::to_string(totalInode);
     std::string storageUsage = "storage usage not enough event notify freeSize = " + freeSizeStr + ", totalSize = " +
-                               totalSizeStr;
-    if (freeSize < thresholds["notify_l"]) {
-        EventNotifyFreqHandlerForLow();
-        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_l"]) + ", success notify event";
+                               totalSizeStr + ", freeInode = " + freeInodeStr + ", totalInode = " + totalInodeStr;
+    bool isCleanSpace = true;
+    if (freeSize < thresholds["notify_l"] || freeInode < inodeThresholds_["notify_l"]) {
+        isCleanSpace = freeSize < thresholds["notify_l"] ? true : false;
+        EventNotifyFreqHandlerForLow(isCleanSpace, freeInode, totalInode);
+        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_l"]) + ", freeInode < " +
+                        std::to_string(inodeThresholds_["notify_l"]) + ", success notify event";
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_LOW, storageUsage);
         return;
     }
-    if (freeSize < thresholds["notify_m"]) {
-        EventNotifyFreqHandlerForMedium();
-        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_m"]) + ", success notify event";
+    if (freeSize < thresholds["notify_m"] || freeInode < inodeThresholds_["notify_m"]) {
+        isCleanSpace = freeSize < thresholds["notify_m"] ? true : false;
+        EventNotifyFreqHandlerForMedium(isCleanSpace, freeInode, totalInode);
+        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_m"]) + ", freeInode < " +
+                        std::to_string(inodeThresholds_["notify_m"]) + ", success notify event";
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM, storageUsage);
         return;
     }
-    EventNotifyFreqHandlerForHigh();
+    isCleanSpace = freeSize < thresholds["notify_h"] ? true : false;
+    EventNotifyFreqHandlerForHigh(isCleanSpace, freeInode, totalInode);
+}
+
+std::string StorageMonitorService::GetJsonStringForInode(const std::string &faultDesc,
+                                                         const std::string &faultSuggest,
+                                                         int64_t freeInode,
+                                                         int64_t totalInode)
+{
+    std::string eventDataStr = "{}";
+    cJSON *root = cJSON_CreateObject();
+    if (root == nullptr) {
+        LOGE("Create json object failed.");
+        return eventDataStr;
+    }
+    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
+    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
+
+    cJSON *params = cJSON_CreateObject();
+    if (params == nullptr) {
+        LOGE("Create params json object failed.");
+        cJSON_Delete(root);
+        return eventDataStr;
+    }
+    std::string freeInodeStr = std::to_string(freeInode);
+    std::string totalInodeStr = std::to_string(totalInode);
+    cJSON_AddStringToObject(params, "free", freeInodeStr.c_str());
+    cJSON_AddStringToObject(params, "total", totalInodeStr.c_str());
+
+    if (!cJSON_AddItemToObject(root, "extraData", params)) {
+        LOGE("Add params to root failed.");
+        cJSON_Delete(params);
+        cJSON_Delete(root);
+        return eventDataStr;
+    }
+
+    char *json_str = cJSON_Print(root);
+    if (json_str == nullptr) {
+        LOGE("Print json string failed.");
+        cJSON_Delete(root);
+        return eventDataStr;
+    }
+    eventDataStr = json_str;
+    cJSON_free(json_str);
+    cJSON_Delete(root);
+    return eventDataStr;
 }
 
 std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
@@ -383,6 +556,34 @@ std::string StorageMonitorService::GetJsonString(const std::string &faultDesc,
     return eventDataStr;
 }
 
+void StorageMonitorService::SendSmartNotificationInodeEvent(const std::string &faultDesc,
+                                                            const std::string &faultSuggest,
+                                                            int64_t freeInode,
+                                                            int64_t totalInode)
+{
+    LOGI("StorageMonitorService, start SendSmartNotificationInodeEvent.");
+    EventFwk::CommonEventPublishInfo publishInfo;
+    const std::string permission = PUBLISH_SYSTEM_COMMON_EVENT;
+    std::vector<std::string> permissions;
+    permissions.emplace_back(permission);
+    publishInfo.SetSubscriberPermissions(permissions);
+    publishInfo.SetOrdered(false);
+    publishInfo.SetSticky(false);
+
+    AAFwk::Want want;
+    want.SetAction(SMART_ACTION);
+    EventFwk::CommonEventData eventData;
+    eventData.SetWant(want);
+
+    std::string eventDataStr = GetJsonStringForInode(faultDesc, faultSuggest, freeInode, totalInode);
+    eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\n'), eventDataStr.end());
+    eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\t'), eventDataStr.end());
+
+    LOGI("send message is %{public}s", eventDataStr.c_str());
+    eventData.SetData(eventDataStr);
+    EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
+}
+
 void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
                                                        const std::string &faultSuggest,
                                                        bool isHighFreq)
@@ -410,12 +611,12 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
 
-void StorageMonitorService::EventNotifyFreqHandlerForLow()
+void StorageMonitorService::EventNotifyFreqHandlerForLow(bool isCleanSpace, int64_t freeInode, int64_t totalInode)
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::minutes>
             (currentTime - lastNotificationTimeHighFreq_).count());
-    LOGW("StorageMonitorService left Storage Size < Low, duration is %{public}d", duration);
+    LOGW("StorageMonitorService notify, left Storage Size < Low, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL_HIGH_FREQ) {
         lastNotificationTimeHighFreq_ = currentTime;
         lastNotificationTime_ =
@@ -427,12 +628,12 @@ void StorageMonitorService::EventNotifyFreqHandlerForLow()
     }
 }
 
-void StorageMonitorService::EventNotifyFreqHandlerForMedium()
+void StorageMonitorService::EventNotifyFreqHandlerForMedium(bool isCleanSpace, int64_t freeInode, int64_t totalInode)
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
             (currentTime - lastNotificationTimeMedium_).count());
-    LOGW("StorageMonitorService left Storage Size < Medium, duration is %{public}d", duration);
+    LOGW("StorageMonitorService notify, left Storage Size < Medium, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
         lastNotificationTimeMedium_ = currentTime;
         lastNotificationTime_ =
@@ -444,12 +645,12 @@ void StorageMonitorService::EventNotifyFreqHandlerForMedium()
     }
 }
 
-void StorageMonitorService::EventNotifyFreqHandlerForHigh()
+void StorageMonitorService::EventNotifyFreqHandlerForHigh(bool isCleanSpace, int64_t freeInode, int64_t totalInode)
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
             (currentTime - lastNotificationTime_).count());
-    LOGW("StorageMonitorService left Storage Size < High, duration is %{public}d", duration);
+    LOGW("StorageMonitorService notify, left Storage Size < High, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
         lastNotificationTime_ = currentTime;
         lastNotificationTimeMedium_ =
@@ -495,16 +696,17 @@ void StorageMonitorService::HapAndSaStatisticsThd()
     StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
 }
 
-void StorageMonitorService::SendCommonEventToCleanCache(const std::string &cleanLevel)
+int32_t StorageMonitorService::SendCommonEventToCleanCache(const std::string &cleanLevel, struct SizeInfo &sizeInfo,
+                                                           bool isCleanSpace)
 {
     if (cleanLevel.empty()) {
-        return;
+        return E_PARAMS_INVALID;
     }
     std::lock_guard<std::mutex> lock(notifyCleanMtx_);
     time_t now = std::time(nullptr);
     if (now == static_cast<time_t>(E_ERR)) {
         LOGE("get sys time failed, errno is %{public}d", errno);
-        return;
+        return E_PARAMS_INVALID;
     }
     int64_t curTime = static_cast<int64_t>(now);
     int64_t lastNotifyTime = 0;
@@ -512,28 +714,49 @@ void StorageMonitorService::SendCommonEventToCleanCache(const std::string &clean
     if (ret != E_OK) {
         LOGW("GetLastNotifyTime failed, insert a new value.");
         SetLastNotifyTime(cleanLevel, curTime);
-        return;
+        if (lastNotifyTime == 0) {
+            PublishCleanCacheEvent(cleanLevel, isCleanSpace, sizeInfo);
+        }
+        return ret;
     }
     int64_t interval = curTime - lastNotifyTime;
-    if ((cleanLevel == CLEAN_LEVEL_LOW && interval < CLEAN_LOW_TIME) ||
+    if ((cleanLevel == CLEAN_LEVEL_LOW && interval < cleanLowLevelTime_.load()) ||
         (cleanLevel == CLEAN_LEVEL_MEDIUM && interval < CLEAN_MEDIUM_TIME) ||
         (cleanLevel == CLEAN_LEVEL_HIGH && interval < CLEAN_HIGH_TIME) ||
         (cleanLevel == CLEAN_LEVEL_RICH && interval < CLEAN_RICH_TIME)) {
-        return;
+        return E_CLEAN_TIME_INTERVAL_NOT_ENOUGH;
     }
-    PublishCleanCacheEvent(cleanLevel);
+    PublishCleanCacheEvent(cleanLevel, isCleanSpace, sizeInfo);
     SetLastNotifyTime(cleanLevel, curTime);
-    return;
+    return E_OK;
 }
 
-void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel)
+void StorageMonitorService::PublishCleanCacheEvent(const std::string &cleanLevel, bool isCleanSpace,
+                                                   struct SizeInfo &sizeInfo)
 {
     AAFwk::Want want;
     want.SetAction("usual.event.DEVICE_STORAGE_LOW");
+    std::string cleanType = "";
+    int64_t freeSize = 0;
+    int64_t totalSize = 0;
+    if (isCleanSpace) {
+        cleanType = "space";
+        freeSize = sizeInfo.freeSize;
+        totalSize = sizeInfo.totalSize;
+    } else {
+        cleanType = "inode";
+        freeSize = sizeInfo.freeInode;
+        totalSize = sizeInfo.totalInode;
+    }
     want.SetParam(CLEAN_LEVEL, static_cast<std::string>(cleanLevel));
+    want.SetParam(CLEAN_TYPE, static_cast<std::string>(cleanType));
+    want.SetParam(CLEAN_FREE, static_cast<int64_t>(freeSize));
+    want.SetParam(CLEAN_TOTAL, static_cast<int64_t>(totalSize));
     EventFwk::CommonEventData commonData{want};
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);
-    LOGI("Send usual.event.DEVICE_STORAGE_LOW event success, type is %{public}s.", cleanLevel.c_str());
+    LOGI("Send usual.event.DEVICE_STORAGE_LOW event success, cleanLevel=%{public}s, cleantype=%{public}s, "
+         "freeSize=%{public}" PRId64 ", totalSize=%{public}" PRId64, cleanLevel.c_str(), cleanType.c_str(), freeSize,
+         totalSize);
 }
 
 int32_t StorageMonitorService::GetLastNotifyTime(const std::string &cleanLevel, int64_t &lastNotifyTime)

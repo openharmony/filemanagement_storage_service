@@ -82,6 +82,42 @@ ErrCode BundleManagerAdapterProxy::CleanBundleCacheFilesAutomatic(uint64_t cache
     return reply.ReadInt32();
 }
 
+ErrCode BundleManagerAdapterProxy::CleanBundleCacheFilesAutomatic(uint64_t cacheSize, CleanType cleanType,
+                                                                  std::optional<uint64_t>& cleanedSize)
+{
+    if (cacheSize == 0) {
+        LOGE("parameter error, cache size must be greater than 0");
+        return ERR_BUNDLE_MANAGER_INVALID_PARAMETER;
+    }
+
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        LOGE("fail to CleanBundleCacheFilesAutomatic write InterfaceToken fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    if (!data.WriteUint64(cacheSize)) {
+        LOGE("fail to CleanBundleCacheFilesAutomatic write cache size fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    if (!data.WriteInt8(static_cast<int8_t>(cleanType))) {
+        LOGE("fail to CleanBundleCacheFilesAutomatic write clean type fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+
+    MessageParcel reply;
+    if (!SendTransactCmd(BundleMgrInterfaceCode::AUTO_CLEAN_CACHE_BY_INODE, data, reply)) {
+        LOGE("fail CleanBundleCacheFilesAutomatic from CBCFA server");
+        return ERR_BUNDLE_MANAGER_IPC_TRANSACTION;
+    }
+
+    ErrCode result = reply.ReadInt32();
+    bool hasValue = reply.ReadBool();
+    if (hasValue) {
+        cleanedSize = reply.ReadUint64();
+    }
+    return result;
+}
+
 ErrCode BundleManagerAdapterProxy::GetBundleInfosV9(int32_t flags, std::vector<BundleInfo> &bundleInfos, int32_t userId)
 {
     MessageParcel data;

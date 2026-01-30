@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -89,11 +89,12 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_CLEAN_LOW,
     BIZ_STAGE_THRESHOLD_NOTIFY_LOW,
     BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM,
+    BIZ_STAGE_THRESHOLD_GET_CCM_PARA,
 
     BIZ_STAGE_USER_MOUNT = 61,
 
     BIZ_STAGE_MTPFS_MTP_DEVICE = 71,
-    
+
     BIZ_STAGE_NOT_PERMISSION = 81,
 };
 

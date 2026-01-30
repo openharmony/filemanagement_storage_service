@@ -149,6 +149,46 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_CleanBundleCac
 }
 
 /**
+ * @tc.name: BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001
+ * @tc.desc: The execution of the CleanBundleCacheFilesAutomatic failed.
+ * @tc.type: FUNC
+ * @tc.require: I7TDJK
+ */
+HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001 Start";
+
+    std::optional<uint64_t> cleanedSize = 0;
+
+    auto ret = proxy_->CleanBundleCacheFilesAutomatic(0, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, ERR_BUNDLE_MANAGER_INVALID_PARAMETER);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(false));
+    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(false));
+    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(ERR_APPEXECFWK_PARCEL_ERROR));
+    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, ERR_BUNDLE_MANAGER_IPC_TRANSACTION);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(0));
+    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, 0);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001 End";
+}
+
+/**
  * @tc.name: BundleManagerAdapterProxy_GetBundleInfosV9_0000
  * @tc.desc: The execution of the ConnectDfs failed.
  * @tc.type: FUNC

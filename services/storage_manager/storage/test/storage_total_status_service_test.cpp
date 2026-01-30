@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -279,5 +279,33 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_MonitorAndManageStorage_0
     StorageMonitorService& service = StorageMonitorService::GetInstance();
     service.MonitorAndManageStorage();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_MonitorAndManageStorage_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetInodeOfPath_0000
+ * @tc.name: Storage_total_status_service_GetInodeOfPath_0000
+ * @tc.desc: Test function of GetInodeOfPath interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetInodeOfPath_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetInodeOfPath_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int32_t type = static_cast<int32_t>(StorageStatType::TOTAL);
+    int64_t inodeCnt = 0;
+    int32_t result = service.GetInodeOfPath(PATH_DATA, type, inodeCnt);
+    EXPECT_EQ(result, E_OK);
+
+    type = static_cast<int32_t>(StorageStatType::FREE);
+    result = service.GetInodeOfPath(PATH_DATA, type, inodeCnt);
+    EXPECT_EQ(result, E_OK);
+
+    type = static_cast<int32_t>(StorageStatType::USED);
+    result = service.GetInodeOfPath(PATH_DATA, type, inodeCnt);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetInodeOfPath_0000";
 }
 } // namespace
