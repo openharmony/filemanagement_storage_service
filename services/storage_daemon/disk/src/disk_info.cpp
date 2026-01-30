@@ -248,7 +248,7 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
         }
         return E_OK;
     }
- 
+
     bool isExistCD = false;
     IsExistCD(devPath_, isExistCD);
     if (!isExistCD) {
