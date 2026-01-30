@@ -255,7 +255,8 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::PrepareStartUser, userId:%{public}d", userId);
@@ -275,7 +276,8 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
 int32_t StorageManagerProvider::StopUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("StopUser", userId, "StopUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::StopUser, userId:%{public}d", userId);
@@ -298,7 +300,8 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
 int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("CompleteAddUser", userId, "CompleteAddUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::CompleteAddUser, userId:%{public}d", userId);
@@ -1767,35 +1770,6 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
     StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
-    return ret;
-}
-
-int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
-{
-    StorageRadar::ReportFucBehavior("DeleteUserDir", DEFAULT_USERID, "DeleteUserDir Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-        LOGE("Permission check failed, for storage_manager_crypt");
-        return E_PERMISSION_DENIED;
-    }
-
-    auto callingUid = IPCSkeleton::GetCallingUid();
-    LOGE("DeleteUserDir begin, path: %{public}s, uid: %{public}d", path.c_str(), callingUid);
-    if (callingUid != AOCO_UID) {
-        LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
-        return E_PERMISSION_DENIED;
-    }
-
-    if (IsFilePathInvalid(path)) {
-        LOGE("The path: %{public}s is invalid.", path.c_str());
-        return E_PARAMS_INVALID;
-    }
-
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    auto ret = sdCommunication->DeleteUserDir(path);
-    LOGE("DeleteUserDir end, path: %{public}s, uid: %{public}d, ret: %{public}d", path.c_str(), callingUid, ret);
-    std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
     return ret;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License,2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include "directory_ex.h"
 #include "gtest/gtest.h"
 #include "common/help_utils.h"
 #include "storage_service_errno.h"
@@ -210,42 +211,9 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDirSimple_001, TestSize.Level1)
 
     ret = PrepareDirSimple(path, mode, uid, gid);
     EXPECT_EQ(ret, E_OK);
-    bool isPathEmpty = true;
-    DestroyDir(path, isPathEmpty);
 
+    OHOS::ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDirSimple_001 end";
-}
-
-/**
- * @tc.name: FileUtilsTest_DestroyDir_001
- * @tc.desc: Verify the DestroyDir function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(FileUtilsTest, FileUtilsTest_DestroyDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileUtilsTest_DestroyDir_001 start";
-    bool isPathEmpty = true;
-    std::string path = "/data/testDir";
-    mode_t mode = 0771;
-
-    int32_t ret = DestroyDir(path + "/testDir", isPathEmpty);
-    EXPECT_EQ(ret, E_DELETE_USER_DIR_NOEXIST);
-
-    std::ofstream file("/data/testFile.txt");
-    file.close();
-    ret = DestroyDir("/data/testFile.txt", isPathEmpty);
-    EXPECT_EQ(ret, E_OPENDIR_ERROR);
-    std::filesystem::remove("/data/testFile.txt");
-
-    PrepareDirSimple(path, mode, 0, 0);
-    PrepareDirSimple(path + "/testDir", mode, 0, 0);
-    std::ofstream file2(path + "/testDir/testFile.txt");
-    file2.close();
-    ret = DestroyDir(path, isPathEmpty);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "FileUtilsTest_DestroyDir_001 end";
 }
 
 /**

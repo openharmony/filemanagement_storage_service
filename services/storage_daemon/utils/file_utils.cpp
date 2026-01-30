@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License,2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -215,51 +215,6 @@ bool MkDirRecurse(const std::string& path, mode_t mode)
     } while (index != std::string::npos);
 
     return TEMP_FAILURE_RETRY(access(path.c_str(), F_OK)) == 0;
-}
-
-int32_t DestroyDir(const std::string &path, bool &isPathEmpty)
-{
-    LOGD("rm dir %{public}s", path.c_str());
-    DIR *dir = opendir(path.c_str());
-    if (!dir) {
-        if (errno == ENOENT) {
-            return E_DELETE_USER_DIR_NOEXIST;
-        }
-
-        LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
-        return E_OPENDIR_ERROR;
-    }
-
-    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
-        if (ent->d_type == DT_DIR) {
-            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
-                continue;
-            }
-            isPathEmpty = false;
-
-            bool invalid = true;
-            auto ret = DestroyDir(path + "/" + ent->d_name, invalid);
-            if (ret != E_OK) {
-                LOGE("failed to RmDirRecurse %{public}s, errno %{public}d", path.c_str(), errno);
-                (void)closedir(dir);
-                return ret;
-            }
-        } else {
-            isPathEmpty = false;
-            if (unlink((path + "/" + ent->d_name).c_str())) {
-                LOGE("failed to unlink file %{public}s, errno %{public}d", ent->d_name, errno);
-                (void)closedir(dir);
-                return E_UNLINK_ERROR;
-            }
-        }
-    }
-
-    (void)closedir(dir);
-    if (rmdir(path.c_str())) {
-        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
-        return E_RMDIR_ERROR;
-    }
-    return E_OK;
 }
 
 int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t gid)

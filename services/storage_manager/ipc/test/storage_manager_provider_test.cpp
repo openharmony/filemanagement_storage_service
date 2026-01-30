@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1308,20 +1308,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_00
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
- * @tc.desc: Verify the DeleteUserDir function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
 }
 
 /**

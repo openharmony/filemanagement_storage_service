@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -235,7 +235,7 @@ enum StorageDaemonFunction {
     FUNC_PREPARE_USER_DIRS = 12,
     FUNC_DESTROY_USER_DIRS = 13,
     FUNC_COMPLETE_ADD_USER = 14,
-    FUNC_CREATE_USER_DIR_DELETE_USER_DIR = 15,
+    FUNC_CREATE_USER_DIR = 15,
     
     FUNC_INIT_GLOBAL_KEY = 16,
     FUNC_INIT_GLOBAL_USER_KEYS = 17,
@@ -419,13 +419,12 @@ static void HandleUserDirOps(FuzzedDataProvider& provider,
             providerObj->CompleteAddUser(userId);
             break;
         }
-        case FUNC_CREATE_USER_DIR_DELETE_USER_DIR: {
+        case FUNC_CREATE_USER_DIR: {
             std::string path = provider.ConsumeRandomLengthString();
             uint32_t mode = provider.ConsumeIntegral<uint32_t>();
             uint32_t uid = provider.ConsumeIntegral<uint32_t>();
             uint32_t gid = provider.ConsumeIntegral<uint32_t>();
             providerObj->CreateUserDir(path, mode, uid, gid);
-            providerObj->DeleteUserDir(path);
             break;
         }
         default: break;
@@ -917,7 +916,7 @@ static void DispatchStorageDaemonFunction(FuzzedDataProvider& provider,
         {FUNC_SHUTDOWN, FUNC_CHECK, HandleBasicStorageOps},
         {FUNC_FORMAT, FUNC_SET_VOLUME_DESCRIPTION, HandleDiskFormatOps},
         {FUNC_TRY_TO_FIX, FUNC_QUERY_USB_IS_IN_USE, HandleDiskFixUsbOps},
-        {FUNC_START_USER, FUNC_CREATE_USER_DIR_DELETE_USER_DIR, HandleUserDirOps},
+        {FUNC_START_USER, FUNC_CREATE_USER_DIR, HandleUserDirOps},
         {FUNC_INIT_GLOBAL_KEY, FUNC_DELETE_USER_KEYS, HandleGlobalKeyOps},
         {FUNC_UPDATE_USER_AUTH, FUNC_INACTIVE_USER_KEY, HandleUserAuthOps},
         {FUNC_UPDATE_KEY_CONTEXT, FUNC_MOUNT_CRYPTO_PATH_AGAIN, HandleKeyContextOps},
