@@ -233,7 +233,6 @@ int DiskInfo::ReadPartition(const std::string &ejectStatus)
 
 int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 {
-    std::string volumeId = StringPrintf("vol-%u-%u", major(device_), minor(device_));
     if (ejectStatus == "1") {
         for (auto volumeId : volumeId_) {
             auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
