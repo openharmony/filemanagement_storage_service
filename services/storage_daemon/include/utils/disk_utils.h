@@ -39,7 +39,7 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
 std::string DiskType2Str(uint8_t diskType);
 std::string GetCDType(const std::string &diskPath);
-std::string GenerateRandomUuid(const std::string &diskPath);
+std::string GenerateRandomUuid(const std::string &diskPath, const std::string &namespaceUuid);
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len);
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
 int IsBlankCD(const std::string &diskPath, bool &isBlankCD);
