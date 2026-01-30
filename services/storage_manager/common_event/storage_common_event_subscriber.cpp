@@ -27,7 +27,6 @@ namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
 static constexpr int32_t WANT_DEFAULT_VALUE = -1;
-constexpr int32_t BATTERY_LEVEL_TEN = 10;
 constexpr const char* BATTERY_SOC_KEY = "soc";
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
@@ -111,13 +110,6 @@ void StorageCommonEventSubscriber::CheckAndTriggerStatistic()
     bool isChargingScreenOff = (currentDeviceState == STATE_CHARGING_SCREEN_OFF);
     LOGI("CheckAndTriggerStatistic: deviceState=0x%{public}02x, battery=%{public}d%%, isChargingScreenOff=%{public}d",
          currentDeviceState, currentBatteryCapacity, isChargingScreenOff);
-
-    if (isChargingScreenOff && currentBatteryCapacity > BATTERY_LEVEL_TEN) {
-        LOGI("Trigger storage scan - device is charging, screen off, and battery > 10%%");
-        StorageDfxReporter::GetInstance().StartScan();
-    } else {
-        StorageDfxReporter::GetInstance().StopScan();
-    }
 }
 }  // namespace StorageManager
 }  // namespace OHOS
