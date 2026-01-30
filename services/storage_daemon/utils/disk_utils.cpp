@@ -205,41 +205,41 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     return "";
 }
 
-std::string GenerateRandomUuid(const std::string &diskPath)
+std::string GenerateRandomUuid(const std::string &diskPath, const std::string &uuidFormat)
 {
-    const std::string namespaceUuid = "123e4567-e89b-12d3-a456-426614174000";
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctxSeed;
+    SHA256_Init(&ctxSeed);
+    SHA256_Update(&ctxSeed, uuidFormat.c_str(), uuidFormat.length());
+    SHA256_Final(hash, &ctxSeed);
+ 
     unsigned char namespaceRaw[UUID_NAMESPACE_RAW_SIZE];
-    std::istringstream namespaceStream(namespaceUuid);
-    for (int i = 0; i < UUID_NAMESPACE_RAW_SIZE; ++i) {
-        unsigned int byte;
-        namespaceStream >> std::hex >> byte;
-        namespaceRaw[i] = static_cast<unsigned char>(byte);
-    }
-
+    std::copy(hash, hash + UUID_NAMESPACE_RAW_SIZE, namespaceRaw);
+ 
     unsigned char digest[SHA256_DIGEST_LENGTH];
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
     SHA256_Update(&ctx, namespaceRaw, sizeof(namespaceRaw));
     SHA256_Update(&ctx, diskPath.c_str(), diskPath.length());
     SHA256_Final(digest, &ctx);
-
+ 
     digest[UUID_DIGEST_BYTE_OFFSET] &= SHA256_DIGEST_BIT_MASK;
     digest[UUID_DIGEST_BYTE_OFFSET] |= SHA256_DIGEST_VERSION;
     digest[UUID_VARIANT_BYTE_OFFSET] &= SHA256_VARIANT_MASK;
     digest[UUID_VARIANT_BYTE_OFFSET] |= SHA256_IETF_VARIANT;
-
+ 
     std::ostringstream uuidStream;
     uuidStream << std::hex << std::setfill('0') << std::uppercase
-               << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
-               << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-               UUID_DIGEST_TIME_MID_OFFSET) << '-'
-               << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-               UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
-               << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-               UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
-               << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
-               UUID_DIGEST_NODE_ID_OFFSET);
-
+        << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
+        << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_MID_OFFSET) << '-'
+        << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
+        << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
+        << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
+        UUID_DIGEST_NODE_ID_OFFSET);
+ 
     return uuidStream.str();
 }
 
