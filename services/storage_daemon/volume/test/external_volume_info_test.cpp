@@ -440,6 +440,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
 
     vol.fsType_ = "udf";
     vol.isUserdata_ = true;
+    vol.fsUuid_ = "123e4567-e89b-12d3-a456-426614174000";
+    vol.fsLabel_ = "DVD+RW";
     int32_t ret = vol.DoMount(mountFlags);
     EXPECT_EQ(ret, E_UDF_MOUNT);
 
@@ -464,10 +466,65 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
 
     vol.fsType_ = "iso9660";
     vol.isUserdata_ = true;
+    vol.fsUuid_ = "123e4567-e89b-12d3-a456-426614174000";
+    vol.fsLabel_ = "DVD+RW";
     int32_t ret = vol.DoMount(mountFlags);
     EXPECT_EQ(ret, E_ISO9660_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_009 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_010
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_010 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+
+    vol.fsType_ = "udf";
+    vol.isUserdata_ = true;
+    vol.fsUuid_ = "";
+    vol.devPath_ = "/mnt/data/external";
+    int32_t ret = vol.DoMount(mountFlags);
+    EXPECT_EQ(ret, E_UDF_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_010 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_011
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_011, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_011 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    vol.fsUuid_ = "123e4567-e89b-12d3-a456-426614174000";
+    vol.fsLabel_ = "";
+    vol.devPath_ = "/mnt/data/external";
+    int32_t ret = vol.DoMount(mountFlags);
+    EXPECT_EQ(ret, E_ISO9660_MOUNT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_011 end";
 }
 
 /**

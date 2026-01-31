@@ -59,7 +59,12 @@ int32_t ExternalVolumeInfo::ReadMetadata()
         };
         fsLabel_ = GetVolDescByNtfsLabel(cmd);
     } else if (fsType_ == "udf" || fsType_ == "iso9660") {
-        fsUuid_ = GenerateRandomUuid();
+        if (fsUuid_.empty()) {
+            fsUuid_ = GenerateRandomUuid(devPath_, StringPrintf(mountPathDir_.c_str(), fsType_.c_str()));
+        }
+        if (fsLabel_.empty()) {
+            fsLabel_ = GetCDType(devPath_);
+        }
         return E_OK;
     }
     return ret;
@@ -226,12 +231,13 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 {
+    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
     std::vector<std::string> cmd = {
         "mount",
         "-t",
-        fsType_.c_str(),
+        fsType_,
         "-o",
-        "ro",
+        mountData,
         devPath_,
         mountPath_,
     };
@@ -246,10 +252,13 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
 {
+    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
     std::vector<std::string> cmd = {
         "mount",
         "-t",
-        fsType_.c_str(),
+        fsType_,
+        "-o",
+        mountData,
         devPath_,
         mountPath_,
     };

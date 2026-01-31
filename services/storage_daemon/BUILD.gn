@@ -202,6 +202,7 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "json:nlohmann_json_static",
@@ -399,6 +400,7 @@ ohos_shared_library("storage_common_utils") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 
   if (build_selinux) {

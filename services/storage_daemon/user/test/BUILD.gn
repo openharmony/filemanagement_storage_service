@@ -131,7 +131,6 @@ ohos_unittest("mount_manager_test") {
     "$ROOT_DIR/user/src/system_mount_manager.cpp",
     "$ROOT_DIR/user/src/user_path_resolver.cpp",
     "$ROOT_DIR/user/test/mount_manager_test.cpp",
-    "$ROOT_DIR/utils/disk_utils.cpp",
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/storage_radar.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",

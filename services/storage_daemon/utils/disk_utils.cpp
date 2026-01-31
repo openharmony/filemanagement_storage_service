@@ -14,7 +14,7 @@
  */
 
 #include <iomanip>
-#include <random>
+#include <openssl/sha.h>
 #include <sstream>
 #include <scsi/sg.h>
 #include <sys/stat.h>
@@ -38,21 +38,38 @@ constexpr int32_t MAX_UUID_LENGTH = 40;
 constexpr int32_t DEF_TIMEOUT = 120000;
 constexpr int32_t SENSE_BUFF_LEN = 64;
 constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
+constexpr int32_t READ_DISC_INFO_SECTOR = 0x46;
+constexpr uint8_t DISC_TYPE_OFFSET_HIGH = 6;
+constexpr uint8_t DISC_TYPE_OFFSET_LOW = 7;
+constexpr uint8_t DISC_TYPE_OFFSET = 8;
 constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
-constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
 constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
+constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
-constexpr int32_t UUID_HEX_LENGTH = 8;
-constexpr uint32_t UUID_RANDOM_MASK = 0xFFFFFFFF;
 constexpr size_t INT32_SHORT_ID_LENGTH = 20;
 constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
 constexpr size_t INT32_MIN_ID_LENGTH = 3;
+constexpr size_t SHA256_DIGEST_BIT_MASK = 0x0f;
+constexpr size_t SHA256_DIGEST_VERSION = 0x50;
+constexpr size_t SHA256_VARIANT_MASK = 0x3f;
+constexpr size_t SHA256_IETF_VARIANT = 0x80;
+constexpr uint8_t UUID_NAMESPACE_RAW_SIZE = 32;
+constexpr uint8_t UUID_DIGEST_BYTE_OFFSET = 6;
+constexpr uint8_t UUID_VARIANT_BYTE_OFFSET = 8;
+constexpr uint8_t UUID_TIME_LO_FIELD_WIDTH = 8;
+constexpr uint8_t UUID_TIME_MID_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_TIME_HI_VERSION_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_CLOCK_SEQ_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_NODE_ID_FIELD_WIDTH = 12;
+constexpr uint8_t UUID_DIGEST_TIME_MID_OFFSET = 4;
+constexpr uint8_t UUID_DIGEST_TIME_HI_VERSION_OFFSET = 6;
+constexpr uint8_t UUID_DIGEST_CLOCK_SEQ_OFFSET = 8;
+constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {
-    const char *kPath = path.c_str();
-    if (mknod(kPath, NODE_PERM | S_IFBLK, dev) < 0) {
+    if (mknod(path.c_str(), NODE_PERM | S_IFBLK, dev) < 0) {
         LOGE("create disk node failed");
         return E_ERR;
     }
@@ -61,8 +78,7 @@ int CreateDiskNode(const std::string &path, dev_t dev)
 
 int DestroyDiskNode(const std::string &path)
 {
-    const char *kPath = path.c_str();
-    if (TEMP_FAILURE_RETRY(unlink(kPath)) < 0) {
+    if (TEMP_FAILURE_RETRY(unlink(path.c_str())) < 0) {
         return E_ERR;
     }
     return E_OK;
@@ -70,8 +86,7 @@ int DestroyDiskNode(const std::string &path)
 
 int GetDevSize(const std::string &path, uint64_t *size)
 {
-    const char *kPath = path.c_str();
-    FILE *f = fopen(kPath, "r");
+    FILE *f = fopen(path.c_str(), "r");
     if (f == nullptr) {
         LOGE("open %{private}s failed", path.c_str());
         return E_ERR;
@@ -190,16 +205,42 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     return "";
 }
 
-std::string GenerateRandomUuid()
+std::string GenerateRandomUuid(const std::string &diskPath, const std::string &uuidFormat)
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<uint32_t> dist(0, UUID_RANDOM_MASK);
-    uint32_t randomValue = dist(gen);
-
-    std::ostringstream oss;
-    oss << std::hex << std::setw(UUID_HEX_LENGTH) << std::setfill('0') << std::uppercase << randomValue;
-    return oss.str();
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctxSeed;
+    SHA256_Init(&ctxSeed);
+    SHA256_Update(&ctxSeed, uuidFormat.c_str(), uuidFormat.length());
+    SHA256_Final(hash, &ctxSeed);
+ 
+    unsigned char namespaceRaw[UUID_NAMESPACE_RAW_SIZE];
+    std::copy(hash, hash + UUID_NAMESPACE_RAW_SIZE, namespaceRaw);
+ 
+    unsigned char digest[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, namespaceRaw, sizeof(namespaceRaw));
+    SHA256_Update(&ctx, diskPath.c_str(), diskPath.length());
+    SHA256_Final(digest, &ctx);
+ 
+    digest[UUID_DIGEST_BYTE_OFFSET] &= SHA256_DIGEST_BIT_MASK;
+    digest[UUID_DIGEST_BYTE_OFFSET] |= SHA256_DIGEST_VERSION;
+    digest[UUID_VARIANT_BYTE_OFFSET] &= SHA256_VARIANT_MASK;
+    digest[UUID_VARIANT_BYTE_OFFSET] |= SHA256_IETF_VARIANT;
+ 
+    std::ostringstream uuidStream;
+    uuidStream << std::hex << std::setfill('0') << std::uppercase
+        << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
+        << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_MID_OFFSET) << '-'
+        << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
+        << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
+        << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
+        UUID_DIGEST_NODE_ID_OFFSET);
+ 
+    return uuidStream.str();
 }
 
 std::string GetAnonyString(const std::string &value)
@@ -241,7 +282,7 @@ int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
     ioHdr.cmdp = cdb;
     ioHdr.cmd_len = cdbLen;
     ioHdr.dxferp = dxferp;
-    ioHdr.dxfer_len = dxferLen;
+    ioHdr.dxfer_len = static_cast<unsigned int>(dxferLen);
     ioHdr.mx_sb_len = sizeof(sense);
     ioHdr.sbp = sense;
     ioHdr.timeout = DEF_TIMEOUT;
@@ -254,21 +295,39 @@ int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
     return E_OK;
 }
 
-int ReadDiscInfo(int fd, uint8_t *buf, int len)
+int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
 {
-    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = {READ_DISC_INFO_OPCODE};
-    cdb[0] = READ_DISC_INFO_OPCODE;
-    cdb[CDB_ALLOCATION_LENGTH_HIGH] = static_cast<uint8_t>(len >> CDB_ALLOCATION_LENGTH_LOW);
-    cdb[CDB_ALLOCATION_LENGTH_LOW] = static_cast<uint8_t>(len & MAX_ALLOC_LEN);
-    return SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
+    FILE* file = fopen(diskPath.c_str(), "rb");
+    if (file == nullptr) {
+        LOGE("fopen errno: %{public}d", errno);
+        return E_ERR;
+    }
+    int fd = fileno(file);
+    if (fd < 0) {
+        LOGE("fileno error: %{public}d", errno);
+        (void)fclose(file);
+        return E_ERR;
+    }
+    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = { cmdIndex };
+    cdb[CDB_ALLOCATION_LENGTH_HIGH] = static_cast<uint8_t>(static_cast<uint32_t>(len) >> CDB_ALLOCATION_LENGTH_LOW);
+    cdb[CDB_ALLOCATION_LENGTH_LOW] = static_cast<uint8_t>(static_cast<uint32_t>(len) & MAX_ALLOC_LEN);
+
+    int ret = SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
+    if (ret != 0) {
+        LOGE("SendScsiCmd faild: %{public}d", ret);
+        (void)fclose(file);
+        return ret;
+    }
+    (void)fclose(file);
+    return E_OK;
 }
 
-void IsExistCD(const std::string &diskBlock, bool &isExistCD)
+void IsExistCD(const std::string &diskPath, bool &isExistCD)
 {
     std::vector<std::string> cmd;
     cmd = {
         "dd",
-        "if=" + diskBlock,
+        "if=" + diskPath,
         "of=/dev/null",
         "bs=2048",
         "count=1",
@@ -284,30 +343,58 @@ void IsExistCD(const std::string &diskBlock, bool &isExistCD)
     return;
 }
 
-int IsBlankCD(const std::string &diskBlock, bool &isBlankCD)
+int IsBlankCD(const std::string &diskPath, bool &isBlankCD)
 {
     uint8_t buf[MAX_BUF];
-    FILE* file = fopen(diskBlock.c_str(), "rb");
-    if (file == nullptr) {
-        LOGE("fopen errno: %{public}d", errno);
-        return E_ERR;
-    }
-    int fd = fileno(file);
-    if (fd < 0) {
-        LOGE("fileno error: %{public}d", errno);
-        (void)fclose(file);
-        return E_ERR;
-    }
-    if (ReadDiscInfo(fd, buf, sizeof(buf)) == 0) {
+    if (ReadDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) == 0) {
         uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
         isBlankCD = (discStatus == 0);
-        (void)fclose(file);
         return E_OK;
     } else {
         LOGE("Unable to read disc information.");
     }
-    (void)fclose(file);
     return E_OK;
+}
+
+std::string DiskType2Str(uint8_t diskType)
+{
+    switch (diskType) {
+        case 0x08: // CD-ROM (read only)
+            return "CD-ROM";
+        case 0x09:
+            return "CD-R";
+        case 0x0A:
+            return "CD-RW";
+        case 0x10:
+            return "DVD-ROM";
+        case 0x11: // DVD-R sequential
+            return "DVD-R";
+        case 0x12:
+            return "DVD-RAM";
+        case 0x13: // DVD-RW restricted overwrite
+        case 0x14: // DVD-RW sequential
+            return "DVD-RW";
+        case 0x1A:
+            return "DVD+RW";
+        case 0x1B: // DVD+R
+        case 0x1C: // DVD+R dual layer
+            return "DVD+R";
+        case 0x1D: // DVD+RW dual layer
+            return "DVD+RW";
+        default:
+            return "";
+    }
+}
+
+std::string GetCDType(const std::string &diskPath)
+{
+    uint8_t buf[MAX_BUF];
+    if (ReadDiscInfo(diskPath, READ_DISC_INFO_SECTOR, buf, sizeof(buf)) == 0) {
+        return DiskType2Str((buf[DISC_TYPE_OFFSET_HIGH] << DISC_TYPE_OFFSET) | buf[DISC_TYPE_OFFSET_LOW]);
+    } else {
+        LOGE("Unable to read disc information.");
+    }
+    return "";
 }
 
 int Eject(const std::string &devPath)

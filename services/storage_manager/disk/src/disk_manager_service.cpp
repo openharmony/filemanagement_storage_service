@@ -15,6 +15,7 @@
 
 #include "disk/disk_manager_service.h"
 
+#include "disk/disk_notification.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -45,6 +46,7 @@ void DiskManagerService::OnDiskCreated(Disk disk)
     }
     auto diskPtr = std::make_shared<Disk>(disk);
     diskMap_.Insert(diskPtr->GetDiskId(), diskPtr);
+    DiskNotification::GetInstance().NotifyDiskChange(StorageDaemon::DiskInfo::DiskState::MOUNTED, diskPtr);
 }
 
 void DiskManagerService::OnDiskDestroyed(std::string diskId)
@@ -53,6 +55,8 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
         LOGE("DiskManagerService::OnDiskDestroyed the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
         return;
     }
+    auto diskPtr = diskMap_.GetShared(diskId);
+    DiskNotification::GetInstance().NotifyDiskChange(StorageDaemon::DiskInfo::DiskState::REMOVED, diskPtr);
     diskMap_.Erase(diskId);
 }
 

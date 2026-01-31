@@ -233,13 +233,14 @@ int DiskInfo::ReadPartition(const std::string &ejectStatus)
 
 int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 {
-    std::string volumeId = StringPrintf("vol-%u-%u", major(device_), minor(device_));
     if (ejectStatus == "1") {
-        auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
-        if (ret != E_OK) {
-            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
-            return ret;
+        for (auto volumeId : volumeId_) {
+            auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
+            if (ret != E_OK) {
+                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            }
         }
+        volumeId_.clear();
         auto res = Eject(devPath_);
         if (res != E_OK) {
             LOGE("eject failed, %{public}d", res);
@@ -251,10 +252,13 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
     bool isExistCD = false;
     IsExistCD(devPath_, isExistCD);
     if (!isExistCD) {
-        auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
-        if (ret != E_OK) {
-            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+        for (auto volumeId : volumeId_) {
+            auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
+            if (ret != E_OK) {
+                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            }
         }
+        volumeId_.clear();
         return E_OK;
     } else {
         LOGI("ejectStatus is %{public}s", ejectStatus.c_str());

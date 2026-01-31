@@ -97,6 +97,8 @@ void VolumeManagerService::OnVolumeMounted(const VolumeInfoStr &volumeInfoStr)
                 des = "MySDCard";
             } else if (disk->GetFlag() == USB_FLAG) {
                 des = "MyUSB";
+            } else if (disk->GetFlag() == CD_FLAG) {
+                des = "MyDVD";
             } else {
                 des = "Default";
             }

@@ -1107,15 +1107,15 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_004, TestSize.
 
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
     std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
-        .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
 
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    diskInfo->volumeId_.push_back(volId);
     int ret = diskInfo->ReadPartition("1");
     EXPECT_TRUE(ret == E_ERR);
     VolumeManager::Instance().DestroyVolume(volId);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_004 end";
 }
 
@@ -1155,15 +1155,15 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_005, TestSize.
 
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
     std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
-        .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
 
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    diskInfo->volumeId_.push_back(volId);
     int ret = diskInfo->ReadPartition("1");
     EXPECT_TRUE(ret == E_OK);
     VolumeManager::Instance().DestroyVolume(volId);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_005 end";
 }
 
@@ -1203,12 +1203,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_006, TestSize.
 
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
     std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
-        .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
+    diskInfo->volumeId_.push_back(volId);
     VolumeManager::Instance().DestroyVolume(volId);
     int ret = diskInfo->ReadPartition("1");
-    EXPECT_TRUE(ret != E_OK);
+    EXPECT_TRUE(ret == E_OK);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 end";
 }
 
@@ -1249,6 +1249,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_007, TestSize.
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     int ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
+    VolumeManager::Instance().DestroyVolume("vol-11-0");
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_007 end";
 }
 
@@ -1299,6 +1301,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_008, TestSize.
         });
     int ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_008 end";
 }
 
@@ -1347,8 +1350,10 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_009, TestSize.
             }
             return E_ERR;
         });
+    diskInfo->volumeId_.push_back("vol-11-3");
     int ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_009 end";
 }
 
@@ -1387,15 +1392,14 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_010, TestSize.
 
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
     std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
-        .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK));
-
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
+    diskInfo->volumeId_.push_back(volId);
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = diskInfo->ReadPartition();
     EXPECT_TRUE(ret == E_OK);
     VolumeManager::Instance().DestroyVolume(volId);
+    diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_010 end";
 }
 

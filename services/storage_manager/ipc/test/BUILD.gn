@@ -245,6 +245,7 @@ sources = [
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [
       "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+      "${storage_manager_path}/disk/src/disk_notification.cpp",
       "${storage_manager_path}/volume/src/notification.cpp",
       "${storage_manager_path}/volume/src/volume_manager_service.cpp",
       "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
@@ -294,6 +295,7 @@ sources = [
     "init:libbegetutil",
     "ipc:ipc_single",
     "json:nlohmann_json_static",
+    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
