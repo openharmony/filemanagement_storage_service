@@ -608,6 +608,12 @@
             "mode": "0711",
             "uid": 1096,
             "gid": 1096
+        },
+        {
+            "path": "/data/service/el2/<userId>/file_system_service",
+            "mode": "0711",
+            "uid": 7100,
+            "gid": 7100
         }
       ],
       "el3": [
