@@ -808,7 +808,9 @@ int MtpFileSystem::SetupFileAttributes(const char *path, const MtpFsTypeFile *fi
     }
 
     buf->st_size = static_cast<ssize_t>(size);
-    buf->st_blocks = (size / FILE_SIZE) + (size % FILE_SIZE > 0 ? 1 : 0);
+    const uint64_t fileSize = static_cast<uint64_t>(FILE_SIZE);
+    const uint64_t blocksU64 = (size / fileSize) + ((size % fileSize) ? 1 : 0);
+    buf->st_blocks = static_cast<blkcnt_t>(blocksU64);
     buf->st_nlink = 1;
     buf->st_mode = S_IFREG | PERMISSION_TWO;
     buf->st_mtime = file->ModificationDate();
@@ -1145,9 +1147,11 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
         OHOS::StorageService::StorageRadar::ReportMtpResult("Write::FileInfo", E_PARAMS_INVALID, "NA");
         return -ENOENT;
     }
-    off_t currentOffset = offset + static_cast<off_t>(size);
+
     uint64_t freeSize = device_.StorageFreeSize();
-    if ((uint64_t)currentOffset > freeSize) {
+    const uint64_t uOffset = static_cast<uint64_t>(offset);
+    const uint64_t uSize   = static_cast<uint64_t>(size);
+    if (uOffset > freeSize || uSize > (freeSize - uOffset)) {
         LOGE("Write would exceed available space!");
         OHOS::StorageService::StorageRadar::ReportMtpResult("Write::Storage", ENOSPC, "NA");
         return -ENOSPC;
@@ -1220,7 +1224,10 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     const std::string tmpPath = tmpFile->PathTmp();
     struct stat fileStat;
     if (stat(tmpPath.c_str(), &fileStat) != 0) {
-        LOGE("Failed to stat file %{public}d", errno);
+        int err = errno;
+        LOGE("stat failed, errno=%{public}d", err);
+        OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::stat", err, "NA");
+        device_.SetUploadRecord(stdPath, "fail");
         return -EINVAL;
     }
     if (modIf && fileStat.st_size != 0) {

@@ -754,7 +754,7 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
     }
     const_cast<MtpFsTypeDir *>(dirToReName)->SetName(tmpNewBaseName);
     LOGI("Directory renamed");
-    return 0;
+    return E_OK;
 }
 
 int MtpFsDevice::FileMove(const std::string &oldPath, const std::string &newPath)
@@ -984,7 +984,9 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
 {
     struct stat fileStat;
     if (stat(src.c_str(), &fileStat) != 0) {
-        LOGE("Failed to stat file %{public}d", errno);
+        int err = errno;
+        LOGE("stat failed, errno=%{public}d", err);
+        StorageRadar::ReportMtpResult("PerformUpload::stat", err, "NA");
         return -EINVAL;
     }
     MtpFsTypeFile fileToUpload(0, dirParent->Id(), dirParent->StorageId(), dstBaseName,

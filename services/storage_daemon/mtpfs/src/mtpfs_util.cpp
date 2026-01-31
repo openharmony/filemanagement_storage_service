@@ -100,13 +100,11 @@ std::string SmtpfsDirName(const std::string &path)
 
 std::string SmtpfsBaseName(const std::string &path)
 {
-    char *str = strdup(path.c_str());
+    std::unique_ptr<char, decltype(&std::free)> str(::strdup(path.c_str()), &std::free);
     if (!str) {
         return "";
     }
-    std::string result(basename(str));
-    free(static_cast<void *>(str));
-    return result;
+    return std::string(::basename(str.get()));
 }
 
 std::string SmtpfsRealPath(const std::string &path)

@@ -23,16 +23,16 @@ int main(int argc, char **argv)
     if (!MtpFileSystem::GetInstance().ParseOptions(argc, argv)) {
         LOGE("mtpfs wrong usage, see %{public}s -h for details.", SmtpfsBaseName(argv[0]).c_str());
         std::cout << "mtpfs wrong usage, see " << SmtpfsBaseName(argv[0]) << " -h for details.\n";
-        return 1;
+        return -E_ERR;
     }
 
     bool success = MtpFileSystem::GetInstance().Exec();
     if (!success) {
         LOGE("Exec mtpfs.bin to mount mtp device failed.");
         std::cout << "Exec mtpfs to mount mtp device failed.\n";
-        return 1;
+        return -E_ERR;
     }
 
     LOGI("Exec mtpfs.bin to mount mtp device success.");
-    return 0;
+    return E_OK;
 }
