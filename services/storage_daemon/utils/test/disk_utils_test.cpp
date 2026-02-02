@@ -636,6 +636,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_01, TestSize.Level1)
 
     std::string diskBlock = "/dev/test/sr01";
     bool isBlankCD = false;
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(nullptr));
     int32_t result = IsBlankCD(diskBlock, isBlankCD);
     EXPECT_EQ(result, E_OK);
@@ -655,6 +657,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_02, TestSize.Level1)
     std::string diskBlock = "/dev/test/sr02";
     bool isBlankCD = false;
     FILE * tmpFile = tmpfile();
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(-1));
     int32_t result = IsBlankCD(diskBlock, isBlankCD);
@@ -675,6 +679,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_03, TestSize.Level1)
     std::string diskBlock = "/dev/test/sr03";
     bool isBlankCD = false;
     FILE * tmpFile = tmpfile();
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
     EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(-1));
@@ -696,6 +702,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_04, TestSize.Level1)
     std::string diskBlock = "/dev/test/sr04";
     bool isBlankCD = false;
     FILE * tmpFile = tmpfile();
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
     EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(0));
@@ -717,6 +725,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsBlankCD_05, TestSize.Level1)
     std::string diskBlock = "/dev/test/sr06";
     bool isBlankCD = false;
     FILE * tmpFile = tmpfile();
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
 
@@ -788,6 +798,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_01, TestSize.Level1)
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_01 start";
 
     std::string diskPath = "/dev/test/getcdtype01";
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(nullptr));
 
     std::string str = GetCDType(diskPath);
@@ -807,6 +819,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_02, TestSize.Level1)
 
     std::string diskPath = "/dev/test/getcdtype02";
     FILE * tmpFile = tmpfile();
+    char realPath = '\0';
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
     EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(0));
@@ -814,6 +828,24 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_02, TestSize.Level1)
     std::string str = GetCDType(diskPath);
     EXPECT_EQ(str, "");
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_02 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCDType_03
+ * @tc.desc:
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_03, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_03 start";
+
+    std::string diskPath = "/dev/test/getcdtype02";
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(nullptr));
+
+    std::string str = GetCDType(diskPath);
+    EXPECT_EQ(str, "");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCDType_03 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -62,4 +62,12 @@ int Fileno(FILE *stream)
         return -1;
     }
     return DiskFunc::diskFunc_->fileno(stream);
+}
+
+char *Realpath(const char *path, char *resolved_path)
+{
+    if (DiskFunc::diskFunc_ == nullptr) {
+        return nullptr;
+    }
+    return DiskFunc::diskFunc_->realpath(path, resolved_path);
 }

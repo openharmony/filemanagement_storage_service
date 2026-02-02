@@ -1106,6 +1106,27 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_008
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_008 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(testing::Return(false));
+    vol.fsType_ = "udf";
+    auto ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    vol.fsType_ = "iso9660";
+    ret = vol.DoFormat("exfat");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_008 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001
  * @tc.desc: Verify the DoSetVolDesc function.
  * @tc.type: FUNC

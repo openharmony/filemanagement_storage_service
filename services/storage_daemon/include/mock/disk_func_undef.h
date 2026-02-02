@@ -22,5 +22,6 @@
 #define Close close
 #define Ioctl ioctl
 #define Fileno fileno
+#define Realpath realpath
 
-#endif // OHOS_STORAGE_DAEMON_DISK_FUNC_UNDEF_H
+#endif // OHOS_STORAGE_DAEMON_DISK_FUNC_UNDEF_H

@@ -297,6 +297,11 @@ int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
 
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
 {
+    char realPath[PATH_MAX] = { 0 };
+    if (realpath(diskPath.c_str(), realPath) == nullptr) {
+        LOGE("realpath faild.");
+        return E_ERR;
+    }
     FILE* file = fopen(diskPath.c_str(), "rb");
     if (file == nullptr) {
         LOGE("fopen errno: %{public}d", errno);

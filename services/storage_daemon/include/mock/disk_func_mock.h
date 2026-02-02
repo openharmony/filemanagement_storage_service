@@ -35,6 +35,7 @@ int Open(const char*, int, ...);
 int Close(int);
 int Ioctl(int fd, int request, void* arg);
 int Fileno(FILE *stream);
+char* Realpath(const char*, char*);
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -47,6 +48,7 @@ public:
     virtual int close(int) = 0;
     virtual int ioctl(int fd, int request) = 0;
     virtual int fileno(FILE *stream) = 0;
+    virtual char* realpath(const char*, char*) = 0;
 public:
     static inline std::shared_ptr<DiskFunc> diskFunc_ = nullptr;
 };
@@ -59,8 +61,9 @@ public:
     MOCK_METHOD1(close, int(int));
     MOCK_METHOD2(ioctl, int(int, int));
     MOCK_METHOD1(fileno, int(FILE *));
+    MOCK_METHOD2(realpath, char*(const char*, char*));
 };
 } // namespace StorageDaemon
 } // namespace OHOS
 
-#endif // OHOS_STORAGE_DAEMON_DISK_FUNC_MOCK_H
+#endif // OHOS_STORAGE_DAEMON_DISK_FUNC_MOCK_H
