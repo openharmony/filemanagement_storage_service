@@ -648,9 +648,9 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
     if (err != E_OK) {
         return err;
     }
-    
+
     std::map<std::string, std::string>::iterator iter = supportFormatType_.find(type);
-    if (iter == supportFormatType_.end()) {
+    if (iter == supportFormatType_.end() || (fsType_ == "udf" || fsType_ == "iso9660")) {
         LOGE("External volume format not support.");
         return E_NOT_SUPPORT;
     }

@@ -53,7 +53,8 @@ void DiskNotification::NotifyDiskChange(StorageDaemon::DiskInfo::DiskState notif
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_MOUNTED);
             break;
         default:
-            break;
+            LOGE("unknown notifycode.");
+            return;
     }
     want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };

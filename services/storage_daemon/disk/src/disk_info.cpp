@@ -234,13 +234,10 @@ int DiskInfo::ReadPartition(const std::string &ejectStatus)
 int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 {
     if (ejectStatus == "1") {
-        for (auto volumeId : volumeId_) {
-            auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
-            if (ret != E_OK) {
-                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
-            }
+        if (Destroy() != E_OK) {
+            LOGE("Destroy failed");
+            return E_ERR;
         }
-        volumeId_.clear();
         auto res = Eject(devPath_);
         if (res != E_OK) {
             LOGE("eject failed, %{public}d", res);
@@ -576,6 +573,10 @@ int DiskInfo::CreateVolume(dev_t dev)
 int DiskInfo::Partition()
 {
     LOGI("Partitioning the disk.");
+    if (major(device_) == DISK_CD_MAJOR) {
+        LOGE("CD/DVD not support partition.");
+        return E_NOT_SUPPORT;
+    }
     std::vector<std::string> cmd;
     int res;
 

@@ -1207,7 +1207,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_006, TestSize.
     diskInfo->volumeId_.push_back(volId);
     VolumeManager::Instance().DestroyVolume(volId);
     int ret = diskInfo->ReadPartition("1");
-    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(ret == E_ERR);
     diskInfo->volumeId_.clear();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 end";
 }
@@ -1429,6 +1429,46 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FilterOutput_001, TestSize.L
     diskInfo->FilterOutput(lines, output);
     EXPECT_TRUE(!lines.empty());
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_Partition_005
+ * @tc.desc: Verify the Partition function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_005 start";
+
+    char msg[1024] = {
+        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=change\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "DISK_EJECT_REQUEST=1\0"
+        "MAJOR=11\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6988\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    int ret = diskInfo->Partition();
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_005 end";
 }
 }
 }

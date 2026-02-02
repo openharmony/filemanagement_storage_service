@@ -75,7 +75,7 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTABLE);
             break;
         default:
-            break;
+            return;
     }
     want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };
