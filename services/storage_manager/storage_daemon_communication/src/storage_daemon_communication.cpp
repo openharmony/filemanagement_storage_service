@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1050,7 +1050,7 @@ int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmNam
     return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
 }
 
-int32_t StorageDaemonCommunication::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -1061,7 +1061,7 @@ int32_t StorageDaemonCommunication::UMountCryptoPathAgain(uint32_t userId, const
         LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountCryptoPathAgain(userId, bundleName);
+    return storageDaemon_->ClearSecondMountPoint(userId, bundleName);
 }
 } // namespace StorageManager
 } // namespace OHOS

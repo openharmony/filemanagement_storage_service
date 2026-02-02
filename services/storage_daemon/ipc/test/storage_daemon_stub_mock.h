@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,7 +52,7 @@ public:
     MOCK_METHOD1(UpdateUserPublicDirPolicy, int32_t (uint32_t));
     MOCK_METHOD2(UpdateKeyContext, int32_t (uint32_t, bool));
     MOCK_METHOD1(MountCryptoPathAgain, int32_t (uint32_t));
-    MOCK_METHOD2(UMountCryptoPathAgain, int32_t (uint32_t, const std::string &));
+    MOCK_METHOD2(ClearSecondMountPoint, int32_t (uint32_t, const std::string &));
     MOCK_METHOD4(CreateShareFile,
                  int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));

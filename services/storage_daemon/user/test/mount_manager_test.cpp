@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1186,32 +1186,142 @@ HWTEST_F(MountManagerTest, MountManagerTest_GetProcessInfo_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: MountManagerTest_UMountCryptoPathAgain_001
- * @tc.desc: Verify the UMountCryptoPathAgain.
+ * @tc.name: MountManagerTest_ClearSecondMountPoint_001
+ * @tc.desc: Verify the ClearSecondMountPoint function when bundle is not in the list.
  * @tc.type: FUNC
  * @tc.require: IB49AM
  */
-HWTEST_F(MountManagerTest, MountManagerTest_UMountCryptoPathAgain_001, TestSize.Level1)
+HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountPoint_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "MountManagerTest_UMountCryptoPathAgain_001 start";
-    uint32_t userId = 0;
-    std::string bundleName;
-    int32_t ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountPoint_001 start";
+    uint32_t userId = 99999;
+    std::string bundleName = "test.bundle";
+    int32_t ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
 
-    bundleName = "test";
-    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_OK);
 
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
     errno = 5;
-    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
 
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(0));
-    ret = MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "MountManagerTest_UMountCryptoPathAgain_001 end";
+
+    MountManager::GetInstance().secondMountBundleNameMap_.erase(userId);
+    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountPoint_001 end";
+}
+
+/**
+ * @tc.name: MountManagerTest_InitSecondMountBundleName_001
+ * @tc.desc: Verify the InitSecondMountBundleName function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_InitSecondMountBundleName_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_InitSecondMountBundleName_001 start";
+    uint32_t userId = 99999;
+    int32_t ret = MountManager::GetInstance().InitSecondMountBundleName(userId);
+    EXPECT_EQ(ret, E_ERR);
+
+    std::string root = "/mnt/sandbox/99999";
+    std::string bundle1 = "/mnt/sandbox/99999/lock";
+    std::string bundle2 = "/mnt/sandbox/99999/com.bundle";
+    std::string bundle3 = "/mnt/sandbox/99999/com.bundle_locked";
+    std::error_code ec;
+    std::filesystem::create_directories(root, ec);
+    std::filesystem::create_directories(bundle1, ec);
+    std::filesystem::create_directories(bundle2, ec);
+    std::filesystem::create_directories(bundle3, ec);
+    ret = MountManager::GetInstance().InitSecondMountBundleName(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    ret = MountManager::GetInstance().InitSecondMountBundleName(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    MountManager::GetInstance().secondMountBundleNameMap_.erase(userId);
+    std::filesystem::remove_all(bundle1, ec);
+    std::filesystem::remove_all(bundle2, ec);
+    std::filesystem::remove_all(bundle3, ec);
+    std::filesystem::remove_all(root, ec);
+    if (ec && ec != std::errc::no_such_file_or_directory) {
+        GTEST_LOG_(WARNING) << "Cleanup failed: " << ec.message();
+    }
+    GTEST_LOG_(INFO) << "MountManagerTest_InitSecondMountBundleName_001 end";
+}
+
+/**
+ * @tc.name: MountManagerTest_IsBundleNeedClear_001
+ * @tc.desc: Verify the IsBundleNeedClear function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_IsBundleNeedClear_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_IsBundleNeedClear_001 start";
+    uint32_t userId = 99999;
+    std::string bundleName;
+    int32_t ret = MountManager::GetInstance().IsBundleNeedClear(userId, bundleName);
+    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
+
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    bundleName = "test.bundle.not.in.list";
+    ret = MountManager::GetInstance().IsBundleNeedClear(userId, bundleName);
+    EXPECT_EQ(ret, E_NOT_NEED_CLEAR_SECOND_MOUNT_POINT);
+
+    bundleName = "test.bundle";
+    ret = MountManager::GetInstance().IsBundleNeedClear(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+    MountManager::GetInstance().secondMountBundleNameMap_.erase(userId);
+    GTEST_LOG_(INFO) << "MountManagerTest_IsBundleNeedClear_001 end";
+}
+
+/**
+ * @tc.name: MountManagerTest_RemoveBundleNameFromMap_001
+ * @tc.desc: Verify the RemoveBundleNameFromMap function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_RemoveBundleNameFromMap_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_RemoveBundleNameFromMap_001 start";
+    uint32_t userId = 99999;
+    std::string bundleName;
+    MountManager::GetInstance().RemoveBundleNameFromMap(userId, bundleName);
+
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    bundleName = "test.bundle";
+    MountManager::GetInstance().RemoveBundleNameFromMap(userId, bundleName);
+    ASSERT_TRUE(MountManager::GetInstance().secondMountBundleNameMap_[userId].empty());
+
+    MountManager::GetInstance().secondMountBundleNameMap_.erase(userId);
+    GTEST_LOG_(INFO) << "MountManagerTest_RemoveBundleNameFromMap_001 end";
+}
+
+/**
+ * @tc.name: MountManagerTest_ClearSecondMountMap_001
+ * @tc.desc: Verify the ClearSecondMountMap function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 start";
+    uint32_t userId = 99999;
+    MountManager::GetInstance().ClearSecondMountMap(userId);
+
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    MountManager::GetInstance().ClearSecondMountMap(userId);
+    ASSERT_TRUE(MountManager::GetInstance().secondMountBundleNameMap_.find(userId)
+        == MountManager::GetInstance().secondMountBundleNameMap_.end());
+
+    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

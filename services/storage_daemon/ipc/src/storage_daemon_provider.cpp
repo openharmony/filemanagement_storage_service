@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -211,6 +211,10 @@ void StorageDaemonProvider::StorageRadarThd(void)
 StorageDaemonProvider::StorageDaemonProvider()
 {
     callRadarStatisticReportThread_ = std::thread([this]() { StorageRadarThd(); });
+    std::thread thread([this]() {
+        MountManager::GetInstance().InitSecondMountBundleName();
+    });
+    thread.detach();
 }
 
 StorageDaemonProvider::~StorageDaemonProvider()
@@ -1081,9 +1085,9 @@ int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, ui
     return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
 }
 
-int32_t StorageDaemonProvider::UMountCryptoPathAgain(uint32_t userId, const std::string &bundleName)
+int32_t StorageDaemonProvider::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
 {
-    return MountManager::GetInstance().UMountCryptoPathAgain(userId, bundleName);
+    return MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

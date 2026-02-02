@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -121,5 +121,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 85] void NotifyCreateBundleDataDirWithEl([in] unsigned int userId, [in] unsigned char elx);
     [ipccode 86] void QueryActiveOsAccountIds([out] int[] ids);
     [ipccode 87] void IsOsAccountExists([in] unsigned int userId, [out] boolean isOsAccountExists);
-    [ipccode 88] void UMountCryptoPathAgain([in] unsigned int userId, [in] String bundleName);
+    [ipccode 88] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
 }

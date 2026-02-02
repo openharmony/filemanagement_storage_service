@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -2008,21 +2008,21 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ListUserdataDirInf
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_UMountCryptoPathAgain_001
- * @tc.desc: Verify the UMountCryptoPathAgain function.
+ * @tc.name: StorageDaemonProviderTest_ClearSecondMountPoint_001
+ * @tc.desc: Verify the ClearSecondMountPoint function.
  * @tc.type: FUNC
  * @tc.require: AR20251022750568
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCryptoPathAgain_001, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ClearSecondMountPoint_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCryptoPathAgain_001 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
 
-    uint32_t userId = 0;
+    uint32_t userId = 99999;
     std::string bundleName;
-    int32_t ret = storageDaemonProviderTest_->UMountCryptoPathAgain(userId, bundleName);
+    int32_t ret = storageDaemonProviderTest_->ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCryptoPathAgain_001 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

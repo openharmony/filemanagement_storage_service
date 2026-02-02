@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1561,29 +1561,29 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize
 }
 
 /**
- * @tc.number: SUB_STORAGE_Daemon_communication_UMountCryptoPathAgain_001
- * @tc.name: Daemon_communication_UMountCryptoPathAgain_001
- * @tc.desc: Test function of UMountCryptoPathAgain interface for SUCCESS.
+ * @tc.number: SUB_STORAGE_Daemon_communication_ClearSecondMountPoint_001
+ * @tc.name: Daemon_communication_ClearSecondMountPoint_001
+ * @tc.desc: Test function of ClearSecondMountPoint interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: issueI9G5A0
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCryptoPathAgain_001, TestSize.Level1)
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ClearSecondMountPoint_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountCryptoPathAgain_001";
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ClearSecondMountPoint_001";
     ASSERT_TRUE(sdCommunication != nullptr);
     uint32_t userId = 100;
     std::string bundleName = "test";
     MockConnectFail();
-    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SA_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_SA_IS_NULLPTR);
 
     MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, UMountCryptoPathAgain(_, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->UMountCryptoPathAgain(userId, bundleName), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountCryptoPathAgain_001";
+    EXPECT_CALL(*sd, ClearSecondMountPoint(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ClearSecondMountPoint_001";
 }
 }
