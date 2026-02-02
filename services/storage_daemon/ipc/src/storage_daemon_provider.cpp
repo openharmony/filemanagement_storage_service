@@ -211,10 +211,6 @@ void StorageDaemonProvider::StorageRadarThd(void)
 StorageDaemonProvider::StorageDaemonProvider()
 {
     callRadarStatisticReportThread_ = std::thread([this]() { StorageRadarThd(); });
-    std::thread thread([this]() {
-        MountManager::GetInstance().InitSecondMountBundleName();
-    });
-    thread.detach();
 }
 
 StorageDaemonProvider::~StorageDaemonProvider()
