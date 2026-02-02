@@ -17,6 +17,7 @@
 #include "file_ex.h"
 #include "utils/memory_reclaim_manager.h"
 #include "utils/storage_radar.h"
+#include "utils/set_flag_utils.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
 #include <dlfcn.h>
@@ -363,9 +364,17 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("PrepareAppdataDir failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
     }
+    std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
+    thread.detach();
     return result;
 }
-
+void StorageDaemon::SetDeleteFlag4KeyFiles()
+{
+    std::string el0DeviceKeyPath = "/data/service/el0/storage_daemon/sd";
+    std::string el1UserKeyPath = "/data/service/el1/public/storage_daemon/sd";
+    StorageService::SetFlagUtils::SetDelFlagsRecursive(el0DeviceKeyPath);
+    StorageService::SetFlagUtils::SetDelFlagsRecursive(el1UserKeyPath);
+}
 int32_t StorageDaemon::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
 #ifdef USER_CRYPTO_MANAGER

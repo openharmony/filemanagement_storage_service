@@ -389,6 +389,7 @@ ohos_shared_library("storage_common_utils") {
     "utils/mount_argument_utils.cpp",
     "utils/storage_radar.cpp",
     "utils/storage_statistics_radar.cpp",
+    "utils/set_flag_utils.cpp",
     "utils/string_utils.cpp",
     "utils/memory_reclaim_manager.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
