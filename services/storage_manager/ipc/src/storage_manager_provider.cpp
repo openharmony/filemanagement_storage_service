@@ -147,9 +147,9 @@ void StorageManagerProvider::OnStart()
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
+    (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     StorageMonitorService::GetInstance().StartStorageMonitorTask();
-    (void)SetPriority();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
