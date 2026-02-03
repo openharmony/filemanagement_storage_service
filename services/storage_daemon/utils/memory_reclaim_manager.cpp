@@ -17,10 +17,12 @@
 #include "parameters.h"
 #include "storage_service_log.h"
 
+#include <cstdio>
 #include <chrono>
 #include <fcntl.h>
 #include <thread>
 #include <unistd.h>
+#define FDSAN_TAG_A 1
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -28,6 +30,7 @@ constexpr const char *RECLAIM_FILEPAGE_STRING_FOR_HM = "1";
 constexpr const char *RECLAIM_FILEPAGE_STRING_FOR_LINUX = "file";
 constexpr const char *KERNEL_PARAM_KEY = "ohos.boot.kernel";
 constexpr const char *KERNEL_TYPE_HM = "hongmeng";
+constexpr uint64_t NEW_TAG_LOG = static_cast<uint64_t>(LOG_DOMAIN) << 32 | FDSAN_TAG_A;
 
 void MemoryReclaimManager::ScheduleReclaimCurrentProcess(uint32_t delaySeconds)
 {
@@ -59,7 +62,8 @@ bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::s
     }
 
     ssize_t written = write(fd, content.c_str(), content.length());
-    close(fd);
+    fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
+    fdsan_close_with_tag(fd, NEW_TAG_LOG);
 
     if (written < 0 || static_cast<size_t>(written) != content.size()) {
         LOGE("Failed to write to %{public}s", path.c_str());

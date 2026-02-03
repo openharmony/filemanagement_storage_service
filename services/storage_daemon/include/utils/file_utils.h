@@ -89,6 +89,7 @@ bool IsBusinessPath(const std::string& path, const std::string &userId);
 uint64_t GetFileSize(const std::string &filename);
 bool IsFolder(const std::string &filename);
 bool IsFileExist(const std::string &path);
+void CloseFd(int fd);
 }
 }
 
