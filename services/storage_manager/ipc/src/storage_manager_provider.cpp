@@ -18,7 +18,6 @@
 
 #include "utils/storage_radar.h"
 #include <singleton.h>
-#include <regex>
 #ifdef STORAGE_STATISTICS_MANAGER
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_manager.h"
