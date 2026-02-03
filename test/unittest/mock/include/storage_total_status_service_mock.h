@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,8 @@ public:
     virtual int32_t GetSystemSize(int64_t&) = 0;
     virtual int32_t GetTotalSize(int64_t&) = 0;
     virtual int32_t GetFreeSize(int64_t&) = 0;
+    virtual int32_t GetTotalInodes(int64_t&) = 0;
+    virtual int32_t GetFreeInodes(int64_t&) = 0;
 public:
     static inline std::shared_ptr<StorageTotalStatusServiceBase> stss = nullptr;
 };
@@ -37,6 +39,8 @@ public:
     MOCK_METHOD(int32_t, GetSystemSize, (int64_t&));
     MOCK_METHOD(int32_t, GetTotalSize, (int64_t&));
     MOCK_METHOD(int32_t, GetFreeSize, (int64_t&));
+    MOCK_METHOD(int32_t, GetTotalInodes, (int64_t&));
+    MOCK_METHOD(int32_t, GetFreeInodes, (int64_t&));
 };
 } // OHOS::StorageManager
 #endif // OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_MOCK_H

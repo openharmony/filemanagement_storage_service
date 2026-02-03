@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,8 @@
 #include <vector>
 #include <gtest/gtest.h>
 
+#include "bundle_manager_connector.h"
+#include "bundlemgr/bundle_mgr_interface.h"
 #include "cJSON.h"
 #include "init_param.h"
 #include "storage/storage_monitor_service.h"
@@ -55,6 +57,27 @@ public:
     MOCK_METHOD(void, cJSON_free, (void*), (override));
     MOCK_METHOD(void, cJSON_Delete, (cJSON*), (override));
 };
+
+class MockBundleMgr : public AppExecFwk::IBundleMgr {
+public:
+    ErrCode CleanBundleCacheFilesAutomatic(uint64_t cacheSize,
+                                           AppExecFwk::CleanType cleanType,
+                                           std::optional<uint64_t> &cleanedSize) override
+    {
+        return ERR_OK;
+    }
+    sptr<IRemoteObject> AsObject() override { return nullptr; }
+};
+
+BundleMgrConnector::BundleMgrConnector() {}
+BundleMgrConnector::~BundleMgrConnector() {}
+sptr<AppExecFwk::IBundleMgr> g_testBundleMgrProxy = nullptr;
+#ifdef STORAGE_MANAGER_UNIT_TEST
+sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
+{
+    return g_testBundleMgrProxy;
+}
+#endif
 }
 
 namespace OHOS {
@@ -249,6 +272,7 @@ void StorageMonitorServiceTest::TearDown()
     SystemUtilMock::su = nullptr;
     sum = nullptr;
 }
+
 /**
  * @tc.number: SUB_STORAGE_storage_monitor_service_MonitorAndManageStorage_0000
  * @tc.name: Storage_monitor_service_MonitorAndManageStorage_0000
@@ -301,6 +325,90 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_MonitorAndManageStor
 }
 
 /**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_MonitorAndManageStorage_0001
+ * @tc.name: Storage_monitor_service_MonitorAndManageStorage_0001
+ * @tc.desc: Test function of MonitorAndManageStorage interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_MonitorAndManageStorage_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_MonitorAndManageStorage_0001 start";
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(20), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(Return(E_PERMISSION_DENIED));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(20), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(0), Return(E_OK)));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(20), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeInodes(_)).WillOnce(Return(E_PERMISSION_DENIED));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(20), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeInodes(_)).WillOnce(DoAll(SetArgReferee<0>(-1), Return(E_OK)));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_MonitorAndManageStorage_0001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_MonitorAndManageStorage_0002
+ * @tc.name: Storage_monitor_service_MonitorAndManageStorage_0002
+ * @tc.desc: Test function of MonitorAndManageStorage interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_MonitorAndManageStorage_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_MonitorAndManageStorage_0002 start";
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*sum, GetParameter(_, _)).WillRepeatedly(Return(""));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(10), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(E_OK)));
+    EXPECT_CALL(*sum, GetParameter(_, _)).WillRepeatedly(Return(""));
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    EXPECT_CALL(*stss, GetTotalSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(10), Return(E_OK)));
+    EXPECT_CALL(*stss, GetTotalInodes(_)).WillOnce(DoAll(SetArgReferee<0>(100), Return(E_OK)));
+    EXPECT_CALL(*stss, GetFreeInodes(_)).WillOnce(DoAll(SetArgReferee<0>(10), Return(E_OK)));
+    EXPECT_CALL(*sum, GetParameter(_, _)).WillRepeatedly(Return(""));
+    service->hasNotifiedStorageEvent_ = true;
+    service->MonitorAndManageStorage();
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_MonitorAndManageStorage_0002 end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_storage_monitor_service_CheckAndCleanCache_0000
  * @tc.name: Storage_monitor_service_CheckAndCleanCache_0000
  * @tc.desc: Test function of CheckAndCleanCache interface.
@@ -313,46 +421,67 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0000 start";
 
-    service->CheckAndCleanCache(0, 0);
+    service->CheckAndCleanCache(0, 0, 0, 0);
     EXPECT_TRUE(true);
 
-    service->CheckAndCleanCache(0, 20);
+    service->CheckAndCleanCache(0, 20, 0, 0);
     EXPECT_TRUE(true);
 
-    service->CheckAndCleanCache(30, 20);
+    service->CheckAndCleanCache(30, 20, 0, 0);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0000 end";
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_CleanBundleCacheByInterval_0000
- * @tc.name: Storage_monitor_service_CleanBundleCacheByInterval_0000
- * @tc.desc: Test function of CleanBundleCacheByInterval interface.
+ * @tc.number: SUB_STORAGE_storage_monitor_service_CheckAndCleanCache_0001
+ * @tc.name: Storage_monitor_service_CheckAndCleanCache_0001
+ * @tc.desc: Test CheckAndCleanCache with empty result set.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
- * @tc.require: issuesIC35N9
+ * @tc.require: issues2344
  */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CleanBundleCacheByInterval_0000, TestSize.Level1)
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCacheByInterval_0000 start";
+    GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0001 start";
 
-    std::string timestamp;
-    EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return(""));
-    service->CleanBundleCacheByInterval(timestamp, 0, 0);
+    service->thresholds["clean_l"] = 0;
+    service->inodeThresholds_["clean_l"] = 0;
+    service->thresholds["clean_m"] = 20;
+    service->inodeThresholds_["clean_m"] = 20;
+    int64_t freeSize = 5;
+    int64_t totalSize = 100;
+    int64_t freeInode = 5;
+    int64_t totalInode = 100;
+
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
     EXPECT_TRUE(true);
 
-    EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return("0"));
-    service->CleanBundleCacheByInterval(timestamp, 0, 0);
+    service->thresholds["clean_l"] = 10;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
     EXPECT_TRUE(true);
 
-    auto currentTime = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::hours>(currentTime -
-        std::chrono::system_clock::time_point(std::chrono::hours(0))).count();
-    EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return("0"));
-    service->CleanBundleCacheByInterval(timestamp, 0, duration + duration);
+    service->inodeThresholds_["clean_l"] = 10;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
     EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCacheByInterval_0000 end";
+
+    freeSize = 10;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeInode = 10;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeSize = 20;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeInode = 20;
+    service->CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0001 end";
 }
 
 /**
@@ -368,15 +497,59 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndEventNotify_
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndEventNotify_0000 start";
 
-    service->CheckAndEventNotify(0, 0);
+    service->CheckAndEventNotify(0, 0, 0, 0);
     EXPECT_TRUE(true);
 
-    service->CheckAndEventNotify(STORAGE_THRESHOLD_500M, 0);
+    service->CheckAndEventNotify(STORAGE_THRESHOLD_500M, 0, 0, 0);
     EXPECT_TRUE(true);
 
-    service->CheckAndEventNotify(STORAGE_THRESHOLD_2G, 0);
+    service->CheckAndEventNotify(STORAGE_THRESHOLD_2G, 0, 0, 0);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndEventNotify_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_CheckAndEventNotify_0001
+ * @tc.name: Storage_monitor_service_CheckAndEventNotify_0001
+ * @tc.desc: Test CheckAndEventNotify with empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndEventNotify_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndEventNotify_0001 start";
+
+    service->thresholds["notify_l"] = 10;
+    service->inodeThresholds_["notify_l"] = 10;
+    service->thresholds["notify_m"] = 20;
+    service->inodeThresholds_["notify_m"] = 20;
+    int64_t freeSize = 5;
+    int64_t totalSize = 100;
+    int64_t freeInode = 5;
+    int64_t totalInode = 100;
+
+    service->CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeSize = 10;
+    service->CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeInode = 10;
+    service->CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeSize = 20;
+    service->CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    freeInode = 20;
+    service->CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndEventNotify_0001 end";
 }
 
 /**
@@ -393,12 +566,21 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForLow_0000 start";
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyFreqHandlerForLow();
+    service->EventNotifyFreqHandlerForLow(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyFreqHandlerForLow();
+    service->EventNotifyFreqHandlerForLow(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
+
+    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
+    service->EventNotifyFreqHandlerForLow(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
+    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
+    service->EventNotifyFreqHandlerForLow(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForLow_0000 end";
 }
 
@@ -415,13 +597,22 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForMedium_0000 start";
 
-    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyFreqHandlerForMedium();
+    service->lastNotificationTimeMedium_ = std::chrono::system_clock::time_point();
+    service->EventNotifyFreqHandlerForMedium(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
 
-    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyFreqHandlerForMedium();
+    service->lastNotificationTimeMedium_ = std::chrono::system_clock::now() + std::chrono::hours(24);
+    service->EventNotifyFreqHandlerForMedium(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
+
+    service->lastNotificationTimeMedium_ = std::chrono::system_clock::time_point();
+    service->EventNotifyFreqHandlerForMedium(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
+    service->lastNotificationTimeMedium_ = std::chrono::system_clock::now() + std::chrono::hours(24);
+    service->EventNotifyFreqHandlerForMedium(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForMedium_0000 end";
 }
 
@@ -438,13 +629,22 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 start";
 
-    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyFreqHandlerForHigh();
+    service->lastNotificationTime_ = std::chrono::system_clock::time_point();
+    service->EventNotifyFreqHandlerForHigh(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
 
-    service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyFreqHandlerForHigh();
+    service->lastNotificationTime_ = std::chrono::system_clock::now() + std::chrono::hours(24);
+    service->EventNotifyFreqHandlerForHigh(true, ONE_G_BYTE, TWO_G_BYTE);
     EXPECT_TRUE(true);
+
+    service->lastNotificationTime_ = std::chrono::system_clock::time_point();
+    service->EventNotifyFreqHandlerForHigh(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
+    service->lastNotificationTime_ = std::chrono::system_clock::now() + std::chrono::hours(24);
+    service->EventNotifyFreqHandlerForHigh(false, ONE_G_BYTE, TWO_G_BYTE);
+    EXPECT_TRUE(true);
+
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 end";
 }
 
@@ -461,10 +661,10 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetStorageAlertClean
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_GetStorageAlertCleanupParams_0000 start";
     std::string value = "notify_l500M/notify_m2G/notify_h10%";
-    int64_t totalSize = 1024;
-
+    int64_t totalSize = ONE_G_BYTE;
+    int64_t totalInode = TWO_G_BYTE;
     SystemSetParameter("const.storage_service.storage_alert_policy", value.c_str());
-    service->ParseStorageParameters(totalSize);
+    service->ParseStorageParameters(totalSize, totalInode);
     std::string storageParams = service->GetStorageAlertCleanupParams();
     EXPECT_EQ(storageParams, value);
 
@@ -558,7 +758,13 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEve
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 start";
     std::string cleanLevel = CLEAN_LEVEL_HIGH;
-    service->PublishCleanCacheEvent(cleanLevel);
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = ONE_G_BYTE;
+    sizeInfo.totalSize = TWO_G_BYTE;
+    service->PublishCleanCacheEvent(cleanLevel, true, sizeInfo);
+    EXPECT_TRUE(true);
+
+    service->PublishCleanCacheEvent(cleanLevel, false, sizeInfo);
     EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0000 end";
 }
@@ -575,9 +781,12 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEve
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 start";
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = ONE_G_BYTE;
+    sizeInfo.totalSize = TWO_G_BYTE;
     std::vector<std::string> cleanLevels = {CLEAN_LEVEL_LOW, CLEAN_LEVEL_MEDIUM, CLEAN_LEVEL_HIGH, CLEAN_LEVEL_RICH};
     for (const auto &level : cleanLevels) {
-        service->PublishCleanCacheEvent(level);
+        service->PublishCleanCacheEvent(level, true, sizeInfo);
         EXPECT_TRUE(true);
     }
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_000 end";
@@ -595,9 +804,12 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEve
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEvent_0002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 start";
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = ONE_G_BYTE;
+    sizeInfo.totalSize = TWO_G_BYTE;
     std::vector<std::string> specialLevels = {"", "!@#$%^&*()", std::string(1000, 'a')};
     for (const auto &level : specialLevels) {
-        service->PublishCleanCacheEvent(level);
+        service->PublishCleanCacheEvent(level, true, sizeInfo);
         EXPECT_TRUE(true);
     }
     GTEST_LOG_(INFO) << "storage_monitor_service_PublishCleanCacheEvent_0002 end";
@@ -615,20 +827,22 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_PublishCleanCacheEve
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_SendCommonEventToCleanCache_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 start";
-
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = ONE_G_BYTE;
+    sizeInfo.totalSize = TWO_G_BYTE;
     // testcase 1: empty cleanlevel
-    service->SendCommonEventToCleanCache("");
+    service->SendCommonEventToCleanCache("", sizeInfo, true);
 
     // testcase 2: can not find cleanLevel
     std::string cleanLevel = CLEAN_LEVEL_HIGH;
-    service->SendCommonEventToCleanCache(cleanLevel);
+    service->SendCommonEventToCleanCache(cleanLevel, sizeInfo, true);
 
     // testcase 3: can find cleanLevel
     CleanNotify notify;
     notify.cleanLevelName = CLEAN_LEVEL_HIGH;
     notify.lastCleanNotifyTime = 0;
     FileCacheAdapter::GetInstance().InsertOrUpdateCleanNotify(notify);
-    service->SendCommonEventToCleanCache(cleanLevel);
+    service->SendCommonEventToCleanCache(cleanLevel, sizeInfo, true);
 
     GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 end";
 }
@@ -660,5 +874,134 @@ HWTEST_F(StorageMonitorServiceTest,
     EXPECT_TRUE(true);
  
     GTEST_LOG_(INFO) << "HapAndSaStatisticsThd_0003 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_GetJsonStringForInode_0000
+ * @tc.name: Storage_monitor_service_GetJsonStringForInode_0001
+ * @tc.desc: Test function of HapAndSaStatisticsThd interface with multiple calls.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_GetJsonStringForInode_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonStringForInode_0000 start";
+
+    const std::string faultDesc = "faultDesc";
+    const std::string faultSuggest = "faultSuggest";
+    int64_t freeInode = ONE_G_BYTE;
+    int64_t totalInode = TWO_G_BYTE;
+
+    std::string retString;
+    cJSON jsonObject = { 0 };
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonStringForInode(faultDesc, faultSuggest, freeInode, totalInode);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    retString = service->GetJsonStringForInode(faultDesc, faultSuggest, freeInode, totalInode);
+    EXPECT_TRUE(retString == "{}");
+
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(nullptr));
+    retString = service->GetJsonStringForInode(faultDesc, faultSuggest, freeInode, totalInode);
+    EXPECT_TRUE(retString == "{}");
+
+    char stringTemp[] = "{}";
+    EXPECT_CALL(*sum, cJSON_CreateObject()).WillRepeatedly(Return(&jsonObject));
+    EXPECT_CALL(*sum, cJSON_Print(_)).WillRepeatedly(Return(stringTemp));
+    retString = service->GetJsonStringForInode(faultDesc, faultSuggest, freeInode, totalInode);
+    EXPECT_TRUE(retString == "{}");
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_GetJsonStringForInode_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_ParseStorageInodeParameters_0000
+ * @tc.name: Storage_monitor_service_ParseStorageInodeParameters_0002
+ * @tc.desc: Test function of ParseStorageInodeParameters interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issuesIC35N9
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_ParseStorageInodeParameters_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_ParseStorageInodeParameters_0000 start";
+
+    int64_t totalInode = ONE_G_BYTE;
+    std::string storageInodeParams = "notify_l:25000/notify_m:100000/notify_h:10%/clean_l:37500/clean_m:5%/clean_h:10%/"
+                                     "clean_r10%/clean_r:-1%/clean_r:101%/clean_r:/clean_r:-1";
+    service->ParseStorageInodeParameters(totalInode, storageInodeParams);
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_ParseStorageInodeParameters_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_HandleEventAndClean_0000
+ * @tc.name: Storage_monitor_service_HandleEventAndClean_0000
+ * @tc.desc: Test HandleEventAndClean with empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HandleEventAndClean_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_HandleEventAndClean_0000 start";
+
+    service->thresholds["clean_l"] = 10;
+    service->inodeThresholds_["clean_l"] = 10;
+    struct SizeInfo sizeInfo;
+    sizeInfo.freeSize = 10;
+    sizeInfo.totalSize = 100;
+    service->HandleEventAndClean(CLEAN_LEVEL_LOW, sizeInfo);
+    EXPECT_TRUE(true);
+
+    service->HandleEventAndClean(CLEAN_LEVEL_MEDIUM, sizeInfo);
+    EXPECT_TRUE(true);
+
+    service->HandleEventAndClean(CLEAN_LEVEL_HIGH, sizeInfo);
+    EXPECT_TRUE(true);
+
+    service->HandleEventAndClean("", sizeInfo);
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "storage_monitor_service_SendCommonEventToCleanCache_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_storage_monitor_service_CleanBundleCache_0000
+ * @tc.name: Storage_monitor_service_CleanBundleCache_0000
+ * @tc.desc: Test CleanBundleCache with empty result set.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issues2344
+ */
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CleanBundleCache_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCache_0000 start";
+
+    int64_t lowThreshold = ONE_G_BYTE;
+    int64_t lowInodeThreshold = ONE_G_BYTE;
+    bool isCleanSpace = true;
+    std::string cleanLevel = CLEAN_LEVEL_LOW;
+
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    service->CleanBundleCache(lowThreshold, lowInodeThreshold, isCleanSpace, cleanLevel);
+    EXPECT_TRUE(true);
+
+    isCleanSpace = false;
+    service->CleanBundleCache(lowThreshold, lowInodeThreshold, isCleanSpace, cleanLevel);
+    EXPECT_TRUE(true);
+
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCache_0000 end";
 }
 }

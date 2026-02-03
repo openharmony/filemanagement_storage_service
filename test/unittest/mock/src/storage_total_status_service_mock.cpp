@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,5 +30,15 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
 int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
 {
     return StorageTotalStatusServiceBase::stss->GetFreeSize(freeSize);
+}
+
+int32_t StorageTotalStatusService::GetTotalInodes(int64_t &totalInode)
+{
+    return StorageTotalStatusServiceBase::stss->GetTotalInodes(totalInode);
+}
+
+int32_t StorageTotalStatusService::GetFreeInodes(int64_t &freeInode)
+{
+    return StorageTotalStatusServiceBase::stss->GetFreeInodes(freeInode);
 }
 } // OHOS::StorageManager
