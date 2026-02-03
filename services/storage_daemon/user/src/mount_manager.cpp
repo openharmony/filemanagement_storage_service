@@ -248,6 +248,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         }
         MountSandboxPath(userId, sandboxMountNodeList.data, bundleNameStr);
     }
+    ClearSecondMountMap(userId);
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
 }
@@ -648,7 +649,6 @@ int32_t MountManager::UmountByUser(int32_t userId)
     res = (cloudUMount != E_OK) ? cloudUMount : res;
     UMountMediaFuse(userId);
     FindSaFd(userId);
-    ClearSecondMountMap(static_cast<uint32_t>(userId));
     LOGI("unmount end, res is %{public}d.", res);
     return res;
 }
@@ -1334,17 +1334,18 @@ int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &
     std::vector<MountNodeInfo> mountNodeInfos = sandboxMountNodeList.data;
     std::string sandboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    for (const auto &mountNodeInfo: mountNodeInfos) {
+    for (const auto &mountNodeInfo : mountNodeInfos) {
         std::string path = sandboxRootPath + mountNodeInfo.dstPath;
         auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
         int32_t res = UMount(path);
         if (res != E_OK && errno != ENOENT && errno != EINVAL) {
             std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("ClearSecondMountPoint", userId, E_UMOUNT_SANDBOX, extraData);
-            LOGE("failed to unmount path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.",
+                 path.c_str(), errno, res);
             return E_UMOUNT_SANDBOX;
         }
-        StorageService::StorageRadar::ReportDuration("umount" + path, startUmountTime, userId);
+        StorageService::StorageRadar::ReportDuration("umount-" + path, startUmountTime, userId);
     }
     RemoveBundleNameFromMap(userId, bundleName);
     auto delay = StorageService::StorageRadar::ReportDuration("ClearSecondMountPoint", startTime, userId);
@@ -1357,9 +1358,9 @@ int32_t MountManager::InitSecondMountBundleName(uint32_t userId)
     filesystem::path sandboxRootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(sandboxRootDir, errCode)) {
-        std::string extraData = "sandboxRootDir not exist,kernelCode=" + to_string(errCode.value());
+        std::string extraData = "sandbox dir not exist,kernelCode=" + to_string(errCode.value());
         StorageRadar::ReportUserManager("InitSecondMountBundleName", DEFAULT_USERID, E_UMOUNT_SANDBOX, extraData);
-        LOGE("root path not exists, errno is %{public}d", errCode);
+        LOGE("root path not exists, errno is %{public}d", errCode.value());
         return E_ERR;
     }
     filesystem::directory_iterator bundleNameList(sandboxRootDir);
@@ -1393,8 +1394,6 @@ int32_t MountManager::IsBundleNeedClear(uint32_t userId, const std::string &bund
     }
     std::vector<std::string> bundles = secondMountBundleNameMap_.at(userId);
     if (std::find(bundles.begin(), bundles.end(), bundleName) == bundles.end()) {
-        std::string extraData = "bundle not need clear,bundle=" + bundleName;
-        StorageRadar::ReportUserManager("IsBundleNeedClear", userId, E_NOT_NEED_CLEAR_SECOND_MOUNT_POINT, extraData);
         LOGE("bundle not need clear, bundle is %{public}s.", bundleName.c_str());
         return E_NOT_NEED_CLEAR_SECOND_MOUNT_POINT;
     }
@@ -1416,6 +1415,7 @@ void MountManager::ClearSecondMountMap(uint32_t userId)
 {
     std::lock_guard<std::mutex> lock(secondMountMutex_);
     if (secondMountBundleNameMap_.find(userId) != secondMountBundleNameMap_.end()) {
+        LOGE("clear second mount map, userId is %{public}d.", userId);
         secondMountBundleNameMap_.erase(userId);
     }
 }

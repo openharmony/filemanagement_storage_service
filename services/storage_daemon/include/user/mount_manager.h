@@ -105,7 +105,7 @@ private:
     int32_t FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts);
     int32_t FilterNotMountedPath(std::map<std::string, std::string> &notMountPaths);
     int32_t HandleDisDstPath(const std::string &dstPath);
-    bool IsBundleNeedClear(uint32_t userId, const std::string &bundleName);
+    int32_t IsBundleNeedClear(uint32_t userId, const std::string &bundleName);
     int32_t InitSecondMountBundleName(uint32_t userId);
     void RemoveBundleNameFromMap(uint32_t userId, const std::string &bundleName);
     void ClearSecondMountMap(uint32_t userId);
