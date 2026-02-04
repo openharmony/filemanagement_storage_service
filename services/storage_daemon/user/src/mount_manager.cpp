@@ -1371,10 +1371,11 @@ int32_t MountManager::InitSecondMountBundleName(uint32_t userId)
         if (bundleName.length() <= bundleSuffix.length()) {
             continue;
         }
-        if (bundleName.rfind(bundleSuffix) != bundleName.length() - bundleSuffix.length()) {
+        std::string::size_type point = bundleName.rfind(bundleSuffix);
+        if (point != bundleName.length() - bundleSuffix.length()) {
             continue;
         }
-        bundleName = bundleName.substr(0, bundleName.find(bundleSuffix));
+        bundleName = bundleName.substr(0, point);
         if (std::find(bundles.begin(), bundles.end(), bundleName) != bundles.end()) {
             continue;
         }

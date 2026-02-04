@@ -1058,7 +1058,7 @@ int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const
         return err;
     }
     if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
+        LOGE("StorageDaemonCommunication::ClearSecondMountPoint service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->ClearSecondMountPoint(userId, bundleName);
