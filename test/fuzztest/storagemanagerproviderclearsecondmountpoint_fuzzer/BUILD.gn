@@ -15,10 +15,10 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageManagerProviderUMountCryptoPathAgainFuzzTest") {
+ohos_fuzztest("StorageManagerProviderClearSecondMountPointFuzzTest") {
   module_out_path = "storage_service/storage_service/storage_manager"
   fuzz_config_file =
-      "${storage_service_path}/test/fuzztest/storagemanagerproviderumountcryptopathagain_fuzzer"
+      "${storage_service_path}/test/fuzztest/storagemanagerproviderclearsecondmountpoint_fuzzer"
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include",
@@ -33,7 +33,7 @@ ohos_fuzztest("StorageManagerProviderUMountCryptoPathAgainFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "storagemanagerproviderumountcryptopathagain_fuzzer.cpp" ]
+  sources = [ "storagemanagerproviderclearsecondmountpoint_fuzzer.cpp" ]
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
@@ -75,5 +75,5 @@ ohos_fuzztest("StorageManagerProviderUMountCryptoPathAgainFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageManagerProviderUMountCryptoPathAgainFuzzTest" ]
+  deps = [ ":StorageManagerProviderClearSecondMountPointFuzzTest" ]
 }

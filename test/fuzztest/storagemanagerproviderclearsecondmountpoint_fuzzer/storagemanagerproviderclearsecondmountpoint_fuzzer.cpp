@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagemanagerproviderumountcryptopathagain_fuzzer.h"
+#include "storagemanagerproviderclearsecondmountpoint_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -32,9 +32,9 @@ namespace OHOS::StorageManager {
 std::shared_ptr<StorageManagerProvider> storageManagerProvider =
     std::make_shared<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
 
-bool UMountCryptoPathAgainFuzzTest(const uint8_t *data, size_t size)
+bool ClearSecondMountPointFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UMOUNT_CRYPTO_PATH_AGAIN);
+    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_CLEAR_SECOND_MOUNT_POINT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -56,6 +56,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    OHOS::StorageManager::UMountCryptoPathAgainFuzzTest(data, size);
+    OHOS::StorageManager::ClearSecondMountPointFuzzTest(data, size);
     return 0;
 }

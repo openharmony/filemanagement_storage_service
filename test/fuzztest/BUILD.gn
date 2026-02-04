@@ -64,6 +64,7 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidernotifycreatebundledatadirwithel_fuzzer:fuzztest",
     "storagemanagerproviderqueryactiveosaccountids_fuzzer:fuzztest",
     "storagemanagerproviderisosaccountexists_fuzzer:fuzztest",
+    "storagemanagerproviderclearsecondmountpoint_fuzzer:fuzztest",
   ]
 }
 
