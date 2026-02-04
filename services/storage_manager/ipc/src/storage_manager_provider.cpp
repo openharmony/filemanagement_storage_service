@@ -1951,5 +1951,26 @@ int32_t StorageManagerProvider::IsOsAccountExists(unsigned int userId, bool &isO
     }
     return AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
 }
+
+int32_t StorageManagerProvider::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
+{
+    StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint Begin", E_OK);
+    LOGI("clear second mount point start, userId is %{public}d, bundle is %{public}s.", userId, bundleName.c_str());
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || uid != FOUNDATION_UID) {
+        LOGE("ClearSecondMountPoint permission denied, uid: %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    if (userId > TOP_USER_ID || bundleName.empty()) {
+        LOGE("invalid params, userId: %{public}d.", userId);
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->ClearSecondMountPoint(userId, bundleName);
+    LOGI("clear second mount point end, ret is %{public}d.", err);
+    StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint End", err);
+    return err;
+}
 } // namespace StorageManager
 } // namespace OHOS

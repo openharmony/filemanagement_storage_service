@@ -1765,5 +1765,33 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExist
     EXPECT_NE(storageManagerProviderTest_->IsOsAccountExists(userId, isOsAccountExists), E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_002 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_ClearSecondMountPoint_001
+ * @tc.desc: Verify the ClearSecondMountPoint function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ClearSecondMountPoint_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    std::string bundleName;
+    g_testCallingUid = 0;
+    EXPECT_EQ(storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName), E_PERMISSION_DENIED);
+
+    g_testCallingUid = 5523;
+    userId = 99999;
+    EXPECT_EQ(storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName), E_PARAMS_INVALID);
+
+    g_testCallingUid = 5523;
+    userId = 100;
+    EXPECT_EQ(storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName), E_PARAMS_INVALID);
+
+    bundleName = "com.test.demo";
+    EXPECT_EQ(storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName), E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 end";
+}
 }
 }

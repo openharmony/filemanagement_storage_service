@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1701,5 +1701,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExist
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_001 end";
 }
 
+/**
+ * @tc.name: StorageManagerProviderTest_ClearSecondMountPoint_001
+ * @tc.desc: Verify the ClearSecondMountPoint function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ClearSecondMountPoint_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t userId = 0;
+    std::string bundleName;
+    auto ret = storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

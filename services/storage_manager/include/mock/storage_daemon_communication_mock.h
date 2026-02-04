@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ public:
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
     virtual int32_t SetStopScanFlag(bool stop = false);
     virtual int32_t GetAncoSizeData(std::string &outExtraData);
+    virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName);
     static inline std::shared_ptr<IStorageDaemonCommunicationMock> storageDaemonCommunication = nullptr;
 };
 class StorageDaemonCommunicationMock : public IStorageDaemonCommunicationMock {
@@ -48,6 +49,7 @@ public:
     MOCK_METHOD(int32_t, GetDirListSpace, (const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
     MOCK_METHOD(int32_t, SetStopScanFlag, (bool));
     MOCK_METHOD(int32_t, GetAncoSizeData, (std::string &));
+    MOCK_METHOD(int32_t, ClearSecondMountPoint, (uint32_t, const std::string &));
 };
 } // StorageManager
 } // OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,6 +69,7 @@ public:
         std::vector<std::string> &outputList, bool &isOccupy);
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
+    int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName);
 
 private:
     MountManager() = default;
@@ -104,10 +105,16 @@ private:
     int32_t FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts);
     int32_t FilterNotMountedPath(std::map<std::string, std::string> &notMountPaths);
     int32_t HandleDisDstPath(const std::string &dstPath);
+    int32_t IsBundleNeedClear(uint32_t userId, const std::string &bundleName);
+    int32_t InitSecondMountBundleName(uint32_t userId);
+    void RemoveBundleNameFromMap(uint32_t userId, const std::string &bundleName);
+    void ClearSecondMountMap(uint32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
     std::mutex mountDisMutex_;
+    std::mutex secondMountMutex_;
+    std::map<uint32_t, std::vector<std::string>> secondMountBundleNameMap_;
 };
 } // STORAGE_DAEMON
 } // OHOS

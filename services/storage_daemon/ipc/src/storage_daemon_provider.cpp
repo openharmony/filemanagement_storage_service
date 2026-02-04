@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1079,6 +1079,11 @@ int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_
 int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
 {
     return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
+}
+
+int32_t StorageDaemonProvider::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
+{
+    return MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

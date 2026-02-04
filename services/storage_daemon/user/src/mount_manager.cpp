@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -248,6 +248,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         }
         MountSandboxPath(userId, sandboxMountNodeList.data, bundleNameStr);
     }
+    ClearSecondMountMap(userId);
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
 }
@@ -1315,6 +1316,108 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
             continue;
         }
         CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
+    }
+}
+
+int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
+{
+    LOGI("clear second mount point start, userId is %{public}d, bundle is %{public}s", userId, bundleName.c_str());
+    int32_t ret = IsBundleNeedClear(userId, bundleName);
+    if (ret != E_OK) {
+        return ret;
+    }
+    InfoList<MountNodeInfo> sandboxMountNodeList;
+    ret = UserPathResolver::GetSandboxMountNodeList(static_cast<int32_t>(userId), sandboxMountNodeList.data);
+    if (ret != E_OK) {
+        return ret;
+    }
+    std::vector<MountNodeInfo> mountNodeInfos = sandboxMountNodeList.data;
+    std::string sandboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    for (const auto &mountNodeInfo : mountNodeInfos) {
+        std::string path = sandboxRootPath + mountNodeInfo.dstPath;
+        auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
+        int32_t res = UMount(path);
+        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
+            std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("ClearSecondMountPoint", userId, E_UMOUNT_SANDBOX, extraData);
+            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.",
+                 path.c_str(), errno, res);
+            return E_UMOUNT_SANDBOX;
+        }
+        StorageService::StorageRadar::ReportDuration("umount-" + path, startUmountTime, userId);
+    }
+    RemoveBundleNameFromMap(userId, bundleName);
+    auto delay = StorageService::StorageRadar::ReportDuration("ClearSecondMountPoint", startTime, userId);
+    LOGI("SD_DURATION: clear second mount point success, delayTime is %{public}s.", delay.c_str());
+    return E_OK;
+}
+
+int32_t MountManager::InitSecondMountBundleName(uint32_t userId)
+{
+    filesystem::path sandboxRootDir(SANDBOX_ROOT_PATH + to_string(userId));
+    std::error_code errCode;
+    if (!exists(sandboxRootDir, errCode)) {
+        std::string extraData = "sandbox dir not exist,kernelCode=" + to_string(errCode.value());
+        StorageRadar::ReportUserManager("InitSecondMountBundleName", DEFAULT_USERID, E_UMOUNT_SANDBOX, extraData);
+        LOGE("root path not exists, errno is %{public}d", errCode.value());
+        return E_ERR;
+    }
+    filesystem::directory_iterator bundleNameList(sandboxRootDir);
+    std::vector<std::string> bundles;
+    std::string bundleSuffix = MOUNT_SUFFIX;
+    for (const auto &bundle : bundleNameList) {
+        std::string bundleName = bundle.path().filename().generic_string();
+        if (bundleName.length() <= bundleSuffix.length()) {
+            continue;
+        }
+        std::string::size_type point = bundleName.rfind(bundleSuffix);
+        if (point != bundleName.length() - bundleSuffix.length()) {
+            continue;
+        }
+        bundleName = bundleName.substr(0, point);
+        if (std::find(bundles.begin(), bundles.end(), bundleName) != bundles.end()) {
+            continue;
+        }
+        bundles.emplace_back(bundleName);
+    }
+    secondMountBundleNameMap_[userId] = bundles;
+    return E_OK;
+}
+
+int32_t MountManager::IsBundleNeedClear(uint32_t userId, const std::string &bundleName)
+{
+    std::lock_guard<std::mutex> lock(secondMountMutex_);
+    if (secondMountBundleNameMap_.find(userId) == secondMountBundleNameMap_.end()) {
+        if (InitSecondMountBundleName(userId) != E_OK) {
+            return E_UMOUNT_SANDBOX;
+        }
+    }
+    std::vector<std::string> bundles = secondMountBundleNameMap_.at(userId);
+    if (std::find(bundles.begin(), bundles.end(), bundleName) == bundles.end()) {
+        LOGE("bundle not need clear, bundle is %{public}s.", bundleName.c_str());
+        return E_NOT_NEED_CLEAR_SECOND_MOUNT_POINT;
+    }
+    return E_OK;
+}
+
+void MountManager::RemoveBundleNameFromMap(uint32_t userId, const std::string &bundleName)
+{
+    std::lock_guard<std::mutex> lock(secondMountMutex_);
+    if (secondMountBundleNameMap_.find(userId) == secondMountBundleNameMap_.end()) {
+        return;
+    }
+    std::vector<std::string> bundles = secondMountBundleNameMap_.at(userId);
+    bundles.erase(std::remove(bundles.begin(), bundles.end(), bundleName), bundles.end());
+    secondMountBundleNameMap_[userId] = bundles;
+}
+
+void MountManager::ClearSecondMountMap(uint32_t userId)
+{
+    std::lock_guard<std::mutex> lock(secondMountMutex_);
+    if (secondMountBundleNameMap_.find(userId) != secondMountBundleNameMap_.end()) {
+        LOGE("clear second mount map, userId is %{public}d.", userId);
+        secondMountBundleNameMap_.erase(userId);
     }
 }
 } // namespace StorageDaemon

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -140,6 +140,7 @@ public:
     // stats api
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
+    virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

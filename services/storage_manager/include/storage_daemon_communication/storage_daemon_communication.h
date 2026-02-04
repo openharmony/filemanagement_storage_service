@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -61,6 +61,7 @@ public:
     int32_t UpdateUserPublicDirPolicy(uint32_t userId);
     int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     int32_t MountCryptoPathAgain(int32_t userId);
+    int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId,
                              const std::vector<uint8_t> &token,
