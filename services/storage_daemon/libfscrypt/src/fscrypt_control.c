@@ -40,7 +40,7 @@
         (ptr) = NULL; \
     } \
 } while (0)
-
+#define FDSAN_TAG_A 1
 typedef struct FscrtpyItem_ {
     char *key;
     uint8_t value;
@@ -97,6 +97,7 @@ static const char *PATH_KEYDESC = "/key_desc";
 static const char *PATH_KEYID = "/key_id";
 #endif
 
+static uint64_t NEW_TAG_LOG = (((uint64_t)LOG_DOMAIN) << 32) | FDSAN_TAG_A;
 static bool IsSupportedPolicyKey(const char *key,
                                  const FscrtpyItem *items,
                                  size_t len)
@@ -300,13 +301,13 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         LOGE("key file read open failed");
         return -EFAULT;
     }
+    fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
     if (read(fd, buf, len) != (ssize_t)len) {
         LOGE("bad file content");
-        (void)close(fd);
+        fdsan_close_with_tag(fd, NEW_TAG_LOG);
         return -EBADF;
     }
-    (void)close(fd);
-
+    fdsan_close_with_tag(fd, NEW_TAG_LOG);
     return 0;
 }
 
