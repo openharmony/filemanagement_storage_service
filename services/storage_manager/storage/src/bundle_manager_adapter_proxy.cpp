@@ -24,6 +24,21 @@ constexpr size_t MAX_PARCEL_CAPACITY_OF_ASHMEM = 1024 * 1024 * 1024; // allow ma
 constexpr size_t MAX_IPC_REWDATA_SIZE = 120 * 1024 * 1024;           // max ipc size 120MB
 } // namespace
 
+#define CONTAINER_SECURITY_VERIFY(parcel, readContainerSize, val)                                         \
+    do {                                                                                                  \
+        if ((val) == nullptr) {                                                                           \
+            LOGE("Failed to read container due to val is nullptr");                                       \
+            return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
+        }                                                                                                 \
+        size_t readAbleDataSize = (parcel).GetReadableBytes();                                            \
+        size_t readSize = static_cast<size_t>(readContainerSize);                                         \
+        if ((readSize > readAbleDataSize) || ((val)->max_size() < readSize)) {                            \
+            LOGE("Failed to read container, readSize = %{public}zu, readAbleDataSize = %{public}zu",      \
+                readSize, readAbleDataSize);                                                              \
+            return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
+        }                                                                                                 \
+    } while (0)
+
 BundleManagerAdapterProxy::BundleManagerAdapterProxy(const sptr<IRemoteObject> &impl) : IRemoteProxy<IBundleMgr>(impl)
 {}
 
@@ -329,6 +344,7 @@ ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessagePa
     }
 
     int32_t infoSize = tempParcel.ReadInt32();
+    CONTAINER_SECURITY_VERIFY(tempParcel, infoSize, &parcelableInfos);
     for (int32_t i = 0; i < infoSize; i++) {
         std::unique_ptr<T> info(tempParcel.ReadParcelable<T>());
         if (info == nullptr) {
