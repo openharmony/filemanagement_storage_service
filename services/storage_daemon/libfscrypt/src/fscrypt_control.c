@@ -301,13 +301,12 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         LOGE("key file read open failed");
         return -EFAULT;
     }
+    fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
     if (read(fd, buf, len) != (ssize_t)len) {
         LOGE("bad file content");
-        fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
         fdsan_close_with_tag(fd, NEW_TAG_LOG);
         return -EBADF;
     }
-    fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
     fdsan_close_with_tag(fd, NEW_TAG_LOG);
     return 0;
 }

@@ -15,7 +15,6 @@
 
 #include "utils/file_utils.h"
 
-#include <cstdio>
 #include <cstdint>
 #include <dirent.h>
 #include <fcntl.h>
@@ -34,7 +33,6 @@
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 #include "concurrent_task_client.h"
 #endif
-#define FDSAN_TAG_A 1
 
 using namespace std;
 namespace OHOS {
@@ -56,7 +54,7 @@ const std::string CONTAINER_LINUX = "rgm_linux";
 const std::string VM_LINUX = "rgm_openEuler";
 const std::string EL_RGM_MANAGER_PATH = "/data/service/el1/public/vm_manager";
 const std::string RGM_MANAGER_PATH = RGM_MANAGER_PATH_DEF;
-constexpr uint64_t NEW_TAG_LOG = static_cast<uint64_t>(LOG_DOMAIN) << 32 | FDSAN_TAG_A;
+
 struct RgmPathConfig {
     bool isImg = false;
     std::string stateParam = "";
@@ -117,12 +115,6 @@ const static std::map<std::string, RgmPathConfig> rgmConfigs = {
     }
 };
 
-void CloseFd(int fd)
-{
-    fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
-    fdsan_close_with_tag(fd, NEW_TAG_LOG);
-}
-
 int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
     if (logpipe == nullptr || len < PIPE_FD_LEN) {
@@ -130,7 +122,7 @@ int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
         return E_ERR;
     }
     int ret = E_OK;
-    CloseFd(logpipe[0]);
+    (void)close(logpipe[0]);
     if (dup2(logpipe[1], STDOUT_FILENO) == -1) {
         LOGE("dup2 stdout failed, errno is %{public}d.", errno);
         ret = E_ERR;
@@ -139,7 +131,7 @@ int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
         LOGE("dup2 stderr failed, errno is %{public}d.", errno);
         ret = E_ERR;
     }
-    CloseFd(logpipe[1]);
+    (void)close(logpipe[1]);
     return ret;
 }
 
@@ -617,16 +609,6 @@ void GetExitStatus(int *exitStatus, int inputExitStatus)
     }
 }
 
-static void ExecToPipe(int pipe_fd[PIPE_FD_LEN], const std::vector<char*> &args)
-{
-    if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
-        _exit(1);
-    }
-    execvp(args[0], const_cast<char **>(args.data()));
-    LOGE("execvp failed errno: %{public}d", errno);
-    _exit(1);
-}
-
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     int pipe_fd[PIPE_FD_LEN];
@@ -640,13 +622,16 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
-        CloseFd(pipe_fd[1]);
-        CloseFd(pipe_fd[0]);
         return E_FORK;
     } else if (pid == 0) {
-        ExecToPipe(pipe_fd, args);
+        if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
+            _exit(1);
+        }
+        execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d", errno);
+        _exit(1);
     } else {
-        CloseFd(pipe_fd[1]);
+        (void)close(pipe_fd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
@@ -656,7 +641,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
                 output->push_back(buf);
             }
         }
-        CloseFd(pipe_fd[0]);
+        (void)close(pipe_fd[0]);
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             return E_NO_CHILD;
@@ -692,18 +677,18 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
         LOGE("fork failed");
         return E_FORK;
     } else if (pid == 0) {
-        CloseFd(pipe_fd[0]);
+        (void)close(pipe_fd[0]);
         if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
             LOGE("dup2 failed");
             _exit(1);
         }
-        CloseFd(pipe_fd[1]);
+        (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
         _exit(1);
     } else {
-        CloseFd(pipe_fd[1]);
-        CloseFd(pipe_fd[0]);
+        (void)close(pipe_fd[1]);
+        (void)close(pipe_fd[0]);
         waitpid(pid, &status, 0);
         LOGE("Process exits %{public}d", errno);
         if (!WIFEXITED(status)) {
@@ -738,8 +723,8 @@ static void ClosePipe(int pipedes[PIPE_FD_LEN], size_t len)
         LOGE("close pipe param is invalid.");
         return;
     }
-    CloseFd(pipedes[0]);
-    CloseFd(pipedes[1]);
+    (void)close(pipedes[0]);
+    (void)close(pipedes[1]);
 }
 
 static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
@@ -748,23 +733,23 @@ static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
         LOGE("write pipe param is invalid.");
         return;
     }
-    CloseFd(pipe_fd[0]);
+    (void)close(pipe_fd[0]);
     int send_pid = (int)getpid();
     if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
         LOGE("write pipe failed, errno is %{public}d.", errno);
         _exit(1);
     }
-    CloseFd(pipe_fd[1]);
+    (void)close(pipe_fd[1]);
 }
 
 static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
 {
-    CloseFd(pipe_fd[1]);
+    (void)close(pipe_fd[1]);
     int recv_pid;
     while (read(pipe_fd[0], &recv_pid, sizeof(int)) > 0) {
         LOGI("read child pid: %{public}d", recv_pid);
     }
-    CloseFd(pipe_fd[0]);
+    (void)close(pipe_fd[0]);
     ReportExecutorPidEvent(cmd, recv_pid);
 }
 
@@ -774,7 +759,7 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
         LOGE("read pipe param is invalid.");
         return;
     }
-    CloseFd(logpipe[1]);
+    (void)close(logpipe[1]);
     FILE* fp = fdopen(logpipe[0], "r");
     if (fp) {
         char line[BUF_LEN];
@@ -785,7 +770,7 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
         return;
     }
     LOGE("open pipe file failed, errno is %{public}d.", errno);
-    CloseFd(logpipe[0]);
+    (void)close(logpipe[0]);
 }
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
@@ -856,7 +841,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
     if (fd >= 0) {
         std::string writeStr = "add\n";
         write(fd, writeStr.c_str(), writeStr.length());
-        CloseFd(fd);
+        (void)close(fd);
     }
 
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
