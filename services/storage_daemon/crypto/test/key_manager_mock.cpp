@@ -201,7 +201,7 @@ int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string
     return KeyManagerMock::iKeyManagerMock_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
-int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;

@@ -212,4 +212,4 @@ int32_t IamClient::NotifyGetSecureUid()
     return 0;
 }
 } // namespace StorageDaemon
-} // namespace HOHS
+} // namespace OHOS

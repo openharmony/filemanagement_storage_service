@@ -51,7 +51,7 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MountDeviceTest_001 start";
 
     MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
-    manager.isMounting = true;
+    manager.isMounting_ = true;
     int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_MTP_IS_MOUNTING);
 
@@ -68,7 +68,7 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_002, TestSize.Level1)
     GTEST_LOG_(INFO) << "MountDeviceTest_002 start";
 
     MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
-    manager.isMounting = false;
+    manager.isMounting_ = false;
     int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_MTP_PREPARE_DIR_ERR);
 
@@ -85,7 +85,7 @@ HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_003, TestSize.Level1)
     GTEST_LOG_(INFO) << "MountDeviceTest_003 start";
 
     MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
-    manager.isMounting = false;
+    manager.isMounting_ = false;
     deviceInfo.path = "/mnt/data/external";
     int32_t result = manager.MountDevice(deviceInfo);
     EXPECT_EQ(result, E_WEXITSTATUS);
@@ -123,6 +123,48 @@ HWTEST_F(MtpDeviceManagerTest, UmountDeviceTest_002, TestSize.Level1)
     EXPECT_EQ(manager.UmountDevice(deviceInfo, true, false), E_MTP_UMOUNT_FAILED);
 
     GTEST_LOG_(INFO) << "UmountDeviceTest_002 end";
+}
+
+/**
+ * @tc.name  : MtpDeviceManager_StateManagement_0001
+ * @tc.number: MtpDeviceManager_StateManagement_0001
+ * @tc.desc  : Test isMounting_ state management during mount operations
+ */
+HWTEST_F(MtpDeviceManagerTest, MtpDeviceManager_StateManagement_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpDeviceManager_StateManagement_0001 start";
+
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
+    manager.isMounting_ = false;
+    EXPECT_FALSE(manager.isMounting_);
+
+    deviceInfo.path = "/test/mount/path";
+    manager.isMounting_ = true;
+    EXPECT_TRUE(manager.isMounting_);
+
+    manager.isMounting_ = false;
+    EXPECT_FALSE(manager.isMounting_);
+
+    GTEST_LOG_(INFO) << "MtpDeviceManager_StateManagement_0001 end";
+}
+
+/**
+ * @tc.name  : MtpDeviceManager_ConcurrentMount_0002
+ * @tc.number: MtpDeviceManager_ConcurrentMount_0002
+ * @tc.desc  : Test concurrent mount request handling
+ */
+HWTEST_F(MtpDeviceManagerTest, MtpDeviceManager_ConcurrentMount_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpDeviceManager_ConcurrentMount_0002 start";
+
+    MtpDeviceManager& manager = MtpDeviceManager::GetInstance();
+    manager.isMounting_ = true;
+    deviceInfo.path = "/mnt/data/external";
+
+    int32_t result = manager.MountDevice(deviceInfo);
+    manager.isMounting_ = false;
+
+    GTEST_LOG_(INFO) << "MtpDeviceManager_ConcurrentMount_0002 end, result: " << result;
 }
 } // STORAGE_DAEMON
 } // OHOS

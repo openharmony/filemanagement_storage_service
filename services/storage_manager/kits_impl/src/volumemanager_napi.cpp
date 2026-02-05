@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-#include "volumemanager_napi.h"
-
 #ifdef HMDFS_FILE_MANAGER
 #include "napi_module_dfs_service.h"
 #endif

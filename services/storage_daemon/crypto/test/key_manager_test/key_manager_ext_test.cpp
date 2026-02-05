@@ -409,4 +409,235 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_UpdateUserPublicDirPolicy_003, TestSiz
     EXPECT_EQ(KeyManagerExt::GetInstance().UpdateUserPublicDirPolicy(user), E_OK);
     GTEST_LOG_(INFO) << "KeyManagerExt_UpdateUserPublicDirPolicy_003 end";
 }
+
+/**
+ * @tc.name: KeyManagerExt_Init_001
+ * @tc.desc: Verify the Init function with re-initialization check.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_Init_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_001 start";
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    KeyManagerExt::GetInstance().Init();
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_001 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_Init_002
+ * @tc.desc: Verify the Init function with handler_ already initialized.
+ * @tc.type: FUNC
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_Init_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_002 start";
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    KeyManagerExt::GetInstance().Init();
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_002 end";
+}
+
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_004
+ * @tc.desc: Verify the SetRecoverKey function with invalid ivBlob.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_004 start";
+
+    uint32_t userId = 300;
+    uint32_t keyType = 1;
+    KeyManagerExt::GetInstance().service_ = userkeyExtMocMock_.get();
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
+
+    KeyBlob ivBlob;
+    int ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+    EXPECT_EQ(ret, E_PARAMS);
+
+    KeyBlob ivBlob2(0);
+    ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob2);
+    EXPECT_EQ(ret, E_PARAMS);
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_004 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_005
+ * @tc.desc: Verify the SetRecoverKey function with valid ivBlob.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_005 start";
+
+    uint32_t userId = 300;
+    uint32_t keyType = 1;
+    KeyBlob ivBlob(16);
+    for (uint32_t i = 0; i < ivBlob.size; i++) {
+        ivBlob.data.get()[i] = static_cast<uint8_t>(i);
+    }
+
+    KeyManagerExt::GetInstance().service_ = userkeyExtMocMock_.get();
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
+
+    EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_OK));
+    int ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+    EXPECT_TRUE(ret == E_OK || ret == E_KEY_EMPTY_ERROR);
+
+    EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_PARAMS));
+    ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+    EXPECT_NE(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_005 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_006
+ * @tc.desc: Verify the SetRecoverKey function with various keyTypes.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_006 start";
+
+    uint32_t userId = 300;
+    KeyBlob ivBlob(16);
+    for (uint32_t i = 0; i < ivBlob.size; i++) {
+        ivBlob.data.get()[i] = static_cast<uint8_t>(i);
+    }
+
+    KeyManagerExt::GetInstance().service_ = userkeyExtMocMock_.get();
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillRepeatedly(Return(E_OK));
+
+    for (uint32_t keyType = 0; keyType <= 3; keyType++) {
+        int ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+        EXPECT_TRUE(ret == E_OK || ret == E_KEY_EMPTY_ERROR);
+    }
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_006 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_SetRecoverKey_007
+ * @tc.desc: Verify the SetRecoverKey function with boundary ivBlob sizes.
+ * @tc.type: FUNC
+ * @tc.require: DTS2025080504160
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_SetRecoverKey_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_007 start";
+
+    uint32_t userId = 300;
+    uint32_t keyType = 1;
+
+    KeyManagerExt::GetInstance().service_ = userkeyExtMocMock_.get();
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillRepeatedly(Return(true));
+
+    {
+        KeyBlob ivBlob(1);
+        ivBlob.data.get()[0] = 0xFF;
+        EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_OK));
+        int ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+        EXPECT_TRUE(ret == E_OK || ret == E_KEY_EMPTY_ERROR);
+    }
+
+    {
+        KeyBlob ivBlob(32);
+        for (uint32_t i = 0; i < ivBlob.size; i++) {
+            ivBlob.data.get()[i] = static_cast<uint8_t>(i);
+        }
+        EXPECT_CALL(*userkeyExtMocMock_, SetRecoverKey(_, _)).WillOnce(Return(E_OK));
+        int ret = KeyManagerExt::GetInstance().SetRecoverKey(userId, keyType, ivBlob);
+        EXPECT_TRUE(ret == E_OK || ret == E_KEY_EMPTY_ERROR);
+    }
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_SetRecoverKey_007 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_Init_003
+ * @tc.desc: Verify the Init function with handler_ already set.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_Init_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_003 start";
+
+    KeyManagerExt::GetInstance().handler_ = reinterpret_cast<void*>(0x1234);
+    KeyManagerExt::GetInstance().service_ = userkeyExtMocMock_.get();
+    KeyManagerExt::GetInstance().Init();
+
+    EXPECT_NE(KeyManagerExt::GetInstance().handler_, nullptr);
+    EXPECT_NE(KeyManagerExt::GetInstance().service_, nullptr);
+
+    KeyManagerExt::GetInstance().handler_ = nullptr;
+    KeyManagerExt::GetInstance().service_ = nullptr;
+
+    KeyManagerExt::GetInstance().handler_ = reinterpret_cast<void*>(0x5678);
+    KeyManagerExt::GetInstance().service_ = nullptr;
+    KeyManagerExt::GetInstance().Init();
+
+    EXPECT_NE(KeyManagerExt::GetInstance().handler_, nullptr);
+    EXPECT_EQ(KeyManagerExt::GetInstance().service_, nullptr);
+
+    KeyManagerExt::GetInstance().handler_ = nullptr;
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_003 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_Init_004
+ * @tc.desc: Verify the Init function when dlopen returns nullptr.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_Init_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_004 start";
+
+    KeyManagerExt::GetInstance().handler_ = nullptr;
+    KeyManagerExt::GetInstance().service_ = nullptr;
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+
+    KeyManagerExt::GetInstance().Init();
+
+    EXPECT_EQ(KeyManagerExt::GetInstance().service_, nullptr);
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_004 end";
+}
+
+/**
+ * @tc.name: KeyManagerExt_Init_005
+ * @tc.desc: Verify the Init function when KeyCtrlHasFscryptSyspara returns false.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_Init_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_005 start";
+
+    KeyManagerExt::GetInstance().handler_ = nullptr;
+    KeyManagerExt::GetInstance().service_ = nullptr;
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+
+    KeyManagerExt::GetInstance().Init();
+
+    EXPECT_EQ(KeyManagerExt::GetInstance().handler_, nullptr);
+    EXPECT_EQ(KeyManagerExt::GetInstance().service_, nullptr);
+
+    GTEST_LOG_(INFO) << "KeyManagerExt_Init_005 end";
+}
 }

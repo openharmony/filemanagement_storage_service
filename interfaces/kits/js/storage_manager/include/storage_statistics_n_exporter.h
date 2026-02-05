@@ -18,7 +18,6 @@
 
 #include <tuple>
 #include "n_exporter.h"
-#include "storage_statistics_napi.h"
 
 namespace OHOS {
 namespace StorageManager {

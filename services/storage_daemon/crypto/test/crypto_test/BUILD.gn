@@ -54,6 +54,7 @@ ohos_unittest("CryptoTest") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "openssl:libcrypto_shared",
   ]
 
   if (enable_screenlock_manager) {

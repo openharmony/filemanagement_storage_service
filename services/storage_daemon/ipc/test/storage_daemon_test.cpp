@@ -373,7 +373,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_003, TestSize.Le
 
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_ERR));
 
-    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL2_KEY), E_MIGRETE_ELX_FAILED);
+    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL2_KEY), E_MIGRATE_ELX_FAILED);
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_ERR);
 }
 

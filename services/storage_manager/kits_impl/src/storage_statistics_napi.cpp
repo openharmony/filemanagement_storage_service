@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-#include "storage_statistics_napi.h"
-
 #include "storage_statistics_n_exporter.h"
 #include "storage_service_log.h"
 

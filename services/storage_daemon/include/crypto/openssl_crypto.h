@@ -17,6 +17,8 @@
 
 #include "key_blob.h"
 
+typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
+
 namespace OHOS {
 namespace StorageDaemon {
 constexpr size_t GCM_MAC_BYTES = 16;
@@ -28,6 +30,13 @@ public:
     static int32_t AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText);
     static int32_t AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_);
     static KeyBlob HashWithPrefix(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length);
+
+private:
+    static int32_t DoGCMDecryptInit(EVP_CIPHER_CTX *ctx, const KeyBlob &shield,
+                                     const KeyContext &keyContext_, KeyBlob &plainText);
+    static int32_t DoGCMDecryptFinal(EVP_CIPHER_CTX *ctx, const KeyBlob &cipherText, KeyBlob &plainText);
+    static int32_t DoGCMEncryptFinal(EVP_CIPHER_CTX *ctx, KeyBlob &cipherText, const KeyBlob &plainText);
+    static void CleanupShield(KeyBlob &shield);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -79,7 +79,7 @@ void Acl::SetMaskEntry()
      * you can't pass the !!genius!! CI coding style check.
      */
     CompareInsertEntry(
-        { ACL_TAG::MASK, ReCalcMaskPerm(), ACL_UNDEFINED_ID }
+        { ACL_TAG::MASK, ReCalcMaskPerm(), AclXattrHeader::ACL_UNDEFINED_ID }
     );
 }
 
@@ -134,7 +134,7 @@ char *Acl::Serialize(size_t &bufSize)
         errno = EINVAL;
         return nullptr;
     }
-    buf = new (std::nothrow) char[bufSize];
+    buf = new (std::nothrow) char[bufSize]();
     if (buf == nullptr) {
         errno = ENOMEM;
         return nullptr;

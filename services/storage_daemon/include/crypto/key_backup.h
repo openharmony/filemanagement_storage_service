@@ -23,9 +23,9 @@
 namespace OHOS {
 namespace StorageDaemon {
 struct FileAttr {
-    uid_t uid;
-    gid_t gid;
-    mode_t mode;
+    uid_t uid {};
+    gid_t gid {};
+    mode_t mode {};
 };
 
 class KeyBackup {

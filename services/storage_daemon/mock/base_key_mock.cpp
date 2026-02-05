@@ -193,3 +193,11 @@ bool BaseKey::GenerateHashKey()
 {
     return true;
 }
+
+int32_t BaseKey::InactiveKey(uint32_t flag, const std::string &mnt)
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return -1;
+    }
+    return IBaseKeyMoc::baseKeyMoc->InactiveKey(flag, mnt);
+}

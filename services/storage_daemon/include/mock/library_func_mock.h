@@ -30,6 +30,7 @@ public:
     virtual int umount(const char *specialFile) = 0;
     virtual int umount2(const char *specialFile, int flags) = 0;
     virtual int remove(const char *pathname) = 0;
+    virtual int rmdir(const char *pathname) = 0;
     virtual int lstat(const char *path, struct stat *buf) = 0;
 public:
     static inline std::shared_ptr<LibraryFunc> libraryFunc_ = nullptr;
@@ -41,6 +42,7 @@ public:
     MOCK_METHOD1(umount, int(const char *specialFile));
     MOCK_METHOD2(umount2, int(const char *specialFile, int flags));
     MOCK_METHOD1(remove, int(const char *pathname));
+    MOCK_METHOD1(rmdir, int(const char *pathname));
     MOCK_METHOD2(lstat, int(const char *path, struct stat *buf));
 };
 }

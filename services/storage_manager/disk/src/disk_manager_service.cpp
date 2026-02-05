@@ -25,19 +25,31 @@
 
 namespace OHOS {
 namespace StorageManager {
+const std::string UNDEFINED_FS_TYPE = "undefined";
+
 DiskManagerService::DiskManagerService() {}
+
 DiskManagerService::~DiskManagerService() {}
 
-const std::string UNDEFINED_FS_TYPE = "undefined";
-std::shared_ptr<Disk> DiskManagerService::GetDiskById(std::string diskId)
+DiskManagerService &DiskManagerService::GetInstance()
+{
+    static DiskManagerService instance;
+    return instance;
+}
+
+std::shared_ptr<Disk> DiskManagerService::GetDiskById(const std::string &diskId)
 {
     if (!diskMap_.Contains(diskId)) {
         return nullptr;
     }
-    return diskMap_.ReadVal(diskId);
+    auto diskPtr = diskMap_.ReadVal(diskId);
+    if (diskPtr == nullptr) {
+        return nullptr;
+    }
+    return diskPtr;
 }
 
-void DiskManagerService::OnDiskCreated(Disk disk)
+void DiskManagerService::OnDiskCreated(const Disk &disk)
 {
     if (diskMap_.Contains(disk.GetDiskId())) {
         LOGE("DiskManagerService::OnDiskCreated the disk %{public}s already exists",
@@ -49,7 +61,7 @@ void DiskManagerService::OnDiskCreated(Disk disk)
     DiskNotification::GetInstance().NotifyDiskChange(StorageDaemon::DiskInfo::DiskState::MOUNTED, diskPtr);
 }
 
-void DiskManagerService::OnDiskDestroyed(std::string diskId)
+void DiskManagerService::OnDiskDestroyed(const std::string &diskId)
 {
     if (!diskMap_.Contains(diskId)) {
         LOGE("DiskManagerService::OnDiskDestroyed the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
@@ -60,7 +72,7 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
     diskMap_.Erase(diskId);
 }
 
-int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
+int32_t DiskManagerService::Partition(const std::string &diskId, int32_t type)
 {
     bool isUsbFuseByType = VolumeManagerService::GetInstance().IsUsbFuseByType(UNDEFINED_FS_TYPE);
     if (isUsbFuseByType) {
@@ -87,7 +99,7 @@ std::vector<Disk> DiskManagerService::GetAllDisks()
     return result;
 }
 
-int32_t DiskManagerService::GetDiskById(std::string diskId, Disk &disk)
+int32_t DiskManagerService::GetDiskById(const std::string &diskId, Disk &disk)
 {
     if (diskMap_.Contains(diskId)) {
         disk = *diskMap_.ReadVal(diskId);

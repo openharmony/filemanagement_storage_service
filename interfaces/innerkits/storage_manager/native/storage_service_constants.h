@@ -30,7 +30,7 @@ enum UserChangedEventType {
     EVENT_USER_UNLOCKED = 0,
     EVENT_USER_SWITCHED = 1,
 };
-}
-} // OHOS
+} // namespace StorageService
+} // namespace OHOS
 
-#endif // OHOS_STORAGE_POLICE_CONSTANT_H
+#endif // OHOS_STORAGE_SERVICE_CONSTANTS_H

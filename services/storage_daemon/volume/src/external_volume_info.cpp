@@ -484,7 +484,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
             LOGW("umount2 failed in force mode, errno %{public}d", errno);
             return E_OK;
         }
-        ret = remove(mountPath_.c_str());
+        ret = rmdir(mountPath_.c_str());
         if (ret != 0) {
             LOGW("remove failed in force mode, errno %{public}d", errno);
             return E_OK;
@@ -513,7 +513,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGE("umount2 failed errno %{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
-    int err = remove(mountPath_.c_str());
+    int err = rmdir(mountPath_.c_str());
     if (err != E_OK && errno != FILE_NOT_EXIST) {
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", GetAnonyString(mountPath_).c_str(), errno);
         return E_RMDIR_MOUNT;

@@ -74,7 +74,7 @@ int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
     }
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
         LOGE("keyId is invalid, %{public}u", keyInfo_.keyId.size);
-        return E_INVAILd_KEY_ID_ERROR;
+        return E_INVALID_KEY_ID_ERROR;
     }
 
     fscrypt_remove_key_arg arg;

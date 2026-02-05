@@ -88,7 +88,7 @@ public:
                          const std::vector<uint8_t> &secret);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId, bool needReSet = false);
-    int DeleteAppkey(uint32_t user, const std::string keyId);
+    int32_t DeleteAppkey(uint32_t user, const std::string &keyId);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);

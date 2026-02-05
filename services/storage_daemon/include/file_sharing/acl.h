@@ -20,12 +20,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 /*
- * ACL extended attributes (xattr) names
- */
-constexpr const char *ACL_XATTR_ACCESS  = "system.posix_acl_access";
-constexpr const char *ACL_XATTR_DEFAULT = "system.posix_acl_default";
-
-/*
  * ACL tag values
  */
 enum class ACL_TAG : uint16_t {
@@ -84,27 +78,25 @@ public:
     }
 };
 
-/*
- * Other constants
- */
-constexpr uint32_t ACL_EA_VERSION = 0x0002;
-constexpr uint32_t ACL_UNDEFINED_ID = (uint32_t)-1;
 
 /*
  * ACL data structure
  */
 struct AclXattrHeader {
+    static constexpr uint32_t ACL_EA_VERSION = 0x0002;
+    static constexpr uint32_t ACL_UNDEFINED_ID = (uint32_t)-1;
+
     uint32_t version = ACL_EA_VERSION;
 };
 
 struct AclXattrEntry {
     ACL_TAG tag = ACL_TAG::UNDEFINED;
     ACL_PERM perm = {};
-    uint32_t id = ACL_UNDEFINED_ID;
+    uint32_t id = AclXattrHeader::ACL_UNDEFINED_ID;
     bool IsValid() const
     {
         if (tag == ACL_TAG::USER || tag == ACL_TAG::GROUP) {
-            return id != ACL_UNDEFINED_ID;
+            return id != AclXattrHeader::ACL_UNDEFINED_ID;
         }
         return tag != ACL_TAG::UNDEFINED;
     }
@@ -126,6 +118,11 @@ struct AclXattrEntry {
 };
 
 class Acl {
+public:
+    static constexpr const char *ACL_XATTR_ACCESS  = "system.posix_acl_access";
+    static constexpr const char *ACL_XATTR_DEFAULT = "system.posix_acl_default";
+
+private:
     AclXattrHeader header;
     /*
      * Only one entry should exist for the following types:

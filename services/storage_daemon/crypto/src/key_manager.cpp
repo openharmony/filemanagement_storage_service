@@ -242,14 +242,18 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
     }
     auto ret = elKey->StoreKey(auth);
     if (ret != E_OK) {
-        elKey->ClearKey();
+        if (!elKey->ClearKey()) {
+            LOGE("Failed to clear key after store error");
+        }
         LOGE("user security key store failed");
         return E_ELX_KEY_STORE_ERROR;
     }
     // Generate hashkey for encrypt public directory
     elKey->GenerateHashKey();
     if (elKey->ActiveKey(auth.token, FIRST_CREATE_KEY) != E_OK) {
-        elKey->ClearKey();
+        if (!elKey->ClearKey()) {
+            LOGE("Failed to clear key after active error");
+        }
         LOGE("user security key active failed");
         return E_ELX_KEY_ACTIVE_ERROR;
     }
@@ -272,7 +276,9 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     saveESecretStatus[userId] = true;
     auto ret = elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY);
     if (ret != E_OK) {
-        elKey->ClearKey();
+        if (elKey->ClearKey() != E_OK) {
+            LOGW("user %{public}u ClearKey failed after AddClassE error", userId);
+        }
         LOGE("user %{public}u el5 create error, error=%{public}d", userId, ret);
         return E_EL5_ADD_CLASS_ERROR;
     }
@@ -837,7 +843,9 @@ int KeyManager::DeleteGlobalDeviceKey(const std::string &dir)
     LOGI("Start DeleteGlobalDeviceKey");
     globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ != nullptr) {
-        globalEl1Key_->ClearKey();
+        if (globalEl1Key_->ClearKey() != E_OK) {
+            LOGW("ClearKey failed in DeleteGlobalDeviceKey");
+        }
         globalEl1Key_ = nullptr;
         hasGlobalDeviceKey_ = false;
         LOGE("global security key is clear");
@@ -845,7 +853,9 @@ int KeyManager::DeleteGlobalDeviceKey(const std::string &dir)
     std::string backupDir = dir + BACKUP_NAME;
     globalEl1Key_ = GetBaseKey(backupDir);
     if (globalEl1Key_ != nullptr) {
-        globalEl1Key_->ClearKey();
+        if (globalEl1Key_->ClearKey() != E_OK) {
+            LOGW("ClearKey failed for backup key in DeleteGlobalDeviceKey");
+        }
         globalEl1Key_ = nullptr;
         hasGlobalDeviceKey_ = false;
         LOGE("global security bakup key is clear");
@@ -1626,7 +1636,7 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
     return 0;
 }
 
-int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     if (!IsUeceSupport()) {
         LOGI("Not support uece or encryption not enabled!");

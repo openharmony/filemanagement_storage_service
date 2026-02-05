@@ -34,11 +34,15 @@ public:
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
     void MountMtpDeviceByBroadcast();
-    
+
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
-    static void OnMtpDisableParamChange(const char *key, const  char *value, void *context);
-    static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
+    static void OnMtpDisableParamChange(const char *key, const char *value, void *context);
+    static void OnEnterpriseParamChange(const char *key, const char *value, void *context);
+
+    MtpDeviceMonitor(const MtpDeviceMonitor &) = delete;
+    MtpDeviceMonitor &operator=(const MtpDeviceMonitor &) = delete;
+
 private:
     MtpDeviceMonitor();
     ~MtpDeviceMonitor();

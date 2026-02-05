@@ -59,6 +59,12 @@ namespace StorageDaemon {
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 
+StorageDaemon &StorageDaemon::GetInstance(void)
+{
+    static StorageDaemon instance;
+    return instance;
+}
+
 #ifdef USE_LIBRESTORECON
 constexpr const char *DATA_SERVICE_EL2 = "/data/service/el2/";
 constexpr const char *DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
@@ -149,7 +155,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         if (type != EL1_KEY) {
             LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
                 userId, type, ret);
-            return E_MIGRETE_ELX_FAILED; // maybe need user key, so return E_OK to continue
+            return E_MIGRATE_ELX_FAILED; // maybe need user key, so return E_OK to continue
         }
         LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
         return ret;
@@ -187,7 +193,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
     std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
     for (auto type : keyTypes) {
         auto ret = RestoreOneUserKey(userId, type);
-        if (ret == E_MIGRETE_ELX_FAILED) {
+        if (ret == E_MIGRATE_ELX_FAILED) {
             LOGE("Try restore user: %{public}d type: %{public}d migrate key, wait user pin !", userId, type);
             break;
         }

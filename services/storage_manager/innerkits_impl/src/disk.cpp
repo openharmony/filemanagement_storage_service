@@ -19,7 +19,8 @@ namespace OHOS {
 namespace StorageManager {
 Disk::Disk() {}
 
-Disk::Disk(std::string diskId, int64_t sizeBytes, std::string sysPath, std::string vendor, int32_t flag)
+Disk::Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath,
+           const std::string &vendor, int32_t flag)
     : diskId_(diskId), sizeBytes_(sizeBytes), sysPath_(sysPath), vendor_(vendor), flag_(flag) {}
 
 std::string Disk::GetDiskId() const
@@ -27,22 +28,22 @@ std::string Disk::GetDiskId() const
     return diskId_;
 }
 
-int64_t Disk::GetSizeBytes()
+int64_t Disk::GetSizeBytes() const
 {
     return sizeBytes_;
 }
 
-std::string Disk::GetSysPath()
+std::string Disk::GetSysPath() const
 {
     return sysPath_;
 }
 
-std::string Disk::GetVendor()
+std::string Disk::GetVendor() const
 {
     return vendor_;
 }
 
-int32_t Disk::GetFlag()
+int32_t Disk::GetFlag() const
 {
     return flag_;
 }

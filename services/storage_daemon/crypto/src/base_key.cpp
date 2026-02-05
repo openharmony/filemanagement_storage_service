@@ -461,13 +461,13 @@ int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
     KeyContext ctxDe;
     auto ret = InitKeyContext(auth, path, ctxDe);
     if (ret != E_OK) {
-        LOGE("init key context failed !");
+        LOGE("init key context failed, ret=%{public}d.", ret);
         return ret;
     }
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
     ret = HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true);
     if (ret != E_OK) {
-        LOGE("Encrypt by hks failed.");
+        LOGE("Encrypt by hks failed, ret=%{public}d.", ret);
         ClearKeyContext(ctxDe);
         return ret;
     }
@@ -491,10 +491,10 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
     // rnd 64 -> rndEnc 80
     auto ret = HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx);
     if (ret != E_OK) {
-        LOGE("Encrypt by hks failed.");
+        LOGE("Encrypt by hks failed, ret=%{public}d.", ret);
         return ret;
     }
-    LOGE("Huks encrypt end.");
+    LOGI("Huks encrypt end.");
 
     UserAuth mUserAuth = auth;
     if (auth.secret.IsEmpty()) {
@@ -509,10 +509,10 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
     LOGI("Encrypt by openssl start"); // rndEnc 80 -> rndEncEnc 108
     ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
     if (ret != E_OK) {
-        LOGE("Encrypt by openssl failed.");
+        LOGE("Encrypt by openssl failed, ret=%{public}d.", ret);
         return ret;
     }
-    LOGE("Encrypt by openssl end");
+    LOGI("Encrypt by openssl end");
     rndEnc.Clear();
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL;
     LOGI("finish");
@@ -1144,6 +1144,10 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
 
 void BaseKey::CombKeyBlob(const KeyBlob &encAad, const KeyBlob &end, KeyBlob &keyOut)
 {
+    if (encAad.data == nullptr || end.data == nullptr || keyOut.data == nullptr) {
+        LOGE("Invalid key blob data pointer");
+        return;
+    }
     std::vector<uint8_t> startVct(encAad.data.get(), encAad.data.get() + encAad.size);
     std::vector<uint8_t> endVct(end.data.get(), end.data.get() + end.size);
     startVct.insert(startVct.end(), endVct.begin(), endVct.end());

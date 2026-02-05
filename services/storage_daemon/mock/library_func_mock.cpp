@@ -49,6 +49,14 @@ int remove(const char *pathname)
     return LibraryFunc::libraryFunc_->remove(pathname);
 }
 
+int rmdir(const char *pathname)
+{
+    if (LibraryFunc::libraryFunc_ == nullptr) {
+        return -1;
+    }
+    return LibraryFunc::libraryFunc_->rmdir(pathname);
+}
+
 int lstat(const char *path, struct stat *buf)
 {
     if (LibraryFunc::libraryFunc_ == nullptr) {

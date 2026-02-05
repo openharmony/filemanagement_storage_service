@@ -34,7 +34,7 @@ sptr<IStorageManager> StorageManagerClient::GetStorageManagerProxy(void)
 
     sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_MANAGER_MANAGER_ID);
     if (object == nullptr) {
-        LOGE("storage manager client samgr ablity empty error");
+        LOGE("storage manager client samgr ability empty error");
         return nullptr;
     }
 

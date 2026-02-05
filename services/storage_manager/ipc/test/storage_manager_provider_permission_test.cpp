@@ -345,9 +345,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemSize_00
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicyk_001, TestSize.Level1)
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     uint32_t userId = 100;
     std::string dirPath = "/test";
@@ -357,7 +357,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryption
     userId = TOP_USER_ID + 1;
     ret = storageManagerProviderTest_->SetDirEncryptionPolicy(userId, dirPath, type);
     EXPECT_EQ(ret, E_USERID_RANGE);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicyk_001 end";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 end";
 }
 
 /**
@@ -1522,7 +1522,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActi
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceActivationCallback_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallback_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
 
     EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_SERVICE_IS_NULLPTR);
@@ -1622,6 +1622,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
     g_accessTokenType = 0;
     ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
+    g_testCallingUid = 5523;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_001 end";
 }
 
@@ -1656,6 +1657,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
     g_accessTokenType = 0;
     ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
     EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
+    g_testCallingUid = 5523;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetExtBundleStats_001 end";
 }
 
@@ -1683,6 +1685,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleS
     g_accessTokenType = 0;
     ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
+    g_testCallingUid = 5523;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllExtBundleStats_001 end";
 }
 

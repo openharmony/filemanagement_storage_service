@@ -24,6 +24,7 @@
 #include "key_backup.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 
@@ -131,7 +132,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
         if (krid < 0) {
             LOGE("failed to add session keyring");
             std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
-                ",appKey=" + appKey.ToString();
+                ",appKey=" + GetAnonyString(appKey.ToString());
             StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
             return E_ADD_SESSION_KEYRING_ERROR;
         }

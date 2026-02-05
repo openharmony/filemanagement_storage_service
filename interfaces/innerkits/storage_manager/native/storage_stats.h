@@ -37,7 +37,7 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static StorageStats *Unmarshalling(Parcel &parcel);
 };
-} // StorageMangaer
+} // StorageManager
 } // OHOS
 
 #endif // OHOS_STORAGE_MANAGER_STORAGE_STATS_H

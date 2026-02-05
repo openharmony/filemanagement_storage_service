@@ -797,7 +797,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
     bool force = true;
     vol.fsType_ = "hmfs";
     EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, rmdir(_)).WillOnce(Return(0));
     int32_t ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_OK);
     
@@ -818,7 +818,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
     bool force = true;
     vol.fsType_ = "hmfs";
     EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, rmdir(_)).WillOnce(Return(-1));
     int32_t ret = vol.DoUMount(force);
     EXPECT_EQ(ret, E_OK);
 
@@ -1050,7 +1050,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     ExternalVolumeInfo vol;
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_RMDIR_MOUNT);
+    EXPECT_EQ(ret, E_OK);
 }
 
  /**
@@ -1491,6 +1491,5 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_SplitOut
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001 end";
 }
-
 } // STORAGE_DAEMON
 } // OHOS

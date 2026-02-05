@@ -106,14 +106,17 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_StartU
 
     int32_t userid = StorageTest::USER_ID2;
     int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2;
-    storageDaemonClient_->DestroyUserDirs(userid, flags);
-    int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
+    int32_t ret = storageDaemonClient_->DestroyUserDirs(userid, flags);
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST);
+    ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
     ret = storageDaemonClient_->StartUser(userid);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
-    storageDaemonClient_->StopUser(userid);
-    storageDaemonClient_->DestroyUserDirs(userid, flags);
+    ret = storageDaemonClient_->StopUser(userid);
+    EXPECT_TRUE(ret == E_OK) << "StopUser error";
+    ret = storageDaemonClient_->DestroyUserDirs(userid, flags);
+    EXPECT_TRUE(ret == E_OK) << "DestroyUserDirs error";
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_StartUser_001 end";
 }
 
@@ -135,8 +138,8 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
     int32_t ret = storageDaemonClient_->PrepareUserSpace(userid, volId, flags);
     EXPECT_TRUE(ret == E_OK);
 
-    storageDaemonClient_->DestroyUserSpace(userid, volId, flags);
-    EXPECT_TRUE(ret == E_OK);
+    int32_t retDestroy = storageDaemonClient_->DestroyUserSpace(userid, volId, flags);
+    EXPECT_TRUE(retDestroy == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_PrepareUserSpace_001 end";
 }
 
@@ -225,14 +228,17 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     int32_t userid = StorageTest::USER_ID5;
     int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
+    EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
     ret = storageDaemonClient_->StartUser(userid);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
     ret = storageDaemonClient_->UpdateUserAuth(userid, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
-    storageDaemonClient_->StopUser(userid);
-    storageDaemonClient_->DestroyUserDirs(userid, flags);
+    ret = storageDaemonClient_->StopUser(userid);
+    EXPECT_TRUE(ret == E_OK) << "StopUser error";
+    ret = storageDaemonClient_->DestroyUserDirs(userid, flags);
+    EXPECT_TRUE(ret == E_OK) << "DestroyUserDirs error";
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUserAuth_001 end";
 }
 
@@ -295,6 +301,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetLoc
     bool lockScreenStatus = false;
     int32_t ret = storageDaemonClient_->GetLockScreenStatus(userid, lockScreenStatus);
     ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(lockScreenStatus == false || lockScreenStatus == true) << "lockScreenStatus should be set";
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001 end";
 }
@@ -381,6 +388,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetFil
     bool needCheckDirMount = true;
     int32_t ret = storageDaemonClient_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(isEncrypted == false || isEncrypted == true);
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 end";
 }

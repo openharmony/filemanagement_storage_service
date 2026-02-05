@@ -17,15 +17,19 @@
 
 #include "app_clone_key_manager.h"
 #include "crypto/key_manager.h"
-#include "utils/storage_radar.h"
-#include "utils/string_utils.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr const char *NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
+
+AppCloneKeyManager::AppCloneKeyManager() {}
+
+AppCloneKeyManager::~AppCloneKeyManager() {}
 
 int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
 {
