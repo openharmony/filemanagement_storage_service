@@ -1757,9 +1757,10 @@ int32_t KeyManager::InstallEmptyUserKeyForRecovery(uint32_t userId)
     std::string el2Path = std::string(MAINTAIN_USER_EL2_DIR) + "/" + std::to_string(userId);
     std::string el3Path = std::string(MAINTAIN_USER_EL3_DIR) + "/" + std::to_string(userId);
     std::string el4Path = std::string(MAINTAIN_USER_EL4_DIR) + "/" + std::to_string(userId);
+    std::string el5Path = std::string(MAINTAIN_USER_EL5_DIR) + "/" + std::to_string(userId);
 
     const std::vector<std::pair<std::string, KeyType>> keyDirType = {
-        {el1Path, EL1_KEY}, {el2Path, EL2_KEY}, {el3Path, EL3_KEY}, {el4Path, EL4_KEY}};
+        {el1Path, EL1_KEY}, {el2Path, EL2_KEY}, {el3Path, EL3_KEY}, {el4Path, EL4_KEY}, {el5Path, EL5_KEY}};
     for (const auto &[elxDir, elxType] : keyDirType) {
         ret = GenerateAndInstallUserKey(userId, elxDir, NULL_KEY_AUTH, elxType);
         LOGI("InstallEmptyUserKeyForRecovery elxDir=%{public}s, ret=%{public}d", elxDir.c_str(), ret);
