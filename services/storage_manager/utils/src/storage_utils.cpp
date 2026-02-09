@@ -17,6 +17,7 @@
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#include "storage_service_log.h"
 #include "storage/bundle_manager_connector.h"
 
 namespace OHOS {
