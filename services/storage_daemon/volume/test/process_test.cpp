@@ -143,5 +143,24 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_KillProcess_001, TestSize.Leve
     process2.KillProcess(SIGKILL);
     GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_KillProcess_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ProcessTest_UpdatePidAndKill_001
+ * @tc.desc: Verify the UpdatePidAndKill function to fix TOCTOU vulnerability.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ProcessTest, Storage_Service_ProcessTest_UpdatePidAndKill_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_UpdatePidAndKill_001 start";
+    Process process1("/path/to/process");
+    auto ret = process1.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+
+    Process process2("/path/to/process");
+    ret = process2.UpdatePidAndKill(SIGKILL);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_UpdatePidAndKill_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

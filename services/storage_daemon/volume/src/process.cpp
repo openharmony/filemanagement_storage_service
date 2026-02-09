@@ -173,6 +173,37 @@ int32_t Process::UpdatePidByPath()
     return E_OK;
 }
 
+int32_t Process::UpdatePidAndKill(int signal)
+{
+    if (signal == 0) {
+        return E_OK;
+    }
+
+    struct dirent *dirEntry;
+    DIR *dir = opendir("/proc");
+    if (dir == nullptr) {
+        return E_ERR;
+    }
+
+    while ((dirEntry = readdir(dir)) != nullptr) {
+        if (dirEntry->d_type != DT_DIR) continue;
+        pid_t pid = atoi(dirEntry->d_name);
+        if (pid > 0 && pid != getprocpid()) {
+            std::string pidPath = StringPrintf("/proc/%d", pid);
+            if (CheckMaps(pidPath)
+                || CheckSymlink(pidPath + "/cwd")
+                || CheckSymlink(pidPath + "/root")
+                || CheckSymlink(pidPath + "/exe")) {
+                LOGI("KILL PID %{public}d immediately", pid);
+                kill(pid, signal);
+            }
+        }
+    }
+
+    (void)closedir(dir);
+    return E_OK;
+}
+
 void Process::KillProcess(int signal)
 {
     if (signal == 0) {
