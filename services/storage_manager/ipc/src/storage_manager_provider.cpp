@@ -1546,7 +1546,7 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !BundleMgrConnector::GetInstance().IsCalledByFileMgr()) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
