@@ -32,11 +32,6 @@ Process::Process(std::string path)
     path_ = path;
 }
 
-std::unordered_set<pid_t> Process::GetPids()
-{
-    return pids_;
-}
-
 std::string Process::GetPath()
 {
     return path_;
@@ -147,32 +142,6 @@ bool Process::CheckFds(std::string pidPath)
     return false;
 }
 
-int32_t Process::UpdatePidByPath()
-{
-    struct dirent *dirEntry;
-    DIR *dir = opendir("/proc");
-    if (dir == nullptr) {
-        return E_ERR;
-    }
-
-    while ((dirEntry = readdir(dir)) != nullptr) {
-        if (dirEntry->d_type != DT_DIR) continue;
-        pid_t pid = atoi(dirEntry->d_name);
-        if (pid > 0 && pid != getprocpid()) {
-            std::string pidPath = StringPrintf("/proc/%d", pid);
-            if (CheckMaps(pidPath)
-                || CheckSymlink(pidPath + "/cwd")
-                || CheckSymlink(pidPath + "/root")
-                || CheckSymlink(pidPath + "/exe")) {
-                pids_.insert(pid);
-            }
-        }
-    }
-
-    (void)closedir(dir);
-    return E_OK;
-}
-
 int32_t Process::UpdatePidAndKill(int signal)
 {
     if (signal == 0) {
@@ -202,19 +171,6 @@ int32_t Process::UpdatePidAndKill(int signal)
 
     (void)closedir(dir);
     return E_OK;
-}
-
-void Process::KillProcess(int signal)
-{
-    if (signal == 0) {
-        return;
-    }
-
-    for (const auto& pid : pids_) {
-        LOGI("KILL PID %{public}d", pid);
-        kill(pid, signal);
-    }
-    pids_.clear();
 }
 } // StorageDaemon
 } // OHOS

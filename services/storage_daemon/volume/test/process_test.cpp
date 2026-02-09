@@ -36,44 +36,6 @@ public:
 };
 
 /**
- * @tc.name: Storage_Service_ProcessTest_GetPath_001
- * @tc.desc: Verify the GetPath function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_GetXXX_001 start";
-
-    std::string volId = "vol-1-1";
-    std::string diskId = "disk-1-1";
-    bool isUserdata = false;
-    dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
-    uint32_t mountFlags = 0;
-    ExternalVolumeInfoMock mock;
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-
-    auto ret = mock.Create(volId, diskId, device, isUserdata);
-    EXPECT_TRUE(ret == E_OK);
-
-    ret = mock.Check();
-    EXPECT_TRUE(ret == E_OK);
-
-    ret = mock.Mount(mountFlags);
-    EXPECT_TRUE(ret == E_OK);
-
-    auto mountPath = mock.GetMountPath();
-    Process ps(mountPath);
-    ps.UpdatePidByPath();
-    EXPECT_TRUE(ps.GetPath() == mountPath);
-    ps.GetPids();
-
-    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_GetXXX_001 end";
-}
-
-/**
  * @tc.name: Storage_Service_ProcessTest_CheckSubDir_001
  * @tc.desc: Verify the CheckSubDir function.
  * @tc.type: FUNC
@@ -124,24 +86,6 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_CheckFds_001, TestSize.Level1)
     Process process2("/path/to/process");
     EXPECT_FALSE(process2.CheckFds("/proc/111111"));
     GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_CheckFds_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ProcessTest_KillProcess_001
- * @tc.desc: Verify the KillProcess function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(ProcessTest, Storage_Service_ProcessTest_KillProcess_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_KillProcess_001 start";
-    Process process1("/path/to/process");
-    process1.KillProcess(0);
-
-    Process process2("/path/to/process");
-    process2.pids_ = {12345, 56789};
-    process2.KillProcess(SIGKILL);
-    GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_KillProcess_001 end";
 }
 
 /**

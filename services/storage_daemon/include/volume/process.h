@@ -25,9 +25,7 @@ class Process {
 public:
     Process(std::string path);
 
-    int32_t UpdatePidByPath();
     int32_t UpdatePidAndKill(int signal);
-    void KillProcess(int signal);
     std::unordered_set<pid_t> GetPids();
     std::string GetPath();
 
