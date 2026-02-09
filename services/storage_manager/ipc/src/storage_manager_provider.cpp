@@ -1520,11 +1520,7 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    if (IsFilePathInvalid(path)) {
-        return E_PARAMS_INVALID;
-    }
-    if (!IsPathStartWithFileMgr(userId, path)) {
-        LOGE("path is invalid, path: %{public}s", path.c_str());
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
@@ -1546,11 +1542,7 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
         LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    if (IsFilePathInvalid(path)) {
-        return E_PARAMS_INVALID;
-    }
-    if (!IsPathStartWithFileMgr(userId, path)) {
-        LOGE("path is invalid, path: %{public}s", path.c_str());
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {

@@ -178,8 +178,6 @@ private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
     bool IsFilePathInvalid(const std::string &filePath);
-    bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
-    bool IsCalledByFileMgr();
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;
     std::mutex mutex_;
