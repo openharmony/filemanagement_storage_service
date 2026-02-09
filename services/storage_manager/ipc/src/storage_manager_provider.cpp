@@ -2004,7 +2004,7 @@ bool StorageManagerProvider::IsCalledByFileMgr()
         LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
         return false;
     }
-    return E_OK;
+    return true;
 }
 } // namespace StorageManager
 } // namespace OHOS
