@@ -1086,7 +1086,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 end";
 }
@@ -1126,7 +1126,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     int32_t userId = 1002;
     std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 end";
 }
 
