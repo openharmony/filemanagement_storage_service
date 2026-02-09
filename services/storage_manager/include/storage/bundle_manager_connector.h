@@ -30,7 +30,6 @@ public:
     }
     sptr<AppExecFwk::IBundleMgr> GetBundleMgrProxy();
     int32_t ResetBundleMgrProxy();
-    bool IsCalledByFileMgr();
 
 private:
     BundleMgrConnector();

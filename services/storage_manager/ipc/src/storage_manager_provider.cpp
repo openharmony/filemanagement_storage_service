@@ -68,6 +68,7 @@ constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -1523,7 +1524,7 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
     if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !BundleMgrConnector::GetInstance().IsCalledByFileMgr()) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     fuseFd = -1;
@@ -1967,6 +1968,26 @@ int32_t StorageManagerProvider::ClearSecondMountPoint(uint32_t userId, const std
     LOGI("clear second mount point end, ret is %{public}d.", err);
     StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint End", err);
     return err;
+}
+
+bool StorageManagerProvider::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return false;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return false;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return true;
 }
 } // namespace StorageManager
 } // namespace OHOS

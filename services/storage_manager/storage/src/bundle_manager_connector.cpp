@@ -15,7 +15,6 @@
 
 #include "storage/bundle_manager_connector.h"
 
-#include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -23,7 +22,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 BundleMgrConnector::BundleMgrConnector() {}
 
 BundleMgrConnector::~BundleMgrConnector()
@@ -75,26 +73,6 @@ int32_t BundleMgrConnector::ResetBundleMgrProxy()
 void BundleMgrDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     BundleMgrConnector::GetInstance().ResetBundleMgrProxy();
-}
-
-bool BundleMgrConnector::IsCalledByFileMgr()
-{
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = GetBundleMgrProxy();
-    if (bundleMgr == nullptr) {
-        LOGE("Connect bundle manager sa proxy failed.");
-        return false;
-    }
-    std::string bundleName;
-    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
-        LOGE("Invoke bundleMgr interface to get bundle name failed.");
-        return false;
-    }
-    if (bundleName != FILEMGR_BUNDLE_NAME) {
-        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
-        return false;
-    }
-    return true;
 }
 } // StorageManager
 } // OHOS
