@@ -68,6 +68,7 @@ constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -1520,13 +1521,15 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
+    }
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        LOGE("path is invalid, path: %{public}s", path.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
+        return E_PERMISSION_DENIED;
     }
     fuseFd = -1;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -1544,13 +1547,15 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
         LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
+    }
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        LOGE("path is invalid, path: %{public}s", path.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
+        return E_PERMISSION_DENIED;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -1971,6 +1976,35 @@ int32_t StorageManagerProvider::ClearSecondMountPoint(uint32_t userId, const std
     LOGI("clear second mount point end, ret is %{public}d.", err);
     StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint End", err);
     return err;
+}
+
+bool StorageManagerProvider::IsPathStartWithFileMgr(int32_t userId, const std::string &path)
+{
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/userExternal/";
+    if (path.size() <= prefix.size()) {
+        return false;
+    }
+    return path.compare(0, prefix.length(), prefix) == 0;
+}
+
+bool StorageManagerProvider::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return false;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return false;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return E_OK;
 }
 } // namespace StorageManager
 } // namespace OHOS
