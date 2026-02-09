@@ -15,14 +15,8 @@
 
 #include "utils/storage_utils.h"
 
-#include "accesstoken_kit.h"
-#include "ipc_skeleton.h"
-#include "storage_service_log.h"
-#include "storage/bundle_manager_connector.h"
-
 namespace OHOS {
 namespace StorageManager {
-const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 int64_t GetRoundSize(int64_t size)
 {
     int64_t val = 1;
@@ -71,26 +65,6 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
         return false;
     }
     return path.compare(0, prefix.length(), prefix) == 0;
-}
-
-bool IsCalledByFileMgr()
-{
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
-    if (bundleMgr == nullptr) {
-        LOGE("Connect bundle manager sa proxy failed.");
-        return false;
-    }
-    std::string bundleName;
-    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
-        LOGE("Invoke bundleMgr interface to get bundle name failed.");
-        return false;
-    }
-    if (bundleName != FILEMGR_BUNDLE_NAME) {
-        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
-        return false;
-    }
-    return true;
 }
 } // namespace STORAGE_Manager
 } // namespace OHOS
