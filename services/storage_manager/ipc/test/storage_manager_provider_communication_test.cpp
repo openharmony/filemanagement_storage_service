@@ -476,5 +476,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithR
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetSecretWithRecoveryKey_003 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetSystemDataSize_003
+ * @tc.desc: Verify the GetSystemDataSize function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSize_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t systemDataSize = 100;
+    auto  ret = storageManagerProviderTest_->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_003 end";
+}
+
 }
 }

@@ -2024,5 +2024,42 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ClearSecondMountPo
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetDirListSpaceByPaths_001
+ * @tc.desc: Verify the GetDirListSpaceByPaths function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDirListSpaceByPaths_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetDirListSpaceByPaths_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+
+    std::vector<std::string> paths = {"/path1", "/path2"};
+    std::vector<int32_t> uids = {1000, 1001};
+    std::vector<DirSpaceInfo> resultDirs;
+    int32_t ret = storageDaemonProviderTest_->GetDirListSpaceByPaths(paths, uids, resultDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_:GetDirListSpaceByPaths_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetSystemDataSize_001
+ * @tc.desc: Verify the GetSystemDataSize function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetSystemDataSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetSystemDataSize_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+
+    int64_t otherUidSizeSum = 100;
+    int32_t ret = storageDaemonProviderTest_->GetSystemDataSize(otherUidSizeSum);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetSystemDataSize_001 end";
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -43,6 +43,7 @@ public:
     int32_t GetFreeSize(int64_t &freeSize);
     int32_t GetTotalInodes(int64_t &totalInodes);
     int32_t GetFreeInodes(int64_t &freeInodes);
+    int32_t GetUsedInodes(int64_t &usedInodes);
 
 private:
     StorageTotalStatusService();

@@ -308,4 +308,23 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetInodeOfPath_0000
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetInodeOfPath_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetUsedInodes_0000
+ * @tc.name: Storage_total_status_service_GetUsedInodes_0000
+ * @tc.desc: Test function of GetUsedInodesinterface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetUsedInodes_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetUsedInodes_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t usedInodes = 0;
+    int32_t result = service.GetUsedInodes(usedInodes);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetUsedInodes_0000";
+}
 } // namespace

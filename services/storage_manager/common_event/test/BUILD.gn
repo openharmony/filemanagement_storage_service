@@ -28,6 +28,7 @@ ohos_unittest("storage_common_event_subscriber_test") {
     "storage_common_event_subscriber_test.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",

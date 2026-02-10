@@ -31,6 +31,10 @@ function GetFreeSizeSync2(): i64;
 @gen_promise("getTotalSize")
 function GetTotalSizeSync2(): i64;
 
+@gen_async("getSystemDataSize")
+@gen_promise("getSystemDataSize")
+function GetSystemDataSizeSync(): i64;
+
 struct BundleStats {
     dataSize: i64;
     cacheSize: i64;

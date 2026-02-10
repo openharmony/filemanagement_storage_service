@@ -362,6 +362,17 @@ int32_t StorageDaemonProxy::GetRmgResourceSize(const std::string &rgmName, uint6
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
 {
     return E_OK;

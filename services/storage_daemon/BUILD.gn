@@ -194,6 +194,8 @@ ohos_executable("storage_daemon") {
     "ability_base:want",
     "ability_base:zuri",
     "bounds_checking_function:libsec_shared",
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",

@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <regex>
 
+#include "cJSON.h"
+#include "config_policy_utils.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
@@ -42,6 +44,11 @@ constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
+constexpr const char* SYSTEM_DATA_CONFIG_PATH = "/etc/storage_statistic_systemdata.json";
+constexpr const char* SYSTEM_DATA_KEY = "storage.statistic.systemdata";
+constexpr const char* HMFS_PATH = "/sys/fs/hmfs/userdata";
+constexpr const char* MAIN_BLKADDR = "/main_blkaddr";
+constexpr const char* OVP_CHUNKS = "/ovp_chunks";
 constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
@@ -54,8 +61,11 @@ constexpr int32_t BLOCK_BYTE = 512;
 constexpr int32_t TOP_SPACE_COUNT = 20;
 constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
+constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
+constexpr int32_t MAX_WHITE_UID_COUNT = 3;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
+
 #define Q_GETNEXTQUOTA_LOCAL 0x800009
 std::recursive_mutex mMountsLock;
 std::mutex cacheMutex_;
@@ -708,6 +718,237 @@ int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std
         dqBlks.push_back(nextDq);
     }
     LOGI("GetDqBlkSpacesByUids end, dqBlks size: %{public}zu", dqBlks.size());
+    return E_OK;
+}
+
+int32_t QuotaManager::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    LOGI("QuotaManager::GetSystemDataSize start");
+    otherUidSizeSum = 0;
+    std::vector<int32_t> uidList;
+    int32_t ret = ParseSystemDataConfigFile(uidList);
+    if (ret != E_OK) {
+        LOGE("GetSystemDataSize ParseSystemDataConfigFile failed, ret=%{public}d", ret);
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
+    }
+    int64_t systemCacheSize = 0;
+    ret = GetSystemCacheSize(uidList, systemCacheSize);
+    if (ret != E_OK) {
+        LOGE("GetSystemDataSize GetSystemCacheSize failed, ret=%{public}d", ret);
+        systemCacheSize = 0;
+    }
+    LOGI("GetSystemDataSize system_cache=%{public}lld", static_cast<long long>(systemCacheSize));
+    int64_t metaDataSize = 0;
+    ret = GetMetaDataSize(metaDataSize);
+    if (ret != E_OK) {
+        LOGW("GetSystemDataSize GetMetaDataSize failed, ret=%{public}d", ret);
+        metaDataSize = 0;
+    }
+    LOGI("GetSystemDataSize filesystem_metadata=%{public}lld", static_cast<long long>(metaDataSize));
+    otherUidSizeSum = systemCacheSize + metaDataSize;
+    LOGI("GetSystemDataSize end, total=%{public}lld (cache=%{public}lld + meta=%{public}lld)",
+        static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemCacheSize),
+        static_cast<long long>(metaDataSize));
+    return E_OK;
+}
+
+int32_t QuotaManager::ParseSystemDataConfigFile(std::vector<int32_t> &uidList)
+{
+    std::string path = SYSTEM_DATA_CONFIG_PATH;
+    char buf[MAX_PATH_LEN] = { 0 };
+    char *configPath = GetOneCfgFile(path.c_str(), buf, MAX_PATH_LEN);
+    if (configPath == NULL) {
+        LOGE("config path is NULL");
+        return E_PARAMS_INVALID;
+    }
+    char canonicalBuf[PATH_MAX] = { 0 };
+    char *canonicalPath = realpath(configPath, canonicalBuf);
+    if (canonicalPath == NULL || canonicalPath[0] == '\0' || strlen(canonicalPath) >= MAX_PATH_LEN) {
+        LOGE("get ccm config file path failed");
+        canonicalPath = NULL;
+        return E_PARAMS_INVALID;
+    }
+    canonicalBuf[PATH_MAX - 1] = '\0';
+    std::ifstream configFile(canonicalBuf);
+    if (!configFile.is_open()) {
+        LOGE("ParseSystemDataConfigFile cannot open config file: %{public}s, errno: %{public}d", canonicalPath, errno);
+        canonicalPath = NULL;
+        return E_PARAMS_INVALID;
+    }
+    std::string jsonString((std::istreambuf_iterator<char>(configFile)), std::istreambuf_iterator<char>());
+    configFile.close();
+    canonicalPath = NULL;
+    cJSON* root = cJSON_Parse(jsonString.c_str());
+    if (root == NULL) {
+        LOGE("ParseSystemDataConfigFile cJSON_Parse failed");
+        return E_PARAMS_INVALID;
+    }
+    cJSON* uidArray = cJSON_GetObjectItem(root, SYSTEM_DATA_KEY);
+    if (uidArray == NULL || !cJSON_IsArray(uidArray)) {
+        LOGE("ParseSystemDataConfigFile uidArray is null or not an array");
+        cJSON_Delete(root);
+        return E_PARAMS_INVALID;
+    }
+    int arraySize = cJSON_GetArraySize(uidArray);
+    for (int i = 0; i < arraySize; i++) {
+        cJSON* item = cJSON_GetArrayItem(uidArray, i);
+        if (item != NULL && cJSON_IsNumber(item)) {
+            int32_t uid = item->valueint;
+            uidList.push_back(uid);
+        }
+    }
+    cJSON_Delete(root);
+    LOGI("ParseSystemDataConfigFile loaded %{public}zu UIDs from config file", uidList.size());
+    return E_OK;
+}
+
+int32_t QuotaManager::GetSystemCacheSize(const std::vector<int32_t> &uidList, int64_t &cacheSize)
+{
+    LOGI("GetSystemCacheSize start, uidList size=%{public}zu", uidList.size());
+#ifdef ENABLE_EMULATOR
+    LOGW("GetSystemCacheSize not support on emulator");
+    return E_NOT_SUPPORT;
+#else
+    for (auto uid : uidList) {
+        if (uid == StorageService::ROOT_UID || uid == StorageService::SYSTEM_UID ||
+            uid == StorageService::MEMMGR_UID) {
+            continue;
+        }
+        struct dqblk dq;
+        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char *>(&dq)) != 0) {
+            LOGW("GetSystemCacheSize quotactl failed for uid=%{public}d, errno=%{public}d", uid, errno);
+            StorageService::StorageRadar::ReportSpaceRadar("GetSystemCacheSize", E_GET_SYSTEM_DATA_SIZE_ERROR,
+                "uid:" + std::to_string(uid) + ",errno:" + std::to_string(errno));
+            continue;
+        }
+        int64_t uidSize = static_cast<int64_t>(dq.dqb_curspace);
+        cacheSize += uidSize;
+        LOGD("GetSystemCacheSize uid=%{public}d, size=%{public}lld", uid, static_cast<long long>(uidSize));
+    }
+
+    LOGI("GetSystemCacheSize end, cacheSize=%{public}lld", static_cast<long long>(cacheSize));
+    return E_OK;
+#endif
+}
+
+int32_t QuotaManager::GetMetaDataSize(int64_t &metaDataSize)
+{
+    LOGI("GetMetaDataSize start");
+    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
+    int64_t blkSize = -1;
+    int32_t ret = GetFileData(blkPath, blkSize);
+    if (ret != E_OK || blkSize < 0) {
+        LOGE("GetMetaDataSize failed to read main_blkaddr, ret=%{public}d, blkSize=%{public}lld",
+             ret, static_cast<long long>(blkSize));
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
+    }
+    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
+    int64_t chunkSize = -1;
+    ret = GetFileData(chunkPath, chunkSize);
+    if (ret != E_OK || chunkSize < 0) {
+        LOGE("GetMetaDataSize failed to read ovp_chunks, ret=%{public}d, chunkSize=%{public}lld",
+             ret, static_cast<long long>(chunkSize));
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
+    }
+    if (blkSize > INT64_MAX / FOUR_K || chunkSize > INT64_MAX / (FOUR_K * BLOCK_BYTE)) {
+        LOGE("GetMetaDataSize overflow detected: blkSize=%{public}lld, chunkSize=%{public}lld",
+             static_cast<long long>(blkSize), static_cast<long long>(chunkSize));
+        return E_CALCULATE_OVERFLOW_UP;
+    }
+    metaDataSize = static_cast<int64_t>(blkSize * FOUR_K + chunkSize * FOUR_K * BLOCK_BYTE);
+    LOGI("GetMetaDataSize end: blkSize=%{public}lld, chunkSize=%{public}lld, total=%{public}lld",
+        static_cast<long long>(blkSize), static_cast<long long>(chunkSize),
+        static_cast<long long>(metaDataSize));
+    return E_OK;
+}
+
+int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
+    const std::vector<int32_t> &uids)
+{
+    AddBlksMultiUids(path, blks, uids);
+    if (!IsDir(path)) {
+        return E_OK;
+    }
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        LOGE("open dir %{public}s failed, errno %{public}d", path.c_str(), errno);
+        return E_STATISTIC_OPEN_DIR_FAILED;
+    }
+
+    int ret = E_OK;
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..") == 0)) {
+            continue;
+        }
+        std::string subPath = path + "/" + ent->d_name;
+        int32_t retTmp = AddBlksRecurseMultiUids(subPath, blks, uids);
+        if (retTmp != E_OK) {
+            ret = retTmp;
+        }
+    }
+    (void)closedir(dir);
+    return ret;
+}
+
+int32_t QuotaManager::AddBlksMultiUids(const std::string &path, std::vector<int64_t> &blks,
+    const std::vector<int32_t> &uids)
+{
+    struct stat st;
+    if (lstat(path.c_str(), &st) != 0) {
+        int32_t errnoTmp = errno;
+        std::string extraData = "path=" + path + ",kernelCode=" + std::to_string(errnoTmp);
+        StorageService::StorageRadar::ReportSpaceRadar("AddBlksMultiUids", E_STATISTIC_STAT_FAILED, extraData);
+        LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
+        return E_STATISTIC_STAT_FAILED;
+    }
+    for (size_t i = 0; i < uids.size(); ++i) {
+        if (static_cast<uid_t>(uids[i]) == st.st_uid) {
+            blks[i] += static_cast<int64_t>(st.st_blocks);
+            break; // Each file belongs to only one UID
+        }
+    }
+    return E_OK;
+}
+
+int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    LOGI("GetDirListSpaceByPaths start, paths size=%{public}zu", paths.size());
+    if (paths.empty() || uids.empty() || paths.size() > MAX_WHITE_PATH_COUNT || uids.size() > MAX_WHITE_UID_COUNT) {
+        LOGE("GetDirListSpaceByPaths params is invalid, paths size %{public}zu, uids size %{public}zu",
+             paths.size(), uids.size());
+        return E_PARAMS_INVALID;
+    }
+
+    resultDirs.clear();
+
+    for (size_t pathIdx = 0; pathIdx < paths.size(); ++pathIdx) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            LOGI("GetDirListSpaceByPaths stopped by stopScanFlag");
+            std::vector<DirSpaceInfo>().swap(resultDirs);
+            return E_ERR;
+        }
+
+        const std::string &path = paths[pathIdx];
+        std::vector<int64_t> blks(uids.size(), 0);
+        int32_t ret = AddBlksRecurseMultiUids(path, blks, uids);
+        if (ret != E_OK) {
+            LOGW("GetDirListSpaceByPaths AddBlksRecurseMultiUids failed for %{public}s, ret=%{public}d",
+                 path.c_str(), ret);
+            // Continue with other paths even if this one failed
+            continue;
+        }
+
+        // Convert blocks to bytes and create DirSpaceInfo for each UID
+        for (size_t uidIdx = 0; uidIdx < uids.size(); ++uidIdx) {
+            int64_t dirSize = blks[uidIdx] * BLOCK_BYTE;
+            resultDirs.push_back({path, static_cast<uint32_t>(uids[uidIdx]), dirSize});
+            LOGD("GetDirListSpaceByIds path=%{public}s, uid=%{public}d, size=%{public}lld",
+                 path.c_str(), uids[uidIdx], static_cast<long long>(dirSize));
+        }
+    }
+
+    LOGI("GetDirListSpaceByPaths end, result dirs size=%{public}zu", resultDirs.size());
     return E_OK;
 }
 

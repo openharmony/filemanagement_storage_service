@@ -29,6 +29,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
@@ -121,6 +122,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -214,6 +216,7 @@ sources = [
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
@@ -332,6 +335,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
     "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
     "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
@@ -350,7 +354,14 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "STORAGE_MANAGER_UNIT_TEST",
+  ]
+
   if (storage_service_storage_statistics_manager) {
+    defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "${storage_manager_path}/storage/src/storage_status_manager.cpp",
       "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
@@ -359,12 +370,6 @@ ohos_unittest("storage_manager_provider_communication_test") {
       "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     ]
   }
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-    "STORAGE_MANAGER_UNIT_TEST",
-  ]
 
   deps = [
     "${storage_daemon_path}:storage_daemon_header",

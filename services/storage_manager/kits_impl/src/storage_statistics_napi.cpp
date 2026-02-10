@@ -31,6 +31,7 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getBundleStats", GetBundleStats),
         DECLARE_NAPI_FUNCTION("getCurrentBundleStats", GetCurrentBundleStats),
         DECLARE_NAPI_FUNCTION("getSystemSize", GetSystemSize),
+        DECLARE_NAPI_FUNCTION("getSystemDataSize", GetSystemDataSize),
         DECLARE_NAPI_FUNCTION("getUserStorageStats", GetUserStorageStats),
         DECLARE_NAPI_FUNCTION("getTotalSize", GetTotalSize),
         DECLARE_NAPI_FUNCTION("getFreeSize", GetFreeSize),

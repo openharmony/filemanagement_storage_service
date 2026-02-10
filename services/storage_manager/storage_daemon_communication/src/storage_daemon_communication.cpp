@@ -994,6 +994,21 @@ int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceIn
     return storageDaemon_->GetDirListSpace(inDirs, outDirs);
 }
 
+int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetDirListSpaceByPaths(paths, uids, resultDirs);
+}
+
 int32_t StorageDaemonCommunication::SetStopScanFlag(bool stop)
 {
     int32_t err = Connect();
@@ -1062,6 +1077,20 @@ int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->ClearSecondMountPoint(userId, bundleName);
+}
+
+int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetSystemDataSize service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
 }
 } // namespace StorageManager
 } // namespace OHOS

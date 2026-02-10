@@ -1059,6 +1059,12 @@ int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &
     return QuotaManager::GetInstance().GetDirListSpace(outDirs);
 }
 
+int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    return QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+}
+
 int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
 {
     QuotaManager::GetInstance().SetStopScanFlag(stop);
@@ -1074,6 +1080,11 @@ int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
 {
     return QuotaManager::GetInstance().GetFileData(path, size);
+}
+
+int32_t StorageDaemonProvider::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    return QuotaManager::GetInstance().GetSystemDataSize(otherUidSizeSum);
 }
 
 int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)

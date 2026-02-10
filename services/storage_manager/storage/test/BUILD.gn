@@ -204,16 +204,19 @@ ohos_unittest("storage_status_manager_test") {
   }
   module_out_path = "storage_service/storage_service/storage_manager"
 
-  sources = [ "storage_status_manager_test.cpp" ]
+  sources = [
+    "storage_status_manager_test.cpp",
+    "${storage_manager_path}/mock/storage_daemon_communication_mock.cpp",
+    "${storage_service_path}/test/unittest/mock/src/storage_total_status_service_mock.cpp",
+  ]
 
   include_dirs = [
     "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
-    "${storage_manager_path}/include/storage",
-    "${storage_service_path}/utils/include",
     "${storage_manager_path}/include/utils/",
+    "${storage_service_path}/utils/include",
+    "${storage_service_path}/test/unittest/mock/include",
   ]
 
   defines = [

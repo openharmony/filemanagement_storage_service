@@ -40,6 +40,7 @@ public:
     int32_t GetSystemSize(int64_t &systemSize);
     int32_t GetTotalSize(int64_t &totalSize);
     int32_t GetFreeSize(int64_t &freeSize);
+    int32_t GetSystemDataSize(int64_t &systemDataSize);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type);

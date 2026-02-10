@@ -139,6 +139,7 @@ public:
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
+    int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

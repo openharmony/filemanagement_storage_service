@@ -72,6 +72,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",

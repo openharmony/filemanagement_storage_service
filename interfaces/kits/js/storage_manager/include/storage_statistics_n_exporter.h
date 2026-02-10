@@ -32,6 +32,7 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info);
 napi_value GetFreeSize(napi_env env, napi_callback_info info);
 napi_value GetTotalSizeSync(napi_env env, napi_callback_info info);
 napi_value GetFreeSizeSync(napi_env env, napi_callback_info info);
+napi_value GetSystemDataSize(napi_env env, napi_callback_info info);
 napi_value SetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetAllExtBundleStats(napi_env env, napi_callback_info info);

@@ -122,4 +122,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 86] void QueryActiveOsAccountIds([out] int[] ids);
     [ipccode 87] void IsOsAccountExists([in] unsigned int userId, [out] boolean isOsAccountExists);
     [ipccode 88] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
+    [ipccode 89] void GetSystemDataSize([out] long systemDataSize);
 }
