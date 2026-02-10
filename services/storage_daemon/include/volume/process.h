@@ -26,12 +26,10 @@ public:
     Process(std::string path);
 
     int32_t UpdatePidAndKill(int signal);
-    std::unordered_set<pid_t> GetPids();
     std::string GetPath();
 
 private:
     std::string path_;
-    std::unordered_set<pid_t> pids_;
 
     std::string Readlink(std::string path);
     bool CheckSubDir(std::string line);
