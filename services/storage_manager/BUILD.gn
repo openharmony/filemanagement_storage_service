@@ -181,7 +181,10 @@ group("storage_manager_unit_test") {
   ]
 
   if (storage_service_storage_statistics_manager) {
-    deps += [ "storage/test:storage_manager_storage_test" ]
+    deps += [
+      "scan/test:storage_manager_scan_test",
+      "storage/test:storage_manager_storage_test",
+    ]
   }
 
   if (storage_service_external_storage_manager) {

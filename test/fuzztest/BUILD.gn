@@ -65,6 +65,7 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderqueryactiveosaccountids_fuzzer:fuzztest",
     "storagemanagerproviderisosaccountexists_fuzzer:fuzztest",
     "storagemanagerproviderclearsecondmountpoint_fuzzer:fuzztest",
+    "storagemanagerprovidergetsystemdatasize_fuzzer:fuzztest",
   ]
 }
 
@@ -97,6 +98,8 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidergetancosizedata_fuzzer:fuzztest",
     "storagedaemonprovidergetdirlistspace_fuzzer:fuzztest",
     "storagedaemonprovidersetstopscanflag_fuzzer:fuzztest",
+    "storagedaemonprovidergetdirlistspacebypaths_fuzzer:fuzztest",
+    "storagedaemonprovidergetsystemdatasize_fuzzer:fuzztest",
   ]
 }
 
