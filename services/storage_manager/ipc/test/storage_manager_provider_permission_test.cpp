@@ -1083,12 +1083,34 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1002;
-    std::string path = "/mnt/fuse";
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_003
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 1002;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/003";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_003 end";
 }
 
 /**
@@ -1102,10 +1124,30 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1002;
-    std::string path = "/mnt/fuse";
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_003
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 1002;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_003 end";
 }
 
 /**
