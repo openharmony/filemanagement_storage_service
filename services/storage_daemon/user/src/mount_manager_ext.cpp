@@ -184,7 +184,11 @@ int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::l
         }
         std::stringstream ss(tmpLine);
         std::string dst;
-        if ((ss >> dst >> dst) && dst.find(networkId) != std::string::npos) {
+        ss >> dst >> dst;
+ 	    if (dst.empty()) {
+ 	        continue;
+ 	    }
+ 	    if (dst.find(networkId) != std::string::npos) {
             mounts.push_front(dst);
         }
     }
@@ -205,7 +209,11 @@ int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &n
         }
         std::stringstream ss(tmpLine);
         std::string dst;
-        if ((ss >> dst >> dst) && notMountPaths.find(dst) != notMountPaths.end()) {
+        ss >> dst >> dst;
+ 	    if (dst.empty()) {
+ 	        continue;
+ 	    }
+ 	    if (notMountPaths.find(dst) != notMountPaths.end()) {
             notMountPaths.erase(dst);
         }
     }

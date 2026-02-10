@@ -602,6 +602,16 @@ static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
     return res;
 }
 
+static void ClosePipe(int pipedes[PIPE_FD_LEN], size_t len)
+{
+    if (pipedes == nullptr || len < PIPE_FD_LEN) {
+        LOGE("close pipe param is invalid.");
+        return;
+    }
+    (void)close(pipedes[0]);
+    (void)close(pipedes[1]);
+}
+
 void GetExitStatus(int *exitStatus, int inputExitStatus)
 {
     if (exitStatus != nullptr) {
@@ -622,6 +632,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
         return E_FORK;
     } else if (pid == 0) {
         if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
@@ -675,6 +686,8 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed");
+        (void)close(pipe_fd[1]);
+        (void)close(pipe_fd[0]);
         return E_FORK;
     } else if (pid == 0) {
         (void)close(pipe_fd[0]);
