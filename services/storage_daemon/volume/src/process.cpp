@@ -32,11 +32,6 @@ Process::Process(std::string path)
     path_ = path;
 }
 
-std::unordered_set<pid_t> Process::GetPids()
-{
-    return pids_;
-}
-
 std::string Process::GetPath()
 {
     return path_;
