@@ -614,7 +614,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00002, testing::ext::T
 /**
  * @tc.number: STORAGE_ConvertBytesToMB_00003
  * @tc.name: STORAGE_ConvertBytesToMB_00003
- * @tc.desc: Test function of ConvertBytesToMB with negative decimal places.
+ * @tc.desc: Test function of ConvertBytesToMB with negative input value.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -770,4 +770,4 @@ HWTEST_F(StorageManagerScanTest, STORAGE_SaveScanResultToFile_00002, testing::ex
     // Should fail if directory doesn't exist
     EXPECT_TRUE(ret == E_OK || ret == E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_SaveScanResultToFile_00002 end";
-}
+}
