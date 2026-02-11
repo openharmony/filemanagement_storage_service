@@ -1464,15 +1464,15 @@ int32_t StorageManagerStub::HandleUMountFileMgrFuse(MessageParcel &data, Message
 bool StorageManagerStub::IsCalledByFileMgr()
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
-    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
-        return false;
+        return E_SERVICE_IS_NULLPTR;
     }
     std::string bundleName;
     if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
-        return false;
+        return E_BUNDLEMGR_ERROR;
     }
     if (bundleName != FILEMGR_BUNDLE_NAME) {
         LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
