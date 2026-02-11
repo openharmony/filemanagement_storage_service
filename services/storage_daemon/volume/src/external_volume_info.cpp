@@ -198,8 +198,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     if (force) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
-        ps.UpdatePidByPath();
-        ps.KillProcess(SIGKILL);
+        ps.UpdatePidAndKill(SIGKILL);
         umount2(mountPath_.c_str(), MNT_DETACH);
         remove(mountPath_.c_str());
         LOGI("External volume unmount success.");
