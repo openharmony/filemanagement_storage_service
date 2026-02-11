@@ -1610,9 +1610,10 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
         LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    if (userId <= 0) {
-        LOGE("mount share file, userId %{public}d is invalid.", userId);
-        return E_PARAMS_INVALID;
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::MountDisShareFile userId %{public}d out of range", userId);
+        return err;
     }
     for (const auto &item : shareFiles) {
         if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
@@ -1622,7 +1623,7 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->MountDisShareFile(userId, shareFiles);
+    err = sdCommunication->MountDisShareFile(userId, shareFiles);
     StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile End", err);
     return err;
 }
@@ -1635,9 +1636,10 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    if (userId <= 0) {
-        LOGE("umount share file, userId %{public}d is invalid.", userId);
-        return E_PARAMS_INVALID;
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::UMountDisShareFile userId %{public}d out of range", userId);
+        return err;
     }
     if (networkId.find("..") != std::string::npos) {
         LOGE("umount share file, networkId is invalid.");
@@ -1645,7 +1647,7 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UMountDisShareFile(userId, networkId);
+    err = sdCommunication->UMountDisShareFile(userId, networkId);
     StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile End", err);
     return err;
 }

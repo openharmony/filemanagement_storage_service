@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <filesystem>
+#include <regex>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -27,6 +28,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -74,7 +76,10 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
     std::lock_guard<std::mutex> lock(mountDisMutex_);
     LOGI("mount share file start.");
     std::map<std::string, std::string> notMountPaths = shareFiles;
-    FilterNotMountedPath(notMountPaths);
+    int32_t ret = FilterNotMountedPath(notMountPaths);
+    if (ret != E_OK) {
+        return ret;
+    }
     for (const auto &item: notMountPaths) {
         std::string dstPath = item.first;
         std::string srcPath = item.second;
@@ -82,11 +87,16 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
             LOGE("mount share file, src path invalid, errno is %{public}d", errno);
             return E_NON_EXIST;
         }
-        if (HandleDisDstPath(dstPath) != E_OK) {
-            return E_MOUNT_SHARE_FILE;
+        if (!MatchesDisSharePath(dstPath)) {
+            LOGE("mount share file, dst path invalid, errno is %{public}d", errno);
+            return E_NON_EXIST;
         }
-        int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
-        if (ret != 0) {
+        if (!IsDir(dstPath) && !MkDirRecurse(dstPath, SHARE_FILE_0771)) {
+            LOGE("mount share file, dst path mkdir failed, errno is %{public}d", errno);
+            return E_NON_EXIST;
+        }
+        ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
+        if (ret != E_OK) {
             LOGE("mount share file failed, errno is %{public}d", errno);
             std::string extraData = "src=" + srcPath + ",dst=" + dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountDisShareFile", userId, E_MOUNT_SHARE_FILE, extraData);
@@ -97,74 +107,27 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
     return E_OK;
 }
 
-int32_t MountManager::HandleDisDstPath(const std::string &dstPath)
-{
-    std::error_code errorCode;
-    if (!std::filesystem::exists(dstPath, errorCode)) {
-        if (!MkDirRecurse(dstPath, SHARE_FILE_0771)) {
-            std::string extraData = "mkdir failed,errCode=" + std::to_string(errno);
-            StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
-            LOGE("mount share file, dst path mkdir failed, errno is %{public}d", errno);
-            return E_ERR;
-        }
-        return E_OK;
-    }
-    std::string extraData;
-    std::filesystem::directory_iterator iter(dstPath);
-    std::filesystem::directory_iterator endIter;
-    if (iter != endIter) {
-        std::filesystem::path entryName = iter->path().filename();
-        struct stat st;
-        if (stat(iter->path().c_str(), &st) == 0) {
-            LOGE("dir not empty, uid is %{public}d, gid is %{public}d, mode is %{public}d",
-                st.st_uid, st.st_gid, st.st_mode);
-            extraData = "uid=" + std::to_string(st.st_uid) + ",gid=" + std::to_string(st.st_gid) + ",mode="
-                + std::to_string(st.st_mode) + ",name=" + entryName.string();
-            StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
-        }
-        return E_ERR;
-    }
-    auto pos = dstPath.find(REMOTE_SHARE_PATH_DIR);
-    if (pos == std::string::npos) {
-        LOGE("REMOTE_SHARE_PATH_DIR not found in dstPath");
-        return E_ERR;
-    }
-    std::string tempPath = dstPath.substr(0, pos + REMOTE_SHARE_PATH_DIR.size());
-    if (!RmDirRecurse(tempPath)) {
-        extraData = "rm dst path failed,errCode=" + std::to_string(errno);
-        StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
-        LOGE("mount share file, remove dst path failed, errno is %{public}d", errno);
-        return E_ERR;
-    }
-    if (!MkDirRecurse(dstPath, SHARE_FILE_0771)) {
-        extraData = "mkdir failed after remove,errCode=" + std::to_string(errno);
-        StorageRadar::ReportUserManager("HandleDisDstPath", DEFAULT_USERID, E_MOUNT_SHARE_FILE, extraData);
-        LOGE("mount share file, dst path mkdir failed after remove, errno is %{public}d", errno);
-        return E_ERR;
-    }
-    return E_OK;
-}
-
 int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
     std::lock_guard<std::mutex> lock(mountDisMutex_);
     LOGI("umount share file, userId is %{public}d, networkId is %{private}s.", userId, networkId.c_str());
     std::list<std::string> mounts;
-    FindMountsByNetworkId(networkId, mounts);
+    int32_t ret = FindMountsByNetworkId(networkId, mounts);
+    if (ret != E_OK) {
+        return ret;
+    }
     for (const std::string &item: mounts) {
-        auto pos = item.find(REMOTE_SHARE_PATH_DIR);
-        if (pos == std::string::npos) {
+        if (!MatchesDisSharePath(item)) {
             continue;
         }
-        int32_t ret = UMount2(item, MNT_DETACH);
+        ret = UMount2(item, MNT_DETACH);
         if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("umount share file failed, errno is %{public}d.", errno);
             std::string extraData = "networkId=" + networkId + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("UMountDisShareFile", userId, E_UMOUNT_SHARE_FILE, extraData);
             continue;
         }
-        std::string path = item.substr(0, pos + REMOTE_SHARE_PATH_DIR.size());
-        RmDirRecurse(path);
+        RemoveDisSharePath(item, networkId);
     }
     LOGI("umount share file end.");
     return E_OK;
@@ -210,6 +173,66 @@ int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &n
         }
     }
     return E_OK;
+}
+
+bool MountManager::MatchesDisSharePath(const std::string &dstPath)
+{
+    if (dstPath.empty()) {
+        return false;
+    }
+    std::string userIdPattern = R"((0|[1-9][0-9]{0,4}))";
+    std::string bundlePattern = R"(.{1,100})";
+    std::string networkIdPattern = R"([0-9a-zA-Z]{1,100})";
+    std::string levelPattern = R"([0-9a-zA-Z]{1,3})";
+    std::string mediaPattern = R"(^/data/service/el2/)" + userIdPattern + R"(/hmdfs/account/data/)" + bundlePattern +
+        R"(/\.remote_share/)" + networkIdPattern + R"(/Photo$)";
+    std::string otherPattern = R"(^/data/service/el2/)" + userIdPattern + R"(/hmdfs/account/data/)" + bundlePattern +
+        R"(/\.remote_share/)" + networkIdPattern + R"(/data/storage/)" + levelPattern + R"(/base$)";
+    std::regex mediaRegex(mediaPattern);
+    std::regex otherRegex(otherPattern);
+    return std::regex_match(dstPath, mediaRegex) || std::regex_match(dstPath, otherRegex);
+}
+
+void MountManager::RemoveDisSharePath(const std::string &dstPath, const std::string &networkId)
+{
+    if (dstPath.empty() || networkId.empty()) {
+        return;
+    }
+    std::string separator = "/";
+    std::string dstPathTmp = dstPath;
+    std::vector<std::string> parts = SplitLine(dstPathTmp, separator);
+    auto count = static_cast<int32_t>(parts.size());
+    for (int32_t i = count - 1; i >= 0; --i) {
+        if (parts[i].empty()) {
+            continue;
+        }
+        std::string currentPath;
+        for (int32_t j = 0; j <= i; ++j) {
+            if (parts[j].empty()) {
+                continue;
+            }
+            currentPath += separator + parts[j];
+        }
+        std::error_code errCode;
+        if (!std::filesystem::exists(currentPath, errCode)) {
+            LOGE("path not exists, errno is %{public}d, errCode is %{public}s, path is %{public}s.", errno,
+                 errCode.message().c_str(), currentPath.c_str());
+            break;
+        }
+        if (!std::filesystem::is_directory(currentPath) || !std::filesystem::is_empty(currentPath)) {
+            LOGE("path is not dir or not empty, %{public}s.", currentPath.c_str());
+            break;
+        }
+        if (rmdir(currentPath.c_str()) != 0) {
+            LOGE("del share file failed, errno is %{public}d.", errno);
+            std::string extraData = "path=" + currentPath + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("RemoveDisSharePath", GLOBAL_USER_ID, E_UMOUNT_SHARE_FILE, extraData);
+            break;
+        }
+        if (parts[i] == networkId) {
+            break;
+        }
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS
