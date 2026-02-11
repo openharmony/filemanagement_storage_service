@@ -477,8 +477,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     if (force && !isUsbFuseByType) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
-        ps.UpdatePidByPath();
-        ps.KillProcess(SIGKILL);
+        ps.UpdatePidAndKill(SIGKILL);
         int ret = umount2(mountPath_.c_str(), MNT_DETACH);
         if (ret != 0) {
             LOGW("umount2 failed in force mode, errno %{public}d", errno);
