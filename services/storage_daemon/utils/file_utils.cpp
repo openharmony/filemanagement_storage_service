@@ -602,6 +602,16 @@ static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
     return res;
 }
 
+static void ClosePipe(int pipedes[PIPE_FD_LEN], size_t len)
+{
+    if (pipedes == nullptr || len < PIPE_FD_LEN) {
+        LOGE("close pipe param is invalid.");
+        return;
+    }
+    (void)close(pipedes[0]);
+    (void)close(pipedes[1]);
+}
+
 void GetExitStatus(int *exitStatus, int inputExitStatus)
 {
     if (exitStatus != nullptr) {
@@ -622,6 +632,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
         return E_FORK;
     } else if (pid == 0) {
         if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
@@ -666,15 +677,14 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
     pid_t pid;
     int status;
     auto args = FromatCmd(cmd);
-
     if (pipe(pipe_fd) < 0) {
         LOGE("creat pipe failed");
         return E_CREATE_PIPE;
     }
-
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed");
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
         return E_FORK;
     } else if (pid == 0) {
         (void)close(pipe_fd[0]);
@@ -715,16 +725,6 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
         OHOS::ConcurrentTask::ConcurrentTaskClient::GetInstance().ReportSceneInfo(
             SET_SCHED_LOAD_TRANS_TYPE, payloads);
     }
-}
-
-static void ClosePipe(int pipedes[PIPE_FD_LEN], size_t len)
-{
-    if (pipedes == nullptr || len < PIPE_FD_LEN) {
-        LOGE("close pipe param is invalid.");
-        return;
-    }
-    (void)close(pipedes[0]);
-    (void)close(pipedes[1]);
 }
 
 static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
