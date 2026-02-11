@@ -57,6 +57,7 @@ ohos_fuzztest("StorageDaemonProxyMountFuzzTest") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",

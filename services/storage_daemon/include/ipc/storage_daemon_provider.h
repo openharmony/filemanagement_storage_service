@@ -133,6 +133,8 @@ public:
         std::vector<NextDqBlk> &dqBlks) override;
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
         std::vector<DirSpaceInfo> &outDirs) override;
+    virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
     virtual int32_t SetStopScanFlag(bool stop = false) override;
     virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
@@ -141,6 +143,7 @@ public:
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
     virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
+    virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

@@ -100,4 +100,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
      [ipccode 68] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
      [ipccode 69] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
+     [ipccode 70] void GetSystemDataSize([out] long otherUidSizeSum);
+     [ipccode 71] void GetDirListSpaceByPaths([in] String[] paths, [in] int[] uids,
+                                             [out] DirSpaceInfo[] resultDirs);
 }

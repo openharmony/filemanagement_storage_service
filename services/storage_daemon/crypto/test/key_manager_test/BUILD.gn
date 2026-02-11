@@ -72,6 +72,8 @@ ohos_unittest("KeyManagerTest") {
 
   external_deps = [
     "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
@@ -330,6 +332,8 @@ ohos_unittest("KeyManagerAnotherTest") {
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
@@ -420,6 +424,8 @@ ohos_unittest("KeyManagerWithFileMockAnotherTest") {
 
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
   external_deps = [
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
@@ -511,6 +517,8 @@ ohos_unittest("KeyManagerWithNotEncryptedAnotherTest") {
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",

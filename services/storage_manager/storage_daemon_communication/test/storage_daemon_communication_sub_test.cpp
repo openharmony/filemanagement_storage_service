@@ -1586,4 +1586,59 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ClearSecondMountPo
     EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ClearSecondMountPoint_001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDirListSpaceByPaths_001
+ * @tc.name: Daemon_communication_GetDirListSpaceByPaths_001
+ * @tc.desc: Test function of GetDirListSpaceByPaths interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDirListSpaceByPaths_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDirListSpaceByPaths_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::vector<std::string> paths = {"/path1", "/path2"};
+    std::vector<int32_t> uids = {1000, 1001};
+    std::vector<DirSpaceInfo> resultDirs;
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_SA_IS_NULLPTR);
+
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_SERVICE_IS_NULLPTR);
+
+    MockAllSuccess();
+    EXPECT_CALL(*sd, GetDirListSpaceByPaths(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDirListSpaceByPaths_001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetSystemDataSize_001
+ * @tc.name: Daemon_communication_GetSystemDataSize_001
+ * @tc.desc: Test function of GetSystemDataSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetSystemDataSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetSystemDataSize_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+    int64_t otherUidSizeSum = 100;
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->GetSystemDataSize(otherUidSizeSum), E_SA_IS_NULLPTR);
+
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->GetSystemDataSize(otherUidSizeSum), E_SERVICE_IS_NULLPTR);
+
+    MockAllSuccess();
+    EXPECT_CALL(*sd, GetSystemDataSize(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetSystemDataSize(otherUidSizeSum), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDirListSpaceByPaths_001";
+}
+
 }

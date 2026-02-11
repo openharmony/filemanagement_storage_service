@@ -172,6 +172,7 @@ public:
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
+    int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
 private:
     StorageManagerProvider();

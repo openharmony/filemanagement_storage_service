@@ -23,6 +23,7 @@ config("storage_manager_config") {
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include/common_event",
     "${storage_manager_path}/include/utils",
+    "${storage_manager_path}/include/scan",
     "${storage_manager_path}/include/storage",
   ]
 
@@ -112,6 +113,7 @@ ohos_shared_library("storage_manager") {
     sources += [
       "account_subscriber/account_subscriber.cpp",
       "dfx_report/storage_dfx_reporter.cpp",
+      "scan/src/storage_manager_scan.cpp",
       "storage/src/bundle_manager_connector.cpp",
       "storage/src/bundle_manager_adapter_proxy.cpp",
       "storage/src/storage_monitor_service.cpp",

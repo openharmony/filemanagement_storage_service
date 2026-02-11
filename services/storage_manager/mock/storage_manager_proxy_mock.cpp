@@ -449,5 +449,10 @@ int32_t StorageManagerProxy::ClearSecondMountPoint(uint32_t userId, const std::s
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::GetSystemDataSize(int64_t &systemDataSize)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

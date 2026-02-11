@@ -48,6 +48,20 @@ int64_t GetTotalSizeSync2()
     return *resultSize;
 }
 
+int64_t GetSystemDataSizeSync()
+{
+    auto resultSize = std::make_shared<int64_t>();
+
+    int32_t errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->
+        GetSystemDataSize(*resultSize);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return DEFAULTSIZE;
+    }
+
+    return *resultSize;
+}
+
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync()
 {
     uint32_t statFlag = 0;
@@ -289,6 +303,7 @@ taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfo
 // NOLINTBEGIN
 TH_EXPORT_CPP_API_GetFreeSizeSync2(ANI::StorageStatistics::GetFreeSizeSync2);
 TH_EXPORT_CPP_API_GetTotalSizeSync2(ANI::StorageStatistics::GetTotalSizeSync2);
+TH_EXPORT_CPP_API_GetSystemDataSizeSync(ANI::StorageStatistics::GetSystemDataSizeSync);
 TH_EXPORT_CPP_API_GetCurrentBundleStatsSync(ANI::StorageStatistics::GetCurrentBundleStatsSync);
 TH_EXPORT_CPP_API_GetUserStorageStatsSync(ANI::StorageStatistics::GetUserStorageStatsSync);
 TH_EXPORT_CPP_API_GetUserStorageStatsByidSync(ANI::StorageStatistics::GetUserStorageStatsByidSync);

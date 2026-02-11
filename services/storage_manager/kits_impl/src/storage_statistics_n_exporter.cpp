@@ -519,6 +519,46 @@ napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
     return NVal::CreateInt64(env, *resultSize).val_;
 }
 
+napi_value GetSystemDataSize(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    auto cbExec = [resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemDataSize(*resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultSize) };
+    };
+
+    std::string procedureName = "GetSystemDataSize";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        bool isCallable = false;
+        napi_status status = napi_is_callable(env, cb.val_, &isCallable);
+        if (status != napi_ok || !isCallable) {
+            NError(E_PARAMS).ThrowErr(env);
+            return nullptr;
+        }
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+
 static bool ParseExtBundleStats(napi_env env, NVal statsObj, ExtBundleStats &stats)
 {
     bool succ = false;

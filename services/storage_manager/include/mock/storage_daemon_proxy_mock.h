@@ -122,6 +122,9 @@ public:
 
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size) override;
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
+    virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum) override;
+    virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;

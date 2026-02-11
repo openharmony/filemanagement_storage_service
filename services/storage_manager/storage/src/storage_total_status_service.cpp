@@ -95,6 +95,7 @@ int32_t StorageTotalStatusService::GetTotalInodes(int64_t &totalInodes)
     if (ret != E_OK) {
         LOGE("GetTotalInodes failed, please check");
         StorageRadar::ReportGetStorageStatus("GetTotalInodes", DEFAULT_USERID, ret, "setting");
+        return E_GET_INODE_ERROR;
     }
     LOGI("StorageTotalStatusService::GetTotalInodes success, (/data)totalInodes=%{public}lld",
         static_cast<long long>(totalInodes));
@@ -107,9 +108,23 @@ int32_t StorageTotalStatusService::GetFreeInodes(int64_t &freeInodes)
     if (ret != E_OK) {
         LOGE("GetFreeInodes failed, please check");
         StorageRadar::ReportGetStorageStatus("GetFreeInodes", DEFAULT_USERID, ret, "setting");
+        return E_GET_INODE_ERROR;
     }
     LOGI("StorageTotalStatusService::GetFreeInodes success, (/data)freeInodes=%{public}lld",
         static_cast<long long>(freeInodes));
+    return ret;
+}
+
+int32_t StorageTotalStatusService::GetUsedInodes(int64_t &usedInodes)
+{
+    int32_t ret = GetInodeOfPath(PATH_DATA, static_cast<int32_t>(StorageStatType::USED), usedInodes);
+    if (ret != E_OK) {
+        LOGE("GetUsedInodes failed, please check");
+        StorageRadar::ReportGetStorageStatus("GetUsedInodes", DEFAULT_USERID, ret, "setting");
+        return E_GET_INODE_ERROR;
+    }
+    LOGI("StorageTotalStatusService::GetUsedInodes success, (/data)usedInodes=%{public}lld",
+        static_cast<long long>(usedInodes));
     return ret;
 }
 

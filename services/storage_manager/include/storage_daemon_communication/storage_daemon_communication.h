@@ -122,12 +122,15 @@ public:
     // stats radar
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
+    int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs);
     int32_t SetStopScanFlag(bool stop = false);
     int32_t GetAncoSizeData(std::string &outExtraData);
 
     // stats api
     int32_t GetDataSizeByPath(const std::string &path, int64_t &size);
     int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
+    int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
 
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
 

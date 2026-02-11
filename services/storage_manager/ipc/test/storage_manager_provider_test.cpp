@@ -1772,5 +1772,21 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ClearSecondMount
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetSystemDataSize_001
+ * @tc.desc: Verify the GetSystemDataSize function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t systemDataSize = 100;
+    auto ret = storageManagerProviderTest_->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

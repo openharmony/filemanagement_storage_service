@@ -205,6 +205,20 @@ int32_t StorageManagerConnect::GetFreeSize(int64_t &freeSize)
     return storageManager_->GetFreeSize(freeSize);
 }
 
+int32_t StorageManagerConnect::GetSystemDataSize(int64_t &systemDataSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetSystemDataSize:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetSystemDataSize service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetSystemDataSize(systemDataSize);
+}
+
 int32_t StorageManagerConnect::GetUserStorageStats(StorageStats &storageStats)
 {
     int32_t err = Connect();
@@ -385,6 +399,7 @@ int32_t Convert2JsErrNum(int32_t errNum)
         { E_SET_EXT_BUNDLE_STATS_ERROR, E_JS_SET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_EXT_BUNDLE_STATS_ERROR, E_JS_GET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_ALL_EXT_BUNDLE_STATS_ERROR, E_JS_GET_ALL_EXT_BUNDLE_STATS_ERROR},
+        { E_GET_SYSTEM_DATA_SIZE_ERROR, E_JS_GET_SYSTEM_DATA_SIZE_ERROR},
     };
 
     if (errCodeTable.find(errNum) != errCodeTable.end()) {

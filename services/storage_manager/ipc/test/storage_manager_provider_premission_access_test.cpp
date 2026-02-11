@@ -38,8 +38,23 @@
 namespace OHOS {
 
 int g_pStatus  = -1;
+int g_uid = 0;
+int32_t g_accessTokenType = 1;
 
 namespace Security::AccessToken {
+ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
+{
+    if (g_accessTokenType == -1) {
+        return Security::AccessToken::TOKEN_INVALID;
+    }
+    if (g_accessTokenType == 0) {
+        return Security::AccessToken::TOKEN_HAP;
+    }
+    if (g_accessTokenType == 1) {
+        return Security::AccessToken::TOKEN_NATIVE;
+    }
+    return Security::AccessToken::TOKEN_NATIVE;
+}
 int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string &permissionName)
 {
     return g_pStatus ;
@@ -705,6 +720,28 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsFilePathInvali
         EXPECT_NE(storageManagerProviderTest_->IsFilePathInvalid(input), expected);
     }
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsFilePathInvalid_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetSystemDataSize_002
+ * @tc.desc: Verify the GetSystemDataSize function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSize_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    g_uid = 0;
+    int64_t systemDataSize = 100;
+    auto ret = storageManagerProviderTest_->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    g_accessTokenType = 0;
+    ret = storageManagerProviderTest_->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_SYS_APP_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_002 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

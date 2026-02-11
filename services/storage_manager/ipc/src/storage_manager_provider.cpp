@@ -35,6 +35,7 @@
 #include "disk/disk_manager_service.h"
 #include "volume/volume_manager_service.h"
 #endif
+#include "scan/storage_manager_scan.h"
 #include "ipc/storage_manager_provider.h"
 #include "os_account_manager.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -145,6 +146,10 @@ int32_t StorageManagerProvider::CheckUserIdRange(int32_t userId)
 void StorageManagerProvider::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
+    int32_t initRet = StorageManagerScan::GetInstance().Init();
+    if (initRet != E_OK) {
+        LOGE("StorageManager::OnStart Init StorageManagerScan failed, ret=%{public}d", initRet);
+    }
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
     (void)SetPriority();
@@ -458,6 +463,31 @@ int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
     int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetSystemDataSize(int64_t &systemDataSize)
+{
+    StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize Begin", E_OK);
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        LOGE("StorageManagerProvider::GetSystemDataSize permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetSystemDataSize start");
+    int32_t err = StorageStatusManager::GetInstance().GetSystemDataSize(systemDataSize);
+    StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetSystemDataSize", DEFAULT_USERID, err,
             "setting");
     }
     return err;

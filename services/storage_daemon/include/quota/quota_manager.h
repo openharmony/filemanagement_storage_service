@@ -79,6 +79,9 @@ public:
     int32_t GetFileData(const std::string &path, int64_t &size);
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
+    int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs);
+    int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
     void SetStopScanFlag(bool stop);
     void GetAncoSizeData(std::string &extraData);
     int32_t ListUserdataDirInfo(std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
@@ -94,6 +97,9 @@ private:
     bool GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName);
     bool StringToInt32(const std::string &strUid, int32_t &outUid32);
     int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);
+    int32_t ParseSystemDataConfigFile(std::vector<int32_t> &uidList);
+    int32_t GetSystemCacheSize(const std::vector<int32_t> &uidList, int64_t &cacheSize);
+    int32_t GetMetaDataSize(int64_t &metaDataSize);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
     int32_t AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid);
     int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
@@ -106,6 +112,10 @@ private:
     void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
     void ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
         std::vector<DirSpaceInfo> &resultDirs);
+    int32_t AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
+        const std::vector<int32_t> &uids);
+    int32_t AddBlksMultiUids(const std::string &path, std::vector<int64_t> &blks,
+        const std::vector<int32_t> &uids);
     OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
         std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
     std::atomic<bool> stopScanFlag_{false};
