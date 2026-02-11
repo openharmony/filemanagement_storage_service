@@ -24,6 +24,7 @@ static const int64_t THRESHOLD = 512;
 static const int64_t ONE_GB = 1000000000;
 int64_t GetRoundSize(int64_t size);
 std::string GetAnonyString(const std::string &value);
+bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
 } // namespace STORAGE_MANAGER
 } // namespace OHOS
 
