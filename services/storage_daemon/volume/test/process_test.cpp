@@ -65,7 +65,6 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
 
     auto mountPath = mock.GetMountPath();
     Process ps(mountPath);
-    ps.UpdatePidAndKill();
     EXPECT_TRUE(ps.GetPath() == mountPath);
 
     GTEST_LOG_(INFO) << "Storage_Service_ProcessTest_GetXXX_001 end";
