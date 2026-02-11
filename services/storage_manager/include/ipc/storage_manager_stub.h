@@ -102,6 +102,9 @@ private:
     // file mgr fuse
     int32_t HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
+
+    bool IsCalledByFileMgr();
+    bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
 };
 } // StorageManager
 } // OHOS

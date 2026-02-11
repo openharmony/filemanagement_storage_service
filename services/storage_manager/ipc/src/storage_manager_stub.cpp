@@ -1413,12 +1413,15 @@ int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerStub::HandleMountFileMgrFuse start.");
     int32_t userId = data.ReadInt32();
     std::string path = data.ReadString();
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        return E_PARAMS_INVALID;
+    }
     int32_t fuseFd = -1;
     int32_t ret = MountFileMgrFuse(userId, path, fuseFd);
     if (!reply.WriteInt32(ret)) {
@@ -1441,17 +1444,49 @@ int32_t StorageManagerStub::HandleMountFileMgrFuse(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerStub::HandleUMountFileMgrFuse start.");
     int32_t userId = data.ReadInt32();
     std::string path = data.ReadString();
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        return E_PARAMS_INVALID;
+    }
     int32_t ret = UMountFileMgrFuse(userId, path);
     if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
+}
+
+bool StorageManagerStub::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return false;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return false;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return true;
+}
+
+bool StorageManagerStub::IsPathStartWithFileMgr(int32_t userId, const std::string &path)
+{
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/userExternal/";
+    if (path.size() <= prefix.size()) {
+        return false;
+    }
+    return path.compare(0, prefix.length(), prefix) == 0;
 }
 } // StorageManager
 } // OHOS
