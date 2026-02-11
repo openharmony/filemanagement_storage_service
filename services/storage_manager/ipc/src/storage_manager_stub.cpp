@@ -33,6 +33,7 @@ constexpr pid_t DFS_UID = 1009;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
