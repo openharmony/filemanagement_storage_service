@@ -400,11 +400,6 @@ int32_t StorageManagerProxy::CreateUserDir(const std::string &path, mode_t mode,
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteUserDir(const std::string &path)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
 {
     return E_OK;

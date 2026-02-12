@@ -326,11 +326,6 @@ int32_t StorageDaemonProxy::CreateUserDir(const std::string &path, mode_t mode, 
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks)
 {
     return E_OK;

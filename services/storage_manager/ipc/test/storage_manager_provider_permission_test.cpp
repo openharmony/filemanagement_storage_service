@@ -1593,27 +1593,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_00
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
- * @tc.desc: Verify the DeleteUserDir function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-
-    g_testCallingUid = 0;
-    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
-
-    g_testCallingUid = 7558;
-    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_SERVICE_IS_NULLPTR);
-
-    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir("/test/../"), E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_UpdateUserPublicDirPolicy_002
  * @tc.desc: Verify the UpdateUserPublicDirPolicy function.
  * @tc.type: FUNC

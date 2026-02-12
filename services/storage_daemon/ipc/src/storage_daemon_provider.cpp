@@ -1038,14 +1038,6 @@ int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mod
     return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
 }
 
-int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
-{
-    if (IsFilePathInvalid(path)) {
-        return E_PARAMS_INVALID;
-    }
-    return UserManager::GetInstance().DeleteUserDir(path);
-}
-
 int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
     std::vector<NextDqBlk> &dqBlks)
 {

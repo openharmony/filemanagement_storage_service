@@ -935,20 +935,6 @@ int32_t StorageDaemonCommunication::CreateUserDir(const std::string &path, mode_
     return storageDaemon_->CreateUserDir(path, mode, uid, gid);
 }
 
-int32_t StorageDaemonCommunication::DeleteUserDir(const std::string &path)
-{
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->DeleteUserDir(path);
-}
-
 int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
     const std::string &dirPath, uint32_t level)
 {

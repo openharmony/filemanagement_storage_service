@@ -128,7 +128,6 @@ public:
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level) override;
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
-    virtual int32_t DeleteUserDir(const std::string &path) override;
     virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
         std::vector<NextDqBlk> &dqBlks) override;
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,

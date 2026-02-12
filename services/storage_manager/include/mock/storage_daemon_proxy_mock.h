@@ -113,7 +113,6 @@ public:
     virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
     virtual int32_t UnregisterUeceActivationCallback();
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
-    virtual int32_t DeleteUserDir(const std::string &path) override;
     virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks) override;
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
         std::vector<DirSpaceInfo> &outDirs) override;
