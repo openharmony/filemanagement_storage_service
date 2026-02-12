@@ -102,6 +102,26 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_002
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
+    int32_t fuseFd = -1;
+    g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_002 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_001
  * @tc.desc: Verify the UMountFileMgrFuse function.
  * @tc.type: FUNC
@@ -117,6 +137,24 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_002
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/002";
+    g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_002 end";
 }
 
 /**

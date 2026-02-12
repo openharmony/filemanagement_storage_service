@@ -57,5 +57,14 @@ std::string GetAnonyString(const std::string &value)
 
     return res;
 }
+
+bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
+{
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/userExternal/";
+    if (path.size() <= prefix.size()) {
+        return false;
+    }
+    return path.compare(0, prefix.length(), prefix) == 0;
+}
 } // namespace STORAGE_Manager
 } // namespace OHOS
