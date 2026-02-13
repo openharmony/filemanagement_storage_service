@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -256,7 +256,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0002, testing:
 /**
  * @tc.number: SUB_STORAGE_Disk_manager_service_Partition_0000
  * @tc.name: Disk_manager_service_Partition_0000
- * @tc.desc: Test function of Partition interface for SUCCESS.
+ * @tc.desc: Test function of Partition interface when enterprise mode disabled.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -360,8 +360,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     dmService.OnDiskCreated(disk);
     vector<Disk> result = dmService.GetAllDisks();
-    if (result.size() > 0)
-    {
+    if (result.size() > 0) {
         GTEST_LOG_(INFO) << result[0].GetSizeBytes();
         GTEST_LOG_(INFO) << result[0].GetDiskId();
         GTEST_LOG_(INFO) << result[0].GetSysPath();
@@ -370,6 +369,6 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
     }
     EXPECT_GE(result.size(), 0);
     dmService.OnDiskDestroyed(diskId);
-    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service__0000";
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetAllDisks_0000";
 }
 } // namespace

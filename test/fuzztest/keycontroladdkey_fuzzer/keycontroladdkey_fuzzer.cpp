@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     }
     int state = *(reinterpret_cast<const int *>(data));
     char character[MAX_NUM] = { 0x00 };
-    if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
+    if (EOK != memcpy_s(character, sizeof(character) - 1, data, size)) {
         return false;
     }
 

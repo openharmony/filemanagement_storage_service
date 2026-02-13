@@ -70,7 +70,7 @@ constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
 int CreateDiskNode(const std::string &path, dev_t dev)
 {
     if (mknod(path.c_str(), NODE_PERM | S_IFBLK, dev) < 0) {
-        LOGE("create disk node failed");
+        LOGE("create disk node %{private}s failed", path.c_str());
         return E_ERR;
     }
     return E_OK;
@@ -79,6 +79,7 @@ int CreateDiskNode(const std::string &path, dev_t dev)
 int DestroyDiskNode(const std::string &path)
 {
     if (TEMP_FAILURE_RETRY(unlink(path.c_str())) < 0) {
+        LOGE("destroy disk node %{private}s failed", path.c_str());
         return E_ERR;
     }
     return E_OK;

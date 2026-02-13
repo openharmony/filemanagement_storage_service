@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,7 +46,7 @@ bool StorageStatisticRadar::CreateStatisticFile()
         LOGI("File exist filePath:%{public}s", filePath.c_str());
         return true;
     }
-    LOGI("Failed to access filePath :%{public}s", filePath.c_str());
+    LOGE("Failed to access filePath :%{public}s", filePath.c_str());
     UniqueFd fd(open(filePath.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR));
     if (fd < 0) {
         LOGE("Failed to creat filePath :%{public}s", filePath.c_str());
@@ -137,6 +137,11 @@ bool StorageStatisticRadar::UpdateStatisticFile(const std::map<uint32_t, RadarSt
         return false;
     }
     std::string statisticJsonStr = CreateJsonString(statistics);
+    if (statisticJsonStr.empty()) {
+        LOGE("CreateJsonString failed, return empty string");
+        outFile.close();
+        return false;
+    }
     // write StorageStatisticFile.json
     outFile << statisticJsonStr;
     outFile.close();

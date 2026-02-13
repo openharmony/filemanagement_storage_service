@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -140,10 +140,10 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
         return E_OK;
     }
-    std::string SINGLE_RESTORE_VERSION;
-    (void) OHOS::LoadStringFromFile(elNeedRestorePath, SINGLE_RESTORE_VERSION);
+    std::string singleRestoreVersion;
+    (void) OHOS::LoadStringFromFile(elNeedRestorePath, singleRestoreVersion);
     LOGI("start restore User %{public}u el%{public}u, restore version = %{public}s", userId, type,
-        SINGLE_RESTORE_VERSION.c_str());
+        singleRestoreVersion.c_str());
     ret = KeyManager::GetInstance().RestoreUserKey(userId, type);
     if (ret != E_OK) {
         if (type != EL1_KEY) {
@@ -513,11 +513,11 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     if (ret != E_OK) {
         return ret;
     }
-    std::string need_restore_path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    std::string needRestorePath = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     uint32_t new_need_restore = static_cast<uint32_t>(std::atoi(needRestoreVersion.c_str()) + 1);
     std::string errMsg = "";
     if (new_need_restore == UpdateVersion::UPDATE_V4 &&
-        !SaveStringToFileSync(need_restore_path, std::to_string(new_need_restore), errMsg)) {
+        !SaveStringToFileSync(needRestorePath, std::to_string(new_need_restore), errMsg)) {
         LOGE("Write userId: %{public}d, El%{public}d need_restore failed.", userId, type);
         StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuthVx::SaveStringToFileSync",
             userId, E_SAVE_STRING_TO_FILE_ERR, std::to_string(type), errMsg);
@@ -552,7 +552,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
 int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
     KeyType type, const std::vector<uint8_t> &token)
 {
-    LOGW("Prepare dirs and update auth for nato secen for userId=%{public}d, keyType=%{public}u", userId, type);
+    LOGW("Prepare dirs and update auth for nato scene for userId=%{public}d, keyType=%{public}u", userId, type);
     std::error_code errCode;
     std::string natoRestore = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type) + RESTORE_DIR;
     if (!std::filesystem::exists(natoRestore, errCode)) {
@@ -562,7 +562,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
 
     int32_t ret = KeyManager::GetInstance().ActiveElxUserKey4Nato(userId, type, token);
     if (ret != E_OK) {
-        LOGE("Active user=%{public}d el=%{public}u key fot nato secen failed, ret=%{public}d.", userId, type, ret);
+        LOGE("Active user=%{public}d el=%{public}u key fot nato scene failed, ret=%{public}d.", userId, type, ret);
         return ret;
     }
 
@@ -580,7 +580,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
         PrepareUeceDir(userId);
     }
     UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
-    LOGW("Prepare dirs and update auth for nato secen for userId=%{public}u keyType=%{public}u sucess.", userId, type);
+    LOGW("Prepare dirs and update auth for nato scene for userId=%{public}u keyType=%{public}u sucess.", userId, type);
     return E_OK;
 }
 
@@ -781,7 +781,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
 {
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();  // set tid priority to 40
+    (void)SetPriority(); // set tid priority to 40
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance().ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
@@ -804,7 +804,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;
     }
-    LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
+    LOGI("Active user key and prepare el3~el5 for single scene for userId=%{public}d success.", userId);
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, ret == E_ACTIVE_REPEATED ? false : true);
@@ -816,7 +816,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UNLOCK USER APP KEY: delay time = %{public}s.", delay.c_str());
-    LOGW("Active user key for single secen for userId=%{public}d success.", userId);
+    LOGW("Active user key for single scene for userId=%{public}d success.", userId);
 #endif
     return ret == E_ACTIVE_REPEATED ? E_OK : ret;
 }
@@ -825,7 +825,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
 int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
-    LOGW("Active user key for nato secen for userId=%{public}d.", userId);
+    LOGW("Active user key for nato scene for userId=%{public}d.", userId);
     if (!token.empty() || !secret.empty()) {
         LOGE("ActiveUserKey4Nato failed, input token or secret is not empty.");
         ClearAllNatoRestoreKey(userId, true);
@@ -838,7 +838,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
         ClearAllNatoRestoreKey(userId, true);
         return E_ACTIVE_EL2_FAILED;
     }
-    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el2 success.", userId);
+    LOGI("Prepare dirs and update auth for nato scene for userId=%{public}d el2 success.", userId);
 
     ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL3_KEY, token);
     if (ret != E_OK) {
@@ -847,7 +847,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
         ClearAllNatoRestoreKey(userId, true);
         return ret;
     }
-    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el3 success.", userId);
+    LOGI("Prepare dirs and update auth for nato scene for userId=%{public}d el3 success.", userId);
 
     ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL4_KEY, token);
     if (ret != E_OK) {
@@ -856,18 +856,18 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
         ClearAllNatoRestoreKey(userId, true);
         return ret;
     }
-    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el4 success.", userId);
+    LOGI("Prepare dirs and update auth for nato scene for userId=%{public}d el4 success.", userId);
     ClearAllNatoRestoreKey(userId, false);
 
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
-    LOGW("Active user key for nato secen for userId=%{public}d success.", userId);
+    LOGW("Active user key for nato scene for userId=%{public}d success.", userId);
     return E_OK;
 }
 
 int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
-    LOGW("Active user key for update secen for userId=%{public}d.", userId);
+    LOGW("Active user key for update scene for userId=%{public}d.", userId);
     if (token.empty() && secret.empty()) {
         return E_ACTIVE_EL2_FAILED;
     }
@@ -878,20 +878,20 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::PrepareUserDirsAndUpdateUserAuth", userId, ret, "EL2");
         return E_ACTIVE_EL2_FAILED;
     }
-    std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
-    if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
+    std::string el0NeedRestorePath = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
+    if (!SaveStringToFile(el0NeedRestorePath, NEW_DOUBLE_2_SINGLE)) {
         LOGE("Save key type file failed");
         return E_SYS_KERNEL_ERR;
     }
-    LOGI("Prepare dirs and update auth for update secen for userId=%{public}d el2 success.", userId);
+    LOGI("Prepare dirs and update auth for update scene for userId=%{public}d el2 success.", userId);
 
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK && ret != E_ACTIVE_REPEATED) {
-        LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
+        LOGE("Active user key and prepare el3~el5 for update scene failed, userId %{public}u.", userId);
         KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
         return ret;
     }
-    LOGI("Active user key and prepare el3~el5 for update secen for userId=%{public}d success.", userId);
+    LOGI("Active user key and prepare el3~el5 for update scene for userId=%{public}d success.", userId);
 
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
@@ -899,7 +899,7 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::NotifyUeceActivation", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
-    LOGW("Active user key for update secen for userId=%{public}d success.", userId);
+    LOGW("Active user key for update scene for userId=%{public}d success.", userId);
     return E_OK;
 }
 
@@ -965,7 +965,7 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();  // set tid priority to 40
+    (void)SetPriority(); // set tid priority to 40
     int32_t ret = KeyManager::GetInstance().InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
@@ -1027,7 +1027,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                                         const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();  // set tid priority to 40
+    (void)SetPriority(); // set tid priority to 40
     int32_t ret = KeyManager::GetInstance().UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d.", userId, ret);
@@ -1127,7 +1127,7 @@ int32_t StorageDaemon::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkTy
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();  // set tid priority to 40
+    (void)SetPriority(); // set tid priority to 40
     int32_t ret = KeyManager::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");

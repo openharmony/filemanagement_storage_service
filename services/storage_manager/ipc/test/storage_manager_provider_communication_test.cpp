@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -161,7 +161,6 @@ private:
  * @tc.name: StorageManagerProviderTest_PrepareAddUser_003
  * @tc.desc: Verify the PrepareAddUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_003, TestSize.Level1)
 {
@@ -181,7 +180,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level: Level 1
- * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_003, TestSize.Level1)
 {
@@ -202,7 +200,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_003, 
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level: Level 1
- * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser_003, TestSize.Level1)
 {
@@ -225,7 +222,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser
  * @tc.size: SMALL
  * @tc.type: FUNC
  * @tc.level: Level 1
- * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_003, TestSize.Level1)
 {
@@ -244,7 +240,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_003, Te
  * @tc.size: SMALL
  * @tc.type: FUNC
  * @tc.level: Level 1
- * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_003, TestSize.Level1)
 {
@@ -275,7 +270,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncr
  * @tc.name: StorageManagerProviderTest_UpdateUserAuth_003
  * @tc.desc: Verify the UpdateUserAuth function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_003, TestSize.Level1)
 {
@@ -290,7 +284,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_0
  * @tc.name: StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_003
  * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_003, TestSize.Level1)
 {
@@ -310,7 +303,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWit
  * @tc.name: StorageManagerProviderTest_ActiveUserKey_003
  * @tc.desc: Verify the ActiveUserKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_003, TestSize.Level1)
 {
@@ -325,7 +317,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_00
  * @tc.name: StorageManagerProviderTest_InactiveUserKey_003
  * @tc.desc: Verify the InactiveUserKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_003, TestSize.Level1)
 {
@@ -340,7 +331,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_
  * @tc.name: StorageManagerProviderTest_GetFileEncryptStatus_003
  * @tc.desc: Verify the GetFileEncryptStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptStatus_003, TestSize.Level1)
 {
@@ -356,7 +346,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptSt
  * @tc.name: StorageManagerProviderTest_GetUserNeedActiveStatus_003
  * @tc.desc: Verify the GetUserNeedActiveStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiveStatus_003, TestSize.Level1)
 {
@@ -372,7 +361,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiv
  * @tc.name: StorageManagerProviderTest_UnlockUserScreen_003
  * @tc.desc: Verify the UnlockUserScreen function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen_003, TestSize.Level1)
 {
@@ -387,7 +375,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen
  * @tc.name: StorageManagerProviderTest_GetLockScreenStatus_003
  * @tc.desc: Verify the GetLockScreenStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenStatus_003, TestSize.Level1)
 {
@@ -403,7 +390,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenSta
  * @tc.name: StorageManagerProviderTest_storageManagerProviderTest__003
  * @tc.desc: Verify the storageManagerProviderTest_ function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey__003, TestSize.Level1)
 {
@@ -421,7 +407,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey__
  * @tc.name: StorageManagerProviderTest_CreateRecoverKey_003
  * @tc.desc: Verify the CreateRecoverKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey_003, TestSize.Level1)
 {
@@ -437,7 +422,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey
  * @tc.name: StorageManagerProviderTest_SetRecoverKey_003
  * @tc.desc: Verify the SetRecoverKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetRecoverKey_003, TestSize.Level1)
 {
@@ -451,7 +435,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetRecoverKey_00
  * @tc.name: StorageManagerProviderTest_UpdateKeyContext_003
  * @tc.desc: Verify the UpdateKeyContext function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext_003, TestSize.Level1)
 {
@@ -466,7 +449,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext
  * @tc.name: StorageManagerProviderTest_ResetSecretWithRecoveryKey_003
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithRecoveryKey_003, TestSize.Level1)
 {
