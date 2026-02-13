@@ -60,6 +60,7 @@ constexpr pid_t DFS_UID = 1009;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -763,11 +764,11 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
 
 int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
 
-    if (IsFilePathInvalid(path)) {
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
     fuseFd = -1;
@@ -776,11 +777,11 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
 
 int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
 
-    if (IsFilePathInvalid(path)) {
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
     }
     return StorageManager::GetInstance().UMountFileMgrFuse(userId, path);
@@ -856,6 +857,26 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance().UnregisterUeceActivationCallback();
+}
+
+bool StorageManagerProvider::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return false;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return false;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return true;
 }
 } // namespace StorageManager
 } // namespace OHOS

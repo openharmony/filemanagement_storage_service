@@ -88,7 +88,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     int32_t fuseFd = -1;
     g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 end";
 }
@@ -107,7 +107,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     std::string path = "../mnt/mtp/device/storage/usb";
     g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
 }
 
