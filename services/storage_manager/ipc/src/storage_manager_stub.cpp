@@ -33,6 +33,7 @@ constexpr pid_t DFS_UID = 1009;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -1413,12 +1414,15 @@ int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerStub::HandleMountFileMgrFuse start.");
     int32_t userId = data.ReadInt32();
     std::string path = data.ReadString();
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        return E_PARAMS_INVALID;
+    }
     int32_t fuseFd = -1;
     int32_t ret = MountFileMgrFuse(userId, path, fuseFd);
     if (!reply.WriteInt32(ret)) {
@@ -1441,17 +1445,49 @@ int32_t StorageManagerStub::HandleMountFileMgrFuse(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerStub::HandleUMountFileMgrFuse start.");
     int32_t userId = data.ReadInt32();
     std::string path = data.ReadString();
+    if (!IsPathStartWithFileMgr(userId, path)) {
+        return E_PARAMS_INVALID;
+    }
     int32_t ret = UMountFileMgrFuse(userId, path);
     if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
+}
+
+bool StorageManagerStub::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return true;
+}
+
+bool StorageManagerStub::IsPathStartWithFileMgr(int32_t userId, const std::string &path)
+{
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/userExternal/";
+    if (path.size() <= prefix.size()) {
+        return false;
+    }
+    return path.compare(0, prefix.length(), prefix) == 0;
 }
 } // StorageManager
 } // OHOS

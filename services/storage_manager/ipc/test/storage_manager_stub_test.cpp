@@ -113,7 +113,6 @@ namespace {
         static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
-        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE),
     };
 }
 
@@ -233,7 +232,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpMounted(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpUnmounted(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UMountFileMgrFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
@@ -311,32 +309,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     reply.ReadBool();
     EXPECT_TRUE(reply.ReadInt32() == E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_005 end";
-}
-
-/**
- * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006
- * @tc.desc: Verify the OnRemoteRequest function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006 start";
-    StorageManagerStubMock mock;
-    EXPECT_CALL(mock, MountFileMgrFuse(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option(MessageOption::TF_SYNC);
-    bool bRet = data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-    EXPECT_TRUE(bRet) << "write token error";
-    int32_t ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_FILE_MGR_FUSE), data,
-        reply, option);
-    EXPECT_TRUE(ret == E_WRITE_REPLY_ERR);
-    reply.ReadBool();
-    EXPECT_TRUE(reply.ReadInt32() == E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006 end";
 }
 } // STORAGE_MANAGER
 } // OHOS
