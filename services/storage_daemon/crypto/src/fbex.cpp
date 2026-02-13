@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,15 +13,14 @@
  * limitations under the License.
  */
 
-#include "fbex.h"
-
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "fbex.h"
 #include "file_ex.h"
-#include "storage_service_log.h"
 #include "openssl_crypto.h"
+#include "storage_service_log.h"
 #include "utils/storage_radar.h"
 
 using namespace OHOS::StorageService;
@@ -174,28 +173,28 @@ static inline bool CheckWriteBuffValid(const uint8_t *eBuffer, uint32_t size, ui
 
 static inline int MemcpyFbeOptsV1(FbeOptsV1 &ops, const KeyBlob &authToken, uint8_t *iv, uint32_t size)
 {
-    int err;
+    int err = EOK;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("memcpy end for v1, res is %{public}d", err);
+        LOGI("memcpy authToken for v1, err is %{public}d", err);
     }
     err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+        LOGE("memcpy iv failed %{public}d", err);
     }
     return err;
 }
 
 static inline int MemcpyFbeOptsEV1(FbeOptsEV1 &ops, const KeyBlob &authToken, uint8_t *eBuffer, uint32_t size)
 {
-    int err;
+    int err = EOK;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("memcpy end for ev1, res is %{public}d", err);
+        LOGI("memcpy authToken for ev1, err is %{public}d", err);
     }
     err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, size);
     if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+        LOGE("memcpy eBuffer failed %{public}d", err);
     }
     return err;
 }
@@ -257,6 +256,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
     FbeOptsV1 ops{.user = userId, .type = type, .len = iv.size, .flag = flag, .authTokenSize = authToken.size};
     if (MemcpyFbeOptsV1(ops, authToken, iv.data.get(), iv.size) != EOK) {
         close(fd);
+        LOGE("memcpyFbeOptsV1 failed");
         return 0;
     }
     auto delay = StorageService::StorageRadar::ReportDuration("KEY TO KERNEL: FILE OPS",
@@ -274,6 +274,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
     close(fd);
 
     auto errops = memcpy_s(iv.data.get(), iv.size, ops.iv, sizeof(ops.iv));
+    // 出现异常时程序继续执行,这是预期的,仅打印错误日志。
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
     }
@@ -304,6 +305,7 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
                     .status = flag, .length = iv.size, .authTokenSize = authToken.size };
     // eBuffer -> iv
     if (MemcpyFbeOptsEV1(ops, authToken, iv.data.get(), iv.size) != EOK) {
+        LOGE("memcpyFbeOptsEV1 failed");
         close(fd);
         return 0;
     }
@@ -387,7 +389,7 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
         ret = -errno;
     }
     close(fd);
-    LOGI("success");
+    LOGI("deleteClassEPinCode end");
     return ret;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,17 +20,17 @@ namespace StorageManager {
 int64_t GetRoundSize(int64_t size)
 {
     int64_t val = 1;
-    int64_t multple = UNIT;
-    while (val * multple < size) {
+    int64_t multiple = UNIT;
+    while (val * multiple < size) {
         auto tmpVal = static_cast<uint64_t>(val);
         tmpVal <<= 1;
         val = static_cast<int64_t>(tmpVal);
-        if (val > THRESHOLD && multple < ONE_GB) {
+        if (val > THRESHOLD && multiple < ONE_GB) {
             val = 1;
-            multple *= UNIT;
+            multiple *= UNIT;
         }
     }
-    return val * multple;
+    return val * multiple;
 }
 
 std::string GetAnonyString(const std::string &value)

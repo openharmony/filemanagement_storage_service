@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,7 +49,7 @@ std::string StringPrintf(const char *format, ...)
     } else {
         LOGI("allocate larger buffer, len = %{public}d", count + 1);
 
-        char *newBuf = new char[count + 1];
+        char *newBuf = new (std::nothrow) char[count + 1];
         if (newBuf != nullptr) {
             count = vsnprintf_s(newBuf, count + 1, count + 1, format, ap);
             if (count >= 0) {
@@ -92,14 +92,14 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::stri
     FILE *f = fopen(path, "w");
     if (f == nullptr) {
         errMsg = "f == nullptr, errno" + std::to_string(errno);
-        LOGE("open %{public}s failed, errno %{public}d", path, errno);
+        LOGE("open %{private}s failed, errno %{public}d", path, errno);
         return false;
     }
     ChMod(path, S_IRUSR | S_IWUSR);
     int fd = fileno(f);
     if (fd == -1) {
         errMsg = "fd == -1, errno" + std::to_string(errno);
-        LOGE("open %{public}s failed, errno %{public}d", path, errno);
+        LOGE("open %{private}s failed, errno %{public}d", path, errno);
         (void)fclose(f);
         return false;
     }
@@ -120,7 +120,7 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::stri
 
     if (fsync(fd) != 0) {
         errMsg = "fsync(fd), errno" + std::to_string(errno);
-        LOGE("fsync %{public}s failed, errno %{public}d", path, errno);
+        LOGE("fsync %{private}s failed, errno %{public}d", path, errno);
         (void)fclose(f);
         return false;
     }
@@ -133,8 +133,8 @@ bool SaveStringToFileSync(const std::string &path, const std::string &data, std:
     if (path.empty() || data.empty()) {
         return false;
     }
-    LOGI("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
-    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size(), errMsg);
+    LOGI("enter %{private}s, size=%{public}zu", path.c_str(), data.length());
+    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.data()), data.size(), errMsg);
 }
 
 bool StringIsNumber(const std::string &content)
@@ -187,7 +187,7 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         if (!std::regex_match(name, pattern)) {
             continue;
         }
-        char *endptr;
+        char *endptr = nullptr;
         errno = 0;
         int64_t tollRes = strtoll(name.c_str(), &endptr, BASE_DECIMAL);
         if (errno != 0 || endptr != name.c_str() + name.size()) {

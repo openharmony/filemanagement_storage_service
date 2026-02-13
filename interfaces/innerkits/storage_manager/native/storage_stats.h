@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,7 +37,7 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static StorageStats *Unmarshalling(Parcel &parcel);
 };
-} // StorageMangaer
-} // OHOS
+} // namespace StorageManager
+} // namespace OHOS
 
 #endif // OHOS_STORAGE_MANAGER_STORAGE_STATS_H

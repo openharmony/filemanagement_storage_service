@@ -543,7 +543,7 @@ bool ReadFile(const std::string &path, std::string *str)
     return cnt == 0 ? false : true;
 }
 
-static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
+static std::vector<char*> FormatCmd(std::vector<std::string> &cmd)
 {
     std::vector<char*>res;
     res.reserve(cmd.size() + 1);
@@ -579,7 +579,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     int pipe_fd[PIPE_FD_LEN];
     pid_t pid;
     int status;
-    auto args = FromatCmd(cmd);
+    auto args = FormatCmd(cmd);
     if (pipe(pipe_fd) < 0) {
         LOGE("creat pipe failed, errno is %{public}d.", errno);
         return E_CREATE_PIPE;
@@ -631,7 +631,7 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
     int pipe_fd[2];
     pid_t pid;
     int status;
-    auto args = FromatCmd(cmd);
+    auto args = FormatCmd(cmd);
     if (pipe(pipe_fd) < 0) {
         LOGE("creat pipe failed");
         return E_CREATE_PIPE;
@@ -734,7 +734,7 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
     int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
     pid_t pid;
     int status;
-    auto args = FromatCmd(cmd);
+    auto args = FormatCmd(cmd);
 
     if (pipe(pipe_fd) < 0) {
         LOGE("creat pipe failed, errno is %{public}d.", errno);
@@ -916,8 +916,8 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
 
 void DeleteFile(const std::string &path)
 {
-    DIR *dir;
-    struct dirent *dirinfo;
+    DIR *dir = nullptr;
+    struct dirent *dirinfo = nullptr;
     struct stat statbuf;
     if (lstat(path.c_str(), &statbuf) != 0) {
         LOGE(" lstat failed, errno:%{public}d", errno);
