@@ -58,7 +58,6 @@ int32_t MtpDeviceManager::PrepareMtpMountPath(const std::string &path)
 
 int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 {
-    LOGI("MountDevice: start mount mtp device, path=%{public}s", device.path.c_str());
     if (isMounting) {
         LOGI("MountDevice: mtp device is mounting, try again later.");
         return E_MTP_IS_MOUNTING;
@@ -66,11 +65,12 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     isMounting = true;
     int32_t ret = PrepareMtpMountPath(device.path);
     if (ret != E_OK) {
+        LOGI("PrepareMtpMountPath isMounting.");
         isMounting = false;
         return ret;
     }
     std::vector<std::string> cmdVec = {
-        "mtpfs",
+        device.type,
         "-o",
         "uid=" + std::to_string(FILE_MANAGER_UID),
         "-o",
@@ -91,6 +91,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     };
     std::vector<std::string> result;
     int32_t err = ForkExec(cmdVec, &result);
+    LOGI("result.size():%{public}lu.", result.size());
     for (auto str : result) {
         LOGI("MountDevice result: %{public}s", str.c_str());
     }
@@ -98,13 +99,12 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         LOGE("Run mtpfs cmd to mount mtp device failed.");
         UmountDevice(device, false, false);
         isMounting = false;
-        return err;
+        return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
 
-    LOGI("Run mtpfs cmd to mount mtp device success.");
     isMounting = false;
     StorageManagerClient client;
-    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid);
+    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid, device.type);
     return E_OK;
 }
 
@@ -112,7 +112,6 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
 {
     LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
     if (isBadRemove) {
-        LOGI("force to umount mtp device");
         int ret = umount2(device.path.c_str(), MNT_DETACH);
         if (ret != 0) {
             LOGW("umount2 failed in force mode, errno %{public}d", errno);

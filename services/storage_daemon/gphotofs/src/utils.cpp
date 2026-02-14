@@ -12,8 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "utils.h"
-#include <gphoto2.h>
+#include <gphoto2/gphoto2.h>
 #include "storage_service_log.h"
 #include <cstring>
 #include <dirent.h>
@@ -30,7 +31,6 @@ using namespace std;
 static constexpr char *INVALID_PREFIX_PATH = "../";
 static constexpr char *INVALID_SUFFIX_PATH = "/..";
 static const char FILE_SEPARATOR_CHAR = '/';
-static const char *INVALID_DIR_PATH = "/store_deadbeef";
 
 constexpr size_t INVALID_DIR_PATH_LEN = 16;
 constexpr size_t INVALID_PREFIX_PATH_LEN = 3;
@@ -172,10 +172,7 @@ std::string SmtpfsRealPath(const std::string &path)
 std::string SmtpfsGetTmpDir()
 {
     OHOS::StorageDaemon::DelTemp(TMP_FULL_PATH);
-    if (!SmtpfsCreateDir(TMP_FULL_PATH)) {
-        LOGE("SmtpfsGetTmpDir: failed to create temp directory");
-        return "";
-    }
+
     std::string tmpDir = SmtpfsRealPath(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
     if (tmpDir.length() > PATH_MAX) {
         LOGE("SmtpfsGetTmpDir: path too long");
@@ -312,10 +309,7 @@ bool IsFilePathValid(const std::string &filePath)
         LOGE("IsFilePathValid: file path is empty");
         return false;
     }
-    if (filePath.compare(0, INVALID_DIR_PATH_LEN, INVALID_DIR_PATH) == 0) {
-        LOGE("IsFilePathValid: file path is invalid");
-        return false;
-    }
+
     size_t pos = filePath.find(INVALID_PREFIX_PATH);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {

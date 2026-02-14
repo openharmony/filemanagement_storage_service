@@ -35,7 +35,7 @@ public:
     int32_t NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state);
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid);
+                             const std::string &uuid, const std::string &fsType);
     int32_t NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
 
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);

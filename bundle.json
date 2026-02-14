@@ -66,6 +66,7 @@
         "init",
         "ipc",
         "libfuse",
+        "libgphoto2",
         "libmtp",
         "libusb",
         "media_library",
@@ -111,7 +112,8 @@
           "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
           "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
           "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
-          "//foundation/filemanagement/storage_service/services/storage_daemon/mtpfs:mtpfs"
+          "//foundation/filemanagement/storage_service/services/storage_daemon/mtpfs:mtpfs",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/gphotofs:gphotofs"
         ]
       },
       "inner_kits": [

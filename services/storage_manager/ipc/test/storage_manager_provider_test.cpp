@@ -940,7 +940,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted
     std::string path = "/mnt/mtp/device/storage/usb";
     std::string desc = "MTP Device";
     std::string uuid = "1234-5678";
-    auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid);
+    std::string fsType = "mtp";
+    auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid, fsType);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_001 end";
 }

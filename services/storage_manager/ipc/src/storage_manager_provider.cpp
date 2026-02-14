@@ -1431,7 +1431,8 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
 int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
                                                  const std::string &path,
                                                  const std::string &desc,
-                                                 const std::string &uuid)
+                                                 const std::string &uuid,
+                                                 const std::string &fsType)
 {
     StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -1440,7 +1441,7 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s",
         id.c_str(), path.c_str(), GetAnonyString(uuid).c_str());
-    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
+    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid, fsType);
     StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted End", E_OK);
 #endif
     return E_OK;
