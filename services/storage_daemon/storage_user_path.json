@@ -641,7 +641,7 @@
         },
         {
             "path": "/data/service/el4/<userId>/file_guard",
-            "mode": "0744",
+            "mode": "0711",
             "uid": 6266,
             "gid": 6266
         }
