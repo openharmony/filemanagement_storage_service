@@ -204,6 +204,7 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "libusb:libusb",
     "openssl:libcrypto_shared",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -260,6 +261,13 @@ ohos_executable("storage_daemon") {
     ]
   }
 
+  if (support_open_source_libgphoto2) {
+    defines += [ "SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE" ]
+    external_deps += [
+      "libgphoto2:libgphoto2",
+    ]
+  }
+  
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }

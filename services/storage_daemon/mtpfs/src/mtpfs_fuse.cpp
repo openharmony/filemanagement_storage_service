@@ -332,7 +332,7 @@ int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
 }
 
 int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
-    enum fuse_readdir_flags flag)
+    FuseReaddirFlags flag)
 {
     LOGI("mtp WrapReadDir");
     if (!IsFilePathValid(path)) {
@@ -1310,10 +1310,10 @@ int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 }
 
 int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
-    struct fuse_file_info *fileInfo, enum fuse_readdir_flags flag)
+    struct fuse_file_info *fileInfo, FuseReaddirFlags flag)
 {
     LOGI("MtpFileSystem: ReadDir");
-    enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
+    FuseFillDirFlags fillFlags = FUSE_FILL_DIR_PLUS;
     const MtpFsTypeDir *content = device_.ReadDirFetchContent(std::string(path));
     if (content == nullptr) {
         OHOS::StorageService::StorageRadar::ReportMtpResult("ReadDir::ReadDirFetchContent",

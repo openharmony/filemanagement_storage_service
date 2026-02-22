@@ -52,7 +52,7 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 26] void GetAllDisks([out] Disk[] vecOfDisk);
     [ipccode 40] void SetVolumeDescription([in] String fsUuid, [in] String description);
     [ipccode 41] void Format([in] String volumeId, [in] String fsType);
-    [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid);
+    [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid,[in] String fsType);
     [ipccode 55] void NotifyMtpUnmounted([in] String id, [in] boolean isBadRemove);
     [ipccode 30] void UpdateUserAuth([in] unsigned int userId,
                                      [in] unsigned long secureUid,

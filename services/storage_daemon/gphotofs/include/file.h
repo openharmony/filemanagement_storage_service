@@ -16,7 +16,7 @@
 #define GPHOTOFS2_FILE_H
 
 #include <string>
-#include <gphoto2.h>
+#include <gphoto2/gphoto2.h>
 #include <mutex>
 #include <unistd.h>
 
@@ -42,7 +42,6 @@ struct File {
         : name(name), mtime(Now()), size(0),
           tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr) {}
 
-    // Disable copy constructor and assignment operator
     File(const File&) = delete;
     File& operator=(const File&) = delete;
 

@@ -16,7 +16,7 @@
 #define GPHOTOFS2_CONTEXT_H
 
 #include <string>
-#include <gphoto2.h>
+#include <gphoto2/gphoto2.h>
 #include <fuse.h>
 #include <mutex>
 #include "dir.h"

@@ -54,7 +54,7 @@ int32_t StorageManagerClient::NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> vo
 }
 
 int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                               const std::string &uuid)
+                                               const std::string &uuid, const std::string &fsType)
 {
     return 0;
 }

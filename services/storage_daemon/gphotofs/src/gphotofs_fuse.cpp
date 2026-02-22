@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 #include "gphotofs_fuse.h"
+
+#include "gphotofs2.h"
 #include "storage_service_log.h"
 #include "utils.h"
 
@@ -41,7 +43,7 @@ bool GphotoFileSystem::ParseOptionsInner()
 
     --options_.deviceNo_;
 
-    if (options_.deviceNo_ > 0 && options_.deviceFile_) {
+    if (options_.deviceNo_ && options_.deviceFile_) {
         LOGE("gphoto return ParseOptionsInner not good ret");
         options_.good_ = false;
         return false;
@@ -155,6 +157,9 @@ int GphotoFileSystem::GphotoFileSystemOptions::OptProc(void *data, const char *a
         if (options->deviceFile_) {
             options->mountPoint_ = strdup(arg);
             if (options->mountPoint_ == nullptr) {
+                return -1;
+            }
+            if (outargs == nullptr) {
                 return -1;
             }
             if (fuse_opt_add_arg(outargs, arg) == -1) {

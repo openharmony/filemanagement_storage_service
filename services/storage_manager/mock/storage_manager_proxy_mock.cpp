@@ -324,7 +324,7 @@ int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &need
 }
 
 int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                              const std::string &uuid)
+                                              const std::string &uuid, const std::string &fsType)
 {
     return E_OK;
 }

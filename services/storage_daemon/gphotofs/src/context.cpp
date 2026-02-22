@@ -30,6 +30,7 @@ Context::Context() : directory_(""), root_(""), camera_(nullptr), context_(nullp
     int ret;
     if ((ret = gp_camera_new(&camera_)) != GP_OK) {
         LOGE("Context: failed to create camera, ret=%{public}d", ret);
+        gp_camera_exit(camera_, context_ ? context_ : NULL);
         gp_camera_unref(camera_);
         camera_ = nullptr;
         gp_context_unref(context_);
