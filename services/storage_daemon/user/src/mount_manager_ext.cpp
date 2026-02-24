@@ -182,7 +182,7 @@ bool MountManager::MatchesDisSharePath(const std::string &dstPath)
     }
     std::string userIdPattern = R"((0|[1-9][0-9]{0,4}))";
     std::string bundlePattern = R"(.{1,100})";
-    std::string networkIdPattern = R"([0-9a-zA-Z]{1,100})";
+    std::string networkIdPattern = R"([0-9a-zA-Z]{1,65})";
     std::string levelPattern = R"([0-9a-zA-Z]{1,3})";
     std::string mediaPattern = R"(^/data/service/el2/)" + userIdPattern + R"(/hmdfs/account/data/)" + bundlePattern +
         R"(/\.remote_share/)" + networkIdPattern + R"(/Photo$)";
