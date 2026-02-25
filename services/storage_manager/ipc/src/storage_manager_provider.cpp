@@ -146,9 +146,13 @@ int32_t StorageManagerProvider::CheckUserIdRange(int32_t userId)
 void StorageManagerProvider::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
-    int32_t initRet = StorageManagerScan::GetInstance().Init();
-    if (initRet != E_OK) {
-        LOGE("StorageManager::OnStart Init StorageManagerScan failed, ret=%{public}d", initRet);
+    int32_t ret = StorageManagerScan::GetInstance().LoadScanResultFromFile();
+    if (ret == E_OK) {
+        LOGI("StorageManagerProvider::OnStart LoadScanResultFromFile success, root=%{public}lld,"
+        " system=%{public}lld, memmgr=%{public}lld",
+            static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
+            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
+            static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()));
     }
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);

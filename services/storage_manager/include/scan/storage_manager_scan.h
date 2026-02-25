@@ -44,6 +44,7 @@ public:
     int64_t GetRootSize();
     int64_t GetSystemSize();
     int64_t GetMemmgrSize();
+    int32_t LoadScanResultFromFile();
 
 private:
     StorageManagerScan() = default;
@@ -65,7 +66,6 @@ private:
     void GetCurrentTime(std::ostringstream& extraData);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
     std::vector<std::string> GetDirWhiteList();
-    int32_t LoadScanResultFromFile();
     int32_t SaveScanResultToFile();
     int32_t CheckScanResultDirExists();
 

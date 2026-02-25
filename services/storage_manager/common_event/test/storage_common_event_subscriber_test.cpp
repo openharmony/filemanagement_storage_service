@@ -233,5 +233,63 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_CheckAndTriggerSta
 
     GTEST_LOG_(INFO) << "Storage_subscriber_CheckAndTriggerStatistic_test_0001 end";
 }
+
+/**
+* @tc.number: Storage_subscriber_OnReceiveEvent_test_0004
+* @tc.name: Storage_subscriber_OnReceiveEvent_test_0004
+* @tc.desc: Test function of OnReceiveEvent with COMMON_EVENT_USER_UNLOCKED
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR20260114725643
+*/
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0004 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0004 end";
+}
+
+/**
+* @tc.number: Storage_subscriber_OnReceiveEvent_test_0005
+* @tc.name: Storage_subscriber_OnReceiveEvent_test_0005
+* @tc.desc: Test function of OnReceiveEvent with multiple events including USER_UNLOCKED
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR20260114725643
+*/
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0005 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+
+    // Test USER_UNLOCKED event
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+
+    // Test SCREEN_ON event
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+
+    // Test BATTERY_CHANGED event
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
+    want.SetParam("soc", 85);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    EXPECT_EQ(subscriberPtr_->batteryCapacity_.load(), 85);
+
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0005 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

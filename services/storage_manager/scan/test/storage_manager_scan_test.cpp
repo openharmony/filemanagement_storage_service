@@ -771,3 +771,89 @@ HWTEST_F(StorageManagerScanTest, STORAGE_SaveScanResultToFile_00002, testing::ex
     EXPECT_TRUE(ret == E_OK || ret == E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_SaveScanResultToFile_00002 end";
 }
+
+/**
+ * @tc.number: STORAGE_LoadScanResultFromFile_00003
+ * @tc.name: STORAGE_LoadScanResultFromFile_00003
+ * @tc.desc: Test function of LoadScanResultFromFile with valid JSON file.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Create a test file with valid JSON
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    // Create directory
+    system(("mkdir -p " + testDir).c_str());
+    // Write valid JSON
+    std::ofstream outFile(testFile);
+    outFile << R"({"rootSize":104857600,"systemSize":209715200,"memmgrSize":52428800})";
+    outFile.close();
+    int32_t ret = storageManagerScan.LoadScanResultFromFile();
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(storageManagerScan.GetRootSize(), 104857600);
+    EXPECT_EQ(storageManagerScan.GetSystemSize(), 209715200);
+    EXPECT_EQ(storageManagerScan.GetMemmgrSize(), 52428800);
+    // Clean up
+    std::remove(testFile.c_str());
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_LoadScanResultFromFile_00004
+ * @tc.name: STORAGE_LoadScanResultFromFile_00004
+ * @tc.desc: Test function of LoadScanResultFromFile with missing fields.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00004 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Create a test file with partial JSON (missing memmgrSize)
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    system(("mkdir -p " + testDir).c_str());
+    std::ofstream outFile(testFile);
+    outFile << R"({"rootSize":104857600,"systemSize":209715200})";
+    outFile.close();
+    int32_t ret = storageManagerScan.LoadScanResultFromFile();
+    EXPECT_EQ(ret, E_ERR);
+    // Clean up
+    std::remove(testFile.c_str());
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00004 end";
+}
+
+/**
+ * @tc.number: STORAGE_LoadScanResultFromFile_00005
+ * @tc.name: STORAGE_LoadScanResultFromFile_00005
+ * @tc.desc: Test function of LoadScanResultFromFile with negative size values.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00005 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Create a test file with negative values
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    system(("mkdir -p " + testDir).c_str());
+    std::ofstream outFile(testFile);
+    outFile << R"({"rootSize":-100,"systemSize":-200,"memmgrSize":-50})";
+    outFile.close();
+    int32_t ret = storageManagerScan.LoadScanResultFromFile();
+    EXPECT_EQ(ret, E_OK);
+    // Clean up
+    std::remove(testFile.c_str());
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00005 end";
+}

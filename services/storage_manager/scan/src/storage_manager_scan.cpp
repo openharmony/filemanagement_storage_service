@@ -38,7 +38,7 @@ using namespace OHOS::StorageService;
 
 namespace OHOS {
 namespace StorageManager {
-constexpr const char* HYPERHOLD_PATH = "/data/vendor/hyperhold";
+constexpr const char* HYPERHOLD_PATH = "/data/service/el1/0/hyperhold";
 constexpr const char* RGM_MANAGER_PATH = "/data/service/el1/public/rgm_manager";
 constexpr const char* SCAN_RESULT_DIR = "/data/service/el1/public/storage_manager/database";
 constexpr const char* SCAN_RESULT_FILE = "scan_result.json";
@@ -92,6 +92,11 @@ int32_t StorageManagerScan::Init()
         rootSize_ = uidSizeMap[ROOT_UID];
         systemSize_ = uidSizeMap[SYSTEM_UID];
         memmgrSize_ = uidSizeMap[MEMMGR_UID];
+    }
+    ret = SaveScanResultToFile();
+    if (ret != E_OK) {
+        LOGE("StorageManagerScan::Init SaveScanResultToFile failed, ret=%{public}d", ret);
+        return ret;
     }
     LOGI("StorageManagerScan::Init success, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
         static_cast<long long>(rootSize_), static_cast<long long>(systemSize_),
@@ -241,7 +246,7 @@ int32_t StorageManagerScan::ExecuteScan()
     CalculateFinalSizes(startTimeMs, dirScanRootSize, hyperholdRootSize, rgmManagerRootSize, dirScanSystemSize);
     ret = SaveScanResultToFile();
     if (ret != E_OK) {
-        LOGW("ExecuteScan SaveScanResultToFile failed, ret=%{public}d", ret);
+        LOGE("ExecuteScan SaveScanResultToFile failed, ret=%{public}d", ret);
     }
     ReportScanResult();
     LOGI("ExecuteScan success, duration=%{public}lldms, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
