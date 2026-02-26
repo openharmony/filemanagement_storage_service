@@ -60,9 +60,8 @@ bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::s
         LOGE("Failed to open %{public}s", path.c_str());
         return false;
     }
-
-    ssize_t written = write(fd, content.c_str(), content.length());
     fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
+    ssize_t written = write(fd, content.c_str(), content.length());
     fdsan_close_with_tag(fd, NEW_TAG_LOG);
 
     if (written < 0 || static_cast<size_t>(written) != content.size()) {

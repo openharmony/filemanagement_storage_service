@@ -896,7 +896,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapReadDir_001, TestSize.Level1)
     struct fuse_file_info fi = {0};
     fi.fh = 0;
     
-    int result = instance.fuseOperations_.readdir(path, buf, filler, offset, &fi, static_cast<fuse_readdir_flags>(0));
+    int result = instance.fuseOperations_.readdir(path, buf, filler, offset, &fi, static_cast<FuseReaddirFlags>(0));
     EXPECT_NE(result, 0);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapReadDir_001 end";

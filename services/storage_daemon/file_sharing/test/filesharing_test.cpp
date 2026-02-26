@@ -23,7 +23,6 @@
 #include "init_param.h"
 #include "utils/file_utils.h"
 
-
 namespace OHOS::StorageManager {
 class IParamMoc {
 public:
@@ -175,116 +174,5 @@ HWTEST_F(FileSharingTest, file_sharing_test_003, TestSize.Level1)
     EXPECT_TRUE(RmDirRecurse(FILE_SHARING_DIR));
 
     GTEST_LOG_(INFO) << "FileSharingTest_003 ends";
-}
-
-/**
- * @tc.name: FileSharingTest_GetFileShareDefineParameter_002
- * @tc.desc: Verify GetFileShareDefineParameter returns valid scenes.
- * @tc.type: FUNC
- */
-HWTEST_F(FileSharingTest, FileSharingTest_GetFileShareDefineParameter_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_002 start";
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len >= strlen(TOB_SCENE)) {
-                strncpy_s(value, len, TOB_SCENE, strlen(TOB_SCENE));
-                return static_cast<int>(strlen(TOB_SCENE));
-            }
-            return -1;
-        }));
-    std::string result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOB_SCENE);
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len >= strlen(TOC_SCENE)) {
-                strncpy_s(value, len, TOC_SCENE, strlen(TOC_SCENE));
-                return static_cast<int>(strlen(TOC_SCENE));
-            }
-            return -1;
-        }));
-    result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOC_SCENE);
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len >= strlen(TOD_SCENE)) {
-                strncpy_s(value, len, TOD_SCENE, strlen(TOD_SCENE));
-                return static_cast<int>(strlen(TOD_SCENE));
-            }
-            return -1;
-        }));
-    result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOD_SCENE);
-
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_002 end";
-}
-
-/**
- * @tc.name: FileSharingTest_GetFileShareDefineParameter_003
- * @tc.desc: Verify GetFileShareDefineParameter with invalid returns.
- * @tc.type: FUNC
- */
-HWTEST_F(FileSharingTest, FileSharingTest_GetFileShareDefineParameter_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_003 start";
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Return(-1));
-    
-    std::string result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOC_SCENE);
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len > 0) {
-                value[0] = '\0';
-            }
-            return 0;
-        }));
-    
-    result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOC_SCENE);
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len >= 13) {
-                strncpy_s(value, len, "invalid_value", 13);
-                return 13;
-            }
-            return -1;
-        }));
-    
-    result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOC_SCENE);
-
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_003 end";
-}
-
-/**
- * @tc.name: FileSharingTest_GetFileShareDefineParameter_004
- * @tc.desc: Verify GetFileShareDefineParameter with oversized value.
- * @tc.type: FUNC
- */
-HWTEST_F(FileSharingTest, FileSharingTest_GetFileShareDefineParameter_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_004 start";
-
-    EXPECT_CALL(*paramMock_, GetParameter(_, _, _, _))
-        .WillOnce(::testing::Invoke([](const char *key, const char *def, char *value, uint32_t len) -> int {
-            if (value != nullptr && len >= 20) {
-                memset_s(value, len, 'a', 19);
-                value[19] = '\0';
-                return 19;
-            }
-            return -1;
-        }));
-    
-    std::string result = GetFileShareDefineParameter();
-    EXPECT_EQ(result, TOC_SCENE);
-
-    GTEST_LOG_(INFO) << "FileSharingTest_GetFileShareDefineParameter_004 end";
 }
 }

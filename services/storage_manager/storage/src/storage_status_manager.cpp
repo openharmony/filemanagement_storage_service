@@ -20,6 +20,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "os_account_manager.h"
+#include "scan/storage_manager_scan.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -49,6 +50,7 @@ const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
 constexpr int DECIMAL_PLACE = 2;
 constexpr double TO_MB = 1000.0 * 1000.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
+constexpr int32_t FOUR_K = 4096;
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -592,6 +594,40 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
     }
 
     LOGI("DelBundleExtStats success, userId: %{public}u, bundleName: %{public}s", userId, bundleName.c_str());
+    return E_OK;
+}
+
+int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
+{
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("StorageStatusManager::GetSystemDataSize StorageDaemonCommunication is nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    int64_t otherUidSizeSum = 0;
+    int32_t err = sdCommunication->GetSystemDataSize(otherUidSizeSum);
+    if (err != E_OK) {
+        LOGE("StorageStatusManager::GetSystemDataSize GetOtherUidSizeSum failed, err=%{public}d", err);
+        return err;
+    }
+    int64_t usedInodes = 0;
+    err = StorageTotalStatusService::GetInstance().GetUsedInodes(usedInodes);
+    if (err != E_OK) {
+        LOGE("StorageStatusManager::GetSystemDataSize GetUsedInodes failed, err=%{public}d", err);
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
+    }
+    int64_t usedInodesSize = usedInodes * FOUR_K;
+    systemDataSize = StorageManagerScan::GetInstance().GetRootSize() +
+        StorageManagerScan::GetInstance().GetSystemSize() +
+        StorageManagerScan::GetInstance().GetMemmgrSize() + otherUidSizeSum + usedInodesSize;
+    StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
+    LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld, memmgr=%{public}lld,"
+        " other=%{public}lld, usedInodesSize=%{public}lld, total=%{public}lld",
+        static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
+        static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
+        static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()),
+        static_cast<long long>(otherUidSizeSum), static_cast<long long>(usedInodesSize),
+        static_cast<long long>(systemDataSize));
     return E_OK;
 }
 } // StorageManager

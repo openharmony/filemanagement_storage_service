@@ -15,26 +15,24 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
-#include <storage/storage_total_status_service.h>
 
 #include "accesstoken_kit.h"
 #include "bundle_mgr_interface.h"
-#include "bundle_manager_adapter_proxy.h"
 #include "ext_bundle_stats.h"
 #include "file_cache_adapter.h"
 #include "ipc_skeleton.h"
+#include "mock/storage_daemon_communication_mock.h"
 #include "storage/bundle_manager_connector.h"
+#include "storage/bundle_manager_adapter_proxy.h"
 #include "storage/storage_status_manager.h"
 #include "storage_service_errno.h"
+#include "storage_total_status_service_mock.h"
 
 namespace {
 using namespace OHOS;
 using namespace OHOS::StorageManager;
 const std::vector<int64_t> bundleStatsInfo = {0, 1, std::numeric_limits<int64_t>::max() - 8, 10, 0};
-int g_flag = 1;
-int g_bundleFlag  = 1;
-int g_sysFlag = 1;
-int64_t free_size = 0;
+int g_bundleFlag = 1;
 ErrCode g_getNameIndexRet = ERR_OK;
 int32_t g_appIndex = 0;
 std::string g_bundleName = "com.test.app";
@@ -52,7 +50,7 @@ bool BundleManagerAdapterProxy::GetAllBundleStats(int32_t userId, std::vector<in
 bool BundleManagerAdapterProxy::GetBundleNameForUid(const int uid, std::string &bundleName)
 {
     bundleName = str;
-    return g_bundleFlag ;
+    return g_bundleFlag;
 }
 
 ErrCode BundleManagerAdapterProxy::GetNameAndIndexForUid(int32_t uid, std::string &bundleName, int32_t &appIndex)
@@ -64,16 +62,6 @@ ErrCode BundleManagerAdapterProxy::GetNameAndIndexForUid(int32_t uid, std::strin
 } // namespace OHOS::StorageManager
 
 namespace OHOS::StorageManager {
-int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
-{
-    freeSize = free_size;
-    return g_flag;
-}
-
-int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
-{
-    return g_sysFlag;
-}
 
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
@@ -123,9 +111,27 @@ class StorageStatusManagerTest : public testing::Test {
 public:
     static void SetUpTestCase(){};
     static void TearDownTestCase(){};
-    void SetUp(){};
-    void TearDown(){};
+    void SetUp();
+    void TearDown();
+    static inline std::shared_ptr<StorageDaemonCommunicationMock> sdc = nullptr;
+    static inline std::shared_ptr<StorageTotalStatusServiceMock> stss = nullptr;
 };
+
+void StorageStatusManagerTest::SetUp()
+{
+    sdc = std::make_shared<StorageDaemonCommunicationMock>();
+    IStorageDaemonCommunicationMock::storageDaemonCommunication = sdc;
+    stss = std::make_shared<StorageTotalStatusServiceMock>();
+    StorageTotalStatusServiceBase::stss = stss;
+}
+
+void StorageStatusManagerTest::TearDown()
+{
+    sdc = nullptr;
+    IStorageDaemonCommunicationMock::storageDaemonCommunication = nullptr;
+    stss = nullptr;
+    StorageTotalStatusServiceBase::stss = nullptr;
+}
 
 /**
  * @tc.number: SUB_STORAGE_Storage_status_GetAppSize_0001
@@ -431,4 +437,31 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     ret = service->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetSystemDataSize_00001
+ * @tc.name: STORAGE_GetSystemDataSize_00001
+ * @tc.desc: Test function of GetSystemDataSize interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00001 start";
+    int64_t systemDataSize = 100;
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_ERR));
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_OK));
+    ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_OK));
+    EXPECT_CALL(*stss, GetUsedInodes(testing::_)).WillRepeatedly(testing::Return(E_ERR));
+    ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_GET_SYSTEM_DATA_SIZE_ERROR);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00001 end";
 }

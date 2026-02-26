@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,13 +20,16 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
+#include "storage_service_errno.h"
 #include "storage/storage_status_manager.h"
 #include "dfx_report/storage_dfx_reporter.h"
+#include "scan/storage_manager_scan.h"
 
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
 static constexpr int32_t WANT_DEFAULT_VALUE = -1;
+constexpr int32_t BATTERY_LEVEL_TEN = 10;
 constexpr const char* BATTERY_SOC_KEY = "soc";
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
@@ -42,6 +45,7 @@ void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
@@ -78,6 +82,11 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         int batteryCapacity = eventData.GetWant().GetIntParam(BATTERY_SOC_KEY, 0);
         HandleBatteryChangedEvent(batteryCapacity);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        int32_t initRet = StorageManagerScan::GetInstance().Init();
+        if (initRet != E_OK) {
+            LOGE("Init StorageManagerScan failed, ret=%{public}d", initRet);
+        }
     }
 }
 
@@ -110,6 +119,12 @@ void StorageCommonEventSubscriber::CheckAndTriggerStatistic()
     bool isChargingScreenOff = (currentDeviceState == STATE_CHARGING_SCREEN_OFF);
     LOGI("CheckAndTriggerStatistic: deviceState=0x%{public}02x, battery=%{public}d%%, isChargingScreenOff=%{public}d",
          currentDeviceState, currentBatteryCapacity, isChargingScreenOff);
+    if (isChargingScreenOff && currentBatteryCapacity > BATTERY_LEVEL_TEN) {
+        LOGI("Trigger storage scan - device is charging, screen off, and battery > 10%%");
+        StorageManagerScan::GetInstance().StartScan();
+    } else {
+        StorageManagerScan::GetInstance().StopScan();
+    }
 }
 }  // namespace StorageManager
 }  // namespace OHOS

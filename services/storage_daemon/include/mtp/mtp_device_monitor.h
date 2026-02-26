@@ -54,6 +54,7 @@ private:
     int32_t HasMTPDevice(bool &hasMtp);
     int32_t MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
     int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos);
+    int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos);
 
 private:
     std::mutex listMutex_;
@@ -61,4 +62,5 @@ private:
 };
 } // namespace StorageDaemon
 } // namespace OHOS
-#endif
+
+#endif // OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,10 +29,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "ipc/storage_manager_client.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -74,7 +70,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         return ret;
     }
     std::vector<std::string> cmdVec = {
-        "mtpfs",
+        device.type,
         "-o",
         "uid=" + std::to_string(FILE_MANAGER_UID),
         "-o",
@@ -95,6 +91,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     };
     std::vector<std::string> result;
     int32_t err = ForkExec(cmdVec, &result);
+    LOGI("result.size():%{public}lu.", result.size());
     for (auto str : result) {
         LOGI("MountDevice result: %{public}s", str.c_str());
     }
@@ -102,13 +99,13 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         LOGE("Run mtpfs cmd to mount mtp device failed.");
         UmountDevice(device, false, false);
         isMounting_ = false;
-        return err;
+        return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
 
     LOGI("Run mtpfs cmd to mount mtp device success.");
     isMounting_ = false;
     StorageManagerClient client;
-    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid);
+    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid, device.type);
     return E_OK;
 }
 
@@ -116,7 +113,6 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
 {
     LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
     if (isBadRemove) {
-        LOGI("force to umount mtp device");
         int ret = umount2(device.path.c_str(), MNT_DETACH);
         if (ret != 0) {
             LOGW("umount2 failed in force mode, errno %{public}d", errno);

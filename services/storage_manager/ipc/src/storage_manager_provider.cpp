@@ -35,6 +35,7 @@
 #include "disk/disk_manager_service.h"
 #include "volume/volume_manager_service.h"
 #endif
+#include "scan/storage_manager_scan.h"
 #include "ipc/storage_manager_provider.h"
 #include "os_account_manager.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
@@ -68,6 +69,7 @@ constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
+const std::string FILEMGR_BUNDLE_NAME = "com.ohos.filemanager";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -148,6 +150,14 @@ int32_t StorageManagerProvider::CheckUserIdRange(int32_t userId)
 void StorageManagerProvider::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
+    int32_t ret = StorageManagerScan::GetInstance().LoadScanResultFromFile();
+    if (ret == E_OK) {
+        LOGI("StorageManagerProvider::OnStart LoadScanResultFromFile success, root=%{public}lld,"
+        " system=%{public}lld, memmgr=%{public}lld",
+            static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
+            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
+            static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()));
+    }
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
     (void)SetPriority();
@@ -259,7 +269,8 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::PrepareStartUser, userId:%{public}d", userId);
@@ -279,7 +290,8 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
 int32_t StorageManagerProvider::StopUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("StopUser", userId, "StopUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::StopUser, userId:%{public}d", userId);
@@ -302,7 +314,8 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
 int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
 {
     StorageRadar::ReportFucBehavior("CompleteAddUser", userId, "CompleteAddUser Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::CompleteAddUser, userId:%{public}d", userId);
@@ -461,6 +474,31 @@ int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
     int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetSystemDataSize(int64_t &systemDataSize)
+{
+    StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize Begin", E_OK);
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        LOGE("StorageManagerProvider::GetSystemDataSize permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetSystemDataSize start");
+    int32_t err = StorageStatusManager::GetInstance().GetSystemDataSize(systemDataSize);
+    StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetSystemDataSize", DEFAULT_USERID, err,
             "setting");
     }
     return err;
@@ -1401,7 +1439,8 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
 int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
                                                  const std::string &path,
                                                  const std::string &desc,
-                                                 const std::string &uuid)
+                                                 const std::string &uuid,
+                                                 const std::string &fsType)
 {
     StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -1410,7 +1449,7 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s",
         id.c_str(), path.c_str(), GetAnonyString(uuid).c_str());
-    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
+    VolumeManagerService::GetInstance().NotifyMtpMounted(id, path, desc, uuid, fsType);
     StorageRadar::ReportFucBehavior("NotifyMtpMounted", DEFAULT_USERID, "NotifyMtpMounted End", E_OK);
 #endif
     return E_OK;
@@ -1524,13 +1563,11 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-
-    if (IsFilePathInvalid(path)) {
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
+        return E_PERMISSION_DENIED;
     }
     fuseFd = -1;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -1548,13 +1585,11 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
         LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-
-    if (IsFilePathInvalid(path)) {
+    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
         return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
+        return E_PERMISSION_DENIED;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -1774,35 +1809,6 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     return ret;
 }
 
-int32_t StorageManagerProvider::DeleteUserDir(const std::string &path)
-{
-    StorageRadar::ReportFucBehavior("DeleteUserDir", DEFAULT_USERID, "DeleteUserDir Begin", E_OK);
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-        LOGE("Permission check failed, for storage_manager_crypt");
-        return E_PERMISSION_DENIED;
-    }
-
-    auto callingUid = IPCSkeleton::GetCallingUid();
-    LOGE("DeleteUserDir begin, path: %{public}s, uid: %{public}d", path.c_str(), callingUid);
-    if (callingUid != AOCO_UID) {
-        LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
-        return E_PERMISSION_DENIED;
-    }
-
-    if (IsFilePathInvalid(path)) {
-        LOGE("The path: %{public}s is invalid.", path.c_str());
-        return E_PARAMS_INVALID;
-    }
-
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    auto ret = sdCommunication->DeleteUserDir(path);
-    LOGE("DeleteUserDir end, path: %{public}s, uid: %{public}d, ret: %{public}d", path.c_str(), callingUid, ret);
-    std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("DeleteUserDir", 0, ret, extraData);
-    return ret;
-}
-
 int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
 {
     StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent Begin", E_OK);
@@ -1975,6 +1981,26 @@ int32_t StorageManagerProvider::ClearSecondMountPoint(uint32_t userId, const std
     LOGI("clear second mount point end, ret is %{public}d.", err);
     StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint End", err);
     return err;
+}
+
+bool StorageManagerProvider::IsCalledByFileMgr()
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return false;
+    }
+    std::string bundleName;
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return false;
+    }
+    if (bundleName != FILEMGR_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d)", bundleName.c_str(), uid);
+        return false;
+    }
+    return true;
 }
 } // namespace StorageManager
 } // namespace OHOS

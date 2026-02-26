@@ -82,7 +82,8 @@ public:
     int32_t NotifyMtpMounted(const std::string &id,
                              const std::string &path,
                              const std::string &desc,
-                             const std::string &uuid) override;
+                             const std::string &uuid,
+                             const std::string &fsType) override;
     int32_t NotifyMtpUnmounted(const std::string &id, bool isBadRemove) override;
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled) override;
     // fscrypt api
@@ -160,7 +161,6 @@ public:
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback) override;
     int32_t UnregisterUeceActivationCallback() override;
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
-    int32_t DeleteUserDir(const std::string &path) override;
     int32_t CheckUserIdRange(int32_t userId);
     int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
     int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats) override;
@@ -172,12 +172,14 @@ public:
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
+    int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
     bool IsFilePathInvalid(const std::string &filePath);
+    bool IsCalledByFileMgr();
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;
     std::mutex mutex_;

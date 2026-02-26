@@ -30,6 +30,7 @@ struct MtpDeviceInfo {
     std::string path;
     std::string vendor;
     std::string product;
+    std::string type;
     uint8_t devNum;
     uint32_t busLocation;
     uint16_t vendorId;

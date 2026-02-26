@@ -326,11 +326,6 @@ int32_t StorageDaemonProxy::CreateUserDir(const std::string &path, mode_t mode, 
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::DeleteUserDir(const std::string &path)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks)
 {
     return E_OK;
@@ -358,6 +353,17 @@ int32_t StorageDaemonProxy::GetDataSizeByPath(const std::string &path, int64_t &
 }
 
 int32_t StorageDaemonProxy::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
 {
     return E_OK;
 }

@@ -912,7 +912,7 @@ bool MountManager::MediaFuseDirFlag(const std::string &path)
     if (path.empty()) {
         return true;
     }
-    std::regex mediaFusePattern("\\/mnt\\/data.*media_fuse");
+    std::regex mediaFusePattern("\\/mnt\\/data.*media_fuse/Photo");
     if (std::regex_match(path.c_str(), mediaFusePattern)) {
         return true;
     }

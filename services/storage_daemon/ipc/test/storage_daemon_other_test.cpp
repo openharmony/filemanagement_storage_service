@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,7 +27,6 @@ using namespace StorageService;
  * @tc.name: StorageDaemonTest_ActiveUserKey4Nato_001
  * @tc.desc: Verify the ActiveUserKey4Nato when token or secret is not empty.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_001, TestSize.Level1)
 {
@@ -53,7 +52,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_001, TestSize.L
  * @tc.name: StorageDaemonTest_ActiveUserKey4Nato_002
  * @tc.desc: Verify the ActiveUserKey4Nato when EL2 failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_002, TestSize.Level1)
 {
@@ -68,7 +66,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_002, TestSize.L
  * @tc.name: StorageDaemonTest_ActiveUserKey4Nato_003
  * @tc.desc: Verify the ActiveUserKey4Nato when EL3 failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_003, TestSize.Level1)
 {
@@ -84,7 +81,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_003, TestSize.L
  * @tc.name: StorageDaemonTest_ActiveUserKey4Nato_004
  * @tc.desc: Verify the ActiveUserKey4Nato when EL4 failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_004, TestSize.Level1)
 {
@@ -101,7 +97,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_004, TestSize.L
  * @tc.name: StorageDaemonTest_ActiveUserKey4Nato_005
  * @tc.desc: Verify the ActiveUserKey4Nato when all operations succeed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_005, TestSize.Level1)
 {
@@ -119,7 +114,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Nato_005, TestSize.L
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_001
  * @tc.desc: Verify the ActiveUserKey4Update when token and secret is empty.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_001, TestSize.Level1)
 {
@@ -132,7 +126,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_001, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_002
  * @tc.desc: Verify the ActiveUserKey4Update when PrepareUserDirsAndUpdateUserAuth failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_002, TestSize.Level1)
 {
@@ -153,7 +146,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_002, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_003
  * @tc.desc: Verify the ActiveUserKey4Update when SaveStringToFile failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_003, TestSize.Level1)
 {
@@ -179,7 +171,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_003, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_004
  * @tc.desc: Verify the ActiveUserKey4Update when ActiveUserKeyAndPrepareElX failed with not E_ACTIVE_REPEATED.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_004, TestSize.Level1)
 {
@@ -207,7 +198,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_004, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_005
  * @tc.desc: Verify the ActiveUserKey4Update when ActiveUserKeyAndPrepareElX failed with E_ACTIVE_REPEATED.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_005, TestSize.Level1)
 {
@@ -235,7 +225,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_005, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_006
  * @tc.desc: Verify the ActiveUserKey4Update when NotifyUeceActivation failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_006, TestSize.Level1)
 {
@@ -262,7 +251,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_006, TestSize
  * @tc.name: StorageDaemonTest_ActiveUserKey4Update_007
  * @tc.desc: Verify the ActiveUserKey4Update when all operations succeed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_007, TestSize.Level1)
 {
@@ -289,7 +277,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKey4Update_007, TestSize
  * @tc.name: StorageDaemonTest_ClearNatoRestoreKey_001
  * @tc.desc: Verify the ClearNatoRestoreKey.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_ClearNatoRestoreKey_001, TestSize.Level1)
 {
@@ -312,7 +299,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ClearNatoRestoreKey_001, TestSize.
  * @tc.name: StorageDaemonTest_InactiveUserKey_001
  * @tc.desc: Verify the InactiveUserKey.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_InactiveUserKey_001, TestSize.Level1)
 {
@@ -333,7 +319,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InactiveUserKey_001, TestSize.Leve
  * @tc.name: StorageDaemonTest_LockUserScreen_001
  * @tc.desc: Verify the LockUserScreen.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_LockUserScreen_001, TestSize.Level1)
 {
@@ -354,7 +339,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_LockUserScreen_001, TestSize.Level
  * @tc.name: StorageDaemonTest_UnlockUserScreen_001
  * @tc.desc: Verify the UnlockUserScreen.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_UnlockUserScreen_001, TestSize.Level1)
 {
@@ -375,7 +359,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UnlockUserScreen_001, TestSize.Lev
  * @tc.name: StorageDaemonTest_GenerateAppkey_001
  * @tc.desc: Verify the GenerateAppkey.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_GenerateAppkey_001, TestSize.Level1)
 {
@@ -395,7 +378,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_GenerateAppkey_001, TestSize.Level
  * @tc.name: StorageDaemonTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_DeleteAppkey_001, TestSize.Level1)
 {
@@ -415,7 +397,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_DeleteAppkey_001, TestSize.Level1)
  * @tc.name: StorageDaemonTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateKeyContext_001, TestSize.Level1)
 {
@@ -433,7 +414,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateKeyContext_001, TestSize.Lev
  * @tc.name: StorageDaemonTest_GetFileEncryptStatus_001
  * @tc.desc: Verify the GetFileEncryptStatus.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_GetFileEncryptStatus_001, TestSize.Level1)
 {
@@ -453,7 +433,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_GetFileEncryptStatus_001, TestSize
  * @tc.name: StorageDaemonTest_InactiveUserPublicDirKey_001
  * @tc.desc: Verify the InactiveUserPublicDirKey.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_InactiveUserPublicDirKey_001, TestSize.Level1)
 {
@@ -471,7 +450,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InactiveUserPublicDirKey_001, Test
  * @tc.name: StorageDaemonTest_UpdateUserPublicDirPolicy_001
  * @tc.desc: Verify the UpdateUserPublicDirPolicy.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserPublicDirPolicy_001, TestSize.Level1)
 {
@@ -489,7 +467,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserPublicDirPolicy_001, Tes
  * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_001
  * @tc.desc: Verify the SetDirEncryptionPolicy when level not in EL1_SYS_KEY and EL4_USER_KEY.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_001, TestSize.Level1)
 {
@@ -507,7 +484,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_001, TestSi
  * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_002
  * @tc.desc: Verify the SetDirEncryptionPolicy when level and userId not allow.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_002, TestSize.Level1)
 {
@@ -524,7 +500,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_002, TestSi
  * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_003
  * @tc.desc: Verify the SetDirEncryptionPolicy when dirPath is not support.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_003, TestSize.Level1)
 {
@@ -541,7 +516,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_003, TestSi
  * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_004
  * @tc.desc: Verify the SetDirEncryptionPolicy when SetDirEncryptionPolicy failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_004, TestSize.Level1)
 {
@@ -571,7 +545,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_004, TestSi
  * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_005
  * @tc.desc: Verify the SetDirEncryptionPolicy when all.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_005, TestSize.Level1)
 {
@@ -601,7 +574,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_005, TestSi
  * @tc.name: StorageDaemonTest_UintToKeyType_001
  * @tc.desc: Verify the UintToKeyType when all.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_UintToKeyType_001, TestSize.Level1)
 {
@@ -619,7 +591,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UintToKeyType_001, TestSize.Level1
  * @tc.name: StorageDaemonTest_IsDirPathSupport_001
  * @tc.desc: Verify the IsDirPathSupport when access failed.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageDaemonTest, StorageDaemonTest_IsDirPathSupport_001, TestSize.Level1)
 {

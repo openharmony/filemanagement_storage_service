@@ -398,7 +398,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
 }
 
 void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                            const std::string &uuid)
+                                            const std::string &uuid, const std::string &fsType)
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
     std::string key = "user.getfriendlyname";
@@ -415,7 +415,13 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     VolumeCore core(id, 0, "");
     auto volumePtr = make_shared<VolumeExternal>(core);
     volumePtr->SetPath(path);
-    volumePtr->SetFsType(volumePtr->GetFsTypeByStr("mtp"));
+    if (fsType == "mtpfs") {
+        volumePtr->SetFsType(volumePtr->GetFsTypeByStr("mtp"));
+    } else if (fsType == "gphotofs") {
+        volumePtr->SetFsType(volumePtr->GetFsTypeByStr("ptp"));
+    } else {
+        LOGI("Unknown type:%{public}s", fsType.c_str());
+    }
     volumePtr->SetDescription(desc);
     if (len > 0) {
         LOGI("set MTP device name:%{public}s", value);

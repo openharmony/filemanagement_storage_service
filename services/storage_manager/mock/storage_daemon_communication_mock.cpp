@@ -67,5 +67,16 @@ int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const
 {
     return StorageDaemonCommunicationMock::storageDaemonCommunication->ClearSecondMountPoint(userId, bundleName);
 }
+
+int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetSystemDataSize(otherUidSizeSum);
+}
+
+int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs);
 }
 }
+}

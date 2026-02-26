@@ -43,7 +43,8 @@ const std::map<int, StorageTaiheErrorInfo> STORAGE_TAIHE_ERR_MAP {
     { E_PREPARE, { 13600006, "Prepare directory or node error" } },
     { E_DELETE, { 13600007, "Delete directory or node error" } },
     { E_NOOBJECT, { 13600008, "No such object" } },
-    { E_OUTOFRANGE, { 13600009, "User id out of range" } }
+    { E_OUTOFRANGE, { 13600009, "User id out of range" } },
+    { E_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } }
 };
 
 class StorageTaiheError {

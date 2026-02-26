@@ -13,6 +13,15 @@
  * limitations under the License.
  */
 
+#include <cinttypes>
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <fstream>
+#include <sys/resource.h>
+#include <sys/syscall.h>
+#include <thread>
+
+#include "file_ex.h"
 #include "ipc/storage_daemon_provider.h"
 #include "securec.h"
 #include "storage_service_errno.h"
@@ -21,20 +30,12 @@
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
 #include "utils/storage_xcollie.h"
-#include <cinttypes>
+#include "utils/string_utils.h"
+
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
 #include "volume/volume_manager.h"
 #endif
-#include "file_ex.h"
-#include "user/mount_manager.h"
-#include "utils/string_utils.h"
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <fstream>
-#include <sys/resource.h>
-#include <sys/syscall.h>
-#include <thread>
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
@@ -43,8 +44,9 @@
 #endif
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
-#include "user/user_manager.h"
+#include "user/mount_manager.h"
 #include "user/system_mount_manager.h"
+#include "user/user_manager.h"
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
@@ -1038,14 +1040,6 @@ int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mod
     return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
 }
 
-int32_t StorageDaemonProvider::DeleteUserDir(const std::string &path)
-{
-    if (IsFilePathInvalid(path)) {
-        return E_PARAMS_INVALID;
-    }
-    return UserManager::GetInstance().DeleteUserDir(path);
-}
-
 int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
     std::vector<NextDqBlk> &dqBlks)
 {
@@ -1057,6 +1051,12 @@ int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &
 {
     outDirs = inDirs;
     return QuotaManager::GetInstance().GetDirListSpace(outDirs);
+}
+
+int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+{
+    return QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
 }
 
 int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
@@ -1074,6 +1074,11 @@ int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
 {
     return QuotaManager::GetInstance().GetFileData(path, size);
+}
+
+int32_t StorageDaemonProvider::GetSystemDataSize(int64_t &otherUidSizeSum)
+{
+    return QuotaManager::GetInstance().GetSystemDataSize(otherUidSizeSum);
 }
 
 int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)

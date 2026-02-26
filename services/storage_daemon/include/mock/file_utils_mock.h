@@ -31,7 +31,6 @@ public:
     virtual bool IsDir(const std::string &path) = 0;
     virtual bool IsFile(const std::string &path) = 0;
     virtual bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) = 0;
-    virtual bool DestroyDir(const std::string &path) = 0;
     virtual bool MkDirRecurse(const std::string& path, mode_t mode) = 0;
     virtual bool RmDirRecurse(const std::string &path);
     virtual int32_t Mount(const std::string &source, const std::string &target, const char *type,
@@ -61,7 +60,6 @@ public:
     MOCK_METHOD1(IsDir, bool(const std::string &path));
     MOCK_METHOD1(IsFile, bool(const std::string &path));
     MOCK_METHOD4(PrepareDir, bool(const std::string &path, mode_t mode, uid_t uid, gid_t gid));
-    MOCK_METHOD1(DestroyDir, bool(const std::string &path));
     MOCK_METHOD2(MkDirRecurse, bool(const std::string& path, mode_t mode));
     MOCK_METHOD1(RmDirRecurse, bool(const std::string &path));
     MOCK_METHOD5(Mount, int32_t(const std::string &source, const std::string &target, const char *type,

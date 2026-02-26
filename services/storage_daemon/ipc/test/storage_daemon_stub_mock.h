@@ -88,7 +88,6 @@ public:
     MOCK_METHOD0(UnregisterUeceActivationCallback, int32_t(void));
     MOCK_METHOD3(SetDirEncryptionPolicy, int32_t(uint32_t, const std::string &, uint32_t));
     MOCK_METHOD4(CreateUserDir, int32_t(const std::string &, mode_t, uid_t, gid_t));
-    MOCK_METHOD1(DeleteUserDir, int32_t(const std::string &));
     MOCK_METHOD2(GetDqBlkSpacesByUids, int32_t(const std::vector<int32_t> &, std::vector<NextDqBlk> &));
     MOCK_METHOD2(GetDirListSpace, int32_t(const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
     MOCK_METHOD1(SetStopScanFlag, int32_t(bool));
@@ -97,6 +96,9 @@ public:
 
     MOCK_METHOD2(GetDataSizeByPath, int32_t(const std::string &, int64_t &));
     MOCK_METHOD2(GetRmgResourceSize, int32_t(const std::string &, uint64_t &));
+    MOCK_METHOD1(GetSystemDataSize, int32_t(int64_t &));
+    MOCK_METHOD3(GetDirListSpaceByPaths, int32_t(const std::vector<std::string> &, const std::vector<int32_t> &,
+        std::vector<DirSpaceInfo> &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

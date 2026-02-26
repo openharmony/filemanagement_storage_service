@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -160,7 +160,7 @@ void AccountSubscriber::GetSystemAbility()
             mediaShareMap_[userId_] = mediaShare;
             break;
         }
-        LOGE("try to connect media again.");
+        LOGE("try to connect media again, retry count: %{public}d/%{public}d", i + 1, CONNECT_TIME);
         usleep(SLEEP_TIME_INTERVAL_1MS);
     }
 }

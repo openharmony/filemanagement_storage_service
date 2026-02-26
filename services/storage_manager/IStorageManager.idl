@@ -52,7 +52,7 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 26] void GetAllDisks([out] Disk[] vecOfDisk);
     [ipccode 40] void SetVolumeDescription([in] String fsUuid, [in] String description);
     [ipccode 41] void Format([in] String volumeId, [in] String fsType);
-    [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid);
+    [ipccode 54] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid,[in] String fsType);
     [ipccode 55] void NotifyMtpUnmounted([in] String id, [in] boolean isBadRemove);
     [ipccode 30] void UpdateUserAuth([in] unsigned int userId,
                                      [in] unsigned long secureUid,
@@ -108,7 +108,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 73] void UnregisterUeceActivationCallback();
     [ipccode 74] void CreateUserDir([in] String path, [in] unsigned int mode,
                                     [in] unsigned int uid, [in] unsigned int gid);
-    [ipccode 75] void DeleteUserDir([in] String path);
     [ipccode 76] void SetDirEncryptionPolicy([in] unsigned int userId, [in] String dirPath, [in] unsigned int type);
     [ipccode 77] void UpdateUserPublicDirPolicy([in] unsigned int userId);
     [ipccode 78] void NotifyUserChangedEvent([in] unsigned int userId, [in] unsigned int eventType);
@@ -122,4 +121,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 86] void QueryActiveOsAccountIds([out] int[] ids);
     [ipccode 87] void IsOsAccountExists([in] unsigned int userId, [out] boolean isOsAccountExists);
     [ipccode 88] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
+    [ipccode 89] void GetSystemDataSize([out] long systemDataSize);
 }

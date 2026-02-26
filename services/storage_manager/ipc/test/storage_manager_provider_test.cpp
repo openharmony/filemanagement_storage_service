@@ -78,7 +78,6 @@ void StorageManagerProviderTest::TearDown(void) {}
  * @tc.name: StorageManagerProviderTest_PrepareAddUser_001
  * @tc.desc: Verify the PrepareAddUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_001, TestSize.Level1)
 {
@@ -95,7 +94,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
  * @tc.name: StorageManagerProviderTest_RemoveUser_001
  * @tc.desc: Verify the RemoveUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_001, TestSize.Level1)
 {
@@ -112,7 +110,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RemoveUser_001, 
  * @tc.name: StorageManagerProviderTest_PrepareStartUser_001
  * @tc.desc: Verify the PrepareStartUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser_001, TestSize.Level1)
 {
@@ -127,7 +124,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareStartUser
  * @tc.name: StorageManagerProviderTest_StopUser_001
  * @tc.desc: Verify the StopUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_StopUser_001, TestSize.Level1)
 {
@@ -160,7 +156,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryption
  * @tc.name: StorageManagerProviderTest_CompleteAddUser_001
  * @tc.desc: Verify the CompleteAddUser function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_001, TestSize.Level1)
 {
@@ -175,7 +170,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CompleteAddUser_
  * @tc.name: StorageManagerProviderTest_GetFreeSizeOfVolume_001
  * @tc.desc: Verify the GetFreeSizeOfVolume function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSizeOfVolume_001, TestSize.Level1)
 {
@@ -192,7 +186,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSizeOfVol
  * @tc.name: StorageManagerProviderTest_GetTotalSizeOfVolume_001
  * @tc.desc: Verify the GetTotalSizeOfVolume function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVolume_001, TestSize.Level1)
 {
@@ -209,7 +202,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVo
  * @tc.name: StorageManagerProviderTest_GetBundleStats_001
  * @tc.desc: Verify the GetBundleStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetBundleStats_001, TestSize.Level1)
 {
@@ -228,7 +220,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetBundleStats_0
  * @tc.name: StorageManagerProviderTest_GetSystemSize_001
  * @tc.desc: Verify the GetSystemSize function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemSize_001, TestSize.Level1)
 {
@@ -244,7 +235,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemSize_00
  * @tc.name: StorageManagerProviderTest_GetTotalSize_001
  * @tc.desc: Verify the GetTotalSize function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSize_001, TestSize.Level1)
 {
@@ -260,7 +250,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSize_001
  * @tc.name: StorageManagerProviderTest_GetFreeSize_001
  * @tc.desc: Verify the GetFreeSize function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSize_001, TestSize.Level1)
 {
@@ -276,7 +265,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSize_001,
  * @tc.name: StorageManagerProviderTest_GetUserStorageStats_001
  * @tc.desc: Verify the GetUserStorageStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageStats_001, TestSize.Level1)
 {
@@ -292,7 +280,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
  * @tc.name: StorageManagerProviderTest_GetUserStorageStatsIpc_001
  * @tc.desc: Verify the GetUserStorageStatsIpc function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageStatsIpc_001, TestSize.Level1)
 {
@@ -309,7 +296,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
  * @tc.name: StorageManagerProviderTest_GetCurrentBundleStats_001
  * @tc.desc: Verify the GetCurrentBundleStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundleStats_001, TestSize.Level1)
 {
@@ -326,7 +312,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundle
  * @tc.name: StorageManagerProviderTest_NotifyVolumeCreated_001
  * @tc.desc: Verify the NotifyVolumeCreated function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCreated_001, TestSize.Level1)
 {
@@ -342,7 +327,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCrea
  * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_001
  * @tc.desc: Verify the NotifyVolumeMounted function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMounted_001, TestSize.Level1)
 {
@@ -363,7 +347,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMoun
  * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_001
  * @tc.desc: Verify the NotifyVolumeStateChanged function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_001, TestSize.Level1)
 {
@@ -380,7 +363,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStat
  * @tc.name: StorageManagerProviderTest_Mount_001
  * @tc.desc: Verify the Mount function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_001, TestSize.Level1)
 {
@@ -396,7 +378,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_001, TestS
  * @tc.name: StorageManagerProviderTest_Unmount_001
  * @tc.desc: Verify the Unmount function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_001, TestSize.Level1)
 {
@@ -412,7 +393,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_001, Tes
  * @tc.name: StorageManagerProviderTest_GetAllVolumes_001
  * @tc.desc: Verify the GetAllVolumes function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllVolumes_001, TestSize.Level1)
 {
@@ -428,7 +408,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllVolumes_00
  * @tc.name: StorageManagerProviderTest_NotifyDiskCreated_001
  * @tc.desc: Verify the NotifyDiskCreated function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskCreated_001, TestSize.Level1)
 {
@@ -444,7 +423,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskCreate
  * @tc.name: StorageManagerProviderTest_NotifyDiskDestroyed_001
  * @tc.desc: Verify the NotifyDiskDestroyed function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskDestroyed_001, TestSize.Level1)
 {
@@ -460,7 +438,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskDestro
  * @tc.name: StorageManagerProviderTest_Partition_001
  * @tc.desc: Verify the Partition function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Partition_001, TestSize.Level1)
 {
@@ -477,7 +454,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Partition_001, T
  * @tc.name: StorageManagerProviderTest_GetAllDisks_001
  * @tc.desc: Verify the GetAllDisks function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_001, TestSize.Level1)
 {
@@ -493,7 +469,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_001,
  * @tc.name: StorageManagerProviderTest_GetVolumeByUuid_001
  * @tc.desc: Verify the GetVolumeByUuid function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeByUuid_001, TestSize.Level1)
 {
@@ -510,7 +485,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeByUuid_
  * @tc.name: StorageManagerProviderTest_GetVolumeById_001
  * @tc.desc: Verify the GetVolumeById function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeById_001, TestSize.Level1)
 {
@@ -527,7 +501,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeById_00
  * @tc.name: StorageManagerProviderTest_SetVolumeDescription_001
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescription_001, TestSize.Level1)
 {
@@ -544,7 +517,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescrip
  * @tc.name: StorageManagerProviderTest_Format_001
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Format_001, TestSize.Level1)
 {
@@ -561,7 +533,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Format_001, Test
  * @tc.name: StorageManagerProviderTest_GetDiskById_001
  * @tc.desc: Verify the GetDiskById function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_001, TestSize.Level1)
 {
@@ -578,7 +549,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_001,
  * @tc.name: StorageManagerProviderTest_QueryUsbIsInUse_001
  * @tc.desc: Verify the QueryUsbIsInUse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryUsbIsInUse_001, TestSize.Level1)
 {
@@ -610,7 +580,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_EraseAllUserEncr
  * @tc.name: StorageManagerProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_001, TestSize.Level1)
 {
@@ -630,7 +599,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUserAuth_0
  * @tc.name: StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_001
  * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWithRecoveryKey_001, TestSize.Level1)
 {
@@ -651,7 +619,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateUseAuthWit
  * @tc.name: StorageManagerProviderTest_ActiveUserKey_001
  * @tc.desc: Verify the ActiveUserKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_001, TestSize.Level1)
 {
@@ -669,7 +636,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ActiveUserKey_00
  * @tc.name: StorageManagerProviderTest_InactiveUserKey_001
  * @tc.desc: Verify the InactiveUserKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_001, TestSize.Level1)
 {
@@ -685,7 +651,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserKey_
  * @tc.name: StorageManagerProviderTest_LockUserScreen_001
  * @tc.desc: Verify the LockUserScreen function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_LockUserScreen_001, TestSize.Level1)
 {
@@ -701,7 +666,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_LockUserScreen_0
  * @tc.name: StorageManagerProviderTest_GetFileEncryptStatus_001
  * @tc.desc: Verify the GetFileEncryptStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptStatus_001, TestSize.Level1)
 {
@@ -719,7 +683,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFileEncryptSt
  * @tc.name: StorageManagerProviderTest_GetUserNeedActiveStatus_001
  * @tc.desc: Verify the GetUserNeedActiveStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiveStatus_001, TestSize.Level1)
 {
@@ -736,7 +699,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserNeedActiv
  * @tc.name: StorageManagerProviderTest_UnlockUserScreen_001
  * @tc.desc: Verify the UnlockUserScreen function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen_001, TestSize.Level1)
 {
@@ -754,7 +716,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnlockUserScreen
  * @tc.name: StorageManagerProviderTest_GetLockScreenStatus_001
  * @tc.desc: Verify the GetLockScreenStatus function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenStatus_001, TestSize.Level1)
 {
@@ -771,7 +732,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetLockScreenSta
  * @tc.name: StorageManagerProviderTest_GenerateAppkey_001
  * @tc.desc: Verify the GenerateAppkey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_001, TestSize.Level1)
 {
@@ -790,7 +750,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_0
  * @tc.name: StorageManagerProviderTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteAppkey_001, TestSize.Level1)
 {
@@ -806,7 +765,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteAppkey_001
  * @tc.name: StorageManagerProviderTest_CreateRecoverKey_001
  * @tc.desc: Verify the CreateRecoverKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey_001, TestSize.Level1)
 {
@@ -825,7 +783,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateRecoverKey
  * @tc.name: StorageManagerProviderTest_SetRecoverKey_001
  * @tc.desc: Verify the SetRecoverKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetRecoverKey_001, TestSize.Level1)
 {
@@ -841,7 +798,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetRecoverKey_00
  * @tc.name: StorageManagerProviderTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext_001, TestSize.Level1)
 {
@@ -858,7 +814,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateKeyContext
  * @tc.name: StorageManagerProviderTest_CreateShareFile_001
  * @tc.desc: Verify the CreateShareFile function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_001, TestSize.Level1)
 {
@@ -883,7 +838,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
  * @tc.name: StorageManagerProviderTest_DeleteShareFile_001
  * @tc.desc: Verify the DeleteShareFile function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_001, TestSize.Level1)
 {
@@ -906,7 +860,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_
  * @tc.name: StorageManagerProviderTest_SetBundleQuota_001
  * @tc.desc: Verify the SetBundleQuota function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_001, TestSize.Level1)
 {
@@ -925,7 +878,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
  * @tc.name: StorageManagerProviderTest_GetUserStorageStatsByType_001
  * @tc.desc: Verify the GetUserStorageStatsByType function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageStatsByType_001, TestSize.Level1)
 {
@@ -943,7 +895,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
  * @tc.name: StorageManagerProviderTest_MountDfsDocs_001
  * @tc.desc: Verify the MountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001, TestSize.Level1)
 {
@@ -962,7 +913,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001
  * @tc.name: StorageManagerProviderTest_UMountDfsDocs_001
  * @tc.desc: Verify the UMountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_001, TestSize.Level1)
 {
@@ -981,7 +931,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
  * @tc.name: StorageManagerProviderTest_NotifyMtpMounted_001
  * @tc.desc: Verify the NotifyMtpMounted function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted_001, TestSize.Level1)
 {
@@ -991,7 +940,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted
     std::string path = "/mnt/mtp/device/storage/usb";
     std::string desc = "MTP Device";
     std::string uuid = "1234-5678";
-    auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid);
+    std::string fsType = "mtp";
+    auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid, fsType);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_001 end";
 }
@@ -1000,7 +950,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted
  * @tc.name: StorageManagerProviderTest_NotifyMtpUnmounted_001
  * @tc.desc: Verify the NotifyMtpUnmounted function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmounted_001, TestSize.Level1)
 {
@@ -1017,7 +966,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmount
  * @tc.name: StorageManagerProviderTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_001, TestSize.Level1)
 {
@@ -1034,7 +982,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
  * @tc.name: StorageManagerProviderTest_UMountMediaFuse_001
  * @tc.desc: Verify the UMountMediaFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_001, TestSize.Level1)
 {
@@ -1050,7 +997,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
  * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_001
  * @tc.desc: Verify the MountFileMgrFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_001, TestSize.Level1)
 {
@@ -1060,16 +1006,53 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     std::string path = "/mnt/mtp/device/storage/usb";
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_003
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/110";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_004
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string path = "/mnt/mtp";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_004 end";
 }
 
 /**
  * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_001
  * @tc.desc: Verify the UMountFileMgrFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_001, TestSize.Level1)
 {
@@ -1078,15 +1061,31 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     int32_t userId = 1001;
     std::string path = "/mnt/mtp/device/storage/usb";
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_003
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/userExternal/110";
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_003 end";
 }
 
 /**
  * @tc.name: StorageManagerProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsFileOccupied_001, TestSize.Level1)
 {
@@ -1105,7 +1104,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsFileOccupied_0
  * @tc.name: StorageManagerProviderTest_ResetSecretWithRecoveryKey_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithRecoveryKey_001, TestSize.Level1)
 {
@@ -1123,7 +1121,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithR
  * @tc.name: StorageManagerProviderTest_TryToFix_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, TestSize.Level1)
 {
@@ -1139,7 +1136,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, Te
  * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
  * @tc.desc: Verify the NotifyVolumeDamaged function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_001, TestSize.Level1)
 {
@@ -1160,7 +1156,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
  * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_002
  * @tc.desc: Verify the NotifyVolumeDamaged function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_002, TestSize.Level1)
 {
@@ -1181,7 +1176,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
  * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_003
  * @tc.desc: Verify the NotifyVolumeDamaged function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_003, TestSize.Level1)
 {
@@ -1202,7 +1196,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
  * @tc.name: StorageManagerProviderTest_MountDisShareFile_001
  * @tc.desc: Verify the MountDisShareFile function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_001, TestSize.Level1)
 {
@@ -1219,7 +1212,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFil
  * @tc.name: StorageManagerProviderTest_UMountDisShareFile_001
  * @tc.desc: Verify the UMountDisShareFile function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_001, TestSize.Level1)
 {
@@ -1282,25 +1274,24 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActi
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001
+ * @tc.name: StorageManagerProviderTest_UnregisterUeceActivationCallback_001
  * @tc.desc: Verify the UnregisterUeceActivationCallback function.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001, TestSize.Level1)
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceActivationCallback_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnRegisterUeceActivationCallback_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     auto ret = storageManagerProviderTest_->UnregisterUeceActivationCallback();
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001 end";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnRegisterUeceActivationCallback_001 end";
 }
 
 /**
  * @tc.name: StorageManagerProviderTest_CreateUserDir_001
  * @tc.desc: Verify the CreateUserDir function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_001, TestSize.Level1)
 {
@@ -1311,24 +1302,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_00
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_DeleteUserDir_001
- * @tc.desc: Verify the DeleteUserDir function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteUserDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    EXPECT_EQ(storageManagerProviderTest_->DeleteUserDir(""), E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteUserDir_001 end";
-}
-
-/**
  * @tc.name: storageManagerProviderTest_CheckUserid_001
  * @tc.desc: Verify the CheckUserid function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_001, TestSize.Level1)
 {
@@ -1344,7 +1320,6 @@ HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_001,
  * @tc.name: storageManagerProviderTest_CheckUserid_002
  * @tc.desc: Verify the CheckUserid function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_002, TestSize.Level1)
 {
@@ -1360,7 +1335,6 @@ HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_002,
  * @tc.name: storageManagerProviderTest_CheckUserid_003
  * @tc.desc: Verify the CheckUserid function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_003, TestSize.Level1)
 {
@@ -1376,7 +1350,6 @@ HWTEST_F(StorageManagerProviderTest, storageManagerProviderTest_CheckUserid_003,
  * @tc.name: StorageManagerProviderTest_SetBundleQuota_002
  * @tc.desc: Verify the SetBundleQuota function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_002, TestSize.Level1)
 {
@@ -1395,7 +1368,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
  * @tc.name: StorageManagerProviderTest_MountDfsDocs_003
  * @tc.desc: Verify the MountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_002, TestSize.Level1)
 {
@@ -1414,7 +1386,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_002
  * @tc.name: StorageManagerProviderTest_MountDfsDocs_003
  * @tc.desc: Verify the MountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_003, TestSize.Level1)
 {
@@ -1433,7 +1404,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_003
  * @tc.name: StorageManagerProviderTest_UMountDfsDocs_002
  * @tc.desc: Verify the UMountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_002, TestSize.Level1)
 {
@@ -1452,7 +1422,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
  * @tc.name: StorageManagerProviderTest_UMountDfsDocs_003
  * @tc.desc: Verify the UMountDfsDocs function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_003, TestSize.Level1)
 {
@@ -1471,7 +1440,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
  * @tc.name: StorageManagerProviderTest_MountMediaFuse_002
  * @tc.desc: Verify the MountMediaFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_002, TestSize.Level1)
 {
@@ -1488,7 +1456,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
  * @tc.name: StorageManagerProviderTest_UMountMediaFuse_002
  * @tc.desc: Verify the UMountMediaFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_002, TestSize.Level1)
 {
@@ -1504,7 +1471,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
  * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_002
  * @tc.desc: Verify the MountFileMgrFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_002, TestSize.Level1)
 {
@@ -1523,7 +1489,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
  * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_002
  * @tc.desc: Verify the UMountFileMgrFuse function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_002, TestSize.Level1)
 {
@@ -1540,7 +1505,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
  * @tc.name: StorageManagerProviderTest_SetExtBundleStats_001
  * @tc.desc: Verify the SetExtBundleStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_001, TestSize.Level1)
 {
@@ -1557,7 +1521,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
  * @tc.name: StorageManagerProviderTest_GetExtBundleStats_001
  * @tc.desc: Verify the GetExtBundleStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStats_001, TestSize.Level1)
 {
@@ -1574,7 +1537,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
  * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_001
  * @tc.desc: Verify the OnAddSystemAbility function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_001, TestSize.Level1)
 {
@@ -1591,7 +1553,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbili
  * @tc.name: StorageManagerProviderTest_OnAddSystemAbility_002
  * @tc.desc: Verify the OnAddSystemAbility function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbility_002, TestSize.Level1)
 {
@@ -1608,7 +1569,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_OnAddSystemAbili
  * @tc.name: StorageManagerProviderTest_GetAllExtBundleStats_001
  * @tc.desc: Verify the GetAllExtBundleStats function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleStats_001, TestSize.Level1)
 {
@@ -1658,7 +1618,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsUsbFuseByType_
  * @tc.name: StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001
  * @tc.desc: Verify the NotifyCreateBundleDataDirWithEl function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyCreateBundleDataDirWithEl_001, TestSize.Level1)
 {
@@ -1674,7 +1633,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyCreateBund
  * @tc.name: StorageManagerProviderTest_QueryActiveOsAccountIds_001
  * @tc.desc: Verify the QueryActiveOsAccountIds function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryActiveOsAccountIds_001, TestSize.Level1)
 {
@@ -1689,7 +1647,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryActiveOsAcc
  * @tc.name: StorageManagerProviderTest_IsOsAccountExists_001
  * @tc.desc: Verify the IsOsAccountExists function.
  * @tc.type: FUNC
- * @tc.require: AR000H09L6
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExists_001, TestSize.Level1)
 {
@@ -1716,6 +1673,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ClearSecondMount
     auto ret = storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetSystemDataSize_001
+ * @tc.desc: Verify the GetSystemDataSize function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSize_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t systemDataSize = 100;
+    auto ret = storageManagerProviderTest_->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

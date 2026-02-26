@@ -981,9 +981,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0001, testin
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    g_cnt = 0;
-    vmService.NotifyMtpMounted(id, path, desc, uuid);
-    g_cnt = 0;
+    std::string fsType = "mtp";
+    vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0001";
 }
 
@@ -1004,9 +1003,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0002, testin
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    g_cnt = 1;
-    vmService.NotifyMtpMounted(id, path, desc, uuid);
-    g_cnt = 0;
+    std::string fsType = "mtpfs";
+    vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0002";
 }
 
@@ -1027,9 +1025,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0003, testin
     std::string path = "/mnt/data/external/1";
     std::string desc = "description-1";
     std::string uuid = "uuid-1";
-    g_cnt = 2;
-    vmService.NotifyMtpMounted(id, path, desc, uuid);
-    g_cnt = 0;
+    std::string fsType = "gphotofs";
+    vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0003";
 }
 

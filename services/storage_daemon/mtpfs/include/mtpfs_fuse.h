@@ -28,6 +28,9 @@
 
 using namespace OHOS;
 
+using FuseReaddirFlags = enum fuse_readdir_flags;
+using FuseFillDirFlags = enum fuse_fill_dir_flags;
+
 class AccountSubscriber final : public OHOS::AccountSA::OsAccountSubscriber {
 public:
     AccountSubscriber(const OHOS::AccountSA::OsAccountSubscribeInfo &info)
@@ -100,7 +103,7 @@ public:
     int FSync(const char *path, int datasync, struct fuse_file_info *fi);
     int OpenDir(const char *path, struct fuse_file_info *fileInfo);
     int ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
-        enum fuse_readdir_flags flag);
+        FuseReaddirFlags flag);
     int ReleaseDir(const char *path, struct fuse_file_info *fileInfo);
     int FSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo);
     int Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo);

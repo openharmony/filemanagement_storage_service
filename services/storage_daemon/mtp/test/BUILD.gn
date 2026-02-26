@@ -127,7 +127,10 @@ ohos_unittest("mtp_device_monitor_test") {
   ]
 
   if (support_open_source_libmtp) {
-    external_deps += [ "libmtp:libmtp" ]
+    external_deps += [
+        "libmtp:libmtp",
+        "libusb:libusb",
+    ]
   }
 }
 

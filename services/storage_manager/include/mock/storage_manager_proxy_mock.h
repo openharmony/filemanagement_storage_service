@@ -96,12 +96,11 @@ public:
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid) override;
+                             const std::string &uuid, const std::string &fsType) override;
     int32_t NotifyMtpUnmounted(const std::string &id, bool isBadRemove) override;
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
     int32_t UnregisterUeceActivationCallback() override;
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
-    virtual int32_t DeleteUserDir(const std::string &path) override;
     int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled) override;
     
     // app file share api
@@ -139,6 +138,7 @@ public:
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
+    int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

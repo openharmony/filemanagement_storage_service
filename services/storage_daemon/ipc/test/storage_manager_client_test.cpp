@@ -191,7 +191,7 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyMtpMounted_001
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    auto ret = storageManagerClient_->NotifyMtpMounted("", "", "", "");
+    auto ret = storageManagerClient_->NotifyMtpMounted("", "", "", "", "");
     EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpMounted_001 end";

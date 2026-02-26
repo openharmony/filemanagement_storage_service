@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,21 +18,27 @@
 #include <cstdio>
 #include <dirent.h>
 #include <filesystem>
+#ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+#include <gphoto2/gphoto2-camera.h>
+#include <gphoto2/gphoto2-context.h>
+#include <gphoto2/gphoto2-port-log.h>
+#endif
 #include <iostream>
 #include <libmtp.h>
-#include "parameter.h"
-#include "parameters.h"
+#include <libusb.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
-#include <unistd.h>
 #include <thread>
+#include <unistd.h>
 #include "mtp/usb_event_subscriber.h"
-#include "storage_radar.h"
+#include "parameter.h"
+#include "parameters.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/file_utils.h"
+#include "storage_radar.h"
 #include "usb_srv_client.h"
+#include "utils/file_utils.h"
 
 using namespace std;
 namespace OHOS {
@@ -54,6 +60,12 @@ constexpr const char *IS_PTP_MODE = "user.isptpmode";
 constexpr const char *IS_OPEN_HARMONY = "user.isOpenHarmonyMtpDevice";
 constexpr const char *GET_FRIENDLY_NAME = "user.getfriendlyname";
 constexpr int32_t SYS_PARARMETER_SIZE = 256;
+#ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+constexpr int32_t SCANF_NUM = 2;
+constexpr int32_t ERROR_CODE_PARSE_FAILED = -1;
+constexpr int32_t ERROR_CODE_LIBUSB_INIT_FAILED = -2;
+constexpr int32_t ERROR_CODE_GET_DEVICE_LIST_FAILED = -3;
+#endif
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -114,7 +126,9 @@ int32_t MtpDeviceMonitor::GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos)
         ForkExec(cmd, &uuids);
 
         MtpDeviceInfo devInfo;
-        devInfo.uuid = uuids.front();
+        if (!uuids.empty()) {
+            devInfo.uuid = uuids.front();
+        }
         devInfo.devNum = rawDevice->devnum;
         devInfo.busLocation = rawDevice->bus_location;
         devInfo.vendor = rawDevice->device_entry.vendor;
@@ -123,6 +137,7 @@ int32_t MtpDeviceMonitor::GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos)
         devInfo.productId = rawDevice->device_entry.product_id;
         devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
         devInfo.path = std::string(MTP_ROOT_PATH) + devInfo.id;
+        devInfo.type = "mtpfs";
         devInfos.push_back(devInfo);
         LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
             (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
@@ -136,22 +151,27 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
     std::vector<MtpDeviceInfo> devInfos;
     int32_t ret = GetMtpDevices(devInfos);
     if (ret != E_OK) {
-        LOGE("No MTP devices detected");
-        return;
+#ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+        ret = GetGphotoDevices(devInfos);
+        if (ret != E_OK) {
+            LOGE("No GetGphotoDevices devices detected");
+            return;
+        }
+#endif
+        LOGE("No devices detected %{public}d", ret);
     }
     ret = MountMtpDevice(devInfos);
     bool isPtp = UsbEventSubscriber::IsPtpMode();
     std::string extraData = "{Protocol:" + std::string(isPtp ? "PTP" : "MTP") +
         "}{Result:" + std::to_string(ret) + "}";
     if (ret != E_OK) {
-        LOGE("mount mtp device failed");
+        LOGE("mount mtp device failed.");
         const auto& firstDev = devInfos[0];
         extraData += "{Vendor:" + firstDev.vendor + "}{Product:" + firstDev.product +
             "}{Name:unknown}{OpenHarmony:unknown}";
         StorageService::StorageRadar::ReportMtpResult("MountMtpDeviceInfo", E_MTP_MOUNT_FAILED, extraData);
         return;
     }
-
     for (const auto& devInfo : devInfos) {
         const char* value = isPtp ? "true" : "false";
         size_t ptpLen = isPtp ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
@@ -167,8 +187,6 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
             tempBuffer[attrLen] = '\0';
             isOpenHarmony = tempBuffer;
-        } else {
-            LOGE("Failed to get os xattr");
         }
 
         memset_s(tempBuffer, sizeof(tempBuffer), 0, sizeof(tempBuffer));
@@ -176,8 +194,6 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
             tempBuffer[attrLen] = '\0';
             devName = tempBuffer;
-        } else {
-            LOGE("Failed to get device name xattr");
         }
 
         extraData += "{Vendor:" + devInfo.vendor + "}{Product:" + devInfo.product +
@@ -188,7 +204,6 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
 
 void MtpDeviceMonitor::MonitorDevice()
 {
-    LOGI("MonitorDevice: mtp device monitor thread begin.");
     int32_t cnt = DETECT_CNT;
     while (cnt > 0) {
         bool hasMtp = false;
@@ -219,10 +234,9 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
         LOGE("This device cannot support MTP.");
         return E_NOT_SUPPORT;
     }
-    LOGI("MountMtpDevice: start mount mtp device.");
     for (auto device : monitorDevices) {
         if (HasMounted(device)) {
-            LOGI("MountMtpDevice: mtp device has mounted.");
+            LOGE("MountMtpDevice: mtp device has mounted.");
             continue;
         }
 
@@ -233,6 +247,7 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
         int32_t ret = MtpDeviceManager::GetInstance().MountDevice(device);
         if (ret == E_OK) {
             lastestMtpDevList_.push_back(device);
+            LOGI("lastestMtpDevList_.push_back.");
         } else if (ret == E_MTP_IS_MOUNTING) {
             return E_OK;
         } else {
@@ -376,7 +391,6 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         return;
     }
     if (instance->IsNeedDisableMtp()) {
-        LOGI("MTP disable parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
     }
 }
@@ -398,7 +412,6 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         return;
     }
     if (instance->IsNeedDisableMtp()) {
-        LOGI("Enterprise device parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
     }
 }
@@ -428,5 +441,223 @@ int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
     hasMtp = false;
     return E_OK;
 }
+
+#ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+static bool FindLineValue(const char* sourceText, const char* targetKey, char* outputBuffer, size_t bufferSize)
+{
+    if (!sourceText || !targetKey || !outputBuffer || bufferSize == 0) {
+        return false;
+    }
+
+    const char* keyPosition = strstr(sourceText, targetKey);
+    if (!keyPosition) {
+        return false;
+    }
+
+    keyPosition += strlen(targetKey);
+    while (*keyPosition == ' ' || *keyPosition == '\t') {
+        keyPosition++;
+    }
+    const char* lineEnd = strpbrk(keyPosition, "\r\n");
+    if (lineEnd == nullptr) {
+        return false;
+    }
+    size_t valueLength = static_cast<size_t>(lineEnd - keyPosition);
+    if (valueLength >= bufferSize) {
+        valueLength = bufferSize - 1;
+    }
+
+    int copyResult = memcpy_s(outputBuffer, bufferSize, keyPosition, valueLength);
+    if (copyResult != EOK) {
+        LOGE("memcpy failed %{public}d", copyResult);
+    }
+    outputBuffer[valueLength] = '\0';
+    return true;
+}
+
+static bool ParsePortPath(const char* portPath, int &bus, int &dev)
+{
+    if (!portPath) {
+        return false;
+    }
+    if (sscanf_s(portPath, "usb:%d,%d", &bus, &dev) == SCANF_NUM) {
+        return true;
+    }
+    return false;
+}
+
+static int GetVidPidFromPortPath(const char* portPath, uint16_t &vid, uint16_t &pid)
+{
+    int bus = 0;
+    int dev = 0;
+    if (!ParsePortPath(portPath, bus, dev)) {
+        return ERROR_CODE_PARSE_FAILED;
+    }
+    libusb_context *ctx = nullptr;
+    if (libusb_init(&ctx) != 0) {
+        return ERROR_CODE_LIBUSB_INIT_FAILED;
+    }
+    libusb_device **list = nullptr;
+    ssize_t n = libusb_get_device_list(ctx, &list);
+    if (n < 0) {
+        libusb_exit(ctx);
+        return ERROR_CODE_GET_DEVICE_LIST_FAILED;
+    }
+    int ret = -1;
+    for (ssize_t i = 0; i < n; i++) {
+        libusb_device *d = list[i];
+        if (libusb_get_bus_number(d) == bus &&
+            libusb_get_device_address(d) == dev) {
+            libusb_device_descriptor desc;
+            if (libusb_get_device_descriptor(d, &desc) == 0) {
+                vid = desc.idVendor;
+                pid = desc.idProduct;
+                ret = 0;
+            }
+            break;
+        }
+    }
+    libusb_free_device_list(list, 1);
+    libusb_exit(ctx);
+    return ret;
+}
+
+static void CleanupGphotoResources(GPContext *context, CameraList* list, Camera *camera)
+{
+    if (camera) {
+        gp_camera_exit(camera, context);
+        gp_camera_free(camera);
+        camera = NULL;
+    }
+    if (list) {
+        gp_list_free(list);
+    }
+    if (context) {
+        gp_context_unref(context);
+    }
+}
+
+static void GenerateGphotoDeviceInfo(MtpDeviceInfo& devInfo, const char* portPath,
+                                     Camera* camera, GPContext* context)
+{
+    std::vector<std::string> cmd = {
+        "cat",
+        "/proc/sys/kernel/random/uuid",
+    };
+    std::vector<std::string> uuids;
+    ForkExec(cmd, &uuids);
+
+    int bus = 0;
+    int dev = 0;
+    if (!ParsePortPath(portPath, bus, dev)) {
+        LOGE("ParsePortPath failed.");
+        return;
+    }
+    devInfo.busLocation = bus;
+    devInfo.devNum = dev;
+
+    CameraText summary;
+    int ret = gp_camera_get_summary(camera, &summary, context);
+    if (ret >= GP_OK) {
+        char model[256];
+        if (FindLineValue(summary.text, "Model:", model, sizeof(model))) {
+            devInfo.vendor = model;
+            devInfo.product = model;
+        }
+    }
+
+    uint16_t vid = 0;
+    uint16_t pid = 0;
+    if (GetVidPidFromPortPath(portPath, vid, pid) != E_OK) {
+        return;
+    }
+    devInfo.vendorId = vid;
+    devInfo.productId = pid;
+    devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
+    devInfo.uuid = devInfo.id;
+    devInfo.path = std::string(MTP_ROOT_PATH) + devInfo.id;
+    devInfo.type = "gphotofs";
+
+    LOGI("Detect new mtp device: vendorId=%{public}u, productId=%{public}u, id=%{public}s, path=%{public}s",
+        devInfo.vendorId, devInfo.productId, (devInfo.id).c_str(), (devInfo.path).c_str());
+}
+
+static int32_t InitGphoto(GPContext* &context, CameraList* &list, Camera* &camera)
+{
+    context = gp_context_new();
+    if (!context) {
+        LOGI("context nullptr.");
+        CleanupGphotoResources(context, list, camera);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    int ret = gp_list_new(&list);
+    if (ret < GP_OK || !list) {
+        LOGE("gp_list_new failed, ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, camera);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    ret = gp_camera_autodetect(list, context);
+    if (ret < GP_OK) {
+        LOGE("gp_camera_autodetect failed, ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, camera);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    ret = gp_camera_new(&camera);
+    if (ret < GP_OK || !camera) {
+        LOGE("gp_camera_new failed ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, camera);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    ret = gp_camera_init(camera, context);
+    if (ret < GP_OK) {
+        LOGE("gp_camera_init failed ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, camera);
+        return E_MTP_MOUNT_FAILED;
+    }
+    return E_OK;
+}
+
+int32_t MtpDeviceMonitor::GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos)
+{
+    GPContext *context = nullptr;
+    CameraList *list = nullptr;
+    Camera *camera = nullptr;
+    if (InitGphoto(context, list, camera) != E_OK) {
+        LOGE("InitGphoto failed.");
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    const char *model = nullptr;
+    const char *portPath = nullptr;
+
+    int ret = gp_list_get_name(list, 0, &model);
+    if (ret < GP_OK || !model) {
+        LOGE("gp_list_get_name failed ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, nullptr);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    ret = gp_list_get_value(list, 0, &portPath);
+    if (ret < GP_OK || !portPath) {
+        LOGE("gp_list_get_value failed ret:%{public}d.", ret);
+        CleanupGphotoResources(context, list, nullptr);
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    LOGI("model=%{public}s port=%{public}s", model, portPath);
+
+    MtpDeviceInfo devInfo;
+    GenerateGphotoDeviceInfo(devInfo, portPath, camera, context);
+    devInfos.push_back(devInfo);
+
+    LOGI("free camera.");
+    CleanupGphotoResources(context, list, camera);
+    return E_OK;
+}
+#endif
 }  // namespace StorageDaemon
 }  // namespace OHOS

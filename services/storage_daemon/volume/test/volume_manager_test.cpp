@@ -687,7 +687,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_003, 
     // Create a volume for testing
     std::string diskId = "diskId-usb-fuse-003";
     bool isUserdata = false;
-    dev_t device = MKDEV(8, 4);
+    dev_t device = MKDEV(8, 14);
     std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     ASSERT_FALSE(volumeId.empty());
     int fuseFd = -1;
@@ -717,7 +717,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_004, 
     // Create a volume for testing
     std::string diskId = "diskId-usb-fuse-004";
     bool isUserdata = false;
-    dev_t device = MKDEV(8, 4);
+    dev_t device = MKDEV(8, 14);
     std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     ASSERT_FALSE(volumeId.empty());
 

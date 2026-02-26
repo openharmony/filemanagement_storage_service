@@ -41,4 +41,9 @@ int32_t StorageTotalStatusService::GetFreeInodes(int64_t &freeInode)
 {
     return StorageTotalStatusServiceBase::stss->GetFreeInodes(freeInode);
 }
+
+int32_t StorageTotalStatusService::GetUsedInodes(int64_t &usedInodes)
+{
+    return StorageTotalStatusServiceBase::stss->GetUsedInodes(usedInodes);
+}
 } // OHOS::StorageManager

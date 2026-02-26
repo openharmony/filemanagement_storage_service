@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 
 #include <gtest/gtest.h>
 
+#include "directory_ex.h"
 #include "istorage_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -538,41 +539,12 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateUserDir_001, Te
     EXPECT_EQ(ret, E_OK);
     ret = UserManager::GetInstance().CreateUserDir(path  + "/testDir", mode, uid, gid);
     EXPECT_EQ(ret, E_CREATE_USER_DIR_EXIST);
-    UserManager::GetInstance().DeleteUserDir(path + "/testDir");
 
     ret = UserManager::GetInstance().CreateUserDir(path + "/testDir/testDir/testDir", mode, uid, gid);
     EXPECT_NE(ret, E_OK);
+
+    OHOS::ForceRemoveDirectory(path + "/testDir");
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateUserDir_001 end";
-}
-
-/**
- * @tc.name: Storage_Manager_MountManagerTest_DeleteUserDir_001
- * @tc.desc: Verify the DeleteUserDir function.
- * @tc.type: FUNC
- */
-HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_DeleteUserDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_DeleteUserDir_001 start";
-    std::string path;
-
-    int32_t ret = UserManager::GetInstance().DeleteUserDir(path);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    path = "/data/virt_service/rgm_hmos/anco_hmos_data/";
-    ret = UserManager::GetInstance().DeleteUserDir(path + "testDir");
-    EXPECT_EQ(ret, E_DELETE_USER_DIR_NOEXIST);
-
-    std::ofstream file(path + "testFile.txt");
-    file.close();
-    ret = UserManager::GetInstance().DeleteUserDir(path + "testFile.txt");
-    EXPECT_EQ(ret, E_DELETE_USER_DIR_NOTDIR);
-    std::filesystem::remove(path + "testFile.txt");
-
-    mode_t mode = 771;
-    UserManager::GetInstance().CreateUserDir(path + "testDir", mode, 0, 0);
-    ret = UserManager::GetInstance().DeleteUserDir(path + "testDir");
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_DeleteUserDir_001 end";
 }
 
 /**

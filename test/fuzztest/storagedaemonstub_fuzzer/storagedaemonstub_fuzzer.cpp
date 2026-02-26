@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -153,20 +153,6 @@ bool CreateUserDirFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, c
     return true;
 }
 
-bool DeleteUserDirFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_DELETE_USER_DIR);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    daemon->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 void StorageDaemonStubFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
 {
     StorageDaemonCreateRecoveryKeyFuzzTest(daemon, data, size);
@@ -174,7 +160,6 @@ void StorageDaemonStubFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemo
     StorageDaemonResetSecretWithRecoveryKeyFuzzTest(daemon, data, size);
     StorageDaemonIsFileCopyedFuzzTest(daemon, data, size);
     CreateUserDirFuzzTest(daemon, data, size);
-    DeleteUserDirFuzzTest(daemon, data, size);
 }
 } // namespace OHOS
 

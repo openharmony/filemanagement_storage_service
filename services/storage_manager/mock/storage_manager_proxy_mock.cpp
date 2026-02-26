@@ -324,7 +324,7 @@ int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &need
 }
 
 int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                              const std::string &uuid)
+                                              const std::string &uuid, const std::string &fsType)
 {
     return E_OK;
 }
@@ -400,11 +400,6 @@ int32_t StorageManagerProxy::CreateUserDir(const std::string &path, mode_t mode,
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteUserDir(const std::string &path)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
 {
     return E_OK;
@@ -446,6 +441,11 @@ int32_t StorageManagerProxy::IsOsAccountExists(unsigned int userId, bool &isOsAc
 }
 
 int32_t StorageManagerProxy::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetSystemDataSize(int64_t &systemDataSize)
 {
     return E_OK;
 }
