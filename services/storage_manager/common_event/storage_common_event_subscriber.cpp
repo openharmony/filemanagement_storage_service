@@ -20,6 +20,7 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "storage_service_constant.h"
+#include "storage_service_errno.h"
 #include "storage/storage_status_manager.h"
 #include "dfx_report/storage_dfx_reporter.h"
 #include "scan/storage_manager_scan.h"
@@ -44,6 +45,7 @@ void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
@@ -80,6 +82,11 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         int batteryCapacity = eventData.GetWant().GetIntParam(BATTERY_SOC_KEY, 0);
         HandleBatteryChangedEvent(batteryCapacity);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        int32_t initRet = StorageManagerScan::GetInstance().Init();
+        if (initRet != E_OK) {
+            LOGE("Init StorageManagerScan failed, ret=%{public}d", initRet);
+        }
     }
 }
 
