@@ -1205,6 +1205,18 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountPoint_001, TestSize.
 
     MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
     EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
+    errno = 2;
+    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
+    errno = 22;
+    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
+    EXPECT_EQ(ret, E_OK);
+
+    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
+    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
     errno = 5;
     ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
     EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
