@@ -1904,8 +1904,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t userId = -1;
-    std::string networkId = "sharefile1";
+    std::string networkId;
     auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    userId = 100;
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    networkId = "../";
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 end";
 }

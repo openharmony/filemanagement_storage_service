@@ -1641,8 +1641,8 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("StorageManagerProvider::UMountDisShareFile userId %{public}d out of range", userId);
         return err;
     }
-    if (networkId.find("..") != std::string::npos) {
-        LOGE("umount share file, networkId is invalid.");
+    if (networkId.empty() || networkId.find("..") != std::string::npos) {
+        LOGE("networkId %{public}s is invalid.", networkId.c_str());
         return E_PARAMS_INVALID;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;

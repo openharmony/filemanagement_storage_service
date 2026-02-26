@@ -984,8 +984,8 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
         LOGE("umount share file, userId %{public}d is invalid.", userId);
         return E_PARAMS_INVALID;
     }
-    if (networkId.find("..") != std::string::npos) {
-        LOGE("umount share file, networkId is invalid.");
+    if (networkId.empty() || networkId.find("..") != std::string::npos) {
+        LOGE("networkId %{public}s is invalid.", networkId.c_str());
         return E_PARAMS_INVALID;
     }
     return MountManager::GetInstance().UMountDisShareFile(userId, networkId);
