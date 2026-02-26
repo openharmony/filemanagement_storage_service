@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,14 +19,14 @@ namespace OHOS {
 namespace StorageManager {
 VolumeCore::VolumeCore() {}
 
-VolumeCore::VolumeCore(std::string id, int type, std::string diskId)
+VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &diskId)
 {
     id_ = id;
     type_ = type;
     diskId_ = diskId;
 }
 
-VolumeCore::VolumeCore(std::string id, int type, std::string diskId, int32_t state)
+VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state)
 {
     id_ = id;
     type_ = type;
@@ -34,7 +34,8 @@ VolumeCore::VolumeCore(std::string id, int type, std::string diskId, int32_t sta
     state_ = state;
 }
 
-VolumeCore::VolumeCore(std::string id, int type, std::string diskId, int32_t state, std::string fsType)
+VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state,
+                       const std::string &fsType)
 {
     id_ = id;
     type_ = type;
@@ -53,17 +54,17 @@ std::string VolumeCore::GetId() const
     return id_;
 }
 
-int VolumeCore::GetType()
+int VolumeCore::GetType() const
 {
     return type_;
 }
 
-std::string VolumeCore::GetDiskId()
+std::string VolumeCore::GetDiskId() const
 {
     return diskId_;
 }
 
-int32_t VolumeCore::GetState()
+int32_t VolumeCore::GetState() const
 {
     return state_;
 }

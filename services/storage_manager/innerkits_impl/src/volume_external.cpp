@@ -32,32 +32,32 @@ void VolumeExternal::SetFsType(int32_t fsType)
     fsType_ = fsType;
 }
 
-void VolumeExternal::SetFsUuid(std::string fsUuid)
+void VolumeExternal::SetFsUuid(const std::string &fsUuid)
 {
     fsUuid_ = fsUuid;
 }
 
-void VolumeExternal::SetPath(std::string path)
+void VolumeExternal::SetPath(const std::string &path)
 {
     path_ = path;
 }
 
-void VolumeExternal::SetDescription(std::string description)
+void VolumeExternal::SetDescription(const std::string &description)
 {
     description_ = description;
 }
 
-int32_t VolumeExternal::GetFlags()
+int32_t VolumeExternal::GetFlags() const
 {
     return flags_;
 }
 
-int32_t VolumeExternal::GetFsType()
+int32_t VolumeExternal::GetFsType() const
 {
     return fsType_;
 }
 
-std::string VolumeExternal::GetFsTypeString()
+std::string VolumeExternal::GetFsTypeString() const
 {
     auto it = FS_TYPE_MAP.find(fsType_);
     if (it == FS_TYPE_MAP.end()) {
@@ -66,22 +66,22 @@ std::string VolumeExternal::GetFsTypeString()
     return FS_TYPE_MAP[fsType_];
 }
 
-std::string VolumeExternal::GetUuid()
+std::string VolumeExternal::GetUuid() const
 {
     return fsUuid_;
 }
 
-std::string VolumeExternal::GetPath()
+std::string VolumeExternal::GetPath() const
 {
     return path_;
 }
 
-std::string VolumeExternal::GetDescription()
+std::string VolumeExternal::GetDescription() const
 {
     return description_;
 }
 
-int32_t VolumeExternal::GetFsTypeByStr(const std::string &fsTypeStr)
+int32_t VolumeExternal::GetFsTypeByStr(const std::string &fsTypeStr) const
 {
     for (uint32_t i = 0; i < FS_TYPE_MAP.size(); i++) {
         if (FS_TYPE_MAP[i].compare(fsTypeStr) == 0) {
