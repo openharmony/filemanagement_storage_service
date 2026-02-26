@@ -54,7 +54,7 @@ ohos_executable("gphotofs") {
     "c_utils:utils",
     "hilog:libhilog",
   ]
- 
+
   if (support_open_source_libgphoto2) {
     sources = [
         "src/context.cpp",

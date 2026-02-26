@@ -90,16 +90,15 @@ HWTEST_F(MemoryReclaimManagerTest, WriteToProcFile_AllScenarios, TestSize.Level1
     if (access(devFull.c_str(), F_OK) != 0) {
         GTEST_LOG_(INFO) << "/dev/full not exist, skip write-fail sub-scenario";
         GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
-        return;
+    } else {
+        (void)unlink(linkPath.c_str());
+        int ret = symlink(devFull.c_str(), linkPath.c_str());
+        ASSERT_EQ(ret, 0);
+        EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(linkPath, "test content"));
+        (void)unlink(linkPath.c_str());
+    
+        GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
     }
- 
-    (void)unlink(linkPath.c_str());
-    int ret = symlink(devFull.c_str(), linkPath.c_str());
-    ASSERT_EQ(ret, 0);
-    EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(linkPath, "test content"));
-    (void)unlink(linkPath.c_str());
- 
-    GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
 }
 } // namespace Test
 } // namespace StorageDaemon

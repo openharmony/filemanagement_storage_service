@@ -842,12 +842,6 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
 {
     LOGI("MountManager::UMountDfsDocs start.");
 
-    std::regex pathRegex("^[a-zA-Z0-9_/]+$");
-    if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
-        LOGE("[UMountDfsDocs]invalid relativePath");
-        return E_PARAMS_INVALID;
-    }
-
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
     sync();
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -855,7 +849,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     if (ret != E_OK && errno != ERROR_FILE_NOT_FOUND) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
-        return E_USER_UMOUNT_ERR;
+        return errno;
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT DFS DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -864,7 +858,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
         LOGE("[UMountDfsDocs] Failed to umount");
         return E_NOT_EMPTY_TO_UMOUNT;
     }
-    if (!RmDirRecurse(dstPath)) {
+    if (!rmdir(dstPath.c_str())) {
         LOGE("Failed to remove dir %{public}s", dstPath.c_str());
     }
     return E_OK;

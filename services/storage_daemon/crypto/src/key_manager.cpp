@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <future>
 #include "directory_ex.h"
+#include <dirent.h>
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
@@ -44,6 +45,7 @@ constexpr const char *DATA_DIR = "data/app/";
 constexpr const char *SERVICE_DIR = "data/service/";
 constexpr const char *ENCRYPT_VERSION_DIR = "/latest/encrypted";
 constexpr const char *SEC_DISCARD_DIR = "/latest/sec_discard";
+constexpr const char *NEED_UPDATE_DIR = "/latest/need_update";
 constexpr const char *SHIELD_DIR = "/latest/shield";
 constexpr const char *DESC_DIR = "/key_desc";
 constexpr const char *EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
@@ -394,16 +396,37 @@ bool KeyManager::IsNeedClearKeyFile(std::string file)
     return false;
 }
 
+void KeyManager::ClearKeyFilesForPath(const std::string &path)
+{
+    std::vector<std::string> filesToDelete = {
+        path + FSCRYPT_VERSION_DIR,
+        path + DESC_DIR,
+        path + ENCRYPT_VERSION_DIR,
+        path + NEED_UPDATE_DIR,
+        path + SEC_DISCARD_DIR,
+        path + SHIELD_DIR
+    };
+
+    for (const auto &file : filesToDelete) {
+        if (remove(file.c_str()) != 0 && errno != ENOENT) {
+            LOGE("Failed to delete %{public}s, errno: %{public}d", file.c_str(), errno);
+        }
+    }
+    if (!IsDirRecursivelyEmpty(path.c_str())) {
+        return;
+    }
+    if (remove(path.c_str()) != 0 && errno != ENOENT) {
+        LOGE("Failed to delete dir %{public}s, errno: %{public}d", path.c_str(), errno);
+    }
+}
+
 void KeyManager::ProcUpgradeKey(const std::vector<FileList> &dirInfo)
 {
     LOGI("enter:");
     for (const auto &it : dirInfo) {
         std::string needRestorePath = it.path + "/latest/need_restore";
         if (IsNeedClearKeyFile(needRestorePath)) {
-            bool ret = RmDirRecurse(it.path);
-            if (!ret) {
-                LOGE("remove key dir fail, result is %{public}d, dir %{private}s", ret, it.path.c_str());
-            }
+            ClearKeyFilesForPath(it.path);
         }
     }
 }
@@ -2433,6 +2456,44 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     LOGD("EL5_FILEKEY_MANAGER is not supported");
     return E_OK;
 #endif
+}
+
+bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
+{
+    if (dirPath == nullptr || dirPath[0] == '\0') {
+        LOGI("IsDirEmptyAndLogIfNot: dirPath is null/empty");
+        return true;
+    }
+    DIR* dir = opendir(dirPath);
+    if (!dir) {
+        LOGI("IsDirEmptyAndLogIfNot: opendir failed: %s, errno=%d(%s)",
+             dirPath, errno, strerror(errno));
+        return true;
+    }
+    bool empty = true;
+    struct dirent* ent = nullptr;
+    while ((ent = readdir(dir)) != nullptr) {
+        const char* name = ent->d_name;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+            continue;
+        }
+        empty = false;
+        std::string path = std::string(dirPath) + "/" + name;
+        struct stat st;
+        if (lstat(path.c_str(), &st) < 0) {
+            if (errno == ENOENT) {
+                continue;
+            }
+            LOGE("lstat failed: path=%s errno=%d", path.c_str(), errno);
+            continue;
+        }
+        std::string extraData = "path is: " + path +
+            " uid is: " + std::to_string(st.st_uid) +
+            " gid is: " + std::to_string(st.st_gid);
+        StorageService::StorageRadar::ReportCommonResult("dir is not empty", 0, E_DIR_NOT_EMPTY_ERROR, extraData);
+    }
+    closedir(dir);
+    return empty;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

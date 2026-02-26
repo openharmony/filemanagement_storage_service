@@ -59,24 +59,6 @@ int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
     return ret;
 }
 
-int WrapMkNod(const char *path, mode_t mode, dev_t dev)
-{
-    LOGI("mtp WrapMkNod");
-    if (!IsFilePathValid(path)) {
-        LOGE("Invalid path.");
-        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapMkNod::IsFilePathValid", E_PARAMS_INVALID, "NA");
-        return EINVAL;
-    }
-    bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
-    if (readOnly) {
-        LOGI("WrapMkNod fail");
-        return E_CURRENT_USER_READONLY;
-    }
-    int ret = MtpFileSystem::GetInstance().MkNod(path, mode, dev);
-    LOGI("MkNod ret = %{public}d.", ret);
-    return ret;
-}
-
 int WrapMkDir(const char *path, mode_t mode)
 {
     LOGI("mtp WrapMkDir");
@@ -575,7 +557,7 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
     LOGI("mtp MtpFileSystem");
     fuseOperations_.getattr = WrapGetattr;
     fuseOperations_.readlink = WrapReadLink;
-    fuseOperations_.mknod = WrapMkNod;
+    fuseOperations_.mknod = nullptr;
     fuseOperations_.mkdir = WrapMkDir;
     fuseOperations_.unlink = WrapUnLink;
     fuseOperations_.rmdir = WrapRmDir;
@@ -845,33 +827,6 @@ int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
     return E_OK;
 }
 
-int MtpFileSystem::MkNod(const char *path, mode_t mode, dev_t dev)
-{
-    if (!S_ISREG(mode)) {
-        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::InvalidMode", E_PARAMS_INVALID, "NA");
-        return -EINVAL;
-    }
-    std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
-    int rval = ::open(tmpPath.c_str(), O_CREAT | O_WRONLY, mode);
-    if (rval < 0) {
-        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::OpenTmpFile", errno, "NA");
-        return -errno;
-    }
-    rval = ::close(rval);
-    if (rval < 0) {
-        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::CloseTmpFile", errno, "NA");
-        return -errno;
-    }
-    rval = device_.FilePush(tmpPath, std::string(path));
-    ::unlink(tmpPath.c_str());
-
-    if (rval != 0) {
-        OHOS::StorageService::StorageRadar::ReportMtpResult("MkNod::FilePush", rval, "NA");
-        return rval;
-    }
-    return 0;
-}
-
 int MtpFileSystem::MkDir(const char *path, mode_t mode)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
@@ -937,35 +892,6 @@ int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_fil
     return 0;
 }
 
-int MtpFileSystem::Truncate(const char *path, off_t new_size, struct fuse_file_info *fileInfo)
-{
-    const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
-    int rval = device_.FilePull(std::string(path), tmpPath);
-    if (rval != 0) {
-        ::unlink(tmpPath.c_str());
-        return -rval;
-    }
-
-    rval = ::truncate(tmpPath.c_str(), new_size);
-    if (rval != 0) {
-        int errnoTmp = errno;
-        ::unlink(tmpPath.c_str());
-        return -errnoTmp;
-    }
-
-    rval = device_.FileRemove(std::string(path));
-    if (rval != 0) {
-        ::unlink(tmpPath.c_str());
-        return -rval;
-    }
-    rval = device_.FilePush(tmpPath, std::string(path));
-    ::unlink(tmpPath.c_str());
-    if (rval != 0) {
-        return -rval;
-    }
-    return 0;
-}
-
 int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     std::string tmpBaseName(SmtpfsBaseName(std::string(path)));
@@ -1018,6 +944,31 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     return 0;
 }
 
+// Common helper function to open file with proper error handling
+int MtpFileSystem::OpenFileInternal(const char *funcName, const std::string &tmpPath,
+    struct fuse_file_info *fileInfo)
+{
+    char realPath[PATH_MAX] = {0};
+    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
+        LOGE("MtpFileSystem: %{public}s realpath error, errno=%{public}d", funcName, errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult(std::string(funcName) + "::RealPath", errno, "NA");
+        return -errno;
+    }
+
+    int fd = ::open(realPath, fileInfo->flags);
+    if (fd < 0) {
+        auto ret = ::unlink(realPath);
+        if (ret != E_OK) {
+            LOGE("MtpFileSystem: %{public}s unlink error, errno=%{public}d", funcName, ret);
+        }
+        LOGE("MtpFileSystem: %{public}s open error, errno=%{public}d", funcName, errno);
+        OHOS::StorageService::StorageRadar::ReportMtpResult(std::string(funcName) + "::Open", errno, "NA");
+        return -errno;
+    }
+    fileInfo->fh = static_cast<uint32_t>(fd);
+    return 0;
+}
+
 int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
@@ -1048,25 +999,18 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     }
 
     // we create the tmp file even if we can use partial get/send to have a valid file descriptor
-    char realPath[PATH_MAX] = {0};
-    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
-        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
-        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::RealPath", errno, "NA");
-        return -errno;
+    int ret = OpenFileInternal("OpenFile", tmpPath, fileInfo);
+    if (ret != 0) {
+        return ret;
     }
-    int fd = ::open(realPath, fileInfo->flags);
-    if (fd < 0) {
-        ::unlink(realPath);
-        LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
-        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenFile::Open", errno, "NA");
-        return -errno;
-    }
-    fileInfo->fh = static_cast<uint32_t>(fd);
 
     if (tmpFile != nullptr) {
-        tmpFile->AddFileDescriptor(fd);
+        tmpFile->AddFileDescriptor(fileInfo->fh);
     } else {
-        tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, std::string(realPath), fd));
+        char realPath[PATH_MAX] = {0};
+        if (realpath(tmpPath.c_str(), realPath) != nullptr) {
+            tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, std::string(realPath), fileInfo->fh));
+        }
     }
     LOGI("MtpFileSystem: OpenFile success");
     return 0;
@@ -1112,22 +1056,44 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
         flags |= O_TRUNC;
     }
     fileInfo->flags = static_cast<int>(flags);
-    char realPath[PATH_MAX] = {0};
-    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
-        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
-        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenThumb::RealPath", errno, "NA");
-        return -errno;
+
+    int ret = OpenFileInternal("OpenThumb", tmpPath, fileInfo);
+    if (ret != 0) {
+        return ret;
     }
-    fd = ::open(realPath, fileInfo->flags);
-    if (fd < 0) {
-        ::unlink(realPath);
-        LOGE("MtpFileSystem: OpenThumb error, errno=%{public}d", errno);
-        OHOS::StorageService::StorageRadar::ReportMtpResult("OpenThumb::Open", errno, "NA");
-        return -errno;
-    }
-    fileInfo->fh = static_cast<uint32_t>(fd);
     LOGI("MtpFileSystem: OpenThumb success");
     return E_OK;
+}
+
+// Helper function to upload temporary file to MTP device
+int MtpFileSystem::UploadTemporaryFile(const std::string &stdPath, const std::string &tmpPath,
+    const struct stat &fileStat)
+{
+    device_.SetUploadRecord(stdPath, "sending");
+    if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
+        return device_.FilePushAsync(tmpPath, stdPath);
+    }
+    int rval = device_.FilePush(tmpPath, stdPath);
+    usleep(DEVICE_WRITE_DELAY_US);
+    if (rval != 0) {
+        LOGE("FilePush to mtp device fail");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
+        device_.SetUploadRecord(stdPath, "fail");
+        CleanupTemporaryFile(stdPath, tmpPath);
+        return -rval;
+    }
+    LOGI("FilePush to mtp device success");
+    return E_OK;
+}
+
+// Helper function to cleanup temporary file
+void MtpFileSystem::CleanupTemporaryFile(const std::string &stdPath, const std::string &tmpPath)
+{
+    auto unlinkRet = ::unlink(tmpPath.c_str());
+    if (unlinkRet != E_OK) {
+        LOGE("MtpFileSystem: CleanupTemporaryFile unlink error, errno=%{public}d", unlinkRet);
+    }
+    tmpFilesPool_.RemoveFile(stdPath);
 }
 
 int MtpFileSystem::ReadThumb(const std::string &path, char *buf, size_t size)
@@ -1220,6 +1186,7 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
         device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
+
     const bool modIf = tmpFile->IsModified();
     const std::string tmpPath = tmpFile->PathTmp();
     struct stat fileStat;
@@ -1230,26 +1197,16 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
         device_.SetUploadRecord(stdPath, "fail");
         return -EINVAL;
     }
+
     if (modIf && fileStat.st_size != 0) {
-        device_.SetUploadRecord(stdPath, "sending");
-        if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
-            return device_.FilePushAsync(tmpPath, stdPath);
+        int ret = UploadTemporaryFile(stdPath, tmpPath, fileStat);
+        if (ret != E_OK) {
+            return ret;
         }
-        int rval = device_.FilePush(tmpPath, stdPath);
-        usleep(DEVICE_WRITE_DELAY_US);
-        if (rval != 0) {
-            LOGE("FilePush  to mtp device fail");
-            OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
-            device_.SetUploadRecord(stdPath, "fail");
-            ::unlink(tmpPath.c_str());
-            tmpFilesPool_.RemoveFile(stdPath);
-            return -rval;
-        }
-        LOGI("FilePush to mtp device success");
     }
+
     device_.SetUploadRecord(stdPath, "success");
-    ::unlink(tmpPath.c_str());
-    tmpFilesPool_.RemoveFile(stdPath);
+    CleanupTemporaryFile(stdPath, tmpPath);
     LOGI("MtpFileSystem: Release success");
     return 0;
 }

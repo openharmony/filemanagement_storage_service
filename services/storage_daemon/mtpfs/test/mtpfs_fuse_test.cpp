@@ -922,5 +922,211 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapCreate_001, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapCreate_001 end";
 }
+ 
+/**
+ * @tc.name: MtpfsFuseTest_OpenFileInternal_001
+ * @tc.desc: Test OpenFileInternal with invalid tmpPath
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_OpenFileInternal_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_OpenFileInternal_001 start";
+ 
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    std::string invalidPath = "/nonexistent/path/to/file";
+    struct fuse_file_info fi = {0};
+    fi.flags = O_RDONLY;
+ 
+    int result = instance.OpenFileInternal("OpenFileInternalTest", invalidPath, &fi);
+    EXPECT_NE(result, 0);
+ 
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_OpenFileInternal_001 end";
+}
+ 
+/**
+ * @tc.name: MtpfsFuseTest_CleanupTemporaryFile_001
+ * @tc.desc: Test CleanupTemporaryFile function
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_CleanupTemporaryFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_001 start";
+ 
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    std::string stdPath = "/test/path/file.txt";
+    std::string tmpPath = "/tmp/test_mtpfs_cleanup";
+ 
+    // Create a temporary file
+    {
+        std::ofstream file(tmpPath);
+        EXPECT_TRUE(file.is_open());
+    }
+    EXPECT_EQ(access(tmpPath.c_str(), 0), 0);
+ 
+    // Test CleanupTemporaryFile - should delete the tmp file
+    instance.CleanupTemporaryFile(stdPath, tmpPath);
+ 
+    // Verify tmp file is deleted
+    EXPECT_NE(access(tmpPath.c_str(), 0), 0);
+ 
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_001 end";
+}
+ 
+/**
+ * @tc.name: MtpfsFuseTest_CleanupTemporaryFile_002
+ * @tc.desc: Test CleanupTemporaryFile with non-existent file
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_CleanupTemporaryFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_002 start";
+ 
+    MtpFileSystem& instance = MtpFileSystem::GetInstance();
+    std::string stdPath = "/test/path/file2.txt";
+    std::string tmpPath = "/tmp/nonexistent_file";
+ 
+    // Test CleanupTemporaryFile with non-existent file (should not crash)
+    instance.CleanupTemporaryFile(stdPath, tmpPath);
+ 
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_002 end";
+}
+ 
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_001
+ * @tc.desc: Verify IsFilePathValid returns true for normal relative path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_001 start";
+    EXPECT_TRUE(IsFilePathValid("a.txt"));
+    EXPECT_TRUE(IsFilePathValid("dir/a.txt"));
+    EXPECT_TRUE(IsFilePathValid("dir/subdir/file.bin"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_002
+ * @tc.desc: Verify IsFilePathValid rejects empty path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_002 start";
+    EXPECT_FALSE(IsFilePathValid(""));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_002 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_003
+ * @tc.desc: Verify IsFilePathValid rejects ../ at beginning and in the middle.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_003 start";
+    EXPECT_FALSE(IsFilePathValid("../a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir/../a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir/sub/../../a.txt"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_003 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_004
+ * @tc.desc: Verify IsFilePathValid rejects /.. at tail.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_004 start";
+    EXPECT_FALSE(IsFilePathValid("dir/.."));
+    EXPECT_FALSE(IsFilePathValid("dir/sub/.."));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_004 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_005
+ * @tc.desc: Verify IsFilePathValid rejects Windows style ..\ path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_005 start";
+    EXPECT_FALSE(IsFilePathValid("..\\a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir\\..\\a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir\\sub\\..\\..\\a.txt"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_005 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_006
+ * @tc.desc: Verify IsFilePathValid rejects current directory reference ./ and /./.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_006 start";
+    EXPECT_FALSE(IsFilePathValid("./a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir/./a.txt"));
+    EXPECT_FALSE(IsFilePathValid("dir/./sub/file.txt"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_006 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_007
+ * @tc.desc: Verify IsFilePathValid rejects URL-encoded traversal %2e%2e%2f.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_007 start";
+    EXPECT_FALSE(IsFilePathValid("%2e%2e%2fsecret.txt"));          // "../secret.txt"
+    EXPECT_FALSE(IsFilePathValid("dir/%2e%2e%2fsecret.txt"));      // "dir/../secret.txt"
+    EXPECT_FALSE(IsFilePathValid("%2e%2e%5csecret.txt"));          // "..\secret.txt"（%5c == '\')
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_007 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_008
+ * @tc.desc: Verify IsFilePathValid rejects double URL-encoded traversal %252e%252e%252f.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_008 start";
+    EXPECT_FALSE(IsFilePathValid("%252e%252e%252fsecret.txt"));     // "%2e%2e%2fsecret.txt" -> "../secret.txt"
+    EXPECT_FALSE(IsFilePathValid("dir/%252e%252e%252fsecret.txt"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePath_008 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_010
+ * @tc.desc: Verify IsFilePathValid does not over-block benign names containing ".." but not as a segment.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_010 start";
+    EXPECT_TRUE(IsFilePathValid("abc..def"));          // 不是 ".." 段
+    EXPECT_TRUE(IsFilePathValid("dir/abc..def"));
+    EXPECT_TRUE(IsFilePathValid("dir..name/file.txt")); // 不是 ".." 段
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_010 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsFilePathValid_011
+ * @tc.desc: Verify IsFilePathValid rejects mixed separators traversal patterns.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsFilePathValid_011, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_011 start";
+    EXPECT_FALSE(IsFilePathValid("dir\\..\\/a.txt"));   // 混合分隔符仍应识别为 ".." 段
+    EXPECT_FALSE(IsFilePathValid("dir/..\\a.txt"));
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsFilePathValid_011 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

@@ -45,6 +45,7 @@ bool SmtpfsRemoveDir(const std::string &dirName);
 bool SmtpfsCheckDir(const std::string &path);
 bool SmtpfsUsbDevPath(const std::string &path, uint8_t *bnum, uint8_t *dnum);
 bool IsFilePathValid(const std::string &filePath);
+void DelTemp(const std::string &path);
 
 LIBMTP_raw_device_t *SmtpfsRawDeviceNew(const std::string &path);
 void SmtpfsRawDeviceFree(LIBMTP_raw_device_t *device);

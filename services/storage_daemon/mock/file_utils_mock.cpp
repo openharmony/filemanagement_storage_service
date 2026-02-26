@@ -139,19 +139,9 @@ bool IsTempFolder(const std::string &path, const std::string &sub)
     return IFileUtilMoc::fileUtilMoc->IsTempFolder(path, sub);
 }
 
-void DelTemp(const std::string &path)
-{
-    return;
-}
-
 bool IsPathMounted(std::string &path)
 {
     return IFileUtilMoc::fileUtilMoc->IsPathMounted(path);
-}
-
-bool DelFolder(const std::string &path)
-{
-    return IFileUtilMoc::fileUtilMoc->DelFolder(path);
 }
 
 std::string ProcessToString(std::vector<ProcessInfo> &processList)

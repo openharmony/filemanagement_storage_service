@@ -20,8 +20,10 @@
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
 #include <dlfcn.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <vector>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <thread>
@@ -903,25 +905,95 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     return E_OK;
 }
 
+static void DeleteKeyFiles(const std::string &basePath, const std::vector<std::string> &fileList)
+{
+    for (const auto &file : fileList) {
+        unlink((basePath + file).c_str());
+    }
+}
+
+void StorageDaemon::ClearKeyDirInfo(const std::string &path)
+{
+    std::vector<std::string> filesToDelete = {
+        "/fscrypt_version",
+        "/key_desc",
+        "/latest/encrypted",
+        "/latest/need_update",
+        "/latest/sec_discard",
+        "/latest/shield"
+    };
+    DeleteKeyFiles(path, filesToDelete);
+
+    std::string dir = path + PATH_LATEST;
+    if (!KeyManager::GetInstance().IsDirRecursivelyEmpty(dir.c_str())) {
+        return;
+    }
+    rmdir(dir.c_str());
+    if (KeyManager::GetInstance().IsDirRecursivelyEmpty(path.c_str())) {
+            rmdir(path.c_str());
+    }
+}
+
+void StorageDaemon::ClearKeyDir(const std::string &path)
+{
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        LOGE("Failed to open directory %{public}s", path.c_str());
+        return;
+    }
+
+    LOGI("First-level directories under %{public}s:", path.c_str());
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != nullptr) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+            continue;
+        }
+
+        if (ent->d_type == DT_DIR) {
+            std::string fullPath = path + "/" + ent->d_name;
+            ClearKeyDirInfo(fullPath);
+        }
+    }
+    closedir(dir);
+    if (KeyManager::GetInstance().IsDirRecursivelyEmpty(path.c_str())) {
+        rmdir(path.c_str());
+    }
+}
+
 void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll)
 {
     std::string natoKey = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type);
+
     if (!isClearAll) {
-        RmDirRecurse(natoKey + PATH_LATEST);
+        // Only delete 4 files in latest directory
+        std::vector<std::string> filesToDelete = {
+            "/latest/encrypted",
+            "/latest/need_update",
+            "/latest/sec_discard",
+            "/latest/shield"
+        };
+        DeleteKeyFiles(natoKey, filesToDelete);
+        std::string dir = natoKey + PATH_LATEST;
+        if (KeyManager::GetInstance().IsDirRecursivelyEmpty(dir.c_str())) {
+            rmdir(dir.c_str());
+        }
         return;
     }
-    RmDirRecurse(natoKey);
+
+    // Delete all 6 key files
+    ClearKeyDirInfo(natoKey);
+
     if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR)) {
-        RmDirRecurse(NATO_EL2_DIR);
-        RmDirRecurse(std::string(NATO_EL2_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL2_DIR));
+        ClearKeyDir(std::string(NATO_EL2_DIR) + "_bak");
     }
     if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR)) {
-        RmDirRecurse(NATO_EL3_DIR);
-        RmDirRecurse(std::string(NATO_EL3_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL3_DIR));
+        ClearKeyDir(std::string(NATO_EL3_DIR) + "_bak");
     }
     if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR)) {
-        RmDirRecurse(NATO_EL4_DIR);
-        RmDirRecurse(std::string(NATO_EL4_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL4_DIR));
+        ClearKeyDir(std::string(NATO_EL4_DIR) + "_bak");
     }
 }
 

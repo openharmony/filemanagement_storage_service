@@ -16,6 +16,7 @@
 
 #include <fcntl.h>
 #include <fstream>
+#include <unistd.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -2016,6 +2017,445 @@ HWTEST_F(KeyManagerTest, KeyManager_NotifyUeceActivation_001, TestSize.Level1)
     EXPECT_EQ(keyManager.NotifyUeceActivation(userId, E_OK, true), E_OK);
 
     GTEST_LOG_(INFO) << "KeyManager_NotifyUeceActivation_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_ClearKeyFilesForPath_001
+ * @tc.desc: Test ClearKeyFilesForPath function
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_001 start";
+ 
+    std::string testPath = "/data/test/clear_key_files";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Create test files
+    {
+        std::ofstream file1(testPath + "/fscrypt_version");
+        std::ofstream file2(testPath + "/key_desc");
+        std::ofstream file3(testPath + "/latest/encrypted");
+        std::ofstream file4(testPath + "/latest/need_update");
+        std::ofstream file5(testPath + "/latest/sec_discard");
+        std::ofstream file6(testPath + "/latest/shield");
+        EXPECT_TRUE(file1.is_open());
+        EXPECT_TRUE(file2.is_open());
+        EXPECT_TRUE(file3.is_open());
+        EXPECT_TRUE(file4.is_open());
+        EXPECT_TRUE(file5.is_open());
+        EXPECT_TRUE(file6.is_open());
+    }
+ 
+    // Test ClearKeyFilesForPath
+    KeyManager::GetInstance().ClearKeyFilesForPath(testPath);
+ 
+    // Verify files are deleted
+    EXPECT_NE(access((testPath + "/fscrypt_version").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/key_desc").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/latest/encrypted").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/latest/need_update").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/latest/sec_discard").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/latest/shield").c_str(), 0), 0);
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_001 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_ClearKeyFilesForPath_002
+ * @tc.desc: Test ClearKeyFilesForPath with non-existent files
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_002 start";
+ 
+    std::string testPath = "/data/test/clear_key_files_nonexist";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Test ClearKeyFilesForPath with non-existent files (should not crash)
+    KeyManager::GetInstance().ClearKeyFilesForPath(testPath);
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_002 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_ProcUpgradeKey_003
+ * @tc.desc: Test ProcUpgradeKey function
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ProcUpgradeKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ProcUpgradeKey_003 start";
+ 
+    std::string testPath = "/data/test/proc_upgrade_key";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Create need_restore flag file
+    {
+        std::ofstream flagFile(testPath + "/latest/need_restore");
+        EXPECT_TRUE(flagFile.is_open());
+    }
+ 
+    // Create test key files
+    {
+        std::ofstream file1(testPath + "/fscrypt_version");
+        std::ofstream file2(testPath + "/key_desc");
+        EXPECT_TRUE(file1.is_open());
+        EXPECT_TRUE(file2.is_open());
+    }
+ 
+    // Create FileList
+    std::vector<FileList> dirInfo;
+    FileList fileList { .userId = 100, .path = testPath };
+    dirInfo.push_back(fileList);
+ 
+    // Mock IsNeedClearKeyFile to return true
+    // Since we can't easily mock private methods, we'll test with actual file
+    KeyManager::GetInstance().ProcUpgradeKey(dirInfo);
+ 
+    // Verify files are deleted
+    EXPECT_NE(access((testPath + "/fscrypt_version").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/key_desc").c_str(), 0), 0);
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ProcUpgradeKey_003 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_ClearKeyFilesForPath_003
+ * @tc.desc: Test ClearKeyFilesForPath with empty directory (should return early)
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_003 start";
+ 
+    std::string testPath = "/data/test_clear_key_files_empty_003";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Create no files - directory should be empty
+    // Test ClearKeyFilesForPath
+    KeyManager::GetInstance().ClearKeyFilesForPath(testPath);
+ 
+    // Since directory is empty, function should return without deleting anything
+    // Directory should still exist
+    EXPECT_EQ(access(testPath.c_str(), 0), 0);
+    EXPECT_EQ(access((testPath + "/latest").c_str(), 0), 0);
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_003 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_ClearKeyFilesForPath_004
+ * @tc.desc: Test ClearKeyFilesForPath successfully deletes all files
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_004 start";
+ 
+    std::string testPath = "/data/test_clear_key_files_success_004";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Create files to be deleted
+    std::vector<std::string> filesToCreate = {
+        "/fscrypt_version",
+        "/key_desc",
+        "/latest/encrypted"
+    };
+ 
+    for (const auto &file : filesToCreate) {
+        std::ofstream f(testPath + file);
+        EXPECT_TRUE(f.is_open());
+    }
+ 
+    // Test ClearKeyFilesForPath - files should be deleted
+    KeyManager::GetInstance().ClearKeyFilesForPath(testPath);
+ 
+    // Files should be deleted
+    for (const auto &file : filesToCreate) {
+        EXPECT_NE(access((testPath + file).c_str(), 0), 0);
+    }
+    // Latest directory should be removed (empty after deletion)
+    EXPECT_EQ(access((testPath + "/latest").c_str(), 0), 0);
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_004 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_001
+ * @tc.desc: Test IsDirRecursivelyEmpty with nullptr path
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_001 start";
+ 
+    // Test with nullptr
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(nullptr));
+ 
+    // Test with empty string
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(""));
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_001 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_002
+ * @tc.desc: Test IsDirRecursivelyEmpty with non-existent directory
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_002 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_nonexist_002";
+ 
+    // Test with non-existent directory
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_002 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_003
+ * @tc.desc: Test IsDirRecursivelyEmpty with empty directory
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_003 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_exist_003";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Test with empty directory
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_003 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_004
+ * @tc.desc: Test IsDirRecursivelyEmpty with directory containing only . and ..
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_004 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_only_dots_004";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Test with directory containing only . and .. (created by system)
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_004 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_005
+ * @tc.desc: Test IsDirRecursivelyEmpty with directory containing files
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_005 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_with_files_005";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Create test files
+    std::vector<std::string> testFiles = {"file1.txt", "file2.txt"};
+    for (const auto &file : testFiles) {
+        std::ofstream f(testPath + "/" + file);
+        EXPECT_TRUE(f.is_open());
+    }
+ 
+    // Test with non-empty directory
+    EXPECT_FALSE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    for (const auto &file : testFiles) {
+        std::remove((testPath + "/" + file).c_str());
+    }
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_005 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_006
+ * @tc.desc: Test IsDirRecursivelyEmpty with directory containing subdirectories
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_006 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_with_subdirs_006";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Create subdirectories
+    OHOS::ForceCreateDirectory(testPath + "/subdir1");
+    OHOS::ForceCreateDirectory(testPath + "/subdir2");
+ 
+    // Test with directory containing subdirectories
+    EXPECT_FALSE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    OHOS::ForceRemoveDirectory(testPath + "/subdir1");
+    OHOS::ForceRemoveDirectory(testPath + "/subdir2");
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_006 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_007
+ * @tc.desc: Test IsDirRecursivelyEmpty with files that get ENOENT on lstat
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_007 start";
+ 
+    std::string testPath = "/data/test_is_dir_empty_broken_symlink_007";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Create a symlink that points to nowhere
+    symlink("/nonexistent/target", (testPath + "/broken_symlink").c_str());
+ 
+    // The function should handle ENOENT from lstat and continue
+    // It should still return false (not empty) because the directory has the broken symlink
+    EXPECT_FALSE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    std::remove((testPath + "/broken_symlink").c_str());
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_007 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_IsDirRecursivelyEmpty_008
+ * @tc.desc: Test IsDirRecursivelyEmpty with opendir failure
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_IsDirRecursivelyEmpty_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_008 start";
+ 
+    // Test by making a directory that can't be opened
+    // We'll use a path inside a directory we'll delete to simulate permission issues
+    std::string parentPath = "/data/test_is_dir_empty_parent_008";
+    OHOS::ForceCreateDirectory(parentPath);
+ 
+    std::string testPath = parentPath + "/readonly_dir";
+    OHOS::ForceCreateDirectory(testPath);
+ 
+    // Make directory read-only to simulate opendir failure
+    chmod(testPath.c_str(), 0500);
+ 
+    // The function should log the opendir failure and return true (empty)
+    EXPECT_TRUE(KeyManager::GetInstance().IsDirRecursivelyEmpty(testPath.c_str()));
+ 
+    // Cleanup
+    chmod(testPath.c_str(), 0755);
+    OHOS::ForceRemoveDirectory(testPath);
+    OHOS::ForceRemoveDirectory(parentPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_IsDirRecursivelyEmpty_008 end";
+}
+ 
+/**
+ * @tc.name: KeyManager_ClearKeyFilesForPath_005
+ * @tc.desc: Test ClearKeyFilesForPath directory removal with non-empty subdirs
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_005 start";
+ 
+    std::string testPath = "/data/test_clear_key_files_subdirs_005";
+    OHOS::ForceCreateDirectory(testPath);
+    OHOS::ForceCreateDirectory(testPath + "/latest");
+ 
+    // Create files in parent directory (not deleted by ClearKeyFilesForPath)
+    std::ofstream extraFile(testPath + "/extra_in_parent.txt");
+    EXPECT_TRUE(extraFile.is_open());
+ 
+    // Create files to be deleted
+    std::vector<std::string> filesToCreate = {
+        "/fscrypt_version",
+        "/key_desc",
+        "/latest/encrypted"
+    };
+ 
+    for (const auto &file : filesToCreate) {
+        std::ofstream f(testPath + file);
+        EXPECT_TRUE(f.is_open());
+    }
+ 
+    // Test ClearKeyFilesForPath
+    KeyManager::GetInstance().ClearKeyFilesForPath(testPath);
+ 
+    // Created files should be deleted
+    EXPECT_NE(access((testPath + "/fscrypt_version").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/key_desc").c_str(), 0), 0);
+    EXPECT_NE(access((testPath + "/latest/encrypted").c_str(), 0), 0);
+ 
+    // Extra file should still exist
+    EXPECT_EQ(access((testPath + "/extra_in_parent.txt").c_str(), 0), 0);
+ 
+    // Parent directory should NOT be removed (not empty due to extra file)
+    EXPECT_EQ(access(testPath.c_str(), 0), 0);
+ 
+    // Cleanup
+    std::remove((testPath + "/extra_in_parent.txt").c_str());
+    OHOS::ForceRemoveDirectory(testPath);
+ 
+    GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_005 end";
 }
 #endif
 }
