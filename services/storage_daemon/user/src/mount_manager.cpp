@@ -1336,9 +1336,8 @@ int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (const auto &mountNodeInfo : mountNodeInfos) {
         std::string path = sandboxRootPath + mountNodeInfo.dstPath;
-        size_t pos = path.find_last_of('/');
-        if (pos != std::string::npos && pos == path.length() - 1) {
-            path.erase(pos);
+        if (path.back() == '/') {
+            path.pop_back();
         }
         auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
         int32_t res = UMount(path);
