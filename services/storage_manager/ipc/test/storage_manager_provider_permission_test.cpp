@@ -1329,7 +1329,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFil
     int32_t userId = -1;
     std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
     auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_USERID_RANGE);
 
     userId = 100;
     shareFiles = {{{"../", "../"}}};
@@ -1353,8 +1353,12 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     ScopedTestUid uidGuard(1009);
     int32_t userId = -1;
-    std::string networkId = "sharefile1";
+    std::string networkId;
     auto ret = storageManagerProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = 100;
+    ret = storageManagerProviderTest_->UMountDisShareFile(userId, networkId);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
     userId = 100;
