@@ -79,6 +79,7 @@ taihe_shared_library("key_manager_taihe") {
 
   sources = get_target_outputs(":run_taihe")
   sources += [
+    "${storage_service_path}/interfaces/kits/taihe/storage_statistics/src/storageStatistics_taihe_error.cpp",
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
     "src/ani_constructor.cpp",
     "src/ohos.file.keyManager.impl.cpp",
