@@ -66,6 +66,7 @@ taihe_shared_library("key_manager_taihe") {
     "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager/include",
+    "${storage_service_path}/interfaces/kits/taihe/storage_statistics/include",
     "${storage_service_path}/services/storage_manager/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
     "${storage_service_path}/services/common/include",
