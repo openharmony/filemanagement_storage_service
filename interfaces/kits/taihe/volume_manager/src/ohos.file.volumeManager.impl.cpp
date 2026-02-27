@@ -24,37 +24,31 @@ ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid)
     auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("StorageManagerConnect instance failed");
+        taihe::set_error("Get StorageManagerConnect instance failed");
         return { "", "", "", "", true, 0, "", "" };
     }
-
     int32_t errNum = instance->GetVolumeByUuid(uuid.c_str(), *volumeInfo);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeByUuid failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { "", "", "", "", true, 0, "", "" };
     }
-
-    return { volumeInfo->GetId(), volumeInfo->GetUuid(), volumeInfo->GetDiskId(),
-        volumeInfo->GetDescription(), true, volumeInfo->GetState(),
-        volumeInfo->GetPath(), volumeInfo->GetFsTypeString() };
+    return { volumeInfo->GetId(), volumeInfo->GetUuid(), volumeInfo->GetDiskId(), volumeInfo->GetDescription(),
+        true, volumeInfo->GetState(), volumeInfo->GetPath(), volumeInfo->GetFsTypeString() };
 }
 
 taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 {
     auto volumeInfo = std::make_shared<std::vector<OHOS::StorageManager::VolumeExternal>>();
-
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("Get StorageManagerConnect instacne failed");
+        taihe::set_error("Get StorageManagerConnect instance failed");
         return taihe::array<ohos::file::volumeManager::Volume>::make(0, ohos::file::volumeManager::Volume{});
     }
-
     int32_t errNum = instance->GetAllVolumes(*volumeInfo);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetAllVolumes failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return taihe::array<ohos::file::volumeManager::Volume>::make(0, ohos::file::volumeManager::Volume{});
     }
-
     auto result = taihe::array<ohos::file::volumeManager::Volume>::
         make(volumeInfo->size(), ohos::file::volumeManager::Volume{});
     auto volumeTransformer = [](auto &vol) -> ohos::file::volumeManager::Volume {
@@ -62,7 +56,6 @@ taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
             vol.GetPath(), vol.GetFsTypeString()};
     };
     std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(), volumeTransformer);
-
     return taihe::array<ohos::file::volumeManager::Volume>(taihe::copy_data_t{}, result.data(), result.size());
 }
 
@@ -77,6 +70,7 @@ void FormatSync(::taihe::string_view volumeId, ::taihe::string_view fsType)
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -95,14 +89,13 @@ void GetVolumeByIdSync(::taihe::string_view volumeId)
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
-
     auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-
     int32_t errNum = instance->GetVolumeById(volumeIdString, *volumeInfo);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
@@ -120,6 +113,7 @@ void MountSync(::taihe::string_view volumeId)
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -141,10 +135,10 @@ void UnmountSync(::taihe::string_view volumeId)
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-
     int32_t errNum = instance->Unmount(volumeIdString);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
@@ -162,6 +156,7 @@ void PartitionSync(::taihe::string_view diskId, int32_t type)
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -181,9 +176,9 @@ void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view de
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
-
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
+        taihe::set_error("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
