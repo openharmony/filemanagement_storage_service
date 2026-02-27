@@ -1336,13 +1336,17 @@ int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (const auto &mountNodeInfo : mountNodeInfos) {
         std::string path = sandboxRootPath + mountNodeInfo.dstPath;
+        if (path.back() == '/') {
+            path.pop_back();
+        }
         auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
         int32_t res = UMount(path);
-        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-            std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
+        int32_t tmpErrno = errno;
+        if (res != E_OK && tmpErrno != ENOENT && tmpErrno != EINVAL) {
+            std::string extraData = "path=" + path + ",kernelCode=" + to_string(tmpErrno);
             StorageRadar::ReportUserManager("ClearSecondMountPoint", userId, E_UMOUNT_SANDBOX, extraData);
-            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.",
-                 path.c_str(), errno, res);
+            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.", path.c_str(),
+                 tmpErrno, res);
             return E_UMOUNT_SANDBOX;
         }
         StorageService::StorageRadar::ReportDuration("umount-" + path, startUmountTime, userId);
