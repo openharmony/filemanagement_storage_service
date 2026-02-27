@@ -22,7 +22,8 @@ void DeactivateUserKey(int64_t userId)
 {
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        taihe::set_error("Get StorageManagerConnect instance failed");
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
     uint32_t userId_i = static_cast<uint32_t>(userId);
