@@ -157,7 +157,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         return ret;
     }
 
-    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
         return ret;
@@ -194,6 +194,11 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             break;
         }
         if (ret != E_OK) {
+            return ret;
+        }
+        ret = DoStoreAndUpdate(userId, {}, {}, type);
+        if (ret != E_OK) {
+            LOGE("DoStoreAndUpdate failed, userId:%{public}u, ret:%{public}d, type:%{public}u", userId, ret, type);
             return ret;
         }
     }
@@ -538,10 +543,14 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         return E_OK;
     }
 
-    LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
-    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
+    LOGW("prepare user dirs for update, user:%{public}u, flags:%{public}u", userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
+        return ret;
+    }
+    ret = DoStoreAndUpdate(userId, token, secret, type);
+    if (ret != E_OK) {
+        LOGE("DoStoreAndUpdate failed, ret:%{public}d, userId:%{public}u, type:%{public}u", ret, userId, type);
         return ret;
     }
     if (flags == IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
@@ -894,7 +903,6 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for update scene for userId=%{public}d success.", userId);
-
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
         LOGE("NotifyUeceActivation failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
@@ -1423,7 +1431,31 @@ int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
         LOGE("dir is not permission.");
         return E_PARAMS_INVALID;
     }
-    
+    return E_OK;
+}
+
+int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret,
+                                        KeyType keyType)
+{
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    uint64_t secureUid = { 0 };
+    if (!KeyManager::GetInstance().GetSecureUid(userId, secureUid)) {
+        LOGE("GetSecureUid failed, userId:%{public}u", userId);
+    }
+    UserTokenSecret userTokenSecret = { token, secret, secret, secureUid };
+    auto ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecret, keyType);
+    if (ret != E_OK) {
+        LOGE("UpdateUserAuth failed, ret:%{public}d, userId:%{public}u, keyType:%{public}u", ret, userId, keyType);
+        return ret;
+    }
+    ret = KeyManager::GetInstance().UpdateKeyContextByKeyType(userId, keyType);
+    if (ret != E_OK) {
+        LOGE("UpdateKeyContext failed, ret:%{public}d, userId:%{public}u, keyType:%{public}u", ret, userId, keyType);
+        return ret;
+    }
+#endif
     return E_OK;
 }
 } // namespace StorageDaemon

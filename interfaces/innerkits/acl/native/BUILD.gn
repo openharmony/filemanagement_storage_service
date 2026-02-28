@@ -43,6 +43,7 @@ ohos_shared_library("storage_manager_acl") {
     "${storage_daemon_path}/file_sharing/src/acl.cpp",
     "${storage_daemon_path}/file_sharing/src/setacl.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
+    "${storage_daemon_path}/utils/storage_radar.cpp",
   ]
 
   defines = [
@@ -63,6 +64,7 @@ ohos_shared_library("storage_manager_acl") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "hisysevent:libhisysevent"
   ]
 
   innerapi_tags = [ "chipsetsdk_sp_indirect" ]

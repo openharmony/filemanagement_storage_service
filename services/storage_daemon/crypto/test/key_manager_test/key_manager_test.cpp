@@ -2458,4 +2458,60 @@ HWTEST_F(KeyManagerTest, KeyManager_ClearKeyFilesForPath_005, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_ClearKeyFilesForPath_005 end";
 }
 #endif
+
+/**
+ * @tc.name: KeyManager_UpdateUserAuthByKeyType_001
+ * @tc.desc: Verify the UpdateUserAuthByKeyType function when keyType is EL5_KEY.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_UpdateUserAuthByKeyType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUserAuthByKeyType_001 start";
+    auto &keyManager = KeyManager::GetInstance();
+
+    uint32_t userId = 100;
+    UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'},
+        .oldSecret = {'o', 'l', 'd'},
+        .newSecret = {'n', 'e', 'w'},
+        .secureUid = 12345};
+
+    // Test EL5_KEY type - UpdateESecret success
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    int ret = keyManager.UpdateUserAuthByKeyType(userId, userTokenSecret, EL5_KEY);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUserAuthByKeyType_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateKeyContextByKeyType_002
+ * @tc.desc: Verify the UpdateKeyContextByKeyType function when keyType is not EL5_KEY.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(KeyManagerTest, KeyManager_UpdateKeyContextByKeyType_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContextByKeyType_002 start";
+    auto &keyManager = KeyManager::GetInstance();
+
+    uint32_t userId = 100;
+
+    // Test EL2_KEY type
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    int ret = keyManager.UpdateKeyContextByKeyType(userId, EL2_KEY);
+    EXPECT_EQ(ret, 0);
+
+    // Test EL3_KEY type
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    ret = keyManager.UpdateKeyContextByKeyType(userId, EL3_KEY);
+    EXPECT_EQ(ret, 0);
+
+    // Test EL4_KEY type
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    ret = keyManager.UpdateKeyContextByKeyType(userId, EL4_KEY);
+    EXPECT_EQ(ret, 0);
+
+    GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContextByKeyType_002 end";
+}
 }

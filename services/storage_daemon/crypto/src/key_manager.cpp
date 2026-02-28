@@ -889,6 +889,45 @@ std::string BuildTimeInfo(int64_t start, int64_t end)
     return " start: " + std::to_string(start) + " ,end: " + std::to_string(end) + " ,duration: " + duration;
 }
 
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string secretInfo = BuildSecretStatus(userTokenSecret);
+    std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
+    int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
+
+    LOGW("enter, user=%{public}d, token=%{public}d, oldSec=%{public}d, newSec=%{public}d, keyType: %{public}u", user,
+        userTokenSecret.token.empty(), userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty(), keyType);
+    if (keyType == EL5_KEY) {
+        int ret = UpdateESecret(user, userTokenSecret);
+        if (ret != 0) {
+            LOGE("user %{public}u UpdateESecret fail", user);
+            queryTime += " UpdateUserAuth: " +
+                BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+            StorageRadar::ReportUpdateUserAuth("UpdateESecret_ByKeyType", user, ret, "EL5", secretInfo + queryTime);
+        }
+        return ret;
+    }
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true);
+    if (ret != 0) {
+        LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_ByKeyType_Migrate",
+            user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
+    }
+#else
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType);
+    if (ret != 0) {
+        LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_ByKeyType",
+            user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
+    }
+#endif
+    return ret;
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                bool needGenerateShield)
@@ -2098,6 +2137,40 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     return 0;
 }
 
+int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
+{
+    LOGI("UpdateKeyContextByKeyType enter, userId: %{public}u, keyType: %{public}u", userId, keyType);
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string strKeyType = "EL" + std::to_string(keyType);
+    int ret = E_OK;
+    if (keyType != EL5_KEY) {
+        ret = UpdateCeEceSeceKeyContext(userId, keyType);
+        if (ret != 0) {
+            LOGE("Basekey update EL%{public}u newest context failed", keyType);
+            StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext",
+                userId, ret, strKeyType, "");
+        }
+        return ret;
+    }
+    if (IsUeceSupport()) {
+        ret = UpdateClassEBackUpFix(userId);
+        if (ret != 0) {
+            LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
+            return ret;
+        }
+        if (saveESecretStatus[userId]) {
+            ret = UpdateCeEceSeceKeyContext(userId, keyType);
+        }
+    }
+    if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
+        LOGE("Basekey update EL5 newest context failed");
+        StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, strKeyType, "");
+        return ret;
+    }
+    LOGI("Basekey update key context success");
+    return 0;
+}
+
 int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UpdateKeyContext enter");
@@ -2494,6 +2567,21 @@ bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
     }
     closedir(dir);
     return empty;
+}
+
+bool KeyManager::GetSecureUid(uint32_t userId, uint64_t &secureUid)
+{
+    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
+        IamClient::GetInstance().HasPinProtect(userId)) {
+        if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
+            LOGE("Get secure uid form iam failed, use default value.");
+            return false;
+        }
+        LOGI("PIN protect exist.");
+        return true;
+    }
+    LOGE("userId: %{public}u check failed", userId);
+    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

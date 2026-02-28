@@ -28,6 +28,7 @@ public:
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) = 0;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) = 0;
     virtual int32_t PrepareAllUserEl1Dirs() = 0;
+    virtual int32_t PrepareUserDirsForUpdate(int32_t userId, uint32_t flags) = 0;
 
 public:
     static inline std::shared_ptr<IUserManagerMock> iUserManagerMock_ = nullptr;
@@ -38,6 +39,7 @@ public:
     MOCK_METHOD(int32_t, PrepareUserDirs, (int32_t, uint32_t));
     MOCK_METHOD(int32_t, DestroyUserDirs, (int32_t, uint32_t));
     MOCK_METHOD(int32_t, PrepareAllUserEl1Dirs, ());
+    MOCK_METHOD(int32_t, PrepareUserDirsForUpdate, (int32_t, uint32_t));
 };
 }
 }

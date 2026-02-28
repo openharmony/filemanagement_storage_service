@@ -15,6 +15,7 @@
 
 #include "user/user_manager.h"
 
+#include <fcntl.h>
 #include <sys/stat.h>
 
 #ifdef USER_CRYPTO_MANAGER
@@ -71,6 +72,45 @@ int32_t UserManager::StopUser(int32_t userId)
         return err;
     }
     return MountManager::GetInstance().UmountByUser(userId);
+}
+
+int32_t UserManager::PrepareUserDirsForUpdate(int32_t userId, uint32_t flags)
+{
+    LOGI("prepareuserdirs forupdate, userId:%{public}d, flags:%{public}u", userId, flags);
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::PrepareUserDirsForUpdate userId %{public}d out of range", userId);
+        return err;
+    }
+
+    InfoList<DirInfo> dirInfoList;
+    auto ret = UserPathResolver::GetUserBasePath(userId, flags, dirInfoList.data);
+    if (ret != E_OK) {
+        LOGE("GetUserBasePath failed, userId %{public}d, ret %{public}d, flags %{public}u", userId, ret, flags);
+        return ret;
+    }
+    for (const auto &dirInfo : dirInfoList.data) {
+        struct stat st;
+        if (TEMP_FAILURE_RETRY(lstat(dirInfo.path.c_str(), &st)) == 0) {
+            std::string extraData = "dirPath=" + dirInfo.path + ",uid=" + to_string(st.st_uid) +
+                ",gid=" + to_string(st.st_gid);
+            LOGW("dir is exists, %{public}s", extraData.c_str());
+            StorageRadar::ReportUserManager("PrepareUserDirsForUpdate", userId, E_PREPARE_DIR, extraData);
+        }
+        ret = dirInfo.MakeDir();
+        if (ret != E_OK && dirInfo.path.find(EL1) == std::string::npos) {
+            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareUserDirsForUpdate", userId, E_PREPARE_DIR, extraData);
+            LOGE("mkdir %{public}s failed", dirInfo.path.c_str());
+            return ret;
+        }
+        if (SetElDirFscryptPolicy(userId, dirInfo.path)) {
+            LOGE("SetElDirFscryptPolicy %{public}s failed", dirInfo.path.c_str());
+        }
+    }
+    return CreateServiceDirs(userId, flags);
 }
 
 int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
