@@ -15,6 +15,8 @@
 
 #include "mtpfs_util.h"
 
+#include <algorithm>
+#include <cctype>
 #include <config.h>
 #include <cstdio>
 #include <cstring>
@@ -31,11 +33,26 @@
 #include <libusb.h>
 
 #include "file_utils.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 
 constexpr const char *DEV_NULL = "/dev/null";
 static constexpr char PATH_INVALID_FLAG1[] = "../";
 static constexpr char PATH_INVALID_FLAG2[] = "/..";
+static constexpr char DECIMAL_MIN_CHAR = '0';
+static constexpr char DECIMAL_MAX_CHAR = '9';
+static constexpr char LOWER_HEX_MIN_CHAR = 'a';
+static constexpr char LOWER_HEX_MAX_CHAR = 'f';
+static constexpr char UPPER_HEX_MIN_CHAR = 'A';
+static constexpr char UPPER_HEX_MAX_CHAR = 'F';
+static constexpr char URL_ESCAPE_CHAR = '%';
+
+static constexpr int32_t HEX_DECIMAL_BASE = 10;
+static constexpr int32_t INVALID_HEX_VALUE = -1;
+
+static constexpr size_t URL_ESCAPE_ENCODED_LEN = 3;
+static constexpr size_t URL_ESCAPE_HEX_COUNT = 2;
+static constexpr int32_t HEX_RADIX_SHIFT_BITS = 4;
 static const char FILE_SEPARATOR_CHAR = '/';
 constexpr int32_t MAX_INT = 255;
 constexpr int32_t SCANF_NUM = 2;
@@ -120,7 +137,7 @@ std::string SmtpfsRealPath(const std::string &path)
 std::string SmtpfsGetTmpDir()
 {
     const char *cTmp = "/data/local/mtp_tmp";
-    OHOS::StorageDaemon::DelTemp(cTmp);
+    DelTemp(cTmp);
     std::string tmpDir = SmtpfsRealPath(cTmp) + "/simple-mtpfs-XXXXXX";
     char *cTempDir = ::strdup(tmpDir.c_str());
     if (cTempDir == nullptr) {
@@ -136,6 +153,31 @@ std::string SmtpfsGetTmpDir()
     return tmpDir;
 }
 
+void DelTemp(const std::string &path)
+{
+    DIR *dir;
+    if (!OHOS::StorageDaemon::IsDir(path)) {
+        return;
+    }
+    if ((dir = opendir(path.c_str())) != nullptr) {
+        struct dirent *dirinfo = ::readdir(dir);
+        while (dirinfo != nullptr) {
+            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
+                dirinfo = ::readdir(dir);
+                continue;
+            }
+            std::string filePath;
+            filePath.append(path).append("/").append(dirinfo->d_name);
+            if (OHOS::StorageDaemon::IsTempFolder(filePath, "simple-mtpfs")) {
+                OHOS::StorageDaemon::DeleteFile(filePath.c_str());
+                rmdir(filePath.c_str());
+            }
+            dirinfo = ::readdir(dir);
+        }
+        closedir(dir);
+    }
+}
+
 bool SmtpfsCreateDir(const std::string &dirName)
 {
     return ::mkdir(dirName.c_str(), S_IRWXU) == 0;
@@ -143,26 +185,30 @@ bool SmtpfsCreateDir(const std::string &dirName)
 
 bool SmtpfsRemoveDir(const std::string &dirName)
 {
-    DIR *dir;
-    struct dirent *entry;
-    std::string path;
-
-    dir = ::opendir(dirName.c_str());
+    DIR *dir = ::opendir(dirName.c_str());
     if (dir == nullptr) {
         return false;
     }
-    while ((entry = ::readdir(dir))) {
+    struct dirent *entry = ::readdir(dir);
+    while (entry != nullptr) {
         if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
-            path = dirName + "/" + entry->d_name;
+            std::string path = dirName + "/" + entry->d_name;
             if (entry->d_type == DT_DIR) {
                 ::closedir(dir);
                 return SmtpfsRemoveDir(path);
             }
-            ::unlink(path.c_str());
+            auto ret = ::unlink(path.c_str());
+            if (ret != OHOS::E_OK) {
+                LOGE("SmtpfsRemoveDir: unlink error, errno=%{public}d", ret);
+            }
         }
+        entry = ::readdir(dir);
     }
     ::closedir(dir);
-    ::remove(dirName.c_str());
+    auto ret = ::remove(dirName.c_str());
+    if (ret != OHOS::E_OK) {
+        LOGE("SmtpfsRemoveDir: remove error, errno=%{public}d", ret);
+    }
     return true;
 }
 
@@ -311,20 +357,76 @@ bool SmtpfsCheckDir(const std::string &path)
     return false;
 }
 
-bool MtpFileSystem::IsFilePathValid(const std::string &filePath)
+static inline int32_t HexVal(char c)
 {
-    size_t pos = filePath.find(PATH_INVALID_FLAG1);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("Relative path is not allowed, path contain ../");
-            return false;
-        }
-        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    if ((c >= DECIMAL_MIN_CHAR) && (c <= DECIMAL_MAX_CHAR)) {
+        return static_cast<std::int32_t>(c - DECIMAL_MIN_CHAR);
     }
-    pos = filePath.rfind(PATH_INVALID_FLAG2);
-    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("Relative path is not allowed, path tail is /..");
+
+    if ((c >= LOWER_HEX_MIN_CHAR) && (c <= LOWER_HEX_MAX_CHAR)) {
+        return static_cast<std::int32_t>(c - LOWER_HEX_MIN_CHAR) + HEX_DECIMAL_BASE;
+    }
+
+    if ((c >= UPPER_HEX_MIN_CHAR) && (c <= UPPER_HEX_MAX_CHAR)) {
+        return static_cast<std::int32_t>(c - UPPER_HEX_MIN_CHAR) + HEX_DECIMAL_BASE;
+    }
+    return INVALID_HEX_VALUE;
+}
+
+static bool UrlDecodeOnce(const std::string& in, std::string& out)
+{
+    out.clear();
+    out.reserve(in.size());
+
+    size_t i = 0;
+    while (i < in.size()) {
+        if ((in[i] == URL_ESCAPE_CHAR) && (i + URL_ESCAPE_HEX_COUNT < in.size())) {
+            int32_t h1 = HexVal(in[i + 1]);
+            int32_t h2 = HexVal(in[i + 2]);
+            if ((h1 >= 0) && (h2 >= 0)) {
+                out.push_back(static_cast<char>((h1 << HEX_RADIX_SHIFT_BITS) | h2));
+                i += URL_ESCAPE_ENCODED_LEN;
+                continue;
+            }
+        }
+        out.push_back(in[i]);
+        ++i;
+    }
+    return true;
+}
+
+bool IsFilePathValid(const std::string &filePath)
+{
+    if (filePath.empty()) {
+        LOGE("Empty path is not allowed");
         return false;
     }
+    std::string decoded1;
+    std::string decoded2;
+    UrlDecodeOnce(filePath, decoded1);
+    UrlDecodeOnce(decoded1, decoded2);
+
+    std::replace(decoded2.begin(), decoded2.end(), '\\', '/');
+
+    size_t i = 0;
+    while (i < decoded2.size()) {
+        while (i < decoded2.size() && decoded2[i] == '/') {
+            i++;
+        }
+        size_t j = i;
+        while (j < decoded2.size() && decoded2[j] != '/') {
+            j++;
+        }
+
+        if (j > i) {
+            std::string_view seg(decoded2.data() + i, j - i);
+            if (seg == "." || seg == "..") {
+                LOGE("Relative path segment '.' or '..' is not allowed");
+                return false;
+            }
+        }
+        i = j;
+    }
+
     return true;
 }

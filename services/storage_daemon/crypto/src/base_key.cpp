@@ -420,39 +420,30 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 
 int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
 {
-    DoLatestBackUp();
-    bool hasLatest = IsDir(dir_ + PATH_LATEST);
-    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) { // rename {candidate} to latest
-        LOGE("rename candidate to latest fail return %{public}d", errno);
-        if (hasLatest) { // revert from the backup
-            if (rename((dir_ + PATH_LATEST_BACKUP).c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
-                LOGE("restore the latest_backup fail errno:%{public}d", errno);
-            } else {
-                LOGI("restore the latest_backup success");
-            }
-        }
-        SyncKeyDir();
-        return errno;
-    }
-    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
-    return E_OK;
-}
-
-void BaseKey::DoLatestBackUp() const
-{
-    // backup the latest
-    std::string pathLatest = dir_ + PATH_LATEST;
-    std::string pathLatestBak = dir_ + PATH_LATEST_BACKUP;
-    bool hasLatest = IsDir(dir_ + PATH_LATEST);
-    if (hasLatest) {
-        OHOS::ForceRemoveDirectory(pathLatestBak);
-        if (rename(pathLatest.c_str(),
-                   pathLatestBak.c_str()) != 0) {
+    std::string latestPath = dir_ + PATH_LATEST;
+    std::string latestPathBak = dir_ + PATH_LATEST_BACKUP;
+    if (IsDir(latestPath)) { // rename latest to latest_backup
+        OHOS::ForceRemoveDirectory(latestPathBak);
+        if (rename(latestPath.c_str(), latestPathBak.c_str()) != 0) {
             LOGE("backup the latest fail errno:%{public}d", errno);
+            return E_RENAME_FILE_ERROR;
         }
         LOGI("backup the latest success");
     }
+
+    OHOS::ForceRemoveDirectory(latestPath);
+    if (rename(candidate.c_str(), latestPath.c_str()) == 0) { // rename {candidate} to latest
+        LOGI("rename candidate %{public}s to latest success", candidate.c_str());
+        return E_OK;
+    }
+    LOGE("rename candidate to latest fail return %{public}d", errno);
+    if (rename(latestPathBak.c_str(), latestPath.c_str()) != 0) {
+        LOGE("restore the latest_backup fail errno:%{public}d", errno);
+        return E_RENAME_FILE_ERROR;
+    }
+    LOGI("restore the latest_backup success");
+    SyncKeyDir();
+    return E_OK;
 }
 
 int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)

@@ -306,5 +306,13 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     }
     return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
+
+bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->IsDirRecursivelyEmpty(dirPath);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -973,7 +973,10 @@ int MtpFsDevice::FilePushAsync(const std::string src, const std::string dst)
         int ret = FilePush(src, dst);
         SetUploadRecord(dst, (ret == E_OK) ? "success" : "fail");
         filesPool->RemoveFile(dst);
-        ::unlink(src.c_str());
+        auto unlinkRet = ::unlink(src.c_str());
+        if (unlinkRet != E_OK) {
+            LOGE("MtpFileSystem: FilePushAsync unlink error, errno=%{public}d", unlinkRet);
+        }
         }).detach();
 
     return E_OK;

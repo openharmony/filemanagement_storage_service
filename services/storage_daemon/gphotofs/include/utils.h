@@ -36,6 +36,7 @@ bool CreateTmpDir();
 bool RemoveTmpDir();
 bool SmtpfsRemoveDir(const std::string &dirName);
 bool SmtpfsCheckDir(const std::string &path);
+void DelTemp(const std::string &path);
 std::string SmtpfsGetTmpDir();
 
 #endif // GPHOTOFS2_UTILS_H

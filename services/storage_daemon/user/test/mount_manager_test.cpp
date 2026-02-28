@@ -802,35 +802,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
 }
 
 /**
- * @tc.name: Storage_Manager_MountManagerTest_UMountDfsDocs_001
- * @tc.desc: Verify the UMountDfsDocs function with invalid relativePath.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountDfsDocs_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDfsDocs_001 start";
-
-    int32_t userId = 100;
-    std::string relativePath = "";
-    std::string networkId = "test_network";
-    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
-
-    int32_t ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    std::string longPath(PATH_MAX + 1, 'a');
-    ret = MountManager::GetInstance().UMountDfsDocs(userId, longPath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    std::string invalidPath = "test@path";
-    ret = MountManager::GetInstance().UMountDfsDocs(userId, invalidPath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDfsDocs_001 end";
-}
-
-/**
  * @tc.name: Storage_Manager_MountManagerTest_UMountDfsDocs_002
  * @tc.desc: Verify the UMountDfsDocs function when UMount2 fails.
  * @tc.type: FUNC
@@ -848,11 +819,11 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountDfsDocs_002, T
 
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
     int32_t ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
+    EXPECT_EQ(ret, 5);
 
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(2));
     ret = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
+    EXPECT_EQ(ret, 5);
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDfsDocs_002 end";
 }

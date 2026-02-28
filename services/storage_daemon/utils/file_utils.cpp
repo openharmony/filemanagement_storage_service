@@ -150,11 +150,6 @@ int32_t MkDir(const std::string &path, mode_t mode)
     return TEMP_FAILURE_RETRY(mkdir(path.c_str(), mode));
 }
 
-int32_t RmDir(const std::string &path)
-{
-    return TEMP_FAILURE_RETRY(rmdir(path.c_str()));
-}
-
 int32_t Mount(const std::string &source, const std::string &target, const char *type,
               unsigned long flags, const void *data)
 {
@@ -954,39 +949,6 @@ bool IsTempFolder(const std::string &path, const std::string &sub)
         }
     }
     return result;
-}
-
-void DelTemp(const std::string &path)
-{
-    DIR *dir;
-    if (!IsDir(path)) {
-        return;
-    }
-    if ((dir = opendir(path.c_str())) != NULL) {
-        {
-            struct dirent *dirinfo;
-            while ((dirinfo = readdir(dir)) != NULL) {
-                if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
-                    continue;
-                }
-                std::string filePath;
-                filePath.append(path).append("/").append(dirinfo->d_name);
-                if (IsTempFolder(filePath, "simple-mtpfs")) {
-                    DeleteFile(filePath.c_str());
-                    rmdir(filePath.c_str());
-                }
-            }
-            closedir(dir);
-        }
-    }
-}
-
-bool DelFolder(const std::string &path)
-{
-    if (rmdir(path.c_str()) == 0) {
-        return true;
-    }
-    return false;
 }
 
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)

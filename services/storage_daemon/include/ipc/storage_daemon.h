@@ -90,6 +90,7 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
+    bool IsDirRecursivelyEmpty(const char* dirPath);
 private:
     StorageDaemon() = default;
     ~StorageDaemon() = default;
@@ -139,6 +140,8 @@ private:
         const std::vector<uint8_t> &secret);
     void ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll);
     void ClearAllNatoRestoreKey(uint32_t userId, bool isClearAll);
+    void ClearKeyDirInfo(const std::string &path);
+    void ClearKeyDir(const std::string &path);
 };
 } // StorageDaemon
 } // OHOS

@@ -48,7 +48,6 @@ namespace {
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t ChOwn(const std::string &path, uid_t uid, gid_t gid);
 int32_t MkDir(const std::string &path, mode_t mode);
-int32_t RmDir(const std::string &path);
 
 class FileUtilsTest : public testing::Test {
 public:
@@ -167,28 +166,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_MkDir_001, TestSize.Level1)
     EXPECT_TRUE((st.st_mode & ALL_PERMS) == mode);
 
     GTEST_LOG_(INFO) << "FileUtilsTest_MkDir_001 end";
-}
-
-/**
- * @tc.name: FileUtilsTest_RmDir_001
- * @tc.desc: Verify the RmDir function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 start";
-
-    mode_t mode = 0771;
-    bool bRet = StorageTest::StorageTestUtils::MkDir(PATH_RMDIR, mode);
-    ASSERT_TRUE(bRet);
-    ASSERT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR));
-
-    int32_t ret = RmDir(PATH_RMDIR);
-    ASSERT_TRUE(ret == E_OK);
-    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR) == false);
-
-    GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 end";
 }
 
 /**
@@ -324,8 +301,8 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DelFolder_001, TestSize.Level1)
 
     std::string testPath = "/data/test/tdd";
     mkdir(testPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-    EXPECT_TRUE(DelFolder(testPath));
-    EXPECT_FALSE(DelFolder(testPath));
+    EXPECT_TRUE(rmdir(testPath.c_str()) == 0);
+    EXPECT_TRUE(rmdir(testPath.c_str()) != 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 end";
 }
 
@@ -348,7 +325,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFile_001, TestSize.Level1)
     EXPECT_TRUE(IsFile(fileName));
     DeleteFile(fileName);
     EXPECT_FALSE(IsFile(fileName));
-    EXPECT_TRUE(DelFolder(testPath));
+    EXPECT_TRUE(rmdir(testPath.c_str()) == 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFile_001 end";
 }
 
@@ -391,25 +368,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsTempFolder_001, TestSize.Level1)
     mkdir(basePath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     EXPECT_FALSE(IsTempFolder(basePath, sub2));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsTempFolder_001 end";
-}
-
-/**
- * @tc.name: FileUtilsTest_DelTemp_001
- * @tc.desc: Verify the DelTemp function.
- * @tc.type: FUNC
- * @tc.require: IBDKKD
- */
-HWTEST_F(FileUtilsTest, FileUtilsTest_DelTemp_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FileUtilsTest_DelTemp_001 start";
-    std::string basePath = "/data/test/tdd";
-    std::string subPath1 = basePath + "/fold";
-    std::string subPath2 = basePath + "/simple-mtpfs";
-    mkdir(subPath1.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-    mkdir(subPath2.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-    DelTemp(basePath);
-    EXPECT_FALSE(IsDir(subPath2));
-    GTEST_LOG_(INFO) << "FileUtilsTest_DelTemp_001 end";
 }
 
 /**
