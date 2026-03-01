@@ -123,6 +123,9 @@ public:
     friend class KeyManagerExt;
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, StorageService::EncryptionLevel level);
     bool IsDirRecursivelyEmpty(const char* dirPath);
+    bool GetSecureUid(uint32_t userId, uint64_t &secureUid);
+    int UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType);
+    int UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType);
 
 private:
     KeyManager()

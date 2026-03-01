@@ -762,7 +762,7 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
         LOGE("Double 2 single, skip huks -> huks-openssl !");
         return E_OK;
     }
-    uint64_t secureUid = { 0 };
+    uint64_t secureUid = 0;
     uint32_t userId = GetIdFromDir();
     if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
@@ -788,26 +788,6 @@ int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyP
     auto ret = DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir());
     if (ret != E_OK) {
         LOGE("Restore ce ece sece failed !");
-        return ret;
-    }
-    uint64_t secureUid = { 0 };
-
-    uint32_t userId = GetIdFromDir();
-    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
-        IamClient::GetInstance().HasPinProtect(userId)) {
-        if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
-            LOGE("Get secure uid form iam failed, use default value.");
-        }
-        LOGI("PIN protect exist.");
-    }
-    ret = StoreKey({auth.token, auth.secret, secureUid});
-    if (ret != E_OK) {
-        LOGE("Store old failed !");
-        return ret;
-    }
-    ret = UpdateKey();
-    if (ret != E_OK) {
-        LOGE("Update old failed !");
         return ret;
     }
     LOGI("finish");
