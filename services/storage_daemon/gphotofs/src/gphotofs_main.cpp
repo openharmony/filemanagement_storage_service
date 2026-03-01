@@ -16,7 +16,7 @@
 #include <string>
 #include "storage_service_log.h"
 #include <clocale>
-#include "utils.h"
+#include "gphotofs_utils.h"
 
 using namespace std;
 

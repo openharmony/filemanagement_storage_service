@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "utils.h"
+#include "gphotofs_utils.h"
 #include <gphoto2/gphoto2.h>
 #include "storage_service_log.h"
 #include <cstring>
@@ -125,7 +125,7 @@ int GpresultToErrno(int result)
     return -EINVAL;
 }
 
-std::string SmtpfsDirName(const std::string &path)
+std::string GphotoDirName(const std::string &path)
 {
     if (path.empty() || path.length() > PATH_MAX) {
         return "";
@@ -140,7 +140,7 @@ std::string SmtpfsDirName(const std::string &path)
     return result;
 }
 
-std::string SmtpfsBaseName(const std::string &path)
+std::string GphotoBaseName(const std::string &path)
 {
     if (path.empty() || path.length() > PATH_MAX) {
         return "";
@@ -155,7 +155,7 @@ std::string SmtpfsBaseName(const std::string &path)
     return result;
 }
 
-std::string SmtpfsRealPath(const std::string &path)
+std::string GphotoRealPath(const std::string &path)
 {
     if (path.empty() || path.length() > PATH_MAX) {
         return "";
@@ -169,13 +169,13 @@ std::string SmtpfsRealPath(const std::string &path)
     return std::string(realPath);
 }
 
-std::string SmtpfsGetTmpDir()
+std::string GphotoGetTmpDir()
 {
     DelTemp(TMP_FULL_PATH);
 
-    std::string tmpDir = SmtpfsRealPath(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
+    std::string tmpDir = GphotoRealPath(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
     if (tmpDir.length() > PATH_MAX) {
-        LOGE("SmtpfsGetTmpDir: path too long");
+        LOGE("GphotoGetTmpDir: path too long");
         return "";
     }
     char *cTempDir = ::strdup(tmpDir.c_str());
@@ -219,7 +219,7 @@ void DelTemp(const std::string &path)
     }
 }
 
-bool SmtpfsCheckDir(const std::string &path)
+bool GphotoCheckDir(const std::string &path)
 {
     struct stat buf;
     if (::stat(path.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode)) {
@@ -267,13 +267,13 @@ static bool ProcessDirEntry(const std::string &dirName, struct dirent *entry)
     std::string path = dirName + "/" + entry->d_name;
     bool isDir = IsEntryDirectory(path, entry);
     if (isDir) {
-        return SmtpfsRemoveDir(path);
+        return GphotoRemoveDir(path);
     } else {
         return RemoveSingleFile(path);
     }
 }
 
-bool SmtpfsRemoveDir(const std::string &dirName)
+bool GphotoRemoveDir(const std::string &dirName)
 {
     DIR *dir = ::opendir(dirName.c_str());
     if (dir == nullptr) {
@@ -289,7 +289,7 @@ bool SmtpfsRemoveDir(const std::string &dirName)
     while ((entry = ::readdir(dir)) != nullptr) {
         entryCount++;
         if (entryCount > maxEntryCount) {
-            LOGE("SmtpfsRemoveDir: too many entries, possible loop");
+            LOGE("GphotoRemoveDir: too many entries, possible loop");
             ok = false;
             break;
         }
@@ -307,7 +307,7 @@ bool SmtpfsRemoveDir(const std::string &dirName)
     return ok;
 }
 
-bool SmtpfsCreateDir(const std::string &dirName)
+bool GphotoCreateDir(const std::string &dirName)
 {
     return ::mkdir(dirName.c_str(), S_IRWXU) == 0;
 }
@@ -315,17 +315,17 @@ bool SmtpfsCreateDir(const std::string &dirName)
 bool CreateTmpDir()
 {
     if (RemoveTmpDir()) {
-        return SmtpfsCreateDir(TMP_FULL_PATH);
+        return GphotoCreateDir(TMP_FULL_PATH);
     }
     return false;
 }
 
 bool RemoveTmpDir()
 {
-    if (!SmtpfsCheckDir(TMP_FULL_PATH)) {
+    if (!GphotoCheckDir(TMP_FULL_PATH)) {
         return true;
     }
-    return SmtpfsRemoveDir(TMP_FULL_PATH);
+    return GphotoRemoveDir(TMP_FULL_PATH);
 }
 
 bool IsFilePathValid(const std::string &filePath)

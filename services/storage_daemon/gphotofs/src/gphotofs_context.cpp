@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "context.h"
+#include "gphotofs_context.h"
 #include <unistd.h>
-#include "utils.h"
+#include "gphotofs_utils.h"
 #include "storage_service_log.h"
 using namespace std;
 
@@ -69,16 +69,20 @@ Context::~Context()
     LOGI("gphotofs ~context start");
     if (abilities_) {
         gp_abilities_list_free(abilities_);
+        abilities_ = nullptr;
     }
     if (camera_) {
-        gp_camera_exit(camera_, context_ ? context_ : NULL);
+        gp_camera_exit(camera_, context_ ? context_ : nullptr);
         gp_camera_unref(camera_);
+        camera_ = nullptr;
     }
     if (context_) {
         gp_context_unref(context_);
+        context_ = nullptr;
     }
     if (statCache_) {
         delete statCache_;
+        statCache_ = nullptr;
     }
     LOGI("gphotofs ~context end");
 }

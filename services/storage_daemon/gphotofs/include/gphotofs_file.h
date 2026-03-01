@@ -20,7 +20,7 @@
 #include <mutex>
 #include <unistd.h>
 
-#include "utils.h"
+#include "gphotofs_utils.h"
 
 struct File {
     std::string name;

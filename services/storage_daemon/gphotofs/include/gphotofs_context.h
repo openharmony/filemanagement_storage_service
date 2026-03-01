@@ -19,7 +19,7 @@
 #include <gphoto2/gphoto2.h>
 #include <fuse.h>
 #include <mutex>
-#include "dir.h"
+#include "gphotofs_dir.h"
 
 class Context {
 public:

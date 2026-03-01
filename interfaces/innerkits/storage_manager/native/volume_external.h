@@ -30,7 +30,8 @@ enum FsType {
     F2FS,
     MTP,
     UDF,
-    ISO9660
+    ISO9660,
+    PTP
 };
 
 static std::map<int32_t, std::string> FS_TYPE_MAP = {
@@ -42,6 +43,7 @@ static std::map<int32_t, std::string> FS_TYPE_MAP = {
     {MTP, "mtp"},
     {UDF, "udf"},
     {ISO9660, "iso9660"},
+    {PTP, "ptp"},
 };
 
 class VolumeExternal : public VolumeCore {

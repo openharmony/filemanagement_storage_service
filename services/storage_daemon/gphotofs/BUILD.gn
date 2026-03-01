@@ -57,12 +57,12 @@ ohos_executable("gphotofs") {
 
   if (support_open_source_libgphoto2) {
     sources = [
-        "src/context.cpp",
-        "src/dir.cpp",
+        "src/gphotofs_context.cpp",
+        "src/gphotofs_dir.cpp",
         "src/gphotofs2.cpp",
         "src/gphotofs_fuse.cpp",
         "src/gphotofs_main.cpp",
-        "src/utils.cpp",
+        "src/gphotofs_utils.cpp",
     ]
     external_deps += [
         "libfuse:libfuse",

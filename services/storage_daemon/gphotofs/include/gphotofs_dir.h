@@ -30,7 +30,7 @@ struct Dir {
     std::map<std::string, Dir*> dirs;
     std::mutex lock;
 
-    Dir(const std::string& name) : name(name), listed(false) {}
+    explicit Dir(const std::string& name) : name(name), listed(false) {}
     ~Dir();
 
     void addFile(File *file);

@@ -22,10 +22,10 @@
 #include <gphoto2/gphoto2-camera.h>
 #include <gphoto2/gphoto2-context.h>
 #include <gphoto2/gphoto2-port-log.h>
+#include <libusb.h>
 #endif
 #include <iostream>
 #include <libmtp.h>
-#include <libusb.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
