@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,16 +14,22 @@
  */
 
 #include "ohos.file.keyManager.impl.h"
+#include "storageStatistics_taihe_error.h"
+#include "storage_service_log.h"
 
 namespace ANI::KeyManager {
 void DeactivateUserKey(int64_t userId)
 {
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
+    }
     uint32_t userId_i = static_cast<uint32_t>(userId);
-
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>
-        ::GetInstance()->DeactivateUserKey(userId_i);
+    int32_t errNum = instance->DeactivateUserKey(userId_i);
     if (errNum != OHOS::E_OK) {
-        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to deactivate user key.");
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
     }
 }

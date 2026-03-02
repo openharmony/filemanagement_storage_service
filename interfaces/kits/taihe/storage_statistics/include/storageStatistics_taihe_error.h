@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,7 +44,12 @@ const std::map<int, StorageTaiheErrorInfo> STORAGE_TAIHE_ERR_MAP {
     { E_DELETE, { 13600007, "Delete directory or node error" } },
     { E_NOOBJECT, { 13600008, "No such object" } },
     { E_OUTOFRANGE, { 13600009, "User id out of range" } },
-    { E_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } }
+    { E_JS_PARAMS_INVALID, { 13600010, "invalid params" } },
+    { E_JS_SET_EXT_BUNDLE_STATS_ERROR, { 13600011, "set ext bundle failed" } },
+    { E_JS_GET_EXT_BUNDLE_STATS_ERROR, { 13600012, "get ext bundle failed" } },
+    { E_JS_GET_ALL_EXT_BUNDLE_STATS_ERROR, { 13600013, "get all ext bundle failed" } },
+    { E_JS_RETRY_ERROR, { 13600014, "retry failed" } },
+    { E_JS_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } }
 };
 
 class StorageTaiheError {
