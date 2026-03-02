@@ -46,12 +46,12 @@ VolumeManager &VolumeManager::Instance()
     return instance_;
 }
 
-std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
+std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string &volId)
 {
     return volumes_.GetShared(volId);
 }
 
-std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device, bool isUserdata)
+std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata)
 {
     std::string volId = StringPrintf("vol-%u-%u", major(device), minor(device));
 
@@ -80,7 +80,7 @@ std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device, 
     return volId;
 }
 
-int32_t VolumeManager::DestroyVolume(const std::string volId)
+int32_t VolumeManager::DestroyVolume(const std::string &volId)
 {
     LOGI("destroy volume %{public}s.", volId.c_str());
 
@@ -103,7 +103,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     return E_OK;
 }
 
-int32_t VolumeManager::Check(const std::string volId)
+int32_t VolumeManager::Check(const std::string &volId)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
@@ -119,7 +119,7 @@ int32_t VolumeManager::Check(const std::string volId)
     return E_OK;
 }
 
-int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
+int32_t VolumeManager::Mount(const std::string &volId, uint32_t flags)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
@@ -145,7 +145,7 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     return E_OK;
 }
 
-int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd)
+int32_t VolumeManager::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
     if (info == nullptr) {
@@ -186,14 +186,14 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
     return E_OK;
 }
  
-int32_t VolumeManager::ReadVolumeUuid(std::string volumeId, std::string &fsUuid)
+int32_t VolumeManager::ReadVolumeUuid(const std::string &volumeId, std::string &fsUuid)
 {
     std::string devPath = StringPrintf("/dev/block/%s", (volumeId).c_str());
     int32_t ret = OHOS::StorageDaemon::ReadVolumeUuid(devPath, fsUuid);
     return ret;
 }
  
-int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
+int32_t VolumeManager::CreateMountUsbFusePath(std::string &fsUuid)
 {
     LOGI("CreateMountUsbFusePath create path");
     if (fsUuid.find("..") != std::string::npos || fsUuid.find("/") != std::string::npos) {
@@ -217,7 +217,7 @@ int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
     return E_OK;
 }
 
-int32_t VolumeManager::TryToFix(const std::string volId, uint32_t flags)
+int32_t VolumeManager::TryToFix(const std::string &volId, uint32_t flags)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
@@ -262,7 +262,7 @@ int32_t VolumeManager::TryToFix(const std::string volId, uint32_t flags)
     return E_OK;
 }
 
-int32_t VolumeManager::UMount(const std::string volId)
+int32_t VolumeManager::UMount(const std::string &volId)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
@@ -282,7 +282,7 @@ int32_t VolumeManager::UMount(const std::string volId)
     return E_OK;
 }
 
-int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
+int32_t VolumeManager::Format(const std::string &volId, const std::string &fsType)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
@@ -300,7 +300,7 @@ int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
     return E_OK;
 }
 
-int32_t VolumeManager::SetVolumeDescription(const std::string volId, const std::string description)
+int32_t VolumeManager::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {

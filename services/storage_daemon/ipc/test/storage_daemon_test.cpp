@@ -644,7 +644,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
     CreateNeedRestoreFile(StorageService::START_USER_ID, EL1_KEY);
 
     g_saveStringToFile = false;
-    EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), false);
+    EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), E_SAVE_KEY_TYPE_ERROR);
     g_saveStringToFile = true;
 
 #endif

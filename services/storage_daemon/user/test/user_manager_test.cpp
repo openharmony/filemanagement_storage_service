@@ -110,7 +110,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_001, T
     int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
                     IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
     int32_t ret = UserManager::GetInstance().PrepareUserDirs(StorageTest::USER_ID1, flags);
-    EXPECT_TRUE(ret == E_PREPARE_DIR) << "the path is not dir";
+    EXPECT_EQ(ret, E_PREPARE_DIR) << "the path is not dir";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_001 end";
 }

@@ -26,16 +26,16 @@ public:
     virtual ~VolumeManager() = default;
     static VolumeManager &Instance();
 
-    std::string CreateVolume(const std::string diskId, dev_t device, bool isUserdata);
-    int32_t DestroyVolume(const std::string volId);
+    std::string CreateVolume(const std::string &diskId, dev_t device, bool isUserdata);
+    int32_t DestroyVolume(const std::string &volId);
 
-    int32_t Check(const std::string volId);
-    int32_t Mount(const std::string volId, uint32_t flags);
-    int32_t UMount(const std::string volId);
-    int32_t MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd);
-    int32_t TryToFix(const std::string volId, uint32_t flags);
-    int32_t Format(const std::string volId, const std::string fsType);
-    int32_t SetVolumeDescription(const std::string volId, const std::string description);
+    int32_t Check(const std::string &volId);
+    int32_t Mount(const std::string &volId, uint32_t flags);
+    int32_t UMount(const std::string &volId);
+    int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
+    int32_t TryToFix(const std::string &volId, uint32_t flags);
+    int32_t Format(const std::string &volId, const std::string &fsType);
+    int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
 private:
@@ -45,9 +45,9 @@ private:
     bool IsMtpDeviceInUse(const std::string &diskPath);
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 
-    std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
-    int32_t CreateMountUsbFusePath(std::string fsUuid);
-    int32_t ReadVolumeUuid(std::string volumeId, std::string &fsUuid);
+    std::shared_ptr<VolumeInfo> GetVolume(const std::string &volId);
+    int32_t CreateMountUsbFusePath(std::string &fsUuid);
+    int32_t ReadVolumeUuid(const std::string &volumeId, std::string &fsUuid);
     std::string mountUsbFusePath_;
 };
 } // STORAGE_DAEMON

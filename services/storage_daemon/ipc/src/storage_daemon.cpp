@@ -351,7 +351,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
             doubleVersion.c_str(), newSingleVersion, isRead);
         if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
             LOGE("Save NEW_DOUBLE_2_SINGLE file failed");
-            return false;
+            return E_SAVE_KEY_TYPE_ERROR;
         }
     }
 #endif

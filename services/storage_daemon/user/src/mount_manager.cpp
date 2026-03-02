@@ -413,7 +413,7 @@ int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &
     return result;
 }
 
-bool MountManager::IsSysMountPoint(int32_t userId, std::string &path)
+bool MountManager::IsSysMountPoint(const int32_t userId, std::string &path)
 {
     auto count = static_cast<int32_t>(SYS_PATH.size());
     for (int i = 0; i < count; i++) {
@@ -714,7 +714,7 @@ bool MountManager::CheckSysFs(int32_t userId)
     return false;
 }
 
-bool MountManager::IsSysFsInUse(std::string &path)
+bool MountManager::IsSysFsInUse(const std::string &path)
 {
     FILE *f = fopen(path.c_str(), "r");
     if (f == nullptr) {

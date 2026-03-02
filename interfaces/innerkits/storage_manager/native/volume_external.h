@@ -51,16 +51,16 @@ public:
 
     void SetFlags(int32_t flags);
     void SetFsType(int32_t fsType);
-    void SetFsUuid(std::string fsUuid);
-    void SetPath(std::string path);
-    void SetDescription(std::string description);
-    int32_t GetFlags();
-    int32_t GetFsType();
-    std::string GetFsTypeString();
-    std::string GetUuid();
-    std::string GetPath();
-    std::string GetDescription();
-    int32_t GetFsTypeByStr(const std::string &fsTypeStr);
+    void SetFsUuid(const std::string &fsUuid);
+    void SetPath(const std::string &path);
+    void SetDescription(const std::string &description);
+    int32_t GetFlags() const;
+    int32_t GetFsType() const;
+    std::string GetFsTypeString() const;
+    std::string GetUuid() const;
+    std::string GetPath() const;
+    std::string GetDescription() const;
+    int32_t GetFsTypeByStr(const std::string &fsTypeStr) const;
     void Reset();
 
     bool Marshalling(Parcel &parcel) const override;
@@ -72,7 +72,7 @@ private:
     std::string path_;
     std::string description_;
 };
-} // OHOS
-} // StorageManager
+} // namespace StorageManager
+} // namespace OHOS
 
 #endif // OHOS_STORAGE_MANAGER_VOLUME_EXTERNAL_H
