@@ -2514,4 +2514,90 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateKeyContextByKeyType_002, TestSize.Leve
 
     GTEST_LOG_(INFO) << "KeyManager_UpdateKeyContextByKeyType_002 end";
 }
+
+/**
+ * @tc.name: KeyManager_DeleteGlobalDeviceKey_001
+ * @tc.desc: Verify the DeleteGlobalDeviceKey function with globalEl1Key_ != nullptr.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerTest, KeyManager_DeleteGlobalDeviceKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_001 start";
+
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("/data/test"));
+    KeyManager::GetInstance().globalEl1Key_ = tmpKey;
+    EXPECT_NE(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy())
+                .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_))
+                .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+
+    std::vector<int32_t> localIdList = {};
+    int ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_EQ(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_DeleteGlobalDeviceKey_002
+ * @tc.desc: Verify the DeleteGlobalDeviceKey function with backup key.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerTest, KeyManager_DeleteGlobalDeviceKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_002 start";
+
+    auto fscryptKey = std::make_shared<FscryptKeyV2>("/data/test_bak");
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(fscryptKey);
+    KeyManager::GetInstance().globalEl1Key_ = tmpKey;
+    EXPECT_NE(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(FSCRYPT_V2));
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillRepeatedly(Return(E_OK));
+
+    std::vector<int32_t> localIdList = {};
+    int ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_EQ(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_002 end";
+}
+
+/**
+ * @tc.name: KeyManager_DeleteGlobalDeviceKey_003
+ * @tc.desc: Verify the DeleteGlobalDeviceKey function with ClearKey failure.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerTest, KeyManager_DeleteGlobalDeviceKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_003 start";
+
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("/data/test"));
+    KeyManager::GetInstance().globalEl1Key_ = tmpKey;
+    EXPECT_NE(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy())
+                .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_))
+                .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(E_CLEAR_KEY_FAILED)).WillOnce(Return(E_CLEAR_KEY_FAILED));
+
+    std::vector<int32_t> localIdList = {};
+    int ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_EQ(KeyManager::GetInstance().globalEl1Key_, nullptr);
+
+    GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_003 end";
+}
 }

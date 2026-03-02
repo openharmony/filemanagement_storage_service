@@ -28,13 +28,14 @@ enum {
 class Disk : public Parcelable {
 public:
     Disk();
-    Disk(std::string diskId, int64_t sizeBytes, std::string sysPath, std::string vendor, int32_t flag);
+    Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath,
+         const std::string &vendor, int32_t flag);
 
     std::string GetDiskId() const;
-    int64_t GetSizeBytes();
-    std::string GetSysPath();
-    std::string GetVendor();
-    int32_t GetFlag();
+    int64_t GetSizeBytes() const;
+    std::string GetSysPath() const;
+    std::string GetVendor() const;
+    int32_t GetFlag() const;
     void SetFlag(int32_t flag);
 
     bool Marshalling(Parcel &parcel) const override;
@@ -46,7 +47,7 @@ private:
     std::string vendor_;
     int32_t flag_ {};
 };
-} // STORAGE_MANAGER
-} // OHOS
+} // namespace StorageManager
+} // namespace OHOS
 
 #endif // OHOS_STORAGE_MANAGER_DISK_H

@@ -13,7 +13,15 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_moduletest("AclTest") {
+ohos_unittest("AclTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
   include_dirs = [ "${storage_daemon_path}/include" ]
@@ -30,7 +38,15 @@ ohos_moduletest("AclTest") {
   ]
 }
 
-ohos_moduletest("SetAclTest") {
+ohos_unittest("SetAclTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
@@ -60,7 +76,15 @@ ohos_moduletest("SetAclTest") {
   ]
 }
 
-ohos_moduletest("FileSharingTest") {
+ohos_unittest("FileSharingTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [

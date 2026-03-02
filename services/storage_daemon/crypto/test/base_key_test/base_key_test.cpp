@@ -1057,4 +1057,34 @@ HWTEST_F(BaseKeyTest, BaseKey_RestoreKey_001, TestSize.Level1)
     EXPECT_EQ(elKey->BaseKey::RestoreKey(auth), E_VERSION_ERROR);
     GTEST_LOG_(INFO) << "BaseKey_RestoreKey_001 end";
 }
+
+/**
+ * @tc.name: BaseKey_CombKeyBlob_001
+ * @tc.desc: Verify the CombKeyBlob function with null pointer check.
+ * @tc.type: FUNC
+ */
+HWTEST_F(BaseKeyTest, BaseKey_CombKeyBlob_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyBlob_001 start";
+
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob encAad;
+    KeyBlob end(16);
+    KeyBlob keyOut(32);
+
+    elKey->BaseKey::CombKeyBlob(encAad, end, keyOut);
+
+    KeyBlob encAad2(16);
+    KeyBlob end2;
+    KeyBlob keyOut2(32);
+    elKey->BaseKey::CombKeyBlob(encAad2, end2, keyOut2);
+
+    KeyBlob encAad3(16);
+    KeyBlob end3(16);
+    KeyBlob keyOut3;
+    elKey->BaseKey::CombKeyBlob(encAad3, end3, keyOut3);
+
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyBlob_001 end";
+}
 } // OHOS::StorageDaemon

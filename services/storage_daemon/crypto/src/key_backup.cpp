@@ -223,7 +223,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     std::string tempKeyDir;
     ret = CopySameFilesToTempDir(backupKeyDir, tempKeyDir, fileList);
     if (ret != 0) {
-        return false;
+        return E_ERR;
     }
 
     diffNum = fileList.size();
@@ -241,6 +241,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         }
         if (baseKey == nullptr) {
             LOGE("basekey is nullptr");
+            RemoveNode(tempKeyDir);
             return E_ERR;
         }
         if (baseKey->DoRestoreKey(auth, tempKeyDir) == E_OK) {
@@ -248,7 +249,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
             CheckAndFixFiles(tempKeyDir, origKeyDir);
             CheckAndFixFiles(tempKeyDir, backupKeyDir);
             RemoveNode(tempKeyDir);
-            return true;
+            return E_OK;
         }
     }
     RemoveNode(tempKeyDir);
@@ -269,7 +270,6 @@ int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &ba
         AddOrigFileToList(std::string(de->d_name), origDir, fileList);
     }
     closedir(dir);
-    dir = nullptr;
 
     dir = opendir(backDir.c_str());
     if (dir == nullptr) {
@@ -280,7 +280,6 @@ int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &ba
         AddBackupFileToList(std::string(de->d_name), backDir, fileList);
     }
     closedir(dir);
-    dir = nullptr;
 
     diffNum = GetDiffFilesNum(fileList);
     LOGI("get file list origDir: %{public}s backDir: %{public}s diffNum: %{public}d",
@@ -321,7 +320,6 @@ void KeyBackup::AddOrigFileToList(const std::string &fileName, const std::string
     fl.backFile = "";
     fl.isSame = false;
     fileList.push_back(fl);
-    return;
 }
 
 void KeyBackup::AddBackupFileToList(const std::string &fileName, const std::string &backDir,
@@ -352,7 +350,6 @@ void KeyBackup::AddBackupFileToList(const std::string &fileName, const std::stri
     fl.backFile = filePath;
     fl.isSame = false;
     fileList.push_back(fl);
-    return;
 }
 
 uint32_t KeyBackup::GetDiffFilesNum(const std::vector<struct FileNode> &fileList)
@@ -474,7 +471,6 @@ void KeyBackup::FsyncFile(const std::string &dirName)
             LOGE("sync failed: %{public}s", realPath.c_str());
         }
     }
-    return;
 }
 
 int32_t KeyBackup::MkdirParentWithRetry(const std::string &pathName, mode_t mode)
@@ -545,7 +541,6 @@ void KeyBackup::CleanFile(const std::string &path)
         LOGE("failed to sync file %{public}s", realPath.c_str());
     }
     (void)fclose(f);
-    return;
 }
 
 void KeyBackup::CheckAndCopyFiles(const std::string &from, const std::string &to)
@@ -687,7 +682,7 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
 bool KeyBackup::GetRealPath(const std::string &path, std::string &realPath)
 {
     char resolvedPath[PATH_MAX] = { 0 };
-    if (path.size() > PATH_MAX || !realpath(path.c_str(), resolvedPath)) {
+    if (path.size() >= PATH_MAX || !realpath(path.c_str(), resolvedPath)) {
         LOGE("%{public}s realpath failed", path.c_str());
         return false;
     }
@@ -785,4 +780,4 @@ int32_t KeyBackup::SetAttr(const std::string &path, struct FileAttr &attr)
     return ret;
 }
 } // namespace StorageDaemon
-} // namespace HOHS
+} // namespace OHOS

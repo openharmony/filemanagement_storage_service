@@ -26,6 +26,12 @@
 namespace OHOS {
 namespace StorageDaemon {
 
+DiskManager &DiskManager::Instance(void)
+{
+    static DiskManager instance;
+    return instance;
+}
+
 DiskManager::~DiskManager()
 {
     LOGI("Destroy DiskManager");
@@ -97,8 +103,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
             } else {
                 flag |= DiskInfo::DeviceFlag::USB_FLAG;
             }
-            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
-            return diskInfo;
+            return std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
         }
     }
 
@@ -180,7 +185,7 @@ void DiskManager::ReplayUevent()
     TraverseDirUevent(sysBlockPath_, true);
 }
 
-int32_t DiskManager::HandlePartition(std::string diskId)
+int32_t DiskManager::HandlePartition(const std::string &diskId)
 {
     int32_t ret = E_NON_EXIST;
     std::lock_guard<std::mutex> lock(lock_);

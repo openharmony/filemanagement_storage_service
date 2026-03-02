@@ -63,7 +63,7 @@ int32_t StorageDaemonCommunication::Connect()
         deathRecipient_ = new (std::nothrow) SdDeathRecipient();
         if (!deathRecipient_) {
             LOGE("StorageDaemonCommunication::Connect failed to create death recipient");
-            return E_DEATHRECIPIENT_IS_NULLPTR;
+            return E_DEATH_RECIPIENT_IS_NULLPTR;
         }
 
         storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
@@ -632,7 +632,7 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t has
     return storageDaemon_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
-int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     int32_t err = Connect();
     if (err != E_OK) {

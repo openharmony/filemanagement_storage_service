@@ -195,17 +195,17 @@ Acl AclFromMode(const std::string &file)
     acl.InsertEntry(
         { .tag = ACL_TAG::USER_OBJ,
           .perm = (st.st_mode & S_IRWXU) >> 6,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     acl.InsertEntry(
         { .tag = ACL_TAG::GROUP_OBJ,
           .perm = (st.st_mode & S_IRWXG) >> 3,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     acl.InsertEntry(
         { .tag = ACL_TAG::OTHER,
           .perm = (st.st_mode & S_IRWXO),
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
 
     return acl;
@@ -215,7 +215,7 @@ Acl AclFromFile(const std::string &file)
 {
     Acl acl;
     char buf[BUF_SIZE] = { 0 };
-    ssize_t len = getxattr(file.c_str(), ACL_XATTR_ACCESS, buf, BUF_SIZE);
+    ssize_t len = getxattr(file.c_str(), Acl::ACL_XATTR_ACCESS, buf, BUF_SIZE);
     if (len != -1) {
         acl.DeSerialize(buf, BUF_SIZE);
         return acl;
@@ -227,7 +227,7 @@ Acl AclFromFile(const std::string &file)
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
-    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
+    if (strcmp(aclAttrName, Acl::ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
         LOGE("Failed to confirm is a directory: %{public}s",
             errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
         return -1;
@@ -242,7 +242,7 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
 
     /* init acl from file's mode */
     Acl acl;
-    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) == 0) {
+    if (strcmp(aclAttrName, Acl::ACL_XATTR_ACCESS) == 0) {
         acl = AclFromFile(targetFile);
     } else {
         acl = AclFromMode(targetFile);
@@ -275,12 +275,12 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile, entryTxt, ACL_XATTR_DEFAULT);
+    return AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_DEFAULT);
 }
 
 int AclSetAccess(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile, entryTxt, ACL_XATTR_ACCESS);
+    return AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_ACCESS);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

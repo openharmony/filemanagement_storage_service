@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_SERVICE_UTILS_LOG_H
-#define STORAGE_SERVICE_UTILS_LOG_H
+#ifndef STORAGE_SERVICE_LOG_H
+#define STORAGE_SERVICE_LOG_H
 
 #include "hilog/log.h"
 
@@ -63,7 +63,7 @@ static constexpr OHOS::HiviewDFX::HiLogLabel KLOG_LABEL = { LOG_KMSG, LOG_DOMAIN
     ((void)HILOG_IMPL(LOG_CORE, LOG_ERROR, LOG_DOMAIN, STORAGE_LOG_TAG, \
     "[%{public}s:%{public}d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
 #endif
-} // OHOS
+} // namespace OHOS
 
 #define FILEMGMT_CALL_BASE(theCall, retVal)                                 \
     do {                                                                    \
@@ -73,4 +73,4 @@ static constexpr OHOS::HiviewDFX::HiLogLabel KLOG_LABEL = { LOG_KMSG, LOG_DOMAIN
         }                                                                   \
     } while (0)
 #define FILEMGMT_CALL(theCall)             FILEMGMT_CALL_BASE(theCall, nullptr)
-#endif // STORAGE_SERVICE_UTILS_LOG_H
+#endif // STORAGE_SERVICE_LOG_H

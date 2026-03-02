@@ -12,8 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-#include "keymanager_napi.h"
 
 #include "keymanager_n_exporter.h"
 #include "storage_service_log.h"

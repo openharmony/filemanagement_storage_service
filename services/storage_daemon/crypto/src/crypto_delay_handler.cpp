@@ -31,6 +31,7 @@ DelayHandler::DelayHandler(uint32_t userId): timerId_(0), cancelled_(false), use
 DelayHandler::~DelayHandler()
 {
     LOGI("DelayHandler Destructor.");
+    CancelDelayTask();
     timer_.Shutdown();
     LOGI("DelayHandler::Destruct success.");
 }

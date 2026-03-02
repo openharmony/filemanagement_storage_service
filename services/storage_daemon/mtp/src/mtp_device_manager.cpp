@@ -58,15 +58,15 @@ int32_t MtpDeviceManager::PrepareMtpMountPath(const std::string &path)
 
 int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 {
-    if (isMounting) {
+    LOGI("MountDevice: start mount mtp device, path=%{public}s", device.path.c_str());
+    if (isMounting_) {
         LOGI("MountDevice: mtp device is mounting, try again later.");
         return E_MTP_IS_MOUNTING;
     }
-    isMounting = true;
+    isMounting_ = true;
     int32_t ret = PrepareMtpMountPath(device.path);
     if (ret != E_OK) {
-        LOGI("PrepareMtpMountPath isMounting.");
-        isMounting = false;
+        isMounting_ = false;
         return ret;
     }
     std::vector<std::string> cmdVec = {
@@ -98,11 +98,12 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     if ((err != 0) || (result.size() != 0)) {
         LOGE("Run mtpfs cmd to mount mtp device failed.");
         UmountDevice(device, false, false);
-        isMounting = false;
+        isMounting_ = false;
         return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
 
-    isMounting = false;
+    LOGI("Run mtpfs cmd to mount mtp device success.");
+    isMounting_ = false;
     StorageManagerClient client;
     client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid, device.type);
     return E_OK;
@@ -121,7 +122,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
             }
             return E_OK;
         }
-        ret = remove(device.path.c_str());
+        ret = rmdir(device.path.c_str());
         if (ret != 0) {
             LOGW("remove failed in force mode, errno %{public}d", errno);
         }
@@ -139,7 +140,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
         LOGE("umount failed errno %{public}d", errno);
         return E_MTP_UMOUNT_FAILED;
     }
-    int err = remove(device.path.c_str());
+    int err = rmdir(device.path.c_str());
     if (err != E_OK) {
         LOGE("failed to call remove(%{public}s) error, errno=%{public}d", device.path.c_str(), errno);
         return E_SYS_KERNEL_ERR;

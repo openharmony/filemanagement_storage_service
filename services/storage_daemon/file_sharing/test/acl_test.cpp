@@ -65,7 +65,7 @@ HWTEST_F(AclTest, acl_entry_valid_test, TestSize.Level1)
     entry = {
         .tag = ACL_TAG::USER,
         .perm = 5,
-        .id = ACL_UNDEFINED_ID,
+        .id = AclXattrHeader::ACL_UNDEFINED_ID,
     };
     EXPECT_TRUE(!entry.IsValid());
     entry.id = 0;
@@ -74,7 +74,7 @@ HWTEST_F(AclTest, acl_entry_valid_test, TestSize.Level1)
     entry = {
         .tag = ACL_TAG::GROUP,
         .perm = 4,
-        .id = ACL_UNDEFINED_ID,
+        .id = AclXattrHeader::ACL_UNDEFINED_ID,
     };
     EXPECT_TRUE(!entry.IsValid());
     entry.id = 0;
@@ -129,19 +129,19 @@ HWTEST_F(AclTest, acl_valid_test, TestSize.Level1)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::USER_OBJ,
           .perm = 6,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && !acl.IsValid()); // invalid
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::GROUP_OBJ,
           .perm = 6,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && !acl.IsValid()); // still invalid
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::OTHER,
           .perm = 0,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && acl.IsValid()); // valid!
 
@@ -207,7 +207,7 @@ int CreateValidBasicAcl(Acl &out)
     int rc = acl.InsertEntry(
         { .tag = ACL_TAG::USER_OBJ,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;
@@ -215,7 +215,7 @@ int CreateValidBasicAcl(Acl &out)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::GROUP_OBJ,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;
@@ -223,7 +223,7 @@ int CreateValidBasicAcl(Acl &out)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::OTHER,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;

@@ -34,7 +34,7 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static UserdataDirInfo *Unmarshalling(Parcel &parcel);
 };
-} // StorageMangaer
+} // StorageManager
 } // OHOS
 
 #endif // OHOS_STORAGE_MANAGER_USERDATA_DIR_INFO_H

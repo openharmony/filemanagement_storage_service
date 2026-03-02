@@ -16,9 +16,9 @@
 #include <chrono>
 #include <ctime>
 #include <thread>
-#include "storage_daemon_client.h"
 #include "iservice_registry.h"
 #include "libfscrypt/fscrypt_utils.h"
+#include "storage_daemon_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
@@ -47,7 +47,7 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 
     sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_MANAGER_DAEMON_ID);
     if (object == nullptr) {
-        LOGE("storage daemon client samgr ablity empty error");
+        LOGE("storage daemon client samgr ability empty error");
         return nullptr;
     }
 
@@ -183,14 +183,14 @@ int32_t StorageDaemonClient::StopUser(int32_t userId)
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
-        StorageRadar::ReportUserManager("StartUser::CheckServiceStatus", userId, status, "");
+        StorageRadar::ReportUserManager("StopUser::CheckServiceStatus", userId, status, "");
         return status;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
-        StorageRadar::ReportUserManager("StartUser::GetStorageDaemonProxy", userId, E_SA_IS_NULLPTR, "");
+        StorageRadar::ReportUserManager("StopUser::GetStorageDaemonProxy", userId, E_SA_IS_NULLPTR, "");
         return E_SA_IS_NULLPTR;
     }
 
@@ -199,7 +199,7 @@ int32_t StorageDaemonClient::StopUser(int32_t userId)
 
 int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
-    LOGI("StorageDaemonClient::PrepareUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{publc}u",
+    LOGI("StorageDaemonClient::PrepareUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{public}u",
         userId, volumId.c_str(), flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
@@ -218,7 +218,7 @@ int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string
 
 int32_t StorageDaemonClient::DestroyUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
-    LOGI("StorageDaemonClient::DestroyUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{publc}u",
+    LOGI("StorageDaemonClient::DestroyUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{public}u",
         userId, volumId.c_str(), flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
@@ -323,7 +323,7 @@ int32_t StorageDaemonClient::UpdateUseAuthWithRecoveryKey(const std::vector<uint
                                                           std::vector<std::vector<uint8_t>> &plainText)
 {
     LOGI("StorageDaemonClient::UpdateUseAuthWithRecoveryKey, authToken: %{public}d, newSecret:%{public}d,"
-        "userId:%{public}d", authToken.empty(), newSecret.empty(), userId);
+        "userId:%{public}u", authToken.empty(), newSecret.empty(), userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -469,7 +469,7 @@ int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, st
     return client->GenerateAppkey(userId, hashId, keyId, false);
 }
 
-int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     LOGI("StorageDaemonClient::DeleteAppkey, userId: %{public}u, keyId:%{public}s", userId, keyId.c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);

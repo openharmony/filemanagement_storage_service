@@ -33,7 +33,10 @@ class NapiFileDfsListener : public FileManagement::ModuleFileIO::FileDfsListener
 public:
     NapiFileDfsListener(napi_env env, napi_value jsCallback) : env_(env), jsCallback_(jsCallback)
     {
-        napi_create_reference(env, jsCallback_, 1, &callbackRef_);
+        napi_status status = napi_create_reference(env, jsCallback_, 1, &callbackRef_);
+        if (status != napi_ok) {
+            callbackRef_ = nullptr;
+        }
     }
 
     ~NapiFileDfsListener()

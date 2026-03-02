@@ -1470,5 +1470,123 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_005, TestSize.Leve
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_005 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_001
+ * @tc.desc: Verify the ProcessPartitionChanges function with added lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_001 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07"};
+    std::vector<std::string> newLines = {"DISK mbr", "PART 1 0x07", "PART 2 0x07"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_002
+ * @tc.desc: Verify the ProcessPartitionChanges function with removed lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07", "PART 2 0x07"};
+    std::vector<std::string> newLines = {"DISK mbr", "PART 1 0x07"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_003
+ * @tc.desc: Verify the ProcessPartitionChanges function with both added and removed lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2", "PART 3"};
+    std::vector<std::string> newLines = {"DISK gpt", "PART 1", "PART 3", "PART 4"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 4, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_004
+ * @tc.desc: Verify the ProcessPartitionChanges function with no changes.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_004 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2"};
+    std::vector<std::string> newLines = {"DISK gpt", "PART 1", "PART 2"};
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_004 end";
+}
 }
 }

@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace StorageService {
 extern const int START_USER_ID;
-extern const int MAX_USER_ID; // user id range is (0, 10737]
+extern const int MAX_USER_ID; // user id range is [0, 10738]
 extern const uint32_t TOP_USER_ID;
 extern const int START_APP_CLONE_USER_ID;
 extern const int MAX_APP_CLONE_USER_ID;

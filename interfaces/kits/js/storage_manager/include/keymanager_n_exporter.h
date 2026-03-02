@@ -17,7 +17,6 @@
 #define KEYMANAGER_N_EXPORTER_H
  
 #include "n_exporter.h"
-#include "keymanager_napi.h"
  
 namespace OHOS {
 namespace StorageManager {

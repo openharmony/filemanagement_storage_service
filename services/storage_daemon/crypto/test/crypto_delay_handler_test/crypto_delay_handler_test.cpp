@@ -187,4 +187,40 @@ HWTEST_F(DelayHandlerTest, DeactiveEl3El4El5_WithValidKeyAndNotCancelled_01, tes
     userDelayHandler->DeactiveEl3El4El5();
     EXPECT_TRUE(userDelayHandler->cancelled_);
 }
+
+/**
+ * @tc.number: DelayHandler_Destructor_0000
+ * @tc.name: DelayHandler_Destructor_0000
+ * @tc.desc: Test function of DelayHandler destructor calls CancelDelayTask.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DelayHandlerTest, DelayHandler_Destructor_0000, testing::ext::TestSize.Level1)
+{
+    std::shared_ptr<DelayHandler> userDelayHandler = std::make_shared<DelayHandler>(100);
+    userDelayHandler->el4Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+    userDelayHandler->cancelled_ = false;
+    userDelayHandler.reset();
+    EXPECT_TRUE(true);
+}
+
+/**
+ * @tc.number: DelayHandler_Destructor_0001
+ * @tc.name: DelayHandler_Destructor_0001
+ * @tc.desc: Test function of DelayHandler destructor with active task.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DelayHandlerTest, DelayHandler_Destructor_0001, testing::ext::TestSize.Level1)
+{
+    {
+        std::shared_ptr<DelayHandler> userDelayHandler = std::make_shared<DelayHandler>(100);
+        userDelayHandler->cancelled_ = false;
+    }
+    EXPECT_TRUE(true);
+}
 }

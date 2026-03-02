@@ -138,7 +138,7 @@ int DiskInfo::Destroy()
 {
     auto &volume = VolumeManager::Instance();
 
-    for (auto volumeId : volumeId_) {
+    for (const auto& volumeId : volumeId_) {
         auto ret = volume.DestroyVolume(volumeId);
         if (ret != E_OK) {
             LOGE("Destroy volume %{public}s failed", volumeId.c_str());
@@ -359,12 +359,12 @@ void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, in
     );
 
     if (!addedLines.empty()) {
-        std::vector<std::string> SDLines;
-        SDLines.reserve(addedLines.size() + 1);
-        SDLines.push_back(lines.front());
-        SDLines.insert(SDLines.end(), addedLines.begin(), addedLines.end());
+        std::vector<std::string> sgdiskAddedLines;
+        sgdiskAddedLines.reserve(addedLines.size() + 1);
+        sgdiskAddedLines.push_back(lines.front());
+        sgdiskAddedLines.insert(sgdiskAddedLines.end(), addedLines.begin(), addedLines.end());
         sgdiskLines_ = lines;
-        if (ReadDiskLines(SDLines, maxVolumes, isUserdata) != E_OK) {
+        if (ReadDiskLines(sgdiskAddedLines, maxVolumes, isUserdata) != E_OK) {
             LOGI("Failed to read disk lines ");
         }
     }

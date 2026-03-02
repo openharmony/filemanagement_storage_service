@@ -803,4 +803,22 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetFileList_001, TestSize.Level1)
     unlink(f2.c_str());
     GTEST_LOG_(INFO) << "KeyBackup_GetFileList_001 end";
 }
+
+/**
+ * @tc.name: KeyBackup_GetRealPath_002
+ * @tc.desc: Verify the GetRealPath function with PATH_MAX length.
+ * @tc.type: FUNC
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_GetRealPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_GetRealPath_002 start";
+
+    std::string path;
+    std::string realPath;
+
+    path.assign(PATH_MAX, 'a');
+    EXPECT_FALSE(KeyBackup::GetInstance().GetRealPath(path, realPath));
+
+    GTEST_LOG_(INFO) << "KeyBackup_GetRealPath_002 end";
+}
 }

@@ -49,6 +49,11 @@ KeyManagerExt::~KeyManagerExt()
 
 void KeyManagerExt::Init()
 {
+    if (handler_ != nullptr || service_ != nullptr) {
+        LOGW("KeyManagerExt already initialized.");
+        return;
+    }
+
     if (!KeyCtrlHasFscryptSyspara()) {
         LOGE("FscryptSyspara has not enabled");
         return;
@@ -62,12 +67,17 @@ void KeyManagerExt::Init()
     GetExtInstance fnInstance = reinterpret_cast<GetExtInstance>(dlsym(handler_, "GetUserKeyExtInstance"));
     if (fnInstance == nullptr) {
         LOGE("GetExtInstance failed.");
+        dlclose(handler_);
+        handler_ = nullptr;
         return;
     }
 
     service_ = static_cast<UserkeyExtInterface*>(fnInstance());
     if (service_ == nullptr) {
         LOGE("User key Ext instance is null.");
+        dlclose(handler_);
+        handler_ = nullptr;
+        return;
     }
 }
 
@@ -139,13 +149,7 @@ int KeyManagerExt::ActiveUserKey(uint32_t userId,
         return E_OK;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    int ret = DoActiveUserKey(userId, token, secret);
-    if (ret != E_OK) {
-        return ret;
-    }
-
-    LOGI("Active user %{public}u key success", userId);
-    return ret;
+    return DoActiveUserKey(userId, token, secret);
 }
 
 int KeyManagerExt::InActiveUserKey(uint32_t userId)
@@ -180,13 +184,23 @@ int KeyManagerExt::SetRecoverKey(uint32_t userId, uint32_t keyType, const KeyBlo
     if (keyType != TYPE_EL2) {
         return E_OK;
     }
+    if (ivBlob.data == nullptr || ivBlob.size == 0) {
+        LOGE("Invalid ivBlob, size:%{public}u, data:%{public}p", ivBlob.size, ivBlob.data.get());
+        return E_PARAMS;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     KeyBlob preKey(DEFAULT_KEY);
     KeyBlob hashKey = OpensslCrypto::HashWithPrefix(preKey, ivBlob, AES_256_HASH_RANDOM_SIZE);
+    if (hashKey.IsEmpty()) {
+        LOGE("HashWithPrefix failed, hashKey is empty");
+        hashKey.Clear();
+        return E_KEY_EMPTY_ERROR;
+    }
     std::vector<uint8_t> keyVec(hashKey.data.get(), hashKey.data.get() + hashKey.size);
     int ret = service_->SetRecoverKey(userId, std::move(keyVec));
     if (ret != E_OK) {
         LOGE("set recover key error, ret: %{public}d", ret);
+        hashKey.Clear();
         return ret;
     }
 
@@ -228,6 +242,7 @@ int KeyManagerExt::GenerateAndInstallUserKey(uint32_t userId)
     ret = service_->GenerateUserKey(userId, std::move(keyVec));
     if (ret != E_OK) {
         LOGE("Generate user key error, ret: %{public}d", ret);
+        hashKey.Clear();
         return ret;
     }
     hashKey.Clear();
@@ -266,6 +281,7 @@ int KeyManagerExt::DoActiveUserKey(uint32_t userId,
         LOGE("Active user key with token error, ret: %{public}d", ret);
     }
     hashKey.Clear();
+    LOGI("Active user %{public}u key success", userId);
     return ret;
 }
 

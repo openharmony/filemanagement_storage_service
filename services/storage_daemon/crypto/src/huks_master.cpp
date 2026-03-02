@@ -88,7 +88,7 @@ void HuksMaster::ReleaseHdiProxyInstance()
     LOGI("finish");
 }
 
-int HuksMaster::HdiModuleInit()
+int32_t HuksMaster::HdiModuleInit()
 {
     LOGI("enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -126,7 +126,7 @@ int HuksMaster::HdiModuleInit()
     return retryRet;
 }
 
-int HuksMaster::HdiModuleDestroy()
+int32_t HuksMaster::HdiModuleDestroy()
 {
     LOGI("enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -164,7 +164,7 @@ int HuksMaster::HdiModuleDestroy()
     return retryRet;
 }
 
-int HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut)
+int32_t HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut)
 {
     LOGI("enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -207,7 +207,7 @@ int HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *para
     return retryRet;
 }
 
-int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token)
+int32_t HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token)
 {
     LOGD("HuksMaster::HdiAccessInit enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -247,8 +247,8 @@ int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, 
     return retryRet;
 }
 
-int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
-                                const HuksBlob &inData, HuksBlob &outData)
+int32_t HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
+                                    const HuksBlob &inData, HuksBlob &outData)
 {
     LOGD("HuksMaster::HdiAccessFinish enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -288,7 +288,7 @@ int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *param
     return retryRet;
 }
 
-int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey)
+int32_t HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey)
 {
     LOGI("enter");
     if (hksHdiProxyInstance_ == nullptr) {
@@ -552,7 +552,7 @@ static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, 
 
     ret = AppendNonceAadTokenEx(ctx, auth, paramSet, isEncrypt);
     if (ret != HKS_SUCCESS) {
-        LOGE("AppendNonceAad failed ret %{public}d", ret);
+        LOGE("AppendNonceAadTokenEx failed ret %{public}d", ret);
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
@@ -607,7 +607,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     ret = isNeedNewNonce ? AppendNonceAadToken(ctx, auth, paramSet)
                          : AppendNewNonceAadToken(ctx, auth, paramSet, isEncrypt);
     if (ret != HKS_SUCCESS) {
-        LOGE("AppendNonceAad failed ret %{public}d", ret);
+        LOGE("AppendNonceAadToken failed ret %{public}d", ret);
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
@@ -622,8 +622,8 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     return paramSet;
 }
 
-int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                   const KeyBlob &keyIn, KeyBlob &keyOut)
+int32_t HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                                       const KeyBlob &keyIn, KeyBlob &keyOut)
 {
     LOGD("HuksMaster::HuksHalTripleStage enter");
     HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
@@ -635,7 +635,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
     HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
 
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
+    int32_t ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
     if (ret != HKS_SUCCESS) {
         LOGE("HdiAccessInit failed ret %{public}d", ret);
         return ret;

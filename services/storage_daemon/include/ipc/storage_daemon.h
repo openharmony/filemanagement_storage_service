@@ -31,12 +31,8 @@ struct UserTokenSecret {
 };
 class StorageDaemon {
 public:
+    static StorageDaemon &GetInstance(void);
 
-    static StorageDaemon &GetInstance(void)
-    {
-        static StorageDaemon instance;
-        return instance;
-    }
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t CompleteAddUser(int32_t userId);

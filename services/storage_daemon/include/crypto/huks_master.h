@@ -56,12 +56,13 @@ private:
     void ReleaseHdiProxyInstance();
     int32_t HdiModuleInit();
     int32_t HdiModuleDestroy();
-    int HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut);
-    int HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token);
-    int HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet, const HuksBlob &inData, HuksBlob &outData);
-    int HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey);
-    int HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                           const KeyBlob &keyIn, KeyBlob &keyOut);
+    int32_t HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut);
+    int32_t HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token);
+    int32_t HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
+                            const HuksBlob &inData, HuksBlob &outData);
+    int32_t HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey);
+    int32_t HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                               const KeyBlob &keyIn, KeyBlob &keyOut);
 
     std::mutex hdiProxyMutex_;
     struct IHuks *hksHdiProxyInstance_ = nullptr;

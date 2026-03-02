@@ -25,6 +25,13 @@ public:
         return instance;
     }
     int ActiveAppCloneUserKey(unsigned int &failedUserId);
+
+    AppCloneKeyManager(const AppCloneKeyManager &) = delete;
+    AppCloneKeyManager &operator=(const AppCloneKeyManager &) = delete;
+
+private:
+    AppCloneKeyManager();
+    ~AppCloneKeyManager();
 };
 } // namespace StorageDaemon
 } // namespace OHOS

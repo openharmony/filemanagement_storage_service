@@ -152,11 +152,12 @@ public:
         void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId);
     };
 
-    std::mutex mutex_;
-    std::mutex mutexStats_;
     void StorageRadarThd(void);
 
 private:
+    std::mutex mutex_;
+    std::mutex mutexStats_;
+
     std::atomic<bool> stopRadarReport_{false};
     std::condition_variable execRadarReportCon_;
     std::mutex onRadarReportLock_;

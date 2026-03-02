@@ -88,7 +88,7 @@ bool CheckClientPermission(const std::string &permissionStr)
     }
 
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGD("StorageMangaer permissionCheck pass!");
+        LOGD("StorageManager permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
@@ -111,7 +111,7 @@ bool CheckClientPermissionForCrypt(const std::string &permissionStr)
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller, permissionStr);
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGD("StorageMangaer permissionCheck pass!");
+        LOGD("StorageManager permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
@@ -122,7 +122,11 @@ bool CheckClientPermissionForShareFile()
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo nativeInfo;
-    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+    int32_t ret = Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+    if (ret != E_OK) {
+        LOGE("CheckClientPermissionForShareFile GetNativeTokenInfo failed, ret=%{public}d", ret);
+        return false;
+    }
 
     auto uid = IPCSkeleton::GetCallingUid();
     if (nativeInfo.processName != PROCESS_NAME_FOUNDATION || uid != FOUNDATION_UID) {

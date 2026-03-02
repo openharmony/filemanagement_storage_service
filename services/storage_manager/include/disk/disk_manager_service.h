@@ -24,21 +24,16 @@ namespace OHOS {
 namespace StorageManager {
 class DiskManagerService final : public NoCopyable {
 public:
-    static DiskManagerService &GetInstance()
-    {
-        static DiskManagerService instance;
-        return instance;
-    }
-    std::shared_ptr<Disk> GetDiskById(std::string diskId);
-    int32_t Partition(std::string diskId, int32_t type);
-    void OnDiskCreated(Disk disk);
-    void OnDiskDestroyed(std::string diskId);
+    static DiskManagerService &GetInstance();
+    std::shared_ptr<Disk> GetDiskById(const std::string &diskId);
+    int32_t Partition(const std::string &diskId, int32_t type);
+    void OnDiskCreated(const Disk &disk);
+    void OnDiskDestroyed(const std::string &diskId);
     std::vector<Disk> GetAllDisks();
-    int32_t GetDiskById(std::string diskId, Disk &disk);
+    int32_t GetDiskById(const std::string &diskId, Disk &disk);
 private:
     DiskManagerService();
     ~DiskManagerService();
-    
     StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };
 } // StorageManager

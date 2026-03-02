@@ -22,16 +22,15 @@
 #include <string>
 #include <vector>
 
-#include "directory_ex.h"
-
 #include "base_key_mock.h"
-#include "key_control_mock.h"
+#include "directory_ex.h"
 #include "file_utils_mock.h"
 #include "fscrypt_control_mock.h"
 #include "fscrypt_key_v1.h"
+#include "key_control_mock.h"
 #include "os_account_manager_mock.h"
-#include "storage_manager_client_mock.h"
 #include "recover_manager_mock.h"
+#include "storage_manager_client_mock.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
 

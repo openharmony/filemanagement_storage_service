@@ -93,7 +93,7 @@ int PrepareFileSharingDir(const std::string &fsShareParam)
 int SetupDirAcl(const std::string &fsShareParam)
 {
     if (fsShareParam == TOB_SCENE || fsShareParam == TOD_SCENE) {
-        if (getxattr(SHARE_TOB_DIR, ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
+        if (getxattr(SHARE_TOB_DIR, Acl::ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
             int rc = AclSetDefault(SHARE_TOB_DIR, "g:7017:rwx");
             if (rc != 0) {
                 LOGE("Set acl for dir = %{public}s failed, fsShareParam = %{public}s",
@@ -104,7 +104,7 @@ int SetupDirAcl(const std::string &fsShareParam)
     }
 
     if (fsShareParam == TOC_SCENE || fsShareParam == TOD_SCENE) {
-        if (getxattr(PUBLIC_DIR, ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
+        if (getxattr(PUBLIC_DIR, Acl::ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
             int rc = AclSetDefault(PUBLIC_DIR, "g:1006:rwx");
             if (rc != 0) {
                 LOGE("Set acl for dir = %{public}s failed, fsShareParam = %{public}s",
@@ -119,7 +119,7 @@ int SetupDirAcl(const std::string &fsShareParam)
 
 std::string GetFileShareDefineParameter()
 {
-    char fsShareParam[] = "2c_share";
+    char fsShareParam[MAX_FS_DEFINE_VAL_LEN + 1] = "2c_share";
     int ret = GetParameter(SHARE_DIR_ENABLE_PARAMETER, "", fsShareParam, MAX_FS_DEFINE_VAL_LEN);
     if (ret <= 0) {
         LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
@@ -127,15 +127,18 @@ std::string GetFileShareDefineParameter()
         return TOC_SCENE;
     }
 
+    fsShareParam[MAX_FS_DEFINE_VAL_LEN] = '\0';
+
     if ((strlen(fsShareParam) == 0) || (strlen(fsShareParam) > MAX_FS_DEFINE_VAL_LEN)) {
         LOGE("GetParameter success, but fsShareParam = %{public}s is invalid, return default value",
              fsShareParam);
         return TOC_SCENE;
     }
 
-    if ((fsShareParam != TOB_SCENE) && (fsShareParam != TOC_SCENE) && (fsShareParam != TOD_SCENE)) {
-        LOGE("GetParameter success, but fsShareParam = %{public}s is not expected, return default value",
-             fsShareParam);
+    if ((strcmp(fsShareParam, TOB_SCENE) != 0) &&
+        (strcmp(fsShareParam, TOC_SCENE) != 0) &&
+        (strcmp(fsShareParam, TOD_SCENE) != 0)) {
+        LOGE("GetParameter success, but fsShareParam is not expected, return default value");
         return TOC_SCENE;
     }
     LOGI("GetParameter success, fsShareParam = %{public}s", fsShareParam);

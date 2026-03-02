@@ -48,10 +48,10 @@ public:
         Utils::UniqueWriteGuard<Utils::RWLock> mapGuard(this->rl_);
         map_.clear();
     }
-    void Empty()
+    bool Empty()
     {
         Utils::UniqueReadGuard<Utils::RWLock> volumeGuard(this->rl_);
-        map_.empty();
+        return map_.empty();
     }
     bool Contains(const K& key)
     {
@@ -111,6 +111,6 @@ private:
     OHOS::Utils::RWLock rl_;
     std::map<K, V> map_;
 };
-}
-}
+} //namespace StorageService
+} //namespace OHOS
 #endif // STORAGE_RL_MAP_H

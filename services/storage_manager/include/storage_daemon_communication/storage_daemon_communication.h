@@ -70,7 +70,7 @@ public:
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet = false);
-    int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
+    int32_t DeleteAppkey(uint32_t userId, const std::string &keyId);
     int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
                              const std::vector<uint8_t> &token,
