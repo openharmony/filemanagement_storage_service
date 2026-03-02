@@ -2600,3 +2600,4 @@ HWTEST_F(KeyManagerTest, KeyManager_DeleteGlobalDeviceKey_003, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "KeyManager_DeleteGlobalDeviceKey_003 end";
 }
+}
