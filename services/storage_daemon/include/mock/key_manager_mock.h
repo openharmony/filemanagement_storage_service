@@ -53,6 +53,11 @@ public:
     virtual int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount) = 0;
     virtual int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
         StorageService::EncryptionLevel level) = 0;
+    virtual bool IsDirRecursivelyEmpty(const char* dirPath) = 0;
+    virtual bool GetSecureUid(uint32_t userId, uint64_t &secureUid) = 0;
+    virtual int UpdateUserAuthByKeyType(unsigned int user,
+        struct UserTokenSecret &userTokenSecret, KeyType keyType) = 0;
+    virtual int UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType) = 0;
 
 public:
     static inline std::shared_ptr<IKeyManagerMock> iKeyManagerMock_ = nullptr;
@@ -85,6 +90,10 @@ public:
     MOCK_METHOD(int32_t, UpdateKeyContext, (uint32_t, bool));
     MOCK_METHOD(int, GetFileEncryptStatus, (uint32_t, bool &, bool));
     MOCK_METHOD(int32_t, SetDirEncryptionPolicy, (uint32_t, const std::string &, StorageService::EncryptionLevel));
+    MOCK_METHOD(bool, IsDirRecursivelyEmpty, (const char *));
+    MOCK_METHOD(bool, GetSecureUid, (uint32_t, uint64_t &));
+    MOCK_METHOD(int, UpdateUserAuthByKeyType, (unsigned int, struct UserTokenSecret &, KeyType));
+    MOCK_METHOD(int, UpdateKeyContextByKeyType, (uint32_t, KeyType));
 };
 }
 }

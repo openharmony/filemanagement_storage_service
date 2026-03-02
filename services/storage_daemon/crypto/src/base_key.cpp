@@ -420,39 +420,30 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 
 int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
 {
-    DoLatestBackUp();
-    bool hasLatest = IsDir(dir_ + PATH_LATEST);
-    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) { // rename {candidate} to latest
-        LOGE("rename candidate to latest fail return %{public}d", errno);
-        if (hasLatest) { // revert from the backup
-            if (rename((dir_ + PATH_LATEST_BACKUP).c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
-                LOGE("restore the latest_backup fail errno:%{public}d", errno);
-            } else {
-                LOGI("restore the latest_backup success");
-            }
-        }
-        SyncKeyDir();
-        return errno;
-    }
-    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
-    return E_OK;
-}
-
-void BaseKey::DoLatestBackUp() const
-{
-    // backup the latest
-    std::string pathLatest = dir_ + PATH_LATEST;
-    std::string pathLatestBak = dir_ + PATH_LATEST_BACKUP;
-    bool hasLatest = IsDir(dir_ + PATH_LATEST);
-    if (hasLatest) {
-        OHOS::ForceRemoveDirectory(pathLatestBak);
-        if (rename(pathLatest.c_str(),
-                   pathLatestBak.c_str()) != 0) {
+    std::string latestPath = dir_ + PATH_LATEST;
+    std::string latestPathBak = dir_ + PATH_LATEST_BACKUP;
+    if (IsDir(latestPath)) { // rename latest to latest_backup
+        OHOS::ForceRemoveDirectory(latestPathBak);
+        if (rename(latestPath.c_str(), latestPathBak.c_str()) != 0) {
             LOGE("backup the latest fail errno:%{public}d", errno);
+            return E_RENAME_FILE_ERROR;
         }
         LOGI("backup the latest success");
     }
+
+    OHOS::ForceRemoveDirectory(latestPath);
+    if (rename(candidate.c_str(), latestPath.c_str()) == 0) { // rename {candidate} to latest
+        LOGI("rename candidate %{public}s to latest success", candidate.c_str());
+        return E_OK;
+    }
+    LOGE("rename candidate to latest fail return %{public}d", errno);
+    if (rename(latestPathBak.c_str(), latestPath.c_str()) != 0) {
+        LOGE("restore the latest_backup fail errno:%{public}d", errno);
+        return E_RENAME_FILE_ERROR;
+    }
+    LOGI("restore the latest_backup success");
+    SyncKeyDir();
+    return E_OK;
 }
 
 int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
@@ -771,7 +762,7 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
         LOGE("Double 2 single, skip huks -> huks-openssl !");
         return E_OK;
     }
-    uint64_t secureUid = { 0 };
+    uint64_t secureUid = 0;
     uint32_t userId = GetIdFromDir();
     if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
@@ -797,26 +788,6 @@ int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyP
     auto ret = DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir());
     if (ret != E_OK) {
         LOGE("Restore ce ece sece failed !");
-        return ret;
-    }
-    uint64_t secureUid = { 0 };
-
-    uint32_t userId = GetIdFromDir();
-    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
-        IamClient::GetInstance().HasPinProtect(userId)) {
-        if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
-            LOGE("Get secure uid form iam failed, use default value.");
-        }
-        LOGI("PIN protect exist.");
-    }
-    ret = StoreKey({auth.token, auth.secret, secureUid});
-    if (ret != E_OK) {
-        LOGE("Store old failed !");
-        return ret;
-    }
-    ret = UpdateKey();
-    if (ret != E_OK) {
-        LOGE("Update old failed !");
         return ret;
     }
     LOGI("finish");

@@ -122,6 +122,10 @@ public:
     bool HasElkey(uint32_t userId, KeyType type);
     friend class KeyManagerExt;
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, StorageService::EncryptionLevel level);
+    bool IsDirRecursivelyEmpty(const char* dirPath);
+    bool GetSecureUid(uint32_t userId, uint64_t &secureUid);
+    int UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType);
+    int UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType);
 
 private:
     KeyManager()
@@ -151,6 +155,7 @@ private:
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type, bool isSave = true);
     bool IsNeedClearKeyFile(std::string file);
+    void ClearKeyFilesForPath(const std::string &path);
     bool CheckDir(KeyType type, std::string keyDir, unsigned int user);
     int ActiveUece(unsigned int user,
                    std::shared_ptr<BaseKey> elKey,

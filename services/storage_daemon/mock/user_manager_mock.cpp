@@ -50,5 +50,13 @@ int32_t UserManager::PrepareAllUserEl1Dirs()
     }
     return UserManagerMock::iUserManagerMock_->PrepareAllUserEl1Dirs();
 }
+
+int32_t UserManager::PrepareUserDirsForUpdate(int32_t userId, uint32_t flags)
+{
+    if (UserManagerMock::iUserManagerMock_ == nullptr) {
+        return -1;
+    }
+    return UserManagerMock::iUserManagerMock_->PrepareUserDirsForUpdate(userId, flags);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

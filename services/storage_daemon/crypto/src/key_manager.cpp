@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <future>
 #include "directory_ex.h"
+#include <dirent.h>
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
@@ -44,6 +45,7 @@ constexpr const char *DATA_DIR = "data/app/";
 constexpr const char *SERVICE_DIR = "data/service/";
 constexpr const char *ENCRYPT_VERSION_DIR = "/latest/encrypted";
 constexpr const char *SEC_DISCARD_DIR = "/latest/sec_discard";
+constexpr const char *NEED_UPDATE_DIR = "/latest/need_update";
 constexpr const char *SHIELD_DIR = "/latest/shield";
 constexpr const char *DESC_DIR = "/key_desc";
 constexpr const char *EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
@@ -400,16 +402,37 @@ bool KeyManager::IsNeedClearKeyFile(std::string file)
     return false;
 }
 
+void KeyManager::ClearKeyFilesForPath(const std::string &path)
+{
+    std::vector<std::string> filesToDelete = {
+        path + FSCRYPT_VERSION_DIR,
+        path + DESC_DIR,
+        path + ENCRYPT_VERSION_DIR,
+        path + NEED_UPDATE_DIR,
+        path + SEC_DISCARD_DIR,
+        path + SHIELD_DIR
+    };
+
+    for (const auto &file : filesToDelete) {
+        if (remove(file.c_str()) != 0 && errno != ENOENT) {
+            LOGE("Failed to delete %{public}s, errno: %{public}d", file.c_str(), errno);
+        }
+    }
+    if (!IsDirRecursivelyEmpty(path.c_str())) {
+        return;
+    }
+    if (remove(path.c_str()) != 0 && errno != ENOENT) {
+        LOGE("Failed to delete dir %{public}s, errno: %{public}d", path.c_str(), errno);
+    }
+}
+
 void KeyManager::ProcUpgradeKey(const std::vector<FileList> &dirInfo)
 {
     LOGI("enter:");
     for (const auto &it : dirInfo) {
         std::string needRestorePath = it.path + "/latest/need_restore";
         if (IsNeedClearKeyFile(needRestorePath)) {
-            bool ret = RmDirRecurse(it.path);
-            if (!ret) {
-                LOGE("remove key dir fail, result is %{public}d, dir %{private}s", ret, it.path.c_str());
-            }
+            ClearKeyFilesForPath(it.path);
         }
     }
 }
@@ -874,6 +897,45 @@ std::string BuildTimeInfo(int64_t start, int64_t end)
 {
     std::string duration = std::to_string(end - start);
     return " start: " + std::to_string(start) + " ,end: " + std::to_string(end) + " ,duration: " + duration;
+}
+
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string secretInfo = BuildSecretStatus(userTokenSecret);
+    std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
+    int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
+
+    LOGW("enter, user=%{public}d, token=%{public}d, oldSec=%{public}d, newSec=%{public}d, keyType: %{public}u", user,
+        userTokenSecret.token.empty(), userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty(), keyType);
+    if (keyType == EL5_KEY) {
+        int ret = UpdateESecret(user, userTokenSecret);
+        if (ret != 0) {
+            LOGE("user %{public}u UpdateESecret fail", user);
+            queryTime += " UpdateUserAuth: " +
+                BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+            StorageRadar::ReportUpdateUserAuth("UpdateESecret_ByKeyType", user, ret, "EL5", secretInfo + queryTime);
+        }
+        return ret;
+    }
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true);
+    if (ret != 0) {
+        LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_ByKeyType_Migrate",
+            user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
+    }
+#else
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType);
+    if (ret != 0) {
+        LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_ByKeyType",
+            user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
+    }
+#endif
+    return ret;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -2085,6 +2147,40 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     return 0;
 }
 
+int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
+{
+    LOGI("UpdateKeyContextByKeyType enter, userId: %{public}u, keyType: %{public}u", userId, keyType);
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string strKeyType = "EL" + std::to_string(keyType);
+    int ret = E_OK;
+    if (keyType != EL5_KEY) {
+        ret = UpdateCeEceSeceKeyContext(userId, keyType);
+        if (ret != 0) {
+            LOGE("Basekey update EL%{public}u newest context failed", keyType);
+            StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext",
+                userId, ret, strKeyType, "");
+        }
+        return ret;
+    }
+    if (IsUeceSupport()) {
+        ret = UpdateClassEBackUpFix(userId);
+        if (ret != 0) {
+            LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
+            return ret;
+        }
+        if (saveESecretStatus[userId]) {
+            ret = UpdateCeEceSeceKeyContext(userId, keyType);
+        }
+    }
+    if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
+        LOGE("Basekey update EL5 newest context failed");
+        StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, strKeyType, "");
+        return ret;
+    }
+    LOGI("Basekey update key context success");
+    return 0;
+}
+
 int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UpdateKeyContext enter");
@@ -2443,6 +2539,59 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     LOGD("EL5_FILEKEY_MANAGER is not supported");
     return E_OK;
 #endif
+}
+
+bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
+{
+    if (dirPath == nullptr || dirPath[0] == '\0') {
+        LOGI("IsDirEmptyAndLogIfNot: dirPath is null/empty");
+        return true;
+    }
+    DIR* dir = opendir(dirPath);
+    if (!dir) {
+        LOGI("IsDirEmptyAndLogIfNot: opendir failed: %s, errno=%d(%s)",
+             dirPath, errno, strerror(errno));
+        return true;
+    }
+    bool empty = true;
+    struct dirent* ent = nullptr;
+    while ((ent = readdir(dir)) != nullptr) {
+        const char* name = ent->d_name;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+            continue;
+        }
+        empty = false;
+        std::string path = std::string(dirPath) + "/" + name;
+        struct stat st;
+        if (lstat(path.c_str(), &st) < 0) {
+            if (errno == ENOENT) {
+                continue;
+            }
+            LOGE("lstat failed: path=%s errno=%d", path.c_str(), errno);
+            continue;
+        }
+        std::string extraData = "path is: " + path +
+            " uid is: " + std::to_string(st.st_uid) +
+            " gid is: " + std::to_string(st.st_gid);
+        StorageService::StorageRadar::ReportCommonResult("dir is not empty", 0, E_DIR_NOT_EMPTY_ERROR, extraData);
+    }
+    closedir(dir);
+    return empty;
+}
+
+bool KeyManager::GetSecureUid(uint32_t userId, uint64_t &secureUid)
+{
+    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
+        IamClient::GetInstance().HasPinProtect(userId)) {
+        if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
+            LOGE("Get secure uid form iam failed, use default value.");
+            return false;
+        }
+        LOGI("PIN protect exist.");
+        return true;
+    }
+    LOGE("userId: %{public}u check failed", userId);
+    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -226,44 +226,17 @@ HWTEST_F(BaseKeyTest, BaseKey_UpdateKey_001, TestSize.Level1)
     EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_EMPTY_CANDIDATE_ERROR);
 
     keyPath = "/test";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), 2);
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_RENAME_FILE_ERROR);
 
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), 2);
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_RENAME_FILE_ERROR);
 
     keyPath = "/test/latest";
     elKey->dir_ = "/test";
     EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
     EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
     GTEST_LOG_(INFO) << "BaseKey_UpdateKey_001 end";
-}
-
-/**
- * @tc.name: BaseKey_DoLatestBackUp_001
- * @tc.desc: Verify the DoLatestBackUp function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(BaseKeyTest, BaseKey_DoLatestBackUp_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "BaseKey_DoLatestBackUp_001 start";
-    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    elKey->DoLatestBackUp();
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    elKey->DoLatestBackUp();
-
-    std::string pathLatest = elKey->GetDir() + PATH_LATEST;
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(pathLatest));
-    std::string pathLatestBak = elKey->GetDir() + PATH_LATEST_BACKUP;
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    elKey->DoLatestBackUp();
-    EXPECT_FALSE(access(pathLatest.c_str(), F_OK) == 0);
-    EXPECT_TRUE(access(pathLatestBak.c_str(), F_OK) == 0);
-    EXPECT_TRUE(OHOS::ForceRemoveDirectory(pathLatestBak));
-    GTEST_LOG_(INFO) << "BaseKey_DoLatestBackUp_001 end";
 }
 
 /**

@@ -32,6 +32,7 @@ public:
     int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t PrepareAllUserEl1Dirs();
+    int32_t PrepareUserDirsForUpdate(int32_t userId, uint32_t flags);
 
 private:
     UserManager() = default;

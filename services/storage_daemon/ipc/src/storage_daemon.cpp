@@ -20,8 +20,10 @@
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
 #include <dlfcn.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <vector>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <thread>
@@ -161,7 +163,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         return ret;
     }
 
-    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
         return ret;
@@ -198,6 +200,11 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             break;
         }
         if (ret != E_OK) {
+            return ret;
+        }
+        ret = DoStoreAndUpdate(userId, {}, {}, type);
+        if (ret != E_OK) {
+            LOGE("DoStoreAndUpdate failed, userId:%{public}u, ret:%{public}d, type:%{public}u", userId, ret, type);
             return ret;
         }
     }
@@ -542,10 +549,14 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         return E_OK;
     }
 
-    LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
-    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
+    LOGW("prepare user dirs for update, user:%{public}u, flags:%{public}u", userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
+        return ret;
+    }
+    ret = DoStoreAndUpdate(userId, token, secret, type);
+    if (ret != E_OK) {
+        LOGE("DoStoreAndUpdate failed, ret:%{public}d, userId:%{public}u, type:%{public}u", ret, userId, type);
         return ret;
     }
     if (flags == IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
@@ -898,7 +909,6 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for update scene for userId=%{public}d success.", userId);
-
     auto ueceRet = KeyManager::GetInstance().NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
         LOGE("NotifyUeceActivation failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
@@ -909,25 +919,95 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     return E_OK;
 }
 
+static void DeleteKeyFiles(const std::string &basePath, const std::vector<std::string> &fileList)
+{
+    for (const auto &file : fileList) {
+        unlink((basePath + file).c_str());
+    }
+}
+
+void StorageDaemon::ClearKeyDirInfo(const std::string &path)
+{
+    std::vector<std::string> filesToDelete = {
+        "/fscrypt_version",
+        "/key_desc",
+        "/latest/encrypted",
+        "/latest/need_update",
+        "/latest/sec_discard",
+        "/latest/shield"
+    };
+    DeleteKeyFiles(path, filesToDelete);
+
+    std::string dir = path + PATH_LATEST;
+    if (!KeyManager::GetInstance().IsDirRecursivelyEmpty(dir.c_str())) {
+        return;
+    }
+    rmdir(dir.c_str());
+    if (KeyManager::GetInstance().IsDirRecursivelyEmpty(path.c_str())) {
+            rmdir(path.c_str());
+    }
+}
+
+void StorageDaemon::ClearKeyDir(const std::string &path)
+{
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        LOGE("Failed to open directory %{public}s", path.c_str());
+        return;
+    }
+
+    LOGI("First-level directories under %{public}s:", path.c_str());
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != nullptr) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+            continue;
+        }
+
+        if (ent->d_type == DT_DIR) {
+            std::string fullPath = path + "/" + ent->d_name;
+            ClearKeyDirInfo(fullPath);
+        }
+    }
+    closedir(dir);
+    if (KeyManager::GetInstance().IsDirRecursivelyEmpty(path.c_str())) {
+        rmdir(path.c_str());
+    }
+}
+
 void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll)
 {
     std::string natoKey = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type);
+
     if (!isClearAll) {
-        RmDirRecurse(natoKey + PATH_LATEST);
+        // Only delete 4 files in latest directory
+        std::vector<std::string> filesToDelete = {
+            "/latest/encrypted",
+            "/latest/need_update",
+            "/latest/sec_discard",
+            "/latest/shield"
+        };
+        DeleteKeyFiles(natoKey, filesToDelete);
+        std::string dir = natoKey + PATH_LATEST;
+        if (KeyManager::GetInstance().IsDirRecursivelyEmpty(dir.c_str())) {
+            rmdir(dir.c_str());
+        }
         return;
     }
-    RmDirRecurse(natoKey);
+
+    // Delete all 6 key files
+    ClearKeyDirInfo(natoKey);
+
     if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR)) {
-        RmDirRecurse(NATO_EL2_DIR);
-        RmDirRecurse(std::string(NATO_EL2_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL2_DIR));
+        ClearKeyDir(std::string(NATO_EL2_DIR) + "_bak");
     }
     if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR)) {
-        RmDirRecurse(NATO_EL3_DIR);
-        RmDirRecurse(std::string(NATO_EL3_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL3_DIR));
+        ClearKeyDir(std::string(NATO_EL3_DIR) + "_bak");
     }
     if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR)) {
-        RmDirRecurse(NATO_EL4_DIR);
-        RmDirRecurse(std::string(NATO_EL4_DIR) + "_bak");
+        ClearKeyDir(std::string(NATO_EL4_DIR));
+        ClearKeyDir(std::string(NATO_EL4_DIR) + "_bak");
     }
 }
 
@@ -1357,7 +1437,31 @@ int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
         LOGE("dir is not permission.");
         return E_PARAMS_INVALID;
     }
-    
+    return E_OK;
+}
+
+int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret,
+                                        KeyType keyType)
+{
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    uint64_t secureUid = { 0 };
+    if (!KeyManager::GetInstance().GetSecureUid(userId, secureUid)) {
+        LOGE("GetSecureUid failed, userId:%{public}u", userId);
+    }
+    UserTokenSecret userTokenSecret = { token, secret, secret, secureUid };
+    auto ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecret, keyType);
+    if (ret != E_OK) {
+        LOGE("UpdateUserAuth failed, ret:%{public}d, userId:%{public}u, keyType:%{public}u", ret, userId, keyType);
+        return ret;
+    }
+    ret = KeyManager::GetInstance().UpdateKeyContextByKeyType(userId, keyType);
+    if (ret != E_OK) {
+        LOGE("UpdateKeyContext failed, ret:%{public}d, userId:%{public}u, keyType:%{public}u", ret, userId, keyType);
+        return ret;
+    }
+#endif
     return E_OK;
 }
 } // namespace StorageDaemon

@@ -171,7 +171,7 @@ std::string SmtpfsRealPath(const std::string &path)
 
 std::string SmtpfsGetTmpDir()
 {
-    OHOS::StorageDaemon::DelTemp(TMP_FULL_PATH);
+    DelTemp(TMP_FULL_PATH);
 
     std::string tmpDir = SmtpfsRealPath(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
     if (tmpDir.length() > PATH_MAX) {
@@ -192,6 +192,31 @@ std::string SmtpfsGetTmpDir()
     ::free(static_cast<void *>(cTempDir));
     cTempDir = nullptr;
     return tmpDir;
+}
+
+void DelTemp(const std::string &path)
+{
+    DIR *dir;
+    if (!OHOS::StorageDaemon::IsDir(path)) {
+        return;
+    }
+    if ((dir = opendir(path.c_str())) != nullptr) {
+        struct dirent *dirinfo = ::readdir(dir);
+        while (dirinfo != nullptr) {
+            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
+                dirinfo = ::readdir(dir);
+                continue;
+            }
+            std::string filePath;
+            filePath.append(path).append("/").append(dirinfo->d_name);
+            if (OHOS::StorageDaemon::IsTempFolder(filePath, "simple-mtpfs")) {
+                OHOS::StorageDaemon::DeleteFile(filePath.c_str());
+                rmdir(filePath.c_str());
+            }
+            dirinfo = ::readdir(dir);
+        }
+        closedir(dir);
+    }
 }
 
 bool SmtpfsCheckDir(const std::string &path)

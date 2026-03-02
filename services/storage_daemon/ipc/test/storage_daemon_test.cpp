@@ -388,7 +388,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_004, TestSize.Le
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_ERR);
 }
@@ -994,7 +994,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
     auto natoPath = KeyManager::GetInstance().GetNatoNeedRestorePath(userId_, EL3_KEY) + FSCRYPT_VERSION_DIR;
     std::error_code errCode;
     std::filesystem::remove(natoPath, errCode);
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL3_KEY, token_, secret_, "1"), E_ERR);
 }

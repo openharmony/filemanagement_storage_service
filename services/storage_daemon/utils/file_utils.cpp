@@ -27,6 +27,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
+#include "utils/storage_radar.h"
 #ifdef USE_LIBRESTORECON
 #include "policycoreutils.h"
 #endif
@@ -35,6 +36,7 @@
 #endif
 
 using namespace std;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
@@ -150,11 +152,6 @@ int32_t MkDir(const std::string &path, mode_t mode)
     return TEMP_FAILURE_RETRY(mkdir(path.c_str(), mode));
 }
 
-int32_t RmDir(const std::string &path)
-{
-    return TEMP_FAILURE_RETRY(rmdir(path.c_str()));
-}
-
 int32_t Mount(const std::string &source, const std::string &target, const char *type,
               unsigned long flags, const void *data)
 {
@@ -264,16 +261,20 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
             return false;
         }
         if (((st.st_mode & ALL_PERMS) != mode) && ChMod(path, mode)) {
-            LOGE("dir exists and failed to chmod, errno %{public}d, uid %{public}d, gid %{public}d, mode %{public}d",
-                 errno, st.st_uid, st.st_gid, st.st_mode);
+            std::string extraData = "path=" + path + ",uid=" + to_string(st.st_uid) +
+              ",gid=" + to_string(st.st_gid) + ",mode=" + to_string(st.st_mode) + ",errno=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareDir", DEFAULT_USERID, E_PREPARE_DIR, extraData);
+            LOGE("dir exists and failed to chmod, %{public}s", extraData.c_str());
             if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &st)) == E_ERR) {
                 LOGE("failed to lstat for chmod, errno %{public}d", errno);
             }
             return false;
         }
         if (((st.st_uid != uid) || (st.st_gid != gid)) && ChOwn(path, uid, gid)) {
-            LOGE("dir exists and failed to chown, errno %{public}d, uid %{public}d, gid %{public}d, mode %{public}d",
-                 errno, st.st_uid, st.st_gid, st.st_mode);
+            std::string extraData = "path=" + path + ",uid=" + to_string(st.st_uid) +
+              ",gid=" + to_string(st.st_gid) + ",mode=" + to_string(st.st_mode) + ",errno=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareDir", DEFAULT_USERID, E_PREPARE_DIR, extraData);
+            LOGE("dir exists and failed to chown, %{public}s", extraData.c_str());
             if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &st)) == E_ERR) {
                 LOGE("failed to lstat for chown, errno %{public}d", errno);
             }
@@ -954,39 +955,6 @@ bool IsTempFolder(const std::string &path, const std::string &sub)
         }
     }
     return result;
-}
-
-void DelTemp(const std::string &path)
-{
-    DIR *dir;
-    if (!IsDir(path)) {
-        return;
-    }
-    if ((dir = opendir(path.c_str())) != NULL) {
-        {
-            struct dirent *dirinfo;
-            while ((dirinfo = readdir(dir)) != NULL) {
-                if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
-                    continue;
-                }
-                std::string filePath;
-                filePath.append(path).append("/").append(dirinfo->d_name);
-                if (IsTempFolder(filePath, "simple-mtpfs")) {
-                    DeleteFile(filePath.c_str());
-                    rmdir(filePath.c_str());
-                }
-            }
-            closedir(dir);
-        }
-    }
-}
-
-bool DelFolder(const std::string &path)
-{
-    if (rmdir(path.c_str()) == 0) {
-        return true;
-    }
-    return false;
 }
 
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)

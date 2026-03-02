@@ -1242,46 +1242,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetDamag
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001
- * @tc.desc: Verify the DoMount4Ext function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 start";
-
-    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
-    uint32_t mountFlags = 0;
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(E_EXT_MOUNT));
-    int32_t ret = externalVolumeInfo_->DoMount4Ext(mountFlags);
-    GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_EXT_MOUNT);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_002
- * @tc.desc: Verify the DoMount4Ext function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_002 start";
-
-    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
-    uint32_t mountFlags = 0;
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(E_OK));
-    int32_t ret = externalVolumeInfo_->DoMount4Ext(mountFlags);
-    GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_002 end";
-}
-
-/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001
  * @tc.desc: Verify the DoMount4Ntfs function.
  * @tc.type: FUNC

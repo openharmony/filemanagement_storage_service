@@ -123,7 +123,6 @@ private:
     int GetCandidateVersion() const;
     std::string GetNextCandidateDir() const;
     void SyncKeyDir() const;
-    void DoLatestBackUp() const;
     uint32_t GetTypeFromDir();
     uint32_t GetIdFromDir();
     int32_t UpdateOrRollbackKey(const std::string &candidate);

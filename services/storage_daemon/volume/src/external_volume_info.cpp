@@ -128,15 +128,6 @@ int32_t ExternalVolumeInfo::DoDestroy()
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
-{
-    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
-    if (ret != E_OK) {
-        return E_EXT_MOUNT;
-    }
-    return ret;
-}
-
 int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 {
     const char *fsType = "hmfs";
@@ -395,16 +386,18 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         ret = DoMount4Hmfs(mountFlags);
     }
     if (ret != E_OK) {
-        if (remove(mountPath_.c_str()) != 0) {
-            LOGE("remove failed errno: %{public}d", errno);
+        auto retNo = remove(mountPath_.c_str());
+        if (retNo != 0) {
+            LOGE("remove failed errno: %{public}d, retNo is : %{public}d", errno, retNo);
         }
         return E_HMFS_MOUNT;
     }
 
     ret = ExecuteAsyncMount(mountFlags);
     if (ret != E_OK) {
-        if (remove(mountPath_.c_str()) != 0) {
-            LOGE("remove failed errno: %{public}d", errno);
+        auto retNo = remove(mountPath_.c_str());
+        if (retNo != 0) {
+            LOGE("remove failed errno: %{public}d, retNo is : %{public}d", errno, retNo);
         }
     }
     mountPath_ = mountBackupPath_;

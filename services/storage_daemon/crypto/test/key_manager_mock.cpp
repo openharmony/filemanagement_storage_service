@@ -306,5 +306,37 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     }
     return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
+
+bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->IsDirRecursivelyEmpty(dirPath);
+}
+
+bool KeyManager::GetSecureUid(uint32_t userId, uint64_t &secureUid)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return false;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetSecureUid(userId, secureUid);
+}
+
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuthByKeyType(user, userTokenSecret, keyType);
+}
+
+int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateKeyContextByKeyType(userId, keyType);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

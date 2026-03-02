@@ -842,12 +842,6 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
 {
     LOGI("MountManager::UMountDfsDocs start.");
 
-    std::regex pathRegex("^[a-zA-Z0-9_/]+$");
-    if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
-        LOGE("[UMountDfsDocs]invalid relativePath");
-        return E_PARAMS_INVALID;
-    }
-
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
     sync();
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -855,7 +849,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     if (ret != E_OK && errno != ERROR_FILE_NOT_FOUND) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
-        return E_USER_UMOUNT_ERR;
+        return errno;
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT DFS DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -864,7 +858,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
         LOGE("[UMountDfsDocs] Failed to umount");
         return E_NOT_EMPTY_TO_UMOUNT;
     }
-    if (!RmDirRecurse(dstPath)) {
+    if (!rmdir(dstPath.c_str())) {
         LOGE("Failed to remove dir %{public}s", dstPath.c_str());
     }
     return E_OK;
@@ -1336,13 +1330,17 @@ int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (const auto &mountNodeInfo : mountNodeInfos) {
         std::string path = sandboxRootPath + mountNodeInfo.dstPath;
+        if (path.back() == '/') {
+            path.pop_back();
+        }
         auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
         int32_t res = UMount(path);
-        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-            std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
+        int32_t tmpErrno = errno;
+        if (res != E_OK && tmpErrno != ENOENT && tmpErrno != EINVAL) {
+            std::string extraData = "path=" + path + ",kernelCode=" + to_string(tmpErrno);
             StorageRadar::ReportUserManager("ClearSecondMountPoint", userId, E_UMOUNT_SANDBOX, extraData);
-            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.",
-                 path.c_str(), errno, res);
+            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.", path.c_str(),
+                 tmpErrno, res);
             return E_UMOUNT_SANDBOX;
         }
         StorageService::StorageRadar::ReportDuration("umount-" + path, startUmountTime, userId);

@@ -565,5 +565,92 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateElxBundleDataDi
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_001
+ * @tc.desc: func PrepareUserDirsForUpdate when the el1 path exist but is not dir.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_001 start";
+
+    std::string filePath(StorageTest::StorageTestUtils::gRootDirs[0].path);
+    filePath.replace(filePath.find("%s"), 2, "el1");
+    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::USER_ID1));
+    auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
+    EXPECT_TRUE(bRet) << "check the file create";
+
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
+    int32_t ret = UserManager::GetInstance().PrepareUserDirsForUpdate(StorageTest::USER_ID1, flags);
+    EXPECT_TRUE(ret == E_PREPARE_DIR) << "the path is not dir";
+
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_002
+ * @tc.desc: func PrepareUserDirsForUpdate when the flags is incorrect.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_002 start";
+
+    std::string filePath(StorageTest::StorageTestUtils::gRootDirs[0].path);
+    filePath.replace(filePath.find("%s"), 2, "el1");
+    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::USER_ID1));
+    auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
+    EXPECT_TRUE(bRet) << "check the file create";
+
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1;
+    int32_t ret = UserManager::GetInstance().PrepareUserDirsForUpdate(StorageTest::USER_ID1, flags);
+    EXPECT_TRUE(ret == E_PREPARE_DIR) << "the flags is incorrect";
+
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_002 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_003
+ * @tc.desc: check PrepareUserDirsForUpdate when args are normal
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_003 start";
+
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
+    auto ret = KeyManager::GetInstance().GenerateUserKeys(StorageTest::USER_ID5, flags);
+    EXPECT_EQ(ret, E_OK);
+
+    ret = UserManager::GetInstance().PrepareUserDirsForUpdate(StorageTest::USER_ID5, flags);
+    EXPECT_TRUE(ret == E_OK);
+    UserManager::GetInstance().DestroyUserDirs(StorageTest::USER_ID5, flags);
+    KeyManager::GetInstance().DeleteUserKeys(StorageTest::USER_ID5);
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_004
+ * @tc.desc: check PrepareUserDirsForUpdate when user id is invalid
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_004 start";
+
+    int32_t userId = -1;
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
+    auto ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
+    EXPECT_FALSE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_004 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

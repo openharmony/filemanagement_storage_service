@@ -131,7 +131,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
             client.NotifyMtpUnmounted(device.id, isBadRemove);
         }
 
-        DelFolder(device.path);
+        rmdir(device.path.c_str());
         return E_OK;
     }
 
@@ -150,7 +150,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
         StorageManagerClient client;
         client.NotifyMtpUnmounted(device.id, isBadRemove);
     }
-    DelFolder(device.path);
+    rmdir(device.path.c_str());
     return E_OK;
 }
 } // namespace StorageDaemon
