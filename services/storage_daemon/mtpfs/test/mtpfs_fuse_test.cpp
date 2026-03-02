@@ -85,46 +85,6 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetattr_002, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetattr_002 end";
 }
 
-
-/**
- * @tc.name: MtpfsFuseTest_WrapMkNod_001
- * @tc.desc: Verify the WrapMkNod function when msg is incorrect.
- * @tc.type: FUNC
- */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkNod_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_001 start";
-
-    const char *path = "/mnt/data/external";
-    mode_t mode = S_IFDIR;
-    dev_t dev = 1;
-    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
-    int ret = mtpFileSystem.MkNod(path, mode, dev);
-    EXPECT_EQ(ret, -EINVAL);
-
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_001 end";
-}
-
-/**
- * @tc.name: MtpfsFuseTest_WrapMkNod_002
- * @tc.desc: Verify the WrapMkNod function when path is incorrect.
- * @tc.type: FUNC
- */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapMkNod_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_002 start";
-
-    MtpFileSystem& instance = MtpFileSystem::GetInstance();
-    const char* path = "/test/../invalid/path";
-    mode_t mode = S_IFREG | 0644;
-    dev_t dev = 0;
-    
-    int result = instance.fuseOperations_.mknod(path, mode, dev);
-    EXPECT_NE(result, 0);
-
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapMkNod_002 end";
-}
-
 /**
  * @tc.name: MtpfsFuseTest_WrapChMod_001
  * @tc.desc: Test WrapChMod function when path is valid

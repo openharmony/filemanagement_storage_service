@@ -30,6 +30,7 @@ public:
     virtual int32_t IsUsbFuseByType(std::string fsType, bool enabled) = 0;
     virtual int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) = 0;
     virtual int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) = 0;
+    virtual int32_t NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo) = 0;
 
 public:
     static inline std::shared_ptr<IStorageManagerClientMock> iStorageManagerClientMock_ = nullptr;
@@ -42,6 +43,8 @@ public:
     MOCK_METHOD(int32_t, IsUsbFuseByType, (std::string, bool));
     MOCK_METHOD(int32_t, QueryActiveOsAccountIds, (std::vector<int32_t> &));
     MOCK_METHOD(int32_t, IsOsAccountExists, (unsigned int, bool &));
+    MOCK_METHOD(int32_t, NotifyEncryptVolumeStateChanged, (std::shared_ptr<VolumeInfo>));
+    MOCK_METHOD(int32_t, NotifyVolumeMounted, (std::shared_ptr<VolumeInfo>));
 };
 }
 }

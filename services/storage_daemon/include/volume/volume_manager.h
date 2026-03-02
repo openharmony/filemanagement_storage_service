@@ -38,6 +38,10 @@ public:
     int32_t SetVolumeDescription(const std::string volId, const std::string description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
+    //disk crypt api
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
+
 private:
     VolumeManager() = default;
     DISALLOW_COPY_AND_MOVE(VolumeManager);

@@ -15,9 +15,13 @@
 
 #include "volume/external_volume_info.h"
 
+#include <cinttypes>
 #include <cstring>
+#include <dirent.h>
 #include <fcntl.h>
 #include <future>
+#include <fstream>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -47,6 +51,7 @@ namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 60;
 constexpr int32_t FILE_NOT_EXIST = 2;
 constexpr int UID_FILE_MANAGER = 1006;
+
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
@@ -120,10 +125,22 @@ std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 
 int32_t ExternalVolumeInfo::DoDestroy()
 {
-    int err = remove(devPath_.c_str());
-    if (err != E_OK) {
-        LOGE("External volume DoDestroy, errno %{public}d", errno);
-        return E_ERR;
+    int err = E_OK;
+    LOGE("External volume DoDestroy %{public}s.", devPath_.c_str());
+    struct stat pathStat;
+    if (lstat(devPath_.c_str(), &pathStat) == 0) {
+        err = remove(devPath_.c_str());
+        if (err != E_OK) {
+            LOGE("External volume DoDestroy error, errno %{public}d.", errno);
+            return E_ERR;
+        }
+    }
+    if (lstat(devBackupPath_.c_str(), &pathStat) == 0) {
+        err = remove(devBackupPath_.c_str());
+        if (err != E_OK) {
+            LOGE("External volume DoDestroy error, errno %{public}d.", errno);
+            return E_ERR;
+        }
     }
     return E_OK;
 }
@@ -464,25 +481,38 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
     return E_OK;
 }
 
+int32_t ExternalVolumeInfo::DoUMountWithForceUsbFuse()
+{
+    LOGI("External volume start force to unmount.");
+    Process ps(mountPath_);
+    ps.UpdatePidAndKill(SIGKILL);
+    int ret = umount2(mountPath_.c_str(), MNT_DETACH);
+    if (ret != 0) {
+        LOGW("umount2 failed in force mode, errno %{public}d", errno);
+        return E_OK;
+    }
+    ret = rmdir(mountPath_.c_str());
+    if (ret != 0) {
+        LOGW("remove failed in force mode, errno %{public}d", errno);
+        return E_OK;
+    }
+    LOGI("External volume force to unmount success.");
+    return E_OK;
+}
+
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
+    if (fsType_ == "crypt_LUKS") {
+        LOGI("External volume start force to unmount, fsType is crypt_LUKS.");
+        return E_OK;
+    }
+    if (mountPath_.empty()) {
+        LOGI("External volume start force to unmount, mountPath_ is empty %{public}s.", mountPath_.c_str());
+        return E_OK;
+    }
     bool isUsbFuseByType = IsUsbFuseByType(fsType_);
     if (force && !isUsbFuseByType) {
-        LOGI("External volume start force to unmount.");
-        Process ps(mountPath_);
-        ps.UpdatePidAndKill(SIGKILL);
-        int ret = umount2(mountPath_.c_str(), MNT_DETACH);
-        if (ret != 0) {
-            LOGW("umount2 failed in force mode, errno %{public}d", errno);
-            return E_OK;
-        }
-        ret = rmdir(mountPath_.c_str());
-        if (ret != 0) {
-            LOGW("remove failed in force mode, errno %{public}d", errno);
-            return E_OK;
-        }
-        LOGI("External volume force to unmount success.");
-        return E_OK;
+        return DoUMountWithForceUsbFuse();
     }
     if (isUsbFuseByType) {
         mountPath_ = mountUsbFusePath_;

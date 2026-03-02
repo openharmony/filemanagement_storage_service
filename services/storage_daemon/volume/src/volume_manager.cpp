@@ -91,6 +91,8 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
         return E_NON_EXIST;
     }
 
+    destroyNode->DestroyCrypt(volId);
+
     int32_t ret = destroyNode->Destroy();
     if (ret) {
         return ret;
@@ -121,6 +123,7 @@ int32_t VolumeManager::Check(const std::string volId)
 
 int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
 {
+    int err = E_OK;
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
@@ -130,14 +133,23 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
         return E_NON_EXIST;
 #endif
     }
+    StorageManagerClient client;
+    string fsTypeBase = info->GetFsTypeBase();
+    if (fsTypeBase == "crypt_LUKS") {
+        LOGI("Volume is LUKS encrypted.");
+        info->SetState(ENCRYPTED_AND_LOCKED);
+        err = client.NotifyEncryptVolumeStateChanged(info);
+        if (err != E_OK) {
+            LOGE("the volume %{public}s notify failed.", volId.c_str());
+        }
+        return E_OK;
+    }
     LOGI("Before Mount in VolumeManager::Mount");
-    int32_t err = info->Mount(flags);
+    err = info->Mount(flags);
     if (err != E_OK) {
         LOGE("the volume %{public}s mount failed.", volId.c_str());
         return err;
     }
-
-    StorageManagerClient client;
     err = client.NotifyVolumeMounted(info);
     if (err) {
         LOGE("Volume Notify Mount Destroyed failed");
@@ -382,6 +394,16 @@ bool VolumeManager::IsMtpDeviceInUse(const std::string &diskPath)
         return true;
     }
     return false;
+}
+
+int32_t VolumeManager::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t VolumeManager::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

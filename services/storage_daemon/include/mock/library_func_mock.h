@@ -44,6 +44,7 @@ public:
     MOCK_METHOD1(remove, int(const char *pathname));
     MOCK_METHOD1(rmdir, int(const char *pathname));
     MOCK_METHOD2(lstat, int(const char *path, struct stat *buf));
+    MOCK_METHOD1(fclose, int(FILE *));
 };
 }
 }

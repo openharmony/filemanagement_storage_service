@@ -74,6 +74,7 @@ ohos_shared_library("storage_manager") {
       "volume/src/notification.cpp",
       "volume/src/volume_manager_service.cpp",
       "volume/src/volume_manager_service_ext.cpp",
+      "volume/src/encrypted_volume_manager_service.cpp",
     ]
   }
 

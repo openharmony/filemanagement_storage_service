@@ -39,8 +39,18 @@ namespace OHOS {
 namespace StorageManager {
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
+char g_usbDes = 'A';
+
 VolumeManagerService::VolumeManagerService() {}
 VolumeManagerService::~VolumeManagerService() {}
+
+void VolumeManagerService::SetUsbDescription(void)
+{
+    if (g_usbDes > 'A') {
+        g_usbDes--;
+    }
+    return ;
+}
 
 void VolumeManagerService::VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume)
 {
@@ -68,6 +78,7 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
         return;
     }
     std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    volumePtr->SetState(state);
     VolumeStateNotify(state, volumePtr);
     if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
         volumeMap_.Erase(volumeId);
@@ -110,6 +121,47 @@ void VolumeManagerService::OnVolumeMounted(const VolumeInfoStr &volumeInfoStr)
     LOGI("volumePtr OnVolumeMounted Info %{public}s, %{public}s, %{public}d in VolumeManagerService::OnVolumeMounted",
         volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
     VolumeStateNotify(volumeInfoStr.isDamaged == true ? VolumeState::DAMAGED_MOUNTED : VolumeState::MOUNTED, volumePtr);
+}
+
+void VolumeManagerService::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+    if (!volumeMap_.Contains(volumeInfoStr.volumeId)) {
+        LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists",
+            volumeInfoStr.volumeId.c_str());
+        return;
+    }
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeInfoStr.volumeId);
+    if (volumePtr == nullptr) {
+        LOGE("volumePtr is nullptr for volumeId");
+        return;
+    }
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(volumeInfoStr.fsTypeStr));
+    volumePtr->SetFsUuid(volumeInfoStr.fsUuid);
+    volumePtr->SetPath(volumeInfoStr.path);
+    std::string des = volumeInfoStr.description;
+    auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
+    if (disk != nullptr) {
+        if (des == "") {
+            if (disk->GetFlag() == SD_FLAG) {
+                des = "MySDCard";
+            } else if (disk->GetFlag() == USB_FLAG) {
+                des = "MyUSB";
+            } else if (disk->GetFlag() == CD_FLAG) {
+                des = "MyDVD";
+            } else {
+                des = "Default";
+            }
+        }
+        volumePtr->SetFlags(disk->GetFlag());
+    }
+    des = des + "(" + g_usbDes + ")";
+    g_usbDes++;
+    volumePtr->SetDescription(des);
+    volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
+    LOGI("volumePtr NotifyEncryptVolumeStateChanged Info %{public}s, %{public}s,"
+        " %{public}d in VolumeManagerService::NotifyEncryptVolumeStateChanged",
+        volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
+    VolumeStateNotify(VolumeState::ENCRYPTED_AND_LOCKED, volumePtr);
 }
 
 void VolumeManagerService::OnVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
@@ -158,7 +210,8 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         LOGE("volumePtr is nullptr for volumeId");
         return E_VOLUMEEX_IS_NULLPTR;
     }
-    if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
+    if ((volumePtr->GetState() != VolumeState::UNMOUNTED) &&
+        (volumePtr->GetState() != VolumeState::DECRYPTING)) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
         return E_VOL_MOUNT_ERR;
     }
@@ -231,7 +284,9 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         return E_VOLUMEEX_IS_NULLPTR;
     }
     if (volumePtr->GetState() != VolumeState::MOUNTED &&
-        volumePtr->GetState() != VolumeState::DAMAGED_MOUNTED) {
+        volumePtr->GetState() != VolumeState::DAMAGED_MOUNTED &&
+        volumePtr->GetState() != VolumeState::ENCRYPTED_AND_LOCKED &&
+        volumePtr->GetState() != VolumeState::ENCRYPTED_AND_UNLOCKED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted, %{public}d", volumeId.c_str(),
             volumePtr->GetState());
         return E_VOL_UMOUNT_ERR;

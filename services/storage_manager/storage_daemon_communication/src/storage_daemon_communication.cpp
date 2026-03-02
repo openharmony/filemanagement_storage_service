@@ -1078,5 +1078,35 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
     }
     return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
 }
+
+int32_t StorageDaemonCommunication::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Encrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Encrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Encrypt(volumeId, pazzword);
+}
+
+int32_t StorageDaemonCommunication::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    LOGI("StorageDaemonCommunication::GetCryptProgressById start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::GetCryptProgressById connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetCryptProgressById(volumeId, progress);
+}
 } // namespace StorageManager
 } // namespace OHOS

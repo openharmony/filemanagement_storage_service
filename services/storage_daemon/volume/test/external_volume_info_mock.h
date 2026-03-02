@@ -35,6 +35,8 @@ public:
     MOCK_METHOD0(DoFix4Ntfs, int32_t());
     MOCK_METHOD0(DoFix4Exfat, int32_t());
     MOCK_METHOD0(DoTryToFix, int32_t());
+    MOCK_METHOD1(ExtractVolumSize, int32_t(const std::vector<std::string>));
+    MOCK_METHOD0(DoUMountWithForceUsbFuse, int32_t());
 };
 } // namespace StorageDaemon
 } // namespace OHOS

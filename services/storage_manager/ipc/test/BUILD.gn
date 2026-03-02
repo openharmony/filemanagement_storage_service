@@ -251,6 +251,7 @@ sources = [
       "${storage_manager_path}/disk/src/disk_notification.cpp",
       "${storage_manager_path}/volume/src/notification.cpp",
       "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+      "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
       "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
       "${storage_service_path}/services/storage_daemon/disk/src/disk_config.cpp",
       "${storage_service_path}/services/storage_daemon/disk/src/disk_info.cpp",

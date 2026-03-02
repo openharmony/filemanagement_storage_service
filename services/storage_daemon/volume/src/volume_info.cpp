@@ -73,6 +73,11 @@ int32_t VolumeInfo::GetState()
     return mountState_;
 }
 
+void VolumeInfo::SetState(VolumeState mountState)
+{
+    mountState_ = mountState;
+}
+
 bool VolumeInfo::GetIsUserdata()
 {
     return isUserdata_;
@@ -220,7 +225,11 @@ int32_t VolumeInfo::UMountUsbFuse()
 int32_t VolumeInfo::Check()
 {
     LOGI("Volume enter Check, mountState_ is %{public}d.", mountState_);
-    if (mountState_ != UNMOUNTED) {
+    if ((mountState_ != UNMOUNTED) &&
+        (mountState_ != ENCRYPTING) &&
+        (mountState_ != DECRYPTING) &&
+        (mountState_ != ENCRYPTED_AND_LOCKED) &&
+        (mountState_ != ENCRYPTED_AND_UNLOCKED)) {
         LOGE("the volume %{public}s is not in UNMOUNT state, in %{public}d state.", GetVolumeId().c_str(), mountState_);
         return E_VOL_STATE;
     }
@@ -263,7 +272,9 @@ int32_t VolumeInfo::TryToFix()
 
 int32_t VolumeInfo::Format(std::string type)
 {
-    if (mountState_ != UNMOUNTED) {
+    if ((mountState_ != UNMOUNTED) &&
+        (mountState_ != ENCRYPTED_AND_LOCKED) &&
+        (mountState_ != ENCRYPTED_AND_UNLOCKED)) {
         LOGE("Please unmount the volume %{public}s first", GetVolumeId().c_str());
         return E_VOL_STATE;
     }
@@ -272,12 +283,15 @@ int32_t VolumeInfo::Format(std::string type)
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeInfo::DoFormat", err);
     }
+    fsTypeBase_ = type;
     return err;
 }
 
 int32_t VolumeInfo::SetVolumeDescription(const std::string description)
 {
-    if (mountState_ != UNMOUNTED) {
+    if ((mountState_ != UNMOUNTED) &&
+        (mountState_ != ENCRYPTED_AND_LOCKED) &&
+        (mountState_ != ENCRYPTED_AND_UNLOCKED)) {
         LOGE("Please unmount the volume %{public}s first", GetVolumeId().c_str());
         return E_VOL_STATE;
     }
@@ -295,6 +309,11 @@ bool VolumeInfo::IsUsbFuseByType(std::string fsType)
     bool isUsbFuseByType = true;
     client.IsUsbFuseByType(fsType, isUsbFuseByType);
     return isUsbFuseByType;
+}
+
+int32_t VolumeInfo::DestroyCrypt(const std::string &volumeId)
+{
+    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

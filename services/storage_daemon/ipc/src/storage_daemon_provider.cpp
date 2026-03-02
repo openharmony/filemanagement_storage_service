@@ -1090,5 +1090,35 @@ int32_t StorageDaemonProvider::ClearSecondMountPoint(uint32_t userId, const std:
 {
     return MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
 }
+
+int32_t StorageDaemonProvider::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle Encrypt");
+    int32_t ret = VolumeManager::Instance().Encrypt(volumeId, pazzword);
+    if (ret != E_OK) {
+        LOGW("Encrypt failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Encrypt", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle GetCryptProgressById");
+    int32_t ret = VolumeManager::Instance().GetCryptProgressById(volumeId, progress);
+    if (ret != E_OK) {
+        LOGW("GetCryptProgressById failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::GetCryptProgressById", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

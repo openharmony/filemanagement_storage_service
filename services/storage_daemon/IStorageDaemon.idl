@@ -102,4 +102,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 70] void GetSystemDataSize([out] long otherUidSizeSum);
      [ipccode 71] void GetDirListSpaceByPaths([in] String[] paths, [in] int[] uids,
                                              [out] DirSpaceInfo[] resultDirs);
+     
+     //disk crypt api
+     [ipccode 72] void  Encrypt([in] String volumeId, [in] String pazzword);
+     [ipccode 73] void  GetCryptProgressById([in] String volumeId, [out] int progress);
 }
