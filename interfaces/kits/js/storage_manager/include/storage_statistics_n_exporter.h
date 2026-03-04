@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,9 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info);
 napi_value GetFreeSize(napi_env env, napi_callback_info info);
 napi_value GetTotalSizeSync(napi_env env, napi_callback_info info);
 napi_value GetFreeSizeSync(napi_env env, napi_callback_info info);
+napi_value GetTotalInodes(napi_env env, napi_callback_info info);
+napi_value GetFreeInodes(napi_env env, napi_callback_info info);
+napi_value GetCurrentBundleInodes(napi_env env, napi_callback_info info);
 napi_value GetSystemDataSize(napi_env env, napi_callback_info info);
 napi_value SetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetExtBundleStats(napi_env env, napi_callback_info info);

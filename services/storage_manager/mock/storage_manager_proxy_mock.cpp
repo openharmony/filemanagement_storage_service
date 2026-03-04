@@ -224,6 +224,21 @@ int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::GetTotalInodes(int64_t &totalInodes)
+{
+    return E_OK;
+}
+ 
+int32_t StorageManagerProxy::GetFreeInodes(int64_t &freeInodes)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetCurrentBundleInodes(int64_t &curInodes)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 {
     return E_OK;

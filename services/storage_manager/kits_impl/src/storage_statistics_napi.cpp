@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,6 +33,9 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getUserStorageStats", GetUserStorageStats),
         DECLARE_NAPI_FUNCTION("getTotalSize", GetTotalSize),
         DECLARE_NAPI_FUNCTION("getFreeSize", GetFreeSize),
+        DECLARE_NAPI_FUNCTION("getTotalInodes", GetTotalInodes),
+        DECLARE_NAPI_FUNCTION("getFreeInodes", GetFreeInodes),
+        DECLARE_NAPI_FUNCTION("getCurrentBundleInodes", GetCurrentBundleInodes),
         DECLARE_NAPI_FUNCTION("getTotalSizeSync", GetTotalSizeSync),
         DECLARE_NAPI_FUNCTION("getFreeSizeSync", GetFreeSizeSync),
         DECLARE_NAPI_FUNCTION("setExtBundleStats", SetExtBundleStats),

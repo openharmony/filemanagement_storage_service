@@ -52,7 +52,6 @@ private:
     StorageStatusManager();
     ~StorageStatusManager();
     std::string ConvertBytesToMB(int64_t bytes);
-    int GetCurrentUserId();
     std::string GetCallingPkgName();
     int32_t GetAppSize(int32_t userId, int64_t &size);
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};

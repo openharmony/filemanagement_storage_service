@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -517,6 +517,126 @@ napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
         return nullptr;
     }
     return NVal::CreateInt64(env, *resultSize).val_;
+}
+
+napi_value GetTotalInodes(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+ 
+    auto resultInodes = std::make_shared<int64_t>();
+    auto cbExec = [resultInodes]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalInodes(*resultInodes);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultInodes](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultInodes) };
+    };
+ 
+    std::string procedureName = "GetTotalInodes";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        bool isCallable = false;
+        napi_status status = napi_is_callable(env, cb.val_, &isCallable);
+        if (status != napi_ok || !isCallable) {
+            NError(E_PARAMS).ThrowErr(env);
+            return nullptr;
+        }
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+ 
+napi_value GetFreeInodes(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+ 
+    auto resultInodes = std::make_shared<int64_t>();
+    auto cbExec = [resultInodes]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeInodes(*resultInodes);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultInodes](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultInodes) };
+    };
+ 
+    std::string procedureName = "GetFreeInodes";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        bool isCallable = false;
+        napi_status status = napi_is_callable(env, cb.val_, &isCallable);
+        if (status != napi_ok || !isCallable) {
+            NError(E_PARAMS).ThrowErr(env);
+            return nullptr;
+        }
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+
+napi_value GetCurrentBundleInodes(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+ 
+    auto resultInodes = std::make_shared<int64_t>();
+    auto cbExec = [resultInodes]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleInodes(*resultInodes);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultInodes](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultInodes) };
+    };
+ 
+    std::string procedureName = "GetCurrentBundleInodes";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        bool isCallable = false;
+        napi_status status = napi_is_callable(env, cb.val_, &isCallable);
+        if (status != napi_ok || !isCallable) {
+            NError(E_PARAMS).ThrowErr(env);
+            return nullptr;
+        }
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
 }
 
 napi_value GetSystemDataSize(napi_env env, napi_callback_info info)

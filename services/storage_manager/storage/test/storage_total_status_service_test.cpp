@@ -17,8 +17,11 @@
 #include <gtest/gtest.h>
 
 #include "accesstoken_kit.h"
+#include "bundle_mgr_interface.h"
 #include "directory_ex.h"
+#include "ipc_skeleton.h"
 #include "nativetoken_kit.h"
+#include "storage/bundle_manager_adapter_proxy.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_manager.h"
@@ -89,6 +92,35 @@ const std::vector<DirInfo> virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER
         {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/account", MODE_0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}};
+int32_t g_callingUid = 5523;
+ErrCode g_getBundleInodeCountRet = ERR_OK;
+std::string g_bundleName = "com.test.app";
+ErrCode g_getNameIndexRet = ERR_OK;
+int32_t g_appIndex = 0;
+} // namespace
+
+namespace OHOS {
+pid_t IPCSkeleton::GetCallingUid()
+{
+    return g_callingUid;
+}
+}
+
+namespace OHOS::StorageManager {
+ErrCode BundleManagerAdapterProxy::GetNameAndIndexForUid(int32_t uid, std::string &bundleName, int32_t &appIndex)
+{
+    bundleName = g_bundleName;
+    appIndex = g_appIndex;
+    return g_getNameIndexRet;
+}
+
+// Define mock GetBundleInodeCount for testing GetBundleInodeCount failure branch
+ErrCode BundleManagerAdapterProxy::GetBundleInodeCount(const std::string &bundleName,
+    int32_t appIndex, int32_t userId, uint64_t &inodeCount)
+{
+    return g_getBundleInodeCountRet;
+}
+}
 
 class StorageTotalStatusServiceTest : public testing::Test {
 public:
@@ -211,7 +243,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
     StorageStatusManager &service = StorageStatusManager::GetInstance();
     BundleStats bundleStats;
     int32_t result = service.GetCurrentBundleStats(bundleStats, 0);
-    EXPECT_EQ(result, E_GET_BUNDLE_NAME_FAILED);
+    EXPECT_NE(result, E_GET_BUNDLE_NAME_FAILED);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetCurrentBundleStats_0000";
 }
 
@@ -327,4 +359,138 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetUsedInodes_0000,
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetUsedInodes_0000";
 }
-} // namespace
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetTotalInodes_0000
+ * @tc.name: Storage_total_status_service_GetTotalInodes_0000
+ * @tc.desc: Test function of GetTotalInodes interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetTotalInodes_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetTotalInodes_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t totalInodes = 0;
+    int32_t result = service.GetTotalInodes(totalInodes);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GT(totalInodes, 0);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetTotalInodes_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetFreeInodes_0000
+ * @tc.name: Storage_total_status_service_GetFreeInodes_0000
+ * @tc.desc: Test function of GetFreeInodes interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeInodes_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetFreeInodes_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t freeInodes = 0;
+    int32_t result = service.GetFreeInodes(freeInodes);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(freeInodes, 0);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetFreeInodes_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetCurrentBundleInodes_0000
+ * @tc.name: Storage_total_status_service_GetCurrentBundleInodes_0000
+ * @tc.desc: Test function of GetCurrentBundleInodes when caller is not a hap.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleInodes_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetCurrentBundleInodes_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t curInodes = 0;
+    int32_t result = service.GetCurrentBundleInodes(curInodes);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetCurrentBundleInodes_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetCurrentBundleInodes_0001
+ * @tc.name: Storage_total_status_service_GetCurrentBundleInodes_0001
+ * @tc.desc: Test function of GetCurrentBundleInodes when uid < 0.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleInodes_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetCurrentBundleInodes_0001";
+    g_callingUid = -1;
+
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t curInodes = 0;
+    int32_t result = service.GetCurrentBundleInodes(curInodes);
+
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetCurrentBundleInodes_0001";
+
+    g_callingUid = 5523;
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetCurrentBundleInodes_0002
+ * @tc.name: Storage_total_status_service_GetCurrentBundleInodes_0002
+ * @tc.desc: Test function of GetCurrentBundleInodes when GetBundleInodeCount fails (ret != ERR_OK).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleInodes_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetCurrentBundleInodes_0002";
+    g_bundleName = "";
+    g_getNameIndexRet = ERR_APPEXECFWK_PARCEL_ERROR;
+
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t curInodes = 0;
+    int32_t result = service.GetCurrentBundleInodes(curInodes);
+
+    EXPECT_EQ(result, E_GET_BUNDLE_INODES_ERROR);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetCurrentBundleInodes_0002";
+
+    g_bundleName = "com.test.app";
+    g_getNameIndexRet = ERR_OK;
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetCurrentBundleInodes_0003
+ * @tc.name: Storage_total_status_service_GetCurrentBundleInodes_0003
+ * @tc.desc: Test function of GetCurrentBundleInodes when GetBundleInodeCount fails (ret != ERR_OK).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleInodes_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetCurrentBundleInodes_0003";
+    g_getBundleInodeCountRet = ERR_APPEXECFWK_PARCEL_ERROR;
+    g_callingUid = 5523;
+
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t curInodes = 0;
+    int32_t result = service.GetCurrentBundleInodes(curInodes);
+
+    EXPECT_TRUE(result == E_GET_BUNDLE_INODES_ERROR);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetCurrentBundleInodes_0003";
+
+    g_callingUid = 5523;
+    g_getBundleInodeCountRet = ERR_OK;
+}

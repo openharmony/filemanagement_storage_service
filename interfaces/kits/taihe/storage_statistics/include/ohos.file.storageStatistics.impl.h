@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,9 @@ int64_t GetSystemSizeSync();
 int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid);
 int64_t GetFreeSizeSync2();
 int64_t GetTotalSizeSync2();
+int64_t GetFreeInodesSync();
+int64_t GetTotalInodesSync();
+int64_t GetCurrentBundleInodesSync();
 int64_t GetSystemDataSizeSync();
 
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();

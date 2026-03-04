@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -191,6 +191,48 @@ int32_t StorageManagerConnect::GetFreeSize(int64_t &freeSize)
     return storageManager_->GetFreeSize(freeSize);
 }
 
+int32_t StorageManagerConnect::GetTotalInodes(int64_t &totalInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetTotalInodes::Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetTotalInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetTotalInodes(totalInodes);
+}
+ 
+int32_t StorageManagerConnect::GetFreeInodes(int64_t &freeInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetFreeInodes::Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetFreeInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetFreeInodes(freeInodes);
+}
+ 
+int32_t StorageManagerConnect::GetCurrentBundleInodes(int64_t &curInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCurrentBundleInodes:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCurrentBundleInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCurrentBundleInodes(curInodes);
+}
+
 int32_t StorageManagerConnect::GetSystemDataSize(int64_t &systemDataSize)
 {
     int32_t err = Connect();
@@ -380,12 +422,15 @@ int32_t Convert2JsErrNum(int32_t errNum)
         { E_SERVICE_IS_NULLPTR, E_IPCSS},
         { E_BUNDLEMGR_ERROR, E_IPCSS},
         { E_MEDIALIBRARY_ERROR, E_IPCSS},
+        { E_DEATH_RECIPIENT_IS_NULLPTR, E_IPCSS },
         { E_PARAMS_INVALID, E_JS_PARAMS_INVALID},
         { E_SYS_APP_PERMISSION_DENIED, E_PERMISSION_SYS},
         { E_SET_EXT_BUNDLE_STATS_ERROR, E_JS_SET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_EXT_BUNDLE_STATS_ERROR, E_JS_GET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_ALL_EXT_BUNDLE_STATS_ERROR, E_JS_GET_ALL_EXT_BUNDLE_STATS_ERROR},
         { E_GET_SYSTEM_DATA_SIZE_ERROR, E_JS_GET_SYSTEM_DATA_SIZE_ERROR},
+        { E_GET_INODE_ERROR, E_JS_GET_INODE_ERROR },
+        { E_GET_BUNDLE_INODES_ERROR, E_JS_GET_BUNDLE_INODES_ERROR },
     };
 
     if (errCodeTable.find(errNum) != errCodeTable.end()) {

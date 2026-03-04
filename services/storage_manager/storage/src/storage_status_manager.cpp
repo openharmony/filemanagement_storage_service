@@ -29,6 +29,7 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
+#include "utils/storage_utils.h"
 #include "utils/string_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "datashare_abs_result_set.h"
@@ -156,14 +157,6 @@ int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
     LOGE("GetFileStorageStats end");
     return err;
-}
-
-int StorageStatusManager::GetCurrentUserId()
-{
-    int uid = -1;
-    uid = IPCSkeleton::GetCallingUid();
-    int userId = uid / 200000;
-    return userId;
 }
 
 std::string StorageStatusManager::GetCallingPkgName()
