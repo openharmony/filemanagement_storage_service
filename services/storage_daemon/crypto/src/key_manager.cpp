@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -2498,9 +2498,12 @@ int KeyManager::UnregisterUeceActivationCallback()
 int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
 {
 #ifdef EL5_FILEKEY_MANAGER
-    if (ueceCallback_ == nullptr) {
-        LOGE("el5 activation callback invalid");
-        return E_OK;
+    {
+        std::lock_guard<std::mutex> lock(ueceMutex_);
+        if (ueceCallback_ == nullptr) {
+            LOGE("el5 activation callback invalid");
+            return E_OK;
+        }
     }
     resultCode = (resultCode == E_ACTIVE_REPEATED ? E_OK : resultCode);
     std::promise<int32_t> promise;
@@ -2510,7 +2513,10 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
         int32_t retValue = E_OK;
         LOGI("ready for callback, El5 activation result = %{public}d, userId=%{public}u, needGetAllAppKey=%{public}d",
             resultCode, userId, needGetAllAppKey);
-        ueceCallback_->OnEl5Activation(resultCode, userId, needGetAllAppKey, retValue);
+        std::lock_guard<std::mutex> lock(ueceMutex_);
+        if (ueceCallback_ != nullptr) {
+            ueceCallback_->OnEl5Activation(resultCode, userId, needGetAllAppKey, retValue);
+        }
         p.set_value(retValue);
     });
 
