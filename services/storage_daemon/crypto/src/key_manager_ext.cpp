@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -185,7 +185,7 @@ int KeyManagerExt::SetRecoverKey(uint32_t userId, uint32_t keyType, const KeyBlo
         return E_OK;
     }
     if (ivBlob.data == nullptr || ivBlob.size == 0) {
-        LOGE("Invalid ivBlob, size:%{public}u, data:%{public}p", ivBlob.size, ivBlob.data.get());
+        LOGE("Invalid ivBlob, size:%{public}u", ivBlob.size);
         return E_PARAMS;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
