@@ -1124,7 +1124,7 @@ int MtpFsDevice::GetThumbnailSize(const std::string &path, size_t &size)
         free(tmpBuf);
     }
     size = tmpSize;
-    LOGI("MtpFsDevice: GetThumbnailSize success, size=%{public}", tmpSize);
+    LOGI("MtpFsDevice: GetThumbnailSize success, size=%{public}u", tmpSize);
     return 0;
 }
 
