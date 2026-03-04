@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -300,9 +300,33 @@ int32_t VolumeManagerService::Check(std::string volumeId)
 vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
 {
     vector<VolumeExternal> result;
+    vector<std::string> dvdDiskIds;
     for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
         VolumeExternal vc = *(it->second);
+        if (vc.GetFsType() == UDF || vc.GetFsType() == ISO9660) {
+            dvdDiskIds.push_back(vc.GetDiskId());
+        }
         result.push_back(vc);
+    }
+    vector<Disk> disks = DiskManagerService::GetInstance().GetAllDisks();
+    for (auto &disk : disks) {
+        if (disk.GetFlag() != CD_FLAG) {
+            continue;
+        }
+        auto it = std::find(dvdDiskIds.begin(), dvdDiskIds.end(), disk.GetDiskId());
+        if (it != dvdDiskIds.end()) {
+            LOGE("Tish disk has real volume, diskId: %{public}s", disk.GetDiskId().c_str());
+            continue;
+        }
+        VolumeCore core("0", CD_FLAG, disk.GetDiskId(), MOUNTED);
+        auto volumePtr = make_shared<VolumeExternal>(core);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr !");
+            continue;
+        }
+        volumePtr->SetFsType(volumePtr->GetFsTypeByStr("udf"));
+        volumePtr->SetDescription("DVD RW");
+        result.push_back(*volumePtr);
     }
     return result;
 }
