@@ -372,5 +372,16 @@ int32_t StorageDaemonProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &sc
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    progress = 0;
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

@@ -465,5 +465,33 @@ int32_t StorageManagerConnect::ListUserdataDirInfo(std::vector<UserdataDirInfo> 
     }
     return storageManager_->ListUserdataDirInfo(scanDirs);
 }
+
+int32_t StorageManagerConnect::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Encrypt:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Encrypt service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Encrypt(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCryptProgressById:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCryptProgressById service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCryptProgressById(volumeId, progress);
+}
 } // StorageManager
 } // OHOS

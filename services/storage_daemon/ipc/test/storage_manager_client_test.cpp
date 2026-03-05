@@ -22,6 +22,7 @@
 #include "volume_core.h"
 #include "volume/external_volume_info.h"
 
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
@@ -286,6 +287,19 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_IsOsAccountExists_00
     auto ret = storageManagerClient_->IsOsAccountExists(userId, isOsAccountExists);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageManagerClientTest_IsOsAccountExists_001 end";
+}
+
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyEncryptVolumeStateChanged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyEncryptVolumeStateChanged_001 start";
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+    std::shared_ptr<VolumeInfo> info = nullptr;
+    auto ret = storageManagerClient_->NotifyEncryptVolumeStateChanged(info);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    info = std::make_shared<ExternalVolumeInfo>();
+    ret = storageManagerClient_->NotifyEncryptVolumeStateChanged(info);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyEncryptVolumeStateChanged_001 end";
 }
 } // StorageDaemon
 } // OHOS

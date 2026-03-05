@@ -144,6 +144,10 @@ public:
     virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum) override;
 
+    //disk crypt api
+    virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

@@ -54,6 +54,7 @@ bool ReadFile(const std::string &path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
              int *exitStatus = nullptr);
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr);
+
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 #endif
@@ -66,7 +67,6 @@ bool IsTempFolder(const std::string &path, const std::string &sub);
 void DeleteFile(const std::string &path);
 std::vector<std::string> Split(std::string str, const std::string &pattern);
 bool IsPathMounted(std::string &path);
-bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);

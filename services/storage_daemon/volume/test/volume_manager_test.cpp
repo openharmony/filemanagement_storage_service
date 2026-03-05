@@ -35,12 +35,16 @@ constexpr int UPLOAD_RECORD_TRUE_LEN = 5;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 6;
 
 namespace {
-uint32_t g_FindParameter = 0;
+    uint32_t g_findParameter = 0;
+    int32_t g_doTryToCheck = 0;
+    int32_t g_doTryToFix = 0;
+    int32_t g_doCheck = 0;
+    int32_t g_doMount = 0;
 }
 
 uint32_t FindParameter(const char *key)
 {
-    return g_FindParameter;
+    return g_findParameter;
 }
 
 ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
@@ -60,6 +64,28 @@ ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
         return UPLOAD_RECORD_FALSE_LEN;
     }
     return 0;
+}
+
+namespace OHOS::StorageDaemon {
+class VolumeInfoTestMock : public VolumeInfo {
+public:
+    VolumeInfoTestMock() {};
+    virtual ~VolumeInfoTestMock() {};
+    void SetFsTypeBase(const std::string str) {fsTypeBase_ = str;}
+protected:
+    int32_t DoCreate(dev_t dev) override { return E_OK; };
+    int32_t DoDestroy() override { return E_OK; };
+    int32_t DoMount(uint32_t mountFlags) override { return g_doMount; };
+    int32_t DoUMount(bool force) override { return E_OK; };
+    int32_t DoUMountUsbFuse() override { return E_OK; };
+    int32_t DoCheck() override { return g_doCheck; };
+    int32_t DoFormat(std::string type) override { return E_OK; };
+    int32_t DoSetVolDesc(std::string description) override { return E_OK; };
+    int32_t DoTryToCheck() override { return g_doTryToCheck; };
+    int32_t DoTryToFix() override { return g_doTryToFix; };
+    std::string GetFsTypeByDev(dev_t dev) override { return ""; };
+    std::string GetFsType() override { return ""; };
+};
 }
 
 namespace OHOS {
@@ -524,7 +550,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
     volumeInfoMock->mountState_ = UNMOUNTED;
     EXPECT_CALL(*volumeInfoMock, DoCheck()).WillOnce(Return(0));
-    g_FindParameter = -1;
+    g_findParameter = -1;
     EXPECT_CALL(*volumeInfoMock, DoMount(_)).WillOnce(Return(-1));
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), -1);
 
@@ -862,6 +888,64 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumeUuid_002
     VolumeManager::Instance().DestroyVolume(volumeId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ReadVolumeUuid_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_001 start";
+    std::string diskId = "diskId-1-6";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    std::string pazzword = "testPasswd";
+    int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_001 start";
+    std::string diskId = "diskId-1-6";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    int32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_001 end";
+}
+
+ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_004, TestSize.Level1)
+ {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_004 start";
+    std::string volId = "mount_test";
+    uint32_t flags = 1;
+    auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
+    volumeInfoMock->SetFsTypeBase("crypt_LUKS");
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    g_doTryToCheck = 0;
+    volumeInfoMock->mountState_ = REMOVED;
+    EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_004 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_005 start";
+    std::string volId = "mount_test_crypt";
+    uint32_t flags = 1;
+    auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
+    volumeInfoMock->SetFsTypeBase("crypt_LUKS");
+    volumeInfoMock->mountState_ = REMOVED;
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    g_doTryToCheck = 0;
+    int32_t result = VolumeManager::Instance().Mount(volId, flags);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(volumeInfoMock->GetState(), ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_005 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

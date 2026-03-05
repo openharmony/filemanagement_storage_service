@@ -39,6 +39,7 @@ public:
     MOCK_METHOD0(DoTryToFix, int32_t());
     MOCK_METHOD1(GetFsTypeByDev, std::string(dev_t));
     MOCK_METHOD1(IsUsbFuseByType, bool(std::string));
+    MOCK_METHOD0(GetFsType, std::string());
 };
 } // namespace StorageDaemon
 } // namespace OHOS

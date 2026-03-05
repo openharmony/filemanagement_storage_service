@@ -28,6 +28,7 @@ public:
         static VolumeManagerService instance;
         return instance;
     }
+    void SetUsbDescription(void);
     int32_t Mount(std::string volumeId);
     int32_t Unmount(std::string volumeId);
     int32_t MountUsbFuse(const std::string &volumeId);
@@ -46,6 +47,7 @@ public:
     void NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                           const std::string &uuid, const std::string &fsType);
     void NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
+    void NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr);
 
 private:
     VolumeManagerService();

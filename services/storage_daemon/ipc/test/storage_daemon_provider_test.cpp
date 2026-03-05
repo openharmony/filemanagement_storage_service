@@ -2069,5 +2069,38 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetSystemDataSize_
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetSystemDataSize_001 end";
 }
 
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Encrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Encrypt_001 start";
+#ifdef EXTERNAL_STORAGE_MANAGER
+    std::string volumeId = "vol-1-5";
+    std::string pazzword = "test_pazzword";
+    auto ret = storageDaemonProviderTest_->Encrypt(volumeId, pazzword);
+    EXPECT_TRUE(ret == E_OK);
+#else
+    std::string volumeId = "vol-1-7";
+    std::string pazzword = "test_pazzword";
+    auto ret = storageDaemonProviderTest_->Encrypt(volumeId, pazzword);
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Encrypt_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetCryptProgressById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptProgressById_001 start";
+#ifdef EXTERNAL_STORAGE_MANAGER
+    std::string volumeId = "vol-1-8";
+    int32_t progress = 0;
+    auto ret = storageDaemonProviderTest_->GetCryptProgressById(volumeId, progress);
+    EXPECT_TRUE(ret == E_OK);
+#else
+    std::string volumeId = "vol-1-10";
+    int32_t progress = 0;
+    auto ret = storageDaemonProviderTest_->GetCryptProgressById(volumeId, progress);
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptProgressById_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

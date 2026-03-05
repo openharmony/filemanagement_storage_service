@@ -133,6 +133,10 @@ public:
 
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
 
+    //disk crypt api
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
+
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

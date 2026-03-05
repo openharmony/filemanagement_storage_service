@@ -34,6 +34,7 @@
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager_service.h"
 #include "volume/volume_manager_service.h"
+#include "volume/encrypted_volume_manager_service.h"
 #endif
 #include "scan/storage_manager_scan.h"
 #include "ipc/storage_manager_provider.h"
@@ -75,6 +76,8 @@ const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER"
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
+const std::string PERMISSION_ENCRYPT_VOLUME_MANAGER = "ohos.permission.ENCRYPT_VOLUME_MANAGER";
+
 bool CheckClientPermission(const std::string &permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -217,6 +220,14 @@ OHOS::StorageManager::VolumeState UintToState(uint32_t state)
             return OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED;
         case DAMAGED:
             return OHOS::StorageManager::VolumeState::DAMAGED;
+        case ENCRYPTING:
+            return OHOS::StorageManager::VolumeState::ENCRYPTING;
+        case ENCRYPTED_AND_LOCKED:
+            return OHOS::StorageManager::VolumeState::ENCRYPTED_AND_LOCKED;
+        case ENCRYPTED_AND_UNLOCKED:
+            return OHOS::StorageManager::VolumeState::ENCRYPTED_AND_UNLOCKED;
+        case DECRYPTING:
+            return OHOS::StorageManager::VolumeState::DECRYPTING;
         default:
             return OHOS::StorageManager::VolumeState::UNMOUNTED;
     }
@@ -717,6 +728,7 @@ int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
     DiskManagerService& diskManager = DiskManagerService::GetInstance();
     diskManager.OnDiskDestroyed(diskId);
     StorageRadar::ReportFucBehavior("NotifyDiskDestroyed", DEFAULT_USERID, "NotifyDiskDestroyed End", E_OK);
+    VolumeManagerService::GetInstance().SetUsbDescription();
 #endif
     return E_OK;
 }
@@ -2003,6 +2015,60 @@ bool StorageManagerProvider::IsCalledByFileMgr()
         return false;
     }
     return true;
+}
+
+int32_t StorageManagerProvider::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+    StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
+        "NotifyEncryptVolumeStateChanged Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::NotifyEncryptVolumeStateChanged start");
+    VolumeManagerService::GetInstance().NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
+        "NotifyEncryptVolumeStateChanged End", E_OK);
+#endif
+    return E_OK;
+}
+
+int32_t StorageManagerProvider::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Encrypt start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Encrypt(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Encrypt", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetCryptProgressById start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().GetCryptProgressById(volumeId, progress);
+    StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::GetCryptProgressById", err);
+    }
+    return err;
+#else
+    return E_OK;
+#endif
 }
 } // namespace StorageManager
 } // namespace OHOS

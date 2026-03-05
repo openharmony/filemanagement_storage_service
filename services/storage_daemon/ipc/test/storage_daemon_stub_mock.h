@@ -99,6 +99,10 @@ public:
     MOCK_METHOD1(GetSystemDataSize, int32_t(int64_t &));
     MOCK_METHOD3(GetDirListSpaceByPaths, int32_t(const std::vector<std::string> &, const std::vector<int32_t> &,
         std::vector<DirSpaceInfo> &));
+
+    //disk crypt api
+    MOCK_METHOD2(Encrypt, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(GetCryptProgressById, int32_t(const std::string &, int32_t &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS
