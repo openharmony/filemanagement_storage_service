@@ -656,39 +656,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_IsFilePathInvalid_001
- * @tc.desc: Verify the IsFilePathInvalid function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsFilePathInvalid_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsFilePathInvalid_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    const std::array<std::tuple<std::string, bool>, 15> testCases = {
-        std::make_tuple<std::string, bool>("/valid/path/file.txt", true),
-        std::make_tuple<std::string, bool>("../invalid/path", false),
-        std::make_tuple<std::string, bool>("/valid/../path", false),
-        std::make_tuple<std::string, bool>("/path/to/..", false),
-        std::make_tuple<std::string, bool>("", true),
-        std::make_tuple<std::string, bool>("/", true),
-        std::make_tuple<std::string, bool>("../a/../b", false),
-        std::make_tuple<std::string, bool>("a/../b", false),
-        std::make_tuple<std::string, bool>("../a/b", false),
-        std::make_tuple<std::string, bool>("//../a", false),
-        std::make_tuple<std::string, bool>("/valid%path/file.txt", true),
-        std::make_tuple<std::string, bool>("a../b", true),
-        std::make_tuple<std::string, bool>("../", false),
-        std::make_tuple<std::string, bool>("/path/..more", true),
-        std::make_tuple<std::string, bool>("/a/..b", true)};
-    for (auto testCase : testCases) {
-        const std::string &input = std::get<0>(testCase);
-        const bool expected = std::get<1>(testCase);
-        EXPECT_NE(storageManagerProviderTest_->IsFilePathInvalid(input), expected);
-    }
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsFilePathInvalid_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_GetSystemDataSize_002
  * @tc.desc: Verify the GetSystemDataSize function.
  * @tc.type: FUNC

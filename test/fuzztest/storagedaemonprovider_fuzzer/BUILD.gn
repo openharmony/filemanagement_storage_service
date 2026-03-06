@@ -67,6 +67,8 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
   ]
 
   defines = [

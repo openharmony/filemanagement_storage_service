@@ -36,6 +36,8 @@ ohos_fuzztest("StorageDaemonProviderDeleteShareFileFuzzTest") {
   ]
   sources = [
    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
@@ -85,6 +87,7 @@ ohos_fuzztest("StorageDaemonProviderDeleteShareFileFuzzTest") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_cloud_fuse) {

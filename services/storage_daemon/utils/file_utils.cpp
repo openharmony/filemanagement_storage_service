@@ -56,6 +56,10 @@ const std::string CONTAINER_LINUX = "rgm_linux";
 const std::string VM_LINUX = "rgm_openEuler";
 const std::string EL_RGM_MANAGER_PATH = "/data/service/el1/public/vm_manager";
 const std::string RGM_MANAGER_PATH = RGM_MANAGER_PATH_DEF;
+constexpr const char *PATH_INVALID_FLAG1 = "../";
+constexpr const char *PATH_INVALID_FLAG2 = "/..";
+constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+constexpr char FILE_SEPARATOR_CHAR = '/';
 
 struct RgmPathConfig {
     bool isImg = false;
@@ -1229,6 +1233,24 @@ uint64_t GetFileSize(const string &filename)
         return 0;
     }
     return st.st_size;
+}
+
+bool IsFilePathInvalid(const std::string &filePath)
+{
+    size_t pos = filePath.find(PATH_INVALID_FLAG1);
+    while (pos != std::string::npos) {
+        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
+            LOGE("Relative path is not allowed, path contain ../");
+            return true;
+        }
+        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    }
+    pos = filePath.rfind(PATH_INVALID_FLAG2);
+    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
+        LOGE("Relative path is not allowed, path tail is /..");
+        return true;
+    }
+    return false;
 }
 } // STORAGE_DAEMON
 } // OHOS
