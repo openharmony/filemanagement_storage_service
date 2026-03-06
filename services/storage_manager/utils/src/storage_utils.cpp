@@ -15,6 +15,8 @@
 
 #include "utils/storage_utils.h"
 
+#include "ipc_skeleton.h"
+
 namespace OHOS {
 namespace StorageManager {
 int64_t GetRoundSize(int64_t size)
@@ -65,6 +67,14 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
         return false;
     }
     return path.compare(0, prefix.length(), prefix) == 0;
+}
+
+int GetCurrentUserId()
+{
+    int uid = -1;
+    uid = IPCSkeleton::GetCallingUid();
+    int userId = uid / 200000;
+    return userId;
 }
 } // namespace STORAGE_Manager
 } // namespace OHOS

@@ -708,4 +708,105 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_GetData_0003, 
 
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetData_0003 End";
 }
+
+/**
+ * @tc.name: BundleManagerAdapterProxy_GetBundleInodeCount_0000
+ * @tc.desc: Test GetBundleInodeCount function with various scenarios
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(BundleManagerAdapterProxyTest, GetBundleInodeCount_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0000 Start";
+
+    std::string bundleName = "com.example.app";
+    int32_t appIndex = 0;
+    int32_t userId = 100;
+    uint64_t inodeCount = 0;
+
+    // Scenario 1: WriteInterfaceToken fails
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(false));
+    auto ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    // Scenario 2: WriteString(bundleName) fails
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(false));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    // Scenario 3: WriteInt32(appIndex) fails
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(false));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    // Scenario 4: WriteInt32(userId) fails
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(false));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    // Scenario 5: SendRequest fails with IPC transaction error
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(ERR_APPEXECFWK_PARCEL_ERROR));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0000 End";
+}
+
+/**
+ * @tc.name: BundleManagerAdapterProxy_GetBundleInodeCount_0001
+ * @tc.desc: Test GetBundleInodeCount function with various scenarios
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(BundleManagerAdapterProxyTest, GetBundleInodeCount_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0001 Start";
+
+    std::string bundleName = "com.example.app";
+    int32_t appIndex = 0;
+    int32_t userId = 100;
+    uint64_t inodeCount = 0;
+
+    // Scenario 6: Service returns error code
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(ERR_APPEXECFWK_SERVICE_NOT_READY));
+    auto ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_SERVICE_NOT_READY);
+
+    // Scenario 7: ReadUint64 fails
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(ERR_OK));
+    EXPECT_CALL(*messageParcelMock_, ReadUint64(_)).WillOnce(Return(false));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    // Scenario 8: Success case
+    uint64_t expectedInodeCount = 12345;
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteString(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(ERR_OK));
+    EXPECT_CALL(*messageParcelMock_, ReadUint64(_))
+        .WillOnce(DoAll(SetArgReferee<0>(expectedInodeCount), Return(true)));
+    ret = proxy_->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(inodeCount, expectedInodeCount);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0001 End";
+}
 } // namespace OHOS::StorageManager::Test

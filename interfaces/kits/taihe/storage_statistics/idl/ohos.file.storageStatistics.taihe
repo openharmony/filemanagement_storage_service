@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,18 @@ function GetFreeSizeSync2(): i64;
 @gen_async("getTotalSize")
 @gen_promise("getTotalSize")
 function GetTotalSizeSync2(): i64;
+
+@gen_async("getTotalInodes")
+@gen_promise("getTotalInodes")
+function GetTotalInodesSync(): i64;
+ 
+@gen_async("getFreeInodes")
+@gen_promise("getFreeInodes")
+function GetFreeInodesSync(): i64;
+ 
+@gen_async("getCurrentBundleInodes")
+@gen_promise("getCurrentBundleInodes")
+function GetCurrentBundleInodesSync(): i64;
 
 @gen_async("getSystemDataSize")
 @gen_promise("getSystemDataSize")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,9 @@ public:
     int32_t GetSystemSize(int64_t &systemSize);
     int32_t GetTotalSize(int64_t &totalSize);
     int32_t GetFreeSize(int64_t &freeSize);
+    int32_t GetTotalInodes(int64_t &totalInodes);
+    int32_t GetFreeInodes(int64_t &freeInodes);
+    int32_t GetCurrentBundleInodes(int64_t &curInodes);
     int32_t GetSystemDataSize(int64_t &systemDataSize);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);

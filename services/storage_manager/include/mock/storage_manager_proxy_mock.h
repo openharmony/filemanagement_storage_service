@@ -39,6 +39,9 @@ public:
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
+    int32_t GetTotalInodes(int64_t &totalInodes) override;
+    int32_t GetFreeInodes(int64_t &freeInodes) override;
+    int32_t GetCurrentBundleInodes(int64_t &curInodes) override;
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string& type) override;

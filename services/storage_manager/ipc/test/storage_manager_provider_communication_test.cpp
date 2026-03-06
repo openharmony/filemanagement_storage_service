@@ -475,5 +475,52 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSiz
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_003 end";
 }
 
+/**
+ * @tc.name: StorageManagerProviderTest_GetTotalInodes_001
+ * @tc.desc: Verify the GetTotalInodes function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalInodes_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalInodes_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t totalInodes = 0;
+    auto ret = storageManagerProviderTest_->GetTotalInodes(totalInodes);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalInodes_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetFreeInodes_001
+ * @tc.desc: Verify the GetFreeInodes function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeInodes_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeInodes_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t freeInodes = 0;
+    auto ret = storageManagerProviderTest_->GetFreeInodes(freeInodes);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeInodes_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetCurrentBundleInodes_001
+ * @tc.desc: Verify the GetCurrentBundleInodes function.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725395
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundleInodes_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCurrentBundleInodes_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int64_t curInodes = 0;
+    auto ret = storageManagerProviderTest_->GetCurrentBundleInodes(curInodes);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCurrentBundleInodes_001 end";
+}
 }
 }

@@ -54,6 +54,57 @@ int64_t GetTotalSizeSync2()
     return *resultSize;
 }
 
+int64_t GetTotalInodesSync()
+{
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return DEFAULTSIZE;
+    }
+    auto resultInodes = std::make_shared<int64_t>();
+    int32_t errNum = instance->GetTotalInodes(*resultInodes);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return DEFAULTSIZE;
+    }
+    return *resultInodes;
+}
+ 
+int64_t GetFreeInodesSync()
+{
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return DEFAULTSIZE;
+    }
+    auto resultInodes = std::make_shared<int64_t>();
+    int32_t errNum = instance->GetFreeInodes(*resultInodes);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return DEFAULTSIZE;
+    }
+    return *resultInodes;
+}
+
+int64_t GetCurrentBundleInodesSync()
+{
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return DEFAULTSIZE;
+    }
+    auto resultInodes = std::make_shared<int64_t>();
+    int32_t errNum = instance->GetCurrentBundleInodes(*resultInodes);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return DEFAULTSIZE;
+    }
+    return *resultInodes;
+}
+
 int64_t GetSystemDataSizeSync()
 {
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -353,6 +404,9 @@ taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfo
 // NOLINTBEGIN
 TH_EXPORT_CPP_API_GetFreeSizeSync2(ANI::StorageStatistics::GetFreeSizeSync2);
 TH_EXPORT_CPP_API_GetTotalSizeSync2(ANI::StorageStatistics::GetTotalSizeSync2);
+TH_EXPORT_CPP_API_GetTotalInodesSync(ANI::StorageStatistics::GetTotalInodesSync);
+TH_EXPORT_CPP_API_GetFreeInodesSync(ANI::StorageStatistics::GetFreeInodesSync);
+TH_EXPORT_CPP_API_GetCurrentBundleInodesSync(ANI::StorageStatistics::GetCurrentBundleInodesSync);
 TH_EXPORT_CPP_API_GetSystemDataSizeSync(ANI::StorageStatistics::GetSystemDataSizeSync);
 TH_EXPORT_CPP_API_GetCurrentBundleStatsSync(ANI::StorageStatistics::GetCurrentBundleStatsSync);
 TH_EXPORT_CPP_API_GetUserStorageStatsSync(ANI::StorageStatistics::GetUserStorageStatsSync);

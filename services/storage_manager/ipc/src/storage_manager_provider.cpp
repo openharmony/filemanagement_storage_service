@@ -493,6 +493,51 @@ int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
 #endif
 }
 
+int32_t StorageManagerProvider::GetTotalInodes(int64_t &totalInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetTotalInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalInodes(totalInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+ 
+int32_t StorageManagerProvider::GetFreeInodes(int64_t &freeInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetFreeInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeInodes(freeInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCurrentBundleInodes(int64_t &curInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetCurrentBundleInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetCurrentBundleInodes(curInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetCurrentBundleInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t StorageManagerProvider::GetSystemDataSize(int64_t &systemDataSize)
 {
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize Begin", E_OK);

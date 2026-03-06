@@ -49,6 +49,8 @@ const std::map<int, StorageTaiheErrorInfo> STORAGE_TAIHE_ERR_MAP {
     { E_JS_GET_EXT_BUNDLE_STATS_ERROR, { 13600012, "get ext bundle failed" } },
     { E_JS_GET_ALL_EXT_BUNDLE_STATS_ERROR, { 13600013, "get all ext bundle failed" } },
     { E_JS_RETRY_ERROR, { 13600014, "retry failed" } },
+    { E_JS_GET_INODE_ERROR, { 13600016, "Fail to query the inode information of the data partition" } },
+    { E_JS_GET_BUNDLE_INODES_ERROR, { 13600017, "Fail to query the inode information of the application" } },
     { E_JS_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } }
 };
 

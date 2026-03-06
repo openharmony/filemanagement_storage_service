@@ -66,6 +66,9 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderisosaccountexists_fuzzer:fuzztest",
     "storagemanagerproviderclearsecondmountpoint_fuzzer:fuzztest",
     "storagemanagerprovidergetsystemdatasize_fuzzer:fuzztest",
+    "storagemanagerprovidergettotalinodes_fuzzer:fuzztest",
+    "storagemanagerprovidergetfreeinodes_fuzzer:fuzztest",
+    "storagemanagerprovidergetcurrentbundleinodes_fuzzer:fuzztest",
   ]
 }
 
