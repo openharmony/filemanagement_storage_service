@@ -142,6 +142,10 @@ public:
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
+    //disk crypt api
+    int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

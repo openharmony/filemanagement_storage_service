@@ -24,6 +24,7 @@
 #include "mock/storage_manager_client_mock.h"
 #include "library_func_mock.h"
 #include "volume/external_volume_info.h"
+#include "volume/process.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -145,11 +146,61 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
 
     ExternalVolumeInfo vol;
     vol.devPath_ = "/mnt/data/external";
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillRepeatedly(Return(0));
     int ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_003 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(2)
+        .WillOnce(Return(-1))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_))
+        .Times(1)
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_004 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(2)
+        .WillOnce(Return(-1))
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_004 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_005 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(1)
+        .WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_))
+        .Times(1)
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_005 end";
 }
 
 /**
@@ -770,10 +821,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 start";
-
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-
     vol.fsType_ = "iso9660";
     vol.isUserdata_ = true;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -783,66 +832,105 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 end";
 }
 
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_001
- * @tc.desc: Verify the DoUMount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001 start";
+    ExternalVolumeInfo vol;
+    vol.mountPath_ = "/mnt/usb_fuse";
+    Process process(vol.mountPath_);
+    auto ret = process.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    ret = vol.DoUMountWithForceUsbFuse();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002 start";
+    ExternalVolumeInfo vol;
+    vol.mountPath_ = "/mnt/usb_fuse";
+    Process process(vol.mountPath_);
+    auto ret = process.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(-1));
+    ret = vol.DoUMountWithForceUsbFuse();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_003 start";
+    ExternalVolumeInfo vol;
+    vol.mountPath_ = "/mnt/usb_fuse";
+    Process process(vol.mountPath_);
+    auto ret = process.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(-1));
+    ret = vol.DoUMountWithForceUsbFuse();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_003 end";
+}
+
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 start";
-
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, rmdir(_)).WillOnce(Return(0));
-    int32_t ret = vol.DoUMount(force);
+    vol.fsType_ = "crypt_LUKS";
+    int32_t ret = vol.DoUMount(false);
     EXPECT_EQ(ret, E_OK);
-    
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 end";
 }
 
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_002
- * @tc.desc: Verify the DoUMount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_002 start";
-
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, rmdir(_)).WillOnce(Return(-1));
-    int32_t ret = vol.DoUMount(force);
+    vol.mountPath_ = "";
+    int32_t ret = vol.DoUMount(false);
     EXPECT_EQ(ret, E_OK);
-
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_002 end";
 }
 
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_003
- * @tc.desc: Verify the DoUMount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 start";
-
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(-1));
-    int32_t ret = vol.DoUMount(force);
-    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
-
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "ext4";
+    vol.mountPath_ = "/mnt/data";
+    int32_t ret = vol.DoUMount(true);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_004 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "usb_fuse";
+    vol.mountPath_ = "/mnt/usb";
+    vol.mountUsbFusePath_ = "/mnt/usb_fuse";
+    int32_t ret = vol.DoUMount(false);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_004 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_005 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "ext4";
+    vol.mountPath_ = "/mnt/data";
+    int32_t ret = vol.DoUMount(false);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_005 end";
 }
 
 /**
@@ -1160,12 +1248,10 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsType_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 start";
-
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     std::string ret = externalVolumeInfo_->GetFsType();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret.empty());
-
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 end";
 }
 

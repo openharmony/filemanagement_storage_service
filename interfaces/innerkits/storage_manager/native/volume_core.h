@@ -34,6 +34,10 @@ enum VolumeState {
     DAMAGED,
     FUSE_REMOVED,
     DAMAGED_MOUNTED,
+    ENCRYPTING,
+    ENCRYPTED_AND_LOCKED,
+    ENCRYPTED_AND_UNLOCKED,
+    DECRYPTING,
 };
 
 class VolumeInfoStr : public Parcelable {

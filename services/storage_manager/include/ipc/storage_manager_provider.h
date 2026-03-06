@@ -177,6 +177,11 @@ public:
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
+    //disk crypt api
+    int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

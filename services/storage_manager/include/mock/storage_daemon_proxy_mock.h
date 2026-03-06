@@ -125,6 +125,10 @@ public:
     virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
         const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
+
+    //disk crypt api
+    virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

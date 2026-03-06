@@ -30,6 +30,28 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
+struct VolumeStateInfo {
+    VolumeState state;
+    const char* logMessage;
+    std::string eventAction;
+};
+
+const VolumeStateInfo STATE_INFOS[] = {
+    {VolumeState::REMOVED, "VOLUME_REMOVED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_REMOVED},
+    {VolumeState::UNMOUNTED, "VOLUME_UNMOUNTED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_UNMOUNTED},
+    {VolumeState::MOUNTED, "VOLUME_MOUNTED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED},
+    {VolumeState::BAD_REMOVAL, "VOLUME_BAD_REMOVAL", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_BAD_REMOVAL},
+    {VolumeState::EJECTING, "VOLUME_EJECT", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_EJECT},
+    {VolumeState::DAMAGED, "DeskDamaged", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTABLE},
+    {VolumeState::DAMAGED_MOUNTED, "DeskDamagedMounted", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTABLE},
+    {VolumeState::ENCRYPTING, "DeskEncrypting", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL},
+    {VolumeState::ENCRYPTED_AND_LOCKED, "DeskEncryptedAndLocked",
+        EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL},
+    {VolumeState::ENCRYPTED_AND_UNLOCKED, "DeskEncryptedAndUnLocked",
+        EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL},
+    {VolumeState::DECRYPTING, "DeskDecrypting", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL}
+};
+
 void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume)
 {
     AAFwk::Want want;
@@ -42,41 +64,21 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
     wantParams.SetParam("flags", AAFwk::Integer::Box(volume->GetFlags()));
-    switch (notifyCode) {
-        case VolumeState::REMOVED:
-            LOGI("notifycode: VOLUME_REMOVED");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_REMOVED);
+    wantParams.SetParam("volumeState", AAFwk::Integer::Box(notifyCode));
+
+    for (const auto& info : STATE_INFOS) {
+        if (info.state == notifyCode) {
+            LOGI("notifycode: %{public}s, id:%{public}s", info.logMessage, volume->GetId().c_str());
+            want.SetAction(info.eventAction);
             break;
-        case VolumeState::UNMOUNTED:
-            LOGI("notifycode: VOLUME_UNMOUNTED");
-            wantParams.SetParam("volumeState", AAFwk::Integer::Box(UNMOUNTED));
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_UNMOUNTED);
-            break;
-        case VolumeState::MOUNTED:
-            LOGI("notifycode: VOLUME_MOUNTED");
-            wantParams.SetParam("volumeState", AAFwk::Integer::Box(MOUNTED));
-            wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
-            wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED);
-            break;
-        case VolumeState::BAD_REMOVAL:
-            LOGI("notifycode: VOLUME_BAD_REMOVAL");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_BAD_REMOVAL);
-            break;
-        case VolumeState::EJECTING:
-            LOGI("notifycode: VOLUME_EJECT");
-            wantParams.SetParam("volumeState", AAFwk::Integer::Box(EJECTING));
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_EJECT);
-            break;
-        case VolumeState::DAMAGED:
-        case VolumeState::DAMAGED_MOUNTED:
-            LOGI("notifycode: DeskDamaged, id:%{public}s", volume->GetId().c_str());
-            wantParams.SetParam("volumeState", AAFwk::Integer::Box(DAMAGED));
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTABLE);
-            break;
-        default:
-            return;
+        }
     }
+
+    if (notifyCode == VolumeState::MOUNTED) {
+        wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
+        wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
+    }
+
     want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);

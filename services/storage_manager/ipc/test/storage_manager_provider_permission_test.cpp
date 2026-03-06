@@ -1746,5 +1746,27 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ClearSecondMount
     EXPECT_EQ(storageManagerProviderTest_->ClearSecondMountPoint(userId, bundleName), E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ClearSecondMountPoint_001 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "testVolumeId";
+    std::string pazzword = "testPasswd";
+    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgressById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "testVolumeId";
+    int32_t progress = 0;
+    auto ret = storageManagerProviderTest_->GetCryptProgressById(volumeId, progress);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_002 end";
+}
 }
 }

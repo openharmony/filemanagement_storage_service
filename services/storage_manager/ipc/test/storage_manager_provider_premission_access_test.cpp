@@ -709,5 +709,25 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetSystemDataSiz
 
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetSystemDataSize_002 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_003 start";
+    std::string volumeId = "testVolumeId";
+    std::string pazzword = "testPasswd";
+    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_003 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgressById_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_003 start";
+    std::string volumeId = "testVolumeId";
+    int32_t progress = 0;
+    auto ret = storageManagerProviderTest_->GetCryptProgressById(volumeId, progress);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_003 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

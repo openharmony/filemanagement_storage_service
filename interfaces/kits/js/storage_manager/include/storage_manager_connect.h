@@ -60,6 +60,10 @@ public:
     int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
+
+    //disk crypt api
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

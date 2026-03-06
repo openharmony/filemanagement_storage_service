@@ -1133,4 +1133,34 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ListUserdataDirInf
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Encrypt_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Encrypt_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->Encrypt(volumeId, pazzword);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Encrypt_0000 SUCCESS";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptProgressById_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetCryptProgressById_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    string volumeId = "vol-2-5";
+    int32_t progress = 0;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->GetCryptProgressById(volumeId, progress);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetCryptProgressById_0000 SUCCESS";
+}
 } // namespace

@@ -148,6 +148,31 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
     return E_OK;
 }
 
+int32_t StorageManagerClient::NotifyEncryptVolumeStateChanged(std::shared_ptr<VolumeInfo> volumeInfo)
+{
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (volumeInfo == nullptr) {
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
+
+    if (info == nullptr) {
+        LOGE("volumeInfo is not ExternalVolumeInfo");
+        return E_PARAMS_INVALID;
+    }
+    if (storageManager_ != nullptr) {
+        storageManager_->NotifyEncryptVolumeStateChanged(
+            StorageManager::VolumeInfoStr{
+                info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
+                info->GetMountPath(), info->GetFsLabel(), info->GetDamagedFlag()
+            }
+        );
+    }
+    return E_OK;
+}
+
 int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state)
 
 {

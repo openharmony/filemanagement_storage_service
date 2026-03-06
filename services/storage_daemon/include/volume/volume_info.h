@@ -31,6 +31,10 @@ enum VolumeState {
     DAMAGED,
     FUSE_REMOVED,
     DAMAGED_MOUNTED,
+    ENCRYPTING,
+    ENCRYPTED_AND_LOCKED,
+    ENCRYPTED_AND_UNLOCKED,
+    DECRYPTING,
 };
 
 enum VolumeType {
@@ -53,13 +57,15 @@ public:
     int32_t SetVolumeDescription(const std::string description);
     int32_t TryToCheck();
     int32_t TryToFix();
-
     std::string GetVolumeId();
     int32_t GetVolumeType();
     std::string GetDiskId();
     int32_t GetState();
+    void SetState(VolumeState mountState);
     bool GetIsUserdata();
     std::string GetFsTypeBase();
+    //disk crypt api
+    int32_t DestroyCrypt(const std::string &volumeId);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -74,6 +80,7 @@ protected:
     virtual int32_t DoTryToFix() = 0;
     virtual std::string GetFsTypeByDev(dev_t dev) = 0;
     virtual bool IsUsbFuseByType(std::string fsType);
+    virtual std::string GetFsType() = 0;
 
 private:
     std::string id_;

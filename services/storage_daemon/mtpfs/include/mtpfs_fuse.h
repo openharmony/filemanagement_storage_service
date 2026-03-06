@@ -84,7 +84,6 @@ public:
         return options_.good_;
     }
     int GetAttr(const char *path, struct stat *buf);
-    int MkNod(const char *path, mode_t mode, dev_t dev);
     int MkDir(const char *path, mode_t mode);
     int UnLink(const char *path);
     int RmDir(const char *path);

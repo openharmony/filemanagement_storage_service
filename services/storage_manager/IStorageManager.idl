@@ -125,4 +125,8 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 90] void GetTotalInodes([out] long totalInodes);
     [ipccode 91] void GetFreeInodes([out] long freeInodes);
     [ipccode 92] void GetCurrentBundleInodes([out] long curInodes);
+    //disk crypt api
+    [ipccode 93] void NotifyEncryptVolumeStateChanged([in] VolumeInfoStr vis);
+    [ipccode 94] void Encrypt([in] String volumeId, [in] String pazzword);
+    [ipccode 95] void GetCryptProgressById([in] String volumeId, [out] int progress);
 }

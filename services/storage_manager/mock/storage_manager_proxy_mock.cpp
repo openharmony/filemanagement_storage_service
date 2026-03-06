@@ -464,5 +464,20 @@ int32_t StorageManagerProxy::GetSystemDataSize(int64_t &systemDataSize)
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

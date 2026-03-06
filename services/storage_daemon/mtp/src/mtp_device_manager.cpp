@@ -130,7 +130,6 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
             StorageManagerClient client;
             client.NotifyMtpUnmounted(device.id, isBadRemove);
         }
-
         rmdir(device.path.c_str());
         return E_OK;
     }
