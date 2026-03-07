@@ -25,6 +25,13 @@ namespace ModuleEncryptedVolumeManager {
 //disk crypt api
 napi_value Encrypt(napi_env env, napi_callback_info info);
 napi_value GetCryptProgressById(napi_env env, napi_callback_info info);
+napi_value GetCryptUuidById(napi_env env, napi_callback_info info);
+napi_value BindRecoverKeyToPasswd(napi_env env, napi_callback_info info);
+napi_value UpdateCryptPasswd(napi_env env, napi_callback_info info);
+napi_value ResetCryptPasswd(napi_env env, napi_callback_info info);
+napi_value VerifyCryptPasswd(napi_env env, napi_callback_info info);
+napi_value Unlock(napi_env env, napi_callback_info info);
+napi_value Decrypt(napi_env env, napi_callback_info info);
 } // namespace ModuleEncryptedVolumeManager
 } // namespace StorageManager
 } // namespace OHOS

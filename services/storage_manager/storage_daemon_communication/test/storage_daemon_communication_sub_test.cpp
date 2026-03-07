@@ -1646,4 +1646,98 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptProgressBy
     EXPECT_CALL(*sd, GetCryptProgressById(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->GetCryptProgressById("", progress), E_OK);
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptUuidById_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string uuid;
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->GetCryptUuidById(volumeId, uuid), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->GetCryptUuidById(volumeId, uuid), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->GetCryptUuidById(volumeId, uuid), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_BindRecoverKeyToPasswd_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    std::string recoverKey = "testRecoverKey";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateCryptPasswd_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "oldPasswd";
+    std::string newPazzword = "newPasswd";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->UpdateCryptPasswd(volumeId, pazzword, newPazzword), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->UpdateCryptPasswd(volumeId, pazzword, newPazzword), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->UpdateCryptPasswd(volumeId, pazzword, newPazzword), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetCryptPasswd_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string recoverKey = "testRecoverKey";
+    std::string newPazzword = "newPasswd";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->ResetCryptPasswd(volumeId, recoverKey, newPazzword), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->ResetCryptPasswd(volumeId, recoverKey, newPazzword), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->ResetCryptPasswd(volumeId, recoverKey, newPazzword), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyCryptPasswd_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->VerifyCryptPasswd(volumeId, pazzword), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->VerifyCryptPasswd(volumeId, pazzword), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->VerifyCryptPasswd(volumeId, pazzword), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unlock_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->Unlock(volumeId, pazzword), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->Unlock(volumeId, pazzword), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->Unlock(volumeId, pazzword), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Decrypt_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->Decrypt(volumeId, pazzword), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->Decrypt(volumeId, pazzword), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_EQ(sdCommunication->Decrypt(volumeId, pazzword), E_OK);
+}
 }

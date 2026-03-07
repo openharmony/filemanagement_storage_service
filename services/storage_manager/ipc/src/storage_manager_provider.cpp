@@ -2064,12 +2064,12 @@ bool StorageManagerProvider::IsCalledByFileMgr()
 
 int32_t StorageManagerProvider::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
         "NotifyEncryptVolumeStateChanged Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::NotifyEncryptVolumeStateChanged start");
     VolumeManagerService::GetInstance().NotifyEncryptVolumeStateChanged(volumeInfoStr);
     StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
@@ -2080,11 +2080,11 @@ int32_t StorageManagerProvider::NotifyEncryptVolumeStateChanged(const VolumeInfo
 
 int32_t StorageManagerProvider::Encrypt(const std::string &volumeId, const std::string &pazzword)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Encrypt start, volumeId: %{public}s", volumeId.c_str());
     int32_t err = EncryptedVolumeManagerService::GetInstance().Encrypt(volumeId, pazzword);
     StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt End", err);
@@ -2093,17 +2093,17 @@ int32_t StorageManagerProvider::Encrypt(const std::string &volumeId, const std::
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
 int32_t StorageManagerProvider::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetCryptProgressById start, volumeId: %{public}s", volumeId.c_str());
     int32_t err = EncryptedVolumeManagerService::GetInstance().GetCryptProgressById(volumeId, progress);
     StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById End", err);
@@ -2112,7 +2112,147 @@ int32_t StorageManagerProvider::GetCryptProgressById(const std::string &volumeId
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("GetCryptUuidById", DEFAULT_USERID, "GetCryptUuidById Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::GetCryptUuidById start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().GetCryptUuidById(volumeId, uuid);
+    StorageRadar::ReportFucBehavior("GetCryptUuidById", DEFAULT_USERID, "GetCryptUuidById End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::GetCryptUuidById", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                       const std::string &pazzword,
+                                                       const std::string &recoverKey)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("BindRecoverKeyToPasswd", DEFAULT_USERID, "BindRecoverKeyToPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::BindRecoverKeyToPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    StorageRadar::ReportFucBehavior("BindRecoverKeyToPasswd", DEFAULT_USERID, "BindRecoverKeyToPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::BindRecoverKeyToPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::UpdateCryptPasswd(const std::string &volumeId,
+                                                  const std::string &pazzword,
+                                                  const std::string &newPazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("UpdateCryptPasswd", DEFAULT_USERID, "UpdateCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::UpdateCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    StorageRadar::ReportFucBehavior("UpdateCryptPasswd", DEFAULT_USERID, "UpdateCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::UpdateCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::ResetCryptPasswd(const std::string &volumeId,
+                                                 const std::string &recoverKey,
+                                                 const std::string &newPazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("ResetCryptPasswd", DEFAULT_USERID, "ResetCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::ResetCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    StorageRadar::ReportFucBehavior("ResetCryptPasswd", DEFAULT_USERID, "ResetCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::ResetCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("VerifyCryptPasswd", DEFAULT_USERID, "VerifyCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::VerifyCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().VerifyCryptPasswd(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("VerifyCryptPasswd", DEFAULT_USERID, "VerifyCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::VerifyCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("Unlock", DEFAULT_USERID, "Unlock Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::Unlock start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Unlock(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Unlock", DEFAULT_USERID, "Unlock End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Unlock", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("Decrypt", DEFAULT_USERID, "Decrypt Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+
+    LOGI("StorageManagerProvider::Decrypt start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Decrypt(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Decrypt", DEFAULT_USERID, "Decrypt End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Decrypt", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
 #endif
 }
 } // namespace StorageManager

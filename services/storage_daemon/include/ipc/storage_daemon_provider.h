@@ -147,6 +147,19 @@ public:
     //disk crypt api
     virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    virtual int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    virtual int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey) override;
+    virtual int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &newPazzword) override;
+    virtual int32_t ResetCryptPasswd(const std::string &volumeId,
+                                    const std::string &recoverKey,
+                                    const std::string &newPazzword) override;
+    virtual int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

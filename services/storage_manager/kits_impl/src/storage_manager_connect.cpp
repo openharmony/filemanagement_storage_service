@@ -538,5 +538,109 @@ int32_t StorageManagerConnect::GetCryptProgressById(const std::string &volumeId,
     }
     return storageManager_->GetCryptProgressById(volumeId, progress);
 }
+
+int32_t StorageManagerConnect::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCryptUuidById:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCryptUuidById service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCryptUuidById(volumeId, uuid);
+}
+
+int32_t StorageManagerConnect::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                      const std::string &pazzword,
+                                                      const std::string &recoverKey)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::BindRecoverKeyToPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::BindRecoverKeyToPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+}
+
+int32_t StorageManagerConnect::UpdateCryptPasswd(const std::string &volumeId,
+                                                 const std::string &pazzword,
+                                                 const std::string &newPazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::UpdateCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::UpdateCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+}
+
+int32_t StorageManagerConnect::ResetCryptPasswd(const std::string &volumeId,
+                                                const std::string &recoverKey,
+                                                const std::string &newPazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::ResetCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::ResetCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+}
+
+int32_t StorageManagerConnect::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::VerifyCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::VerifyCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->VerifyCryptPasswd(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Unlock:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Unlock service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Unlock(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Decrypt:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Decrypt service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Decrypt(volumeId, pazzword);
+}
 } // StorageManager
 } // OHOS

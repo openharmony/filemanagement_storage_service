@@ -1108,5 +1108,116 @@ int32_t StorageDaemonCommunication::GetCryptProgressById(const std::string &volu
     }
     return storageDaemon_->GetCryptProgressById(volumeId, progress);
 }
+
+int32_t StorageDaemonCommunication::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    LOGI("StorageDaemonCommunication::GetCryptUuidById start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::GetCryptUuidById connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                           const std::string &pazzword,
+                                                           const std::string &recoverKey)
+{
+    LOGI("StorageDaemonCommunication::Encrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Encrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::UpdateCryptPasswd(const std::string &volumeId,
+                                                      const std::string &pazzword,
+                                                      const std::string &newPazzword)
+{
+    LOGI("StorageDaemonCommunication::UpdateCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::UpdateCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::ResetCryptPasswd(const std::string &volumeId,
+                                                     const std::string &recoverKey,
+                                                     const std::string &newPazzword)
+{
+    LOGI("StorageDaemonCommunication::ResetCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::ResetCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::VerifyCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::VerifyCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Unlock start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Unlock connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Decrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Decrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return E_OK;
+}
 } // namespace StorageManager
 } // namespace OHOS

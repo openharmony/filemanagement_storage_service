@@ -181,6 +181,19 @@ public:
     int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
     int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
     int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey) override;
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &newPazzword) override;
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                                    const std::string &recoverKey,
+                                    const std::string &newPazzword) override;
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
 
 private:
     StorageManagerProvider();

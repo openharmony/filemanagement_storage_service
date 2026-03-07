@@ -1120,5 +1120,63 @@ int32_t StorageDaemonProvider::GetCryptProgressById(const std::string &volumeId,
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    (void)volumeId;
+    (void)uuid;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                      const std::string &password,
+                                                      const std::string &recoverKey)
+{
+    (void)volumeId;
+    (void)password;
+    (void)recoverKey;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::UpdateCryptPasswd(const std::string &volumeId,
+                                                 const std::string &password,
+                                                 const std::string &newPassword)
+{
+    (void)volumeId;
+    (void)password;
+    (void)newPassword;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::ResetCryptPasswd(const std::string &volumeId,
+                                                const std::string &recoverKey,
+                                                const std::string &newPassword)
+{
+    (void)volumeId;
+    (void)recoverKey;
+    (void)newPassword;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::VerifyCryptPasswd(const std::string &volumeId, const std::string &password)
+{
+    (void)volumeId;
+    (void)password;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::Unlock(const std::string &volumeId, const std::string &password)
+{
+    (void)volumeId;
+    (void)password;
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::Decrypt(const std::string &volumeId, const std::string &password)
+{
+    (void)volumeId;
+    (void)password;
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

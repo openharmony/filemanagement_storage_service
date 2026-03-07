@@ -479,5 +479,46 @@ int32_t StorageManagerProxy::GetCryptProgressById(const std::string &volumeId, i
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                    const std::string &pazzword,
+                                                    const std::string &recoverKey)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UpdateCryptPasswd(const std::string &volumeId,
+                                               const std::string &pazzword,
+                                               const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::ResetCryptPasswd(const std::string &volumeId,
+                                              const std::string &recoverKey,
+                                              const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

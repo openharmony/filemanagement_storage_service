@@ -27,6 +27,13 @@ napi_value EncryptedVolumeManagerExport(napi_env env, napi_value exports)
     static napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("encrypt", Encrypt),
         DECLARE_NAPI_FUNCTION("getCryptProgressById", GetCryptProgressById),
+        DECLARE_NAPI_FUNCTION("getCryptUuidById", GetCryptUuidById),
+        DECLARE_NAPI_FUNCTION("bindRecoverKeyToPasswd", BindRecoverKeyToPasswd),
+        DECLARE_NAPI_FUNCTION("updateCryptPasswd", UpdateCryptPasswd),
+        DECLARE_NAPI_FUNCTION("resetCryptPasswd", ResetCryptPasswd),
+        DECLARE_NAPI_FUNCTION("verifyCryptPasswd", VerifyCryptPasswd),
+        DECLARE_NAPI_FUNCTION("unlock", Unlock),
+        DECLARE_NAPI_FUNCTION("decrypt", Decrypt),
     };
     FILEMGMT_CALL(napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
