@@ -324,4 +324,28 @@ HWTEST_F(AclTest, acl_serialize_test_2, TestSize.Level1)
         EXPECT_TRUE(rc != 0) << "de-serializing with wrong bufSize should fail";
     }
 }
+
+/**
+ * @tc.name: acl_deserialize_insert_failed_test
+ * @tc.desc: Verify DeSerialize returns failure when parsed entry cannot be inserted.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09ML
+ */
+HWTEST_F(AclTest, acl_deserialize_insert_failed_test, TestSize.Level1)
+{
+    Acl acl;
+    constexpr size_t rawSize = sizeof(AclXattrHeader) + sizeof(AclXattrEntry);
+    char raw[rawSize] = {0};
+    auto *header = reinterpret_cast<AclXattrHeader *>(raw);
+    *header = {0};
+
+    auto *entry = reinterpret_cast<AclXattrEntry *>(raw + sizeof(AclXattrHeader));
+    entry->tag = static_cast<ACL_TAG>(255);
+    entry->perm = 0;
+    entry->id = OHOS::StorageDaemon::AclXattrHeader::ACL_UNDEFINED_ID;
+
+    int rc = acl.DeSerialize(raw, rawSize);
+    EXPECT_NE(rc, 0);
 }
+}
+

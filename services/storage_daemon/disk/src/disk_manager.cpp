@@ -16,6 +16,7 @@
 #include "disk/disk_manager.h"
 
 #include <sys/sysmacros.h>
+#include <cinttypes>
 
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
@@ -34,17 +35,19 @@ DiskManager &DiskManager::Instance(void)
 
 DiskManager::~DiskManager()
 {
-    LOGI("Destroy DiskManager");
+    LOGI("[L2:DiskManager] ~DiskManager: >>> ENTER <<<");
 }
 
 void DiskManager::HandleDiskEvent(NetlinkData *data)
 {
+    LOGI("[L2:DiskManager] HandleDiskEvent: >>> ENTER <<<");
     if (data == nullptr) {
-        LOGE("data is nullptr");
+        LOGE("[L2:DiskManager] HandleDiskEvent: <<< EXIT FAILED <<< data is nullptr");
         return;
     }
     std::string devType = data->GetParam("DEVTYPE");
     if (devType != "disk") {
+        LOGD("[L2:DiskManager] HandleDiskEvent: devType=%{public}s, not disk, skip", devType.c_str());
         return;
     }
 
@@ -56,34 +59,37 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
         case NetlinkData::Actions::ADD: {
             auto diskInfo = MatchConfig(data);
             if (diskInfo == nullptr) {
-                LOGI("Can't match config, devPath is %{public}s", data->GetDevpath().c_str());
+                LOGI("[L2:DiskManager] HandleDiskEvent: Can't match config, devPath=%{public}s",
+                     data->GetDevpath().c_str());
             } else {
                 CreateDisk(diskInfo);
-                LOGI("Handle Disk Add Event");
+                LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=ADD");
             }
             break;
         }
         case NetlinkData::Actions::CHANGE: {
             ChangeDisk(device, data);
-            LOGI("Handle Disk Change Event");
+            LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=CHANGE");
             break;
         }
         case NetlinkData::Actions::REMOVE: {
             DestroyDisk(device);
-            LOGI("Handle Disk Remove Event");
+            LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=REMOVE");
             break;
         }
         default: {
-            LOGW("Cannot handle unexpected disk event %{public}d", data->GetAction());
+            LOGW("[L2:DiskManager] HandleDiskEvent: unexpected event, action=%{public}d", data->GetAction());
             break;
         }
     }
+    LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<<");
 }
 
 std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
+    LOGI("[L2:DiskManager] MatchConfig: >>> ENTER <<<");
     if (data == nullptr) {
-        LOGE("data is nullptr");
+        LOGE("[L2:DiskManager] MatchConfig: <<< EXIT FAILED <<< data is nullptr");
         return nullptr;
     }
     std::lock_guard<std::mutex> lock(lock_);
@@ -103,90 +109,104 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
             } else {
                 flag |= DiskInfo::DeviceFlag::USB_FLAG;
             }
-            return std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
+            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
+            LOGI("[L2:DiskManager] MatchConfig: <<< EXIT SUCCESS <<< devPath=%{public}s, matched", devPath.c_str());
+            return diskInfo;
         }
     }
 
-    LOGI("No matching configuration found");
+    LOGI("[L2:DiskManager] MatchConfig: <<< EXIT SUCCESS <<< No matching configuration found");
     return nullptr;
 }
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
+    LOGI("[L2:DiskManager] CreateDisk: >>> ENTER <<<");
     std::lock_guard<std::mutex> lock(lock_);
     if (diskInfo == nullptr) {
-        LOGE("diskInfo is nullptr");
+        LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< diskInfo is nullptr");
         return;
     }
 
     int ret = diskInfo->Create();
     if (ret != E_OK) {
-        LOGE("Create DiskInfo failed");
+        LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< Create DiskInfo failed, err=%{public}d", ret);
         return;
     }
     disk_.push_back(diskInfo);
+    LOGI("[L2:DiskManager] CreateDisk: <<< EXIT SUCCESS <<<");
 }
 
 void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
 {
+    LOGI("[L2:DiskManager] ChangeDisk: >>> ENTER <<< device=%{public}" PRIu64, device);
     {
         std::lock_guard<std::mutex> lock(lock_);
         for (auto &diskInfo : disk_) {
             if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
                 diskInfo->ReadMetadata();
                 diskInfo->ReadPartition(data->GetEjectRequest());
+                LOGI("[L2:DiskManager] ChangeDisk: <<< EXIT SUCCESS <<< disk found and updated");
                 return;
             }
         }
     }
     auto diskInfo = MatchConfig(data);
     if (diskInfo == nullptr) {
-        LOGI("Can't match config, devPath is %{public}s", data->GetDevpath().c_str());
+        LOGI("[L2:DiskManager] ChangeDisk: Can't match config, devPath=%{public}s",
+             data->GetDevpath().c_str());
     } else {
         CreateDisk(diskInfo);
-        LOGI("Handle Disk Add Event");
+        LOGI("[L2:DiskManager] ChangeDisk: <<< EXIT SUCCESS <<< new disk created");
     }
 }
 
 void DiskManager::DestroyDisk(dev_t device)
 {
+    LOGI("[L2:DiskManager] DestroyDisk: >>> ENTER <<< device=%{public}" PRIu64, device);
     int ret;
     std::lock_guard<std::mutex> lock(lock_);
     for (auto i = disk_.begin(); i != disk_.end();) {
         if (*i != nullptr && (*i)->GetDevice() == device) {
             ret = (*i)->Destroy();
             if (ret != E_OK) {
-                LOGE("Destroy DiskInfo failed");
+                LOGE("[L2:DiskManager] DestroyDisk: <<< EXIT FAILED <<< Destroy DiskInfo failed, err=%{public}d", ret);
                 return;
             }
 
             StorageManagerClient client;
             ret = client.NotifyDiskDestroyed((*i)->GetId());
             if (ret != E_OK) {
-                LOGI("Notify Disk Destroyed failed");
+                LOGI("[L2:DiskManager] DestroyDisk: Notify Disk Destroyed failed, err=%{public}d", ret);
             }
             i = disk_.erase(i);
         } else {
             i++;
         }
     }
+    LOGI("[L2:DiskManager] DestroyDisk: <<< EXIT SUCCESS <<<");
 }
 
 void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)
 {
+    LOGI("[L2:DiskManager] AddDiskConfig: >>> ENTER <<<");
     std::lock_guard<std::mutex> lock(lock_);
     if (diskConfig != nullptr) {
         diskConfig_.push_back(diskConfig);
     }
+    LOGI("[L2:DiskManager] AddDiskConfig: <<< EXIT SUCCESS <<<");
 }
 
 void DiskManager::ReplayUevent()
 {
+    LOGI("[L2:DiskManager] ReplayUevent: >>> ENTER <<<");
     TraverseDirUevent(sysBlockPath_, true);
+    LOGI("[L2:DiskManager] ReplayUevent: <<< EXIT SUCCESS <<<");
 }
 
 int32_t DiskManager::HandlePartition(const std::string &diskId)
 {
+    LOGI("[L2:DiskManager] HandlePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = E_NON_EXIST;
     std::lock_guard<std::mutex> lock(lock_);
     for (auto i = disk_.begin(); i != disk_.end(); i++) {
@@ -200,6 +220,12 @@ int32_t DiskManager::HandlePartition(const std::string &diskId)
         }
     }
 
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandlePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
+    } else {
+        LOGE("[L2:DiskManager] HandlePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
     return ret;
 }
 } // namespace STORAGE_DAEMON

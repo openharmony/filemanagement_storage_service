@@ -167,6 +167,7 @@ ohos_unittest("netlink_manager_test") {
   include_dirs = [
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_daemon/include",
+    "$ROOT_DIR/storage_daemon/netlink/test",
     "$ROOT_DIR/storage_manager/include",
     "${storage_service_path}/utils/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -179,9 +180,9 @@ ohos_unittest("netlink_manager_test") {
     "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_handler.cpp",
-    "$ROOT_DIR/storage_daemon/netlink/src/netlink_listener.cpp",
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_manager.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_manager_test.cpp",
+    "$ROOT_DIR/storage_daemon/netlink/test/netlink_listener_mock.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",

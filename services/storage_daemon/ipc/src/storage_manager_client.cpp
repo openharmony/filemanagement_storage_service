@@ -225,7 +225,7 @@ int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std:
                                                const std::string &uuid, const std::string &fsType)
 {
     LOGI("[L1:StorageManagerClient] NotifyMtpMounted: >>> ENTER <<< id=%{public}s, path=%{public}s, desc=%{public}s,"
-         "uuid=%{private}s",
+         "uuid=%{public}s",
         id.c_str(), path.c_str(), desc.c_str(), GetAnonyString(uuid).c_str());
     if (GetClient() != E_OK) {
         LOGE("[L1:StorageManagerClient] NotifyMtpMounted: <<< EXIT FAILED <<< GetClient failed");
@@ -301,7 +301,7 @@ int32_t StorageManagerClient::NotifyCreateBundleDataDirWithEl(uint32_t userId, u
 
 int32_t StorageManagerClient::QueryActiveOsAccountIds(std::vector<int32_t> &ids)
 {
-    LOGI("[L1:StorageManagerClient] QueryActiveOsAccountIds: >>> ENTER <<<");
+    LOGI("[L1:StorageManagerClient] QueryActiveOsAccountIds: >>> ENTER <<< ids length=%{public}zu.", ids.size());
     if (GetClient() != E_OK) {
         LOGE("[L1:StorageManagerClient] QueryActiveOsAccountIds: <<< EXIT FAILED <<< GetClient failed");
         return E_SERVICE_IS_NULLPTR;

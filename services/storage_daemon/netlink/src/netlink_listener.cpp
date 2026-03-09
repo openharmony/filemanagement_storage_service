@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,23 +46,28 @@ ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
 
     ssize_t n = recvmsg(socket, &hdr, 0);
     if (n <= 0) {
-        LOGE("Recvmsg failed, errno %{public}d", errno);
+        LOGE("[L3:NetlinkListener] UeventKernelMulticastRecv: <<< EXIT FAILED <<< recvmsg failed, errno=%{public}d",
+             errno);
         return n;
     }
 
     if (addr.nl_groups == 0 || addr.nl_pid != 0) {
+        LOGE("[L3:NetlinkListener] UeventKernelMulticastRecv: <<< EXIT FAILED <<< invalid addr, nl_groups=%{public}u,"
+             "nl_pid=%{public}u",
+             addr.nl_groups, addr.nl_pid);
         return E_ERR;
     }
 
     cmsg = CMSG_FIRSTHDR(&hdr);
     if (cmsg == nullptr || cmsg->cmsg_type != SCM_CREDENTIALS) {
-        LOGE("SCM_CREDENTIALS check failed");
+        LOGE("[L3:NetlinkListener] UeventKernelMulticastRecv: <<< EXIT FAILED <<< SCM_CREDENTIALS check failed");
         return E_ERR;
     }
 
     struct ucred cred;
     if (memcpy_s(&cred, sizeof(cred), CMSG_DATA(cmsg), sizeof(struct ucred)) != EOK || cred.uid != 0) {
-        LOGE("Uid check failed");
+        LOGE("[L3:NetlinkListener] UeventKernelMulticastRecv: <<< EXIT FAILED <<< uid check failed, uid=%{public}u",
+             cred.uid);
         return E_ERR;
     }
 
@@ -71,6 +76,8 @@ ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
 
 void NetlinkListener::RecvUeventMsg()
 {
+    LOGD("[L3:NetlinkListener] RecvUeventMsg: >>> ENTER <<<");
+
     auto msg = std::make_unique<char[]>(UEVENT_MSG_LEN + 1);
 
     while (1) {
@@ -80,12 +87,15 @@ void NetlinkListener::RecvUeventMsg()
             break;
         }
         if (count >= UEVENT_MSG_LEN) {
+            LOGW("[L3:NetlinkListener] RecvUeventMsg: message too long, count=%{public}zd, skip", count);
             continue;
         }
 
         msg.get()[count] = '\0';
         OnEvent(msg.get());
     }
+
+    LOGD("[L3:NetlinkListener] RecvUeventMsg: <<< EXIT SUCCESS <<<");
 }
 
 int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
@@ -99,11 +109,12 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
         if (ufds[i].fd == socketPipe_[0]) {
             int32_t msg = 0;
             if (read(socketPipe_[0], &msg, 1) < 0) {
-                LOGE("Read socket pipe failed");
+                LOGE("[L3:NetlinkListener] ReadMsg: <<< EXIT FAILED <<< read socket pipe failed, errno=%{public}d",
+                     errno);
                 return E_ERR;
             }
             if (msg == 0) {
-                LOGI("Stop listener");
+                LOGI("[L3:NetlinkListener] ReadMsg: received stop message, exiting");
                 return E_ERR;
             }
         } else if (ufds[i].fd == socketFd_) {
@@ -112,7 +123,8 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
                 continue;
             }
             if ((static_cast<uint32_t>(ufds[i].revents)) & (POLLERR | POLLHUP)) {
-                LOGE("POLLERR | POLLHUP");
+                LOGE("[L3:NetlinkListener] ReadMsg: <<< EXIT FAILED <<< POLLERR | POLLHUP, revents=%{public}u",
+                     ufds[i].revents);
                 return E_ERR;
             }
         }
@@ -122,6 +134,8 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
 
 void NetlinkListener::RunListener()
 {
+    LOGD("[L3:NetlinkListener] RunListener: >>> ENTER <<<");
+
     struct pollfd ufds[2];
     int32_t idleTime = POLL_IDLE_TIME;
 
@@ -144,6 +158,7 @@ void NetlinkListener::RunListener()
             if (errno == EAGAIN || errno == EINTR) {
                 continue;
             }
+            LOGE("[L3:NetlinkListener] RunListener: <<< EXIT FAILED <<< poll failed, errno=%{public}d", errno);
             break;
         } else if (fdEventCount == 0) {
             continue;
@@ -158,23 +173,26 @@ void NetlinkListener::RunListener()
 void NetlinkListener::EventProcess(void *object)
 {
     if (object == nullptr) {
-        LOGE("object is NULL");
+        LOGE("[L3:NetlinkListener] EventProcess: <<< EXIT FAILED <<< object is NULL");
         return;
     }
 
+    LOGD("[L3:NetlinkListener] EventProcess: >>> ENTER <<<");
     NetlinkListener* client = reinterpret_cast<NetlinkListener *>(object);
     client->RunListener();
 }
 
 int32_t NetlinkListener::StartListener()
 {
+    LOGI("[L3:NetlinkListener] StartListener: >>> ENTER <<<");
+
     if (socketFd_ < 0) {
-        LOGE("socketFD < 0");
+        LOGE("[L3:NetlinkListener] StartListener: <<< EXIT FAILED <<< socketFd=%{public}d is invalid", socketFd_);
         return E_ERR;
     }
 
     if (pipe(socketPipe_) == -1) {
-        LOGE("Pipe error");
+        LOGE("[L3:NetlinkListener] StartListener: <<< EXIT FAILED <<< pipe failed, errno=%{public}d", errno);
         return E_ERR;
     }
     socketThread_ = std::make_unique<std::thread>([this]() { this->EventProcess(static_cast<void *>(this)); });
@@ -183,14 +201,18 @@ int32_t NetlinkListener::StartListener()
         (void)close(socketPipe_[1]);
         socketPipe_[0] = -1;
         socketPipe_[1] = -1;
+        LOGE("[L3:NetlinkListener] StartListener: <<< EXIT FAILED <<< create thread failed");
         return E_ERR;
     }
 
+    LOGI("[L3:NetlinkListener] StartListener: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t NetlinkListener::StopListener()
 {
+    LOGI("[L3:NetlinkListener] StopListener: >>> ENTER <<<");
+
     int32_t msg = 0;
     write(socketPipe_[1], &msg, 1);
 
@@ -203,12 +225,15 @@ int32_t NetlinkListener::StopListener()
     socketPipe_[0] = -1;
     socketPipe_[1] = -1;
 
+    LOGI("[L3:NetlinkListener] StopListener: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 NetlinkListener::NetlinkListener(int32_t socket)
 {
     socketFd_ = socket;
+    LOGD("[L3:NetlinkListener] Constructor: socketFd=%{public}d", socket);
 }
 } // StorageDaemon
 } // OHOS
+

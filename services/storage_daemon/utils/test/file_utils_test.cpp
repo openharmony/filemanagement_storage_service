@@ -36,6 +36,7 @@ using namespace testing::ext;
 
 constexpr int NOT_EXIST_FD_1 = 45678;
 constexpr int NOT_EXIST_FD_2 = 45679;
+constexpr const char *READ_FILE_TEST_PATH = "/data/service/read_file_test.txt";
 namespace {
     const uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
     const std::string PATH_CHMOD = "/data/storage_daemon_chmod_test_dir";
@@ -304,6 +305,35 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DelFolder_001, TestSize.Level1)
     EXPECT_TRUE(rmdir(testPath.c_str()) == 0);
     EXPECT_TRUE(rmdir(testPath.c_str()) != 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ReadFile_001
+ * @tc.desc: Verify ReadFile branches for non-exist file, empty file and non-empty file.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFile_001 start";
+    std::string content;
+    EXPECT_FALSE(ReadFile("/data/service/not_exist_read_file_test.txt", &content));
+
+    std::ofstream emptyFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(emptyFile.is_open());
+    emptyFile.close();
+    content.clear();
+    EXPECT_FALSE(ReadFile(READ_FILE_TEST_PATH, &content));
+
+    std::ofstream textFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(textFile.is_open());
+    textFile << "hello world";
+    textFile.close();
+    content.clear();
+    EXPECT_TRUE(ReadFile(READ_FILE_TEST_PATH, &content));
+    EXPECT_FALSE(content.empty());
+    DeleteFile(READ_FILE_TEST_PATH);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFile_001 end";
 }
 
 /**
@@ -718,3 +748,4 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgDataSize_002, TestSize.Level1)
 }
 } // STORAGE_DAEMON
 } // OHOS
+

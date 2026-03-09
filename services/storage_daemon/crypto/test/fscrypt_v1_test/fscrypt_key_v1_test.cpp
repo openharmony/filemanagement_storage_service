@@ -445,4 +445,24 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DoDecryptClassE_001, TestSize.Level1)
     EXPECT_EQ(g_testKeyV1->DoDecryptClassE(auth, eSecretFBE, decryptedKey), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DoDecryptClassE_001 end";
 }
+
+/**
+ * @tc.name: fscrypt_key_v1_InactiveKey_001
+ * @tc.desc: Verify the fscrypt V1 DoDecryptClassE.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InactiveKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_InactiveKey_001 start";
+    auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
+    uint32_t flag = 0;
+    std::string mnt = "";
+    KeyContext keyCtx;
+    g_testKeyV1->keyInfo_.key.Clear();
+    EXPECT_EQ(g_testKeyV1->InactiveKey(flag, mnt), 0);
+    EXPECT_CALL(*fscryptKeyExtMock_, InactiveKeyExt(_)).WillOnce(Return(-1));
+    EXPECT_EQ(g_testKeyV1->InactiveKey(flag, mnt), -1);
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_InactiveKey_001 end";
 } // OHOS::StorageDaemon
+}

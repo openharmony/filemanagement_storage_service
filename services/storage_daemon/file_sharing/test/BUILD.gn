@@ -24,7 +24,15 @@ ohos_unittest("AclTest") {
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
-  include_dirs = [ "${storage_daemon_path}/include" ]
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
+  ]
 
   sources = [
     "${storage_daemon_path}/file_sharing/src/acl.cpp",
@@ -35,6 +43,7 @@ ohos_unittest("AclTest") {
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
+    "hilog:libhilog",
   ]
 }
 
@@ -124,3 +133,4 @@ group("file_sharing_test") {
     ":SetAclTest",
   ]
 }
+

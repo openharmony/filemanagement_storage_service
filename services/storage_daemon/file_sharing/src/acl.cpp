@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 
 #include "file_sharing/endian.h"
 #include "securec.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -87,6 +88,8 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
 {
     if (entries.size() >= ENTRIES_MAX_NUM) {
         errno = EAGAIN;
+        LOGE("[L4:Acl] InsertEntry: <<< EXIT FAILED <<< entries count=%{public}zu, max=%{public}zu",
+             entries.size(), ENTRIES_MAX_NUM);
         return -1;
     }
 
@@ -104,6 +107,8 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
             break;
         default:
             errno = EINVAL;
+            LOGE("[L4:Acl] InsertEntry: <<< EXIT FAILED <<< invalid tag=%{public}d",
+                 static_cast<int>(entry.tag));
             return -1;
     }
     return 0;
@@ -113,6 +118,7 @@ char *Acl::Serialize(size_t &bufSize)
 {
     if (!IsValid()) {
         errno = EINVAL;
+        LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< acl is not valid");
         return nullptr;
     }
 
@@ -125,6 +131,8 @@ char *Acl::Serialize(size_t &bufSize)
     if (entries.size() > ENTRIES_MAX_NUM) {
         bufSize = 0;
         errno = EINVAL;
+        LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< entries size=%{public}zu exceeds max=%{public}zu",
+             entries.size(), ENTRIES_MAX_NUM);
         return nullptr;
     }
 
@@ -132,11 +140,14 @@ char *Acl::Serialize(size_t &bufSize)
     if (bufSize > BUF_MAX_SIZE) {
         bufSize = 0;
         errno = EINVAL;
+        LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< bufSize=%{public}zu exceeds max=%{public}zu",
+             bufSize, BUF_MAX_SIZE);
         return nullptr;
     }
     buf = new (std::nothrow) char[bufSize]();
     if (buf == nullptr) {
         errno = ENOMEM;
+        LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< alloc failed, bufSize=%{public}zu", bufSize);
         return nullptr;
     }
     auto err = memcpy_s(buf, bufSize, &header, sizeof(AclXattrHeader));
@@ -144,6 +155,7 @@ char *Acl::Serialize(size_t &bufSize)
         errno = err;
         delete[] buf;
         buf = nullptr;
+        LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< memcpy_s header failed, err=%{public}d", err);
         return nullptr;
     }
 
@@ -155,17 +167,26 @@ char *Acl::Serialize(size_t &bufSize)
             errno = err;
             delete[] buf;
             buf = nullptr;
+            LOGE("[L4:Acl] Serialize: <<< EXIT FAILED <<< memcpy_s entry failed, err=%{public}d", err);
             return nullptr;
         }
         restSize -= sizeof(AclXattrEntry);
     }
+
+    LOGI("[L4:Acl] Serialize: <<< EXIT SUCCESS <<< bufSize=%{public}zu, entries=%{public}zu",
+         bufSize, entries.size());
     return buf;
 }
 
 int Acl::DeSerialize(const char *p, size_t size)
 {
+    LOGI("[L4:Acl] DeSerialize: >>> ENTER <<< size=%{public}zu", size);
+
     if (p == nullptr || size > BUF_MAX_SIZE || size < sizeof(AclXattrHeader)) {
         errno = EINVAL;
+        LOGE("[L4:Acl] DeSerialize: <<< EXIT FAILED <<< invalid input, p=%{public}s, size=%{public}zu,"
+             "maxSize=%{public}zu",
+             p == nullptr ? "null" : "valid", size, BUF_MAX_SIZE);
         return -1;
     }
     header = *reinterpret_cast<const AclXattrHeader *>(p);
@@ -179,16 +200,22 @@ int Acl::DeSerialize(const char *p, size_t size)
     for (const AclXattrEntry *e = reinterpret_cast<const AclXattrEntry *>(p);
             size >= sizeof(AclXattrEntry) && LeToCpu(e->tag) != ACL_TAG::UNDEFINED;
             e++) {
-        InsertEntry(*e);
+        int ret = InsertEntry(*e);
+        if (ret != 0) {
+            LOGE("[L4:Acl] DeSerialize: <<< EXIT FAILED <<< InsertEntry failed, errno=%{public}d", errno);
+        }
         size -= sizeof(AclXattrEntry);
     }
     if (size < 0) {
         entries.clear();
         header = { 0 };
         errno = EINVAL;
+        LOGE("[L4:Acl] DeSerialize: <<< EXIT FAILED <<< size calculation error, remaining size=%{public}zd",
+             static_cast<ssize_t>(size));
         return -1;
     }
 
+    LOGI("[L4:Acl] DeSerialize: <<< EXIT SUCCESS <<< entries=%{public}zu", entries.size());
     return 0;
 }
 

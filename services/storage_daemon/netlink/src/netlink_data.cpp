@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "netlink/netlink_data.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -25,6 +26,8 @@ constexpr const char *EMPTY_STRING = "";
 
 void NetlinkData::Decode(const char *msg)
 {
+    LOGD("[L4:NetlinkData] Decode: >>> ENTER <<<");
+
     int32_t paramIdx = 0;
 
     while (*msg) {
@@ -50,6 +53,9 @@ void NetlinkData::Decode(const char *msg)
         }
         while (*msg++);
     }
+
+    LOGD("[L4:NetlinkData] Decode: <<< EXIT SUCCESS <<< action=%{public}d, subsystem=%{public}s, devPath=%{public}s",
+         static_cast<int>(action_), subSystem_.c_str(), devPath_.c_str());
     return;
 }
 
@@ -94,3 +100,4 @@ const std::string NetlinkData::GetParam(const std::string paramName)
 }
 } // namespace StorageDaemon
 } // namespace OHOS
+
