@@ -49,7 +49,6 @@ constexpr const char* SYSTEM_DATA_KEY = "storage.statistic.systemdata";
 constexpr const char* HMFS_PATH = "/sys/fs/hmfs/userdata";
 constexpr const char* MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char* OVP_CHUNKS = "/ovp_chunks";
-constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr double DIVISOR = 1000.0 * 1000.0;
@@ -63,6 +62,7 @@ constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
 constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
 constexpr int32_t MAX_WHITE_UID_COUNT = 3;
+constexpr int32_t FOUR_K = 4096;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 

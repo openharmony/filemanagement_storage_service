@@ -303,7 +303,7 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
         LOGE("realpath faild.");
         return E_ERR;
     }
-    FILE* file = fopen(diskPath.c_str(), "rb");
+    FILE* file = fopen(realPath, "rb");
     if (file == nullptr) {
         LOGE("fopen errno: %{public}d", errno);
         return E_ERR;
