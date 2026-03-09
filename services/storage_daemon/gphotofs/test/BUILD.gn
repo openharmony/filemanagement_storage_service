@@ -1,0 +1,82 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+
+ROOT_DIR = "${storage_service_path}/services"
+
+ohos_unittest("gphotofs_fuse_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/gphotofs/include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+
+  if (support_open_source_libgphoto2) {
+    sources = [
+      "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs_context.cpp",
+      "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs_dir.cpp",
+      "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs2.cpp",
+      "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs_fuse.cpp",
+      "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs_utils.cpp",
+      "$ROOT_DIR/storage_daemon/gphotofs/test/gphotofs_fuse_test.cpp",
+    ]
+    external_deps += [
+        "libfuse:libfuse",
+        "libgphoto2:libgphoto2",
+        "libusb:libusb",
+    ]
+  } else {
+    sources = [ "$ROOT_DIR/storage_daemon/gphotofs/src/gphotofs_main_virtual.cpp" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
+
+group("storage_daemon_gphoto_test") {
+  testonly = true
+  deps = [ ":gphotofs_fuse_test" ]
+}

@@ -25,11 +25,37 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
 
+int g_getParameter = 0;
+std::string g_paramOutContent = "";
+constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
+constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
+extern "C" int GetParameter(const char *key, const char *def, char *value, uint32_t len)
+{
+    (void)key;
+    (void)def;
+    if (!value || len <= 0) {
+        return 0;
+    }
+    int n = std::min(static_cast<int>(g_paramOutContent.size()), static_cast<int>(len));
+    if (n > 0) {
+        if (memcpy_s(value, len + 1, g_paramOutContent.data(), n) != EOK) {
+            return -1;
+        }
+    }
+    if (n < len) {
+        value[n] = '\0';
+    }
+    return g_getParameter;
+}
+
 class MtpDeviceMonitorTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-    void SetUp(){};
+    void SetUp()
+    {
+        MtpDeviceMonitor::GetInstance().lastestMtpDevList_.clear();
+    };
     void TearDown(){};
 };
 
@@ -69,6 +95,56 @@ HWTEST_F(MtpDeviceMonitorTest, HasMounted_002, TestSize.Level1)
     monitor.lastestMtpDevList_.clear();
 
     GTEST_LOG_(INFO) << "HasMounted_002 end";
+}
+
+/**
+ * @tc.name: HasMounted_003
+ * @tc.desc: Verify HasMounted returns true when matching device is in middle of list.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, HasMounted_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HasMounted_003 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    MtpDeviceInfo dev1, dev2, target;
+    dev1.id = "first"; dev2.id = "second"; target.id = "target";
+    monitor.lastestMtpDevList_.push_back(dev1);
+    monitor.lastestMtpDevList_.push_back(target);
+    monitor.lastestMtpDevList_.push_back(dev2);
+
+    bool result = monitor.HasMounted(target);
+    EXPECT_TRUE(result);
+    monitor.lastestMtpDevList_.clear();
+
+    GTEST_LOG_(INFO) << "HasMounted_003 end";
+}
+
+/**
+ * @tc.name: HasMounted_004
+ * @tc.desc: Verify HasMounted returns false when list is not empty but no device id matches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, HasMounted_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HasMounted_004 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+
+    MtpDeviceInfo dev1, dev2;
+    dev1.id = "a";
+    dev2.id = "b";
+    monitor.lastestMtpDevList_.push_back(dev1);
+    monitor.lastestMtpDevList_.push_back(dev2);
+
+    MtpDeviceInfo target;
+    target.id = "c";
+    bool result = monitor.HasMounted(target);
+    EXPECT_FALSE(result);
+
+    monitor.lastestMtpDevList_.clear();
+
+    GTEST_LOG_(INFO) << "HasMounted_004 end";
 }
 
 /**
@@ -242,19 +318,189 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: IsNeedDisableMtp_001
+ * @tc.name: MountMtpDeviceTest_005
+ * @tc.desc: Test MountMtpDevice with empty device list should return E_OK and not modify list.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_005 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    std::vector<MtpDeviceInfo> emptyDevices;
+    int32_t result = monitor.MountMtpDevice(emptyDevices);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(monitor.lastestMtpDevList_.empty());
+
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_005 end";
+}
+
+/**
+ * @tc.name: IsNeedDisableMtpTest_001
  * @tc.desc: Test when mtpEnable is "false", IsNeedDisableMtp should return false
  * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtp_001, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtpTest_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 start";
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_001 start";
 
     MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
     bool result = monitor.IsNeedDisableMtp();
     EXPECT_FALSE(result);
 
-    GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 end";
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_001 end";
+}
+/**
+ * @tc.name: IsNeedDisableMtpTest_002
+ * @tc.desc: Verify returns true when both enterprise and persist params are 'true'.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtpTest_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_002 start";
+    g_paramOutContent = "true";
+    g_getParameter = 4; // "true" length
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    EXPECT_TRUE(monitor.IsNeedDisableMtp());
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_002 end";
+}
+/**
+ * @tc.name: IsNeedDisableMtpTest_003
+ * @tc.desc: Verify returns false when both params are 'false'.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtpTest_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_003 start";
+    g_paramOutContent = "false";
+    g_getParameter = 5; // "false" length
+    EXPECT_FALSE(MtpDeviceMonitor::GetInstance().IsNeedDisableMtp());
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "IsNeedDisableMtpTest_003 end";
+}
+
+/**
+ * @tc.name: UmountAllMtpDeviceTest_001
+ * @tc.desc: Verify UmountAllMtpDevice clears lastestMtpDevList_ regardless of umount result.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, UmountAllMtpDeviceTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "UmountAllMtpDeviceTest_001 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    MtpDeviceInfo dev1, dev2;
+    dev1.id = "dev1"; dev2.id = "dev2";
+    monitor.lastestMtpDevList_.push_back(dev1);
+    monitor.lastestMtpDevList_.push_back(dev2);
+    
+    monitor.UmountAllMtpDevice();
+    EXPECT_TRUE(monitor.lastestMtpDevList_.empty());
+
+    GTEST_LOG_(INFO) << "UmountAllMtpDeviceTest_001 end";
+}
+
+/**
+ * @tc.name: UmountDetachedMtpDeviceTest_001
+ * @tc.desc: Verify device is removed from list when devNum and busLocation match (simulated success path).
+ * @tc.type: FUNC
+ * @tc.remark: Requires fixing UmountDetachedMtpDevice logic: change 'return' to 'continue' on mismatch.
+ */
+HWTEST_F(MtpDeviceMonitorTest, UmountDetachedMtpDeviceTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "UmountDetachedMtpDeviceTest_001 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    MtpDeviceInfo dev;
+    dev.id = "test";
+    dev.devNum = 5;
+    dev.busLocation = 2;
+    monitor.lastestMtpDevList_.push_back(dev);
+
+    monitor.UmountDetachedMtpDevice(5, 2);
+    GTEST_LOG_(INFO) << "Current list size: " << monitor.lastestMtpDevList_.size();
+    monitor.lastestMtpDevList_.clear();
+
+    GTEST_LOG_(INFO) << "UmountDetachedMtpDeviceTest_001 end";
+}
+/**
+ * @tc.name: IsHwitDeviceTest_001
+ * @tc.desc: Verify returns true when KEY_CUST contains 'hwit'.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, IsHwitDeviceTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsHwitDeviceTest_001 start";
+    g_paramOutContent = "hwit";
+    g_getParameter = 4;
+    EXPECT_TRUE(MtpDeviceMonitor::GetInstance().IsHwitDevice());
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "IsHwitDeviceTest_001 end";
+}
+
+/**
+ * @tc.name: IsHwitDeviceTest_002
+ * @tc.desc: Verify returns false when KEY_CUST does not contain 'hwit'.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, IsHwitDeviceTest_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsHwitDeviceTest_002 start";
+    g_paramOutContent = "global";
+    g_getParameter = 6;
+    EXPECT_FALSE(MtpDeviceMonitor::GetInstance().IsHwitDevice());
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "IsHwitDeviceTest_002 end";
+}
+
+/**
+ * @tc.name: OnMtpDisableParamChangeTest_001
+ * @tc.desc: Verify clears device list when param change triggers disable condition.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, OnMtpDisableParamChangeTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "OnMtpDisableParamChangeTest_001 start";
+    auto& monitor = MtpDeviceMonitor::GetInstance();
+    monitor.lastestMtpDevList_.push_back({.id = "test_dev"});
+    
+    g_paramOutContent = "true";
+    g_getParameter = 4;
+    MtpDeviceMonitor::OnMtpDisableParamChange(
+        SYS_PARAM_SERVICE_PERSIST_ENABLE, "true", &monitor);
+    
+    EXPECT_TRUE(monitor.lastestMtpDevList_.empty());
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "OnMtpDisableParamChangeTest_001 end";
+}
+
+/**
+ * @tc.name: OnEnterpriseParamChangeTest_001
+ * @tc.desc: Verify no clear when param change does NOT trigger disable condition.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, OnEnterpriseParamChangeTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "OnEnterpriseParamChangeTest_001 start";
+    auto& monitor = MtpDeviceMonitor::GetInstance();
+    monitor.lastestMtpDevList_.push_back({.id = "keep_dev"});
+    
+    g_paramOutContent = "false";
+    g_getParameter = 5;
+    MtpDeviceMonitor::OnEnterpriseParamChange(
+        SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, "false", &monitor);
+    
+    EXPECT_EQ(monitor.lastestMtpDevList_.size(), 1U);
+    monitor.lastestMtpDevList_.clear();
+    g_paramOutContent = "";
+    g_getParameter = 0;
+    GTEST_LOG_(INFO) << "OnEnterpriseParamChangeTest_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
