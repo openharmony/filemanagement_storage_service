@@ -522,6 +522,11 @@ group("storage_daemon_unit_test") {
       "mtpfs/test:storage_daemon_mtpfs_test",
     ]
   }
+  if (support_open_source_libgphoto2) {
+    deps += [
+      "gphotofs/test:storage_daemon_gphoto_test",
+    ]
+  }
   if (enable_huks_hdi) {
     deps += [ "crypto/test/huks_master_test:huks_master_test", ]
   }
