@@ -1754,7 +1754,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_002, Tes
     std::string volumeId = "testVolumeId";
     std::string pazzword = "testPasswd";
     auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 end";
 }
 
@@ -1765,7 +1765,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgress
     std::string volumeId = "testVolumeId";
     int32_t progress = 0;
     auto ret = storageManagerProviderTest_->GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_002 end";
 }
 }

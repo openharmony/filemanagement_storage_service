@@ -729,5 +729,147 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgress
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_003 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_001 start";
+    std::string volumeId = "test_vol";
+    std::string uuid;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->GetCryptUuidById(volumeId, uuid);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptUuidById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_002 start";
+    std::string volumeId = "test_vol";
+    std::string uuid;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->GetCryptUuidById(volumeId, uuid);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_BindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_001 start";
+    std::string volumeId = "test_vol", pwd = "pwd123", recoverKey = "key456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->BindRecoverKeyToPasswd(volumeId, pwd, recoverKey);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_BindRecoverKeyToPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_002 start";
+    std::string volumeId = "test_vol", pwd = "pwd123", recoverKey = "key456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->BindRecoverKeyToPasswd(volumeId, pwd, recoverKey);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_001 start";
+    std::string volumeId = "test_vol", oldPwd = "old123", newPwd = "new456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->UpdateCryptPasswd(volumeId, oldPwd, newPwd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_002 start";
+    std::string volumeId = "test_vol", oldPwd = "old123", newPwd = "new456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->UpdateCryptPasswd(volumeId, oldPwd, newPwd);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_001 start";
+    std::string volumeId = "test_vol", recoverKey = "key123", newPwd = "new456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->ResetCryptPasswd(volumeId, recoverKey, newPwd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_002 start";
+    std::string volumeId = "test_vol", recoverKey = "key123", newPwd = "new456";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->ResetCryptPasswd(volumeId, recoverKey, newPwd);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_001 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->VerifyCryptPasswd(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_002 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->VerifyCryptPasswd(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_001 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->Unlock(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unlock_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_002 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->Unlock(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Decrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_001 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    auto ret = storageManagerProviderTest_->Decrypt(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Decrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_002 start";
+    std::string volumeId = "test_vol", pazzword = "pwd123";
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->Decrypt(volumeId, pazzword);
+    EXPECT_EQ(ret, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_002 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

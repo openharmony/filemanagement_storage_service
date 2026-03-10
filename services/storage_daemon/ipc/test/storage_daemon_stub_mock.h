@@ -103,7 +103,14 @@ public:
     //disk crypt api
     MOCK_METHOD2(Encrypt, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(GetCryptProgressById, int32_t(const std::string &, int32_t &));
-};
+    MOCK_METHOD2(GetCryptUuidById, int32_t(const std::string &, std::string &));
+    MOCK_METHOD3(BindRecoverKeyToPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD3(UpdateCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD3(ResetCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD2(VerifyCryptPasswd, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(Unlock, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(Decrypt, int32_t(const std::string &, const std::string &));
+    };
 }  // namespace StorageDaemon
 }  // namespace OHOS
 #endif /* MOCK_STORAGE_DAEMON_STUB_H */

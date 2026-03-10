@@ -2102,5 +2102,175 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetCryptProgressBy
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptProgressById_001 end";
 }
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptUuidById_001 start";
+    std::string uuid;
+    auto ret = storageDaemonProviderTest_->GetCryptUuidById("vol-1-9", uuid);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptUuidById_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetCryptUuidById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptUuidById_002 start";
+    std::string uuid;
+    auto ret = storageDaemonProviderTest_->GetCryptUuidById("", uuid);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetCryptUuidById_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_BindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_BindRecoverKeyToPasswd_001 start";
+    auto ret = storageDaemonProviderTest_->BindRecoverKeyToPasswd("vol-1-11", "test_password", "test_recover_key");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_BindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_BindRecoverKeyToPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_BindRecoverKeyToPasswd_002 start";
+    auto ret = storageDaemonProviderTest_->BindRecoverKeyToPasswd("", "test_password", "test_recover_key");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_BindRecoverKeyToPasswd_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateCryptPasswd_001 start";
+    auto ret = storageDaemonProviderTest_->UpdateCryptPasswd("vol-1-12", "old_password", "new_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateCryptPasswd_002 start";
+    auto ret = storageDaemonProviderTest_->UpdateCryptPasswd("", "old_password", "new_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetCryptPasswd_001 start";
+    auto ret = storageDaemonProviderTest_->ResetCryptPasswd("vol-1-13", "test_recover_key", "new_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetCryptPasswd_002 start";
+    auto ret = storageDaemonProviderTest_->ResetCryptPasswd("", "test_recover_key", "new_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_VerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyCryptPasswd_001 start";
+    auto ret = storageDaemonProviderTest_->VerifyCryptPasswd("vol-1-14", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_VerifyCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyCryptPasswd_002 start";
+    auto ret = storageDaemonProviderTest_->VerifyCryptPasswd("", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyCryptPasswd_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Unlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Unlock_001 start";
+    auto ret = storageDaemonProviderTest_->Unlock("vol-1-15", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Unlock_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Unlock_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Unlock_002 start";
+    auto ret = storageDaemonProviderTest_->Unlock("", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Unlock_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Decrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Decrypt_001 start";
+    auto ret = storageDaemonProviderTest_->Decrypt("vol-1-16", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Decrypt_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Decrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Decrypt_002 start";
+    auto ret = storageDaemonProviderTest_->Decrypt("", "test_password");
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_TRUE(ret == E_OK);
+#else
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Decrypt_002 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

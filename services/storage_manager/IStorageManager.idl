@@ -129,4 +129,17 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 93] void NotifyEncryptVolumeStateChanged([in] VolumeInfoStr vis);
     [ipccode 94] void Encrypt([in] String volumeId, [in] String pazzword);
     [ipccode 95] void GetCryptProgressById([in] String volumeId, [out] int progress);
+    [ipccode 96] void GetCryptUuidById([in] String volumeId, [out] String uuid);
+    [ipccode 97] void BindRecoverKeyToPasswd([in] String volumeId,
+                                    [in] String pazzword,
+                                    [in] String recoverKey);
+    [ipccode 98] void UpdateCryptPasswd([in] String volumeId,
+                                [in] String pazzword,
+                                [in] String newPazzword);
+    [ipccode 99] void ResetCryptPasswd([in] String volumeId,
+                                [in] String recoverKey,
+                                [in] String newPazzword);
+    [ipccode 100] void VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
+    [ipccode 101] void Unlock([in] String volumeId, [in] String pazzword);
+    [ipccode 102] void Decrypt([in] String volumeId, [in] String pazzword);
 }

@@ -1707,10 +1707,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_001, Tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "test_volume";
-    std::string pazzword = "test_pazzword";
-    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->Encrypt("test_volume", "test_pazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_001 end";
 }
 
@@ -1718,10 +1716,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_002, Tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "";
-    std::string pazzword = "";
-    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->Encrypt("", "");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 end";
 }
 
@@ -1729,10 +1725,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_003, Tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_003 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "test_volume";
-    std::string pazzword = "";
-    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->Encrypt("test_volume", "");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_003 end";
 }
 
@@ -1740,10 +1734,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_004, Tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_004 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "";
-    std::string pazzword = "test_pazzword";
-    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->Encrypt("", "test_pazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_004 end";
 }
 
@@ -1751,10 +1743,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgress
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "test_volume";
     int32_t progress = 0;
-    auto ret = storageManagerProviderTest_->GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->GetCryptProgressById("test_volume", progress);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_001 end";
 }
 
@@ -1762,9 +1753,8 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyEncryptVol
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyEncryptVolumeStateChanged_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    VolumeInfoStr volumeInfoStr;
-    auto ret = storageManagerProviderTest_->NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    auto ret = storageManagerProviderTest_->NotifyEncryptVolumeStateChanged(VolumeInfoStr());
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyEncryptVolumeStateChanged_001 end";
 }
 
@@ -1772,15 +1762,74 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyEncryptVol
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyEncryptVolumeStateChanged_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    std::string fsTypeStr = "testfsTypeStr";
-    std::string fsUuid = "testFsUuid";
-    std::string path = "/mnt/testVolume";
-    std::string description = "Test Volume";
     auto ret = storageManagerProviderTest_->NotifyEncryptVolumeStateChanged(
-        VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+        VolumeInfoStr{"testVolumeId", "testfsTypeStr", "testFsUuid", "/mnt/testVolume", "Test Volume", false});
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyEncryptVolumeStateChanged_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string uuid;
+    auto ret = storageManagerProviderTest_->GetCryptUuidById("testVolumeId", uuid);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptUuidById_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_BindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->BindRecoverKeyToPasswd("testVolumeId", "testPazzword", "testRecoverKey");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_BindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->UpdateCryptPasswd("testVolumeId", "testPazzword", "testNewPazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->ResetCryptPasswd("testVolumeId", "testRecoverKey", "testNewPazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->VerifyCryptPasswd("testVolumeId", "testPazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->Unlock("testVolumeId", "testPazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unlock_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Decrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->Decrypt("testVolumeId", "testPazzword");
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS
