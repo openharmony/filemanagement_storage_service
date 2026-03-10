@@ -23,7 +23,8 @@
 
 namespace OHOS {
 namespace StorageService {
-constexpr const char *FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
+constexpr const char *FILE_STORAGE_MANAGER_FAULT = "FILE_STORAGE_MANAGER_FAULT";
+constexpr const char *FILE_STORAGE_MANAGER_BEHAVIOR = "FILE_STORAGE_MANAGER_BEHAVIOR";
 constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
@@ -358,7 +359,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
     };
     size_t len = 11;
     if (parRes.errorCode == E_OK) {
-        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
+        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_BEHAVIOR,
             HISYSEVENT_BEHAVIOR, params, len);
     } else {
         const int32_t stageFail = static_cast<int32_t>(StageRes::STAGE_FAIL);
@@ -366,7 +367,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
         params[ERROR_CODE_INDEX] = {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode },
             .arraySize = 0 };
         len++;
-        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
+        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT,
             HISYSEVENT_FAULT, params, len);
     }
     if (res != E_OK) {

@@ -399,6 +399,8 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
 
 int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    std::string message = "PrepareUserDirs Begin, flags: " + to_string(flags);
+    StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, message, E_OK);
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("StorageDaemon::PrepareUserDirs userId %{public}d out of range", userId);
@@ -407,12 +409,15 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
+    StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, "PrepareUserDirs End", err);
     SetUserStatistics(userId, err != E_OK ? USER_ADD_FAIL : USER_ADD_SUCCESS);
     return err;
 }
 
 int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    std::string message = "DestroyUserDirs Begin, flags: " + to_string(flags);
+    StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, message, E_OK);
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("StorageDaemon::DestroyUserDirs userId %{public}d out of range", userId);
@@ -421,6 +426,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
+    StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, "DestroyUserDirs End", err);
     SetUserStatistics(userId, err != E_OK ? USER_REMOVE_FAIL : USER_REMOVE_SUCCESS);
     return err;
 }
