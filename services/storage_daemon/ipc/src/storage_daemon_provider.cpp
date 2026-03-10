@@ -409,8 +409,7 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
-    message = "PrepareUserDirs End, flags: " + to_string(flags);
-    StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, message, err);
+    StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, "PrepareUserDirs End", err);
     SetUserStatistics(userId, err != E_OK ? USER_ADD_FAIL : USER_ADD_SUCCESS);
     return err;
 }
@@ -427,8 +426,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
-    message = "DestroyUserDirs End, flags: " + to_string(flags);
-    StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, message, err);
+    StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, "DestroyUserDirs End", err);
     SetUserStatistics(userId, err != E_OK ? USER_REMOVE_FAIL : USER_REMOVE_SUCCESS);
     return err;
 }
