@@ -973,7 +973,12 @@ void QuotaManager::ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::
             std::vector<DirSpaceInfo>().swap(resultDirs);
             return;
         }
-        std::string userPath = StringPrintf(path.c_str(), userId);
+        std::string userPath = path;
+        std::string_view uidPlaceHolder = "%d";
+        auto pos = path.find(uidPlaceHolder);
+        if (pos != std::string::npos) {
+            userPath.replace(pos, uidPlaceHolder.size(), std::to_string(userId));
+        }
         int64_t blks = 0;
         AddBlksRecurse(userPath, blks, uid);
         int64_t dirSize = blks * BLOCK_BYTE;
