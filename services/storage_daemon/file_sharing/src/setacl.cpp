@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -80,6 +80,8 @@ int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
                 break;
             }
             if ((pwd = getpwnam(idTxt.c_str())) == nullptr) {
+                LOGE("[L3:FileSharing] AclEntryParseId: <<< EXIT FAILED <<< getpwnam failed, name=%{public}s",
+                     idTxt.c_str());
                 return -1;
             }
             entry.id = pwd->pw_uid;
@@ -94,6 +96,8 @@ int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
                 break;
             }
             if ((grp = getgrnam(idTxt.c_str())) == nullptr) {
+                LOGE("[L3:FileSharing] AclEntryParseId: <<< EXIT FAILED <<< getgrnam failed, name=%{public}s",
+                     idTxt.c_str());
                 return -1;
             }
             entry.id = grp->gr_gid;
@@ -102,6 +106,7 @@ int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
         default:
             if (!idTxt.empty()) {
                 errno = EINVAL;
+                LOGE("[L3:FileSharing] AclEntryParseId: <<< EXIT FAILED <<< invalid qualifier for non-USER/GROUP tag");
                 return -1;
             }
             break;
@@ -113,6 +118,7 @@ int AclEntryParsePerm(const std::string &permTxt, AclXattrEntry &entry)
 {
     if (permTxt.empty()) {
         errno = EINVAL;
+        LOGE("[L3:FileSharing] AclEntryParsePerm: <<< EXIT FAILED <<< permission text is empty");
         return -1;
     }
     for (const char &c : permTxt) {
@@ -130,6 +136,7 @@ int AclEntryParsePerm(const std::string &permTxt, AclXattrEntry &entry)
                 break;
             default:
                 errno = EINVAL;
+                LOGE("[L3:FileSharing] AclEntryParsePerm: <<< EXIT FAILED <<< invalid permission char=%{public}c", c);
                 return -1;
         }
     }
@@ -143,18 +150,19 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
     std::string::size_type pos;
 
     if ((pos = entryTxt.find(":", last)) == std::string::npos) {
-        LOGE("Invalid ACL entry format");
+        LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< invalid ACL entry format, entryTxt=%{public}s",
+             entryTxt.c_str());
         return {};
     }
     const std::string tagTxt = entryTxt.substr(last, pos - last);
     if (AclEntryParseTag(tagTxt, entry) == -1) {
-        LOGE("Unknown tag: %{public}s", tagTxt.c_str());
+        LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< unknown tag=%{public}s", tagTxt.c_str());
         return {};
     }
     last = pos + 1;
 
     if ((pos = entryTxt.find(":", last)) == std::string::npos) {
-        LOGE("Invalid ACL entry format");
+        LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< invalid ACL entry format, missing second colon");
         return {};
     }
     const std::string idTxt = entryTxt.substr(last, pos - last);
@@ -162,12 +170,12 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
         switch (entry.tag) {
             case ACL_TAG::USER:
             case ACL_TAG::GROUP:
-                LOGE("Error in processing qualifier: \"%{public}s\": %{public}s",
+                LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< qualifier=%{public}s, error=%{public}s",
                      idTxt.c_str(),
                      errno == 0 ? "user/group not found" : std::strerror(errno));
                 break;
             default:
-                LOGE("Qualifier only allowed for USER & GROUP");
+                LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< qualifier only allowed for USER & GROUP");
                 break;
         }
         return {};
@@ -176,10 +184,12 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
 
     const std::string permTxt = entryTxt.substr(last); // take substr till the end
     if (AclEntryParsePerm(permTxt, entry) == -1) {
-        LOGE("Wrong permission: %{public}s", permTxt.c_str());
+        LOGE("[L3:FileSharing] AclEntryParseText: <<< EXIT FAILED <<< permission=%{public}s, error=%{public}s",
+             permTxt.c_str(), std::strerror(errno));
         return {};
     }
 
+    LOGI("[L3:FileSharing] AclEntryParseText: <<< EXIT SUCCESS <<< entryTxt=%{public}s", entryTxt.c_str());
     return entry;
 }
 
@@ -189,6 +199,8 @@ Acl AclFromMode(const std::string &file)
     struct stat st;
 
     if (stat(file.c_str(), &st) == -1) {
+        LOGE("[L3:FileSharing] AclFromMode: <<< EXIT FAILED <<< file=%{public}s, stat failed, errno=%{public}d",
+             file.c_str(), errno);
         return acl;
     }
 
@@ -208,6 +220,7 @@ Acl AclFromMode(const std::string &file)
           .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
 
+    LOGI("[L3:FileSharing] AclFromMode: <<< EXIT SUCCESS <<< file=%{public}s", file.c_str());
     return acl;
 }
 
@@ -218,8 +231,11 @@ Acl AclFromFile(const std::string &file)
     ssize_t len = getxattr(file.c_str(), Acl::ACL_XATTR_ACCESS, buf, BUF_SIZE);
     if (len != -1) {
         acl.DeSerialize(buf, BUF_SIZE);
+        LOGI("[L3:FileSharing] AclFromFile: <<< EXIT SUCCESS <<< file=%{public}s, len=%{public}zd",
+             file.c_str(), len);
         return acl;
     }
+    LOGI("[L3:FileSharing] AclFromFile: no xattr, use mode, file=%{public}s", file.c_str());
     return AclFromMode(file);
 }
 
@@ -227,16 +243,22 @@ Acl AclFromFile(const std::string &file)
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
+    LOGI("[L3:FileSharing] AclSetAttribution: >>> ENTER <<< file=%{public}s, attrName=%{public}s",
+         targetFile.c_str(), aclAttrName);
+
     if (strcmp(aclAttrName, Acl::ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
-        LOGE("Failed to confirm is a directory: %{public}s",
-            errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, error=%{public}s",
+             targetFile.c_str(),
+             errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
         return -1;
     }
 
     /* parse text */
     AclXattrEntry entry = AclEntryParseText(entryTxt);
     if (!entry.IsValid()) {
-        LOGE("Failed to parse entry text: %{public}s", std::strerror(errno));
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, parse failed,"
+             "entryTxt=%{public}s",
+             targetFile.c_str(), entryTxt.c_str());
         return -1;
     }
 
@@ -248,13 +270,15 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
         acl = AclFromMode(targetFile);
     }
     if (acl.IsEmpty()) {
-        LOGE("Failed to generate ACL from file's mode: %{public}s", std::strerror(errno));
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, acl is empty",
+             targetFile.c_str());
         return -1;
     }
 
     /* add new entry into set */
     if (acl.InsertEntry(entry) == -1) {
-        LOGE("Failed to insert new entry into ACL: %{public}s", std::strerror(errno));
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, insert failed, errno=%{public}d",
+             targetFile.c_str(), errno);
         return -1;
     }
 
@@ -262,25 +286,50 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
     size_t bufSize;
     char *buf = acl.Serialize(bufSize);
     if (buf == nullptr) {
-        LOGE("Failed to serialize ACL into binary: %{public}s, bufSize: %{public}zu",
-            std::strerror(errno), bufSize);
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, serialize failed,"
+             "bufSize=%{public}zu",
+             targetFile.c_str(), bufSize);
         return -1;
     }
     if (setxattr(targetFile.c_str(), aclAttrName, buf, bufSize, 0) == -1) {
-        LOGE("Failed to write into file's xattr: %{public}s", std::strerror(errno));
+        LOGE("[L3:FileSharing] AclSetAttribution: <<< EXIT FAILED <<< file=%{public}s, setxattr failed,"
+             "errno=%{public}d",
+             targetFile.c_str(), errno);
         return -1;
     }
+
+    LOGI("[L3:FileSharing] AclSetAttribution: <<< EXIT SUCCESS <<< file=%{public}s, attrName=%{public}s",
+         targetFile.c_str(), aclAttrName);
     return 0;
 }
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_DEFAULT);
+    LOGI("[L3:FileSharing] AclSetDefault: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
+        targetFile.c_str(), entryTxt.c_str());
+    int ret = AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_DEFAULT);
+    if (ret == 0) {
+        LOGI("[L3:FileSharing] AclSetDefault: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
+    } else {
+        LOGE("[L3:FileSharing] AclSetDefault: <<< EXIT FAILED <<< file=%{public}s, ret=%{public}d",
+            targetFile.c_str(), ret);
+    }
+    return ret;
 }
 
 int AclSetAccess(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_ACCESS);
+    LOGI("[L3:FileSharing] AclSetAccess: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
+        targetFile.c_str(), entryTxt.c_str());
+    int ret = AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_ACCESS);
+    if (ret == 0) {
+        LOGI("[L3:FileSharing] AclSetAccess: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
+    } else {
+        LOGE("[L3:FileSharing] AclSetAccess: <<< EXIT FAILED <<< file=%{public}s, ret=%{public}d",
+            targetFile.c_str(), ret);
+    }
+    return ret;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
+

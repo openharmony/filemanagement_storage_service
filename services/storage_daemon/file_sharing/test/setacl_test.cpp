@@ -309,4 +309,30 @@ HWTEST_F(SetAclTest, SetAclTest_006, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "SetAclTest_006 ends";
 }
+
+/**
+ * @tc.name: SetAclTest_007
+ * @tc.desc: Verify AclSetDefault/AclSetAccess success and failure wrapper branches.
+ * @tc.type: FUNC
+ * @tc.require: AR000I1L48
+ */
+HWTEST_F(SetAclTest, SetAclTest_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "SetAclTest_007 starts";
+
+    EXPECT_EQ(AclSetDefault("/data/setacl_not_exist_path", "g:7017:rwx"), -1);
+    EXPECT_EQ(AclSetAccess("/data/setacl_not_exist_path", "g:7017:rwx"), -1);
+
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH;
+    int rc = MkDir(PATH_TEST, mode);
+    ASSERT_TRUE(rc == 0) << "directory creation failed";
+
+    rc = AclSetDefault(PATH_TEST, "g:7017:rwx");
+    EXPECT_EQ(rc, 0);
+    rc = AclSetAccess(PATH_TEST, "g:7017:rwx");
+    EXPECT_EQ(rc, 0);
+
+    GTEST_LOG_(INFO) << "SetAclTest_007 ends";
 }
+}
+

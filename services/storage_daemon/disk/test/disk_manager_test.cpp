@@ -18,6 +18,7 @@
 #include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
+#include "disk_info_test_mock.h"
 #include "message_parcel.h"
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
@@ -468,8 +469,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandlePartition_002, T
     diskManager.disk_.push_back(disk);
     int ret = diskManager.HandlePartition(diskId);
     EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
+

@@ -175,4 +175,31 @@ HWTEST_F(FileSharingTest, file_sharing_test_003, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "FileSharingTest_003 ends";
 }
+
+/**
+ * @tc.name: FileSharingTest_004
+ * @tc.desc: Verify SetupFileSharingDir covers return branches and creates expected dirs by scene.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileSharingTest, file_sharing_test_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSharingTest_004 starts";
+
+    int rc = SetupFileSharingDir();
+    EXPECT_EQ(rc, 0);
+
+    std::string fsShareParam = GetFileShareDefineParameter();
+    if (fsShareParam == TOB_SCENE || fsShareParam == TOD_SCENE) {
+        EXPECT_TRUE(IsDir(SHARE_TOB_DIR));
+        EXPECT_TRUE(RmDirRecurse(SHARE_TOB_DIR));
+    }
+    if (fsShareParam == TOC_SCENE || fsShareParam == TOD_SCENE) {
+        EXPECT_TRUE(IsDir(PUBLIC_DIR));
+        EXPECT_TRUE(IsDir(FILE_SHARING_DIR));
+        EXPECT_TRUE(RmDirRecurse(PUBLIC_DIR));
+        EXPECT_TRUE(RmDirRecurse(FILE_SHARING_DIR));
+    }
+
+    GTEST_LOG_(INFO) << "FileSharingTest_004 ends";
+}
 }

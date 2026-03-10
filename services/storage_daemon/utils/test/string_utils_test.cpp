@@ -17,6 +17,8 @@
 #include <gtest/gtest.h>
 #include <tuple>
 #include <climits>
+#include <cstdio>
+#include <fstream>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -30,6 +32,11 @@ public:
     void SetUp() {};
     void TearDown() {};
 };
+
+namespace {
+const std::string WRITE_FILE_SYNC_TEST_PATH = "/data/service/string_utils_write_test.txt";
+const std::string WRITE_FILE_SYNC_INVALID_PATH = "/data/service/not_exist_dir/string_utils_write_test.txt";
+}
 
 /**
  * @tc.name: UserPathResolverTest_ConvertStringToInt_001
@@ -143,6 +150,54 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_ConvertStringToInt32_001, TestSize.Lev
     ASSERT_TRUE(ret);
     GTEST_LOG_(INFO) << "StringUtilsTest_ConvertStringToInt32_001 end";
 }
+
+/**
+ * @tc.name: StringUtilsTest_WriteFileSync_001
+ * @tc.desc: Verify WriteFileSync success and failure branches.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_WriteFileSync_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_WriteFileSync_001 start";
+    std::string errMsg;
+    const std::string content = "write file sync content";
+    const uint8_t *data = reinterpret_cast<const uint8_t *>(content.c_str());
+
+    EXPECT_FALSE(WriteFileSync(WRITE_FILE_SYNC_INVALID_PATH.c_str(), data, content.size(), errMsg));
+    EXPECT_FALSE(errMsg.empty());
+
+    std::ofstream out(WRITE_FILE_SYNC_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(out.is_open());
+    out.close();
+
+    errMsg.clear();
+    EXPECT_TRUE(WriteFileSync(WRITE_FILE_SYNC_TEST_PATH.c_str(), data, content.size(), errMsg));
+    EXPECT_EQ(std::remove(WRITE_FILE_SYNC_TEST_PATH.c_str()), 0);
+    GTEST_LOG_(INFO) << "StringUtilsTest_WriteFileSync_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_SaveStringToFileSync_001
+ * @tc.desc: Verify SaveStringToFileSync branches for invalid input, write fail and write success.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_SaveStringToFileSync_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_SaveStringToFileSync_001 start";
+    std::string errMsg;
+    const std::string content = "save string to file sync content";
+
+    EXPECT_FALSE(SaveStringToFileSync("", content, errMsg));
+    EXPECT_FALSE(SaveStringToFileSync(WRITE_FILE_SYNC_TEST_PATH, "", errMsg));
+    EXPECT_FALSE(SaveStringToFileSync(WRITE_FILE_SYNC_INVALID_PATH, content, errMsg));
+
+    EXPECT_TRUE(SaveStringToFileSync(WRITE_FILE_SYNC_TEST_PATH, content, errMsg));
+    EXPECT_EQ(std::remove(WRITE_FILE_SYNC_TEST_PATH.c_str()), 0);
+    GTEST_LOG_(INFO) << "StringUtilsTest_SaveStringToFileSync_001 end";
+}
 } // Test
 } // STORAGE_DAEMON
 } // OHOS
+

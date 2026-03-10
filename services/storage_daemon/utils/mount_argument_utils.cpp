@@ -52,6 +52,7 @@ namespace {
 
 string MountArgument::GetFullSrc() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFullSrc: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << DATA_POINT << userId_ << "/hmdfs/" << relativePath_;
 
@@ -60,6 +61,7 @@ string MountArgument::GetFullSrc() const
 
 string MountArgument::GetFullDst() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFullDst: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << BASE_MOUNT_POINT << userId_ << "/" << relativePath_;
 
@@ -68,6 +70,7 @@ string MountArgument::GetFullDst() const
 
 string MountArgument::GetFullMediaCloud() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFullMediaCloud: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << TMPFS_MNT_DATA << userId_ << "/" << "cloud";
 
@@ -76,6 +79,7 @@ string MountArgument::GetFullMediaCloud() const
 
 string MountArgument::GetFullCloud() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFullCloud: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << TMPFS_MNT_DATA << userId_ << "/" << "cloud_fuse";
 
@@ -84,6 +88,7 @@ string MountArgument::GetFullCloud() const
 
 string MountArgument::GetShareSrc() const
 {
+    LOGD("[L8:MountArgumentUtils] GetShareSrc: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << SHAREFS_DATA_POINT << userId_ << "/share";
 
@@ -92,6 +97,7 @@ string MountArgument::GetShareSrc() const
 
 string MountArgument::GetUserIdPara() const
 {
+    LOGD("[L8:MountArgumentUtils] GetUserIdPara: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << "user_id=" << userId_;
 
@@ -100,6 +106,7 @@ string MountArgument::GetUserIdPara() const
 
 string MountArgument::GetHmUserIdPara() const
 {
+    LOGD("[L8:MountArgumentUtils] GetHmUserIdPara: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << "override_support_delete,user_id=" << userId_;
     return ss.str();
@@ -107,6 +114,7 @@ string MountArgument::GetHmUserIdPara() const
 
 string MountArgument::GetShareDst() const
 {
+    LOGD("[L8:MountArgumentUtils] GetShareDst: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << SHAREFS_BASE_MOUNT_POINT << userId_;
 
@@ -115,6 +123,7 @@ string MountArgument::GetShareDst() const
 
 string MountArgument::GetCommFullPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCommFullPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << COMM_DATA_POINT << userId_ << "/";
 
@@ -123,6 +132,7 @@ string MountArgument::GetCommFullPath() const
 
 string MountArgument::GetCloudFullPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCloudFullPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << COMM_CLOUD_POINT << userId_ << "/";
 
@@ -131,6 +141,7 @@ string MountArgument::GetCloudFullPath() const
 
 string MountArgument::GetCloudDocsPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCloudDocsPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << COMM_CLOUD_POINT << userId_ << RELATIVE_DOCS_PATH;
 
@@ -139,6 +150,7 @@ string MountArgument::GetCloudDocsPath() const
 
 string MountArgument::GetLocalDocsPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetLocalDocsPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << BASE_MOUNT_POINT << userId_ << "/" << relativePath_ << HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH;
 
@@ -147,6 +159,7 @@ string MountArgument::GetLocalDocsPath() const
 
 string MountArgument::GetCachePath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCachePath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     if (enableCloudDisk_) {
         ss << DATA_POINT << userId_ << "/hmdfs/cloud/";
@@ -161,14 +174,16 @@ static uint64_t MocklispHash(const string &str)
     struct stat statBuf;
     auto err = stat(str.c_str(), &statBuf);
     if (err != 0) {
-        LOGE("stat failed err: %{public}d", err);
+        LOGE("[L8:MountArgumentUtils] MocklispHash: stat failed, err=%{public}d", err);
     }
-    LOGI("statBuf dev id: %{public}lu", static_cast<unsigned long>(statBuf.st_dev));
+    LOGD("[L8:MountArgumentUtils] MocklispHash: statBuf dev id=%{public}lu",
+         static_cast<unsigned long>(statBuf.st_dev));
     return statBuf.st_dev;
 }
 
 string MountArgument::GetCtrlPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCtrlPath: >>> ENTER <<< userId=%{public}d", userId_);
     auto dst = GetFullDst();
     auto res = MocklispHash(dst);
 
@@ -179,6 +194,7 @@ string MountArgument::GetCtrlPath() const
 
 string MountArgument::GetMountPointPrefix() const
 {
+    LOGD("[L8:MountArgumentUtils] GetMountPointPrefix: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << DATA_POINT << userId_ << "/hmdfs";
     return ss.str();
@@ -186,6 +202,7 @@ string MountArgument::GetMountPointPrefix() const
 
 std::string MountArgument::GetSandboxPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetSandboxPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << SANDBOX_PATH << userId_;
     return ss.str();
@@ -193,6 +210,7 @@ std::string MountArgument::GetSandboxPath() const
 
 string MountArgument::OptionsToString() const
 {
+    LOGD("[L8:MountArgumentUtils] OptionsToString: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << "local_dst=" << GetFullDst() << ",user_id=" << userId_;
     ss << ",ra_pages=512";
@@ -222,6 +240,7 @@ string MountArgument::OptionsToString() const
 
 string MountArgument::GetMediaDocsPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetMediaDocsPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << COMM_DATA_POINT << userId_ << LOCAL_FILE_DOCS_PATH;
     return ss.str();
@@ -229,6 +248,7 @@ string MountArgument::GetMediaDocsPath() const
 
 string MountArgument::GetNoSharefsAppdataPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetNoSharefsAppdataPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << NOSHAREFS_APPDATA_PATH;
     return ss.str();
@@ -236,6 +256,7 @@ string MountArgument::GetNoSharefsAppdataPath() const
 
 string MountArgument::GetNoSharefsDocPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetNoSharefsDocPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << NOSHAREFS_DOC_PATH;
     return ss.str();
@@ -243,6 +264,7 @@ string MountArgument::GetNoSharefsDocPath() const
 
 string MountArgument::GetNoSharefsDocCurPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetNoSharefsDocCurPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << NOSHAREFS_DOC_CUR_PATH;
     return ss.str();
@@ -250,6 +272,7 @@ string MountArgument::GetNoSharefsDocCurPath() const
 
 string MountArgument::GetSharefsDocPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetSharefsDocPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << SHAREFS_DOC_PATH;
     return ss.str();
@@ -257,6 +280,7 @@ string MountArgument::GetSharefsDocPath() const
 
 string MountArgument::GetSharefsDocCurPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetSharefsDocCurPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << SHAREFS_DOC_CUR_PATH;
     return ss.str();
@@ -264,6 +288,7 @@ string MountArgument::GetSharefsDocCurPath() const
 
 string MountArgument::GetCurOtherAppdataPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCurOtherAppdataPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << CUR_OTHER_APPDATA_PATH;
     return ss.str();
@@ -271,6 +296,7 @@ string MountArgument::GetCurOtherAppdataPath() const
 
 string MountArgument::GetMntUserPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetMntUserPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_;
     return ss.str();
@@ -278,6 +304,7 @@ string MountArgument::GetMntUserPath() const
 
 string MountArgument::GetCurOtherPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCurOtherPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << CUR_OTHER_PATH;
     return ss.str();
@@ -285,6 +312,7 @@ string MountArgument::GetCurOtherPath() const
 
 string MountArgument::GetCurFileMgrPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCurFileMgrPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << CUR_FILEMGR_PATH;
     return ss.str();
@@ -292,6 +320,7 @@ string MountArgument::GetCurFileMgrPath() const
 
 string MountArgument::GetCurFileMgrAppdataPath() const
 {
+    LOGD("[L8:MountArgumentUtils] GetCurFileMgrAppdataPath: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << MNT_USER_PATH << userId_ << CUR_FILEMGR_APPDATA_PATH;
     return ss.str();
@@ -299,12 +328,14 @@ string MountArgument::GetCurFileMgrAppdataPath() const
 
 unsigned long MountArgument::GetFlags() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFlags: <<< EXIT SUCCESS <<< return MS_NODEV");
     return MS_NODEV;
 }
 
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
 string MountArgument::GetFullMediaFuse() const
 {
+    LOGD("[L8:MountArgumentUtils] GetFullMediaFuse: >>> ENTER <<< userId=%{public}d", userId_);
     stringstream ss;
     ss << TMPFS_MNT_DATA << userId_ << "/" << "media_fuse/Photo";
     return ss.str();
@@ -313,6 +344,7 @@ string MountArgument::GetFullMediaFuse() const
 
 MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
 {
+    LOGD("[L8:MountArgumentUtils] Alpha: >>> ENTER <<< userId=%{public}d", userId);
     MountArgument mountArgument = {
         .userId_ = userId,
         .needInitDir_ = true,
@@ -330,3 +362,4 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
 } // namespace Utils
 } // namespace StorageDaemon
 } // namespace OHOS
+

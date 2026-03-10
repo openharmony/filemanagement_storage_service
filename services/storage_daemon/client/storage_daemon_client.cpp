@@ -24,6 +24,7 @@
 #include "system_ability_definition.h"
 #include "userdata_dir_info.h"
 #include "utils/storage_radar.h"
+#include "utils/storage_utils.h"
 
 using namespace OHOS::StorageService;
 namespace {
@@ -33,28 +34,12 @@ constexpr uint32_t LOG_CHECK_INTERVAL = 50;
 constexpr uint32_t SLEEP_TIME_PRE_CHECK = 20; // 20ms
 constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
 constexpr int32_t STORAGE_DAEMON_SAID = OHOS::STORAGE_MANAGER_DAEMON_ID;
-constexpr size_t MASK_KEY_ID_MIN_LENGTH = 6;
-constexpr size_t MASK_KEY_ID_PREFIX_LENGTH = 2;
-constexpr size_t MASK_KEY_ID_SUFFIX_LENGTH = 2;
-
-std::string MaskLogKeyId(const std::string &keyId)
-{
-    if (keyId.empty()) {
-        return "<empty>";
-    }
-    if (keyId.size() <= MASK_KEY_ID_MIN_LENGTH) {
-        return "***";
-    }
-    return keyId.substr(0, MASK_KEY_ID_PREFIX_LENGTH) + "***" + keyId.substr(keyId.size() - MASK_KEY_ID_SUFFIX_LENGTH);
-}
 }
 
 namespace OHOS {
 namespace StorageDaemon {
 sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 {
-    LOGI("[L1:IPC] GetStorageDaemonProxy: >>> ENTER <<<");
-
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
         LOGE("[L1:IPC] GetStorageDaemonProxy: <<< EXIT FAILED <<< samgr is nullptr");
@@ -67,7 +52,6 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
         return nullptr;
     }
 
-    LOGI("[L1:IPC] GetStorageDaemonProxy: <<< EXIT SUCCESS <<<");
     return iface_cast<IStorageDaemon>(object);
 }
 
@@ -388,9 +372,9 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &oldSecret,
                                             const std::vector<uint8_t> &newSecret)
 {
-    LOGI("[L1:IPC] UpdateUserAuth: >>> ENTER <<< userId=%{public}u, secureUid=%{public}llu, tokenLen=%{public}zu, "
+    LOGI("[L1:IPC] UpdateUserAuth: >>> ENTER <<< userId=%{public}u, secureUid=%{public}s, tokenLen=%{public}zu, "
          "oldSecretLen=%{public}zu, newSecretLen=%{public}zu",
-         userId, (unsigned long long)secureUid, token.size(), oldSecret.size(), newSecret.size());
+         userId, GetAnonyString(std::to_string(secureUid)).c_str(), token.size(), oldSecret.size(), newSecret.size());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u, service check failed, err=%{public}d",
@@ -419,9 +403,9 @@ int32_t StorageDaemonClient::UpdateUseAuthWithRecoveryKey(const std::vector<uint
                                                           uint32_t userId,
                                                           std::vector<std::vector<uint8_t>> &plainText)
 {
-    LOGI("[L1:IPC] UpdateUseAuthWithRecoveryKey: >>> ENTER <<< userId=%{public}u, secureUid=%{public}llu, "
+    LOGI("[L1:IPC] UpdateUseAuthWithRecoveryKey: >>> ENTER <<< userId=%{public}u, secureUid=%{public}s, "
          "authTokenLen=%{public}zu, newSecretLen=%{public}zu",
-         userId, (unsigned long long)secureUid, authToken.size(), newSecret.size());
+         userId, GetAnonyString(std::to_string(secureUid)).c_str(), authToken.size(), newSecret.size());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}u, service check failed,"
@@ -621,9 +605,8 @@ int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, st
 
     int32_t ret = client->GenerateAppkey(userId, hashId, keyId, false);
     if (ret == E_OK) {
-        const std::string maskedKeyId = MaskLogKeyId(keyId);
         LOGI("[L1:IPC] GenerateAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyId=%{public}s",
-             userId, maskedKeyId.c_str());
+             userId, GetAnonyString(keyId).c_str());
     } else {
         LOGE("[L1:IPC] GenerateAppkey: <<< EXIT FAILED <<< userId=%{public}u, err=%{public}d", userId, ret);
     }
@@ -632,8 +615,8 @@ int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, st
 
 int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
-    const std::string maskedKeyId = MaskLogKeyId(keyId);
-    LOGI("[L1:IPC] DeleteAppkey: >>> ENTER <<< userId=%{public}u, keyIdMasked=%{public}s", userId, maskedKeyId.c_str());
+    LOGI("[L1:IPC] DeleteAppkey: >>> ENTER <<< userId=%{public}u, keyIdMasked=%{public}s", userId,
+        GetAnonyString(keyId).c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] DeleteAppkey: <<< EXIT FAILED <<< userId=%{public}u, service check failed, err=%{public}d",
@@ -713,7 +696,8 @@ int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &rel
     const std::string &networkId, const std::string &deviceId)
 {
     LOGI("[L1:IPC] MountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s, networkId=%{public}s, "
-         "deviceId=%{public}s", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
+        "deviceId=%{public}s", userId, GetAnonyString(relativePath).c_str(), GetAnonyString(networkId).c_str(),
+        GetAnonyString(deviceId).c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] MountDfsDocs: <<< EXIT FAILED <<< userId=%{public}d, service check failed, err=%{public}d",
@@ -740,7 +724,8 @@ int32_t StorageDaemonClient::UMountDfsDocs(int32_t userId, const std::string &re
     const std::string &networkId, const std::string &deviceId)
 {
     LOGI("[L1:IPC] UMountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s, networkId=%{public}s, "
-         "deviceId=%{public}s", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
+         "deviceId=%{public}s", userId, GetAnonyString(relativePath).c_str(), GetAnonyString(networkId).c_str(),
+         GetAnonyString(deviceId).c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] UMountDfsDocs: <<< EXIT FAILED <<< userId=%{public}d, service check failed, err=%{public}d",
@@ -835,7 +820,8 @@ int32_t StorageDaemonClient::GetUserNeedActiveStatus(uint32_t userId, bool &need
 
 int32_t StorageDaemonClient::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
-    LOGI("[L1:IPC] MountFileMgrFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s", userId, path.c_str());
+    LOGI("[L1:IPC] MountFileMgrFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s", userId,
+        GetAnonyString(path).c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] MountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d, service check failed, err=%{public}d",
@@ -858,7 +844,8 @@ int32_t StorageDaemonClient::MountFileMgrFuse(int32_t userId, const std::string 
 
 int32_t StorageDaemonClient::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    LOGI("[L1:IPC] UMountFileMgrFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s", userId, path.c_str());
+    LOGI("[L1:IPC] UMountFileMgrFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s", userId,
+        GetAnonyString(path).c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] UMountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d, service check failed, err=%{public}d",
@@ -883,7 +870,7 @@ int32_t StorageDaemonClient::IsFileOccupied(const std::string &path, const std::
     std::vector<std::string> &outputList, bool &isOccupy)
 {
     LOGI("[L1:IPC] IsFileOccupied: >>> ENTER <<< path=%{public}s, inputCount=%{public}zu",
-         path.c_str(), inputList.size());
+         GetAnonyString(path).c_str(), inputList.size());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] IsFileOccupied: <<< EXIT FAILED <<< service check failed, err=%{public}d", status);

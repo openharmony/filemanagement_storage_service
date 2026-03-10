@@ -112,6 +112,7 @@ DiskInfo::~DiskInfo()
 
 int DiskInfo::Create()
 {
+    LOGI("[L3:DiskInfo] Create: >>> ENTER <<< id=%{public}s", id_.c_str());
     int ret;
 
     CreateDiskNode(devPath_, device_);
@@ -121,37 +122,42 @@ int DiskInfo::Create()
     StorageManagerClient client;
     ret = client.NotifyDiskCreated(*this);
     if (ret != E_OK) {
-        LOGE("Notify Disk Created failed");
+        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created failed, err=%{public}d", ret);
         return ret;
     }
 
     ret = ReadPartition();
     if (ret != E_OK) {
-        LOGE("Create disk failed");
+        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Create disk failed, err=%{public}d", ret);
         return ret;
     }
 
+    LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
     return E_OK;
 }
 
 int DiskInfo::Destroy()
 {
+    LOGI("[L3:DiskInfo] Destroy: >>> ENTER <<< id=%{public}s", id_.c_str());
     auto &volume = VolumeManager::Instance();
 
     for (const auto& volumeId : volumeId_) {
         auto ret = volume.DestroyVolume(volumeId);
         if (ret != E_OK) {
-            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            LOGE("[L3:DiskInfo] Destroy: <<< EXIT FAILED <<< Destroy volume=%{public}s failed, err=%{public}d",
+                 volumeId.c_str(), ret);
             return E_ERR;
         }
     }
     status = S_DESTROY;
     volumeId_.clear();
+    LOGI("[L3:DiskInfo] Destroy: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
     return E_OK;
 }
 
 void DiskInfo::ReadMetadata()
 {
+    LOGI("[L3:DiskInfo] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath_.c_str());
     size_ = -1;
     vendor_.clear();
     if (GetDevSize(devPath_, &size_) != E_OK) {
@@ -163,38 +169,40 @@ void DiskInfo::ReadMetadata()
         std::string path(sysPath_ + "/device/manfid");
         std::string str;
         if (!ReadFile(path, &str)) {
-            LOGE("open file %{public}s failed", path.c_str());
+            LOGE("[L3:DiskInfo] ReadMetadata: <<< EXIT FAILED <<< open file=%{public}s failed", path.c_str());
             return;
         }
-        LOGI("Raw manfid value from file: %{public}s", str.c_str());
+        LOGI("[L3:DiskInfo] ReadMetadata: Raw manfid value from file=%{public}s", str.c_str());
         uint32_t manfid = 0;
         bool is_valid = ParseAndValidateManfid(str, manfid);
         if (is_valid) {
             auto it = vendorMap_.find(manfid);
             vendor_ = (it != vendorMap_.end()) ? it->second : "Unknown";
         } else {
-            LOGI("Invalid manfid: %{public}s", str.c_str());
+            LOGI("[L3:DiskInfo] ReadMetadata: Invalid manfid=%{public}s", str.c_str());
             vendor_ = "Invalid";
         }
     } else {
         std::string path(sysPath_ + "/device/vendor");
         std::string str;
         if (!ReadFile(path, &str)) {
-            LOGE("open file %{public}s failed", path.c_str());
+            LOGE("[L3:DiskInfo] ReadMetadata: <<< EXIT FAILED <<< open file=%{public}s failed", path.c_str());
             return;
         }
         vendor_ = str;
-        LOGI("Read metadata %{public}s", path.c_str());
+        LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     }
 }
 
 bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
 {
+    LOGD("[L3:DiskInfo] ParseAndValidateManfid: >>> ENTER <<<");
     std::string trimmed = str;
     size_t start = trimmed.find_first_not_of(" \t\n\r");
     if (start != std::string::npos) {
         trimmed.erase(0, start);
     } else {
+        LOGD("[L3:DiskInfo] ParseAndValidateManfid: <<< EXIT FAILED <<< empty string");
         return false;
     }
     size_t end = trimmed.find_last_not_of(" \t\n\r");
@@ -214,35 +222,48 @@ bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
         } else if (c >= 'a' && c <= 'f') {
             manfid = (manfid << HEX_SHIFT_BITS) | (c - 'a' + HEX_LETTER_OFFSET);
         } else {
+            LOGD("[L3:DiskInfo] ParseAndValidateManfid: <<< EXIT FAILED <<< invalid character");
             return false;
         }
     }
+    LOGD("[L3:DiskInfo] ParseAndValidateManfid: <<< EXIT SUCCESS <<< manfid=0x%{public}x", manfid);
     return true;
 }
 
 int DiskInfo::ReadPartition(const std::string &ejectStatus)
 {
+    LOGI("[L3:DiskInfo] ReadPartition: >>> ENTER <<< id=%{public}s, ejectStatus=%{public}s",
+         id_.c_str(), ejectStatus.c_str());
     int ret = 0;
     if (major(device_) == DISK_CD_MAJOR) {
         ret = ReadPartitionCD(ejectStatus);
     } else {
         ret = ReadPartitionUSB();
     }
+    if (ret == E_OK) {
+        LOGI("[L3:DiskInfo] ReadPartition: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
+    } else {
+        LOGE("[L3:DiskInfo] ReadPartition: <<< EXIT FAILED <<< id=%{public}s, err=%{public}d",
+             id_.c_str(), ret);
+    }
     return ret;
 }
 
 int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 {
+    LOGI("[L3:DiskInfo] ReadPartitionCD: >>> ENTER <<< id=%{public}s, ejectStatus=%{public}s",
+         id_.c_str(), ejectStatus.c_str());
     if (ejectStatus == "1") {
         if (Destroy() != E_OK) {
-            LOGE("Destroy failed");
+            LOGE("[L3:DiskInfo] ReadPartitionCD: <<< EXIT FAILED <<< Destroy failed");
             return E_ERR;
         }
         auto res = Eject(devPath_);
         if (res != E_OK) {
-            LOGE("eject failed, %{public}d", res);
+            LOGE("[L3:DiskInfo] ReadPartitionCD: <<< EXIT FAILED <<< eject failed, err=%{public}d", res);
             return res;
         }
+        LOGI("[L3:DiskInfo] ReadPartitionCD: <<< EXIT SUCCESS <<< ejected");
         return E_OK;
     }
 
@@ -252,28 +273,32 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
         for (auto volumeId : volumeId_) {
             auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
             if (ret != E_OK) {
-                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+                LOGE("[L3:DiskInfo] ReadPartitionCD: Destroy volume=%{public}s failed, err=%{public}d",
+                     volumeId.c_str(), ret);
             }
         }
         volumeId_.clear();
+        LOGI("[L3:DiskInfo] ReadPartitionCD: <<< EXIT SUCCESS <<< CD not exist, cleared");
         return E_OK;
     } else {
-        LOGI("ejectStatus is %{public}s", ejectStatus.c_str());
+        LOGI("[L3:DiskInfo] ReadPartitionCD: ejectStatus=%{public}s, CD exists", ejectStatus.c_str());
         dev_t partitionDev = makedev(major(device_), minor(device_));
         auto res = CreateVolume(partitionDev);
         if (res != E_OK) {
-            LOGE("CreateVolume failed");
+            LOGE("[L3:DiskInfo] ReadPartitionCD: <<< EXIT FAILED <<< CreateVolume failed, err=%{public}d", res);
             return res;
         }
     }
+    LOGI("[L3:DiskInfo] ReadPartitionCD: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int DiskInfo::ReadPartitionUSB()
 {
+    LOGI("[L3:DiskInfo] ReadPartitionUSB: >>> ENTER <<< id=%{public}s", id_.c_str());
     int maxVolumes = GetMaxVolume(device_);
     if (maxVolumes < 0) {
-        LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
+        LOGE("[L3:DiskInfo] ReadPartitionUSB: <<< EXIT FAILED <<< Invalid maxVolumes=%{public}d", maxVolumes);
         return E_ERR;
     }
 
@@ -285,7 +310,8 @@ int DiskInfo::ReadPartitionUSB()
     if (res != E_OK || lines.empty()) {
         int destroyRes = Destroy();
         sgdiskLines_.clear();
-        LOGE("get partition failed, destroy error is %{public}d", destroyRes);
+        LOGE("[L3:DiskInfo] ReadPartitionUSB: <<< EXIT FAILED <<< get partition failed, destroy error=%{public}d",
+             destroyRes);
         return res;
     }
     isUserdata = false;
@@ -308,6 +334,7 @@ int DiskInfo::ReadPartitionUSB()
         sgdiskLines_ = lines;
     } else {
         ProcessPartitionChanges(lines, maxVolumes, isUserdata);
+        LOGI("[L3:DiskInfo] ReadPartitionUSB: <<< EXIT SUCCESS <<< processed changes");
         return E_OK;
     }
     return ReadDiskLines(sgdiskLines_, maxVolumes, isUserdata);
@@ -315,6 +342,7 @@ int DiskInfo::ReadPartitionUSB()
 
 void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
 {
+    LOGD("[L3:DiskInfo] FilterOutput: >>> ENTER <<<");
     std::vector<std::string> tempInfo;
     std::string bufToken = "\n";
     for (auto &buf : output) {
@@ -331,7 +359,7 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
         }
     }
     if (index == -1) {
-        LOGE("disk info not found");
+        LOGE("[L3:DiskInfo] FilterOutput: <<< EXIT FAILED <<< disk info not found");
         return;
     }
     for (int32_t i = index; i < count; i++) {
@@ -340,11 +368,12 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
             lines.push_back(target);
         }
     }
-    LOGE("lines size is %{public}zu.", lines.size());
+    LOGE("[L3:DiskInfo] FilterOutput: <<< EXIT SUCCESS <<< lines.size=%{public}zu", lines.size());
 }
 
 void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata)
 {
+    LOGI("[L3:DiskInfo] ProcessPartitionChanges: >>> ENTER <<<");
     std::vector<std::string> addedLines;
     std::vector<std::string> removedLines;
     std::set_difference(
@@ -365,7 +394,7 @@ void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, in
         sgdiskAddedLines.insert(sgdiskAddedLines.end(), addedLines.begin(), addedLines.end());
         sgdiskLines_ = lines;
         if (ReadDiskLines(sgdiskAddedLines, maxVolumes, isUserdata) != E_OK) {
-            LOGI("Failed to read disk lines ");
+            LOGI("[L3:DiskInfo] ProcessPartitionChanges: Failed to read added disk lines");
         }
     }
     if (!removedLines.empty()) {
@@ -373,10 +402,12 @@ void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, in
         sgdiskLines_.clear();
         sgdiskLines_ = lines;
     }
+    LOGI("[L3:DiskInfo] ProcessPartitionChanges: <<< EXIT SUCCESS <<<");
 }
 
 void DiskInfo::UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata)
 {
+    LOGI("[L3:DiskInfo] UmountLines: >>> ENTER <<<");
     std::string lineToken = " ";
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
@@ -396,26 +427,31 @@ void DiskInfo::UmountLines(std::vector<std::string> lines, int32_t maxVols, bool
             std::string volumeId = StringPrintf("vol-%u-%u", major(partitionDev), minor(partitionDev));
             auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
             if (ret != E_OK) {
-                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+                LOGE("[L3:DiskInfo] UmountLines: Destroy volume=%{public}s failed, err=%{public}d",
+                     volumeId.c_str(), ret);
             }
         }
     }
+    LOGI("[L3:DiskInfo] UmountLines: <<< EXIT SUCCESS <<<");
 }
 
 bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
 {
+    LOGD("[L3:DiskInfo] CreateMBRVolume: >>> ENTER <<< type=0x%{public}x", type);
     // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EFI FAT32 || EXT 2/3/4
     if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x1b || type == 0x83) {
         if (CreateVolume(dev) == E_OK) {
+            LOGD("[L3:DiskInfo] CreateMBRVolume: <<< EXIT SUCCESS <<<");
             return true;
         }
     }
+    LOGD("[L3:DiskInfo] CreateMBRVolume: <<< EXIT FAILED <<< unsupported type=0x%{public}x", type);
     return false;
 }
 
 int32_t DiskInfo::CreateUnknownTabVol()
 {
-    LOGI("%{public}s has unknown table", id_.c_str());
+    LOGI("[L3:DiskInfo] CreateUnknownTabVol: >>> ENTER <<< id=%{public}s", id_.c_str());
     std::string fsType;
     std::string uuid;
     std::string label;
@@ -425,14 +461,16 @@ int32_t DiskInfo::CreateUnknownTabVol()
     } else {
         StorageService::StorageRadar::ReportUserManager("DiskInfo::CreateUnknownTabVol::ReadMetadata", 0,
                                                         ret, "devPath_=" + devPath_);
-        LOGE("failed to identify the disk device");
+        LOGE("[L3:DiskInfo] CreateUnknownTabVol: <<< EXIT FAILED <<< failed to identify the disk device");
         return E_NON_EXIST;
     }
+    LOGI("[L3:DiskInfo] CreateUnknownTabVol: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata)
 {
+    LOGI("[L3:DiskInfo] ReadDiskLines: >>> ENTER <<< lines.size=%{public}zu", lines.size());
     std::string lineToken = " ";
     bool foundPart = false;
     Table table = Table::UNKNOWN;
@@ -452,7 +490,7 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
             } else if (*it == "gpt") {
                 table = Table::GPT;
             } else {
-                LOGI("Unknown partition table %{public}s", (*it).c_str());
+                LOGI("[L3:DiskInfo] ReadDiskLines: Unknown partition table=%{public}s", (*it).c_str());
                 continue;
             }
         } else if (*it == "PART") {
@@ -468,18 +506,21 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
     }
 
     if (table == Table::UNKNOWN || !foundPart) {
+        LOGI("[L3:DiskInfo] ReadDiskLines: trying unknown table");
         return CreateUnknownTabVol();
     }
 
+    LOGI("[L3:DiskInfo] ReadDiskLines: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 dev_t DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata)
 {
+    LOGD("[L3:DiskInfo] ProcessPartition: >>> ENTER <<<");
     int32_t index = std::atoi((*it).c_str());
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
-        LOGE("Invalid partition %{public}d", index);
+        LOGE("[L3:DiskInfo] ProcessPartition: <<< EXIT FAILED <<< Invalid partition=%{public}d", index);
         return makedev(0, 0);
     }
     dev_t partitionDev = makedev(0, 0);
@@ -498,16 +539,20 @@ dev_t DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, int32_t
             partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
         }
     }
+    LOGD("[L3:DiskInfo] ProcessPartition: <<< EXIT SUCCESS <<< partition=%{public}u,%{public}u",
+         major(partitionDev), minor(partitionDev));
     return partitionDev;
 }
 
 int32_t DiskInfo::GetMaxMinor(int32_t major)
 {
+    LOGD("[L3:DiskInfo] GetMaxMinor: >>> ENTER <<< major=%{public}d", major);
     DIR* dir;
     struct dirent* entry;
     int32_t maxMinor = -1;
     if ((dir = opendir(BLOCK_PATH)) == nullptr) {
-        LOGE("fail to open %{public}s", BLOCK_PATH);
+        LOGE("[L3:DiskInfo] GetMaxMinor: <<< EXIT FAILED <<< open=%{public}s failed, errno=%{public}d",
+             BLOCK_PATH, errno);
         return E_ERR;
     }
     while ((entry = readdir(dir)) != nullptr) {
@@ -526,12 +571,14 @@ int32_t DiskInfo::GetMaxMinor(int32_t major)
         }
     }
     closedir(dir);
+    LOGD("[L3:DiskInfo] GetMaxMinor: <<< EXIT SUCCESS <<< maxMinor=%{public}d", maxMinor);
     return maxMinor;
 }
 
 void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
     Table table, bool &foundPart, dev_t partitionDev)
 {
+    LOGD("[L3:DiskInfo] CreateTableVolume: >>> ENTER <<<");
     if (table == Table::MBR) {
         if (++it == end) {
             return;
@@ -545,36 +592,41 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
         int32_t type = static_cast<int32_t>(val);
         if (CreateMBRVolume(type, partitionDev)) {
             foundPart = true;
+            LOGD("[L3:DiskInfo] CreateTableVolume: <<< EXIT SUCCESS <<< MBR volume created");
         } else {
-            LOGE("Create MBR Volume failed");
+            LOGE("[L3:DiskInfo] CreateTableVolume: Create MBR Volume failed, type=0x%{public}x", type);
         }
     } else if (table == Table::GPT) {
         if (CreateVolume(partitionDev) == E_OK) {
             foundPart = true;
+            LOGD("[L3:DiskInfo] CreateTableVolume: <<< EXIT SUCCESS <<< GPT volume created");
+        } else {
+            LOGW("[L3:DiskInfo] CreateTableVolume: Create GPT Volume failed");
         }
     }
 }
 
 int DiskInfo::CreateVolume(dev_t dev)
 {
+    LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
 
-    LOGI("disk read volume metadata");
     std::string volumeId = volume.CreateVolume(GetId(), dev, isUserdata);
     if (volumeId.empty()) {
-        LOGE("Create volume failed");
+        LOGE("[L3:DiskInfo] CreateVolume: <<< EXIT FAILED <<< Create volume failed");
         return E_ERR;
     }
 
     volumeId_.push_back(volumeId);
+    LOGI("[L3:DiskInfo] CreateVolume: <<< EXIT SUCCESS <<< volumeId=%{public}s", volumeId.c_str());
     return E_OK;
 }
 
 int DiskInfo::Partition()
 {
-    LOGI("Partitioning the disk.");
+    LOGI("[L3:DiskInfo] Partition: >>> ENTER <<< id=%{public}s", id_.c_str());
     if (major(device_) == DISK_CD_MAJOR) {
-        LOGE("CD/DVD not support partition.");
+        LOGE("[L3:DiskInfo] Partition: <<< EXIT FAILED <<< CD/DVD not support partition");
         return E_NOT_SUPPORT;
     }
     std::vector<std::string> cmd;
@@ -582,17 +634,17 @@ int DiskInfo::Partition()
 
     res = Destroy();
     if (res != E_OK) {
-        LOGE("Destroy failed in Partition()");
+        LOGE("[L3:DiskInfo] Partition: Destroy failed in Partition(), err=%{public}d", res);
     }
 
     cmd.push_back(SGDISK_PATH);
     cmd.push_back(SGDISK_ZAP_CMD);
     cmd.push_back(devPath_);
-    LOGI("Partition executing command.");
+    LOGI("[L3:DiskInfo] Partition: executing sgdisk zap command");
     std::vector<std::string> output;
     res = ForkExec(cmd, &output);
     if (res != E_OK) {
-        LOGE("sgdisk: zap fail");
+        LOGE("[L3:DiskInfo] Partition: <<< EXIT FAILED <<< sgdisk zap failed, err=%{public}d", res);
         return res;
     }
 
@@ -603,11 +655,13 @@ int DiskInfo::Partition()
     cmd.push_back(devPath_);
     res = ForkExec(cmd, &output);
     if (res != E_OK) {
-        LOGE("sgdisk: partition fail");
+        LOGE("[L3:DiskInfo] Partition: <<< EXIT FAILED <<< sgdisk partition failed, err=%{public}d", res);
         return res;
     }
 
+    LOGI("[L3:DiskInfo] Partition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
+
