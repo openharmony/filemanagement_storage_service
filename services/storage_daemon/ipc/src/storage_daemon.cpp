@@ -147,6 +147,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 
     std::error_code errCode;
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
+        LOGW("elNeedRestorePath is empty, type: %{public}d", type);
         return E_OK;
     }
     std::string singleRestoreVersion;
@@ -156,8 +157,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     ret = KeyManager::GetInstance().RestoreUserKey(userId, type);
     if (ret != E_OK) {
         if (type != EL1_KEY) {
-            LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
-                userId, type, ret);
+            LOGE("user:%{public}u type:%{public}u restore failed, but return succ, ret:%{public}d", userId, type, ret);
             return E_MIGRATE_ELX_FAILED; // maybe need user key, so return E_OK to continue
         }
         LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
@@ -171,6 +171,10 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     }
     if (type == EL2_KEY) {
         PrepareUeceDir(userId);
+    }
+    if ((ret = DoStoreAndUpdate(userId, {}, {}, type)) != E_OK) {
+        LOGE("DoStoreAndUpdate failed, userId:%{public}u, ret:%{public}d, type:%{public}u", userId, ret, type);
+        return ret;
     }
     if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
         if (type != EL1_KEY) {
@@ -201,11 +205,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             break;
         }
         if (ret != E_OK) {
-            return ret;
-        }
-        ret = DoStoreAndUpdate(userId, {}, {}, type);
-        if (ret != E_OK) {
-            LOGE("DoStoreAndUpdate failed, userId:%{public}u, ret:%{public}d, type:%{public}u", userId, ret, type);
+            LOGE("RestoreOneUserKey failed, userId:%{public}d, type:%{public}d, ret:%{public}d", userId, type, ret);
             return ret;
         }
     }
@@ -561,6 +561,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     LOGW("prepare user dirs for update, user:%{public}u, flags:%{public}u", userId, flags);
     ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
+        LOGE("prepare user dirs for update failed, user:%{public}u, flags:%{public}u", userId, flags);
         return ret;
     }
     ret = DoStoreAndUpdate(userId, token, secret, type);

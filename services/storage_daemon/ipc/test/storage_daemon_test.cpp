@@ -403,7 +403,11 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
 {
     ASSERT_TRUE(storageDaemon_ != nullptr);
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_OK));
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _)).WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_PARAMS_NULLPTR_ERR));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(_, _)).WillRepeatedly(Return(E_OK));
 
     // userId < START_APP_CLONE_USER_ID
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_OK);
@@ -419,6 +423,12 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
     CreateNeedRestoreFile(userId, EL3_KEY);
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId, EL3_KEY), E_OK);
     DeleteNeedRestoreFile(userId, EL3_KEY);
+
+    // userId > MAX_APP_CLONE_USER_ID
+    userId = StorageService::MAX_APP_CLONE_USER_ID + 1;
+    CreateNeedRestoreFile(userId, EL4_KEY);
+    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId, EL4_KEY), E_PARAMS_NULLPTR_ERR);
+    DeleteNeedRestoreFile(userId, EL4_KEY);
 }
 
 /**
