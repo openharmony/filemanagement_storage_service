@@ -442,8 +442,7 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level);
-    message = "SetDirEncryptionPolicy End, dirPath: " + GetAnonyString(dirPath) + " level: " + std::to_string(level);
-    StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, message, err);
+    StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy End", err);
     return err;
 #else
     return E_OK;
