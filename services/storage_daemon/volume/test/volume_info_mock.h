@@ -40,6 +40,17 @@ public:
     MOCK_METHOD1(GetFsTypeByDev, std::string(dev_t));
     MOCK_METHOD1(IsUsbFuseByType, bool(std::string));
     MOCK_METHOD0(GetFsType, std::string());
+    // disk crypt api mock
+    MOCK_METHOD2(DoEncrypt, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(DoGetCryptProgressById, int32_t(const std::string &, int32_t &));
+    MOCK_METHOD2(DoGetCryptUuidById, int32_t(const std::string &, std::string &));
+    MOCK_METHOD3(DoBindRecoverKeyToPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD3(DoUpdateCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD3(DoResetCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD2(DoVerifyCryptPasswd, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(DoUnlock, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(DoDecrypt, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD1(DoDestroyCrypt, int32_t(const std::string &));
 };
 } // namespace StorageDaemon
 } // namespace OHOS
