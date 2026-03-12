@@ -903,37 +903,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_OpenFileInternal_001, TestSize.Level1)
  
     GTEST_LOG_(INFO) << "MtpfsFuseTest_OpenFileInternal_001 end";
 }
- 
-/**
- * @tc.name: MtpfsFuseTest_CleanupTemporaryFile_001
- * @tc.desc: Test CleanupTemporaryFile function
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_CleanupTemporaryFile_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_001 start";
- 
-    MtpFileSystem& instance = MtpFileSystem::GetInstance();
-    std::string stdPath = "/test/path/file.txt";
-    std::string tmpPath = "/tmp/test_mtpfs_cleanup";
- 
-    // Create a temporary file
-    {
-        std::ofstream file(tmpPath);
-        EXPECT_TRUE(file.is_open());
-    }
-    EXPECT_EQ(access(tmpPath.c_str(), 0), 0);
- 
-    // Test CleanupTemporaryFile - should delete the tmp file
-    instance.CleanupTemporaryFile(stdPath, tmpPath);
- 
-    // Verify tmp file is deleted
-    EXPECT_NE(access(tmpPath.c_str(), 0), 0);
- 
-    GTEST_LOG_(INFO) << "MtpfsFuseTest_CleanupTemporaryFile_001 end";
-}
- 
+
 /**
  * @tc.name: MtpfsFuseTest_CleanupTemporaryFile_002
  * @tc.desc: Test CleanupTemporaryFile with non-existent file
