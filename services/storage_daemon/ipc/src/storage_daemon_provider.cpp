@@ -31,6 +31,8 @@
 #include "utils/storage_radar.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
+#include "utils/disk_utils.h"
+#include "utils/file_utils.h"
 
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
@@ -43,6 +45,7 @@
 #include "crypto/key_manager.h"
 #endif
 #include "file_sharing/file_sharing.h"
+#include "hi_audit.h"
 #include "quota/quota_manager.h"
 #include "user/mount_manager.h"
 #include "user/system_mount_manager.h"
@@ -60,10 +63,6 @@ constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
-constexpr const char *PATH_INVALID_FLAG1 = "../";
-constexpr const char *PATH_INVALID_FLAG2 = "/..";
-constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
-
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
     auto it = opStatistics_.find(userId);
@@ -81,24 +80,6 @@ int32_t StorageDaemonProvider::CheckUserIdRange(int32_t userId)
         return E_USERID_RANGE;
     }
     return E_OK;
-}
-
-bool StorageDaemonProvider::IsFilePathInvalid(const std::string &filePath)
-{
-    size_t pos = filePath.find(PATH_INVALID_FLAG1);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("Relative path is not allowed, path contain ../");
-            return true;
-        }
-        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
-    }
-    pos = filePath.rfind(PATH_INVALID_FLAG2);
-    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("Relative path is not allowed, path tail is /..");
-        return true;
-    }
-    return false;
 }
 
 void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInfoType type)
@@ -366,6 +347,7 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("StartUser", "userId: " + std::to_string(userId));
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance().SetPriority();  // set tid priority to 40
@@ -375,7 +357,7 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
         StorageService::StorageRadar::ReportUserManager("StartUser", userId, ret, "");
     }
     SetUserStatistics(userId, ret != E_OK ? USER_START_FAIL : USER_START_SUCCESS);
-
+    HiAudit::GetInstance().WriteEnd("StartUser", ret);
     auto delay = StorageService::StorageRadar::ReportDuration("START USER",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: START USER: delay time = %{public}s", delay.c_str());
@@ -384,22 +366,26 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("StopUser", "userId: " + std::to_string(userId));
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("StorageDaemon::PrepareUserDirs userId %{public}d out of range", userId);
+        LOGE("StorageDaemon::StopUser userId %{public}d out of range", userId);
         return err;
     }
     isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
     StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "");
+    HiAudit::GetInstance().WriteEnd("StopUser", ret);
     SetUserStatistics(userId, ret != E_OK ? USER_STOP_FAIL : USER_STOP_SUCCESS);
     return ret;
 }
 
 int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
-    std::string message = "PrepareUserDirs Begin, flags: " + to_string(flags);
+    std::string message = "userId: " + std::to_string(userId) + " flags: " + std::to_string(flags);
+    HiAudit::GetInstance().WriteStart("PrepareUserDirs", message);
+    message = "PrepareUserDirs Begin, flags: " + to_string(flags);
     StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, message, E_OK);
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
@@ -410,6 +396,7 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().PrepareUserDirs(userId, flags);
     StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, "PrepareUserDirs End", err);
+    HiAudit::GetInstance().WriteEnd("PrepareUserDirs", err, "flags: " + std::to_string(flags));
     SetUserStatistics(userId, err != E_OK ? USER_ADD_FAIL : USER_ADD_SUCCESS);
     return err;
 }
@@ -418,6 +405,8 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     std::string message = "DestroyUserDirs Begin, flags: " + to_string(flags);
     StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, message, E_OK);
+    message = "`userId: " + std::to_string(userId) + " flags: " + std::to_string(flags);
+    HiAudit::GetInstance().WriteStart("DestroyUserDirs", message);
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("StorageDaemon::DestroyUserDirs userId %{public}d out of range", userId);
@@ -427,6 +416,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().DestroyUserDirs(userId, flags);
     StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, "DestroyUserDirs End", err);
+    HiAudit::GetInstance().WriteEnd("DestroyUserDirs", err, "flags: " + std::to_string(flags));
     SetUserStatistics(userId, err != E_OK ? USER_REMOVE_FAIL : USER_REMOVE_SUCCESS);
     return err;
 }
@@ -434,27 +424,35 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
 {
     LOGI("SetDirEncryptionPolicy begin.");
+    std::string message = "userId: " + std::to_string(userId) + " dirPath: "
+        + GetAnonyString(dirPath) + " level: " + std::to_string(level);
+    HiAudit::GetInstance().WriteStart("SetDirEncryptionPolicy", message);
     if (IsFilePathInvalid(dirPath)) {
         return E_PARAMS_INVALID;
     }
     int timerId = StorageXCollie::SetTimer("storage:SetDirEncryptionPolicy", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
     StorageXCollie::CancelTimer(timerId);
+    HiAudit::GetInstance().WriteEnd("SetDirEncryptionPolicy", ret);
     return ret;
 }
 
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("CompleteAddUser", "userId: " + std::to_string(userId));
     int32_t err = StorageDaemon::GetInstance().CompleteAddUser(userId);
+    HiAudit::GetInstance().WriteEnd("CompleteAddUser", err);
     return err;
 }
 
 int32_t StorageDaemonProvider::InitGlobalKey()
 {
     StorageRadar::ReportFucBehavior("InitGlobalKey", DEFAULT_USERID, "InitGlobalKey Begin", E_OK);
+    HiAudit::GetInstance().WriteStart("InitGlobalKey");
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int err = StorageDaemon::GetInstance().InitGlobalKey();
+    HiAudit::GetInstance().WriteEnd("InitGlobalKey", err);
     SetUserStatistics(USER0ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     StorageRadar::ReportFucBehavior("InitGlobalKey", DEFAULT_USERID, "InitGlobalKey End", err);
     return err;
@@ -464,9 +462,11 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
     StorageRadar::ReportFucBehavior("InitGlobalUserKeys", DEFAULT_USERID, "InitGlobalUserKeys Begin", E_OK);
+    HiAudit::GetInstance().WriteStart("InitGlobalUserKeys");
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StorageDaemon::GetInstance().InitGlobalUserKeys();
+    HiAudit::GetInstance().WriteEnd("InitGlobalUserKeys", err);
     SetUserStatistics(USER100ID, err != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     StorageRadar::ReportFucBehavior("InitGlobalUserKeys", DEFAULT_USERID, "InitGlobalUserKeys End", err);
     return err;
@@ -474,7 +474,10 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 
 int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
-    return StorageDaemon::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    HiAudit::GetInstance().WriteStart("EraseAllUserEncryptedKeys");
+    int32_t ret = StorageDaemon::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    HiAudit::GetInstance().WriteEnd("EraseAllUserEncryptedKeys", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
@@ -483,10 +486,16 @@ int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
                                               const std::vector<uint8_t> &oldSecret,
                                               const std::vector<uint8_t> &newSecret)
 {
+    std::string message = "userId: " + std::to_string(userId) + " secureUid: "
+        + GetAnonyString(std::to_string(secureUid)) + " token size: " + std::to_string(token.size())
+        + " oldSecret size: " + std::to_string(oldSecret.size())
+        + " newSecret size: " + std::to_string(newSecret.size());
+    HiAudit::GetInstance().WriteStart("UpdateUserAuth", message);
     int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int err =  StorageDaemon::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     StorageXCollie::CancelTimer(timerId);
+    HiAudit::GetInstance().WriteEnd("UpdateUserAuth", err);
     return err;
 }
 
@@ -509,6 +518,9 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret)
 {
+    std::string message = "userId: " + std::to_string(userId)
+        + " token size: " + std::to_string(token.size()) + " secret size: " + std::to_string(secret.size());
+    HiAudit::GetInstance().WriteStart("ActiveUserKey", message);
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("StorageDaemon::ActiveUserKey userId %{public}d out of range", userId);
@@ -528,11 +540,13 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     auto delay = StorageService::StorageRadar::ReportDuration("ACTIVE USER KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s", delay.c_str());
+    HiAudit::GetInstance().WriteEnd("ActiveUserKey", err);
     return err;
 }
 
 int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("InactiveUserKey", "userId: " + std::to_string(userId));
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::InactiveUserKey userId %{public}d out of range", userId);
@@ -542,6 +556,7 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int32_t ret = StorageDaemon::GetInstance().InactiveUserKey(userId);
+    HiAudit::GetInstance().WriteEnd("InactiveUserKey", ret);
     StorageXCollie::CancelTimer(timerId);
     SetUserStatistics(userId, ret != E_OK ? KEY_UNLOAD_FAIL : KEY_UNLOAD_SUCCESS);
     return ret;
@@ -549,6 +564,9 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    std::string message = "userId: " + std::to_string(userId)
+        + " needRemoveTmpKey: " + std::to_string(needRemoveTmpKey);
+    HiAudit::GetInstance().WriteStart("UpdateKeyContext", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UpdateKeyContext userId %{public}d out of range", userId);
@@ -558,12 +576,15 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
     StorageXCollie::CancelTimer(timerId);
+    message = "needRemoveTmpKey: " + std::to_string(needRemoveTmpKey);
+    HiAudit::GetInstance().WriteEnd("UpdateKeyContext", ret, message);
     return ret;
 }
 
 int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
+    HiAudit::GetInstance().WriteStart("MountCryptoPathAgain", "userId: " + std::to_string(userId));
     StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain Begin", E_OK);
 #ifdef USER_CRYPTO_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -575,6 +596,7 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
     auto delay = StorageService::StorageRadar::ReportDuration("MountCryptoPathAgain",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: MountCryptoPathAgain: delay time = %{public}s", delay.c_str());
+    HiAudit::GetInstance().WriteEnd("MountCryptoPathAgain", ret);
     StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain End", ret);
     return ret;
 #else
@@ -584,6 +606,7 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 
 int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("LockUserScreen", "userId: " + std::to_string(userId));
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::LockUserScreen userId %{public}d out of range", userId);
@@ -593,6 +616,7 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance().LockUserScreen(userId);
+    HiAudit::GetInstance().WriteEnd("LockUserScreen", ret);
     StorageXCollie::CancelTimer(timerId);
     SetUserStatistics(userId, ret != E_OK ? KEY_UNLOAD_FAIL : KEY_UNLOAD_SUCCESS);
     return ret;
@@ -602,10 +626,14 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
+    std::string message = "UnlockUserScreen Begin userId: " + std::to_string(userId)
+        + " token size: " + std::to_string(token.size()) + " secret size: " + std::to_string(secret.size());
+    HiAudit::GetInstance().WriteStart("UnlockUserScreen", message);
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::unique_lock<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance().UnlockUserScreen(userId, token, secret);
+    HiAudit::GetInstance().WriteEnd("UnlockUserScreen", ret);
     StorageXCollie::CancelTimer(timerId);
     SetUserStatistics(userId, ret != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
     lock.unlock();
@@ -625,6 +653,9 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    std::string message = "userId: " + std::to_string(userId)
+        + " lockScreenStatus: " + std::to_string(lockScreenStatus);
+    HiAudit::GetInstance().WriteStart("GetLockScreenStatus", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::GetLockScreenStatus userId %{public}d out of range", userId);
@@ -635,11 +666,16 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
     StorageXCollie::CancelTimer(timerId);
+    message = "lockScreenStatus: " + std::to_string(lockScreenStatus);
+    HiAudit::GetInstance().WriteEnd("GetLockScreenStatus", ret, message);
     return ret;
 }
 
 int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
+    std::string message = "userId: " + std::to_string(userId) + " hashId:"
+        + std::to_string(hashId) + " keyId:" + GetAnonyString(keyId) + " needReSet:" + std::to_string(needReSet);
+    HiAudit::GetInstance().WriteStart("GenerateAppkey", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::GenerateAppkey userId %{public}d out of range", userId);
@@ -648,11 +684,16 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = StorageDaemon::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageXCollie::CancelTimer(timerId);
+    message = "hashId: " + std::to_string(hashId)
+        + " keyId: " + GetAnonyString(keyId) + " needReSet: " + std::to_string(needReSet);
+    HiAudit::GetInstance().WriteEnd("GenerateAppkey", ret, message);
     return ret;
 }
 
 int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
+    std::string message = "userId: " + std::to_string(userId) + " keyId:" + GetAnonyString(keyId);
+    HiAudit::GetInstance().WriteStart("DeleteAppkey", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::DeleteAppkey userId %{public}d out of range", userId);
@@ -662,6 +703,7 @@ int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().DeleteAppkey(userId, keyId);
     StorageXCollie::CancelTimer(timerId);
+    HiAudit::GetInstance().WriteEnd("DeleteAppkey", ret);
     return ret;
 }
 
@@ -728,11 +770,15 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
                                                std::vector<int32_t> &funcResult)
 {
     LOGI("Create Share file list len is %{public}u", rawData.size);
+    std::string message = "tokenId: " + GetAnonyString(std::to_string(tokenId)) + " flag:"
+        + std::to_string(flag) + " rawData size: " + std::to_string(rawData.size);
+    HiAudit::GetInstance().WriteStart("CreateShareFile", message);
     funcResult.clear();
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
     if (ret != E_OK) {
         LOGE("RawDataToStringVec failed, ret is %{public}d", ret);
+        HiAudit::GetInstance().WriteEnd("CreateShareFile", ret);
         return ret;
     }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
@@ -740,6 +786,7 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
     if (dlhandler == NULL) {
         LOGE("CreateShareFile cannot open so, errno = %{public}s", dlerror());
+        HiAudit::GetInstance().WriteEnd("CreateShareFile", E_DLOPEN_ERROR);
         return E_DLOPEN_ERROR;
     }
 
@@ -749,27 +796,35 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     if (createShareFile == nullptr) {
         LOGE("CreateShareFile dlsym failed, errno = %{public}s", dlerror());
         dlclose(dlhandler);
+        HiAudit::GetInstance().WriteEnd("CreateShareFile", E_DLSYM_ERROR);
         return E_DLSYM_ERROR;
     }
-    createShareFile(uriList, tokenId, flag, funcResult);
+    int32_t createRet = createShareFile(uriList, tokenId, flag, funcResult);
     dlclose(dlhandler);
 
     LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
-    return E_OK;
+    HiAudit::GetInstance().WriteEnd("CreateShareFile", createRet,
+        "result size: " + std::to_string(funcResult.size()));
+    return createRet;
 }
 
 int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
+    std::string message = "tokenId: " + GetAnonyString(std::to_string(tokenId))
+        + " rawData size: " + std::to_string(rawData.size);
+    HiAudit::GetInstance().WriteStart("DeleteShareFile", message);
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
     if (ret != E_OK) {
         LOGE("RawDataToStringVec failed, ret is %{public}d", ret);
+        HiAudit::GetInstance().WriteEnd("DeleteShareFile", ret);
         return ret;
     }
 
     void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
     if (dlhandler == NULL) {
         LOGE("DeleteShareFile cannot open so, errno = %{public}s", dlerror());
+        HiAudit::GetInstance().WriteEnd("DeleteShareFile", E_DLOPEN_ERROR);
         return E_DLOPEN_ERROR;
     }
 
@@ -779,11 +834,13 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFi
     if (deleteShareFile == nullptr) {
         LOGE("DeleteShareFile dlsym failed, errno = %{public}s", dlerror());
         dlclose(dlhandler);
+        HiAudit::GetInstance().WriteEnd("DeleteShareFile", E_DLSYM_ERROR);
         return E_DLSYM_ERROR;
     }
 
     ret = deleteShareFile(tokenId, uriList);
     dlclose(dlhandler);
+    HiAudit::GetInstance().WriteEnd("DeleteShareFile", ret);
     return ret;
 }
 
@@ -811,6 +868,9 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &deviceId)
 {
     LOGI("StorageDaemon::MountDfsDocs start.");
+    std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
+        + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
+    HiAudit::GetInstance().WriteStart("MountDfsDocs", message);
     if (IsFilePathInvalid(relativePath)) {
         return E_PARAMS_INVALID;
     }
@@ -819,7 +879,9 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
         LOGE("StorageDaemonProvider::MountDfsDocs userId %{public}d out of range", userId);
         return err;
     }
-    return MountManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
+    err = MountManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
+    HiAudit::GetInstance().WriteEnd("MountDfsDocs", err);
+    return err;
 }
 
 int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
@@ -828,6 +890,9 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
                                              const std::string &deviceId)
 {
     LOGI("StorageDaemon::UMountDfsDocs start.");
+    std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
+        + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
+    HiAudit::GetInstance().WriteStart("UMountDfsDocs", message);
     if (IsFilePathInvalid(relativePath)) {
         return E_PARAMS_INVALID;
     }
@@ -836,7 +901,9 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
         LOGE("StorageDaemonProvider::UMountDfsDocs userId %{public}d out of range", userId);
         return err;
     }
-    return MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    err = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    HiAudit::GetInstance().WriteEnd("UMountDfsDocs", err);
+    return err;
 }
 
 int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
@@ -851,6 +918,8 @@ int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEnc
 
 int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    std::string message = "userId: " + std::to_string(userId) + " needActive: " + std::to_string(needActive);
+    HiAudit::GetInstance().WriteStart("GetUserNeedActiveStatus", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::GetUserNeedActiveStatus userId %{public}d out of range", userId);
@@ -861,11 +930,15 @@ int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &ne
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = StorageDaemon::GetInstance().GetUserNeedActiveStatus(userId, needActive);
     StorageXCollie::CancelTimer(timerId);
+    message = "needActive: " + std::to_string(needActive);
+    HiAudit::GetInstance().WriteEnd("GetUserNeedActiveStatus", ret, message);
     return ret;
 }
 
 int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+    std::string message = "userId: " + std::to_string(userId) + " devFd: " + std::to_string(devFd);
+    HiAudit::GetInstance().WriteStart("MountMediaFuse", message);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::MountMediaFuse userId %{public}d out of range", userId);
@@ -874,13 +947,16 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::MountMediaFuse start.");
     devFd = -1;
-    return MountManager::GetInstance().MountMediaFuse(userId, devFd);
+    err = MountManager::GetInstance().MountMediaFuse(userId, devFd);
+    HiAudit::GetInstance().WriteEnd("MountMediaFuse", err, "devFd: " + std::to_string(devFd));
+    return err;
 #endif
     return E_OK;
 }
 
 int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 {
+    HiAudit::GetInstance().WriteStart("UMountMediaFuse", "userId: " + std::to_string(userId));
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UMountMediaFuse userId %{public}d out of range", userId);
@@ -888,13 +964,18 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
     }
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::UMountMediaFuse start.");
-    return MountManager::GetInstance().UMountMediaFuse(userId);
+    err = MountManager::GetInstance().UMountMediaFuse(userId);
+    HiAudit::GetInstance().WriteEnd("UMountMediaFuse", err);
+    return err;
 #endif
     return E_OK;
 }
 
 int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
+    std::string message = "userId: " + std::to_string(userId) + " path: "
+        + GetAnonyString(path) + " fuseFd: " + std::to_string(fuseFd);
+    HiAudit::GetInstance().WriteStart("MountFileMgrFuse", message);
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
@@ -906,11 +987,16 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
     }
     LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
-    return MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
+    err = MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
+    message = " fuseFd: " + std::to_string(fuseFd);
+    HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", err);
+    return err;
 }
 
 int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
+    std::string message = "userId: " + std::to_string(userId) + " path: " + GetAnonyString(path);
+    HiAudit::GetInstance().WriteStart("UMountFileMgrFuse", message);
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
@@ -921,7 +1007,9 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
         return err;
     }
     LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
-    return MountManager::GetInstance().UMountFileMgrFuse(userId, path);
+    err = MountManager::GetInstance().UMountFileMgrFuse(userId, path);
+    HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
+    return err;
 }
 
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
@@ -973,6 +1061,8 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
 
 int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
+    std::string message = "userId: " + std::to_string(userId);
+    HiAudit::GetInstance().WriteStart("MountDisShareFile", message);
     if (userId <= 0) {
         LOGE("mount share file, userId %{public}d is invalid.", userId);
         return E_PARAMS_INVALID;
@@ -983,11 +1073,15 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
             return E_PARAMS_INVALID;
         }
     }
-    return MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
+    int32_t ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
+    HiAudit::GetInstance().WriteEnd("MountDisShareFile", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
+    std::string message = "userId: " + std::to_string(userId) + " networkId: " + GetAnonyString(networkId);
+    HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
     if (userId <= 0) {
         LOGE("umount share file, userId %{public}d is invalid.", userId);
         return E_PARAMS_INVALID;
@@ -996,7 +1090,9 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
         LOGE("networkId %{public}s is invalid.", networkId.c_str());
         return E_PARAMS_INVALID;
     }
-    return MountManager::GetInstance().UMountDisShareFile(userId, networkId);
+    int32_t ret = MountManager::GetInstance().UMountDisShareFile(userId, networkId);
+    HiAudit::GetInstance().WriteEnd("UMountDisShareFile", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
@@ -1026,24 +1122,35 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::string &storageStatu
 int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
     const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
+    HiAudit::GetInstance().WriteStart("RegisterUeceActivationCallback");
     if (ueceCallback == nullptr) {
         LOGE("callback is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    return StorageDaemon::GetInstance().RegisterUeceActivationCallback(ueceCallback);
+    int32_t ret = StorageDaemon::GetInstance().RegisterUeceActivationCallback(ueceCallback);
+    HiAudit::GetInstance().WriteEnd("RegisterUeceActivationCallback", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
-    return StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
+    HiAudit::GetInstance().WriteStart("UnregisterUeceActivationCallback");
+    int32_t ret = StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
+    HiAudit::GetInstance().WriteEnd("UnregisterUeceActivationCallback", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
+    std::string message = "path: " + GetAnonyString(path) + " mode: " + std::to_string(mode)
+        + " uid: " + std::to_string(uid) + " gid: " + std::to_string(gid);
+    HiAudit::GetInstance().WriteStart("CreateUserDir", message);
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
-    return UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+    int32_t ret = UserManager::GetInstance().CreateUserDir(path, mode, uid, gid);
+    HiAudit::GetInstance().WriteEnd("CreateUserDir", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,

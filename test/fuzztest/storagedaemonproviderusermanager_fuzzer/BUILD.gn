@@ -29,6 +29,8 @@ ohos_static_library("storagedaemonprovider_usermanager_fuzztest") {
   sources = [
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
@@ -73,6 +75,7 @@ ohos_static_library("storagedaemonprovider_usermanager_fuzztest") {
     "config_policy:configpolicy_util",
     "c_utils:utils",
     "crypto_framework:crypto_framework_lib",
+    "zlib:shared_libz",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",
     "hilog:libhilog",
@@ -153,6 +156,7 @@ ohos_fuzztest("StorageDaemonProviderUserManagerFuzzTest") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "crypto_framework:crypto_framework_lib",
+    "zlib:shared_libz",
   ]
 
   use_exceptions = true

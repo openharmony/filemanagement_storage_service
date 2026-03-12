@@ -1122,24 +1122,6 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     return E_OK;
 #endif
 }
-
-bool StorageManagerProvider::IsFilePathInvalid(const std::string &filePath)
-{
-    size_t pos = filePath.find(PATH_INVALID_FLAG1);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("Relative path is not allowed, path contain ../");
-            return true;
-        }
-        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
-    }
-    pos = filePath.rfind(PATH_INVALID_FLAG2);
-    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("Relative path is not allowed, path tail is /..");
-        return true;
-    }
-    return false;
-}
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, "GetFileEncryptStatus Begin", E_OK);
