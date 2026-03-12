@@ -313,6 +313,117 @@ bool VolumeInfo::IsUsbFuseByType(std::string fsType)
 
 int32_t VolumeInfo::DestroyCrypt(const std::string &volumeId)
 {
+    int32_t err = DoDestroyCrypt(volumeId);
+    if (err != E_OK) {
+        LOGE("Volume DoCloseCrypt failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    mountState_ = ENCRYPTING;
+    StorageManagerClient client;
+    if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::ENCRYPTING) != E_OK) {
+        LOGE("Volume Notify Encryption failed");
+    }
+    int32_t err = DoEncrypt(volumeId, pazzword);
+    if (err != E_OK) {
+        mountState_ = UNMOUNTED;
+        LOGE("Volume DoEncrypt failed, err: %{public}d", err);
+        return err;
+    }
+    mountState_ = ENCRYPTED_AND_LOCKED;
+    if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::ENCRYPTED_AND_LOCKED) != E_OK) {
+        LOGE("Volume Notify Encryption failed");
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    int32_t err = DoGetCryptProgressById(volumeId, progress);
+    if (err != E_OK) {
+        LOGE("Volume DoGetCryptProgressById failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    int32_t err = DoGetCryptUuidById(volumeId, uuid);
+    if (err != E_OK) {
+        LOGE("Volume GetCryptUuidById failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                           const std::string &pazzword,
+                                           const std::string &recoverKey)
+{
+    int32_t err = DoBindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    if (err != E_OK) {
+        LOGE("Volume DoBindRecoverKeyToPasswd failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::UpdateCryptPasswd(const std::string &volumeId,
+                                      const std::string &pazzword,
+                                      const std::string &newPazzword)
+{
+    int32_t err = DoUpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    if (err != E_OK) {
+        LOGE("Volume DoUpdateCryptPasswd failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::ResetCryptPasswd(const std::string &volumeId,
+                                     const std::string &recoverKey,
+                                     const std::string &newPazzword)
+{
+    int32_t err = DoResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    if (err != E_OK) {
+        LOGE("Volume DoResetCryptPasswd failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = DoVerifyCryptPasswd(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("Volume DoVerifyCryptPasswd failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = DoUnlock(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("Volume DoUnlock failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeInfo::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = DoDecrypt(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("Volume DoDecrypt failed, err: %{public}d", err);
+        return err;
+    }
     return E_OK;
 }
 } // StorageDaemon

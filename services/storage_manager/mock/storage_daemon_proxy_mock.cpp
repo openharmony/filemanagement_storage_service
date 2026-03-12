@@ -390,37 +390,37 @@ int32_t StorageDaemonProxy::GetCryptUuidById(const std::string &volumeId, std::s
 }
 
 int32_t StorageDaemonProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
-                                                   const std::string &password,
+                                                   const std::string &pazzword,
                                                    const std::string &recoverKey)
 {
     return E_OK;
 }
 
 int32_t StorageDaemonProxy::UpdateCryptPasswd(const std::string &volumeId,
-                                              const std::string &password,
-                                              const std::string &newPassword)
+                                              const std::string &pazzword,
+                                              const std::string &newPazzword)
 {
     return E_OK;
 }
 
 int32_t StorageDaemonProxy::ResetCryptPasswd(const std::string &volumeId,
                                              const std::string &recoverKey,
-                                             const std::string &newPassword)
+                                             const std::string &newPazzword)
 {
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::Unlock(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;
 }

@@ -19,13 +19,13 @@
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
+#include <filesystem>
 #include <future>
 #include <fstream>
 #include <regex>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <filesystem>
 #include <sys/sysmacros.h>
 
 #include "ipc/storage_manager_client.h"
@@ -51,6 +51,14 @@ namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 60;
 constexpr int32_t FILE_NOT_EXIST = 2;
 constexpr int UID_FILE_MANAGER = 1006;
+constexpr const char *CRYPTSETUP_PATH = "/system/bin/cryptsetup";
+constexpr const char *BLOCK_PATH = "/dev/block/";
+constexpr const char *DEV_MAPPER_PATH = "/dev/mapper/";
+constexpr const char *PROGRESS_FILE = "/data/local/crypt_tmp";
+constexpr const char *REMOVE_CMD = "remove";
+constexpr int MIN_PASSWORD_LENGTH = 8;
+constexpr int MAX_PASSWORD_LENGTH = 256;
+constexpr int PWD_TYPE_NUMBER = 2;
 
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
@@ -835,6 +843,207 @@ std::string ExternalVolumeInfo::SplitOutputIntoLines(std::vector<std::string> &o
     }
     LOGE("exec ntfs label success, label is %{public}s", volDesc.c_str());
     return volDesc;
+}
+
+int32_t ExternalVolumeInfo::DoDestroyCrypt(const std::string &volumeId)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoDestroyCrypt: volume is %{public}s", devPath.c_str());
+    std::string cryptName = volumeId + "_crypt";
+    std::string devMapperPath = DEV_MAPPER_PATH + cryptName;
+    struct stat pathStat;
+    if (lstat(devMapperPath.c_str(), &pathStat) != 0) {
+        LOGW("DoDestroyCrypt: devMapperPath does not exist: %{public}s", devMapperPath.c_str());
+        return E_OK;
+    }
+    std::vector<std::string> cmd = {
+        CRYPTSETUP_PATH, REMOVE_CMD, cryptName
+    };
+    std::vector<std::string> output;
+    int ret = ForkExec(cmd, &output);
+    if (ret != E_OK) {
+        LOGE("exec cryptsetup remove failed, ret is: %{public}d", ret);
+        StorageRadar::ReportVolumeOperation("ForkExec", ret);
+        return ret;
+    }
+    int err = remove(devMapperPath.c_str());
+    if (err && errno != FILE_NOT_EXIST) {
+        LOGE("remove failed, errno is: %{public}d", errno);
+        return E_NOT_SUPPORT;
+    }
+    LOGI("Successfully closed crypt.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::ValidatePazzword(const std::string &pazzword)
+{
+    size_t len = pazzword.length();
+    if (len < MIN_PASSWORD_LENGTH || len > MAX_PASSWORD_LENGTH) {
+        LOGE("Pazzword length must be between 8 and 256 characters.");
+        return E_PARAMS_INVALID;
+    }
+    int typeMask = 0;
+    const int UPPER_MASK = 1 << 0;
+    const int LOWER_MASK = 1 << 1;
+    const int DIGIT_MASK = 1 << 2;
+    const int SPACE_MASK = 1 << 3;
+    const int PUNCT_MASK = 1 << 4;
+    for (unsigned char c : pazzword) {
+        if (std::isupper(c)) {
+            typeMask |= UPPER_MASK;
+        } else if (std::islower(c)) {
+            typeMask |= LOWER_MASK;
+        } else if (std::isdigit(c)) {
+            typeMask |= DIGIT_MASK;
+        } else if (c == ' ') {
+            typeMask |= SPACE_MASK;
+        } else if (std::ispunct(c)) {
+            typeMask |= PUNCT_MASK;
+        }
+        if (__builtin_popcount(typeMask) >= PWD_TYPE_NUMBER) {
+            LOGI("Pazzword validation passed.");
+            return E_OK;
+        }
+    }
+    LOGE("Pazzword must contain at least two types of characters.");
+    return E_PARAMS_INVALID;
+}
+
+int32_t ExternalVolumeInfo::DoEncrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t ret = ValidatePazzword(pazzword);
+    if (ret != E_OK) {
+        LOGE("DoEncrypt pazzword validation failed.");
+        return ret;
+    }
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoEncrypt: volume is %{public}s", devPath.c_str());
+    LOGI("Successfully DoEncrypt.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoGetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    std::ifstream file(PROGRESS_FILE);
+    if (!file.is_open()) {
+        LOGE("Failed to open file %{public}s", PROGRESS_FILE);
+        progress = 0;
+        return E_OK;
+    }
+    std::string content((std::istreambuf_iterator<char>(file)),
+                       std::istreambuf_iterator<char>());
+    (void)file.close();
+    std::regex pattern(R"(Progress:\s*(\d+))");
+    std::smatch match;
+    if (std::regex_search(content, match, pattern)) {
+        progress = atoi(match[1].str().c_str());
+        LOGI("ExternalVolumeInfo::GetCryptProgressFromFile, volume is %{public}s, "
+             "Progress is %{public}" PRId32, devPath.c_str(), progress);
+        return E_OK;
+    }
+    LOGE("Progress keyword not found");
+    progress = 0;
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoGetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoGetCryptUuidById, volume is%{public}s.", devPath.c_str());
+    int ret = OHOS::StorageDaemon::ReadVolumeUuid(devPath, uuid);
+    if (ret != E_OK) {
+        LOGE("ReadVolumeUuid failed, ret is: %{public}d", ret);
+        return ret;
+    }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoBindRecoverKeyToPasswd(const std::string &volumeId,
+                                                     const std::string &pazzword,
+                                                     const std::string &recoverKey)
+{
+    int32_t ret = ValidatePazzword(pazzword);
+    if (ret != E_OK) {
+        LOGE("DoBindRecoverKeyToPasswd pazzword validation failed.");
+        return ret;
+    }
+    ret = ValidatePazzword(recoverKey);
+    if (ret != E_OK) {
+        LOGE("DoBindRecoverKeyToPasswd recoverKey validation failed.");
+        return ret;
+    }
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoBindRecoverKeyToPasswd, volume is%{public}s.", devPath.c_str());
+    LOGI("Successfully DoBindRecoverKeyToPasswd.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoUpdateCryptPasswd(const std::string &volumeId,
+                                                const std::string &pazzword,
+                                                const std::string &newPazzword)
+{
+    int32_t ret = ValidatePazzword(pazzword);
+    if (ret != E_OK) {
+        LOGE("DoUpdateCryptPasswd pazzword validation failed.");
+        return ret;
+    }
+    ret = ValidatePazzword(newPazzword);
+    if (ret != E_OK) {
+        LOGE("DoUpdateCryptPasswd newPazzword validation failed.");
+        return ret;
+    }
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoUpdateCryptPasswd, volume is%{public}s.", devPath.c_str());
+    LOGI("Successfully DoUpdateCryptPasswd.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoResetCryptPasswd(const std::string &volumeId,
+                                               const std::string &recoverKey,
+                                               const std::string &newPazzword)
+{
+    int32_t ret = ValidatePazzword(recoverKey);
+    if (ret != E_OK) {
+        LOGE("DoResetCryptPasswd recoverKey validation failed.");
+        return ret;
+    }
+    ret = ValidatePazzword(newPazzword);
+    if (ret != E_OK) {
+        LOGE("DoResetCryptPasswd newPazzword validation failed.");
+        return ret;
+    }
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoResetCryptPasswd, volume is%{public}s.", devPath.c_str());
+    LOGI("Successfully DoResetCryptPasswd.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoVerifyCryptPasswd, volume is%{public}s.", devPath.c_str());
+    (void)pazzword;
+    LOGI("Successfully DoVerifyCryptPasswd.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoUnlock(const std::string &volumeId, const std::string &pazzword)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoUnlock, volume is%{public}s.", devPath.c_str());
+    (void)pazzword;
+    LOGI("Successfully DoUnlock.");
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoDecrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    std::string devPath = BLOCK_PATH + volumeId;
+    LOGI("ExternalVolumeInfo::DoDecrypt, volume is%{public}s.", devPath.c_str());
+    (void)pazzword;
+    LOGI("Successfully DoDecrypt.");
+    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

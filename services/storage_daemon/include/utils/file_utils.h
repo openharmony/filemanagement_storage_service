@@ -54,6 +54,8 @@ bool ReadFile(const std::string &path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
              int *exitStatus = nullptr);
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr);
+int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
+                        std::vector<std::string> *intput = nullptr);
 
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
