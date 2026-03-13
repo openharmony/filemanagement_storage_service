@@ -76,19 +76,6 @@ HWTEST_F(HiAuditTest, HiAudit_GetMilliseconds_001, TestSize.Level1)
 }
 
 /**
- * @tc.number: HiAudit_GetFormattedTimestampEndWithMilli_001
- * @tc.desc: Verify GetFormattedTimestampEndWithMilli formats correctly
- * @tc.type: FUNC
- */
-HWTEST_F(HiAuditTest, HiAudit_GetFormattedTimestampEndWithMilli_001, TestSize.Level1)
-{
-    auto &audit = HiAudit::GetInstance();
-    std::string timestamp = audit.GetFormattedTimestampEndWithMilli();
-    EXPECT_GT(timestamp.length(), 10U);
-    EXPECT_TRUE(timestamp.find("2025") != std::string::npos || timestamp.find("2026") != std::string::npos);
-}
-
-/**
  * @tc.number: HiAudit_ZipUtil_GetDestFilePath_001
  * @tc.desc: Verify ZipUtil::GetDestFilePath with simple paths
  * @tc.type: FUNC

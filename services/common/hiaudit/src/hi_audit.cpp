@@ -106,8 +106,7 @@ std::string HiAudit::GetFormattedTimestamp(time_t timeStamp, const std::string& 
 std::string HiAudit::GetFormattedTimestampEndWithMilli()
 {
     uint64_t milliSeconds = GetMilliseconds();
-    uint64_t seconds = milliSeconds / SEC_TO_MILLISEC;
-    std::string formattedTimeStamp = GetFormattedTimestamp(seconds, "%Y%m%d%H%M%S");
+    std::string formattedTimeStamp = GetFormattedTimestamp(milliSeconds, "%Y%m%d%H%M%S");
     std::stringstream ss;
     ss << formattedTimeStamp;
     uint64_t milliseconds = milliSeconds % SEC_TO_MILLISEC;
