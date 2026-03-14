@@ -48,6 +48,7 @@ const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
+const string MULTI_USER_URI_FLAG = "user=";
 constexpr int DECIMAL_PLACE = 2;
 constexpr double TO_MB = 1000.0 * 1000.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
@@ -97,10 +98,10 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
 }
 #endif
 
-int32_t GetMediaStorageStats(StorageStats &storageStats)
+int32_t GetMediaStorageStats(StorageStats &storageStats, int32_t userId)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGE("GetMediaStorageStats start");
+    LOGE("GetMediaStorageStats start, userId=%{public}d", userId);
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -113,11 +114,12 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
         return E_REMOTE_IS_NULLPTR;
     }
     int32_t tryCount = 1;
-    LOGE("GetMediaStorageStats start Creator");
-    auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+    LOGE("GetMediaStorageStats start Creator, userId=%{public}d", userId);
+    std::string mediaLibraryDataUri = MEDIALIBRARY_DATA_URI + "?" + MULTI_USER_URI_FLAG + to_string(userId);
+    auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, mediaLibraryDataUri);
     while (dataShareHelper == nullptr && tryCount < GET_DATA_SHARE_HELPER_TIMES) {
         LOGW("dataShareHelper is retrying, attempt %{public}d", tryCount);
-        dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+        dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, mediaLibraryDataUri);
         tryCount++;
     }
     if (dataShareHelper == nullptr) {
@@ -225,7 +227,7 @@ int32_t StorageStatusManager::GetUserStorageStats(int32_t userId, StorageStats &
 int32_t StorageStatusManager::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     // mediaSize
-    auto err = GetMediaStorageStats(storageStats);
+    auto err = GetMediaStorageStats(storageStats, userId);
     if (err != E_OK) {
         LOGE("StorageStatusManager::GetUserStorageStats GetMediaStorageStats failed");
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, err,
@@ -381,12 +383,31 @@ int32_t StorageStatusManager::GetAppSize(int32_t userId, int64_t &appSize)
         StorageRadar::ReportBundleMgrResult("GetAppSize::GetAllBundleStats", res, userId, extraData);
         return E_BUNDLEMGR_ERROR;
     }
-
-    for (uint i = 0; i < bundleStats.size(); i++) {
-        if (bundleStats[i] > 0 && appSize > MAX_INT64 - bundleStats[i]) {
-            return E_CALCULATE_OVERFLOW_UP;
+    vector<int64_t> zeroUserBundleStats;
+    res = bundleMgr->GetAllBundleStats(ZERO_USER, zeroUserBundleStats);
+    if (!res || zeroUserBundleStats.size() != dataDir.size()) {
+        LOGE("StorageStatusManager::GetAllBundleStats fail. res %{public}d, zeroUserBundleStats.size %{public}zu",
+             res, zeroUserBundleStats.size());
+        std::string extraData = "zeroUserBundleStats size=" + std::to_string(zeroUserBundleStats.size())
+            + ", dataDir size=" + std::to_string(dataDir.size());
+        StorageRadar::ReportBundleMgrResult("GetAppSize::GetAllBundleStats", res, ZERO_USER, extraData);
+        return E_BUNDLEMGR_ERROR;
+    }
+    int curUserId = GetCurrentUserId();
+    if (userId == curUserId) {
+        LOGE("current userId is the frontend userId, curUserId: %{public}d, userId: %{public}d", curUserId, userId);
+        for (uint i = 0; i < bundleStats.size(); i++) {
+            if (bundleStats[i] > 0 && appSize > MAX_INT64 - bundleStats[i]) {
+                return E_CALCULATE_OVERFLOW_UP;
+            }
+            appSize += bundleStats[i];
         }
-        appSize += bundleStats[i];
+    } else {
+        LOGE("current userId is not the frontend userId, curUserId: %{public}d, userId: %{public}d, "
+            "bundleStats[LOCAL]: %{public}lld, zeroUserBundleStats[LOCAL]: %{public}lld",
+            curUserId, userId, static_cast<long long>(bundleStats[LOCAL]),
+            static_cast<long long>(zeroUserBundleStats[LOCAL]));
+        appSize = bundleStats[LOCAL] - zeroUserBundleStats[LOCAL];
     }
     LOGD("StorageStatusManager::GetAppSize end");
     return E_OK;
@@ -400,7 +421,7 @@ int32_t StorageStatusManager::GetUserStorageStatsByType(int32_t userId, StorageS
     int32_t err = E_OK;
     if (type == MEDIA_TYPE) {
         LOGI("GetUserStorageStatsByType media");
-        err = GetMediaStorageStats(storageStats);
+        err = GetMediaStorageStats(storageStats, userId);
         if (err != E_OK) {
             StorageRadar::ReportGetStorageStatus("GetMediaStorageStats", userId, err, "setting");
         }

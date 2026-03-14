@@ -595,7 +595,12 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManagerProvider::GetUserStorageStats start");
-    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
     StorageRadar::ReportFucBehavior("GetUserStorageStats", userId, "GetUserStorageStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
