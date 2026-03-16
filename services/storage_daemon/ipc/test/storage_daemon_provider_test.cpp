@@ -19,6 +19,10 @@
 #include "storage_service_errno.h"
 #include "system_ability_definition.h"
 #include "test/common/help_utils.h"
+#include "mock/user_manager_mock.h"
+#include "mock/key_manager_mock.h"
+#include "mock/mount_manager_mock.h"
+#include "mock/key_manager_ext_mock.h"
 #include "userdata_dir_info.h"
 #include <cstdlib>
 #include <cstring>
@@ -40,6 +44,10 @@ public:
     void TearDown();
 
     StorageDaemonProvider *storageDaemonProviderTest_;
+    static inline std::shared_ptr<UserManagerMock> userManagerMock_ = nullptr;
+    static inline std::shared_ptr<KeyManagerMock> keyManagerMock_ = nullptr;
+    static inline std::shared_ptr<KeyManagerExtMock> keyManagerExtMock_ = nullptr;
+    static inline std::shared_ptr<MountManagerMoc> mountManagerMoc_ = nullptr;
 };
 
 std::vector<uint8_t> GenerateTestVector(uint8_t startValue, size_t length)
@@ -81,6 +89,14 @@ void StorageDaemonProviderTest::SetUp(void)
 {
     storageDaemonProviderTest_ = new StorageDaemonProvider();
     StorageTest::StorageTestUtils::ClearTestResource();
+    userManagerMock_ = std::make_shared<UserManagerMock>();
+    UserManagerMock::iUserManagerMock_ = userManagerMock_;
+    keyManagerMock_ = std::make_shared<KeyManagerMock>();
+    KeyManagerMock::iKeyManagerMock_ = keyManagerMock_;
+    keyManagerExtMock_ = std::make_shared<KeyManagerExtMock>();
+    KeyManagerExtMock::iKeyManagerExtMock_ = keyManagerExtMock_;
+    mountManagerMoc_ = std::make_shared<MountManagerMoc>();
+    MountManagerMoc::mountManagerMoc = mountManagerMoc_;
 }
 
 void StorageDaemonProviderTest::TearDown(void)
@@ -90,6 +106,14 @@ void StorageDaemonProviderTest::TearDown(void)
         delete storageDaemonProviderTest_;
         storageDaemonProviderTest_ = nullptr;
     }
+    UserManagerMock::iUserManagerMock_ = nullptr;
+    userManagerMock_ = nullptr;
+    KeyManagerMock::iKeyManagerMock_= nullptr;
+    keyManagerMock_ = nullptr;
+    KeyManagerExtMock::iKeyManagerExtMock_ = nullptr;
+    keyManagerExtMock_ = nullptr;
+    MountManagerMoc::mountManagerMoc = nullptr;
+    mountManagerMoc_ = nullptr;
 }
 
 /**
@@ -345,21 +369,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_00
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_StartUser_001
- * @tc.desc: Verify the StartUser function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StartUser_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StartUser_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t ret = storageDaemonProviderTest_->StartUser(StorageService::START_USER_ID - 1);
-    EXPECT_TRUE(ret == E_USERID_RANGE) << "user's dirs are not prepare";
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StartUser_001 end";
-}
-
-/**
  * @tc.name: Storage_Manager_StorageDaemonProviderTest_StartUser_002
  * @tc.desc: check the StartUser function when args are normal
  * @tc.type: FUNC
@@ -374,27 +383,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StartUser_002, Tes
     auto ret = storageDaemonProviderTest_->PrepareUserDirs(StorageTest::USER_ID5, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
+    EXPECT_CALL(*keyManagerMock_, GenerateUserKeys(_, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->PrepareUserDirs(StorageTest::USER_ID5, flags);
+    EXPECT_TRUE(ret == -1) << "create user dirs error";
+
     ret = storageDaemonProviderTest_->StartUser(StorageTest::USER_ID5);
     EXPECT_TRUE(ret == E_OK) << "check StartUser";
 
     storageDaemonProviderTest_->StopUser(StorageTest::USER_ID5);
     storageDaemonProviderTest_->DestroyUserDirs(StorageTest::USER_ID5, flags);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StartUser_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_StopUser_001
- * @tc.desc: Verify the StopUser function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StopUser_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StopUser_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto ret = storageDaemonProviderTest_->StopUser(StorageService::START_USER_ID - 1);
-    EXPECT_NE(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StopUser_001 end";
 }
 
 /**
@@ -418,8 +416,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StopUser_002, Test
     ret = storageDaemonProviderTest_->StopUser(StorageTest::USER_ID1);
     EXPECT_TRUE(ret == E_OK) << "dir is not mount";
 
+    EXPECT_CALL(*userManagerMock_, StopUser(_)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->StopUser(StorageTest::USER_ID1);
+    EXPECT_TRUE(ret == -1);
+
     ret = storageDaemonProviderTest_->DestroyUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*userManagerMock_, DestroyUserDirs(_, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->DestroyUserDirs(StorageTest::USER_ID1, flags);
+    EXPECT_TRUE(ret == -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StopUser_002 end";
 }
 
@@ -532,6 +538,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InitGlobalUserKeys
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t ret = storageDaemonProviderTest_->InitGlobalUserKeys();
     EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->InitGlobalUserKeys();
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InitGlobalUserKeys_001 end";
 }
 
@@ -548,6 +558,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EraseAllUserEncryp
     std::vector<int32_t> localIdList;
     auto ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys(localIdList);
     EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, EraseAllUserEncryptedKeys(_)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys(localIdList);
+    EXPECT_TRUE(ret == -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EraseAllUserEncryptedKeys_001 end";
 }
 
@@ -568,6 +582,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUserAuth_001
     int32_t ret =
         storageDaemonProviderTest_->UpdateUserAuth(StorageTest::USER_ID1, secureUid, token, oldSecret, newSecret);
     EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuth(_, _)).WillOnce(Return(-1));
+    ret =
+        storageDaemonProviderTest_->UpdateUserAuth(StorageTest::USER_ID1, secureUid, token, oldSecret, newSecret);
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUserAuth_001 end";
 }
 
@@ -637,6 +656,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserKey_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t ret = storageDaemonProviderTest_->InactiveUserKey(StorageTest::USER_ID1);
     EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, InActiveUserKey(_)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->InactiveUserKey(StorageTest::USER_ID1);
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserKey_001 end";
 }
 
@@ -670,6 +693,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateKeyContext_0
     bool needRemoveTmpKey = true;
     int32_t result = storageDaemonProviderTest_->UpdateKeyContext(StorageTest::USER_ID1, needRemoveTmpKey);
     EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContext(_, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->UpdateKeyContext(StorageTest::USER_ID1, needRemoveTmpKey);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateKeyContext_001 end";
 }
 
@@ -702,7 +729,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCryptoPathAga
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     uint32_t userId = 123;
     int32_t result = storageDaemonProviderTest_->MountCryptoPathAgain(userId);
-    EXPECT_EQ(result, -ENOENT);
+    EXPECT_EQ(result, 0);
+    EXPECT_CALL(*mountManagerMoc_, MountCryptoPathAgain(_)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->MountCryptoPathAgain(userId);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCryptoPathAgain_001 end";
 }
 
@@ -718,6 +748,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_LockUserScreen_001
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t result = storageDaemonProviderTest_->LockUserScreen(StorageTest::USER_ID1);
     EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, LockUserScreen(_)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->LockUserScreen(StorageTest::USER_ID1);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_LockUserScreen_001 end";
 }
 
@@ -1241,6 +1275,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_001,
     int32_t result =
         storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
     EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, UMountDfsDocs(_, _, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_001 end";
 }
 
@@ -1259,6 +1297,12 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetFileEncryptStat
     int32_t result =
         storageDaemonProviderTest_->GetFileEncryptStatus(StorageTest::USER_ID1, isEncrypted, needCheckDirMount);
     EXPECT_EQ(result, E_OK);
+
+#ifdef USER_CRYPTO_MANAGER
+    EXPECT_CALL(*keyManagerMock_, GetFileEncryptStatus(_, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->GetFileEncryptStatus(StorageTest::USER_ID1, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(result, -1);
+#endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetFileEncryptStatus_001 end";
 }
 
@@ -1308,6 +1352,12 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountMediaFuse_001
     int32_t devFd = 1001;
     int32_t result = storageDaemonProviderTest_->MountMediaFuse(StorageTest::USER_ID1, devFd);
     EXPECT_EQ(result, E_OK);
+
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
+    EXPECT_CALL(*mountManagerMoc_, MountMediaFuse(_, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->MountMediaFuse(StorageTest::USER_ID1, devFd);
+    EXPECT_EQ(result, -1);
+#endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountMediaFuse_001 end";
 }
 
@@ -1323,6 +1373,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountMediaFuse_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t result = storageDaemonProviderTest_->UMountMediaFuse(StorageTest::USER_ID1);
     EXPECT_EQ(result, E_OK);
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
+    EXPECT_CALL(*mountManagerMoc_, UMountMediaFuse(_)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->UMountMediaFuse(StorageTest::USER_ID1);
+    EXPECT_EQ(result, -1);
+#endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountMediaFuse_001 end";
 }
 
@@ -1340,7 +1395,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_0
     int32_t fuseFd = 0;
     testing::internal::CaptureStderr();
     int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
-    EXPECT_TRUE(result > 0);
+    EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, MountFileMgrFuse(_, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_001 end";
 }
 
@@ -1357,6 +1416,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     std::string path = "";
     int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
     EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, UMountFileMgrFuse(_, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_001 end";
 }
 
@@ -1375,10 +1438,15 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_001
     std::vector<std::string> outputList;
     bool status = true;
     int32_t result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, 0);
+
+    EXPECT_CALL(*mountManagerMoc_, IsFileOccupied(_, _, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFileOccupied_001 end";
 }
 
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
 /**
  * @tc.name: StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
@@ -1393,8 +1461,13 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     std::vector<uint8_t> key = {0x01, 0x23, 0x45, 0x67};
     int32_t result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(StorageTest::USER_ID1, rkType, key);
     EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, ResetSecretWithRecoveryKey(_, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(StorageTest::USER_ID1, rkType, key);
+    EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001 end";
 }
+#endif
 
 /**
  * @tc.name: StorageDaemonProviderTest_TryToFix_001
@@ -1444,7 +1517,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_
     int32_t userId = 100;
     std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
     auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_TRUE(ret == E_NON_EXIST);
+    EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, MountDisShareFile(_, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 end";
 }
 
@@ -1462,6 +1539,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
     std::string networkId = "sharefile1";
     auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
     EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 end";
 }
 
@@ -1592,6 +1673,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetDirEncryptionPo
     std::string path = "/..";
     int32_t result = storageDaemonProviderTest_->SetDirEncryptionPolicy(userId, path, true);
     EXPECT_EQ(result, E_PARAMS_INVALID);
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    path = "/data/service";
+    EXPECT_CALL(*keyManagerMock_, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_OK));
+    result = storageDaemonProviderTest_->SetDirEncryptionPolicy(userId, path, true);
+    EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->SetDirEncryptionPolicy(userId, path, true);
+    EXPECT_EQ(result, -1);
+    #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetDirEncryptionPolicy end";
 }
 
@@ -1869,6 +1960,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserPublic
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = storageDaemonProviderTest_->InactiveUserPublicDirKey(StorageService::START_USER_ID);
     EXPECT_EQ(ret, E_OK);
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
+    EXPECT_CALL(*keyManagerExtMock_, InActiveUserKey(_)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->InactiveUserPublicDirKey(StorageService::START_USER_ID);
+    EXPECT_EQ(ret, -1);
+#endif
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserPublicDirKey_001 end";
 }
@@ -1967,7 +2063,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ClearSecondMountPo
     uint32_t userId = 99999;
     std::string bundleName;
     int32_t ret = storageDaemonProviderTest_->ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
+    EXPECT_EQ(ret, 0);
+
+    EXPECT_CALL(*mountManagerMoc_, ClearSecondMountPoint(_, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->ClearSecondMountPoint(userId, bundleName);
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 end";
 }
 
@@ -2210,5 +2310,69 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Decrypt_002, TestS
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Decrypt_002 end";
 }
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDqBlkSpacesByUids_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetDqBlkSpacesByUids_001 start";
+    std::vector<int32_t> uids{1000, 999999};
+    std::vector<NextDqBlk> dqBlks;
+    auto ret = storageDaemonProviderTest_->GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_TRUE(ret == E_OK);
+    uids.erase(std::remove(uids.begin(), uids.end(), 999999), uids.end());
+    #ifdef ENABLE_EMULATOR
+    ret = storageDaemonProviderTest_->GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_TRUE(ret == E_OK);
+    #endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetDqBlkSpacesByUids_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateUserDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateUserDir_001 start";
+    const std::string path = "";
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH;
+    uid_t uid = 0;
+    gid_t gid = 0;
+    EXPECT_CALL(*userManagerMock_, CreateUserDir(_, _, _, _)).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->CreateUserDir(path, mode, uid, gid);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*userManagerMock_, CreateUserDir(_, _, _, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->CreateUserDir(path, mode, uid, gid);
+    EXPECT_TRUE(ret == -1);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateUserDir_001 end";
+}
+
+#ifdef EL5_FILEKEY_MANAGER
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnregisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnregisterUeceActivationCallback_001 start";
+
+    EXPECT_CALL(*keyManagerMock_, UnregisterUeceActivationCallback()).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->UnregisterUeceActivationCallback();
+    EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, UnregisterUeceActivationCallback()).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->UnregisterUeceActivationCallback();
+    EXPECT_TRUE(ret == -1);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnregisterUeceActivationCallback_001 end";
+}
+#endif
+
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_RegisterUeceActivationCallback_001 start";
+    int userId = 0;
+    EXPECT_CALL(*keyManagerExtMock_, UpdateUserPublicDirPolicy(_)).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    EXPECT_CALL(*keyManagerExtMock_, UpdateUserPublicDirPolicy(_)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->UpdateUserPublicDirPolicy(userId);
+    EXPECT_TRUE(ret == -1);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_RegisterUeceActivationCallback_001 end";
+}
+#endif
+
 } // namespace StorageDaemon
 } // namespace OHOS

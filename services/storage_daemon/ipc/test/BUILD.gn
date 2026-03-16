@@ -60,6 +60,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
   ]
 
@@ -226,11 +227,10 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/test/hi_audit_test.cpp",
     "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/mock/mount_manager_mock.cpp",
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
-    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/mock/user_manager_mock.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",

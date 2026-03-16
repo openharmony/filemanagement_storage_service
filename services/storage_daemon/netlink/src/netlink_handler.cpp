@@ -56,15 +56,15 @@ void NetlinkHandler::OnEvent(char *msg)
     auto nlData = std::make_unique<NetlinkData>();
     nlData->Decode(msg);
     if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
-        LOGD("[L1:NetlinkHandler] OnEvent: block device event, sysPath=%{public}s, devPath=%{public}s,"
+        LOGI("[L1:NetlinkHandler] OnEvent: block device event, sysPath=%{public}s, devPath=%{public}s,"
              "subsystem=%{public}s, action=%{public}d",
             nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
             nlData->GetSubsystem().c_str(), nlData->GetAction());
         DiskManager::Instance().HandleDiskEvent(nlData.get());
-        LOGD("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< block event handled");
+        LOGI("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< block event handled");
     } else {
-        LOGD("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< non-block subsystem=%{public}s, skipped",
-             nlData->GetSubsystem().c_str());
+        LOGI("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< non-block subsystem=%{public}s, skipped",
+            nlData->GetSubsystem().c_str());
     }
 }
 } // StorageDaemon
