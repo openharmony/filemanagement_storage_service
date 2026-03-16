@@ -60,6 +60,14 @@ MtpFsDevice::~MtpFsDevice()
     LOGI("MtpFsDevice Destructor.");
     eventFlag_.store(false);
     SetTransferValue(false);
+    {
+        std::lock_guard<std::mutex> lock(eventMutex_);
+        eventCon_.notify_all();
+    }
+    if (eventThread_.joinable()) {
+        eventThread_.join();
+    }
+    
     Disconnect();
 }
 
@@ -218,6 +226,10 @@ void MtpFsDevice::ReadEvent()
         }
         if (g_isEventDone.load()) {
             LOGI("Registering MTP event callback");
+            if (device_ == nullptr) {
+                LOGE("device_ is nullptr, exit");
+                break;
+            }
             int ret = LIBMTP_Read_Event_Async(device_, MtpEventCallback, nullptr);
             if (ret != 0) {
                 LOGE("Event registration failed, ret=%{public}d", ret);
@@ -233,7 +245,7 @@ void MtpFsDevice::ReadEvent()
 
 void MtpFsDevice::InitDevice()
 {
-    std::thread([this]() { ReadEvent(); }).detach();
+    eventThread_ = std::thread([this]() { ReadEvent(); });
 }
 
 bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)

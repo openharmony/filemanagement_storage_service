@@ -710,7 +710,6 @@ bool MtpFileSystem::Exec()
         LOGE("fuse_main fail, ret = %{public}d", ret);
         return false;
     }
-    device_.Disconnect();
 
     if (!tmpFilesPool_.RemoveTmpDir()) {
         LOGE("Can not remove a temporary directory");
