@@ -781,6 +781,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetFileList_001, TestSize.Level1)
     std::string backDir;
     std::vector<struct FileNode> fileList;
     uint32_t diffNum = 0;
+    origDir = "/data/temp1";
     EXPECT_EQ(KeyBackup::GetInstance().GetFileList(origDir, backDir, fileList, diffNum), -1);
 
     origDir = TEST_PATH;

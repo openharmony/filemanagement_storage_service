@@ -1532,7 +1532,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroyCrypt_001 end";
 }
 
-
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001 start";
@@ -1547,7 +1546,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEncryp
     EXPECT_EQ(vol.DoEncrypt("vol-156-300", "lower123"), E_OK);
     EXPECT_EQ(vol.DoEncrypt("vol-156-300", "Upper!@#"), E_OK);
     EXPECT_EQ(vol.DoEncrypt("vol-156-300", "lower!@#"), E_OK);
-    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "123!@#$"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "1234567!@#$"), E_OK);
     EXPECT_EQ(vol.DoEncrypt("vol-156-300", "UpperLow"), E_OK);
     EXPECT_EQ(vol.DoEncrypt("vol-156-300", "Complex Pass123!@#"), E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001 end";

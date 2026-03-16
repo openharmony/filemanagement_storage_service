@@ -595,7 +595,12 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManagerProvider::GetUserStorageStats start");
-    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
     StorageRadar::ReportFucBehavior("GetUserStorageStats", userId, "GetUserStorageStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
@@ -1121,24 +1126,6 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
 #else
     return E_OK;
 #endif
-}
-
-bool StorageManagerProvider::IsFilePathInvalid(const std::string &filePath)
-{
-    size_t pos = filePath.find(PATH_INVALID_FLAG1);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("Relative path is not allowed, path contain ../");
-            return true;
-        }
-        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
-    }
-    pos = filePath.rfind(PATH_INVALID_FLAG2);
-    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("Relative path is not allowed, path tail is /..");
-        return true;
-    }
-    return false;
 }
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {

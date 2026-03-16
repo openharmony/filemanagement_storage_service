@@ -26,10 +26,6 @@ namespace StorageManager {
 class StorageManagerProvider : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManagerProvider)
 public:
-    const std::string PATH_INVALID_FLAG1 = "../";
-    const std::string PATH_INVALID_FLAG2 = "/..";
-    const uint32_t PATH_INVALID_FLAG_LEN = 3;
-    const char FILE_SEPARATOR_CHAR = '/';
     StorageManagerProvider(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate) {};
     ~StorageManagerProvider() = default;
 
@@ -195,11 +191,10 @@ public:
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
 
-private:
+ private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
-    bool IsFilePathInvalid(const std::string &filePath);
     bool IsCalledByFileMgr();
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;

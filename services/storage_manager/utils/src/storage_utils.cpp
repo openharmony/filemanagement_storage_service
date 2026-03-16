@@ -16,9 +16,14 @@
 #include "utils/storage_utils.h"
 
 #include "ipc_skeleton.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
+    constexpr const char *PATH_INVALID_FLAG1 = "../";
+    constexpr const char *PATH_INVALID_FLAG2 = "/..";
+    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+    constexpr char FILE_SEPARATOR_CHAR = '/';
 int64_t GetRoundSize(int64_t size)
 {
     int64_t val = 1;
@@ -76,5 +81,24 @@ int GetCurrentUserId()
     int userId = uid / 200000;
     return userId;
 }
+
+bool IsFilePathInvalid(const std::string &filePath)
+{
+    size_t pos = filePath.find(PATH_INVALID_FLAG1);
+    while (pos != std::string::npos) {
+        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
+            LOGE("Relative path is not allowed, path contain ../");
+            return true;
+        }
+        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    }
+    pos = filePath.rfind(PATH_INVALID_FLAG2);
+    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
+        LOGE("Relative path is not allowed, path tail is /..");
+        return true;
+    }
+    return false;
+}
+
 } // namespace STORAGE_Manager
 } // namespace OHOS
