@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -45,6 +46,9 @@ constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 constexpr int BUF_LEN = 1024;
 constexpr int PIPE_FD_LEN = 2;
+constexpr int UUID_LENGTH = 36;
+constexpr int UUID_PREFIX_LENGTH = 4;
+constexpr int UUID_PREFIX_SUFFIX_LENGTH = 8;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr int32_t MAX_STATISTICS_FILES_NUMBER = 5120000;
@@ -74,6 +78,31 @@ struct RgmPathConfig {
     std::string businessPath = "";
     std::string rootfsPath = "";
 };
+
+std::string MaskSensitiveInfo(const std::string &input)
+{
+    if (input.length() < UUID_LENGTH) {
+        return input;
+    }
+    static const std::regex uuidStr("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+    std::string output;
+    std::sregex_iterator it(input.begin(), input.end(), uuidStr);
+    std::sregex_iterator end;
+    size_t lastPos = 0;
+
+    for (; it != end; ++it) {
+        const std::smatch& match = *it;
+        output += input.substr(lastPos, match.position() - lastPos);
+        std::string fullUuid = match.str(0);
+        output += fullUuid.substr(0, UUID_PREFIX_LENGTH) +
+                  std::string(fullUuid.length() - UUID_PREFIX_SUFFIX_LENGTH, '*') +
+                  fullUuid.substr(fullUuid.length() - UUID_PREFIX_LENGTH);
+        
+        lastPos = match.position() + match.length();
+    }
+    output += input.substr(lastPos);
+    return output;
+}
 
 const static std::map<std::string, RgmPathConfig> rgmConfigs = {
     {
@@ -608,7 +637,6 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
             while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
-                LOGE("get result %{public}s", buf);
                 output->push_back(buf);
             }
         }
@@ -819,62 +847,6 @@ void TraverseDirUevent(const std::string &path, bool flag)
     (void)closedir(dir);
 }
 
-int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
-{
-    struct stat st;
-    if (TEMP_FAILURE_RETRY(lstat(dir.c_str(), &st)) == E_ERR) {
-        LOGE("failed to lstat, errno %{public}d", errno);
-        if (errno == ENOENT) {
-            return E_NON_EXIST;
-        }
-        return E_SYS_KERNEL_ERR;
-    }
-    return (st.st_uid == uid) && (st.st_gid == gid) ? E_OK : E_DIFF_UID_GID;
-}
-
-bool MoveDataShell(const std::string &from, const std::string &to)
-{
-    LOGI("MoveDataShell start");
-    if (TEMP_FAILURE_RETRY(access(from.c_str(), F_OK)) != 0) {
-        return true;
-    }
-    std::vector<std::string> cmd = {
-        "/system/bin/mv",
-        from,
-        to
-    };
-    std::vector<std::string> out;
-    int32_t err = ForkExec(cmd, &out);
-    if (err != 0) {
-        LOGE("MoveDataShell failed err:%{public}d", err);
-    }
-    return true;
-}
-
-void MoveFileManagerData(const std::string &filesPath)
-{
-    std::string docsPath = filesPath + "Docs/";
-    MoveDataShell(filesPath + "Download/", docsPath);
-    MoveDataShell(filesPath + "Documents/", docsPath);
-    MoveDataShell(filesPath + "Desktop/", docsPath);
-    MoveDataShell(filesPath + ".Trash/", docsPath);
-}
-
-void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
-{
-    std::vector<std::string> cmd = {
-        "/system/bin/chown",
-        "-R",
-        std::to_string(uid) + ":" + std::to_string(gid),
-        dir
-    };
-    std::vector<std::string> out;
-    int32_t err = ForkExec(cmd, &out);
-    if (err != 0) {
-        LOGE("path: %{public}s chown failed err:%{public}d", cmd.back().c_str(), err);
-    }
-}
-
 bool IsPathMounted(std::string &path)
 {
     if (path.empty()) {
@@ -932,9 +904,11 @@ void DeleteFile(const std::string &path)
     if (S_ISREG(statbuf.st_mode)) {
         remove(path.c_str());
     } else if (S_ISDIR(statbuf.st_mode)) {
-        if ((dir = opendir(path.c_str())) == NULL)
+        if ((dir = opendir(path.c_str())) == nullptr) {
+            LOGE("DeleteFile opendir failed, errno:%{public}d", errno);
             return;
-        while ((dirinfo = readdir(dir)) != NULL) {
+        }
+        while ((dirinfo = readdir(dir)) != nullptr) {
             std::string filepath;
             filepath.append(path).append("/").append(dirinfo->d_name);
             if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
@@ -1252,5 +1226,5 @@ bool IsFilePathInvalid(const std::string &filePath)
     }
     return false;
 }
-} // STORAGE_DAEMON
-} // OHOS
+} // namespace StorageDaemon
+} // namespace OHOS

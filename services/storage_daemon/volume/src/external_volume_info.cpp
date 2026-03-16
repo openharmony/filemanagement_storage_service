@@ -200,6 +200,9 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
     return E_OK;
 #else
     if (ForkExec(cmd, &output) != E_OK) {
+        for (auto str : output) {
+            LOGI("DoMount4Ntfs output: %{public}s", str.c_str());
+        }
         LOGE("exec mount for ntfs failed, errno is %{public}d.", errno);
         return E_NTFS_MOUNT;
     }
@@ -230,6 +233,9 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
     return E_OK;
 #else
     if (ForkExec(cmd, &output) != E_OK) {
+        for (auto str : output) {
+            LOGI("DoMount4Exfat output: %{public}s", str.c_str());
+        }
         LOGE("exec mount for exfat failed, errno is %{public}d.", errno);
         return E_EXFAT_MOUNT;
     }
@@ -252,6 +258,9 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
     std::vector<std::string> output;
 
     if (ForkExec(cmd, &output) != E_OK) {
+        for (auto str : output) {
+            LOGI("DoMount4Udf output: %{public}s", str.c_str());
+        }
         LOGE("exec mount for udf failed, errno is %{public}d.", errno);
         return E_UDF_MOUNT;
     }
@@ -273,6 +282,9 @@ int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
     std::vector<std::string> output;
 
     if (ForkExec(cmd, &output) != E_OK) {
+        for (auto str : output) {
+            LOGI("DoMount4Iso9660 output: %{public}s", str.c_str());
+        }
         LOGE("exec mount for iso9660 failed, errno is %{public}d.", errno);
         return E_ISO9660_MOUNT;
     }
@@ -684,12 +696,18 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
             devPath_
         };
         err = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("DoFormat with-A output: %{public}s", str.c_str());
+        }
     } else {
         std::vector<std::string> cmd = {
             iter->second,
             devPath_
         };
         err = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("DoFormat output: %{public}s", str.c_str());
+        }
     }
 
     if (err == E_NO_CHILD) {
@@ -705,33 +723,29 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
     int32_t err = 0;
     std::vector<std::string> output;
     if (fsType_ == "ntfs") {
-        std::vector<std::string> fixCmd = {
-            "ntfsfix",
-            "-d",
-            devPath_
-        };
+        std::vector<std::string> fixCmd = {"ntfsfix", "-d", devPath_};
         err = ForkExec(fixCmd, &output);
-        std::vector<std::string> labelCmd = {
-            "ntfslabel",
-            devPath_,
-            description
-        };
+        for (auto str : output) {
+            LOGI("DoSetVolDesc ntfsfix output: %{public}s", str.c_str());
+        }
+        std::vector<std::string> labelCmd = {"ntfslabel", devPath_, description};
         output.clear();
         err = ForkExec(labelCmd, &output);
+        for (auto str : output) {
+            LOGI("DoSetVolDesc ntfslabel output: %{public}s", str.c_str());
+        }
     } else if (fsType_ == "exfat") {
-        std::vector<std::string> cmd = {
-            "exfatlabel",
-            devPath_,
-            description
-        };
+        std::vector<std::string> cmd = {"exfatlabel", devPath_, description};
         err = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("DoSetVolDesc exfatlabel output: %{public}s", str.c_str());
+        }
     } else if (fsType_ == "hmfs") {
-        std::vector<std::string> cmd = {
-            "hmfslabel",
-            devPath_,
-            description
-        };
+        std::vector<std::string> cmd = {"hmfslabel", devPath_, description};
         err = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("DoSetVolDesc hmfslabel output: %{public}s", str.c_str());
+        }
     } else {
         LOGE("SetVolumeDescription fsType not support.");
         return E_NOT_SUPPORT;
@@ -803,6 +817,9 @@ std::string ExternalVolumeInfo::GetVolDescByNtfsLabel(std::vector<std::string> &
 {
     std::vector<std::string> output;
     int32_t ret = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("GetVolDescByNtfsLabel output: %{public}s", str.c_str());
+    }
     if (ret != E_OK) {
         LOGE("exec ntfs label failed, ret is: %{public}d, output size is %{public}zu", ret, output.size());
         StorageRadar::ReportVolumeOperation("ForkExec", ret);
