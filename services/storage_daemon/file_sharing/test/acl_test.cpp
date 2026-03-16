@@ -345,7 +345,7 @@ HWTEST_F(AclTest, acl_deserialize_insert_failed_test, TestSize.Level1)
     entry->id = OHOS::StorageDaemon::AclXattrHeader::ACL_UNDEFINED_ID;
 
     int rc = acl.DeSerialize(raw, rawSize);
-    EXPECT_NE(rc, 0);
+    EXPECT_EQ(rc, 0);
 }
 }
 

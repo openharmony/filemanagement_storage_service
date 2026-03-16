@@ -27,6 +27,7 @@
 #include "storage/storage_status_manager.h"
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
+#include "utils/storage_utils.h"
 
 namespace {
 using namespace OHOS;
@@ -38,13 +39,21 @@ int32_t g_appIndex = 0;
 std::string g_bundleName = "com.test.app";
 int32_t g_getBundleStatsRet = E_OK;
 int32_t accessTokenType = -1;
+int32_t g_callingUid = 20000000; // Default to userId = 100 (100 * 200000 = 20000000)
+std::vector<int64_t> g_mockBundleStats = {100, 200, 300, 400, 500}; // app, local, distributed, database, cache
+std::vector<int64_t> g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
+bool g_getAllBundleStatsRet = true;
 } // namespace
 std::string str = "settings";
 namespace OHOS::StorageManager {
 bool BundleManagerAdapterProxy::GetAllBundleStats(int32_t userId, std::vector<int64_t> &bundleStats)
 {
-    bundleStats = bundleStatsInfo;
-    return true;
+    if (userId == 0) {
+        bundleStats = g_mockZeroUserBundleStats;
+    } else {
+        bundleStats = g_mockBundleStats;
+    }
+    return g_getAllBundleStatsRet;
 }
 
 bool BundleManagerAdapterProxy::GetBundleNameForUid(const int uid, std::string &bundleName)
@@ -63,7 +72,7 @@ ErrCode BundleManagerAdapterProxy::GetNameAndIndexForUid(int32_t uid, std::strin
 
 namespace OHOS::StorageManager {
 
-int32_t GetMediaStorageStats(StorageStats &storageStats)
+int32_t GetMediaStorageStats(StorageStats &storageStats, int32_t userId)
 {
     return E_OK;
 }
@@ -77,6 +86,13 @@ int32_t StorageStatusManager::GetBundleStats(const std::string &bundleName, int 
     int32_t appIndex, uint32_t statFlag)
 {
     return g_getBundleStatsRet;
+}
+}
+
+namespace OHOS {
+pid_t IPCSkeleton::GetCallingUid()
+{
+    return g_callingUid;
 }
 }
 
@@ -146,12 +162,17 @@ HWTEST_F(StorageStatusManagerTest, Storage_status_GetAppSize_0001, testing::ext:
 {
     GTEST_LOG_(INFO) << "StorageStatusManagerTest-begin Storage_status_GetAppSize_0001";
     std::shared_ptr<StorageStatusManager> service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    g_callingUid = 100 * 200000;
+    g_mockBundleStats = {10, 20, 0, 0, 0};
+    g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
+    g_getAllBundleStatsRet = true;
+
     int32_t userId = 100;
     int64_t appSize = 0;
     int32_t result = service->GetAppSize(userId, appSize);
 
     std::cout << "appsize is : " << appSize << "max int is " << std::numeric_limits<int64_t>::max() << std::endl;
-    EXPECT_EQ(result, E_CALCULATE_OVERFLOW_UP);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageStatusManagerTest-end Storage_status_GetAppSize_0001";
 } // namespace AppExecFwk
 
@@ -464,4 +485,164 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00001, testing::ext
     ret = service->GetSystemDataSize(systemDataSize);
     EXPECT_EQ(ret, E_GET_SYSTEM_DATA_SIZE_ERROR);
     GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetAppSize_CurrentUser_0001
+ * @tc.name: STORAGE_GetAppSize_CurrentUser_0001
+ * @tc.desc: Test GetAppSize when userId equals current userId (use accumulation logic).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_CurrentUser_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_CurrentUser_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+
+    // Set up mock data
+    g_callingUid = 100 * 200000;
+    g_mockBundleStats = {100, 200, 300, 400, 500}; // app, local, distributed, database, cache
+    g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
+    g_getAllBundleStatsRet = true;
+
+    // Test when userId == current userId (should use accumulation logic)
+    int32_t userId = 100;
+    int64_t appSize = 0;
+    int32_t result = service->GetAppSize(userId, appSize);
+    std::cout << "appsize is : " << appSize << std::endl;
+
+    // Expected: sum of all bundleStats = 100 + 200 + 300 + 400 + 500 = 1500
+    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(appSize, 1500);
+
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_CurrentUser_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetAppSize_NonCurrentUser_0001
+ * @tc.name: STORAGE_GetAppSize_NonCurrentUser_0001
+ * @tc.desc: Test GetAppSize when userId does not equal current userId (use subtraction logic).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_NonCurrentUser_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_NonCurrentUser_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+
+    // Set up mock data
+    g_callingUid = 100 * 200000;
+    g_mockBundleStats = {100, 200, 300, 400, 500}; // app, local, distributed, database, cache
+    g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
+    g_getAllBundleStatsRet = true;
+
+    // Test when userId != current userId (should use subtraction logic: LOCAL - zeroUser LOCAL)
+    int32_t userId = 101;
+    int64_t appSize = 0;
+    int32_t result = service->GetAppSize(userId, appSize);
+
+    // Expected: bundleStats[LOCAL] - zeroUserBundleStats[LOCAL] = 200 - 20 = 180
+    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(appSize, 180);
+
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_NonCurrentUser_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetAppSize_ZeroUserFail_0001
+ * @tc.name: STORAGE_GetAppSize_ZeroUserFail_0001
+ * @tc.desc: Test GetAppSize when getting zeroUser bundleStats fails.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_ZeroUserFail_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_ZeroUserFail_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+
+    // Set up mock data - zeroUser stats will fail
+    g_callingUid = 100 * 200000;
+    g_mockBundleStats = {100, 200, 300, 400, 500};
+    g_getAllBundleStatsRet = false; // Simulate failure
+
+    // Test when getting zeroUser bundleStats fails
+    int32_t userId = 100;
+    int64_t appSize = 0;
+    int32_t result = service->GetAppSize(userId, appSize);
+
+    // Expected: return E_BUNDLEMGR_ERROR
+    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
+
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_ZeroUserFail_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetAppSize_CurrentUserOverflow_0001
+ * @tc.name: STORAGE_GetAppSize_CurrentUserOverflow_0001
+ * @tc.desc: Test GetAppSize when userId equals current userId and overflow occurs.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_CurrentUserOverflow_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_CurrentUserOverflow_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+
+    // Set up mock data - values that will cause overflow
+    g_callingUid = 101 * 200000;
+    g_mockBundleStats = {std::numeric_limits<int64_t>::max(), 1, 0, 0, 0};
+    g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
+    g_getAllBundleStatsRet = true;
+
+    // Test when userId == current userId and overflow occurs
+    int32_t userId = 101;
+    int64_t appSize = 0;
+    int32_t result = service->GetAppSize(userId, appSize);
+    std::cout << "appsize is : " << appSize << " max int is " << std::numeric_limits<int64_t>::max() << std::endl;
+
+    // Expected: return E_CALCULATE_OVERFLOW_UP
+    EXPECT_EQ(result, E_CALCULATE_OVERFLOW_UP);
+
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_CurrentUserOverflow_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetAppSize_NegativeResult_0001
+ * @tc.name: STORAGE_GetAppSize_NegativeResult_0001
+ * @tc.desc: Test GetAppSize when subtraction results in negative value.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require:
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_NegativeResult_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_NegativeResult_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+
+    // Set up mock data - zeroUser LOCAL > bundleStats LOCAL
+    g_callingUid = 100 * 200000;
+    g_mockBundleStats = {100, 50, 300, 400, 500}; // LOCAL = 50
+    g_mockZeroUserBundleStats = {10, 100, 30, 40, 50}; // zeroUser LOCAL = 100
+    g_getAllBundleStatsRet = true;
+
+    // Test when userId != current userId (should use subtraction logic)
+    int32_t userId = 101;
+    int64_t appSize = 0;
+    int32_t result = service->GetAppSize(userId, appSize);
+
+    // Expected: bundleStats[LOCAL] - zeroUserBundleStats[LOCAL] = 50 - 100 = -50
+    // This should still return E_OK, with negative appSize
+    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(appSize, -50);
+
+    GTEST_LOG_(INFO) << "STORAGE_GetAppSize_NegativeResult_0001 end";
 }

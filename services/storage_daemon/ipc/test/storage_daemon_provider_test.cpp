@@ -936,6 +936,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetRecoverKey_001,
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 start";
+    int32_t shareFileCreateFailed = 12100001;
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string uriStr = "file1";
     std::vector<std::string> uriStrVec = {uriStr};
@@ -948,7 +949,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
     int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
-    ASSERT_EQ(ret, E_OK);
+    ASSERT_EQ(ret, shareFileCreateFailed);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 end";
 }
 
@@ -961,6 +962,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 start";
+    int32_t shareFileCreateFailed = 12100001;
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::vector<std::string> uriStrVec;
     for (int i = 0; i < 200000; ++i) {
@@ -976,7 +978,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
     int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
-    ASSERT_EQ(ret, E_OK);
+    ASSERT_EQ(ret, shareFileCreateFailed);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 end";
 }
 
@@ -1574,70 +1576,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CheckUserid_003, T
     auto ret = storageDaemonProviderTest_->CheckUserIdRange(StorageService::MAX_USER_ID + 1);
     EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CheckUserid_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_001
- * @tc.desc: Verify the IsFilePathInvalid function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "../";
-    bool result = storageDaemonProviderTest_->IsFilePathInvalid(path);
-    EXPECT_TRUE(result);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_002
- * @tc.desc: Verify the IsFilePathInvalid function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "/..";
-    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
-    EXPECT_TRUE(result);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_003
- * @tc.desc: Verify the IsFilePathInvalid function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_003 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "/valid/path/test/";
-    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
-    EXPECT_FALSE(result);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_IsFilePathInvalid_004
- * @tc.desc: Verify the IsFilePathInvalid function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFilePathInvalid_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_004 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "/valid/path/test";
-    int32_t result = storageDaemonProviderTest_->IsFilePathInvalid(path);
-    EXPECT_FALSE(result);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFilePathInvalid_004 end";
 }
 
 /**

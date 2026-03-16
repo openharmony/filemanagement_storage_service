@@ -116,6 +116,8 @@ ohos_fuzztest("StorageDaemonProviderActiveUserKeyFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovideractiveuserkey_fuzzer/storagedaemonprovideractiveuserkey_fuzzer.cpp",
   ]
 
@@ -153,6 +155,7 @@ ohos_fuzztest("StorageDaemonProviderActiveUserKeyFuzzTest") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "crypto_framework:crypto_framework_lib",
+    "zlib:shared_libz",
   ]
 
   use_exceptions = true
