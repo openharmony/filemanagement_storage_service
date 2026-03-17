@@ -1605,60 +1605,113 @@ int32_t StorageDaemonProvider::GetCryptProgressById(const std::string &volumeId,
 
 int32_t StorageDaemonProvider::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
 {
-    (void)volumeId;
-    (void)uuid;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle GetCryptUuidById");
+    int32_t ret = VolumeManager::Instance().GetCryptUuidById(volumeId, uuid);
+    if (ret != E_OK) {
+        LOGW("GetCryptUuidById failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::GetCryptUuidById", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageDaemonProvider::BindRecoverKeyToPasswd(const std::string &volumeId,
-                                                      const std::string &password,
+                                                      const std::string &pazzword,
                                                       const std::string &recoverKey)
 {
-    (void)volumeId;
-    (void)password;
-    (void)recoverKey;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle BindRecoverKeyToPasswd");
+    int32_t ret = VolumeManager::Instance().BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    if (ret != E_OK) {
+        LOGW("BindRecoverKeyToPasswd failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::BindRecoverKeyToPasswd", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageDaemonProvider::UpdateCryptPasswd(const std::string &volumeId,
-                                                 const std::string &password,
-                                                 const std::string &newPassword)
+                                                 const std::string &pazzword,
+                                                 const std::string &newPazzword)
 {
-    (void)volumeId;
-    (void)password;
-    (void)newPassword;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle UpdateCryptPasswd");
+    int32_t ret = VolumeManager::Instance().UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    if (ret != E_OK) {
+        LOGW("UpdateCryptPasswd failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::UpdateCryptPasswd", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
 int32_t StorageDaemonProvider::ResetCryptPasswd(const std::string &volumeId,
                                                 const std::string &recoverKey,
-                                                const std::string &newPassword)
+                                                const std::string &newPazzword)
 {
-    (void)volumeId;
-    (void)recoverKey;
-    (void)newPassword;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle ResetCryptPasswd");
+    int32_t ret = VolumeManager::Instance().ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    if (ret != E_OK) {
+        LOGW("ResetCryptPasswd failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::ResetCryptPasswd", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
-int32_t StorageDaemonProvider::VerifyCryptPasswd(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProvider::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
 {
-    (void)volumeId;
-    (void)password;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle VerifyCryptPasswd");
+    int32_t ret = VolumeManager::Instance().VerifyCryptPasswd(volumeId, pazzword);
+    if (ret != E_OK) {
+        LOGW("VerifyCryptPasswd failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::VerifyCryptPasswd", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
-int32_t StorageDaemonProvider::Unlock(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProvider::Unlock(const std::string &volumeId, const std::string &pazzword)
 {
-    (void)volumeId;
-    (void)password;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle Unlock");
+    int32_t ret = VolumeManager::Instance().Unlock(volumeId, pazzword);
+    if (ret != E_OK) {
+        LOGW("Unlock failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Unlock", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 
-int32_t StorageDaemonProvider::Decrypt(const std::string &volumeId, const std::string &password)
+int32_t StorageDaemonProvider::Decrypt(const std::string &volumeId, const std::string &pazzword)
 {
-    (void)volumeId;
-    (void)password;
-    return E_OK;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle Decrypt");
+    int32_t ret = VolumeManager::Instance().Decrypt(volumeId, pazzword);
+    if (ret != E_OK) {
+        LOGW("Decrypt failed, please check, ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Decrypt", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS

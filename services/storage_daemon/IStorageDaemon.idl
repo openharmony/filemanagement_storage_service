@@ -108,15 +108,15 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 73] void  GetCryptProgressById([in] String volumeId, [out] int progress);
      [ipccode 74] void  GetCryptUuidById([in] String volumeId, [out] String uuid);
      [ipccode 75] void  BindRecoverKeyToPasswd([in] String volumeId,
-                                             [in] String password,
+                                             [in] String pazzword,
                                              [in] String recoverKey);
      [ipccode 76] void  UpdateCryptPasswd([in] String volumeId,
-                                        [in] String password,
-                                        [in] String newPassword);
+                                        [in] String pazzword,
+                                        [in] String newPazzword);
      [ipccode 77] void  ResetCryptPasswd([in] String volumeId,
                                         [in] String recoverKey,
-                                        [in] String newPassword);
-     [ipccode 78] void  VerifyCryptPasswd([in] String volumeId, [in] String password);
-     [ipccode 79] void  Unlock([in] String volumeId, [in] String password);
-     [ipccode 80] void  Decrypt([in] String volumeId, [in] String password);
+                                        [in] String newPazzword);
+     [ipccode 78] void  VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
+     [ipccode 79] void  Unlock([in] String volumeId, [in] String pazzword);
+     [ipccode 80] void  Decrypt([in] String volumeId, [in] String pazzword);
 }

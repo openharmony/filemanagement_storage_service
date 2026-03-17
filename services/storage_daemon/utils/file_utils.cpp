@@ -20,6 +20,9 @@
 #include <fcntl.h>
 #include <fstream>
 #include <regex>
+#include <string>
+#include <sstream>
+#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -610,37 +613,37 @@ void GetExitStatus(int *exitStatus, int inputExitStatus)
 
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
-    int pipe_fd[PIPE_FD_LEN];
+    int pipeFd[PIPE_FD_LEN];
     pid_t pid;
     int status;
     auto args = FormatCmd(cmd);
-    if (pipe(pipe_fd) < 0) {
+    if (pipe(pipeFd) < 0) {
         LOGE("creat pipe failed, errno is %{public}d.", errno);
         return E_CREATE_PIPE;
     }
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ClosePipe(pipeFd, PIPE_FD_LEN);
         return E_FORK;
     } else if (pid == 0) {
-        if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
+        if (RedirectStdToPipe(pipeFd, PIPE_FD_LEN)) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
         _exit(1);
     } else {
-        (void)close(pipe_fd[1]);
+        (void)close(pipeFd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
-            while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
+            while (read(pipeFd[0], buf, BUF_LEN - 1) > 0) {
                 output->push_back(buf);
             }
         }
-        (void)close(pipe_fd[0]);
+        (void)close(pipeFd[0]);
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             return E_NO_CHILD;
@@ -661,32 +664,32 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
 
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
 {
-    int pipe_fd[2];
+    int pipeFd[2];
     pid_t pid;
     int status;
     auto args = FormatCmd(cmd);
-    if (pipe(pipe_fd) < 0) {
+    if (pipe(pipeFd) < 0) {
         LOGE("creat pipe failed");
         return E_CREATE_PIPE;
     }
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed");
-        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ClosePipe(pipeFd, PIPE_FD_LEN);
         return E_FORK;
     } else if (pid == 0) {
-        (void)close(pipe_fd[0]);
-        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
+        (void)close(pipeFd[0]);
+        if (dup2(pipeFd[1], STDOUT_FILENO) == -1) {
             LOGE("dup2 failed");
             _exit(1);
         }
-        (void)close(pipe_fd[1]);
+        (void)close(pipeFd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
         _exit(1);
     } else {
-        (void)close(pipe_fd[1]);
-        (void)close(pipe_fd[0]);
+        (void)close(pipeFd[1]);
+        (void)close(pipeFd[0]);
         waitpid(pid, &status, 0);
         LOGE("Process exits %{public}d", errno);
         if (!WIFEXITED(status)) {
@@ -703,6 +706,76 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
     return E_OK;
 }
 
+static void WriteInputToPipe(int pipeFd, std::vector<std::string> &input)
+{
+    for (const auto& line : input) {
+        write(pipeFd, line.c_str(), line.size());
+        write(pipeFd, "\n", 1);
+    }
+}
+
+static void ReadPipeOutput(int pipeFd, std::vector<std::string> &output)
+{
+    LOGI("ReadPipeOutput start!!!");
+    char buf[BUF_LEN] = { 0 };
+    (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
+    output.clear();
+    while (read(pipeFd, buf, BUF_LEN - 1) > 0) {
+        if (strstr(buf, "[2k") != nullptr) {
+            break;
+        }
+        LOGI("get result %{public}s", buf);
+        output.push_back(buf);
+    }
+    LOGI("ReadPipeOutput end!!!");
+}
+
+int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output,
+                        std::vector<std::string> *input)
+{
+    int inPipe[PIPE_FD_LEN];
+    int outPipe[PIPE_FD_LEN];
+    pid_t pid;
+    auto args = FormatCmd(cmd);
+    if (pipe(inPipe) < 0) {
+        LOGE("creat pipe failed, errno is %{public}d.", errno);
+        return E_CREATE_PIPE;
+    }
+    if (pipe(outPipe) < 0) {
+        LOGE("creat pipe failed, errno is %{public}d.", errno);
+        ClosePipe(inPipe, PIPE_FD_LEN);
+        return E_CREATE_PIPE;
+    }
+    pid = fork();
+    if (pid == -1) {
+        LOGE("fork failed, errno is %{public}d.", errno);
+        return E_FORK;
+    } else if (pid == 0) {
+        (void)close(inPipe[1]);
+        (void)close(outPipe[0]);
+        dup2(inPipe[0], STDIN_FILENO);
+        dup2(outPipe[1], STDOUT_FILENO);
+        dup2(outPipe[1], STDERR_FILENO);
+        execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d", errno);
+        _exit(1);
+    } else {
+        (void)close(inPipe[0]);
+        (void)close(outPipe[1]);
+        if (input) {
+            WriteInputToPipe(inPipe[1], *input);
+        }
+        (void)close(inPipe[1]);
+
+        if (output) {
+            ReadPipeOutput(outPipe[0], *output);
+        }
+        (void)close(outPipe[0]);
+    }
+    LOGI("ForkExecInteractive end.");
+    return E_OK;
+}
+
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
 {
@@ -715,29 +788,29 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
     }
 }
 
-static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
+static void WritePidToPipe(int pipeFd[PIPE_FD_LEN], size_t len)
 {
-    if (pipe_fd == nullptr || len < PIPE_FD_LEN) {
+    if (pipeFd == nullptr || len < PIPE_FD_LEN) {
         LOGE("write pipe param is invalid.");
         return;
     }
-    (void)close(pipe_fd[0]);
+    (void)close(pipeFd[0]);
     int send_pid = (int)getpid();
-    if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
+    if (write(pipeFd[1], &send_pid, sizeof(int)) == -1) {
         LOGE("write pipe failed, errno is %{public}d.", errno);
         _exit(1);
     }
-    (void)close(pipe_fd[1]);
+    (void)close(pipeFd[1]);
 }
 
-static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
+static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipeFd[2])
 {
-    (void)close(pipe_fd[1]);
+    (void)close(pipeFd[1]);
     int recv_pid;
-    while (read(pipe_fd[0], &recv_pid, sizeof(int)) > 0) {
+    while (read(pipeFd[0], &recv_pid, sizeof(int)) > 0) {
         LOGI("read child pid: %{public}d", recv_pid);
     }
-    (void)close(pipe_fd[0]);
+    (void)close(pipeFd[0]);
     ReportExecutorPidEvent(cmd, recv_pid);
 }
 
@@ -763,31 +836,31 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
-    int pipe_fd[PIPE_FD_LEN];
+    int pipeFd[PIPE_FD_LEN];
     int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
     pid_t pid;
     int status;
     auto args = FormatCmd(cmd);
 
-    if (pipe(pipe_fd) < 0) {
+    if (pipe(pipeFd) < 0) {
         LOGE("creat pipe failed, errno is %{public}d.", errno);
         return E_ERR;
     }
 
     if (pipe(pipe_log_fd) < 0) {
         LOGE("creat pipe for log failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ClosePipe(pipeFd, PIPE_FD_LEN);
         return E_ERR;
     }
 
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ClosePipe(pipeFd, PIPE_FD_LEN);
         ClosePipe(pipe_log_fd, PIPE_FD_LEN);
         return E_ERR;
     } else if (pid == 0) {
-        WritePidToPipe(pipe_fd, PIPE_FD_LEN);
+        WritePidToPipe(pipeFd, PIPE_FD_LEN);
         if (RedirectStdToPipe(pipe_log_fd, PIPE_FD_LEN)) {
             _exit(1);
         }
@@ -795,7 +868,7 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
         LOGE("execvp failed errno: %{public}d", errno);
         _exit(1);
     } else {
-        ReadPidFromPipe(cmd, pipe_fd);
+        ReadPidFromPipe(cmd, pipeFd);
         ReadLogFromPipe(pipe_log_fd, PIPE_FD_LEN);
 
         waitpid(pid, &status, 0);
@@ -880,12 +953,15 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
     std::vector<std::string> result;
     str += pattern;
     size_t size = str.size();
-    for (size_t i = 0; i < size; i++) {
+    size_t i = 0;
+    while (i < size) {
         size_t pos = str.find(pattern, i);
         if (pos < size) {
             std::string s = str.substr(i, pos - i);
             result.push_back(s);
-            i = pos + pattern.size() - 1;
+            i = pos + pattern.size();
+        } else {
+            break;
         }
     }
     return result;

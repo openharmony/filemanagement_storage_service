@@ -22,6 +22,7 @@
 #include "storage_service_errno.h"
 
 #include <optional>
+#include <securec.h>
 
 using namespace OHOS::StorageManager;
 using namespace OHOS::FileManagement::LibN;
@@ -71,6 +72,7 @@ napi_value Encrypt(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -183,6 +185,8 @@ napi_value BindRecoverKeyToPasswd(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
+    (void)memset_s(const_cast<char*>(reKeyStr->c_str()), reKeyStr->length(), 0, reKeyStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -221,6 +225,8 @@ napi_value UpdateCryptPasswd(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
+    (void)memset_s(const_cast<char*>(nPwdStr->c_str()), nPwdStr->length(), 0, nPwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -259,6 +265,8 @@ napi_value ResetCryptPasswd(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(reKeyStr->c_str()), reKeyStr->length(), 0, reKeyStr->length());
+    (void)memset_s(const_cast<char*>(nPwdStr->c_str()), nPwdStr->length(), 0, nPwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -296,6 +304,7 @@ napi_value VerifyCryptPasswd(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -334,6 +343,7 @@ napi_value Unlock(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
@@ -371,6 +381,7 @@ napi_value Decrypt(napi_env env, napi_callback_info info)
         }
         return NError(ERRNO_NOERR);
     };
+    (void)memset_s(const_cast<char*>(pwdStr->c_str()), pwdStr->length(), 0, pwdStr->length());
     auto cbComplete = [](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };

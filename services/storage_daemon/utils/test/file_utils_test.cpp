@@ -986,6 +986,37 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DeleteFile_003, TestSize.Level1)
     
     GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_003 end";
 }
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_Basic, TestSize.Level1)
+{
+    std::vector<std::string> cmd = {"echo", "test"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"y"};
+    int ret = ForkExecInteractive(cmd, &output, &input);
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_EdgeCases, TestSize.Level1)
+{
+    std::vector<std::string> cmd1 = {"echo", "test"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"y"};
+    EXPECT_EQ(ForkExecInteractive(cmd1, nullptr, nullptr), E_OK);
+    EXPECT_EQ(ForkExecInteractive(cmd1, nullptr, &input), E_OK);
+    EXPECT_EQ(ForkExecInteractive(cmd1, &output, nullptr), E_OK);
+    std::vector<std::string> invalidCmd = {"invalid_cmd"};
+    EXPECT_EQ(ForkExecInteractive(invalidCmd, nullptr, nullptr), E_OK);
+    std::vector<std::string> emptyCmd = {};
+    EXPECT_EQ(ForkExecInteractive(emptyCmd, nullptr, nullptr), E_OK);
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_RealInteraction, TestSize.Level1)
+{
+    std::vector<std::string> cmd = {"cat"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"hello", "world"};
+    int ret = ForkExecInteractive(cmd, &output, &input);
+    EXPECT_EQ(ret, E_OK);
+}
 } // namespace StorageDaemon
 } // namespace OHOS
-

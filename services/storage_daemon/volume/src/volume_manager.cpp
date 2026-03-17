@@ -398,11 +398,151 @@ bool VolumeManager::IsMtpDeviceInUse(const std::string &diskPath)
 
 int32_t VolumeManager::Encrypt(const std::string &volumeId, const std::string &pazzword)
 {
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->Encrypt(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s Encrypt failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Encrypt", err);
+        return err;
+    }
     return E_OK;
 }
 
 int32_t VolumeManager::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
 {
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->GetCryptProgressById(volumeId, progress);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s GetCryptProgressById failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::GetCryptProgressById", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->GetCryptUuidById(volumeId, uuid);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s GetCryptUuidById failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::GetCryptUuidById", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                              const std::string &pazzword,
+                                              const std::string &recoverKey)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s BindRecoverKeyToPasswd failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::BindRecoverKeyToPasswd", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::UpdateCryptPasswd(const std::string &volumeId,
+                                         const std::string &pazzword,
+                                         const std::string &newPazzword)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s UpdateCryptPasswd failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::UpdateCryptPasswd", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::ResetCryptPasswd(const std::string &volumeId,
+                                        const std::string &recoverKey,
+                                        const std::string &newPazzword)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s ResetCryptPasswd failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::ResetCryptPasswd", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->VerifyCryptPasswd(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s VerifyCryptPasswd failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::VerifyCryptPasswd", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->Unlock(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s Unlock failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Unlock", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->Decrypt(volumeId, pazzword);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s Decrypt failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Decrypt", err);
+        return err;
+    }
     return E_OK;
 }
 } // StorageDaemon

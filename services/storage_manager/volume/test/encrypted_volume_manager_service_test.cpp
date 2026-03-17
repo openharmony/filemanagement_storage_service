@@ -105,7 +105,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_1, tes
     DelayedSingleton<StorageDaemonCommunication>::instance_ = nullptr;
     int32_t result = encryptVmService.Encrypt(volumeId, pazzword);
     DelayedSingleton<StorageDaemonCommunication>::instance_ = storageDaemonCommunicationMock_;
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Encrypt_1";
 }
 
@@ -123,7 +123,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_2, tes
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::MOUNTED);
     int32_t result = encryptVmService.Encrypt(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Encrypt_2";
 }
 
@@ -141,7 +141,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_3, tes
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::MOUNTED);
     int32_t result = encryptVmService.Encrypt(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Encrypt_3";
 }
 
@@ -207,7 +207,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_GetCryptProgre
     volumePtr->SetState(VolumeState::ENCRYPTING);
     int32_t progress = 0;
     int32_t result = encryptVmService.GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_GetCryptProgressById_2";
 }
 
@@ -225,7 +225,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_GetCryptProgre
     volumePtr->SetState(VolumeState::DECRYPTING);
     int32_t progress = 0;
     int32_t result = encryptVmService.GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_GetCryptProgressById_3";
 }
 
@@ -243,7 +243,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_GetCryptProgre
     volumePtr->SetState(VolumeState::DECRYPTING);
     int32_t progress = 0;
     int32_t result = encryptVmService.GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_GetCryptProgressById_4";
 }
 
@@ -284,7 +284,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_GetCryptUuidBy
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
     std::string uuid;
     int32_t result = encryptVmService.GetCryptUuidById(volumeId, uuid);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_GetCryptUuidById_2";
 }
 
@@ -324,7 +324,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_BindRecoverKey
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_UNLOCKED);
     int32_t result = encryptVmService.BindRecoverKeyToPasswd(volumeId, "pwd123", "key456");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_BindRecoverKeyToPasswd_2";
 }
 
@@ -346,7 +346,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_UpdateCryptPas
     VolumeCore vc(volumeId, 1, "disk-1-11");
     vmService.OnVolumeCreated(vc);
     int32_t result = encryptVmService.UpdateCryptPasswd(volumeId, "old123", "new456");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_UpdateCryptPasswd_1";
 }
 
@@ -361,7 +361,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_UpdateCryptPas
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_UNLOCKED);
     int32_t result = encryptVmService.UpdateCryptPasswd(volumeId, "old123", "new456");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_UpdateCryptPasswd_2";
 }
 
@@ -383,7 +383,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_ResetCryptPass
     VolumeCore vc(volumeId, 1, "disk-1-11");
     vmService.OnVolumeCreated(vc);
     int32_t result = encryptVmService.ResetCryptPasswd(volumeId, "key123", "new456");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_ResetCryptPasswd_1";
 }
 
@@ -398,7 +398,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_ResetCryptPass
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_UNLOCKED);
     int32_t result = encryptVmService.ResetCryptPasswd(volumeId, "key123", "new456");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_ResetCryptPasswd_2";
 }
 
@@ -421,7 +421,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_VerifyCryptPas
     VolumeCore vc(volumeId, 1, "disk-1-11");
     vmService.OnVolumeCreated(vc);
     int32_t result = encryptVmService.VerifyCryptPasswd(volumeId, "pwd123");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_VerifyCryptPasswd_1";
 }
 
@@ -436,7 +436,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_VerifyCryptPas
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
     int32_t result = encryptVmService.VerifyCryptPasswd(volumeId, "pwd123");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_VerifyCryptPasswd_2";
 }
 
@@ -459,7 +459,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Unlock_1, test
     VolumeCore vc(volumeId, 1, "disk-1-11");
     vmService.OnVolumeCreated(vc);
     int32_t result = encryptVmService.Unlock(volumeId, "pwd123");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Unlock_1";
 }
 
@@ -474,7 +474,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Unlock_2, test
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
     int32_t result = encryptVmService.Unlock(volumeId, "pwd123");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Unlock_2";
 }
 
@@ -512,7 +512,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Decrypt_2, tes
     auto volumePtr = vmService.volumeMap_.ReadVal(volumeId);
     volumePtr->SetState(VolumeState::MOUNTED);
     int32_t result = encryptVmService.Decrypt(volumeId, "pwd123");
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Decrypt_2";
 }
 } // namespace

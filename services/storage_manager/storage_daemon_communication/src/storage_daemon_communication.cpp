@@ -1121,7 +1121,7 @@ int32_t StorageDaemonCommunication::GetCryptUuidById(const std::string &volumeId
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->GetCryptUuidById(volumeId, uuid);
 }
 
 int32_t StorageDaemonCommunication::BindRecoverKeyToPasswd(const std::string &volumeId,
@@ -1138,7 +1138,7 @@ int32_t StorageDaemonCommunication::BindRecoverKeyToPasswd(const std::string &vo
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
 }
 
 int32_t StorageDaemonCommunication::UpdateCryptPasswd(const std::string &volumeId,
@@ -1155,7 +1155,7 @@ int32_t StorageDaemonCommunication::UpdateCryptPasswd(const std::string &volumeI
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
 }
 
 int32_t StorageDaemonCommunication::ResetCryptPasswd(const std::string &volumeId,
@@ -1172,7 +1172,7 @@ int32_t StorageDaemonCommunication::ResetCryptPasswd(const std::string &volumeId
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
 }
 
 int32_t StorageDaemonCommunication::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
@@ -1187,7 +1187,7 @@ int32_t StorageDaemonCommunication::VerifyCryptPasswd(const std::string &volumeI
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->VerifyCryptPasswd(volumeId, pazzword);
 }
 
 int32_t StorageDaemonCommunication::Unlock(const std::string &volumeId, const std::string &pazzword)
@@ -1202,7 +1202,7 @@ int32_t StorageDaemonCommunication::Unlock(const std::string &volumeId, const st
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->Unlock(volumeId, pazzword);
 }
 
 int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const std::string &pazzword)
@@ -1217,7 +1217,7 @@ int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const s
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return E_OK;
+    return storageDaemon_->Decrypt(volumeId, pazzword);
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -44,6 +44,24 @@ protected:
     virtual int32_t DoFormat(std::string type) override;
     virtual int32_t DoSetVolDesc(std::string description) override;
     virtual std::string GetFsTypeByDev(dev_t dev) override;
+
+    //disk crypt api
+    virtual int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoGetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    virtual int32_t DoGetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    virtual int32_t DoBindRecoverKeyToPasswd(const std::string &volumeId,
+                                             const std::string &pazzword,
+                                             const std::string &recoverKey) override;
+    virtual int32_t DoUpdateCryptPasswd(const std::string &volumeId,
+                                        const std::string &pazzword,
+                                        const std::string &newPazzword) override;
+    virtual int32_t DoResetCryptPasswd(const std::string &volumeId,
+                                       const std::string &recoverKey,
+                                       const std::string &newPazzword) override;
+    virtual int32_t DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoDestroyCrypt(const std::string &volumeId) override;
 private:
     std::string devPath_;
     std::string devBackupPath_;
@@ -81,6 +99,7 @@ private:
     std::string SplitOutputIntoLines(std::vector<std::string> &output);
     int32_t ExecuteAsyncMount(uint32_t mountFlags);
     int32_t DoUMountWithForceUsbFuse();
+    int32_t ValidatePazzword(const std::string &pazzword);
 };
 } // STORAGE_DAEMON
 } // OHOS

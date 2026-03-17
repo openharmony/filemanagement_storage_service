@@ -41,9 +41,8 @@ public:
     virtual bool ReadFile(const std::string &path, std::string *str) = 0;
     virtual int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
         int *exitStatus = nullptr) = 0;
-    virtual int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr) = 0;
     virtual int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
-        int *exitStatus = nullptr) = 0;
+                                    std::vector<std::string> *input = nullptr) = 0;
     virtual bool IsTempFolder(const std::string &path, const std::string &sub) = 0;
     virtual void DeleteFile(const std::string &path) = 0;
     virtual std::vector<std::string> Split(std::string str, const std::string &pattern) = 0;
@@ -70,9 +69,8 @@ public:
     MOCK_METHOD2(StringToUint32, bool(const std::string &str, uint32_t &num));
     MOCK_METHOD2(ReadFile, bool(const std::string &path, std::string *str));
     MOCK_METHOD3(ForkExec, int(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus));
-    MOCK_METHOD2(ForkExec, int(std::vector<std::string> &cmd, std::vector<std::string> *output));
     MOCK_METHOD3(ForkExecInteractive, int(std::vector<std::string> &cmd, std::vector<std::string> *output,
-        int *exitStatus));
+                 std::vector<std::string> *input));
     MOCK_METHOD2(IsTempFolder, bool(const std::string &path, const std::string &sub));
     MOCK_METHOD1(DeleteFile, void(const std::string &path));
     MOCK_METHOD2(Split, std::vector<std::string>(std::string str, const std::string &pattern));
