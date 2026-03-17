@@ -43,11 +43,11 @@ std::string StringPrintf(const char *format, ...)
 
     int count = vsnprintf_s(buf, sizeof(buf), sizeof(buf), format, apBackup);
     if (count < 0) {
-        LOGE("vsnprintf_s error, errno %{public}d", errno);
+        LOGE("[L8:StringUtils] StringPrintf: <<< EXIT FAILED <<< vsnprintf_s error, errno=%{public}d", errno);
     } else if (count < BUFF_SIZE) {
         result.append(buf, count);
     } else {
-        LOGI("allocate larger buffer, len = %{public}d", count + 1);
+        LOGI("[L8:StringUtils] StringPrintf: allocate larger buffer, len=%{public}d", count + 1);
 
         char *newBuf = new (std::nothrow) char[count + 1];
         if (newBuf != nullptr) {
@@ -89,17 +89,18 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
 
 bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::string &errMsg)
 {
+    LOGD("[L8:StringUtils] WriteFileSync: >>> ENTER <<< path=%{public}s, size=%{public}zu", path, size);
     FILE *f = fopen(path, "w");
     if (f == nullptr) {
         errMsg = "f == nullptr, errno" + std::to_string(errno);
-        LOGE("open %{private}s failed, errno %{public}d", path, errno);
+        LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
         return false;
     }
     ChMod(path, S_IRUSR | S_IWUSR);
     int fd = fileno(f);
     if (fd == -1) {
         errMsg = "fd == -1, errno" + std::to_string(errno);
-        LOGE("open %{private}s failed, errno %{public}d", path, errno);
+        LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< fd=-1, errno=%{public}d", errno);
         (void)fclose(f);
         return false;
     }
@@ -107,34 +108,44 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::stri
     long len = write(fd, data, size);
     if (len < 0) {
         errMsg = "fd == -1, errno" + std::to_string(errno);
-        LOGE("write %{public}s failed, errno %{public}d", path, errno);
+        LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< write failed, errno=%{public}d", errno);
         (void)fclose(f);
         return false;
     }
     if (static_cast<size_t>(len) != size) {
         errMsg = "len != size, errno" + std::to_string(errno);
-        LOGE("write return len %{public}ld, not equal to content length %{public}zu", len, size);
+        LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< len mismatch, len=%{public}ld, size=%{public}zu",
+            len, size);
         (void)fclose(f);
         return false;
     }
 
     if (fsync(fd) != 0) {
         errMsg = "fsync(fd), errno" + std::to_string(errno);
-        LOGE("fsync %{private}s failed, errno %{public}d", path, errno);
+        LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< fsync failed, errno=%{public}d", errno);
         (void)fclose(f);
         return false;
     }
     (void)fclose(f);
+    LOGD("[L8:StringUtils] WriteFileSync: <<< EXIT SUCCESS <<<");
     return true;
 }
 
 bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
     if (path.empty() || data.empty()) {
+        LOGE("[L8:StringUtils] SaveStringToFileSync: <<< EXIT FAILED <<< empty input");
         return false;
     }
-    LOGI("enter %{private}s, size=%{public}zu", path.c_str(), data.length());
-    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.data()), data.size(), errMsg);
+    LOGI("[L8:StringUtils] SaveStringToFileSync: >>> ENTER <<< path=%{public}s, size=%{public}zu",
+        path.c_str(), data.length());
+    bool ret = WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size(), errMsg);
+    if (ret) {
+        LOGI("[L8:StringUtils] SaveStringToFileSync: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L8:StringUtils] SaveStringToFileSync: <<< EXIT FAILED <<<");
+    }
+    return ret;
 }
 
 bool StringIsNumber(const std::string &content)
@@ -172,9 +183,10 @@ std::string ListToString(const std::list<std::string> &strList)
 
 void GetAllUserIds(std::vector<int32_t> &userIds)
 {
+    LOGD("[L8:StringUtils] GetAllUserIds: >>> ENTER <<<");
     auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(APP_EL1_PATH), closedir);
     if (!procDir) {
-        LOGE("open dir failed, path is %{public}s, errno is %{public}d", APP_EL1_PATH, errno);
+        LOGE("[L8:StringUtils] GetAllUserIds: <<< EXIT FAILED <<< open dir failed, errno=%{public}d", errno);
         return;
     }
     std::regex pattern("^[1-9]\\d*$");
@@ -202,6 +214,7 @@ void GetAllUserIds(std::vector<int32_t> &userIds)
         }
         userIds.push_back(userId);
     }
+    LOGD("[L8:StringUtils] GetAllUserIds: <<< EXIT SUCCESS <<< userIdCount=%{public}zu", userIds.size());
 }
 
 bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base)
@@ -225,6 +238,7 @@ bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base)
         return false;
     }
     value = result;
+    LOGD("[L8:StringUtils] ConvertStringToInt: <<< EXIT SUCCESS <<< value=%{public}lld", value);
     return true;
 }
 
@@ -289,6 +303,7 @@ bool ConvertStringToInt32(const std::string &context, int32_t &value)
         return false;
     }
     value = static_cast<int32_t>(tollRes);
+    LOGD("[L8:StringUtils] ConvertStringToInt32: <<< EXIT SUCCESS <<< value=%{public}d", value);
     return true;
 }
 } // namespace StorageDaemon
