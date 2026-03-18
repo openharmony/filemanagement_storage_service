@@ -244,10 +244,9 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_MultipleCopies_0001, test
     StorageFileRawData storages[count];
 
     for (int i = 0; i < count; i++) {
-        char data[64];
-        sprintf_s(data, sizeof(data), "data_%d", i);
-        storages[i].size = static_cast<uint32_t>(strlen(data) + 1);
-        EXPECT_EQ(storages[i].RawDataCpy(data), ERR_NONE);
+        std::string dataStr = "data_" + std::to_string(i);
+        storages[i].size = static_cast<uint32_t>(dataStr.size() + 1);
+        EXPECT_EQ(storages[i].RawDataCpy(dataStr.c_str()), ERR_NONE);
         EXPECT_NE(storages[i].data, nullptr);
         EXPECT_TRUE(storages[i].isMalloc);
     }
