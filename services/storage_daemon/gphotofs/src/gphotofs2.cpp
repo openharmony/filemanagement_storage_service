@@ -239,7 +239,7 @@ Dir* FindDir(const string& path, Context *ctx)
 
     bool continueLoop = true;
     while (continueLoop) {
-        int next = path.find('/', last + 1);
+        size_t next = path.find('/', last + 1);
         if (next == string::npos) {
             string name = path.substr(last + 1);
             if (name == "") {

@@ -132,6 +132,11 @@ ohos_unittest("mtp_device_monitor_test") {
         "libusb:libusb",
     ]
   }
+  if (support_open_source_libgphoto2) {
+    external_deps += [
+        "libgphoto2:libgphoto2",
+    ]
+  }
 }
 
 group("storage_daemon_mtp_test") {

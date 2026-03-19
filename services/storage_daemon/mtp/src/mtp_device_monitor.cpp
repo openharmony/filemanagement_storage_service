@@ -22,10 +22,10 @@
 #include <gphoto2/gphoto2-camera.h>
 #include <gphoto2/gphoto2-context.h>
 #include <gphoto2/gphoto2-port-log.h>
+#include <libusb.h>
 #endif
 #include <iostream>
 #include <libmtp.h>
-#include <libusb.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
@@ -49,7 +49,6 @@ constexpr int32_t MTP_TRUE_LEN = 5;
 constexpr int32_t DETECT_CNT = 4;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
-constexpr int32_t BUF_SIZE_512 = 512;
 
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
@@ -57,9 +56,7 @@ constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterp
 constexpr const char *KEY_CUST = "const.cust.custPath";
 constexpr const char *CUST_HWIT = "hwit";
 constexpr const char *IS_PTP_MODE = "user.isptpmode";
-constexpr const char *IS_OPEN_HARMONY = "user.isOpenHarmonyMtpDevice";
-constexpr const char *GET_FRIENDLY_NAME = "user.getfriendlyname";
-constexpr int32_t SYS_PARARMETER_SIZE = 256;
+constexpr const int32_t SYS_PARARMETER_SIZE = 256;
 #ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
 constexpr int32_t SCANF_NUM = 2;
 constexpr int32_t ERROR_CODE_PARSE_FAILED = -1;
@@ -98,6 +95,24 @@ bool MtpDeviceMonitor::IsNeedDisableMtp()
         return true;
     }
     return false;
+}
+
+DeviceType MtpDeviceMonitor::GetDeviceType(uint16_t vendorId, uint16_t productId)
+{
+#ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+    if (IsCameraDevice(vendorId, productId)) {
+        LOGI("GetDeviceType: device is camera, VID=%{public}04x, PID=%{public}04x", vendorId, productId);
+        return DeviceType::CAMERA;
+    }
+#endif
+
+    if (LIBMTP_check_is_mtp_device(0, vendorId, productId)) {
+        LOGI("GetDeviceType: device is MTP mobile, VID=%{public}04x, PID=%{public}04x", vendorId, productId);
+        return DeviceType::MOBILE;
+    }
+    
+    LOGI("GetDeviceType: unknown device type, VID=%{public}04x, PID=%{public}04x", vendorId, productId);
+    return DeviceType::UNKNOWN;
 }
 
 int32_t MtpDeviceMonitor::GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos)
@@ -146,60 +161,71 @@ int32_t MtpDeviceMonitor::GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos)
     return E_OK;
 }
 
-void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
+int32_t MtpDeviceMonitor::MountDeviceByType(DeviceType deviceType, std::vector<MtpDeviceInfo> &devInfos,
+                                            const std::string &deviceTypeName)
 {
-    std::vector<MtpDeviceInfo> devInfos;
-    int32_t ret = GetMtpDevices(devInfos);
-    if (ret != E_OK) {
+    int32_t ret = E_MTP_MOUNT_FAILED;
+    if (deviceType == DeviceType::CAMERA) {
 #ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
         ret = GetGphotoDevices(devInfos);
-        if (ret != E_OK) {
-            LOGE("No GetGphotoDevices devices detected");
-            return;
-        }
+#else
+        LOGE("Camera device type not supported");
+        return E_MTP_MOUNT_FAILED;
 #endif
-        LOGE("No devices detected %{public}d", ret);
+    } else {
+        ret = GetMtpDevices(devInfos);
     }
-    ret = MountMtpDevice(devInfos);
-    bool isPtp = UsbEventSubscriber::IsPtpMode();
-    std::string extraData = "{Protocol:" + std::string(isPtp ? "PTP" : "MTP") +
-        "}{Result:" + std::to_string(ret) + "}";
-    if (ret != E_OK) {
-        LOGE("mount mtp device failed.");
-        const auto& firstDev = devInfos[0];
-        extraData += "{Vendor:" + firstDev.vendor + "}{Product:" + firstDev.product +
-            "}{Name:unknown}{OpenHarmony:unknown}";
-        StorageService::StorageRadar::ReportMtpResult("MountMtpDeviceInfo", E_MTP_MOUNT_FAILED, extraData);
+
+    if (ret == E_OK && !devInfos.empty()) {
+        LOGI("Mounting %{public}s device, count=%{public}zu", deviceTypeName.c_str(), devInfos.size());
+        ret = MountMtpDevice(devInfos);
+        if (ret == E_OK) {
+            SetPtpMode(devInfos, deviceType == DeviceType::CAMERA);
+            return E_OK;
+        }
+    }
+    LOGE("%{public}s device mount failed", deviceTypeName.c_str());
+    return E_MTP_MOUNT_FAILED;
+}
+
+void MtpDeviceMonitor::SetPtpMode(const std::vector<MtpDeviceInfo> &devInfos, bool isCamera)
+{
+    if (isCamera) {
         return;
     }
+
+    bool isPtp = UsbEventSubscriber::IsPtpMode();
     for (const auto& devInfo : devInfos) {
         const char* value = isPtp ? "true" : "false";
         size_t ptpLen = isPtp ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
         if (setxattr(devInfo.path.c_str(), IS_PTP_MODE, value, ptpLen, 0) == -1) {
             LOGE("Failed to set PTP mode xattr");
         }
-
-        std::string isOpenHarmony = "unknown";
-        std::string devName = "unknown";
-        char tempBuffer[BUF_SIZE_512] = {0};
-
-        int32_t attrLen = getxattr(devInfo.path.c_str(), IS_OPEN_HARMONY, tempBuffer, BUF_SIZE_512);
-        if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
-            tempBuffer[attrLen] = '\0';
-            isOpenHarmony = tempBuffer;
-        }
-
-        memset_s(tempBuffer, sizeof(tempBuffer), 0, sizeof(tempBuffer));
-        attrLen = getxattr(devInfo.path.c_str(), GET_FRIENDLY_NAME, tempBuffer, BUF_SIZE_512);
-        if (attrLen >= 0 && attrLen < BUF_SIZE_512) {
-            tempBuffer[attrLen] = '\0';
-            devName = tempBuffer;
-        }
-
-        extraData += "{Vendor:" + devInfo.vendor + "}{Product:" + devInfo.product +
-            "}{Name:" + devName + "}{OpenHarmony:" + isOpenHarmony + "}";
     }
-    StorageService::StorageRadar::ReportMtpResult("MountMtpDeviceInfo", E_MTP_MOUNT_FAILED, extraData);
+}
+
+void MtpDeviceMonitor::MountMtpDeviceByBroadcast(DeviceType deviceType)
+{
+    std::vector<MtpDeviceInfo> devInfos;
+
+    if (deviceType == DeviceType::CAMERA) {
+        MountDeviceByType(DeviceType::CAMERA, devInfos, "camera");
+        return;
+    } else if (deviceType == DeviceType::MOBILE) {
+        MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile");
+        return;
+    } else if (deviceType == DeviceType::UNKNOWN) {
+        int32_t ret = MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile");
+        if (ret == E_OK) {
+            return;
+        }
+        devInfos.clear();
+        MountDeviceByType(DeviceType::CAMERA, devInfos, "camera");
+        return;
+    }
+
+    LOGE("Invalid device type");
+    return;
 }
 
 void MtpDeviceMonitor::MonitorDevice()
@@ -213,7 +239,7 @@ void MtpDeviceMonitor::MonitorDevice()
             continue;
         }
         if (hasMtp) {
-            MountMtpDeviceByBroadcast();
+            MountMtpDeviceByBroadcast(DeviceType::UNKNOWN);
             break;
         }
         cnt--;
@@ -234,23 +260,49 @@ int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monit
         LOGE("This device cannot support MTP.");
         return E_NOT_SUPPORT;
     }
+    std::lock_guard<std::mutex> lock(listMutex_);
     for (auto device : monitorDevices) {
-        if (HasMounted(device)) {
-            LOGE("MountMtpDevice: mtp device has mounted.");
+        bool isMounted = false;
+        for (const auto& dev : lastestMtpDevList_) {
+            if (dev.id == device.id) {
+                isMounted = true;
+                break;
+            }
+        }
+        if (isMounted) {
+            LOGI("MountMtpDevice: device has mounted, id=%{public}s", device.id.c_str());
+            continue;
+        }
+
+        bool isInPendingList = false;
+        for (const auto& pendingDev : pendingMtpDevList_) {
+            if (pendingDev.id == device.id) {
+                isInPendingList = true;
+                break;
+            }
+        }
+        if (isInPendingList) {
+            LOGI("Device already in pending list, skipping: id=%{public}s", device.id.c_str());
             continue;
         }
 
         if (lastestMtpDevList_.size() > 0) {
-            LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
-            return E_MTP_MOUNT_FAILED;
+            LOGW("Multiple devices detected. Only one device is supported. Adding to pending list: id=%{public}s",
+                device.id.c_str());
+            StorageService::StorageRadar::ReportMtpResult("MountMtpDevice", E_NOT_SUPPORT, "NA");
+            pendingMtpDevList_.push_back(device);
+            continue;
         }
+        
+        lastestMtpDevList_.push_back(device);
         int32_t ret = MtpDeviceManager::GetInstance().MountDevice(device);
         if (ret == E_OK) {
-            lastestMtpDevList_.push_back(device);
-            LOGI("lastestMtpDevList_.push_back.");
+            LOGI("Device mounted successfully, id=%{public}s", device.id.c_str());
         } else if (ret == E_MTP_IS_MOUNTING) {
             return E_OK;
         } else {
+            lastestMtpDevList_.pop_back();
+            LOGE("Mount device failed, removing from list. ret=%{public}d, id=%{public}s", ret, device.id.c_str());
             return ret;
         }
     }
@@ -282,25 +334,40 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
 
 void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 {
-    std::lock_guard<std::mutex> lock(listMutex_);
-    LOGI("MtpDeviceMonitor::Umount detached mtp device, devNum=%{public}d, busLoc=%{public}d.", devNum, busLoc);
+    std::vector<MtpDeviceInfo> devicesToUnmount;
     
-    auto newEnd = std::remove_if(lastestMtpDevList_.begin(), lastestMtpDevList_.end(),
-        [devNum, busLoc, this](const MtpDeviceInfo& device) {
-            if (device.devNum == devNum && device.busLocation == busLoc) {
-                int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(device, true, true);
-                if (ret == E_OK) {
-                    LOGI("Successfully unmounted device, path=%{public}s", device.path.c_str());
+    {
+        std::lock_guard<std::mutex> lock(listMutex_);
+        auto newEnd = std::remove_if(lastestMtpDevList_.begin(), lastestMtpDevList_.end(),
+            [devNum, busLoc, &devicesToUnmount](const MtpDeviceInfo& device) {
+                if (device.devNum == devNum && device.busLocation == busLoc) {
+                    devicesToUnmount.push_back(device);
                     return true;
-                } else {
-                    LOGE("Umount mtp device failed, path=%{public}s, ret=%{public}d", device.path.c_str(), ret);
-                    StorageService::StorageRadar::ReportMtpResult("UmountDetachedMtpDevice::UmountDevice", ret, "NA");
-                    return false;
                 }
-            }
-            return false;
-        });
-    lastestMtpDevList_.erase(newEnd, lastestMtpDevList_.end());
+                return false;
+            });
+        lastestMtpDevList_.erase(newEnd, lastestMtpDevList_.end());
+
+        auto newPendingEnd = std::remove_if(pendingMtpDevList_.begin(), pendingMtpDevList_.end(),
+            [devNum, busLoc](const MtpDeviceInfo& device) {
+                if (device.devNum == devNum && device.busLocation == busLoc) {
+                    LOGI("Removing pending device, id=%{public}s", device.id.c_str());
+                    return true;
+                }
+                return false;
+            });
+        pendingMtpDevList_.erase(newPendingEnd, pendingMtpDevList_.end());
+    }
+    
+    for (const auto& device : devicesToUnmount) {
+        int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(device, true, true);
+        if (ret == E_OK) {
+            LOGI("Successfully unmounted device");
+        } else {
+            LOGE("Umount mtp device failed, ret=%{public}d", ret);
+            StorageService::StorageRadar::ReportMtpResult("UmountDetachedMtpDevice::UmountDevice", ret, "NA");
+        }
+    }
 }
 
 int32_t MtpDeviceMonitor::Mount(const std::string &id)
@@ -347,7 +414,7 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
 
 bool MtpDeviceMonitor::IsHwitDevice()
 {
-    char param[SYS_PARARMETER_SIZE] = {0};
+    char param[SYS_PARARMETER_SIZE + 1] = {0};
     int errorCode = GetParameter(KEY_CUST, "", param, SYS_PARARMETER_SIZE);
     if (errorCode <= 0) {
         LOGE("get vendor country fail, errorCode:%{public}d", errorCode);
@@ -443,6 +510,57 @@ int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
 }
 
 #ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
+bool MtpDeviceMonitor::IsCameraDevice(uint16_t vendorId, uint16_t productId)
+{
+    GPContext* context = gp_context_new();
+    if (context == nullptr) {
+        LOGE("IsCameraDevice: failed to create gphoto2 context");
+        return false;
+    }
+    
+    CameraAbilitiesList* abilitiesList = nullptr;
+    int ret = gp_abilities_list_new(&abilitiesList);
+    if (ret < GP_OK || abilitiesList == nullptr) {
+        LOGE("IsCameraDevice: failed to create abilities list, ret=%{public}d, error=%{public}s",
+             ret, gp_result_as_string(ret));
+        gp_context_unref(context);
+        return false;
+    }
+    
+    ret = gp_abilities_list_load(abilitiesList, context);
+    if (ret < GP_OK) {
+        LOGE("IsCameraDevice: failed to load abilities list, ret=%{public}d, error=%{public}s",
+             ret, gp_result_as_string(ret));
+        gp_abilities_list_free(abilitiesList);
+        gp_context_unref(context);
+        return false;
+    }
+    
+    int count = gp_abilities_list_count(abilitiesList);
+    for (int i = 0; i < count; i++) {
+        CameraAbilities abilities;
+        ret = gp_abilities_list_get_abilities(abilitiesList, i, &abilities);
+        if (ret < GP_OK) {
+            continue;
+        }
+
+        if (abilities.usb_vendor == vendorId &&
+            (abilities.usb_product == productId || abilities.usb_product == 0)) {
+            if (abilities.device_type == GP_DEVICE_STILL_CAMERA) {
+                gp_abilities_list_free(abilitiesList);
+                gp_context_unref(context);
+                return true;
+            } else {
+                LOGD("IsCameraDevice: VID/PID matches but device type is %{public}d (not camera)",
+                     abilities.device_type);
+            }
+        }
+    }
+    gp_abilities_list_free(abilitiesList);
+    gp_context_unref(context);
+    return false;
+}
+
 static bool FindLineValue(const char* sourceText, const char* targetKey, char* outputBuffer, size_t bufferSize)
 {
     if (!sourceText || !targetKey || !outputBuffer || bufferSize == 0) {
@@ -631,6 +749,11 @@ int32_t MtpDeviceMonitor::GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos)
         return E_MTP_MOUNT_FAILED;
     }
 
+    if (list == nullptr) {
+        LOGE("GetGphotoDevices: list is nullptr");
+        CleanupGphotoResources(context, list, nullptr);
+        return E_MTP_MOUNT_FAILED;
+    }
     const char *model = nullptr;
     const char *portPath = nullptr;
 
