@@ -370,7 +370,7 @@ vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
         }
         auto it = std::find(dvdDiskIds.begin(), dvdDiskIds.end(), disk.GetDiskId());
         if (it != dvdDiskIds.end()) {
-            LOGE("Tish disk has real volume, diskId: %{public}s", disk.GetDiskId().c_str());
+            LOGE("This disk has real volume, diskId: %{public}s", disk.GetDiskId().c_str());
             continue;
         }
         VolumeCore core("0", CD_FLAG, disk.GetDiskId(), MOUNTED);

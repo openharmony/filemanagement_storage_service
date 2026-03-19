@@ -268,8 +268,8 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
     }
 
     bool isExistCD = false;
-    IsExistCD(devPath_, isExistCD);
-    if (!isExistCD) {
+    int existRet = IsExistCD(devPath_, isExistCD);
+    if (existRet != E_OK || !isExistCD) {
         for (auto volumeId : volumeId_) {
             auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
             if (ret != E_OK) {

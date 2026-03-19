@@ -753,6 +753,7 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetAllVolumes start");
     vecOfVol = VolumeManagerService::GetInstance().GetAllVolumes();
+    LOGI("StorageManagerProvider::GetAllVolumes end, size:%{public}zu", vecOfVol.size());
 #endif
     return E_OK;
 }
