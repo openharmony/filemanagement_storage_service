@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <libmtp.h>
-#include "libmtpreleasedevice_fuzzer.h"
+#include "libmtpsendpartialobject_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -25,11 +25,6 @@ constexpr size_t MIN_EXTENSION_SIZE = sizeof(char *) + sizeof(int) * 2;
 constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int) +
                                       sizeof(LIBMTP_error_t);
 constexpr size_t MIN_SIZE = std::max({MIN_STORAGE_SIZE, MIN_EXTENSION_SIZE, MIN_MTPDEVICE_SIZE});
-constexpr size_t MIN_RAWDEVICE_SIZE = sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2 +
-                                      sizeof(uint8_t) + sizeof(int) + sizeof(char *) * 2;
-constexpr size_t MIN_FOLDER_SIZE = sizeof(uint32_t) * 3 + sizeof(char *);
-constexpr size_t MIN_FILE_SIZE = sizeof(uint32_t) * 3 + sizeof(uint64_t) + sizeof(char *) +
-                                 sizeof(time_t) + sizeof(LIBMTP_filetype_t);
 
 template<class T>
 T TypeCast(const uint8_t *data, size_t size, size_t *pos = nullptr)
@@ -108,15 +103,16 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     return pos;
 }
 
-bool ReleaseDeviceTest(const uint8_t *data, size_t size)
+bool SendPartialObjectTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    size_t sizeReq = MIN_SIZE + sizeof(uint32_t const) + sizeof(uint64_t const) +
+                     sizeof(unsigned int) + sizeof(unsigned char);
+    if (data == nullptr || size <= sizeReq) {
         return false;
     }
 
     LIBMTP_raw_device_t *rawdevices = nullptr;
     int numDevices = 0;
-
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawdevices, &numDevices);
     if (err != LIBMTP_ERROR_NONE || numDevices == 0) {
         if (rawdevices) {
@@ -124,20 +120,21 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
         }
         return false;
     }
-
-    LIBMTP_mtpdevice_t *device = LIBMTP_Open_Raw_Device(&rawdevices[0]);
-    if (!device) {
-        free(rawdevices);
-        return false;
-    }
+    free(rawdevices);
 
     LIBMTP_mtpdevice_t mtpDevice;
     LIBMTP_devicestorage_t storage;
     LIBMTP_device_extension_t extensions;
-    int ret = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
-    LIBMTP_Release_Device(&mtpDevice);
-    LIBMTP_Release_Device(device);
-    free(rawdevices);
+    size_t pos = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
+    uint32_t const id = TypeCast<uint32_t const>(data, size, &pos);
+    uint64_t offset = TypeCast<uint64_t>(data, size, &pos);
+    unsigned char paraData = TypeCast<unsigned char>(data, size, &pos);
+    unsigned int paraSize = TypeCast<unsigned int>(data, size, &pos);
+
+    int ret = LIBMTP_SendPartialObject(&mtpDevice, id, offset, &paraData, paraSize);
+    if (ret == -1) {
+        return false;
+    }
     return true;
 }
 } // namespace OHOS
@@ -146,6 +143,6 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::ReleaseDeviceTest(data, size);
+    OHOS::SendPartialObjectTest(data, size);
     return 0;
 }

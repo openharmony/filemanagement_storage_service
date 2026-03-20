@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <libmtp.h>
-#include "libmtpreleasedevice_fuzzer.h"
+#include "libmtpsendfilefromfile_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -25,11 +25,8 @@ constexpr size_t MIN_EXTENSION_SIZE = sizeof(char *) + sizeof(int) * 2;
 constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int) +
                                       sizeof(LIBMTP_error_t);
 constexpr size_t MIN_SIZE = std::max({MIN_STORAGE_SIZE, MIN_EXTENSION_SIZE, MIN_MTPDEVICE_SIZE});
-constexpr size_t MIN_RAWDEVICE_SIZE = sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2 +
-                                      sizeof(uint8_t) + sizeof(int) + sizeof(char *) * 2;
-constexpr size_t MIN_FOLDER_SIZE = sizeof(uint32_t) * 3 + sizeof(char *);
 constexpr size_t MIN_FILE_SIZE = sizeof(uint32_t) * 3 + sizeof(uint64_t) + sizeof(char *) +
-                                 sizeof(time_t) + sizeof(LIBMTP_filetype_t);
+                                  sizeof(time_t) + sizeof(LIBMTP_filetype_t);
 
 template<class T>
 T TypeCast(const uint8_t *data, size_t size, size_t *pos = nullptr)
@@ -108,15 +105,30 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     return pos;
 }
 
-bool ReleaseDeviceTest(const uint8_t *data, size_t size)
+int ConstructFile(const uint8_t *data, size_t size, size_t pos, LIBMTP_file_t *file)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    if (file != nullptr) {
+        file->item_id = TypeCast<uint32_t>(data, size, &pos);
+        file->parent_id = TypeCast<uint32_t>(data, size, &pos);
+        file->storage_id = TypeCast<uint32_t>(data, size, &pos);
+        file->filename = TypeCast<char*>(data, size, &pos);
+        file->filesize = TypeCast<uint64_t>(data, size, &pos);
+        file->modificationdate = TypeCast<time_t>(data, size, &pos);
+        file->filetype = TypeCast<LIBMTP_filetype_t>(data, size, &pos);
+        file->next = nullptr;
+    }
+    return pos;
+}
+
+bool SendFileFromFileTest(const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size <= MIN_SIZE + MIN_FILE_SIZE + sizeof(LIBMTP_progressfunc_t)
+        + sizeof(char const *const) + sizeof(void const *const)) {
         return false;
     }
 
     LIBMTP_raw_device_t *rawdevices = nullptr;
     int numDevices = 0;
-
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawdevices, &numDevices);
     if (err != LIBMTP_ERROR_NONE || numDevices == 0) {
         if (rawdevices) {
@@ -124,20 +136,22 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
         }
         return false;
     }
-
-    LIBMTP_mtpdevice_t *device = LIBMTP_Open_Raw_Device(&rawdevices[0]);
-    if (!device) {
-        free(rawdevices);
-        return false;
-    }
+    free(rawdevices);
 
     LIBMTP_mtpdevice_t mtpDevice;
     LIBMTP_devicestorage_t storage;
     LIBMTP_device_extension_t extensions;
-    int ret = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
-    LIBMTP_Release_Device(&mtpDevice);
-    LIBMTP_Release_Device(device);
-    free(rawdevices);
+    LIBMTP_file_t file;
+    size_t pos = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
+    char const *const path = TypeCast<char const *const>(data, size, &pos);
+    pos = ConstructFile(data, size, pos, &file);
+    LIBMTP_progressfunc_t const callback = TypeCast<LIBMTP_progressfunc_t const>(data, size, &pos);
+    void const * const userData = TypeCast<void const * const>(data, size, &pos);
+
+    int ret = LIBMTP_Send_File_From_File(&mtpDevice, path, &file, callback, userData);
+    if (ret != 0) {
+        return false;
+    }
     return true;
 }
 } // namespace OHOS
@@ -146,6 +160,6 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::ReleaseDeviceTest(data, size);
+    OHOS::SendFileFromFileTest(data, size);
     return 0;
 }

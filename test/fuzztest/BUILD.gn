@@ -203,13 +203,25 @@ group("storage_service_fuzztest") {
   ]
   if (support_open_source_libmtp) {
     deps += [
+      "libmtpcheckcapability_fuzzer:fuzztest",
       "libmtpcheckspecificdevice_fuzzer:fuzztest",
+      "libmtpclearerrorstack_fuzzer:fuzztest",
       "libmtpcreatefolder_fuzzer:fuzztest",
+      "libmtpdeleteobject_fuzzer:fuzztest",
       "libmtpdetectrawdevices_fuzzer:fuzztest",
-      "libmtp_fuzzer:fuzztest",
+      "libmtpdumperrorstack_fuzzer:fuzztest",
+      "libmtpgetfiletofile_fuzzer:fuzztest",
       "libmtpgetfilesandfolders_fuzzer:fuzztest",
+      "libmtpgetpartialobject_fuzzer:fuzztest",
+      "libmtpgetstorage_fuzzer:fuzztest",
       "libmtpopenrawdeviceuncached_fuzzer:fuzztest",
       "libmtpreleasedevice_fuzzer:fuzztest",
+      "libmtpsendfilefromfile_fuzzer:fuzztest",
+      "libmtpsendpartialobject_fuzzer:fuzztest",
+      "libmtpsetfilename_fuzzer:fuzztest",
+      "libmtpsetfoldername_fuzzer:fuzztest",
+      "libmtpsetobjectstring_fuzzer:fuzztest",
+      "libmtpsetobjectu32_fuzzer:fuzztest",
     ]
   }
 }
