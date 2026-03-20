@@ -118,8 +118,10 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     }
     int64_t freeSize = 0;
     int64_t systemSize = 0;
+    int64_t systemDataSize = 0;
     StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
+    StorageStatusManager::GetInstance().GetSystemDataSize(systemDataSize);
 
     extraData << "{userId is:" << userId << "}\n";
     extraData << "{app size is:" << ConvertBytesToMB(storageStatsInfo.app_, ACCURACY_NUM) << "MB";
@@ -129,7 +131,8 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     extraData << ",file size is:" << ConvertBytesToMB(storageStatsInfo.file_, ACCURACY_NUM) << "MB";
     extraData << ",total size is:" << std::to_string(ConvertBytesToMB(storageStatsInfo.total_, ACCURACY_NUM)) << "MB";
     extraData << ",sys size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB";
-    extraData << ",free size is:" << ConvertBytesToMB(freeSize, ACCURACY_NUM) << "MB}" << std::endl;
+    extraData << ",free size is:" << ConvertBytesToMB(freeSize, ACCURACY_NUM) << "MB";
+    extraData << ",sys data size is:" << ConvertBytesToMB(systemDataSize, ACCURACY_NUM) << "MB}" << std::endl;
     return E_OK;
 }
 
