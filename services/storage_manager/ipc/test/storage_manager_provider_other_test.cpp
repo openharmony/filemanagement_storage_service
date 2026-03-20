@@ -130,6 +130,7 @@ constexpr pid_t FOUNDATION_UID = 5523;
 constexpr int32_t USER_ID = 100;
 constexpr int32_t MINUSERID = -1;
 constexpr int32_t MAXUSERID = 10739;
+constexpr int32_t BUNDLE_POS = 2;
 
 class StorageManagerProviderTest : public testing::Test {
 public:
@@ -159,10 +160,10 @@ public:
     bool GetBundleNameForUid(const int uid, std::string &bundleName) override
     {
         if (g_returnBundleName == 0) {
-            bundleName = "com.huawei.hmos.filemanager";
+            bundleName = "com.hmos.filemanager";
         } else if (g_returnBundleName == 1) {
             bundleName = "com.ohos.sceneboard";
-        } else if (g_returnBundleName == 2) {
+        } else if (g_returnBundleName == BUNDLE_POS) {
             bundleName = "com.ohos.medialibrary.medialibrarydata";
         }
         return true;
