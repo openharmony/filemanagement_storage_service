@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,18 +19,19 @@
 
 #include "accesstoken_kit.h"
 #include "bundle_manager_connector.h"
+#include "bundle_mgr_client.h"
 #include "bundlemgr/bundle_mgr_interface.h"
 #include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
+#include "mock/storage_daemon_communication_mock.h"
+#include "mock/uece_activation_callback_mock.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
-#include "mock/uece_activation_callback_mock.h"
-#include "mock/storage_daemon_communication_mock.h"
-#include "bundle_mgr_client.h"
 #include "volume_core.h"
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <map>
@@ -38,7 +39,6 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-#include <cstdint>
 
 namespace {
 int32_t g_getTokenTypeFlag = 0;
@@ -47,7 +47,7 @@ int32_t g_returnBundleName = 0;
 pid_t g_testCallingUid = 1009;
 pid_t g_testUpdateServiceUid = 6666;
 bool g_returnUpdateService = false;
-}
+} // namespace
 
 void SetCallingUid(int32_t uid)
 {
@@ -68,11 +68,11 @@ void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRa
 {
     std::stringstream ss;
     uint32_t stringCount = stringVec.size();
-    ss.write(reinterpret_cast<const char*>(&stringCount), sizeof(stringCount));
+    ss.write(reinterpret_cast<const char *>(&stringCount), sizeof(stringCount));
 
     for (uint32_t i = 0; i < stringCount; ++i) {
         uint32_t strLen = stringVec[i].length();
-        ss.write(reinterpret_cast<const char*>(&strLen), sizeof(strLen));
+        ss.write(reinterpret_cast<const char *>(&strLen), sizeof(strLen));
         ss.write(stringVec[i].c_str(), strLen);
     }
     std::string result = ss.str();
@@ -99,7 +99,7 @@ uint32_t OHOS::IPCSkeleton::GetCallingTokenID()
     uint32_t callingTokenID = 100;
     return callingTokenID;
 }
-}
+} // namespace OHOS
 
 namespace OHOS::Security::AccessToken {
 ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID mockRet)
@@ -112,12 +112,12 @@ int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string &
     return g_verifyAccessToken;
 }
 
-int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& nativeTokenInfoRes)
+int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo &nativeTokenInfoRes)
 {
     nativeTokenInfoRes.processName = "foundation";
     return 0;
 }
-}
+} // namespace OHOS::Security::AccessToken
 
 namespace OHOS {
 namespace StorageManager {
@@ -167,7 +167,10 @@ public:
         }
         return true;
     }
-    sptr<IRemoteObject> AsObject() override { return nullptr; }
+    sptr<IRemoteObject> AsObject() override
+    {
+        return nullptr;
+    }
 };
 
 BundleMgrConnector::BundleMgrConnector() {}
@@ -185,13 +188,11 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
  * @tc.desc: Verify the MountDisShareFile function returns E_OK.
  * @tc.type: FUNC
  */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderMockTest_MountDisShareFile_001, TestSize.Level1) {
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderMockTest_MountDisShareFile_001, TestSize.Level1)
+{
     GTEST_LOG_(INFO) << "StorageManagerProviderMockTest_MountDisShareFile_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::map<std::string, std::string> shareFiles = {
-        {"file1", "path1"},
-        {"file2", "path2"}
-    };
+    std::map<std::string, std::string> shareFiles = {{"file1", "path1"}, {"file2", "path2"}};
 
     int32_t result = storageManagerProviderTest_->MountDisShareFile(USER_ID, shareFiles);
     EXPECT_NE(result, E_OK);
