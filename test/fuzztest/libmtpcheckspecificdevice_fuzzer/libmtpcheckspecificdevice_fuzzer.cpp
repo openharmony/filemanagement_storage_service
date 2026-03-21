@@ -46,6 +46,17 @@ bool CheckSpecificDeviceFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
 
+    LIBMTP_raw_device_t *rawdevices = nullptr;
+    int numDevices = 0;
+    LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawdevices, &numDevices);
+    if (err != LIBMTP_ERROR_NONE || numDevices == 0) {
+        if (rawdevices) {
+            free(rawdevices);
+        }
+        return false;
+    }
+    free(rawdevices);
+
     int pos = 0;
     int busno = TypeCast<int>(data, &pos);
     int devno = TypeCast<int>(data + pos);
