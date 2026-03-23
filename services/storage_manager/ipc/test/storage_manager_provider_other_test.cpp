@@ -137,22 +137,14 @@ public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
     void SetUp();
-    void TearDown();
+    void TearDown() {};
     std::shared_ptr<StorageDaemonCommunicationMock> sdCommMock_;
-    StorageManagerProvider *storageManagerProviderTest_;
+    std::unique_ptr<StorageManagerProvider> storageManagerProviderTest_ = nullptr;
 };
 
 void StorageManagerProviderTest::SetUp(void)
 {
-    storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
-}
-
-void StorageManagerProviderTest::TearDown(void)
-{
-    if (storageManagerProviderTest_ != nullptr) {
-        delete storageManagerProviderTest_;
-        storageManagerProviderTest_ = nullptr;
-    }
+    storageManagerProviderTest_ = std::make_unique<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
 }
 
 class MockBundleMgr : public AppExecFwk::IBundleMgr {
@@ -444,12 +436,14 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_00
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryptionPolicy_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(ACCOUNT_UID);
     std::string dirPath = "/test";
     uint32_t type = 2;
     auto ret = storageManagerProviderTest_->SetDirEncryptionPolicy(USER_ID, dirPath, type);
     EXPECT_NE(ret, E_OK);
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetDirEncryptionPolicy_001 end";
 }
 
@@ -461,6 +455,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetDirEncryption
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(DFS_UID);
     std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
@@ -468,6 +463,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001
     std::string deviceId = "device123";
     auto ret = storageManagerProviderTest_->MountDfsDocs(USER_ID, relativePath, networkId, deviceId);
     EXPECT_NE(ret, E_OK);
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_001 end";
 }
 
@@ -479,12 +475,14 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
     std::string networkId = "network123";
     std::string deviceId = "device123";
     auto ret = storageManagerProviderTest_->UMountDfsDocs(USER_ID, relativePath, networkId, deviceId);
     EXPECT_NE(ret, E_OK);
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_001 end";
 }
 
@@ -496,14 +494,15 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     g_returnBundleName = 2;
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
     g_testBundleMgrProxy = new MockBundleMgr();
     int32_t devFd = -1;
+
     auto ret = storageManagerProviderTest_->MountMediaFuse(USER_ID, devFd);
     EXPECT_NE(ret, E_OK);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_001 end";
 }
 
@@ -515,12 +514,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgr();
     auto ret = storageManagerProviderTest_->UMountMediaFuse(USER_ID);
     EXPECT_NE(ret, E_OK);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_001 end";
 }
 
@@ -532,6 +530,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateShareFile_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(FOUNDATION_UID);
     std::string uriStr = "file1";
@@ -546,6 +545,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
     std::vector<int32_t> funcResult;
     auto ret = storageManagerProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
     EXPECT_EQ(ret, E_OK);
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateShareFile_001 end";
 }
 
@@ -557,6 +557,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteShareFile_001 start";
+
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string uriStr = "file1";
     std::vector<std::string> uriStrVec = {uriStr};
@@ -568,6 +569,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_
     uint32_t tokenId = 12345;
     auto ret = storageManagerProviderTest_->DeleteShareFile(tokenId, fileRawData);
     EXPECT_NE(ret, E_OK);
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteShareFile_001 end";
 }
 
@@ -584,12 +586,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     std::string path = "/mnt/data/100/userExternal/1702";
     int32_t fuseFd = -1;
     g_returnBundleName = 0;
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgr();
 
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(USER_ID, path, fuseFd);
     EXPECT_NE(ret, E_OK);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 end";
 }
 
@@ -604,12 +604,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string path = "/mnt/data/100/userExternal/1702";
 
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgr();
-
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(USER_ID, path);
     EXPECT_NE(ret, E_OK);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
 }
 
@@ -658,12 +655,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_LockUserScreen_0
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(ACCOUNT_UID);
     g_returnBundleName = 1;
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgr();
 
     auto ret = storageManagerProviderTest_->LockUserScreen(USER_ID);
     EXPECT_NE(ret, E_OK);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
+
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_LockUserScreen_001 end";
 }
 
