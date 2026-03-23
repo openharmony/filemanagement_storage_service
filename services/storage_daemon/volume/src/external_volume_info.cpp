@@ -409,6 +409,18 @@ int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
+    if (major(device_) == DISK_CD_MAJOR) { // Don't deal mount, when CD is blank.
+        bool isBlankCD = false;
+        int blankRet = IsBlankCD(devPath_, isBlankCD);
+        if (blankRet == E_OK && isBlankCD) {
+            LOGW("Current cd is blank skip.");
+            fsType_ = "udf"; // Set default value
+            fsUuid_ = " ";
+            fsLabel_ = "DVD RW";
+            mountPath_ = StringPrintf(mountPathDir_.c_str(), fsType_.c_str());
+            return E_OK;
+        }
+    }
     int32_t ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
         return ret;
@@ -530,6 +542,14 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGI("External volume start force to unmount, mountPath_ is empty %{public}s.", mountPath_.c_str());
         return E_OK;
     }
+    if (major(device_) == DISK_CD_MAJOR) { // Don't deal unmount, when CD is blank.
+        bool isBlankCD = false;
+        int blankRet = IsBlankCD(devPath_, isBlankCD);
+        if (blankRet == E_OK && isBlankCD) {
+            LOGW("Current cd is blank skip.");
+            return E_OK;
+        }
+    }
     bool isUsbFuseByType = IsUsbFuseByType(fsType_);
     if (force && !isUsbFuseByType) {
         return DoUMountWithForceUsbFuse();
@@ -544,7 +564,6 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
-
     LOGI("External volume start to unmount mountPath: %{public}s.", GetAnonyString(mountPath_).c_str());
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (fd >= 0) {
@@ -665,6 +684,14 @@ int32_t ExternalVolumeInfo::DoTryToFix()
 
 int32_t ExternalVolumeInfo::DoCheck()
 {
+    if (major(device_) == DISK_CD_MAJOR) { // Don't deal check, when CD is blank.
+        bool isBlankCD = false;
+        int blankRet = IsBlankCD(devPath_, isBlankCD);
+        if (blankRet == E_OK && isBlankCD) {
+            LOGW("Current cd is blank skip.");
+            return E_OK;
+        }
+    }
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret != E_OK) {
         LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());

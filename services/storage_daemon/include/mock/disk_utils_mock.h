@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,9 @@ public:
     virtual int DestroyDiskNode(const std::string &path) = 0;
     virtual int GetDevSize(const std::string &path, uint64_t *size) = 0;
     virtual int GetMaxVolume(dev_t device) = 0;
+    virtual int IsBlankCD(const std::string &diskPath, bool &isBlankCD) = 0;
+    virtual int IsExistCD(const std::string &diskPath, bool &isExistCD) = 0;
+    virtual int Eject(const std::string &devPath) = 0;
     virtual int32_t ReadMetadata(const std::string &path, std::string &uuid, std::string &type,
                                  std::string &label) = 0;
     virtual std::string GetBlkidData(const std::string &devPath, const std::string &type) = 0;
@@ -46,6 +49,9 @@ public:
     MOCK_METHOD1(DestroyDiskNode, int(const std::string &path));
     MOCK_METHOD2(GetDevSize, int(const std::string &path, uint64_t *size));
     MOCK_METHOD1(GetMaxVolume, int(dev_t device));
+    MOCK_METHOD2(IsBlankCD, int(const std::string &diskPath, bool &isBlankCD));
+    MOCK_METHOD2(IsExistCD, int(const std::string &diskPath, bool &isExistCD));
+    MOCK_METHOD1(Eject, int(const std::string &devPath));
     MOCK_METHOD4(ReadMetadata, int32_t(const std::string &path, std::string &uuid, std::string &type,
                                        std::string &label));
     MOCK_METHOD2(GetBlkidData, std::string(const std::string &devPath, const std::string &type));

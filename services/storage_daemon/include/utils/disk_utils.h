@@ -25,8 +25,12 @@ constexpr int DISK_MMC_MAJOR = 179;
 constexpr int MAX_SCSI_VOLUMES = 15;
 constexpr int DISK_CD_MAJOR = 11;
 constexpr int DISC_STATUS_BYTE_INDEX = 2;
-constexpr uint8_t DISC_STATUS_MASK = 0x03;
 constexpr int MAX_BUF = 4096;
+constexpr uint8_t DISC_STATUS_MASK = 0x03;
+constexpr uint8_t CDS_NO_DISC = 1;
+constexpr uint8_t CDS_TRAY_OPEN = 2;
+constexpr uint8_t CDS_DRIVE_NOT_READY = 3;
+constexpr uint8_t CDS_DISC_OK = 4;
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
@@ -44,7 +48,8 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
 int IsBlankCD(const std::string &diskPath, bool &isBlankCD);
 int Eject(const std::string &devPath);
-void IsExistCD(const std::string &diskPath, bool &isExistCD);
+int IsExistCD(const std::string &diskPath, bool &isExistCD);
+int GetCDStatus(const char *device, int &status);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

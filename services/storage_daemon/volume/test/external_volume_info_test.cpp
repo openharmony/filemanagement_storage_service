@@ -580,6 +580,54 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_012
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_012, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_012 start";
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    vol.fsUuid_ = "123e4567-e89b-12d3-a456-426614174000";
+    vol.fsLabel_ = "";
+    vol.devPath_ = "/mnt/data/external";
+    vol.device_ = 2816;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_ISO9660_MOUNT);
+
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_ISO9660_MOUNT);
+
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_012 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_001
  * @tc.desc: Verify ExecuteAsyncMount function.
  * @tc.type: FUNC
@@ -919,6 +967,60 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_006
+ * @tc.desc: Verify the DoUMount function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_006 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "udf";
+    vol.mountPath_ = "/mnt/data";
+    vol.device_ = 9999;
+    EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return(" "));
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillRepeatedly(Return(0));
+
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.device_ = 2816;
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_006 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoTryToFix_001
  * @tc.desc: Verify the DoTryToFix function.
  * @tc.type: FUNC
@@ -1029,6 +1131,43 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCheck_002
+ * @tc.desc: Verify the DoCheck function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_002 start";
+
+    ExternalVolumeInfo vol;
+    std::string diskId = "disk-11-600";
+    std::string volId = "vol-11-601";
+    bool isUserdata = false;
+    vol.Create(volId, diskId, 2816, isUserdata);
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.Check(), E_CHECK);
+
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.Check(), E_CHECK);
+
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.Check(), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_002 end";
 }
 
 /**

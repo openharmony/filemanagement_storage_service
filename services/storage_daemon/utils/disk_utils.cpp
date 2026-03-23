@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include <cstdint>
+#include <fcntl.h>
 #include <iomanip>
 #include <openssl/sha.h>
 #include <sstream>
@@ -39,6 +41,7 @@ constexpr int32_t DEF_TIMEOUT = 120000;
 constexpr int32_t SENSE_BUFF_LEN = 64;
 constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
 constexpr int32_t READ_DISC_INFO_SECTOR = 0x46;
+constexpr int32_t CDROM_DRIVE_STATUS = 0x5326;
 constexpr uint8_t DISC_TYPE_OFFSET_HIGH = 6;
 constexpr uint8_t DISC_TYPE_OFFSET_LOW = 7;
 constexpr uint8_t DISC_TYPE_OFFSET = 8;
@@ -299,6 +302,46 @@ int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
     return E_OK;
 }
 
+int GetCDStatus(const char *device, int &status)
+{
+    char realPath[PATH_MAX] = { 0 };
+    if (realpath(device, realPath) == nullptr) {
+        LOGE("realpath failed.");
+        return E_FILE_PATH_INVALID;
+    }
+    FILE* file = fopen(realPath, "rb");
+    if (file == nullptr) {
+        LOGE("fopen failed errStr:%{public}s errno:%{public}d", strerror(errno), errno);
+        return E_SYS_KERNEL_ERR;
+    }
+    int fd = fileno(file);
+    if (fd < 0) {
+        LOGE("fileno failed, errStr:%{public}s errno:%{public}d", strerror(errno), errno);
+        (void)fclose(file);
+        return E_SYS_KERNEL_ERR;
+    }
+
+    /* Get CD status by ioctl
+     * CDS_NO_DISC - 1 - No disk.
+     * CDS_TRAY_OPEN - 2 - Tray open.
+     * CDS_DRIVE_NOT_READY - 3 - CD-Rom in tray but not ready, wait init.
+     * CDS_DISC_OK - 4 - CD-Rom is ready.
+     */
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int slot = INT_MAX;
+    status = ioctl(fd, CDROM_DRIVE_STATUS, &slot);
+    if (status < 0) {
+        LOGE("CD status:%{public}d errStr:%{public}s errno:%{public}d", status, strerror(errno), errno);
+        (void)fclose(file);
+        return E_ERR;
+    }
+    (void)fclose(file);
+    auto delay = StorageService::StorageRadar::ReportDuration("GET CD STATUS: CD ROM",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, 0);
+    LOGW("SD_DURATION: GET CD STATUS: device=%{public}s, delay = %{public}s", device, delay.c_str());
+    return E_OK;
+}
+
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
 {
     char realPath[PATH_MAX] = { 0 };
@@ -331,41 +374,39 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
     return E_OK;
 }
 
-void IsExistCD(const std::string &diskPath, bool &isExistCD)
+int IsExistCD(const std::string &diskPath, bool &isExistCD)
 {
-    std::vector<std::string> cmd;
-    cmd = {
-        "dd",
-        "if=" + diskPath,
-        "of=/dev/null",
-        "bs=2048",
-        "count=1",
-        "status=none"
-    };
-    std::vector<std::string> output;
-    int32_t err = ForkExec(cmd, &output);
-    for (auto str : output) {
-        LOGI("IsExistCD output: %{public}s", str.c_str());
+    int status = 0;
+    isExistCD = false;
+    int ret = GetCDStatus(diskPath.c_str(), status);
+    if (ret != E_OK) {
+        LOGE("Unknown cd status !");
+        return E_ERR;
     }
-    if (err != 0 || !output.empty()) {
-        isExistCD = false;
-        return;
-    }
-    isExistCD = true;
-    return;
+    isExistCD = (status == CDS_DRIVE_NOT_READY || status == CDS_DISC_OK);
+    LOGI("Current CD statue, isExistCD: %{public}d", isExistCD);
+    return E_OK;
 }
 
 int IsBlankCD(const std::string &diskPath, bool &isBlankCD)
 {
+    isBlankCD = false;
+    bool isExistCD = false;
+    int existRet = IsExistCD(diskPath, isExistCD);
+    if (existRet != E_OK || !isExistCD) {
+        LOGE("CD is not exist, please check ! existRet:%{public}d, isExistCD:%{public}d", existRet, isExistCD);
+        return E_ERR;
+    }
+
     uint8_t buf[MAX_BUF];
-    if (ReadDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) == 0) {
+    if (ReadDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) == E_OK) {
         uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
         isBlankCD = (discStatus == 0);
+        LOGI("Current CD statue, isBlank: %{public}d", isBlankCD);
         return E_OK;
-    } else {
-        LOGE("Unable to read disc information.");
     }
-    return E_OK;
+    LOGE("Unable to read disc information.");
+    return E_ERR;
 }
 
 std::string DiskType2Str(uint8_t diskType)
