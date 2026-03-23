@@ -229,7 +229,7 @@ int32_t StorageDaemonProvider::Mount(const std::string &volId, uint32_t flags)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
-    HiAudit::GetInstance().WriteStart("Mount", "volId=" + volId + ",flags=" + flags);
+    HiAudit::GetInstance().WriteStart("Mount", "volId=" + volId + ",flags=" + std::to_string(flags));
     int32_t ret = VolumeManager::Instance().Mount(volId, flags);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< ret=%{public}d", ret);
