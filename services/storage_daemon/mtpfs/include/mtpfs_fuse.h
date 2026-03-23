@@ -128,7 +128,6 @@ private:
     int HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo);
     int SetupFileAttributes(const char *path, const MtpFsTypeFile *file, struct stat *buf);
     int OpenFileInternal(const char *funcName, const std::string &tmpPath, struct fuse_file_info *fileInfo);
-    int UploadTemporaryFile(const std::string &stdPath, const std::string &tmpPath, const struct stat &fileStat);
     void CleanupTemporaryFile(const std::string &stdPath, const std::string &tmpPath);
     struct fuse_args args_;
     struct fuse_operations fuseOperations_;
