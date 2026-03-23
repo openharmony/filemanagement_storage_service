@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Huawei Device Co., Ltd.
+# Copyright (C) 2025-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -415,10 +415,105 @@ ohos_unittest("storage_manager_provider_communication_test") {
   ldflags = ["--coverage"]
 }
 
+ohos_unittest("storage_manager_provider_other_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
+    "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
+    "${storage_manager_path}/common_event/storage_common_event_subscriber.cpp",
+    "${storage_manager_path}/dfx_report/storage_dfx_reporter.cpp",
+    "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
+    "${storage_service_path}/services/common/src/storage_service_constant.cpp",
+    "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
+    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "storage_manager_provider_other_test.cpp",
+    
+  ]
+
+  include_dirs = [
+    "${storage_manager_path}/include/ipc",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include/common_event",
+    "${storage_manager_path}/include/utils",
+    "${storage_manager_path}/include/storage",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  if (storage_service_storage_statistics_manager) {
+    sources += [
+      "${storage_manager_path}/storage/src/storage_status_manager.cpp",
+      "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
+      "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+      "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+      "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
+    ]
+  }
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "private=public",
+    "STORAGE_MANAGER_UNIT_TEST",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
+
+  external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:dataobs_manager",
+    "access_token:libaccesstoken_sdk",
+    "appspawn:appspawn_client",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "cJSON:cjson",
+    "common_event_service:cesfwk_innerkits",
+    "config_policy:configpolicy_util",
+    "data_share:datashare_consumer",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "json:nlohmann_json_static",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+  cflags_cc = [ "--coverage"]
+  ldflags = ["--coverage"]
+}
+
 group("storage_manager_ipc_test") {
   testonly = true
   deps = [ ":storage_manager_provider_test" ]
   deps += [ ":storage_manager_provider_permission_test" ]
   deps += [ ":storage_manager_provider_premission_access_test" ]
   deps += [ ":storage_manager_provider_communication_test" ]
+  deps += [ ":storage_manager_provider_other_test" ]
 }
