@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -170,19 +170,25 @@ int32_t DirInfo::MakeDir() const
 
 int32_t DirInfo::MakeDir(const std::string &createPath) const
 {
+    LOGI("[L2:UserPathResolver] DirInfo::MakeDir: >>> ENTER <<< path=%{public}s", createPath.c_str());
     if (!PrepareDir(createPath, mode, uid, gid)) {
-        LOGE("prepareDir failed, path=%{public}s, errno=%{public}d", createPath.c_str(), errno);
+        LOGE("[L2:UserPathResolver] DirInfo::MakeDir: <<< EXIT FAILED <<< prepareDir failed, path=%{public}s,"
+            "errno=%{public}d", createPath.c_str(), errno);
         return E_PREPARE_DIR;
     }
+    LOGI("[L2:UserPathResolver] DirInfo::MakeDir: <<< EXIT SUCCESS <<< path=%{public}s", createPath.c_str());
     return E_OK;
 }
 
 int32_t DirInfo::RemoveDir() const
 {
+    LOGI("[L2:UserPathResolver] DirInfo::RemoveDir: >>> ENTER <<< path=%{public}s", path.c_str());
     if (!RmDirRecurse(path)) {
-        LOGE("RmDirRecurse failed, path=%{public}s, errno=%{public}d", path.c_str(), errno);
+        LOGE("[L2:UserPathResolver] DirInfo::RemoveDir: <<< EXIT FAILED <<< RmDirRecurse failed, path=%{public}s,"
+             "errno=%{public}d", path.c_str(), errno);
         return E_DESTROY_DIR;
     }
+    LOGI("[L2:UserPathResolver] DirInfo::RemoveDir: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     return E_OK;
 }
 
@@ -200,24 +206,29 @@ int32_t MountNodeInfo::MountDir() const
 
 int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) const
 {
+    LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: >>> ENTER <<< src=%{public}s, dst=%{public}s",
+        src.c_str(), dst.c_str());
     std::string currentDst = dst;
     if (createDstPath && dstPathInfo != nullptr) {
         dstPathInfo->MakeDir(currentDst);
     }
 
     if (!src.empty() && !IsDir(src)) {
-        LOGE("path invalid, %{public}s", src.c_str());
+        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< src path invalid, %{public}s",
+            src.c_str());
         return E_NON_EXIST;
     }
 
     if (currentDst.empty() || !IsDir(currentDst)) {
-        LOGE("path invalid, %{public}s", currentDst.c_str());
+        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< dst path invalid, %{public}s",
+            currentDst.c_str());
         return E_NON_EXIST;
     }
 
     if (options.find(OPTIONS_CHECK_MOUNTED) != options.end()) {
         if (IsPathMounted(currentDst)) {
-            LOGI("path has mounted, %{public}s", currentDst.c_str());
+            LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< path has mounted, %{public}s",
+                currentDst.c_str());
             return E_OK;
         }
     }
@@ -229,16 +240,21 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USER_ID);
     LOGI("SD_DURATION: MountDir, delayTime = %{public}s", delay.c_str());
     if (ret != E_OK && errno != EEXIST && errno != EBUSY) {
-        LOGE("mount failed, path=%{public}s, errno=%{public}d.", currentDst.c_str(), errno);
+        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< mount failed, path=%{public}s,"
+            "errno=%{public}d", currentDst.c_str(), errno);
         return ret;
     }
+    LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< src=%{public}s, dst=%{public}s",
+        src.c_str(), dst.c_str());
     return E_OK;
 }
 
 int32_t UserPathResolver::GetUserBasePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] GetUserBasePath: >>> ENTER <<< userId=%{public}d, flags=%{public}u", userId, flags);
     auto ret = GetUserPath(flags, JSON_KEY_USER_BASE, dirInfoList);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetUserBasePath: <<< EXIT FAILED <<< GetUserPath failed, ret=%{public}d", ret);
         return ret;
     }
     return ReplaceUserId(userId, dirInfoList);
@@ -246,8 +262,10 @@ int32_t UserPathResolver::GetUserBasePath(int32_t userId, uint32_t flags, std::v
 
 int32_t UserPathResolver::GetUserServicePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] GetUserServicePath: >>> ENTER <<< userId=%{public}d, flags=%{public}u", userId, flags);
     auto ret = GetUserPath(flags, JSON_KEY_USER_SERVICE, dirInfoList);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetUserServicePath: <<< EXIT FAILED <<< GetUserPath failed, ret=%{public}d", ret);
         return ret;
     }
     return ReplaceUserId(userId, dirInfoList);
@@ -255,14 +273,17 @@ int32_t UserPathResolver::GetUserServicePath(int32_t userId, uint32_t flags, std
 
 int32_t UserPathResolver::GetAppdataPath(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] GetAppdataPath: >>> ENTER <<< userId=%{public}d", userId);
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_USER_PATH, j);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetAppdataPath: <<< EXIT FAILED <<< OpenJsonFile failed, ret=%{public}d", ret);
         return ret;
     }
 
     ret = GetTListFromJson<DirInfo>(j, {JSON_KEY_APPDATA}, dirInfoList);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetAppdataPath: <<< EXIT FAILED <<< GetTListFromJson failed, ret=%{public}d", ret);
         return ret;
     }
     return ReplaceUserId(userId, dirInfoList);
@@ -270,14 +291,17 @@ int32_t UserPathResolver::GetAppdataPath(int32_t userId, std::vector<DirInfo> &d
 
 int32_t UserPathResolver::GetVirtualPath(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] GetVirtualPath: >>> ENTER <<< userId=%{public}d", userId);
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_USER_PATH, j);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetVirtualPath: <<< EXIT FAILED <<< OpenJsonFile failed, ret=%{public}d", ret);
         return ret;
     }
 
     ret = GetTListFromJson<DirInfo>(j, {JSON_KEY_VIRTUAL}, dirInfoList);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetVirtualPath: <<< EXIT FAILED <<< GetTListFromJson failed, ret=%{public}d", ret);
         return ret;
     }
     return ReplaceUserId(userId, dirInfoList);
@@ -301,14 +325,19 @@ int32_t UserPathResolver::GetSandboxMountNodeList(int32_t userId, std::vector<Mo
 int32_t UserPathResolver::GetMountNodeList(int32_t userId, const std::vector<std::string> &pathKeys,
     std::vector<MountNodeInfo> &mountNodeList)
 {
+    LOGI("[L2:UserPathResolver] GetMountNodeList: >>> ENTER <<< userId=%{public}d, pathKeys.size()=%{public}zu",
+        userId, pathKeys.size());
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_MOUNT_INFO, j);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetMountNodeList: <<< EXIT FAILED <<< OpenJsonFile failed, ret=%{public}d", ret);
         return ret;
     }
 
     ret = GetTListFromJson<MountNodeInfo>(j, pathKeys, mountNodeList);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetMountNodeList: <<< EXIT FAILED <<< GetTListFromJson failed, ret=%{public}d",
+            ret);
         return ret;
     }
     return ReplaceUserId(userId, mountNodeList);
@@ -316,6 +345,8 @@ int32_t UserPathResolver::GetMountNodeList(int32_t userId, const std::vector<std
 
 int32_t UserPathResolver::GetUserPath(uint32_t flags, const std::string &userType, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] GetUserPath: >>> ENTER <<< flags=%{public}u, userType=%{public}s",
+        flags, userType.c_str());
     std::map<IStorageDaemonEnum, std::string> expectFlags {
         {CRYPTO_FLAG_EL1, EL1},
         {CRYPTO_FLAG_EL2, EL2},
@@ -327,6 +358,7 @@ int32_t UserPathResolver::GetUserPath(uint32_t flags, const std::string &userTyp
     nlohmann::json j;
     auto ret = OpenJsonFile(STORAGE_USER_PATH, j);
     if (ret != E_OK) {
+        LOGE("[L2:UserPathResolver] GetUserPath: <<< EXIT FAILED <<< OpenJsonFile failed, ret=%{public}d", ret);
         return ret;
     }
 
@@ -336,24 +368,30 @@ int32_t UserPathResolver::GetUserPath(uint32_t flags, const std::string &userTyp
             ret = GetTListFromJson<DirInfo>(j, {userType, expectFlag.second}, dirInfoList);
         }
         if (ret != E_OK) {
+            LOGE("[L2:UserPathResolver] GetUserPath: <<< EXIT FAILED <<< GetTListFromJson failed, ret=%{public}d", ret);
             return ret;
         }
     }
+    LOGI("[L2:UserPathResolver] GetUserPath: <<< EXIT SUCCESS <<< dirInfoList.size()=%{public}zu", dirInfoList.size());
     return E_OK;
 }
 
 int32_t UserPathResolver::OpenJsonFile(const std::string &filename, nlohmann::json &j)
 {
+    LOGI("[L2:UserPathResolver] OpenJsonFile: >>> ENTER <<< filename=%{public}s", filename.c_str());
     std::string filePath = STORAGE_ETC_PATH + filename;
     struct stat fileStat;
     if (stat(filePath.c_str(), &fileStat) != 0 ||
         fileStat.st_size <= 0 || fileStat.st_size > MAX_JSON_FILE_LEN) {
+        LOGE("[L2:UserPathResolver] OpenJsonFile: <<< EXIT FAILED <<< file stat error, filename=%{public}s",
+            filename.c_str());
         return E_OPEN_JSON_FILE_ERROR;
     }
 
     std::ifstream file(filePath);
     if (!file.is_open()) {
-        LOGE("json file: %{public}s open failed, error=%{public}d", filename.c_str(), errno);
+        LOGE("[L2:UserPathResolver] OpenJsonFile: <<< EXIT FAILED <<< json file open failed, filename=%{public}s,"
+            "error=%{public}d", filename.c_str(), errno);
         return E_OPEN_JSON_FILE_ERROR;
     }
     
@@ -361,11 +399,12 @@ int32_t UserPathResolver::OpenJsonFile(const std::string &filename, nlohmann::js
     buffer << file.rdbuf();
     std::string content = buffer.str();
     if (content.empty() || !nlohmann::json::accept(content)) {
-        LOGE("parseFromJson: jsonStr is empty or invalid");
+        LOGE("[L2:UserPathResolver] OpenJsonFile: <<< EXIT FAILED <<< jsonStr is empty or invalid");
         return E_JSON_PARSE_ERROR;
     }
 
     j = nlohmann::json::parse(content, nullptr, false);
+    LOGI("[L2:UserPathResolver] OpenJsonFile: <<< EXIT SUCCESS <<< filename=%{public}s", filename.c_str());
     return E_OK;
 }
 
@@ -373,36 +412,38 @@ template <typename T>
 int32_t UserPathResolver::GetTListFromJson(const nlohmann::json &j, const std::vector<std::string> &pathKeys,
     std::vector<T> &tList)
 {
+    LOGI("[L2:UserPathResolver] GetTListFromJson: >>> ENTER <<< pathKeys.size()=%{public}zu", pathKeys.size());
     if (j.is_discarded()) {
-        LOGE("parseFromJson: jsonStr is discarded");
+        LOGE("[L2:UserPathResolver] GetTListFromJson: <<< EXIT FAILED <<< jsonStr is discarded");
         return E_JSON_PARSE_ERROR;
     }
 
     const nlohmann::json* current = &j;
     for (const auto &key : pathKeys) {
         if (!(*current).contains(key)) {
-            LOGE("json parse error, key=%{public}s not exist", key.c_str());
+            LOGE("[L2:UserPathResolver] GetTListFromJson: <<< EXIT FAILED <<< key=%{public}s not exist", key.c_str());
             return E_JSON_PARSE_ERROR;
         }
         if (!(*current).at(key).is_object() && !(*current).at(key).is_array()) {
-            LOGE("json parse error, key=%{public}s invalid", key.c_str());
+            LOGE("[L2:UserPathResolver] GetTListFromJson: <<< EXIT FAILED <<< key=%{public}s invalid", key.c_str());
             return E_JSON_PARSE_ERROR;
         }
         current = &(*current).at(key);
     }
 
     if (!(*current).is_array()) {
-        LOGE("json parse error, not array");
+        LOGE("[L2:UserPathResolver] GetTListFromJson: <<< EXIT FAILED <<< not array");
         return E_JSON_PARSE_ERROR;
     }
 
     for (const auto &item : *current) {
         if (!item.is_object()) {
-            LOGE("json parse error, item not object");
+            LOGE("[L2:UserPathResolver] GetTListFromJson: <<< EXIT FAILED <<< item not object");
             return E_JSON_PARSE_ERROR;
         }
         tList.emplace_back(item.get<T>());
     }
+    LOGI("[L2:UserPathResolver] GetTListFromJson: <<< EXIT SUCCESS <<< tList.size()=%{public}zu", tList.size());
     return E_OK;
 }
 
@@ -414,19 +455,25 @@ template int32_t UserPathResolver::GetTListFromJson<MountNodeInfo>(const nlohman
 
 int32_t UserPathResolver::ReplaceUserId(int32_t userId, std::vector<DirInfo> &dirInfoList)
 {
+    LOGI("[L2:UserPathResolver] ReplaceUserId(DirInfo): >>> ENTER <<< userId=%{public}d,"
+        "dirInfoList.size()=%{public}zu", userId, dirInfoList.size());
     for (auto &dirInfo : dirInfoList) {
         ReplaceAndCount(dirInfo.path, USER_ID, std::to_string(userId));
     }
+    LOGI("[L2:UserPathResolver] ReplaceUserId(DirInfo): <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
 
 int32_t UserPathResolver::ReplaceUserId(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
+    LOGI("[L2:UserPathResolver] ReplaceUserId(MountNodeInfo): >>> ENTER <<< userId=%{public}d,"
+        "mountNodeList.size()=%{public}zu", userId, mountNodeList.size());
     for (auto &mountNode : mountNodeList) {
         ReplaceAndCount(mountNode.srcPath, USER_ID, std::to_string(userId));
         ReplaceAndCount(mountNode.dstPath, USER_ID, std::to_string(userId));
         ReplaceAndCount(mountNode.data, USER_ID, std::to_string(userId));
     }
+    LOGI("[L2:UserPathResolver] ReplaceUserId(MountNodeInfo): <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
 } // namespace StorageDaemon

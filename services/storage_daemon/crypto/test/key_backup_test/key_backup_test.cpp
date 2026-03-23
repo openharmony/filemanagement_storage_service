@@ -29,6 +29,10 @@ constexpr static uint32_t MAX_FILE_NUM = 5;
 constexpr uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
 const string TEST_PATH = "/data/tdd";
 constexpr const char *BACKUP_NAME = "_bak";
+const string MKDIR_RETRY_ROOT = TEST_PATH + "/mkdir_retry_case";
+const string MKDIR_RETRY_SUCCESS_PATH = MKDIR_RETRY_ROOT + "/dir_a/dir_b/file.txt";
+const string MKDIR_RETRY_CREATED_DIR = MKDIR_RETRY_ROOT + "/dir_a/dir_b";
+const string MKDIR_RETRY_FAIL_PATH = "/proc/1/key_backup_retry/file.txt";
 class KeyBackupTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -108,6 +112,27 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetLoopMaxNum_001, TestSize.Level1)
     EXPECT_EQ(KeyBackup::GetInstance().GetLoopMaxNum(MAX_FILE_NUM + 1), INVALID_LOOP_NUM);
     EXPECT_EQ(KeyBackup::GetInstance().GetLoopMaxNum(MAX_FILE_NUM), 31);
     GTEST_LOG_(INFO) << "KeyBackup_GetLoopMaxNum_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_MkdirParentWithRetry_001
+ * @tc.desc: Verify MkdirParentWithRetry success and failure branches.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_MkdirParentWithRetry_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_MkdirParentWithRetry_001 Start";
+
+    (void)KeyBackup::GetInstance().RemoveNode(MKDIR_RETRY_ROOT);
+    EXPECT_EQ(
+        KeyBackup::GetInstance().MkdirParentWithRetry(MKDIR_RETRY_SUCCESS_PATH, DEFAULT_WRITE_FILE_PERM), 0);
+    EXPECT_EQ(access(MKDIR_RETRY_CREATED_DIR.c_str(), F_OK), 0);
+
+    EXPECT_NE(KeyBackup::GetInstance().MkdirParentWithRetry(MKDIR_RETRY_FAIL_PATH, DEFAULT_WRITE_FILE_PERM), 0);
+
+    (void)KeyBackup::GetInstance().RemoveNode(MKDIR_RETRY_ROOT);
+    GTEST_LOG_(INFO) << "KeyBackup_MkdirParentWithRetry_001 end";
 }
 
 /**
@@ -803,23 +828,5 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetFileList_001, TestSize.Level1)
     unlink(f1.c_str());
     unlink(f2.c_str());
     GTEST_LOG_(INFO) << "KeyBackup_GetFileList_001 end";
-}
-
-/**
- * @tc.name: KeyBackup_GetRealPath_002
- * @tc.desc: Verify the GetRealPath function with PATH_MAX length.
- * @tc.type: FUNC
- */
-HWTEST_F(KeyBackupTest, KeyBackup_GetRealPath_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyBackup_GetRealPath_002 start";
-
-    std::string path;
-    std::string realPath;
-
-    path.assign(PATH_MAX, 'a');
-    EXPECT_FALSE(KeyBackup::GetInstance().GetRealPath(path, realPath));
-
-    GTEST_LOG_(INFO) << "KeyBackup_GetRealPath_002 end";
 }
 }

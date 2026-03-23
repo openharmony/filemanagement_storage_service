@@ -42,10 +42,12 @@ constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::string &path,
     std::set<std::string> &occupyFiles)
 {
+    LOGI("[L2:MountManager] CheckSymlinkForMulti: >>> ENTER <<< fdPath=%{public}s, path=%{public}s",
+        fdPath.c_str(), path.c_str());
     char realPath[PATH_MAX_FOR_LINK];
     int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
     if (res < 0) {
-        LOGE("readlink failed for multi, errno is %{public}d.", errno);
+        LOGE("[L2:MountManager] CheckSymlinkForMulti: <<< EXIT FAILED <<< readlink failed, errno=%{public}d", errno);
         return;
     }
     realPath[res] = '\0';
@@ -54,13 +56,15 @@ void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::st
         realPathStr = realPathStr.substr(strlen(UN_REACHABLE)) + FILE_SEPARATOR_CHAR;
     }
     if (realPathStr.find(path) == 0) {
-        LOGE("find a fd from link, %{public}s", realPathStr.c_str());
+        LOGE("[L2:MountManager] CheckSymlinkForMulti: find a fd from link, %{public}s", realPathStr.c_str());
         realPathStr = realPathStr.substr(path.size());
         if (realPathStr.empty()) {
+            LOGI("[L2:MountManager] CheckSymlinkForMulti: <<< EXIT SUCCESS <<< realPathStr is empty");
             return;
         }
         if (path == FILE_MGR_ROOT_PATH) {
             occupyFiles.insert(realPathStr);
+            LOGI("[L2:MountManager] CheckSymlinkForMulti: <<< EXIT SUCCESS <<< inserted to occupyFiles");
             return;
         }
         std::string::size_type point = realPathStr.find(FILE_SEPARATOR_CHAR);
@@ -69,51 +73,62 @@ void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::st
         }
         occupyFiles.insert(realPathStr);
     }
+    LOGI("[L2:MountManager] CheckSymlinkForMulti: <<< EXIT SUCCESS <<< occupyFiles.size()=%{public}zu",
+         occupyFiles.size());
 }
 
 int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
+    LOGI("[L2:MountManager] MountDisShareFile: >>> ENTER <<< userId=%{public}d, shareFiles.size()=%{public}zu",
+        userId, shareFiles.size());
     std::lock_guard<std::mutex> lock(mountDisMutex_);
-    LOGI("mount share file start.");
+    LOGI("[L2:MountManager] MountDisShareFile: mount share file start.");
     std::map<std::string, std::string> notMountPaths = shareFiles;
     int32_t ret = FilterNotMountedPath(notMountPaths);
     if (ret != E_OK) {
+        LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< FilterNotMountedPath failed, ret=%{public}d",
+            ret);
         return ret;
     }
     for (const auto &item: notMountPaths) {
         std::string dstPath = item.first;
         std::string srcPath = item.second;
         if (!IsDir(srcPath)) {
-            LOGE("mount share file, src path invalid, errno is %{public}d", errno);
+            LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< src path invalid, errno=%{public}d", errno);
             return E_NON_EXIST;
         }
         if (!MatchesDisSharePath(dstPath)) {
-            LOGE("mount share file, dst path invalid, errno is %{public}d", errno);
+            LOGE("[L2:MountManager] MountDisShareFile: mount share file, dst path invalid, errno is %{public}d", errno);
             return E_NON_EXIST;
         }
         if (!IsDir(dstPath) && !MkDirRecurse(dstPath, SHARE_FILE_0771)) {
-            LOGE("mount share file, dst path mkdir failed, errno is %{public}d", errno);
+            LOGE("[L2:MountManager] MountDisShareFile: mount share file, dst path mkdir failed,"
+                "errno is %{public}d", errno);
             return E_NON_EXIST;
         }
         ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
         if (ret != E_OK) {
-            LOGE("mount share file failed, errno is %{public}d", errno);
+            LOGE("[L2:MountManager] MountDisShareFile: mount share file failed, errno is %{public}d", errno);
             std::string extraData = "src=" + srcPath + ",dst=" + dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountDisShareFile", userId, E_MOUNT_SHARE_FILE, extraData);
             return E_MOUNT_SHARE_FILE;
         }
     }
-    LOGI("mount share file success.");
+    LOGI("[L2:MountManager] MountDisShareFile: mount share file success.");
     return E_OK;
 }
 
 int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
+    LOGI("[L2:MountManager] UMountDisShareFile: >>> ENTER <<< userId=%{public}d, networkId=%{private}s",
+        userId, networkId.c_str());
     std::lock_guard<std::mutex> lock(mountDisMutex_);
-    LOGI("umount share file, userId is %{public}d, networkId is %{private}s.", userId, networkId.c_str());
+    LOGI("[L2:MountManager] UMountDisShareFile: umount share file start.");
     std::list<std::string> mounts;
     int32_t ret = FindMountsByNetworkId(networkId, mounts);
     if (ret != E_OK) {
+        LOGE("[L2:MountManager] UMountDisShareFile: <<< EXIT FAILED <<< FindMountsByNetworkId failed, ret=%{public}d",
+            ret);
         return ret;
     }
     for (const std::string &item: mounts) {
@@ -122,22 +137,24 @@ int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &netw
         }
         ret = UMount2(item, MNT_DETACH);
         if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
-            LOGE("umount share file failed, errno is %{public}d.", errno);
+            LOGE("[L2:MountManager] UMountDisShareFile: umount share file failed, errno is %{public}d.", errno);
             std::string extraData = "networkId=" + networkId + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("UMountDisShareFile", userId, E_UMOUNT_SHARE_FILE, extraData);
             continue;
         }
         RemoveDisSharePath(item, networkId);
     }
-    LOGI("umount share file end.");
+    LOGI("[L2:MountManager] UMountDisShareFile: umount share file end.");
     return E_OK;
 }
 
 int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts)
 {
+    LOGI("[L2:MountManager] FindMountsByNetworkId: >>> ENTER <<< networkId=%{private}s", networkId.c_str());
     std::ifstream inputStream(PROC_MOUNTS.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
-        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        LOGE("[L2:MountManager] FindMountsByNetworkId: <<< EXIT FAILED <<< unable to open /proc/mounts,"
+            "errno=%{public}d", errno);
         return E_UMOUNT_PROC_MOUNTS_OPEN;
     }
     std::string tmpLine;
@@ -155,14 +172,18 @@ int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::l
             mounts.push_front(dst);
         }
     }
+    LOGI("[L2:MountManager] FindMountsByNetworkId: <<< EXIT SUCCESS <<< mounts.size()=%{public}zu", mounts.size());
     return E_OK;
 }
 
 int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &notMountPaths)
 {
+    LOGI("[L2:MountManager] FilterNotMountedPath: >>> ENTER <<< notMountPaths.size()=%{public}zu",
+        notMountPaths.size());
     std::ifstream inputStream(PROC_MOUNTS.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
-        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        LOGE("[L2:MountManager] FilterNotMountedPath: <<< EXIT FAILED <<< unable to open /proc/mounts,"
+            "errno=%{public}d", errno);
         return E_UMOUNT_PROC_MOUNTS_OPEN;
     }
     std::string tmpLine;
@@ -180,6 +201,8 @@ int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &n
             notMountPaths.erase(dst);
         }
     }
+    LOGI("[L2:MountManager] FilterNotMountedPath: <<< EXIT SUCCESS <<< remaining paths=%{public}zu",
+        notMountPaths.size());
     return E_OK;
 }
 
