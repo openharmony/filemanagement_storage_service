@@ -19,6 +19,7 @@
 #include "hisysevent.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "hi_audit.h"
 #include <iomanip>
 
 namespace OHOS {
@@ -252,7 +253,8 @@ void StorageRadar::ReportOsAccountResult(const std::string &funcName, int32_t re
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId)
+void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
+    const std::string &extraData)
 {
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
@@ -262,7 +264,8 @@ void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t re
         .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
         .keyElxLevel = "EL5",
         .errorCode = ret,
-        .toCallPkg = "el5_file_key_manager"
+        .toCallPkg = "el5_file_key_manager",
+        .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -368,10 +371,25 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
         res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT,
             HISYSEVENT_FAULT, params, len);
     }
+
+    AuditLog auditLog;
+    auditLog.isUserBehavior = false;
+    auditLog.operationCount = 1;
+    auditLog.cause = parRes.orgPkg;
+    auditLog.operationType = parRes.funcName;
+    auditLog.operationScenario = "bizScene:" + std::to_string(static_cast<int32_t>(parRes.bizScene)) +
+        ",bizStage:" + std::to_string(static_cast<int32_t>(parRes.bizStage));
+    auditLog.operationStatus = (parRes.errorCode == E_OK) ? "success" : "fail";
+    auditLog.extend = "userId:" + std::to_string(parRes.userId) + ",keyElxLevel:" + parRes.keyElxLevel +
+        ",toCallPkg:" + parRes.toCallPkg + ",extraData:" + parRes.extraData +
+        ",errorCode:" + std::to_string(parRes.errorCode);
+    HiAudit::GetInstance().Write(auditLog);
+
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
         return false;
     }
+
     return true;
 }
 

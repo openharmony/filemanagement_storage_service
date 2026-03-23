@@ -24,6 +24,7 @@ ohos_unittest("storage_manager_provider_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
@@ -35,6 +36,8 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "storage_manager_provider_test.cpp",
   ]
 
@@ -93,6 +96,7 @@ ohos_unittest("storage_manager_provider_test") {
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
     "cJSON:cjson",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_media_fuse) {
@@ -117,6 +121,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
@@ -126,6 +131,8 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "storage_manager_provider_permission_test.cpp",
   ]
 
@@ -184,6 +191,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
     "cJSON:cjson",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_media_fuse) {
@@ -211,6 +219,7 @@ ohos_unittest("storage_manager_provider_premission_access_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
 sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
@@ -225,6 +234,8 @@ sources = [
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "storage_manager_provider_premission_access_test.cpp",
   ]
 
@@ -264,7 +275,6 @@ sources = [
       "${storage_service_path}/services/storage_daemon/volume/src/process.cpp",
       "${storage_service_path}/services/storage_daemon/volume/src/volume_info.cpp",
       "${storage_service_path}/services/storage_daemon/volume/src/volume_manager.cpp",
-      "${storage_daemon_path}/utils/file_utils.cpp",
       "${storage_daemon_path}/utils/string_utils.cpp",
     ]
   }
@@ -307,6 +317,7 @@ sources = [
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
     "cJSON:cjson",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_media_fuse) {
@@ -331,6 +342,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
@@ -343,6 +355,8 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "storage_manager_provider_communication_test.cpp",
   ]
 
@@ -402,6 +416,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "ability_runtime:dataobs_manager",
     "eventhandler:libeventhandler",
     "cJSON:cjson",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_media_fuse) {
@@ -426,6 +441,7 @@ ohos_unittest("storage_manager_provider_other_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/memory_reclaim_manager.cpp",
     "${storage_manager_path}/account_subscriber/account_subscriber.cpp",
@@ -436,6 +452,8 @@ ohos_unittest("storage_manager_provider_other_test") {
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/storage/src/storage_quota_controller.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "storage_manager_provider_other_test.cpp",
     
   ]
@@ -496,6 +514,7 @@ ohos_unittest("storage_manager_provider_other_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_media_fuse) {

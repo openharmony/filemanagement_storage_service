@@ -67,6 +67,7 @@ ohos_unittest("BaseKeyTest") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "huks:libhukssdk",
+    "init:libbegetutil",
   ]
 
   if (enable_user_auth_framework) {

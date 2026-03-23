@@ -24,6 +24,7 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -162,6 +163,7 @@ int KeyManagerExt::ActiveUserKey(uint32_t userId,
     if (ret != E_OK) {
         LOGE("[L3:KeyManagerExt] ActiveUserKey: <<< EXIT FAILED <<< DoActiveUserKey failed, userId=%{public}u,"
              "ret=%{public}d", userId, ret);
+        StorageService::StorageRadar::ReportUserKeyResult("ActiveUserKey", userId, ret, "", "DoActiveUserKey failed");
         return ret;
     }
 
@@ -185,6 +187,8 @@ int KeyManagerExt::InActiveUserKey(uint32_t userId)
     if (ret != E_OK) {
         LOGE("[L3:KeyManagerExt] InActiveUserKey: <<< EXIT FAILED <<< DoInactiveUserKey failed, userId=%{public}u,"
             "ret=%{public}d", userId, ret);
+        StorageService::StorageRadar::ReportUserKeyResult("InActiveUserKey", userId, ret, "",
+            "DoInactiveUserKey failed");
         return ret;
     }
     LOGI("[L3:KeyManagerExt] InActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);

@@ -59,6 +59,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/utils/disk_utils.cpp",
     "${storage_daemon_path}/utils/mount_argument_utils.cpp",
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/process.cpp",
@@ -67,8 +68,8 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
-    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
-    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
   ]
 
   defines = [

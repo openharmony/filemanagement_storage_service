@@ -238,12 +238,14 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     if (!exists(rootDir, errCode)) {
         LOGE("[L2:MountManager] MountCryptoPathAgain: <<< EXIT FAILED <<< root path not exists, rootDir=%{public}s",
             SANDBOX_ROOT_PATH);
+        StorageRadar::ReportUserManager("MountCryptoPathAgain", userId, -ENOENT, "root path not exists");
         return -ENOENT;
     }
 
     InfoList<MountNodeInfo> sandboxMountNodeList;
     auto ret = UserPathResolver::GetSandboxMountNodeList(static_cast<int32_t>(userId), sandboxMountNodeList.data);
     if (ret != E_OK) {
+        StorageRadar::ReportUserManager("MountCryptoPathAgain", userId, ret, "GetSandboxMountNodeList failed");
         LOGE("[L2:MountManager] MountCryptoPathAgain: <<< EXIT FAILED <<< GetSandboxMountNodeList failed,"
             "ret=%{public}d", ret);
         return ret;

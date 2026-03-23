@@ -357,6 +357,9 @@ int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool 
     if (ret != E_OK) {
         LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< DecryptKeyBlob failed");
         eSecretFBE.Clear();
+        std::string extraData =
+            "cmd=DoDecryptClassE,ret=" + std::to_string(ret);
+        StorageRadar::ReportKeyRingResult("DecryptClassE::DoDecryptClassE", ret, extraData);
         return ret;
     }
     keyInfo_.key.Alloc(eSecretFBE.size);

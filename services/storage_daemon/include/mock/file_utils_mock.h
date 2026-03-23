@@ -49,6 +49,7 @@ public:
     virtual bool IsPathMounted(std::string &path) = 0;
     virtual std::string ProcessToString(std::vector<ProcessInfo> &processList) = 0;
     virtual void GetSubDirs(const std::string &path, std::vector<std::string> &dirList) = 0;
+    virtual bool IsFilePathInvalid(const std::string &filePath) = 0;
 public:
     static inline std::shared_ptr<IFileUtilMoc> fileUtilMoc = nullptr;
 };
@@ -78,6 +79,7 @@ public:
     MOCK_METHOD0(IsUsbFuse, bool());
     MOCK_METHOD1(ProcessToString, std::string(std::vector<ProcessInfo> &processList));
     MOCK_METHOD2(GetSubDirs, void(const std::string &path, std::vector<std::string> &dirList));
+    MOCK_METHOD1(IsFilePathInvalid, bool(const std::string &filePath));
 };
 }
 }

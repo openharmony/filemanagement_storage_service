@@ -143,6 +143,7 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
     if (retCode != UserIam::UserAuth::ResultCode::SUCCESS && retCode != UserIam::UserAuth::ResultCode::NOT_ENROLLED &&
         retCode != UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
         LOGE("[L4:IamClient] GetSecUserInfo: <<< EXIT FAILED <<< Get SecUserInfo failed, userId=%{public}u", userId);
+        StorageService::StorageRadar::ReportIamResult("GetSecUserInfo", userId, retCode);
         return false;
     }
     std::unique_lock<std::mutex> lock(iamMutex_);

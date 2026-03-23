@@ -136,6 +136,8 @@ ohos_unittest("mount_manager_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/storage_radar.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
   ]
 
@@ -155,6 +157,7 @@ ohos_unittest("mount_manager_test") {
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_cloud_fuse) {
