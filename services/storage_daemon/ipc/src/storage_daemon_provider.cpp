@@ -229,11 +229,13 @@ int32_t StorageDaemonProvider::Mount(const std::string &volId, uint32_t flags)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
+    HiAudit::GetInstance().WriteStart("Mount", "volId=" + volId + ",flags=" + flags);
     int32_t ret = VolumeManager::Instance().Mount(volId, flags);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Mount", ret);
     }
+    HiAudit::GetInstance().WriteEnd("Mount", ret);
     return ret;
 #else
     return E_OK;
@@ -244,11 +246,13 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
+    HiAudit::GetInstance().WriteStart("Mount", "volId=" + volId);
     int32_t ret = VolumeManager::Instance().UMount(volId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMount: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::UMount", ret);
     }
+    HiAudit::GetInstance().WriteEnd("UMount", ret);
     return ret;
 #else
     return E_OK;
@@ -304,11 +308,13 @@ int32_t StorageDaemonProvider::Format(const std::string &volId, const std::strin
     LOGI("[L1:StorageDaemonProvider] Format: >>> ENTER <<< volId=%{public}s, fsType=%{public}s",
         volId.c_str(), fsType.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
+    HiAudit::GetInstance().WriteStart("Format", "volId=" + volId + ",fsType=" + fsType);
     int32_t ret = VolumeManager::Instance().Format(volId, fsType);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Format: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Format", ret);
     }
+    HiAudit::GetInstance().WriteEnd("Format", ret);
     return ret;
 #else
     return E_OK;
@@ -320,11 +326,13 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskId, int32_t type
     LOGI("[L1:StorageDaemonProvider] Partition: >>> ENTER <<< diskId=%{public}s, type=%{public}d",
         diskId.c_str(), type);
 #ifdef EXTERNAL_STORAGE_MANAGER
+    HiAudit::GetInstance().WriteStart("Partition", "diskId=" + diskId + ",type=" + type);
     int32_t ret = DiskManager::Instance().HandlePartition(diskId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Partition: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Partition", ret);
     }
+    HiAudit::GetInstance().WriteEnd("Partition", ret);
     return ret;
 #else
     return E_OK;

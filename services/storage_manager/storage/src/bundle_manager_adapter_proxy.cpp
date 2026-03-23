@@ -411,6 +411,7 @@ ErrCode BundleManagerAdapterProxy::GetParcelInfoFromAshMem(MessageParcel &reply,
     }
     if (memcpy_s(data, ashMemSize, ashDataPtr, ashMemSize) != EOK) {
         free(data);
+        data = nullptr;
         LOGE("failed due to memcpy_s failed");
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
@@ -434,6 +435,7 @@ bool BundleManagerAdapterProxy::GetData(void *&buffer, size_t size, const void *
     }
     if (memcpy_s(buffer, size, data, size) != EOK) {
         free(buffer);
+        buffer = nullptr;
         LOGE("GetData failed due to memcpy_s failed");
         return false;
     }
