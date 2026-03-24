@@ -364,7 +364,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_FAIL) }, .arraySize = 0, };
         params[BIZ_STATE_INDEX] = {.name = "BIZ_STATE", .t = HISYSEVENT_INT32,
             .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) }, .arraySize = 0, };
-        len = 12;
+        len = PARAMS_LEN;
         res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT,
             HISYSEVENT_FAULT, params, len);
     }
