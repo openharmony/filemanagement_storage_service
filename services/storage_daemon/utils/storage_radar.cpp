@@ -24,15 +24,16 @@
 namespace OHOS {
 namespace StorageService {
 constexpr const char *FILE_STORAGE_MANAGER_FAULT = "FILE_STORAGE_MANAGER_FAULT";
-constexpr const char *FILE_STORAGE_MANAGER_BEHAVIOR = "FILE_STORAGE_MANAGER_BEHAVIOR";
+constexpr const char *FILE_STORAGE_FAULT = "FILE_STORAGE_FAULT";
 constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
 constexpr int32_t GLOBAL_USER_ID = 0;
 constexpr int32_t PARAMS_LEN = 12;
-constexpr int32_t STAGE_FAIL_INDEX = 9;
-constexpr int32_t ERROR_CODE_INDEX = 11;
+constexpr int32_t DISK_INFO_INDEX = 9;
+constexpr int32_t STAGE_RES_INDEX = 10;
+constexpr int32_t BIZ_STATE_INDEX = 11;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
@@ -343,30 +344,27 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             .arraySize = 0, },
         {.name = "BIZ_STAGE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(parRes.bizStage) },
             .arraySize = 0, },
-        {.name = "kEY_ELX_LEVEL", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.keyElxLevel.c_str() },
+        {.name = "KEY_ELX_LEVEL", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.keyElxLevel.c_str() },
             .arraySize = 0, },
         {.name = "TO_CALL_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.toCallPkg.c_str() },
             .arraySize = 0, },
-        {.name = "DISK_VOLUME_INFO", .t = HISYSEVENT_STRING, .v = { .s = (char *)DISK_VOLUME_INFO_STR },
-            .arraySize = 0, },
         {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
             .arraySize = 0, },
-        {.name = "STAGE_RES", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_SUCC) },
-            .arraySize = 0, },
-        {.name = "BIZ_STATE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) },
-            .arraySize = 0, },
+        {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode }, .arraySize = 0 },
         {},
     };
-    size_t len = 11;
+    size_t len = 9;
     if (parRes.errorCode == E_OK) {
-        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_BEHAVIOR,
-            HISYSEVENT_BEHAVIOR, params, len);
+        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_FAULT,
+            HISYSEVENT_FAULT, params, len);
     } else {
-        const int32_t stageFail = static_cast<int32_t>(StageRes::STAGE_FAIL);
-        params[STAGE_FAIL_INDEX].v.i32 = stageFail;
-        params[ERROR_CODE_INDEX] = {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode },
-            .arraySize = 0 };
-        len++;
+        params[DISK_INFO_INDEX] = {.name = "DISK_VOLUME_INFO", .t = HISYSEVENT_STRING,
+            .v = { .s = (char *)DISK_VOLUME_INFO_STR }, .arraySize = 0, };
+        params[STAGE_RES_INDEX] = {.name = "STAGE_RES", .t = HISYSEVENT_INT32,
+            .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_FAIL) }, .arraySize = 0, };
+        params[BIZ_STATE_INDEX] = {.name = "BIZ_STATE", .t = HISYSEVENT_INT32,
+            .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) }, .arraySize = 0, };
+        len = 12;
         res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT,
             HISYSEVENT_FAULT, params, len);
     }
