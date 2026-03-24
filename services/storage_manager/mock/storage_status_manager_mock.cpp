@@ -74,5 +74,10 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
 {
     return IStorageStatusManagerMock::storageStatusManager->DelBundleExtStats(userId, bundleName);
 }
+
+int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
+{
+    return IStorageStatusManagerMock::storageStatusManager->GetSystemDataSize(systemDataSize);
+}
 } // StorageManager
 } // OHOS
