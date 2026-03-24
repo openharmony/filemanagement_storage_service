@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <libmtp.h>
-#include "libmtpdumperrorstack_fuzzer.h"
+#include "libmtpsetfoldername_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -25,6 +25,7 @@ constexpr size_t MIN_EXTENSION_SIZE = sizeof(char *) + sizeof(int) * 2;
 constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int) +
                                       sizeof(LIBMTP_error_t);
 constexpr size_t MIN_SIZE = std::max({MIN_STORAGE_SIZE, MIN_EXTENSION_SIZE, MIN_MTPDEVICE_SIZE});
+constexpr size_t MIN_FOLDER_SIZE = sizeof(uint32_t) * 3 + sizeof(char *);
 
 template<class T>
 T TypeCast(const uint8_t *data, size_t size, size_t *pos = nullptr)
@@ -72,22 +73,18 @@ void ConstructDeviceExtension(const uint8_t *data, size_t size, LIBMTP_device_ex
     }
 }
 
-int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *device)
+int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *device,
+    LIBMTP_devicestorage_t *storage, LIBMTP_device_extension_t *extensions)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    if (data == nullptr || size <= MIN_SIZE || device == nullptr ||
+        storage == nullptr || extensions == nullptr) {
         return 0;
     }
-
-    LIBMTP_devicestorage_t storage;
-    LIBMTP_device_extension_t extensions;
 
     size_t pos = 0;
-    if (device == nullptr) {
-        return 0;
-    }
     device->object_bitsize = TypeCast<uint8_t>(data, size, &pos);
-    ConstructDeviceStorage(data, size, &storage);
-    device->storage = &storage;
+    ConstructDeviceStorage(data, size, storage);
+    device->storage = storage;
     device->errorstack = nullptr;
     device->maximum_battery_level = TypeCast<uint8_t>(data, size, &pos);
     device->default_music_folder = TypeCast<uint32_t>(data, size, &pos);
@@ -98,8 +95,8 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     device->default_zencast_folder = TypeCast<uint32_t>(data, size, &pos);
     device->default_album_folder = TypeCast<uint32_t>(data, size, &pos);
     device->default_text_folder = TypeCast<uint32_t>(data, size, &pos);
-    ConstructDeviceExtension(data, size, &extensions);
-    device->extensions = &extensions;
+    ConstructDeviceExtension(data, size, extensions);
+    device->extensions = extensions;
     device->cached = TypeCast<int>(data, size, &pos);
     device->next = nullptr;
     device->params = nullptr;
@@ -107,9 +104,22 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     return pos;
 }
 
-bool DumpErrorstackTest(const uint8_t *data, size_t size)
+int ConstructFolder(const uint8_t *data, size_t size, size_t pos, LIBMTP_folder_t *folder)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    if (folder != nullptr) {
+        folder->folder_id = TypeCast<uint32_t>(data, size, &pos);
+        folder->parent_id = TypeCast<uint32_t>(data, size, &pos);
+        folder->storage_id = TypeCast<uint32_t>(data, size, &pos);
+        folder->name = TypeCast<char*>(data, size, &pos);
+        folder->sibling = nullptr;
+        folder->child = nullptr;
+    }
+    return pos;
+}
+
+bool SetFolderNameTest(const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size <= MIN_SIZE + MIN_FOLDER_SIZE + sizeof(char*)) {
         return false;
     }
 
@@ -125,8 +135,16 @@ bool DumpErrorstackTest(const uint8_t *data, size_t size)
     free(rawdevices);
 
     LIBMTP_mtpdevice_t mtpDevice;
-    ConstructMtpDevice(data, size, &mtpDevice);
-    LIBMTP_Dump_Errorstack(&mtpDevice);
+    LIBMTP_devicestorage_t storage;
+    LIBMTP_device_extension_t extensions;
+    LIBMTP_folder_t folder;
+    size_t pos = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
+    pos = ConstructFolder(data, size, pos, &folder);
+    char* newName = TypeCast<char*>(data, size, &pos);
+    uint32_t ret = LIBMTP_Set_Folder_Name(&mtpDevice, &folder, newName);
+    if (ret != 0) {
+        return false;
+    }
     return true;
 }
 } // namespace OHOS
@@ -135,6 +153,6 @@ bool DumpErrorstackTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::DumpErrorstackTest(data, size);
+    OHOS::SetFolderNameTest(data, size);
     return 0;
 }

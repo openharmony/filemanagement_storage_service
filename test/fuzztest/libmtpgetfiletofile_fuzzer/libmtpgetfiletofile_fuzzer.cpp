@@ -22,11 +22,12 @@
 namespace OHOS {
 constexpr size_t MIN_STORAGE_SIZE = sizeof(uint16_t) * 3 + sizeof(uint32_t) + sizeof(uint64_t) * 3 + sizeof(char *) * 2;
 constexpr size_t MIN_EXTENSION_SIZE = sizeof(char *) + sizeof(int) * 2;
-constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int);
+constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int) +
+                                      sizeof(LIBMTP_error_t);
 constexpr size_t MIN_SIZE = std::max({MIN_STORAGE_SIZE, MIN_EXTENSION_SIZE, MIN_MTPDEVICE_SIZE});
 
 template<class T>
-T TypeCast(const uint8_t *data, size_t size, int *pos = nullptr)
+T TypeCast(const uint8_t *data, size_t size, size_t *pos = nullptr)
 {
     if (data == nullptr || size < sizeof(T)) {
         return T{};
@@ -44,7 +45,7 @@ T TypeCast(const uint8_t *data, size_t size, int *pos = nullptr)
 
 void ConstructDeviceStorage(const uint8_t *data, size_t size, LIBMTP_devicestorage_t *storage)
 {
-    int pos = 0;
+    size_t pos = 0;
     if (storage != nullptr) {
         storage->id = TypeCast<uint32_t>(data, size, &pos);
         storage->StorageType = TypeCast<uint16_t>(data, size, &pos);
@@ -53,8 +54,8 @@ void ConstructDeviceStorage(const uint8_t *data, size_t size, LIBMTP_devicestora
         storage->MaxCapacity = TypeCast<uint64_t>(data, size, &pos);
         storage->FreeSpaceInBytes = TypeCast<uint64_t>(data, size, &pos);
         storage->FreeSpaceInObjects = TypeCast<uint64_t>(data, size, &pos);
-        storage->StorageDescription = TypeCast<char*>(data, size, &pos);
-        storage->VolumeIdentifier = TypeCast<char*>(data, size, &pos);
+        storage->StorageDescription = nullptr;
+        storage->VolumeIdentifier = nullptr;
         storage->next = nullptr;
         storage->prev = nullptr;
     }
@@ -62,9 +63,9 @@ void ConstructDeviceStorage(const uint8_t *data, size_t size, LIBMTP_devicestora
 
 void ConstructDeviceExtension(const uint8_t *data, size_t size, LIBMTP_device_extension_t *extensions)
 {
-    int pos = 0;
+    size_t pos = 0;
     if (extensions != nullptr) {
-        extensions->name = TypeCast<char*>(data, size, &pos);
+        extensions->name = nullptr;
         extensions->major = TypeCast<int>(data, size, &pos);
         extensions->minor = TypeCast<int>(data, size, &pos);
         extensions->next = nullptr;
@@ -79,17 +80,15 @@ int ConstructMtpDeviceData(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t 
 
     LIBMTP_devicestorage_t storage;
     LIBMTP_device_extension_t extensions;
-    LIBMTP_error_t errorStack;
 
-    int pos = 0;
+    size_t pos = 0;
     if (device == nullptr) {
         return 0;
     }
     device->object_bitsize = TypeCast<uint8_t>(data, size, &pos);
     ConstructDeviceStorage(data, size, &storage);
     device->storage = &storage;
-    errorStack = TypeCast<LIBMTP_error_t>(data, size, &pos);
-    device->errorstack = &errorStack;
+    device->errorstack = nullptr;
     device->maximum_battery_level = TypeCast<uint8_t>(data, size, &pos);
     device->default_music_folder = TypeCast<uint32_t>(data, size, &pos);
     device->default_playlist_folder = TypeCast<uint32_t>(data, size, &pos);
@@ -129,7 +128,7 @@ bool GetFileToFileTest(const uint8_t *data, size_t size)
     rawdevices = nullptr;
 
     LIBMTP_mtpdevice_t mtpDevice;
-    int pos = ConstructMtpDeviceData(data, size, &mtpDevice);
+    size_t pos = ConstructMtpDeviceData(data, size, &mtpDevice);
     uint32_t id = TypeCast<uint32_t>(data, size, &pos);
     char const *const path = TypeCast<char const *const>(data, size, &pos);
     LIBMTP_progressfunc_t const callback = TypeCast<LIBMTP_progressfunc_t const>(data, size, &pos);

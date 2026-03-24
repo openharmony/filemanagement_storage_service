@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <libmtp.h>
-#include "libmtpdumperrorstack_fuzzer.h"
+#include "libmtpsetobjectu32_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -72,22 +72,18 @@ void ConstructDeviceExtension(const uint8_t *data, size_t size, LIBMTP_device_ex
     }
 }
 
-int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *device)
+int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *device,
+    LIBMTP_devicestorage_t *storage, LIBMTP_device_extension_t *extensions)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    if (data == nullptr || size <= MIN_SIZE || device == nullptr ||
+        storage == nullptr || extensions == nullptr) {
         return 0;
     }
-
-    LIBMTP_devicestorage_t storage;
-    LIBMTP_device_extension_t extensions;
 
     size_t pos = 0;
-    if (device == nullptr) {
-        return 0;
-    }
     device->object_bitsize = TypeCast<uint8_t>(data, size, &pos);
-    ConstructDeviceStorage(data, size, &storage);
-    device->storage = &storage;
+    ConstructDeviceStorage(data, size, storage);
+    device->storage = storage;
     device->errorstack = nullptr;
     device->maximum_battery_level = TypeCast<uint8_t>(data, size, &pos);
     device->default_music_folder = TypeCast<uint32_t>(data, size, &pos);
@@ -98,8 +94,8 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     device->default_zencast_folder = TypeCast<uint32_t>(data, size, &pos);
     device->default_album_folder = TypeCast<uint32_t>(data, size, &pos);
     device->default_text_folder = TypeCast<uint32_t>(data, size, &pos);
-    ConstructDeviceExtension(data, size, &extensions);
-    device->extensions = &extensions;
+    ConstructDeviceExtension(data, size, extensions);
+    device->extensions = extensions;
     device->cached = TypeCast<int>(data, size, &pos);
     device->next = nullptr;
     device->params = nullptr;
@@ -107,9 +103,10 @@ int ConstructMtpDevice(const uint8_t *data, size_t size, LIBMTP_mtpdevice_t *dev
     return pos;
 }
 
-bool DumpErrorstackTest(const uint8_t *data, size_t size)
+bool SetObjectU32Test(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= MIN_SIZE) {
+    int numPara32 = 3;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) * numPara32 + sizeof(LIBMTP_property_t const)) {
         return false;
     }
 
@@ -125,8 +122,17 @@ bool DumpErrorstackTest(const uint8_t *data, size_t size)
     free(rawdevices);
 
     LIBMTP_mtpdevice_t mtpDevice;
-    ConstructMtpDevice(data, size, &mtpDevice);
-    LIBMTP_Dump_Errorstack(&mtpDevice);
+    LIBMTP_devicestorage_t storage;
+    LIBMTP_device_extension_t extensions;
+    size_t pos = ConstructMtpDevice(data, size, &mtpDevice, &storage, &extensions);
+    uint32_t const objectId = TypeCast<uint32_t const>(data, size, &pos);
+    LIBMTP_property_t const attributeId = TypeCast<LIBMTP_property_t const>(data, size, &pos);
+    uint32_t const value = TypeCast<uint32_t const>(data, size, &pos);
+
+    int ret = LIBMTP_Set_Object_u32(&mtpDevice, objectId, attributeId, value);
+    if (ret != 0) {
+        return false;
+    }
     return true;
 }
 } // namespace OHOS
@@ -135,6 +141,6 @@ bool DumpErrorstackTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::DumpErrorstackTest(data, size);
+    OHOS::SetObjectU32Test(data, size);
     return 0;
 }

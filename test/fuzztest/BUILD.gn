@@ -216,6 +216,12 @@ group("storage_service_fuzztest") {
       "libmtpgetstorage_fuzzer:fuzztest",
       "libmtpopenrawdeviceuncached_fuzzer:fuzztest",
       "libmtpreleasedevice_fuzzer:fuzztest",
+      "libmtpsendfilefromfile_fuzzer:fuzztest",
+      "libmtpsendpartialobject_fuzzer:fuzztest",
+      "libmtpsetfilename_fuzzer:fuzztest",
+      "libmtpsetfoldername_fuzzer:fuzztest",
+      "libmtpsetobjectstring_fuzzer:fuzztest",
+      "libmtpsetobjectu32_fuzzer:fuzztest",
     ]
   }
 }
