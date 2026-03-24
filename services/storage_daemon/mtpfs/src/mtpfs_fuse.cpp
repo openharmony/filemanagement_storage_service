@@ -1065,27 +1065,6 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
     return E_OK;
 }
 
-// Helper function to upload temporary file to MTP device
-int MtpFileSystem::UploadTemporaryFile(const std::string &stdPath, const std::string &tmpPath,
-    const struct stat &fileStat)
-{
-    device_.SetUploadRecord(stdPath, "sending");
-    if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
-        return device_.FilePushAsync(tmpPath, stdPath);
-    }
-    int rval = device_.FilePush(tmpPath, stdPath);
-    usleep(DEVICE_WRITE_DELAY_US);
-    if (rval != 0) {
-        LOGE("FilePush to mtp device fail");
-        OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
-        device_.SetUploadRecord(stdPath, "fail");
-        CleanupTemporaryFile(stdPath, tmpPath);
-        return -rval;
-    }
-    LOGI("FilePush to mtp device success");
-    return E_OK;
-}
-
 // Helper function to cleanup temporary file
 void MtpFileSystem::CleanupTemporaryFile(const std::string &stdPath, const std::string &tmpPath)
 {
@@ -1199,10 +1178,21 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     }
 
     if (modIf && fileStat.st_size != 0) {
-        int ret = UploadTemporaryFile(stdPath, tmpPath, fileStat);
-        if (ret != E_OK) {
-            return ret;
+        device_.SetUploadRecord(stdPath, "sending");
+        if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
+            return device_.FilePushAsync(tmpPath, stdPath);
         }
+        int rval = device_.FilePush(tmpPath, stdPath);
+        usleep(DEVICE_WRITE_DELAY_US);
+        if (rval != 0) {
+            LOGE("FilePush  to mtp device fail");
+            OHOS::StorageService::StorageRadar::ReportMtpResult("HandleTemporaryFile::FilePush", rval, "NA");
+            device_.SetUploadRecord(stdPath, "fail");
+            ::unlink(tmpPath.c_str());
+            tmpFilesPool_.RemoveFile(stdPath);
+            return -rval;
+        }
+        LOGI("FilePush to mtp device success");
     }
 
     device_.SetUploadRecord(stdPath, "success");
