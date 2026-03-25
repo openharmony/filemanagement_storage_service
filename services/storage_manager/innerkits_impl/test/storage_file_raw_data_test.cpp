@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-#include <cstdio>
-#include <cstring>
+#include <algorithm>
 #include <gtest/gtest.h>
 
 #include "storage_file_raw_data.h"
@@ -233,7 +232,7 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_MultipleCopies_0002, test
     for (int i = 0; i < count; i++) {
         StorageFileRawData storage;
         char* data = new char[sizes[i]];
-        memset(data, 'A' + i, sizes[i]);
+        std::fill(data, data + sizes[i], 'A' + i);
         storage.size = sizes[i];
         EXPECT_EQ(storage.RawDataCpy(data), ERR_NONE);
         EXPECT_NE(storage.data, nullptr);
@@ -261,7 +260,7 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_MultipleCopies_0003, test
 
     for (uint32_t size = 10; size <= 100; size += 10) {
         char* data = new char[size];
-        memset(data, 'X', size);
+        std::fill(data, data + size, 'X');
         storage.size = size;
         EXPECT_EQ(storage.RawDataCpy(data), ERR_NONE);
         EXPECT_NE(storage.data, nullptr);
