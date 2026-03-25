@@ -62,6 +62,7 @@ constexpr int PWD_TYPE_NUMBER = 2;
 
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
+    LOGD("[L3:ExternalVolumeInfo] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath_.c_str());
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
     if (fsType_ == "ntfs" && (fsLabel_.find('?') != std::string::npos || fsLabel_ == "")) {
         std::vector<std::string> cmd;
@@ -78,7 +79,13 @@ int32_t ExternalVolumeInfo::ReadMetadata()
         if (fsLabel_.empty()) {
             fsLabel_ = GetCDType(devPath_);
         }
+        LOGD("[L3:ExternalVolumeInfo] ReadMetadata: <<< EXIT SUCCESS <<< fsType=%{public}s", fsType_.c_str());
         return E_OK;
+    }
+    if (ret == E_OK) {
+        LOGD("[L3:ExternalVolumeInfo] ReadMetadata: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L3:ExternalVolumeInfo] ReadMetadata: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
     return ret;
 }
@@ -110,6 +117,8 @@ bool ExternalVolumeInfo::GetDamagedFlag()
 
 int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoCreate: >>> ENTER <<< volId=%{public}s", VolumeInfo::GetVolumeId().c_str());
+
     int32_t ret = 0;
     string id = VolumeInfo::GetVolumeId();
 
@@ -118,9 +127,10 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
 
     ret = mknod(devPath_.c_str(), S_IFBLK, dev);
     if (ret != E_OK) {
-        LOGE("External volume DoCreate error.");
+        LOGE("[L3:ExternalVolumeInfo] DoCreate: <<< EXIT FAILED <<< mknod failed, ret=%{public}d", ret);
         return E_ERR;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoCreate: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -133,20 +143,22 @@ std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 
 int32_t ExternalVolumeInfo::DoDestroy()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoDestroy: >>> ENTER <<<");
+
     int err = E_OK;
-    LOGE("External volume DoDestroy %{public}s.", devPath_.c_str());
+    LOGE("[L3:ExternalVolumeInfo] DoDestroy: External volume DoDestroy %{public}s.", devPath_.c_str());
     struct stat pathStat;
     if (lstat(devPath_.c_str(), &pathStat) == 0) {
         err = remove(devPath_.c_str());
         if (err != E_OK) {
-            LOGE("External volume DoDestroy error, errno %{public}d.", errno);
+            LOGE("[L3:ExternalVolumeInfo] DoDestroy:External volume DoDestroy error, errno %{public}d.", errno);
             return E_ERR;
         }
     }
     if (lstat(devBackupPath_.c_str(), &pathStat) == 0) {
         err = remove(devBackupPath_.c_str());
         if (err != E_OK) {
-            LOGE("External volume DoDestroy error, errno %{public}d.", errno);
+            LOGE("[L3:ExternalVolumeInfo] DoDestroy:External volume DoDestroy error, errno %{public}d.", errno);
             return E_ERR;
         }
     }
@@ -155,33 +167,37 @@ int32_t ExternalVolumeInfo::DoDestroy()
 
 int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Hmfs: >>> ENTER <<<");
+
     const char *fsType = "hmfs";
     auto mountData = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
     if (ret == E_OK) {
         StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
     } else {
-        LOGE("initial mount failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: initial mount failed, errno=%{public}d", errno);
         return ret;
     }
- 
     ret = umount(mountPath_.c_str());
     if (ret != E_OK) {
-        LOGE("umount failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: umount failed, errno=%{public}d", errno);
         return ret;
     }
  
     auto mountDataWithoutOpt = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT);
     ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountDataWithoutOpt.c_str());
     if (ret != E_OK) {
-        LOGE("mount read only failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: mount RO failed, errno=%{public}d", errno);
         return ret;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Hmfs: <<< EXIT SUCCESS <<<");
     return ret;
 }
 
 int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Ntfs: >>> ENTER <<<");
+
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     auto mountData = StringPrintf("rw,big_writes,uid=%d,gid=%d,dmask=0006,fmask=0007",
         UID_FILE_MANAGER, UID_FILE_MANAGER);
@@ -202,24 +218,28 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
     std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
-        LOGE("ext exec mount for ntfs failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Ntfs: <<< EXIT FAILED <<< exec failed, errno=%{public}d", errno);
         return E_NTFS_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Ntfs: <<< EXIT SUCCESS <<<");
     return E_OK;
 #else
     if (ForkExec(cmd, &output) != E_OK) {
         for (auto str : output) {
-            LOGI("DoMount4Ntfs output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoMount4Ntfs: output: %{public}s", str.c_str());
         }
-        LOGE("exec mount for ntfs failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Ntfs: exec mount for ntfs failed, errno is %{public}d.", errno);
         return E_NTFS_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Ntfs: <<< EXIT SUCCESS <<<");
     return E_OK;
 #endif
 }
 
 int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Exfat: >>> ENTER <<<");
+
     auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (mountFlags & MS_RDONLY) {
         mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
@@ -235,24 +255,28 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
     std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
-        LOGE("ext exec mount for exfat failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Exfat: <<< EXIT FAILED <<< exec failed, errno=%{public}d", errno);
         return E_EXFAT_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
 #else
     if (ForkExec(cmd, &output) != E_OK) {
         for (auto str : output) {
-            LOGI("DoMount4Exfat output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoMount4Exfat: output: %{public}s", str.c_str());
         }
-        LOGE("exec mount for exfat failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Exfat: exec mount for exfat failed, errno is %{public}d.", errno);
         return E_EXFAT_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
 #endif
 }
 
 int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Udf: >>> ENTER <<<");
+
     auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
     std::vector<std::string> cmd = {
         "mount",
@@ -267,16 +291,18 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 
     if (ForkExec(cmd, &output) != E_OK) {
         for (auto str : output) {
-            LOGI("DoMount4Udf output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoMount4Udf output: %{public}s", str.c_str());
         }
-        LOGE("exec mount for udf failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Udf: exec mount for udf failed, errno is %{public}d.", errno);
         return E_UDF_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Udf: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Iso9660: >>> ENTER <<<");
     auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
     std::vector<std::string> cmd = {
         "mount",
@@ -291,47 +317,56 @@ int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
 
     if (ForkExec(cmd, &output) != E_OK) {
         for (auto str : output) {
-            LOGI("DoMount4Iso9660 output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoMount4Iso9660: output: %{public}s", str.c_str());
         }
-        LOGE("exec mount for iso9660 failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Iso9660: exec mount for iso9660 failed, errno is %{public}d.", errno);
         return E_ISO9660_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Iso9660: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoCheck4Exfat()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoCheck4Exfat: >>> ENTER <<<");
+
     std::vector<std::string> cmd = {
         "fsck.exfat",
         "-n",
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
-    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoCheck4Exfat: <<< EXIT FAILED <<< execRet=%{public}d", execRet);
         return E_VOL_NEED_FIX;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoCheck4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoCheck4Ntfs()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoCheck4Ntfs: >>> ENTER <<<");
+
     std::vector<std::string> cmd = {
         "fsck.ntfs",
         devPath_,
     };
     int exitStatus = 0;
     int execRet = ForkExecWithExit(cmd, &exitStatus);
-    LOGI("execRet: %{public}d, exitStatus: %{public}d", execRet, exitStatus);
+    LOGI("[L3:ExternalVolumeInfo] DoCheck4Ntfs: execRet: %{public}d, exitStatus: %{public}d", execRet, exitStatus);
     if (exitStatus != 1) {
+        LOGE("[L3:ExternalVolumeInfo] DoCheck4Ntfs: <<< EXIT FAILED <<< exitStatus=%{public}d", exitStatus);
         return E_VOL_NEED_FIX;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoCheck4Ntfs: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoFix4Ntfs()
 {
-    LOGE("DoFix4Ntfs");
+    LOGE("[L3:ExternalVolumeInfo] DoFix4Ntfs: >>> ENTER <<<");
+
     std::vector<std::string> cmd = {
         "ntfsfix",
         "-d",
@@ -340,23 +375,24 @@ int32_t ExternalVolumeInfo::DoFix4Ntfs()
     std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
-        LOGE("ext exec fix for ntfs failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoFix4Ntfs: <<< EXIT FAILED <<< exec failed, errno=%{public}d", errno);
         return E_VOL_FIX_FAILED;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Ntfs: <<< EXIT SUCCESS <<<");
     return E_OK;
 #else
     if (ForkExec(cmd, &output) != E_OK) {
-        LOGE("exec fix for ntfs failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoFix4Ntfs: <<< EXIT FAILED <<< exec failed, errno=%{public}d", errno);
         return E_VOL_FIX_FAILED;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Ntfs: <<< EXIT SUCCESS <<<");
     return E_OK;
 #endif
 }
 
 int32_t ExternalVolumeInfo::DoFix4Exfat()
 {
-    LOGI("DoFix4Exfat");
-    LOGI("devPath_ is %{public}s", devPath_.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Exfat: >>> ENTER <<< devPath_ is %{public}s", devPath_.c_str());
     std::vector<std::string> cmd = {
         "fsck.exfat",
         "-p",
@@ -367,48 +403,64 @@ int32_t ExternalVolumeInfo::DoFix4Exfat()
     int forkExecRes = 0;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     forkExecRes = ExtStorageMountForkExec(cmd, &exitStatus);
-    LOGI("ExtStorageMountForkExec is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Exfat: ExtStorageMountForkExec is %{public}d,"
+        "exitStatus is %{public}d", forkExecRes, exitStatus);
     if (exitStatus != 1 || forkExecRes != E_OK) {
-        LOGE("ext exec fix for exfat failed, errno is %{public}d, forkExecRes is %{public}d.", errno, forkExecRes);
+        LOGE("[L3:ExternalVolumeInfo] DoFix4Exfat: <<< EXIT FAILED <<< exitStatus=%{public}d, res=%{public}d",
+            exitStatus, forkExecRes);
         return E_VOL_FIX_FAILED;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
 #else
     forkExecRes = ForkExec(cmd, &output, &exitStatus);
-    LOGI("forkExecRes is %{public}d, exitStatus is %{public}d", forkExecRes, exitStatus);
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Exfat: forkExecRes is %{public}d, exitStatus is"
+        "%{public}d", forkExecRes, exitStatus);
     if (exitStatus != 1 || forkExecRes != E_OK) {
-        LOGE("exec fix for exfat failed, errno is %{public}d, forkExecRes is %{public}d.", errno, forkExecRes);
+        LOGE("[L3:ExternalVolumeInfo] DoFix4Exfat: <<< EXIT FAILED <<< exitStatus=%{public}d, res=%{public}d",
+            exitStatus, forkExecRes);
         return E_VOL_FIX_FAILED;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoFix4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
 #endif
 }
 
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4OtherType: >>> ENTER <<< fsType=%{public}s", fsType_.c_str());
+
     mountFlags |= MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoMount4OtherType: <<< EXIT FAILED <<< ret=%{public}d, errno=%{public}d",
+            ret, errno);
         return E_OTHER_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4OtherType: <<< EXIT SUCCESS <<<");
     return ret;
 }
 
 int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Vfat: >>> ENTER <<<");
+
     mountFlags |= MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret != E_OK) {
-        LOGE("do mount for vfat failed, errno is %{public}d.", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoMount4Vfat: <<< EXIT FAILED <<< errno=%{public}d", errno);
         return E_FAT_MOUNT;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoMount4Vfat: <<< EXIT SUCCESS <<<");
     return ret;
 }
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoMount: >>> ENTER <<< volId=%{public}s, fsType=%{public}s, flags=%{public}u",
+        VolumeInfo::GetVolumeId().c_str(), fsType_.c_str(), mountFlags);
     if (major(device_) == DISK_CD_MAJOR) { // Don't deal mount, when CD is blank.
         bool isBlankCD = false;
         int blankRet = IsBlankCD(devPath_, isBlankCD);
@@ -423,11 +475,12 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     }
     int32_t ret = IsUsbFuseByType(fsType_) ? CreateFuseMountPath() : CreateMountPath();
     if (ret != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoMount: <<< EXIT FAILED <<< create mount path failed, ret=%{public}d", ret);
         return ret;
     }
     ret = DoCheck();
     if (ret != E_OK) {
-        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoMount: <<< EXIT FAILED <<< DoCheck failed, ret=%{public}d", ret);
         mountPath_ = mountBackupPath_;
         return E_DOCHECK_MOUNT;
     }
@@ -437,8 +490,10 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret != E_OK) {
         auto retNo = remove(mountPath_.c_str());
         if (retNo != 0) {
-            LOGE("remove failed errno: %{public}d, retNo is : %{public}d", errno, retNo);
+            LOGE("[L3:ExternalVolumeInfo] DoMount: remove failed errno: %{public}d,"
+                "retNo is: %{public}d", errno, retNo);
         }
+        LOGE("[L3:ExternalVolumeInfo] DoMount: <<< EXIT FAILED <<< DoMount4Hmfs failed, ret=%{public}d", ret);
         return E_HMFS_MOUNT;
     }
 
@@ -446,22 +501,31 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret != E_OK) {
         auto retNo = remove(mountPath_.c_str());
         if (retNo != 0) {
-            LOGE("remove failed errno: %{public}d, retNo is : %{public}d", errno, retNo);
+            LOGE("[L3:ExternalVolumeInfo] DoMount: remove failed errno: %{public}d,"
+                "retNo is : %{public}d", errno, retNo);
         }
     }
     mountPath_ = mountBackupPath_;
-    
+
+    if (ret == E_OK) {
+        LOGI("[L3:ExternalVolumeInfo] DoMount: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L3:ExternalVolumeInfo] DoMount: <<< EXIT FAILED <<< ExecuteAsyncMount failed, ret=%{public}d", ret);
+    }
     return ret;
 }
 
 int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
 {
+    LOGI("[L3:ExternalVolumeInfo] ExecuteAsyncMount: >>> ENTER <<< fsType=%{public}s, flags=%{public}u",
+        fsType_.c_str(), mountFlags);
+
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    
+
     std::thread mountThread([this, mountFlags, p = std::move(promise)]() mutable {
-        LOGI("Ready to mount: volume fstype is %{public}s, mountflag is %{public}d",
-             fsType_.c_str(), mountFlags);
+        LOGI("[L3:ExternalVolumeInfo] ExecuteAsyncMount: Ready to mount: volume fstype"
+            "is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
         
         int retValue = E_OK;
         if (fsType_ == "ntfs") {
@@ -479,20 +543,23 @@ int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
         } else {
             retValue = E_OTHER_MOUNT;
         }
-        
+
         p.set_value(retValue);
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
-        LOGE("Mount timed out");
+        LOGE("[L3:ExternalVolumeInfo] ExecuteAsyncMount: <<< EXIT FAILED <<< timed out");
         mountThread.detach();
         return E_TIMEOUT_MOUNT;
     }
-    
+
     int32_t ret = future.get();
     mountThread.join();
-    
+
     if (ret != E_OK) {
-        LOGE("External volume DoMount error, errno = %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] ExecuteAsyncMount: <<< EXIT FAILED <<< ret=%{public}d, errno=%{public}d",
+             ret, errno);
+    } else {
+        LOGI("[L3:ExternalVolumeInfo] ExecuteAsyncMount: <<< EXIT SUCCESS <<<");
     }
     
     return ret;
@@ -502,51 +569,52 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 {
     int32_t inUse = -1;
     if (ioctl(fd, STORAGE_MANAGER_IOC_CHK_BUSY, &inUse) < 0) {
-        LOGE("ioctl check in use failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] IsUsbInUse: ioctl failed, errno=%{public}d", errno);
         return E_IOCTL_FAILED;
     }
     if (inUse) {
-        LOGI("usb inuse number is %{public}d", inUse);
+        LOGI("[L3:ExternalVolumeInfo] IsUsbInUse: inUse=%{public}d", inUse);
         return E_USB_IN_USE;
     }
-    LOGI("usb not inUse");
+    LOGI("[L3:ExternalVolumeInfo] IsUsbInUse: not in use");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoUMountWithForceUsbFuse()
 {
-    LOGI("External volume start force to unmount.");
+    LOGI("[L3:ExternalVolumeInfo] DoUMount: >>> ENTER <<< External volume start force to unmount.");
     Process ps(mountPath_);
     ps.UpdatePidAndKill(SIGKILL);
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (ret != 0) {
-        LOGW("umount2 failed in force mode, errno %{public}d", errno);
+        LOGW("[L3:ExternalVolumeInfo] DoUMount: umount2 failed in force mode, errno %{public}d", errno);
         return E_OK;
     }
     ret = rmdir(mountPath_.c_str());
     if (ret != 0) {
-        LOGW("remove failed in force mode, errno %{public}d", errno);
+        LOGW("[L3:ExternalVolumeInfo] DoUMount: remove failed in force mode, errno %{public}d", errno);
         return E_OK;
     }
-    LOGI("External volume force to unmount success.");
+    LOGI("[L3:ExternalVolumeInfo] DoUMount: External volume force to unmount success.");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
     if (fsType_ == "crypt_LUKS") {
-        LOGI("External volume start force to unmount, fsType is crypt_LUKS.");
+        LOGI("[L3:ExternalVolumeInfo] DoUMount: External volume start force to unmount, fsType is crypt_LUKS.");
         return E_OK;
     }
     if (mountPath_.empty()) {
-        LOGI("External volume start force to unmount, mountPath_ is empty %{public}s.", mountPath_.c_str());
+        LOGI("[L3:ExternalVolumeInfo] DoUMount: External volume start force to unmount,"
+            "mountPath_ is empty %{public}s.", mountPath_.c_str());
         return E_OK;
     }
     if (major(device_) == DISK_CD_MAJOR) { // Don't deal unmount, when CD is blank.
         bool isBlankCD = false;
         int blankRet = IsBlankCD(devPath_, isBlankCD);
         if (blankRet == E_OK && isBlankCD) {
-            LOGW("Current cd is blank skip.");
+            LOGW("[L3:ExternalVolumeInfo] DoUMount: Current cd is blank skip.");
             return E_OK;
         }
     }
@@ -559,67 +627,72 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
     if (fd < 0) {
-        LOGE("open file fail mountPath %{public}s, errno %{public}d", GetAnonyString(mountPath_).c_str(), errno);
+        LOGE("[L3:ExternalVolumeInfo] DoUMount: open failed, errno=%{public}d", errno);
     }
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
-    LOGI("External volume start to unmount mountPath: %{public}s.", GetAnonyString(mountPath_).c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoUMount: External volume start to unmount mountPath:"
+        "%{public}s.", GetAnonyString(mountPath_).c_str());
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (fd >= 0) {
         IsUsbInUse(fd);
         close(fd);
     }
     if (ret != E_OK) {
-        LOGE("umount2 failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoUMount: <<< EXIT FAILED <<< umount2 failed, errno=%{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
     int err = rmdir(mountPath_.c_str());
     if (err != E_OK && errno != FILE_NOT_EXIST) {
-        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", GetAnonyString(mountPath_).c_str(), errno);
+        LOGE("[L3:ExternalVolumeInfo] DoUMount: remove failed, errno=%{public}d", errno);
         return E_RMDIR_MOUNT;
     }
     mountPath_ = mountBackupPath_;
 
-    LOGI("External volume unmount success.");
+    LOGI("[L3:ExternalVolumeInfo] DoUMount: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoUMountUsbFuse()
 {
-    LOGI("DoUMountUsbFuse in.");
+    LOGI("[L3:ExternalVolumeInfo] DoUMountUsbFuse: >>> ENTER <<<");
+
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (ret != E_OK) {
-        LOGE("umount2 mountUsbFusePath failed errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoUMountUsbFuse: <<< EXIT FAILED <<< umount2 failed, errno=%{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
- 
+
     int err = rmdir(mountPath_.c_str());
     if (err != E_OK) {
-        LOGE("External volume DoUMountUsbFuse error: rmdir failed, errno %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoUMountUsbFuse: rmdir failed, errno=%{public}d", errno);
         return E_RMDIR_MOUNT;
     }
-    LOGI("DoUMountUsbFuse success.");
+    LOGI("[L3:ExternalVolumeInfo] DoUMountUsbFuse: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoTryToCheck()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoTryToCheck: >>> ENTER <<< fsType=%{public}s", fsType_.c_str());
+
     int32_t ret = DoCheck();
     if (ret != E_OK) {
-        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoTryToCheck: <<< EXIT FAILED <<< DoCheck failed, ret=%{public}d", ret);
         return E_DOCHECK_MOUNT;
     }
 
     if (fsType_ != "ntfs" && fsType_ != "exfat") {
-        LOGE("Volume type %{public}s, is not support fix", fsType_.c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoTryToCheck: <<< EXIT FAILED <<< fsType not support fix");
         return E_VOL_FIX_NOT_SUPPORT;
     }
 
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread mountThread ([this, p = std::move(promise)]() mutable {
-        LOGI("Ready to DoTryToCheck: volume fstype is %{public}s", fsType_.c_str());
+        LOGI("[L3:ExternalVolumeInfo] DoTryToCheck: Ready to DoTryToCheck:"
+            "volume fstype is %{public}s", fsType_.c_str());
         int retValue = E_OK;
         if (fsType_ == "ntfs") {
             retValue = DoCheck4Ntfs();
@@ -628,11 +701,11 @@ int32_t ExternalVolumeInfo::DoTryToCheck()
         } else {
             retValue = E_VOL_FIX_NOT_SUPPORT;
         }
-        LOGI("DoTryToCheck cmdRet:%{public}d", retValue);
+        LOGI("[L3:ExternalVolumeInfo] DoTryToCheck: DoTryToCheck cmdRet:%{public}d", retValue);
         p.set_value(retValue);
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
-        LOGE("DoTryToCheck timed out");
+        LOGE("[L3:ExternalVolumeInfo] DoTryToCheck: <<< EXIT FAILED <<< timed out");
         mountThread.detach();
         return E_TIMEOUT_MOUNT;
     }
@@ -640,28 +713,30 @@ int32_t ExternalVolumeInfo::DoTryToCheck()
     ret = future.get();
     mountThread.join();
     if (ret != E_OK) {
-        LOGE("External volume DoTryToCheck error, maybe need fix, errno = %{public}d", ret);
+        LOGE("[L3:ExternalVolumeInfo] DoTryToCheck: <<< EXIT FAILED <<< need fix, ret=%{public}d", ret);
         return E_VOL_NEED_FIX;
     }
+    LOGI("[L3:ExternalVolumeInfo] DoTryToCheck: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoTryToFix()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoTryToFix: >>> ENTER <<< fsType=%{public}s", fsType_.c_str());
+
     int32_t ret = DoCheck();
     if (ret != E_OK) {
-        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoTryToFix: <<< EXIT FAILED <<< DoCheck failed, ret=%{public}d", ret);
         return E_DOCHECK_MOUNT;
     }
 
     if (fsType_ != "ntfs" && fsType_ != "exfat") {
-        LOGE("Volume type %{public}s, is not support fix", fsType_.c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoTryToFix: <<< EXIT FAILED <<< fsType not support fix");
         return E_VOL_FIX_NOT_SUPPORT;
     }
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread mountThread ([this, p = std::move(promise)]() mutable {
-        LOGI("Ready to mount: volume fstype is %{public}s", fsType_.c_str());
         int retValue = E_OK;
         if (fsType_ == "ntfs") {
             retValue = DoFix4Ntfs();
@@ -671,56 +746,65 @@ int32_t ExternalVolumeInfo::DoTryToFix()
         p.set_value(retValue);
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
-        LOGE("Fix timed out");
+        LOGE("[L3:ExternalVolumeInfo] DoTryToFix: <<< EXIT FAILED <<< timed out");
         mountThread.detach();
         return E_TIMEOUT_MOUNT;
     }
 
     ret = future.get();
     mountThread.join();
-    LOGI("DoTryToFix: volume fstype is %{public}s, ret: %{public}d, errno: %{public}d", fsType_.c_str(), ret, errno);
+    if (ret == E_OK) {
+        LOGI("[L3:ExternalVolumeInfo] DoTryToFix: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L3:ExternalVolumeInfo] DoTryToFix: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
     return ret;
 }
 
 int32_t ExternalVolumeInfo::DoCheck()
 {
+    LOGI("[L3:ExternalVolumeInfo] DoCheck: >>> ENTER <<<");
     if (major(device_) == DISK_CD_MAJOR) { // Don't deal check, when CD is blank.
         bool isBlankCD = false;
         int blankRet = IsBlankCD(devPath_, isBlankCD);
         if (blankRet == E_OK && isBlankCD) {
-            LOGW("Current cd is blank skip.");
+            LOGW("[L3:ExternalVolumeInfo] DoCheck: Current cd is blank skip.");
             return E_OK;
         }
     }
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret != E_OK) {
-        LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoCheck: <<< EXIT FAILED <<< ReadMetadata failed, ret=%{public}d", ret);
         return E_CHECK;
     }
 
     // check fstype
     for (std::string item : supportMountType_) {
         if (item == fsType_) {
+            LOGI("[L3:ExternalVolumeInfo] DoCheck: <<< EXIT SUCCESS <<<");
             return E_OK;
         }
     }
-    LOGE("External Volume type not support.");
+    LOGE("[L3:ExternalVolumeInfo] DoCheck: <<< EXIT FAILED <<< fsType not supported");
     return E_NOT_SUPPORT;
 }
 
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoFormat: >>> ENTER <<< type=%{public}s", type.c_str());
+
     int32_t err = 0;
     if (IsUsbFuseByType(fsType_) && IsPathMounted(mountPath_)) {
         err = DoUMountUsbFuse();
     }
     if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoFormat: <<< EXIT FAILED <<< UMountUsbFuse failed, err=%{public}d", err);
         return err;
     }
 
     std::map<std::string, std::string>::iterator iter = supportFormatType_.find(type);
     if (iter == supportFormatType_.end() || (fsType_ == "udf" || fsType_ == "iso9660")) {
-        LOGE("External volume format not support.");
+        LOGE("[L3:ExternalVolumeInfo] DoFormat: <<< EXIT FAILED <<< type not supported");
         return E_NOT_SUPPORT;
     }
     std::vector<std::string> output;
@@ -749,49 +833,61 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
         err = E_OK;
     }
     ReadMetadata();
-    LOGI("do format end, err is %{public}d.", err);
+    if (err == E_OK) {
+        LOGI("[L3:ExternalVolumeInfo] DoFormat: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L3:ExternalVolumeInfo] DoFormat: <<< EXIT FAILED <<< err=%{public}d", err);
+    }
     return err;
 }
 
 int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
 {
+    LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: >>> ENTER <<< desc=%{public}s", description.c_str());
+
     int32_t err = 0;
     std::vector<std::string> output;
     if (fsType_ == "ntfs") {
         std::vector<std::string> fixCmd = {"ntfsfix", "-d", devPath_};
         err = ForkExec(fixCmd, &output);
         for (auto str : output) {
-            LOGI("DoSetVolDesc ntfsfix output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: ntfsfix output: %{public}s", str.c_str());
         }
         std::vector<std::string> labelCmd = {"ntfslabel", devPath_, description};
         output.clear();
         err = ForkExec(labelCmd, &output);
         for (auto str : output) {
-            LOGI("DoSetVolDesc ntfslabel output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: ntfslabel output: %{public}s", str.c_str());
         }
     } else if (fsType_ == "exfat") {
         std::vector<std::string> cmd = {"exfatlabel", devPath_, description};
         err = ForkExec(cmd, &output);
         for (auto str : output) {
-            LOGI("DoSetVolDesc exfatlabel output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: exfatlabel output: %{public}s", str.c_str());
         }
     } else if (fsType_ == "hmfs") {
         std::vector<std::string> cmd = {"hmfslabel", devPath_, description};
         err = ForkExec(cmd, &output);
         for (auto str : output) {
-            LOGI("DoSetVolDesc hmfslabel output: %{public}s", str.c_str());
+            LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: hmfslabel output: %{public}s", str.c_str());
         }
     } else {
-        LOGE("SetVolumeDescription fsType not support.");
+        LOGE("[L3:ExternalVolumeInfo] DoSetVolDesc: <<< EXIT FAILED <<< fsType not supported");
         return E_NOT_SUPPORT;
     }
     ReadMetadata();
-    LOGI("do set vol desc end, err is %{public}d.", err);
+    if (err == E_OK) {
+        LOGI("[L3:ExternalVolumeInfo] DoSetVolDesc: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L3:ExternalVolumeInfo] DoSetVolDesc: <<< EXIT FAILED <<< err=%{public}d", err);
+    }
     return err;
 }
 
 int32_t ExternalVolumeInfo::CreateFuseMountPath()
 {
+    LOGI("[L3:ExternalVolumeInfo] CreateFuseMountPath: >>> ENTER <<< fsUuid=%{private}s", fsUuid_.c_str());
+
     struct stat statbuf;
     mountBackupPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
     mountUsbFusePath_ = StringPrintf(mountFusePathDir_.c_str(), fsUuid_.c_str());
@@ -800,39 +896,42 @@ int32_t ExternalVolumeInfo::CreateFuseMountPath()
     if (lstat(mountFusePath.c_str(), &statbuf)) {
         ret = PrepareDir("/mnt/data/external_fuse", S_IRWXU | S_IRWXG | S_IXOTH, FILE_MANAGER_UID, FILE_MANAGER_GID);
         if (!ret) {
-            LOGE("create path %{public}s failed", mountFusePath.c_str());
+            LOGE("[L3:ExternalVolumeInfo] CreateFuseMountPath: <<< EXIT FAILED <<< create base path failed");
             return E_MKDIR_MOUNT;
         }
     }
- 
+
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
-        LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
+        LOGE("[L3:ExternalVolumeInfo] CreateFuseMountPath: path exists, removing");
         if (remove(mountUsbFusePath_.c_str()) != 0) {
-            LOGE("remove failed errno: %{public}d", errno);
+            LOGE("[L3:ExternalVolumeInfo] CreateFuseMountPath: <<< EXIT FAILED <<< remove failed, errno=%{public}d",
+                errno);
             return E_SYS_KERNEL_ERR;
         }
     }
     ret = PrepareDir(mountUsbFusePath_, S_IRWXU | S_IRWXG | S_IXOTH, FILE_MANAGER_UID, FILE_MANAGER_GID);
     if (!ret) {
-        LOGE("the volume %{public}s create path %{public}s failed",
-             GetVolumeId().c_str(), GetAnonyString(mountUsbFusePath_).c_str());
+        LOGE("[L3:ExternalVolumeInfo] CreateFuseMountPath: <<< EXIT FAILED <<< PrepareDir failed");
         return E_MKDIR_MOUNT;
     }
     mountPath_ = mountUsbFusePath_;
+    LOGI("[L3:ExternalVolumeInfo] CreateFuseMountPath: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
- 
+
 int32_t ExternalVolumeInfo::CreateMountPath()
 {
+    LOGI("[L3:ExternalVolumeInfo] CreateMountPath: >>> ENTER <<< fsUuid=%{private}s", fsUuid_.c_str());
+
     struct stat statbuf;
     int err;
     mountBackupPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
-    
+
     err = lstat(mountBackupPath_.c_str(), &statbuf);
     if (err == 0) {
-        LOGE("volume mount path %{public}s exists, please remove first", mountBackupPath_.c_str());
+        LOGE("[L3:ExternalVolumeInfo] CreateMountPath: path exists, removing");
         if (remove(mountBackupPath_.c_str()) != 0) {
-            LOGE("remove failed errno: %{public}d", errno);
+            LOGE("[L3:ExternalVolumeInfo] CreateMountPath: <<< EXIT FAILED <<< remove failed, errno=%{public}d", errno);
             return E_SYS_KERNEL_ERR;
         }
     }
@@ -840,11 +939,11 @@ int32_t ExternalVolumeInfo::CreateMountPath()
     err = mkdir(mountBackupPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     umask(originalUmask);
     if (err != 0) {
-        LOGE("the volume %{public}s create path %{public}s failed, errno: %{public}d",
-             GetVolumeId().c_str(), mountBackupPath_.c_str(), errno);
+        LOGE("[L3:ExternalVolumeInfo] CreateMountPath: <<< EXIT FAILED <<< mkdir failed, errno=%{public}d", errno);
         return E_MKDIR_MOUNT;
     }
     mountPath_ = mountBackupPath_;
+    LOGI("[L3:ExternalVolumeInfo] CreateMountPath: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -853,10 +952,10 @@ std::string ExternalVolumeInfo::GetVolDescByNtfsLabel(std::vector<std::string> &
     std::vector<std::string> output;
     int32_t ret = ForkExec(cmd, &output);
     for (auto str : output) {
-        LOGI("GetVolDescByNtfsLabel output: %{public}s", str.c_str());
+        LOGI("[L3:ExternalVolumeInfo] GetVolDescByNtfsLabel: output: %{public}s", str.c_str());
     }
     if (ret != E_OK) {
-        LOGE("exec ntfs label failed, ret is: %{public}d, output size is %{public}zu", ret, output.size());
+        LOGE("[L3:ExternalVolumeInfo] GetVolDescByNtfsLabel: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageRadar::ReportVolumeOperation("ForkExec", ret);
         return "";
     }
@@ -872,7 +971,7 @@ std::string ExternalVolumeInfo::SplitOutputIntoLines(std::vector<std::string> &o
         lines.insert(lines.end(), split.begin(), split.end());
     }
     if (lines.empty()) {
-        LOGE("lines is empty");
+        LOGE("[L3:ExternalVolumeInfo] SplitOutputIntoLines: lines empty");
         return "";
     }
     std::string volDesc;
@@ -885,19 +984,20 @@ std::string ExternalVolumeInfo::SplitOutputIntoLines(std::vector<std::string> &o
         volDesc = line.substr(index + std::strlen(NTFS_LABEL_DESC_PREFIX));
         break;
     }
-    LOGE("exec ntfs label success, label is %{public}s", volDesc.c_str());
+    LOGE("[L3:ExternalVolumeInfo] SplitOutputIntoLines: label=%{public}s", volDesc.c_str());
     return volDesc;
 }
 
 int32_t ExternalVolumeInfo::DoDestroyCrypt(const std::string &volumeId)
 {
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoDestroyCrypt: volume is %{public}s", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoDestroyCrypt: volume is %{public}s", devPath.c_str());
     std::string cryptName = volumeId + "_crypt";
     std::string devMapperPath = DEV_MAPPER_PATH + cryptName;
     struct stat pathStat;
     if (lstat(devMapperPath.c_str(), &pathStat) != 0) {
-        LOGW("DoDestroyCrypt: devMapperPath does not exist: %{public}s", devMapperPath.c_str());
+        LOGW("[L3:ExternalVolumeInfo] DoDestroyCrypt: DoDestroyCrypt:"
+            "devMapperPath does not exist: %{public}s", devMapperPath.c_str());
         return E_OK;
     }
     std::vector<std::string> cmd = {
@@ -906,16 +1006,16 @@ int32_t ExternalVolumeInfo::DoDestroyCrypt(const std::string &volumeId)
     std::vector<std::string> output;
     int ret = ForkExec(cmd, &output);
     if (ret != E_OK) {
-        LOGE("exec cryptsetup remove failed, ret is: %{public}d", ret);
+        LOGE("[L3:ExternalVolumeInfo] DoDestroyCrypt: exec cryptsetup remove failed, ret is: %{public}d", ret);
         StorageRadar::ReportVolumeOperation("ForkExec", ret);
         return ret;
     }
     int err = remove(devMapperPath.c_str());
     if (err && errno != FILE_NOT_EXIST) {
-        LOGE("remove failed, errno is: %{public}d", errno);
+        LOGE("[L3:ExternalVolumeInfo] DoDestroyCrypt: remove failed, errno is: %{public}d", errno);
         return E_NOT_SUPPORT;
     }
-    LOGI("Successfully closed crypt.");
+    LOGI("[L3:ExternalVolumeInfo] DoDestroyCrypt: Successfully closed crypt.");
     return E_OK;
 }
 
@@ -923,7 +1023,7 @@ int32_t ExternalVolumeInfo::ValidatePazzword(const std::string &pazzword)
 {
     size_t len = pazzword.length();
     if (len < MIN_PASSWORD_LENGTH || len > MAX_PASSWORD_LENGTH) {
-        LOGE("Pazzword length must be between 8 and 256 characters.");
+        LOGE("[L3:ExternalVolumeInfo] ValidatePazzword: Pazzword length must be between 8 and 256 characters.");
         return E_PARAMS_INVALID;
     }
     int typeMask = 0;
@@ -945,11 +1045,11 @@ int32_t ExternalVolumeInfo::ValidatePazzword(const std::string &pazzword)
             typeMask |= PUNCT_MASK;
         }
         if (__builtin_popcount(typeMask) >= PWD_TYPE_NUMBER) {
-            LOGI("Pazzword validation passed.");
+            LOGI("[L3:ExternalVolumeInfo] ValidatePazzword: Pazzword validation passed.");
             return E_OK;
         }
     }
-    LOGE("Pazzword must contain at least two types of characters.");
+    LOGE("[L3:ExternalVolumeInfo] ValidatePazzword: Pazzword must contain at least two types of characters.");
     return E_PARAMS_INVALID;
 }
 
@@ -957,12 +1057,12 @@ int32_t ExternalVolumeInfo::DoEncrypt(const std::string &volumeId, const std::st
 {
     int32_t ret = ValidatePazzword(pazzword);
     if (ret != E_OK) {
-        LOGE("DoEncrypt pazzword validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoEncrypt: pazzword validation failed.");
         return ret;
     }
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoEncrypt: volume is %{public}s", devPath.c_str());
-    LOGI("Successfully DoEncrypt.");
+    LOGI("[L3:ExternalVolumeInfo] DoEncrypt: volume is %{public}s", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoEncrypt: Successfully DoEncrypt.");
     return E_OK;
 }
 
@@ -971,7 +1071,7 @@ int32_t ExternalVolumeInfo::DoGetCryptProgressById(const std::string &volumeId, 
     std::string devPath = BLOCK_PATH + volumeId;
     std::ifstream file(PROGRESS_FILE);
     if (!file.is_open()) {
-        LOGE("Failed to open file %{public}s", PROGRESS_FILE);
+        LOGE("[L3:ExternalVolumeInfo] DoGetCryptProgressById: Failed to open file %{public}s", PROGRESS_FILE);
         progress = 0;
         return E_OK;
     }
@@ -982,11 +1082,11 @@ int32_t ExternalVolumeInfo::DoGetCryptProgressById(const std::string &volumeId, 
     std::smatch match;
     if (std::regex_search(content, match, pattern)) {
         progress = atoi(match[1].str().c_str());
-        LOGI("ExternalVolumeInfo::GetCryptProgressFromFile, volume is %{public}s, "
-             "Progress is %{public}" PRId32, devPath.c_str(), progress);
+        LOGI("[L3:ExternalVolumeInfo] DoGetCryptProgressById: ExternalVolumeInfo::GetCryptProgressFromFile,"
+            "volume is %{public}s, Progress is %{public}" PRId32, devPath.c_str(), progress);
         return E_OK;
     }
-    LOGE("Progress keyword not found");
+    LOGE("[L3:ExternalVolumeInfo] DoGetCryptProgressById: Progress keyword not found");
     progress = 0;
     return E_OK;
 }
@@ -994,10 +1094,11 @@ int32_t ExternalVolumeInfo::DoGetCryptProgressById(const std::string &volumeId, 
 int32_t ExternalVolumeInfo::DoGetCryptUuidById(const std::string &volumeId, std::string &uuid)
 {
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoGetCryptUuidById, volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoGetCryptUuidById: ExternalVolumeInfo::DoGetCryptUuidById,"
+        "volume is%{public}s.", devPath.c_str());
     int ret = OHOS::StorageDaemon::ReadVolumeUuid(devPath, uuid);
     if (ret != E_OK) {
-        LOGE("ReadVolumeUuid failed, ret is: %{public}d", ret);
+        LOGE("[L3:ExternalVolumeInfo] DoGetCryptUuidById: ReadVolumeUuid failed, ret is: %{public}d", ret);
         return ret;
     }
     return E_OK;
@@ -1009,17 +1110,17 @@ int32_t ExternalVolumeInfo::DoBindRecoverKeyToPasswd(const std::string &volumeId
 {
     int32_t ret = ValidatePazzword(pazzword);
     if (ret != E_OK) {
-        LOGE("DoBindRecoverKeyToPasswd pazzword validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoBindRecoverKeyToPasswd: pazzword validation failed.");
         return ret;
     }
     ret = ValidatePazzword(recoverKey);
     if (ret != E_OK) {
-        LOGE("DoBindRecoverKeyToPasswd recoverKey validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoBindRecoverKeyToPasswd: recoverKey validation failed.");
         return ret;
     }
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoBindRecoverKeyToPasswd, volume is%{public}s.", devPath.c_str());
-    LOGI("Successfully DoBindRecoverKeyToPasswd.");
+    LOGI("[L3:ExternalVolumeInfo] DoBindRecoverKeyToPasswd: volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoBindRecoverKeyToPasswd: Successfully DoBindRecoverKeyToPasswd.");
     return E_OK;
 }
 
@@ -1029,17 +1130,17 @@ int32_t ExternalVolumeInfo::DoUpdateCryptPasswd(const std::string &volumeId,
 {
     int32_t ret = ValidatePazzword(pazzword);
     if (ret != E_OK) {
-        LOGE("DoUpdateCryptPasswd pazzword validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoUpdateCryptPasswd: pazzword validation failed.");
         return ret;
     }
     ret = ValidatePazzword(newPazzword);
     if (ret != E_OK) {
-        LOGE("DoUpdateCryptPasswd newPazzword validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoUpdateCryptPasswd: newPazzword validation failed.");
         return ret;
     }
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoUpdateCryptPasswd, volume is%{public}s.", devPath.c_str());
-    LOGI("Successfully DoUpdateCryptPasswd.");
+    LOGI("[L3:ExternalVolumeInfo] DoUpdateCryptPasswd: volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoUpdateCryptPasswd: Successfully DoUpdateCryptPasswd.");
     return E_OK;
 }
 
@@ -1049,44 +1150,44 @@ int32_t ExternalVolumeInfo::DoResetCryptPasswd(const std::string &volumeId,
 {
     int32_t ret = ValidatePazzword(recoverKey);
     if (ret != E_OK) {
-        LOGE("DoResetCryptPasswd recoverKey validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoResetCryptPasswd: recoverKey validation failed.");
         return ret;
     }
     ret = ValidatePazzword(newPazzword);
     if (ret != E_OK) {
-        LOGE("DoResetCryptPasswd newPazzword validation failed.");
+        LOGE("[L3:ExternalVolumeInfo] DoResetCryptPasswd: newPazzword validation failed.");
         return ret;
     }
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoResetCryptPasswd, volume is%{public}s.", devPath.c_str());
-    LOGI("Successfully DoResetCryptPasswd.");
+    LOGI("[L3:ExternalVolumeInfo] DoResetCryptPasswd: volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoResetCryptPasswd: Successfully DoResetCryptPasswd.");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
 {
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoVerifyCryptPasswd, volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoVerifyCryptPasswd: volume is%{public}s.", devPath.c_str());
     (void)pazzword;
-    LOGI("Successfully DoVerifyCryptPasswd.");
+    LOGI("[L3:ExternalVolumeInfo] DoVerifyCryptPasswd: Successfully DoVerifyCryptPasswd.");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoUnlock(const std::string &volumeId, const std::string &pazzword)
 {
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoUnlock, volume is%{public}s.", devPath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoUnlock: volume is%{public}s.", devPath.c_str());
     (void)pazzword;
-    LOGI("Successfully DoUnlock.");
+    LOGI("L3:ExternalVolumeInfo] DoUnlock: Successfully DoUnlock.");
     return E_OK;
 }
 
 int32_t ExternalVolumeInfo::DoDecrypt(const std::string &volumeId, const std::string &pazzword)
 {
     std::string devPath = BLOCK_PATH + volumeId;
-    LOGI("ExternalVolumeInfo::DoDecrypt, volume is%{public}s.", devPath.c_str());
+    LOGI("L3:ExternalVolumeInfo] DoDecrypt: volume is%{public}s.", devPath.c_str());
     (void)pazzword;
-    LOGI("Successfully DoDecrypt.");
+    LOGI("L3:ExternalVolumeInfo] DoDecrypt: Successfully DoDecrypt.");
     return E_OK;
 }
 } // StorageDaemon
