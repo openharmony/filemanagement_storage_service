@@ -1088,7 +1088,6 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
 
 int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
 {
-    StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen Begin", E_OK);
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
@@ -1122,7 +1121,6 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->LockUserScreen(userId);
-    StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen End", err);
     return err;
 #else
     return E_OK;
@@ -1156,7 +1154,6 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
 
 int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
-    StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, "GetUserNeedActiveStatus Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1171,8 +1168,6 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetUserNeedActiveStatus(userId, needActive);
-    std::string message = "GetUserNeedActiveStatus End, needActive:" + std::to_string(needActive);
-    StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, message, err);
     return err;
 #else
     return E_OK;
@@ -1183,9 +1178,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
                                                  const std::vector<uint8_t> &token,
                                                  const std::vector<uint8_t> &secret)
 {
-    std::string message = "UnlockUserScreen Begin, token size: " + std::to_string(token.size()) +
-                          ", secret size: " + std::to_string(secret.size());
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1199,7 +1191,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UnlockUserScreen(userId, token, secret);
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen End", err);
     return err;
 #else
     return E_OK;
@@ -1208,7 +1199,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
-    StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, "GetLockScreenStatus Begin", E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1223,8 +1213,6 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
-    std::string message = "GetLockScreenStatus End, lockScreenStatus:" + std::to_string(lockScreenStatus);
-    StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, message, err);
     return err;
 #else
     return E_OK;
