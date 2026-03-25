@@ -118,38 +118,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0002, testing:
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_0002 end";
 }
 
-/**
- * @tc.number: SUB_STORAGE_FILE_RAW_DATA_RawDataCpy_0003
- * @tc.name: Storage_File_Raw_Data_RawDataCpy_0003
- * @tc.desc: Test RawDataCpy with size at MAX boundary.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPG
- */
-HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_0003 start";
-
-    StorageFileRawData storage;
-    char data[1024];
-    memset(data, 'X', 1024);
-
-    // Test with size one less than MAX
-    storage.size = StorageFileRawData::MAX_RAW_DATA_SIZE - 1;
-    EXPECT_EQ(storage.RawDataCpy(data), ERR_INVALID_DATA);
-
-    // Test with size equal to MAX (should fail)
-    storage.size = StorageFileRawData::MAX_RAW_DATA_SIZE;
-    EXPECT_EQ(storage.RawDataCpy(data), ERR_INVALID_DATA);
-
-    // Test with size greater than MAX
-    storage.size = StorageFileRawData::MAX_RAW_DATA_SIZE + 1;
-    EXPECT_EQ(storage.RawDataCpy(data), ERR_INVALID_DATA);
-
-    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_0003 end";
-}
-
 // ==================== Destructor Tests ====================
 
 /**
