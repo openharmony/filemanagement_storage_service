@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -59,9 +59,6 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 #endif
 void TraverseDirUevent(const std::string &path, bool flag);
-void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid);
-int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid);
-void MoveFileManagerData(const std::string &filesPath);
 void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
 void DelTemp(const std::string &path);
 bool IsTempFolder(const std::string &path, const std::string &sub);
@@ -89,7 +86,8 @@ bool IsBusinessPath(const std::string& path, const std::string &userId);
 uint64_t GetFileSize(const std::string &filename);
 bool IsFolder(const std::string &filename);
 bool IsFileExist(const std::string &path);
-}
-}
+std::string MaskSensitiveInfo(const std::string &input);
+} // namespace StorageDaemon
+} // namespace OHOS
 
 #endif // STORAGE_DAEMON_UTILS_FILE_UTILS_H
