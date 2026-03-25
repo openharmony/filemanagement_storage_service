@@ -32,8 +32,6 @@ public:
     void TearDown() {};
 };
 
-// ==================== RawDataCpy Tests ====================
-
 /**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_RawDataCpy_0000
  * @tc.name: Storage_File_Raw_Data_RawDataCpy_0000
@@ -118,8 +116,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0002, testing:
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_0002 end";
 }
 
-// ==================== Destructor Tests ====================
-
 /**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_Destructor_0001
  * @tc.name: Storage_File_Raw_Data_Destructor_0001
@@ -170,8 +166,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_Destructor_0002, testing:
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_Destructor_0002 end";
 }
 
-// ==================== InitialState Tests ====================
-
 /**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_InitialState_0001
  * @tc.name: Storage_File_Raw_Data_InitialState_0001
@@ -192,8 +186,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_InitialState_0001, testin
 
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_InitialState_0001 end";
 }
-
-// ==================== MultipleCopies Tests ====================
 
 /**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_MultipleCopies_0001
