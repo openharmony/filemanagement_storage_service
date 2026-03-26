@@ -246,7 +246,7 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
-    HiAudit::GetInstance().WriteStart("Mount", "volId=" + volId);
+    HiAudit::GetInstance().WriteStart("UMount", "volId=" + volId);
     int32_t ret = VolumeManager::Instance().UMount(volId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMount: <<< EXIT FAILED <<< ret=%{public}d", ret);
