@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,7 @@ namespace StorageDaemon {
 Process::Process(std::string path)
 {
     path_ = path;
+    LOGD("[L4:Process] Constructor: path=%{public}s", path.c_str());
 }
 
 std::string Process::GetPath()
@@ -49,6 +50,7 @@ std::string Process::Readlink(std::string path)
         buf.assign(std::string(size, '\0'));
         len = readlink(path.c_str(), buf.data(), size);
         if (len == -1) {
+            LOGE("[L4:Process] Readlink: failed, path=%{public}s, errno=%{public}d", path.c_str(), errno);
             return "";
         }
     } while (size <= len);
@@ -88,6 +90,7 @@ bool Process::CheckMaps(std::string pidPath)
     auto path = StringPrintf("%s/maps", pidPath.c_str());
     FILE *file = fopen(path.c_str(), "r");
     if (file == nullptr) {
+        LOGE("[L4:Process] CheckMaps: open failed, path=%{public}s, errno=%{public}d", path.c_str(), errno);
         return false;
     }
 
@@ -97,7 +100,7 @@ bool Process::CheckMaps(std::string pidPath)
         if (pos != line.npos) {
             line = line.substr(pos);
             if (CheckSubDir(line)) {
-                LOGI("Found map in %{public}s", pidPath.c_str());
+                LOGI("[L4:Process] CheckMaps: found map in pidPath=%{public}s", pidPath.c_str());
                 (void)fclose(file);
                 free(buf);
                 buf = nullptr;
@@ -127,6 +130,7 @@ bool Process::CheckFds(std::string pidPath)
     auto path = StringPrintf("%s/fd", pidPath.c_str());
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
+        LOGE("[L4:Process] CheckFds: opendir failed, path=%{public}s, errno=%{public}d", path.c_str(), errno);
         return false;
     }
 
@@ -144,6 +148,7 @@ bool Process::CheckFds(std::string pidPath)
 
 int32_t Process::UpdatePidAndKill(int signal)
 {
+    LOGD("[L4:Process] UpdatePidByPath: >>> ENTER <<< path=%{public}s", path_.c_str());
     if (signal == 0) {
         return E_OK;
     }
@@ -151,6 +156,7 @@ int32_t Process::UpdatePidAndKill(int signal)
     struct dirent *dirEntry;
     DIR *dir = opendir("/proc");
     if (dir == nullptr) {
+        LOGE("[L4:Process] UpdatePidByPath: <<< EXIT FAILED <<< opendir /proc failed, errno=%{public}d", errno);
         return E_ERR;
     }
 
@@ -170,6 +176,7 @@ int32_t Process::UpdatePidAndKill(int signal)
     }
 
     (void)closedir(dir);
+    LOGD("[L4:Process] UpdatePidByPath: <<< EXIT SUCCESS <<< ");
     return E_OK;
 }
 } // StorageDaemon

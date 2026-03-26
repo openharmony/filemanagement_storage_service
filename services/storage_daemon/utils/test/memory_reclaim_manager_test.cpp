@@ -90,15 +90,30 @@ HWTEST_F(MemoryReclaimManagerTest, WriteToProcFile_AllScenarios, TestSize.Level1
     if (access(devFull.c_str(), F_OK) != 0) {
         GTEST_LOG_(INFO) << "/dev/full not exist, skip write-fail sub-scenario";
         GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
-    } else {
-        (void)unlink(linkPath.c_str());
-        int ret = symlink(devFull.c_str(), linkPath.c_str());
-        ASSERT_EQ(ret, 0);
-        EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(linkPath, "test content"));
-        (void)unlink(linkPath.c_str());
-    
-        GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
+        return;
     }
+ 
+    (void)unlink(linkPath.c_str());
+    int ret = symlink(devFull.c_str(), linkPath.c_str());
+    ASSERT_EQ(ret, 0);
+    EXPECT_FALSE(MemoryReclaimManager::WriteToProcFile(linkPath, "test content"));
+    (void)unlink(linkPath.c_str());
+ 
+    GTEST_LOG_(INFO) << "WriteToProcFile_AllScenarios end";
+}
+
+/**
+ * @tc.name: MemoryReclaimManagerTest_ExecuteReclaim_InvalidPid
+ * @tc.desc: Test ExecuteReclaim returns false when reclaim proc file cannot be opened.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(MemoryReclaimManagerTest, ExecuteReclaim_InvalidPid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExecuteReclaim_InvalidPid start";
+    constexpr int32_t invalidPid = -1;
+    EXPECT_FALSE(MemoryReclaimManager::ExecuteReclaim(invalidPid));
+    GTEST_LOG_(INFO) << "ExecuteReclaim_InvalidPid end";
 }
 } // namespace Test
 } // namespace StorageDaemon
