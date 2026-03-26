@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -123,6 +123,9 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     std::vector<std::string> output;
 
     int32_t err = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("GetBlkidDataByCmd output: %{public}s", str.c_str());
+    }
     if (err) {
         StorageRadar::ReportVolumeOperation("ForkExec", err);
         return "";

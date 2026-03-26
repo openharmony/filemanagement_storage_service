@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -68,7 +68,8 @@ bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
-}
-}
+std::string MaskSensitiveInfo(const std::string &input);
+} // namespace StorageDaemon
+} // namespace OHOS
 
 #endif // STORAGE_DAEMON_UTILS_FILE_UTILS_H

@@ -208,6 +208,10 @@ int DiskInfo::ReadPartition()
     cmd.push_back(SGDISK_DUMP_CMD);
     cmd.push_back(devPath_);
     res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        std::string maskedStr = MaskSensitiveInfo(str);
+        LOGI("ReadPartitionUSB output: %{public}s", maskedStr.c_str());
+    }
     if (res != E_OK) {
         LOGE("get %{private}s partition failed", devPath_.c_str());
         return res;
