@@ -326,7 +326,7 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskId, int32_t type
     LOGI("[L1:StorageDaemonProvider] Partition: >>> ENTER <<< diskId=%{public}s, type=%{public}d",
         diskId.c_str(), type);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    HiAudit::GetInstance().WriteStart("Partition", "diskId=" + diskId + ",type=" + type);
+    HiAudit::GetInstance().WriteStart("Partition", "diskId=" + diskId + ",type=" + std::to_string(type));
     int32_t ret = DiskManager::Instance().HandlePartition(diskId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Partition: <<< EXIT FAILED <<< ret=%{public}d", ret);
