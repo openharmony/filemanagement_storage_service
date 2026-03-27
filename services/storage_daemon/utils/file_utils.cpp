@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -40,10 +41,38 @@ constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 constexpr int BUF_LEN = 1024;
 constexpr int PIPE_FD_LEN = 2;
+constexpr int UUID_LENGTH = 36;
+constexpr int UUID_PREFIX_LENGTH = 4;
+constexpr int UUID_PREFIX_SUFFIX_LENGTH = 8;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+
+std::string MaskSensitiveInfo(const std::string &input)
+{
+    if (input.length() < UUID_LENGTH) {
+        return input;
+    }
+    static const std::regex uuidStr("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+    std::string output;
+    std::sregex_iterator it(input.begin(), input.end(), uuidStr);
+    std::sregex_iterator end;
+    size_t lastPos = 0;
+
+    for (; it != end; ++it) {
+        const std::smatch& match = *it;
+        output += input.substr(lastPos, match.position() - lastPos);
+        std::string fullUuid = match.str(0);
+        output += fullUuid.substr(0, UUID_PREFIX_LENGTH) +
+                  std::string(fullUuid.length() - UUID_PREFIX_SUFFIX_LENGTH, '*') +
+                  fullUuid.substr(fullUuid.length() - UUID_PREFIX_LENGTH);
+        
+        lastPos = match.position() + match.length();
+    }
+    output += input.substr(lastPos);
+    return output;
+}
 
 int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
@@ -486,7 +515,6 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
             while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
-                LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
         }
@@ -728,6 +756,9 @@ bool MoveDataShell(const std::string &from, const std::string &to)
     };
     std::vector<std::string> out;
     int32_t err = ForkExec(cmd, &out);
+    for (auto str : out) {
+        LOGI("MoveDataShell output: %{public}s", str.c_str());
+    }
     if (err != 0) {
         LOGE("MoveDataShell failed err:%{public}d", err);
     }
@@ -753,6 +784,9 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
     };
     std::vector<std::string> out;
     int32_t err = ForkExec(cmd, &out);
+    for (auto str : out) {
+        LOGI("ChownRecursion output: %{public}s", str.c_str());
+    }
     if (err != 0) {
         LOGE("path: %{public}s chown failed err:%{public}d", cmd.back().c_str(), err);
     }
@@ -812,9 +846,11 @@ bool DeleteFile(const std::string &path)
     if (S_ISREG(statbuf.st_mode)) {
         remove(path.c_str());
     } else if (S_ISDIR(statbuf.st_mode)) {
-        if ((dir = opendir(path.c_str())) == NULL)
+        if ((dir = opendir(path.c_str())) == nullptr) {
+            LOGE("DeleteFile opendir failed, errno:%{public}d", errno);
             return 1;
-        while ((dirinfo = readdir(dir)) != NULL) {
+        }
+        while ((dirinfo = readdir(dir)) != nullptr) {
             std::string filepath;
             filepath.append(path).append("/").append(dirinfo->d_name);
             if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
@@ -944,7 +980,7 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList)
     for (auto &iter : processList) {
         result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
-    return result.empty() ? "" : result.substr(0, result.length() -1);
+    return result.empty() ? "" : result.substr(0, result.length() - 1);
 }
 
 bool RestoreconDir(const std::string &path)
@@ -958,5 +994,5 @@ bool RestoreconDir(const std::string &path)
 #endif
     return true;
 }
-} // STORAGE_DAEMON
-} // OHOS
+} // namespace StorageDaemon
+} // namespace OHOS

@@ -231,6 +231,10 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> lines;
     std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
     int res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        std::string maskedStr = MaskSensitiveInfo(str);
+        LOGI("ReadPartitionUSB output: %{public}s", maskedStr.c_str());
+    }
     FilterOutput(lines, output);
     if (res != E_OK || lines.empty()) {
         int destroyRes = Destroy();
@@ -510,6 +514,9 @@ int DiskInfo::Partition()
     LOGI("Partition executing command.");
     std::vector<std::string> output;
     res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("Partition sgdisk zap cmd output: %{public}s", str.c_str());
+    }
     if (res != E_OK) {
         LOGE("sgdisk: zap fail");
         return res;
@@ -521,6 +528,9 @@ int DiskInfo::Partition()
     cmd.push_back(SGDISK_PART_CMD);
     cmd.push_back(devPath_);
     res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("Partition sgdisk part cmd output: %{public}s", str.c_str());
+    }
     if (res != E_OK) {
         LOGE("sgdisk: partition fail");
         return res;
