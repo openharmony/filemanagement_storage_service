@@ -858,7 +858,7 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList)
     for (auto &iter : processList) {
         result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
-    return result.empty() ? "" : result.substr(0, result.length() -1);
+    return result.empty() ? "" : result.substr(0, result.length() - 1);
 }
 } // STORAGE_DAEMON
 } // OHOS
