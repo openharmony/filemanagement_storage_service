@@ -133,7 +133,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_Destructor_0001, testing:
     storage->size = 0;
     storage->isMalloc = false;
     delete storage;
-    EXPECT_TRUE(true);
 
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_Destructor_0001 end";
 }
@@ -160,7 +159,6 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_Destructor_0002, testing:
 
     // Destructor should free allocated memory
     delete storage;
-    EXPECT_TRUE(true);
 
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_Destructor_0002 end";
 }
