@@ -116,6 +116,28 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0002, testing:
 }
 
 /**
+ * @tc.number: SUB_STORAGE_FILE_RAW_DATA_Destructor_0001
+ * @tc.name: Storage_File_Raw_Data_Destructor_0001
+ * @tc.desc: Test destructor with no data allocated.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_Destructor_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_Destructor_0001 start";
+
+    StorageFileRawData* storage = new StorageFileRawData();
+    EXPECT_EQ(storage->data, nullptr);
+    EXPECT_EQ(storage->size, 0);
+    EXPECT_FALSE(storage->isMalloc);
+    delete storage;
+
+    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_Destructor_0001 end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_Destructor_0002
  * @tc.name: Storage_File_Raw_Data_Destructor_0002
  * @tc.desc: Test destructor with allocated data.
