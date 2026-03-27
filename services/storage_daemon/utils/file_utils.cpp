@@ -92,7 +92,7 @@ std::string MaskSensitiveInfo(const std::string &input)
                   std::string(fullUuid.length() - UUID_PREFIX_SUFFIX_LENGTH, '*') +
                   fullUuid.substr(fullUuid.length() - UUID_PREFIX_LENGTH);
         
-        lastPos = static_cast<size_t>(match.position()) + static_cast<size_t>(match.length());
+        lastPos = match.position() + match.length();
     }
     output += input.substr(lastPos);
     return output;
