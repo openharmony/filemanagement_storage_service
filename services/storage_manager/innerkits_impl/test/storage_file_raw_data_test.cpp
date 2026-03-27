@@ -64,7 +64,7 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0000, testing:
 /**
  * @tc.number: SUB_STORAGE_FILE_RAW_DATA_RawDataCpy_0001
  * @tc.name: Storage_File_Raw_Data_RawDataCpy_0001
- * @tc.desc: Test RawDataCpy with negative size.
+ * @tc.desc: Test RawDataCpy with size exceeding MAX.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -76,7 +76,7 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_0001, testing:
 
     StorageFileRawData storage;
     char data[10] = "test";
-    storage.size = -1;
+    storage.size = StorageFileRawData::MAX_RAW_DATA_SIZE + 1;
     EXPECT_EQ(storage.RawDataCpy(data), ERR_INVALID_DATA);
     EXPECT_EQ(storage.data, nullptr);
     EXPECT_FALSE(storage.isMalloc);
