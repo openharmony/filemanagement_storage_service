@@ -204,10 +204,150 @@ HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_ReadCcmConfigFil
  */
 HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageQuotaControllerTest-begin SaveUidAndBaseLine_0000";
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0000 start";
     std::vector<BaselineCfg> params;
     int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(nullptr, params);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageQuotaControllerTest-end UpdateBaseLineByUid_0000";
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0000 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0001
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0001 start";
+
+    cJSON* emptyArray = cJSON_CreateArray();
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(emptyArray, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 0);
+    cJSON_Delete(emptyArray);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0001 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0002
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0002 start";
+
+    cJSON* array = cJSON_CreateArray();
+    cJSON* item = cJSON_CreateObject();
+    cJSON_AddNumberToObject(item, "uid", 1000);
+    cJSON_AddNumberToObject(item, "baseline", 1024);
+    cJSON_AddItemToArray(array, item);
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(array, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 1);
+    EXPECT_EQ(params[0].uid, 1000);
+    EXPECT_EQ(params[0].baseline, 1024);
+    cJSON_Delete(array);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0002 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0003
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0003 start";
+
+    cJSON* array = cJSON_CreateArray();
+    cJSON* item = cJSON_CreateObject();
+    cJSON_AddNumberToObject(item, "uid", 1000);
+    cJSON_AddNumberToObject(item, "baseline", -1024);
+    cJSON_AddItemToArray(array, item);
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(array, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 0);
+    cJSON_Delete(array);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0003 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0004
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0004 start";
+
+    cJSON* array = cJSON_CreateArray();
+    cJSON* item = cJSON_CreateObject();
+    cJSON_AddNumberToObject(item, "uid", 1000);
+    cJSON_AddItemToArray(array, item);
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(array, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 0);
+    cJSON_Delete(array);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0004 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0005
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0005 start";
+
+    cJSON* array = cJSON_CreateArray();
+    cJSON_AddItemToArray(array, nullptr);
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(array, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 0);
+    cJSON_Delete(array);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0005 end";
+}
+
+/**
+ * @tc.name: StorageQuotaControllerTest_SaveUidAndBaseLine_0006
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageQuotaControllerTest, StorageQuotaControllerTest_SaveUidAndBaseLine_0006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0006 start";
+
+    cJSON* array = cJSON_CreateArray();
+    for (int i = 0; i < 3; i++) {
+        cJSON* item = cJSON_CreateObject();
+        cJSON_AddNumberToObject(item, "uid", 1000 + i);
+        cJSON_AddNumberToObject(item, "baseline", 1024 * (i + 1));
+        cJSON_AddItemToArray(array, item);
+    }
+    std::vector<BaselineCfg> params;
+    int32_t ret = StorageQuotaController::GetInstance().SaveUidAndBaseLine(array, params);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(params.size(), 3);
+    cJSON_Delete(array);
+
+    GTEST_LOG_(INFO) << "StorageQuotaControllerTest_SaveUidAndBaseLine_0006 end";
 }
 }
