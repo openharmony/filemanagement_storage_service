@@ -52,7 +52,6 @@ const string MULTI_USER_URI_FLAG = "user=";
 constexpr int DECIMAL_PLACE = 2;
 constexpr double TO_MB = 1000.0 * 1000.0;
 const int64_t MAX_INT64 = std::numeric_limits<int64_t>::max();
-constexpr int32_t FOUR_K = 4096;
 #ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
@@ -624,24 +623,16 @@ int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
         LOGE("StorageStatusManager::GetSystemDataSize GetOtherUidSizeSum failed, err=%{public}d", err);
         return err;
     }
-    int64_t usedInodes = 0;
-    err = StorageTotalStatusService::GetInstance().GetUsedInodes(usedInodes);
-    if (err != E_OK) {
-        LOGE("StorageStatusManager::GetSystemDataSize GetUsedInodes failed, err=%{public}d", err);
-        return E_GET_SYSTEM_DATA_SIZE_ERROR;
-    }
-    int64_t usedInodesSize = usedInodes * FOUR_K;
     systemDataSize = StorageManagerScan::GetInstance().GetRootSize() +
         StorageManagerScan::GetInstance().GetSystemSize() +
-        StorageManagerScan::GetInstance().GetMemmgrSize() + otherUidSizeSum + usedInodesSize;
+        StorageManagerScan::GetInstance().GetMemmgrSize() + otherUidSizeSum;
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
     LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld, memmgr=%{public}lld,"
-        " other=%{public}lld, usedInodesSize=%{public}lld, total=%{public}lld",
+        " other=%{public}lld, total=%{public}lld",
         static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
         static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
         static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()),
-        static_cast<long long>(otherUidSizeSum), static_cast<long long>(usedInodesSize),
-        static_cast<long long>(systemDataSize));
+        static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemDataSize));
     return E_OK;
 }
 } // StorageManager
