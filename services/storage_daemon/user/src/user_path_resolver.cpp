@@ -58,6 +58,7 @@ constexpr const char *USER_ID = "<userId>";
 // 创建与挂载 扩展属性
 constexpr const char *OPTIONS_UPDATE_UID = "update_uid";
 constexpr const char *OPTIONS_CHECK_MOUNTED = "check_mounted";
+constexpr const char *OPTIONS_NO_RETURN = "no_return";
 
 // json文件配置路径
 constexpr const char *JSON_KEY_USER_BASE = "user_base";
@@ -247,6 +248,11 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
     LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< src=%{public}s, dst=%{public}s",
         src.c_str(), dst.c_str());
     return E_OK;
+}
+
+bool MountNodeInfo::HasNoReturnOption() const
+{
+    return options.find(OPTIONS_NO_RETURN) != options.end();
 }
 
 int32_t UserPathResolver::GetUserBasePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)

@@ -54,6 +54,7 @@ struct MountNodeInfo {
 
     int32_t MountDir() const;
     int32_t MountDir(const std::string &src, const std::string &dst) const;
+    bool HasNoReturnOption() const;
 };
 void from_json(const nlohmann::json &j, MountNodeInfo &mountNodeInfo);
 
