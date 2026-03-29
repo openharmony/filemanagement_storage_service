@@ -621,6 +621,11 @@ int32_t MountManager::MountHmdfs(int32_t userId)
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountHmdfs", userId, E_MOUNT_HMDFS, extraData);
             LOGE("[L2:MountManager] MountHmdfs: <<< EXIT FAILED <<< MountDir failed");
+            if (nodeInfo.HasNoReturnOption()) {
+                LOGE("[L2:MountManager] MountHmdfs:HasNoReturnOption <<< EXIT FAILED <<< MountDir failed, \
+                    But no need return err");
+                continue;
+            }
             return E_MOUNT_HMDFS;
         }
     }
