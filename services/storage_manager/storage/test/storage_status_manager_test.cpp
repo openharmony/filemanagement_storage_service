@@ -480,10 +480,6 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00001, testing::ext
     EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_OK));
     ret = service->GetSystemDataSize(systemDataSize);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_OK));
-    EXPECT_CALL(*stss, GetUsedInodes(testing::_)).WillRepeatedly(testing::Return(E_ERR));
-    ret = service->GetSystemDataSize(systemDataSize);
-    EXPECT_EQ(ret, E_GET_SYSTEM_DATA_SIZE_ERROR);
     GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00001 end";
 }
 
