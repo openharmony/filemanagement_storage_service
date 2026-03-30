@@ -40,7 +40,7 @@ public:
     static bool IsPtpMode();
 
 private:
-    void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
+    void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLocation);
     bool ShouldHandleMtpDevice(const std::string &usbInfo, DeviceType &deviceType);
     bool ParseMtpDeviceIds(const cJSON* usbJson, uint8_t &deviceClass, uint16_t &idVendor, uint16_t &idProduct);
     std::string ToLowerString(const char* str);

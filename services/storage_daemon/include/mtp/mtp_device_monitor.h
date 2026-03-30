@@ -37,10 +37,10 @@ public:
     }
 
     void StartMonitor();
-    void UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc);
+    void UmountDetachedMtpDevice(uint32_t busLocation, uint8_t devNum);
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
-    void MountMtpDeviceByBroadcast(DeviceType deviceType);
+    void MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t busLocation, uint8_t devNum);
 
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
@@ -61,11 +61,11 @@ private:
     bool IsHwitDevice();
     int32_t HasMTPDevice(bool &hasMtp);
     int32_t MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
-    int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos);
-    int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos);
+    int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
+    int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
     bool IsCameraDevice(uint16_t vendorId, uint16_t productId);
     int32_t MountDeviceByType(DeviceType deviceType, std::vector<MtpDeviceInfo> &devInfos,
-                              const std::string &deviceTypeName);
+                              const std::string &deviceTypeName, uint32_t busLocation, uint8_t devNum);
     void SetPtpMode(const std::vector<MtpDeviceInfo> &devInfos, bool isCamera);
 
 private:

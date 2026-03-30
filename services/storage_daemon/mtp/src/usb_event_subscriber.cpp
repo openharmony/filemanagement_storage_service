@@ -85,8 +85,11 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
         LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_DEVICE_ATTACHED, data=%{public}s",
             usbInfo.c_str());
         DeviceType deviceType = DeviceType::UNKNOWN;
+        uint32_t busLocation = 0;
+        uint8_t devNum = 0;
         if (ShouldHandleMtpDevice(usbInfo, deviceType)) {
-            MtpDeviceMonitor::GetInstance().MountMtpDeviceByBroadcast(deviceType);
+            GetValueFromUsbDataInfo(data.GetData(), devNum, busLocation);
+            MtpDeviceMonitor::GetInstance().MountMtpDeviceByBroadcast(deviceType, busLocation, devNum);
         }
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED) {
@@ -94,17 +97,17 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
         LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_DEVICE_DETACHED, data=%{public}s",
             data.GetData().c_str());
         DeviceType deviceType = DeviceType::UNKNOWN;
+        uint32_t busLocation = 0;
+        uint8_t devNum = 0;
         if (ShouldHandleMtpDevice(usbInfo, deviceType)) {
-            uint8_t devNum = 0;
-            uint32_t busLoc = 0;
-            GetValueFromUsbDataInfo(data.GetData(), devNum, busLoc);
-            MtpDeviceMonitor::GetInstance().UmountDetachedMtpDevice(devNum, busLoc);
+            GetValueFromUsbDataInfo(data.GetData(), devNum, busLocation);
+            MtpDeviceMonitor::GetInstance().UmountDetachedMtpDevice(busLocation, devNum);
         }
     }
     LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: <<< EXIT SUCCESS <<<");
 }
 
-void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc)
+void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLocation)
 {
     LOGD("[L2:UsbEventSubscriber] GetValueFromUsbDataInfo: >>> ENTER <<<");
     if (jsonStr.empty()) {
@@ -124,11 +127,11 @@ void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uin
     }
     cJSON *devNumObj = cJSON_GetObjectItemCaseSensitive(usbJson, BUS_NUM_KEY);
     if (devNumObj != nullptr && cJSON_IsNumber(devNumObj)) {
-        busLoc = static_cast<uint32_t>(devNumObj->valueint);
+        busLocation = static_cast<uint32_t>(devNumObj->valueint);
     }
     cJSON_Delete(usbJson);
-    LOGD("[L2:UsbEventSubscriber] GetValueFromUsbDataInfo: <<< EXIT SUCCESS <<< devNum=%{public}u, busLoc=%{public}u",
-        devNum, busLoc);
+    LOGD("[L2:UsbEventSubscriber] GetValueFromUsbDataInfo: <<< EXIT SUCCESS <<< devNum=%{public}u,"
+         "busLocation=%{public}u", devNum, busLocation);
 }
 
 std::string UsbEventSubscriber::ToLowerString(const char* str)
