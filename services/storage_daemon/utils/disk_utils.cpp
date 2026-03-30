@@ -191,6 +191,9 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     std::vector<std::string> output;
 
     int32_t err = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("GetBlkidDataByCmd output: %{public}s", str.c_str());
+    }
     if (err) {
         StorageRadar::ReportVolumeOperation("ForkExec", err);
         return "";
@@ -340,6 +343,9 @@ void IsExistCD(const std::string &diskPath, bool &isExistCD)
     };
     std::vector<std::string> output;
     int32_t err = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("IsExistCD output: %{public}s", str.c_str());
+    }
     if (err != 0 || !output.empty()) {
         isExistCD = false;
         return;
@@ -411,6 +417,9 @@ int Eject(const std::string &devPath)
         devPath
     };
     int res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("Eject output: %{public}s", str.c_str());
+    }
     if (res != E_OK) {
         LOGE("ForkExec eject failed, %{public}d", res);
         return res;
