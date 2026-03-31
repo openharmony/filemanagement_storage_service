@@ -420,7 +420,7 @@ HWTEST_F(MtpDeviceMonitorTest, UmountDetachedMtpDeviceTest_001, TestSize.Level1)
     dev.busLocation = 2;
     monitor.lastestMtpDevList_.push_back(dev);
 
-    monitor.UmountDetachedMtpDevice(5, 2);
+    monitor.UmountDetachedMtpDevice(2, 5);
     GTEST_LOG_(INFO) << "Current list size: " << monitor.lastestMtpDevList_.size();
     monitor.lastestMtpDevList_.clear();
 
