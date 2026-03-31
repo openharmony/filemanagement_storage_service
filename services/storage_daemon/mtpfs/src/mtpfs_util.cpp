@@ -112,6 +112,7 @@ std::string SmtpfsDirName(const std::string &path)
     }
     std::string result(dirname(str));
     free(static_cast<void *>(str));
+    str = nullptr;
     return result;
 }
 
@@ -146,10 +147,12 @@ std::string SmtpfsGetTmpDir()
     char *cTmpDir = ::mkdtemp(cTempDir);
     if (cTmpDir == nullptr) {
         ::free(cTempDir);
+        cTempDir = nullptr;
         return "";
     }
     tmpDir.assign(cTmpDir);
     ::free(static_cast<void *>(cTempDir));
+    cTempDir = nullptr;
     return tmpDir;
 }
 
@@ -249,6 +252,7 @@ LIBMTP_raw_device_t *smtpfs_raw_device_new_priv(libusb_device *usb_device)
     int err = libusb_get_device_descriptor(usb_device, &desc);
     if (err != LIBUSB_SUCCESS) {
         free(static_cast<void *>(device));
+        device = nullptr;
         return nullptr;
     }
 
