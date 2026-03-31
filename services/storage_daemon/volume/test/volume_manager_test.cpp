@@ -85,6 +85,8 @@ protected:
     int32_t DoTryToFix() override { return g_doTryToFix; };
     std::string GetFsTypeByDev(dev_t dev) override { return ""; };
     std::string GetFsType() override { return ""; };
+    int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize,
+            int64_t &freeSize) override { return E_OK; };
     //disk crypt api
     int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoGetCryptProgressById(const std::string &volumeId, int32_t &progress) override { return E_OK; };
@@ -1316,6 +1318,47 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_003, TestS
     EXPECT_EQ(result, E_NOT_SUPPORT);
     VolumeManager::Instance().volumes_.Erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-non-exist";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_NON_EXIST);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_002, TestSize.Level1)
+{
+    std::string diskId = "diskId-odd-capacity";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 10);
+    std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volumeId.empty());
+    
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().DestroyVolume(volumeId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003, TestSize.Level1)
+{
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    std::string volumeId = "vol-test-capacity";
+    VolumeManager::Instance().volumes_.Insert(volumeId, volumeInfoMock);
+    
+    EXPECT_CALL(*volumeInfoMock, DoGetOddCapacity(_, _, _)).WillOnce(Return(E_ERR));
+    
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_ERR);
+    
+    VolumeManager::Instance().volumes_.Erase(volumeId);
 }
 } // STORAGE_DAEMON
 } // OHOS

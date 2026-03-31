@@ -134,6 +134,51 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
     return E_OK;
 }
 
+std::string ExternalVolumeInfo::GetDevPathByVolumeId(const std::string& volumeId)
+{
+    std::string cmdDevPath = StringPrintf(devPathDir_.c_str(), (volumeId).c_str());
+    return cmdDevPath;
+}
+ 
+int32_t ExternalVolumeInfo::DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    std::string cmdDevPath = GetDevPathByVolumeId(volumeId);
+    int64_t usedSize = 0;
+    LOGI("dev path is %{public}s", cmdDevPath.c_str());
+    int cmdFd = open(cmdDevPath.c_str(), O_RDONLY|O_NONBLOCK);
+    if (cmdFd < 0) {
+        return E_ERR;
+    }
+    std::string oddLabel = GetCDType(cmdDevPath);
+    LOGI("label is %{public}s", oddLabel.c_str());
+    int err1 = E_OK;
+    int err2 = E_OK;
+    if (oddLabel == "DVD-RW" || oddLabel == "DVD-R" || oddLabel == "DVD+R") {
+        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "DVD+RW") {
+        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+        usedSize = totalSize;
+    } else if (oddLabel == "CD-RW" || oddLabel == "CD-R") {
+        err1 = GetCdTotalCapacity(cmdFd, totalSize);
+        err2 = GetCdUsedCapacity(cmdFd, usedSize);
+    } else {
+        totalSize = 0;
+        usedSize = 0;
+    }
+    LOGI("totalsize is %{public}" PRId64 ", usedsize is : %{public}" PRId64, totalSize, usedSize);
+    if (err1 != E_OK || err2 != E_OK) {
+        return E_ERR;
+    }
+    if (usedSize > totalSize) {
+        freeSize = 0;
+    } else {
+        freeSize = totalSize - usedSize;
+    }
+    close(cmdFd);
+    return E_OK;
+}
+
 std::string ExternalVolumeInfo::GetFsTypeByDev(dev_t dev)
 {
     std::string volId = StringPrintf("vol-%u-%u", major(dev), minor(dev));

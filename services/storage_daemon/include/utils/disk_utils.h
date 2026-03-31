@@ -27,10 +27,6 @@ constexpr int DISK_CD_MAJOR = 11;
 constexpr int DISC_STATUS_BYTE_INDEX = 2;
 constexpr int MAX_BUF = 4096;
 constexpr uint8_t DISC_STATUS_MASK = 0x03;
-constexpr uint8_t CDS_NO_DISC = 1;
-constexpr uint8_t CDS_TRAY_OPEN = 2;
-constexpr uint8_t CDS_DRIVE_NOT_READY = 3;
-constexpr uint8_t CDS_DISC_OK = 4;
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
@@ -50,6 +46,11 @@ int IsBlankCD(const std::string &diskPath, bool &isBlankCD);
 int Eject(const std::string &devPath);
 int IsExistCD(const std::string &diskPath, bool &isExistCD);
 int GetCDStatus(const char *device, int &status);
+int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity);
+int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity);
+int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity);
+int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapacity);
+int GetDvdConfiguration(int fd, int &dvdMedia);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

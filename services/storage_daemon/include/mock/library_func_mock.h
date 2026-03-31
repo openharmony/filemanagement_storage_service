@@ -32,6 +32,10 @@ public:
     virtual int remove(const char *pathname) = 0;
     virtual int rmdir(const char *pathname) = 0;
     virtual int lstat(const char *path, struct stat *buf) = 0;
+    virtual int fclose(FILE *) = 0;
+    virtual int statvfs(const char *path, struct statvfs *buf) = 0;
+    virtual int open(const char *path, int flags) = 0;
+    virtual int close(int) = 0;
 public:
     static inline std::shared_ptr<LibraryFunc> libraryFunc_ = nullptr;
 };
@@ -45,6 +49,9 @@ public:
     MOCK_METHOD1(rmdir, int(const char *pathname));
     MOCK_METHOD2(lstat, int(const char *path, struct stat *buf));
     MOCK_METHOD1(fclose, int(FILE *));
+    MOCK_METHOD2(statvfs, int(const char *path, struct statvfs *buf));
+    MOCK_METHOD2(open, int(const char *path, int flags));
+    MOCK_METHOD1(close, int(int));
 };
 }
 }

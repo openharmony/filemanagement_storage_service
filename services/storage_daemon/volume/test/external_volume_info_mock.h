@@ -36,6 +36,7 @@ public:
     MOCK_METHOD0(DoFix4Exfat, int32_t());
     MOCK_METHOD0(DoTryToFix, int32_t());
     MOCK_METHOD0(DoUMountWithForceUsbFuse, int32_t());
+    MOCK_METHOD3(DoGetOddCapacity, int32_t(const std::string&, int64_t&, int64_t&));
 
     MOCK_METHOD0(DoTryToCheck, int32_t());
     MOCK_METHOD0(GetFsType, std::string());

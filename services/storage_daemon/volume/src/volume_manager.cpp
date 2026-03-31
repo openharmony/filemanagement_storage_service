@@ -409,6 +409,22 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
     return E_OK;
 }
 
+int32_t VolumeManager::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("[L2:VolumeManager] GetOddCapacity: the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t err = info->GetOddCapacity(volumeId, totalSize, freeSize);
+    if (err != E_OK) {
+        LOGE("[L2:VolumeManager] GetOddCapacity: the volume %{public}s GetOddCapacity failed.", volumeId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::GetOddCapacity", err);
+        return err;
+    }
+    return E_OK;
+}
+
 bool VolumeManager::IsMtpDeviceInUse(const std::string &diskPath)
 {
     if (diskPath.rfind(MTP_PATH_PREFIX, 0) != 0) {

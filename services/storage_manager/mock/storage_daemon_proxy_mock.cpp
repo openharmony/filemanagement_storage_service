@@ -66,6 +66,11 @@ int32_t StorageDaemonProxy::QueryUsbIsInUse(const std::string &diskPath, bool &i
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     return E_OK;

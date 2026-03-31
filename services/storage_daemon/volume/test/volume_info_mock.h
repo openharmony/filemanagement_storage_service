@@ -40,6 +40,7 @@ public:
     MOCK_METHOD1(GetFsTypeByDev, std::string(dev_t));
     MOCK_METHOD1(IsUsbFuseByType, bool(std::string));
     MOCK_METHOD0(GetFsType, std::string());
+    MOCK_METHOD3(DoGetOddCapacity, int32_t(const std::string &, int64_t &, int64_t &));
     // disk crypt api mock
     MOCK_METHOD2(DoEncrypt, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(DoGetCryptProgressById, int32_t(const std::string &, int32_t &));

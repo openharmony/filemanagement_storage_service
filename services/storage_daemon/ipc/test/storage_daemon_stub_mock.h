@@ -33,6 +33,7 @@ public:
     MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));
     MOCK_METHOD2(SetVolumeDescription, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(QueryUsbIsInUse, int32_t(const std::string &, bool &));
+    MOCK_METHOD3(GetOddCapacity, int32_t(const std::string &, int64_t &, int64_t &));
 
     MOCK_METHOD1(StartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));

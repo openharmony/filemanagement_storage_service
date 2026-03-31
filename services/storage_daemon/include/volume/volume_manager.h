@@ -37,6 +37,7 @@ public:
     int32_t Format(const std::string &volId, const std::string &fsType);
     int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
 
     //disk crypt api
     int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);

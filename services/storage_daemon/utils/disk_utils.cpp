@@ -13,13 +13,19 @@
  * limitations under the License.
  */
 
+#include <cerrno>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <fcntl.h>
+#include <getopt.h>
 #include <iomanip>
+#include <linux/cdrom.h>
 #include <openssl/sha.h>
 #include <sstream>
 #include <cinttypes>
 #include <scsi/sg.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
@@ -42,7 +48,6 @@ constexpr int32_t DEF_TIMEOUT = 120000;
 constexpr int32_t SENSE_BUFF_LEN = 64;
 constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
 constexpr int32_t READ_DISC_INFO_SECTOR = 0x46;
-constexpr int32_t CDROM_DRIVE_STATUS = 0x5326;
 constexpr uint8_t DISC_TYPE_OFFSET_HIGH = 6;
 constexpr uint8_t DISC_TYPE_OFFSET_LOW = 7;
 constexpr uint8_t DISC_TYPE_OFFSET = 8;
@@ -70,6 +75,19 @@ constexpr uint8_t UUID_DIGEST_TIME_MID_OFFSET = 4;
 constexpr uint8_t UUID_DIGEST_TIME_HI_VERSION_OFFSET = 6;
 constexpr uint8_t UUID_DIGEST_CLOCK_SEQ_OFFSET = 8;
 constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
+constexpr uint8_t GET_CAPACITY_CMD_BUF_LEN = 16;
+constexpr uint8_t GET_CAPACITY_DATA_BUF_LEN = 48;
+constexpr uint8_t GET_CD_USED_CAPACITY_CMD_LEN = 10;
+constexpr uint8_t GET_CD_USED_CAPACITY_DATA_LEN = 28;
+constexpr uint8_t GET_CD_TOTAL_CAPACITY_CMD_LEN = 10;
+constexpr uint8_t GET_CD_TOTAL_CAPACITY_DATA_LEN = 4;
+constexpr uint8_t GET_DVD_USED_CAPACITY_CMD_LEN = 10;
+constexpr uint8_t GET_DVD_USED_CAPACITY_DATA_LEN = 8;
+constexpr uint8_t GET_DVD_TOTAL_CAPACITY_CMD_LEN = 12;
+constexpr uint8_t GET_DVD_TOTAL_CAPACITY_DATA_LEN = 36;
+constexpr uint16_t ODD_LOGICAL_SECTOR_SIZE = 2048;
+constexpr uint8_t CD_SECTORS_PER_SECOND = 75;
+constexpr uint8_t SECONDS_PER_MINUTES = 60;
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {
@@ -500,6 +518,218 @@ int Eject(const std::string &devPath)
         return res;
     }
     LOGI("[L8:DiskUtils] Eject: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_CD_TOTAL_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    int data_len = GET_CD_TOTAL_CAPACITY_DATA_LEN;
+    int actual_len = 0;
+    int ret = 0;
+    double total_seconds = 0;
+    /**
+      * 功能：通过 SCSI READ TOC 指令获取cd光盘的 ATIP 信息。
+      * ATIP 包含光盘介质类型、制造商及容量等底层参数。
+      * 参数说明：
+      * cmd_buf[2] = 0x04: 指定读取格式为 ATIP。
+      * cmd_buf[7-8]: 定义设备返回数据的最大长度。
+    */
+    cmd_buf[0] = GPCMD_READ_TOC_PMA_ATIP;
+    cmd_buf[2] = 0x04;
+    cmd_buf[7] = (data_len >> 8) & 0xff;
+    cmd_buf[8] = data_len & 0xff;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get atip data len failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+    actual_len = (int)(data_buf[0] << 8) | data_buf[1];
+    actual_len += 2;
+    LOGI("actual_len: %{public}d", actual_len);
+    cmd_buf[7] = (actual_len >> 8) & 0xff;
+    cmd_buf[8] = actual_len & 0xff;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, actual_len);
+    if (ret != 0) {
+        LOGE("get atip data failed, ret is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    total_seconds = (double)data_buf[12] * SECONDS_PER_MINUTES + data_buf[13] +
+                    (double)data_buf[14] / CD_SECTORS_PER_SECOND;
+    cdTotalCapacity = (unsigned long long)(total_seconds * CD_SECTORS_PER_SECOND * ODD_LOGICAL_SECTOR_SIZE);
+    LOGI("cd total_seconds: %{public}f, total_capacity: %{public}" PRIu64, total_seconds, cdTotalCapacity);
+    return E_OK;
+}
+
+int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_CD_USED_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    int data_len = GET_CD_USED_CAPACITY_DATA_LEN;
+    int ret = 0;
+    /*
+    * 使用 SCSI READ TRACK INFORMATION 指令 (0x52) 获取cd光盘轨道/逻辑分区信息
+    * cmd_buf[0]: 指令操作码 0x52 (READ TRACK/RZONE INFORMATION)
+    * cmd_buf[1]: 设置为 1，表示通过轨道编号 (Track Number) 寻址
+    * cmd_buf[5]: 设置为 0xff，通常用于请求最后一条轨道 (Invisible Track) 或特定状态信息
+    * cmd_buf[7-8]: 分别填充 data_len 的高8位和低8位，告知驱动器返回数据的长度限制
+    */
+    cmd_buf[0] = GPCMD_READ_TRACK_RZONE_INFO;
+    cmd_buf[1] = 1;
+    cmd_buf[5] = 0xff;
+    cmd_buf[7] = (data_len >> 8) & 0xff;
+    cmd_buf[8] = data_len & 0xff;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get cd used capacity failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    cdUsedCapacity = ((unsigned long long)data_buf[8] << 24) |
+                     ((unsigned long long)data_buf[9] << 16) |
+                     ((unsigned long long)data_buf[10] << 8) |
+                     data_buf[11];
+    cdUsedCapacity *= ODD_LOGICAL_SECTOR_SIZE;
+    LOGI("cd used_capacity: %{public}" PRIu64, cdUsedCapacity);
+    return E_OK;
+}
+
+int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_DVD_TOTAL_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    int data_len = GET_DVD_TOTAL_CAPACITY_DATA_LEN;
+    int ret = 0;
+    unsigned long long phys_start = 0;
+    unsigned long long phys_end = 0;
+    int dvd_media = 0;
+    ret = GetDvdConfiguration(fd, dvd_media);
+    if (ret != 0) {
+        LOGE("get dvd configuration failed,ret val is %{public}d", ret);
+        return E_ERR;
+    }
+    /*
+    * 使用 SCSI READ DVD STRUCTURE 指令 (0xAD) 获取光盘物理结构或容量信息
+    * cmd_buf[0]: 操作码 0xAD (GPCMD_READ_DVD_STRUCTURE)。
+    * cmd_buf[7]: 格式码 (Format Code)。
+    *             如果 dvd_media <= 0x18 (通常指 DVD-ROM/R/RW)，设置为 16 (0x10)，
+    *             这对应 "DVD Structure List"，用于列出支持的结构。
+    *             否则设置为 0，通常对应 "Physical Format Information"，读取最基础的物理层信息。
+    * cmd_buf[9]: 分配长度 (Allocation Length) 的低位。
+    *             这里通常设置为数据结构的总长度 (GET_DVD_TOTAL_CAPACITY_DATA_LEN)。
+    * cmd_buf[11]:保留位/控制字节，通常设为 0。
+    */
+    cmd_buf[0] = GPCMD_READ_DVD_STRUCTURE;
+    cmd_buf[7] = dvd_media <= 0x18 ? 16 : 0;
+    cmd_buf[9] = GET_DVD_TOTAL_CAPACITY_DATA_LEN;
+    cmd_buf[11] = 0;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get dvd total capacity failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    phys_start = ((unsigned long long)(data_buf[9]) << 16) |
+                 ((unsigned long long)(data_buf[10]) << 8) |
+                 data_buf[11];
+    if ((data_buf[6] & 0x60) == 0) {
+        phys_end = ((unsigned long long)(data_buf[13]) << 16) |
+                   ((unsigned long long)(data_buf[14]) << 8) |
+                   data_buf[15];
+    } else {
+        phys_end = ((unsigned long long)(data_buf[17]) << 16) |
+                    ((unsigned long long)(data_buf[18]) << 8) |
+                    data_buf[19];
+    }
+    if (phys_end > phys_start) {
+        dvdTotalCapacity = (phys_end - phys_start + 1) * ODD_LOGICAL_SECTOR_SIZE;
+    } else {
+        dvdTotalCapacity = 0;
+        LOGI("phys_end is less than phys_start, error data");
+    }
+    
+    LOGI("dvd dvdTotalCapacity: %{public}" PRIu64, dvdTotalCapacity);
+    return E_OK;
+}
+ 
+int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapcity)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    int ret = 0;
+    unsigned int blk_cnt = 0;
+    unsigned int blk_size = 0;
+    /*
+     * 使用 SCSI READ CAPACITY 指令 (0x25) 获取光盘介质的逻辑容量。
+     * 字段详解:
+     * cmd_buf[0]: 操作码 0x25 (GPCMD_READ_CDVD_CAPACITY)。
+     *             用于请求光盘的最后逻辑块地址 (Last LBA) 和块大小 (Block Length)。
+     * cmd_buf[7-8]: 分配长度 (Allocation Length)。
+     *               告知驱动器返回数据的最大长度（通常为 8 字节）。
+     *               高 8 位填入 cmd_buf[7]，低 8 位填入 cmd_buf[8]。
+     * 注意：此指令返回的 LBA 需加 1 才是总扇区数。
+     */
+    cmd_buf[0] = GPCMD_READ_CDVD_CAPACITY;
+    cmd_buf[7] = (data_len >> 8) & 0xff;
+    cmd_buf[8] = data_len & 0xff;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get dvd total capacity failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    blk_cnt = ((unsigned int)data_buf[0] << 24) |
+              ((unsigned int)data_buf[1] << 16) |
+              ((unsigned int)data_buf[2] << 8) |
+              data_buf[3];
+    blk_size = ((unsigned int)data_buf[4] << 24) |
+               ((unsigned int)data_buf[5] << 16) |
+               ((unsigned int)data_buf[6] << 8) |
+               data_buf[7];
+    dvdUsedCapcity = (unsigned long long)(blk_cnt + 1) * blk_size;
+    LOGI("dvd used_capacity: %{public}u * %{public}u = %{public}" PRIu64, blk_cnt + 1, blk_size, dvdUsedCapcity);
+    return E_OK;
+}
+ 
+int GetDvdConfiguration(int fd, int &dvdMedia)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    int ret = 0;
+    /*
+     * 使用 SCSI GET CONFIGURATION 指令 (0x46) 获取光驱设备的功能列表。
+     * 字段详解:
+     * cmd_buf[0]: 操作码 0x46 (GPCMD_GET_CONFIGURATION)。
+     * cmd_buf[1]: RT (Request Type) 字段。
+     *             设置为 1 (01b) 表示请求“当前活动的功能”(Current Features Only)，
+     *             即仅列出当前插入介质所支持的功能（如刻录、读取能力）。
+     * cmd_buf[7-8]: 分配长度 (Allocation Length)。
+     *               指定接收配置数据（Feature Descriptors）的最大缓冲区长度。
+     *               高 8 位存入 cmd_buf[7]，低 8 位存入 cmd_buf[8]。
+     * 用途:
+     * 常用于探测光驱是否支持特定的 Profile（如 DVD-RW, BD-RE）以及当前光盘的写入模式。
+     */
+    cmd_buf[0] = GPCMD_GET_CONFIGURATION;
+    cmd_buf[1] = 1;
+    cmd_buf[7] = (data_len >> 8) & 0xff;
+    cmd_buf[8] = data_len & 0xff;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get atip data len failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    dvdMedia = ((int)data_buf[6] << 8) | data_buf[7];
+    LOGI("dvd_media: %{public}#x", dvdMedia);
     return E_OK;
 }
 } // namespace STORAGE_DAEMON

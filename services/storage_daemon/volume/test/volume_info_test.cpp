@@ -1196,5 +1196,33 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Decrypt_002, TestSize.Le
     EXPECT_TRUE(ret == E_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Decrypt_002 end";
 }
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOddCapacity_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_001 start";
+    VolumeInfoMock mock;
+    std::string volumeId = "vol-1-24";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    EXPECT_CALL(mock, DoGetOddCapacity(testing::_, testing::_, testing::_))
+        .Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOddCapacity_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_002 start";
+    VolumeInfoMock mock;
+    std::string volumeId = "vol-1-25";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    EXPECT_CALL(mock, DoGetOddCapacity(testing::_, testing::_, testing::_))
+        .Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_002 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

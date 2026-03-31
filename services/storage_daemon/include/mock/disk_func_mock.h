@@ -47,6 +47,7 @@ public:
     virtual int open(const char *, int) = 0;
     virtual int close(int) = 0;
     virtual int ioctl(int fd, int request) = 0;
+    virtual int ioctl(int fd, int request, void* arg) = 0;
     virtual int fileno(FILE *stream) = 0;
     virtual char* realpath(const char*, char*) = 0;
 public:
@@ -60,6 +61,7 @@ public:
     MOCK_METHOD2(open, int(const char*, int));
     MOCK_METHOD1(close, int(int));
     MOCK_METHOD2(ioctl, int(int, int));
+    MOCK_METHOD3(ioctl, int(int, int, void*));
     MOCK_METHOD1(fileno, int(FILE *));
     MOCK_METHOD2(realpath, char*(const char*, char*));
 };

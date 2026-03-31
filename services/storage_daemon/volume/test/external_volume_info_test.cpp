@@ -16,6 +16,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <linux/kdev_t.h>
+#include <sys/statvfs.h>
 
 #include "external_volume_info_mock.h"
 #include "mock/disk_utils_mock.h"
@@ -1859,6 +1860,22 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDecryp
     int32_t ret = vol.DoDecrypt("vol-156-300", "short");
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDecrypt_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_GetDevPathByVolumeId_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-test-123";
+    std::string result = externalVolumeInfo_->GetDevPathByVolumeId(volumeId);
+    EXPECT_FALSE(result.empty());
+}
+
+HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_DoGetOddCapacity_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-test-123";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t ret = externalVolumeInfo_->DoGetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(ret, E_ERR);
 }
 } // STORAGE_DAEMON
 } // OHOS

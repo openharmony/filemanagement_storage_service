@@ -39,6 +39,13 @@ public:
     virtual std::string GetBlkidDataByCmd(std::vector<std::string> &cmd) = 0;
     virtual std::string GetAnonyString(const std::string &value) = 0;
     virtual int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid) = 0;
+    virtual std::string GetCDType(const std::string &diskPath) = 0;
+    virtual int GetCDStatus(const char *device, int &status) = 0;
+    virtual int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity) = 0;
+    virtual int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity) = 0;
+    virtual int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity) = 0;
+    virtual int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapacity) = 0;
+    virtual int GetDvdConfiguration(int fd, int &dvdMedia) = 0;
 public:
     static inline std::shared_ptr<IDiskUtilMoc> diskUtilMoc = nullptr;
 };
@@ -58,6 +65,13 @@ public:
     MOCK_METHOD1(GetBlkidDataByCmd, std::string(std::vector<std::string> &cmd));
     MOCK_METHOD1(GetAnonyString, std::string(const std::string &value));
     MOCK_METHOD2(ReadVolumeUuid, int32_t(const std::string &devPath, std::string &uuid));
+    MOCK_METHOD1(GetCDType, std::string(const std::string &diskPath));
+    MOCK_METHOD2(GetCDStatus, int(const char *device, int &status));
+    MOCK_METHOD2(GetCdTotalCapacity, int(int fd, int64_t &cdTotalCapacity));
+    MOCK_METHOD2(GetCdUsedCapacity, int(int fd, int64_t &cdUsedCapacity));
+    MOCK_METHOD2(GetDvdTotalCapacity, int(int fd, int64_t &dvdTotalCapacity));
+    MOCK_METHOD2(GetDvdUsedCapacity, int(int fd, int64_t &dvdUsedCapacity));
+    MOCK_METHOD2(GetDvdConfiguration, int(int fd, int &dvdMedia));
 };
 }
 }
