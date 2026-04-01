@@ -42,6 +42,7 @@ public:
     int32_t Format(std::string volumeId, std::string type);
     int32_t SetVolumeDescription(std::string volumeId, std::string description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
 
     // fscrypt api
     int32_t EraseAllUserEncryptedKeys();

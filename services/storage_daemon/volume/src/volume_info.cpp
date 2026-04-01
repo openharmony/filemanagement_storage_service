@@ -360,6 +360,16 @@ bool VolumeInfo::IsUsbFuseByType(std::string fsType)
     return isUsbFuseByType;
 }
 
+int32_t VolumeInfo::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    int32_t err = DoGetOddCapacity(volumeId, totalSize, freeSize);
+    if (err != E_OK) {
+        LOGE("[L3:VolumeInfo] DoGetOddCapacity: Volume DoGetOddCapacity failed, err: %{public}d", err);
+        return err;
+    }
+    return E_OK;
+}
+
 int32_t VolumeInfo::DestroyCrypt(const std::string &volumeId)
 {
     int32_t err = DoDestroyCrypt(volumeId);

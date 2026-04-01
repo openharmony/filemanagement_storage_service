@@ -1258,4 +1258,17 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Decrypt_0000, test
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Decrypt_0000";
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOddCapacity_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOddCapacity_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "test-volume";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = sdCommunication->GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOddCapacity_0000";
+}
 } // namespace

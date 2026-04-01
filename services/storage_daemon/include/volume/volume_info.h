@@ -64,6 +64,7 @@ public:
     void SetState(VolumeState mountState);
     bool GetIsUserdata();
     std::string GetFsTypeBase();
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
     //disk crypt api
     int32_t DestroyCrypt(const std::string &volumeId);
     int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
@@ -96,6 +97,7 @@ protected:
     virtual std::string GetFsTypeByDev(dev_t dev) = 0;
     virtual bool IsUsbFuseByType(std::string fsType);
     virtual std::string GetFsType() = 0;
+    virtual int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) = 0;
 
     //disk crypt api
     virtual int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) = 0;

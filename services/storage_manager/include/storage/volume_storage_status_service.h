@@ -27,12 +27,14 @@ public:
         static VolumeStorageStatusService instance;
         return instance;
     }
-    int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize);
-    int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize);
+    int32_t GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize);
+    int32_t GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize);
 private:
     VolumeStorageStatusService();
     ~VolumeStorageStatusService();
     std::string GetVolumePath(std::string volumeUuid);
+    bool IsOddDevice(const std::string& volumeUuid);
+    int32_t GetOddSize(const std::string& volumeUuid, int64_t &totalSize, int64_t &freeSize);
 };
 } // StorageManager
 } // OHOS

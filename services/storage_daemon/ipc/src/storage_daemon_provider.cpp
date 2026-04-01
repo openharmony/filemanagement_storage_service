@@ -1713,5 +1713,20 @@ int32_t StorageDaemonProvider::Decrypt(const std::string &volumeId, const std::s
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle Get ODD capacity");
+    int32_t ret = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    if (ret != E_OK) {
+        LOGE("Get ODD capacity failed, please check, ret val is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Get ODD capacity", ret);
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

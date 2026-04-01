@@ -119,4 +119,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 78] void  VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
      [ipccode 79] void  Unlock([in] String volumeId, [in] String pazzword);
      [ipccode 80] void  Decrypt([in] String volumeId, [in] String pazzword);
+
+     [ipccode 81] void GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
 }

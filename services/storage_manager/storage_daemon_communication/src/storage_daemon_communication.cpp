@@ -1079,6 +1079,20 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
     return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
 }
 
+int32_t StorageDaemonCommunication::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetOddCapacity nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetOddCapacity(volumeId, totalSize, freeSize);
+}
+
 int32_t StorageDaemonCommunication::Encrypt(const std::string &volumeId, const std::string &pazzword)
 {
     LOGI("StorageDaemonCommunication::Encrypt start");

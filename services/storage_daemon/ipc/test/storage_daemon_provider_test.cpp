@@ -2444,5 +2444,34 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_RegisterUeceActiva
 }
 #endif
 
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOddCapacity_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volumeId = "vol-test";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    
+    auto ret = storageDaemonProviderTest_->GetOddCapacity(volumeId, totalSize, freeSize);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_NE(ret, E_OK);
+#else
+    EXPECT_EQ(ret, E_OK);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOddCapacity_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volumeId = "";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    
+    auto ret = storageDaemonProviderTest_->GetOddCapacity(volumeId, totalSize, freeSize);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_NE(ret, E_OK);
+#else
+    EXPECT_EQ(ret, E_OK);
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

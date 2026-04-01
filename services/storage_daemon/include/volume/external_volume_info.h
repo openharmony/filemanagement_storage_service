@@ -44,6 +44,7 @@ protected:
     virtual int32_t DoFormat(std::string type) override;
     virtual int32_t DoSetVolDesc(std::string description) override;
     virtual std::string GetFsTypeByDev(dev_t dev) override;
+    virtual int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) override;
 
     //disk crypt api
     virtual int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) override;
@@ -100,6 +101,7 @@ private:
     int32_t ExecuteAsyncMount(uint32_t mountFlags);
     int32_t DoUMountWithForceUsbFuse();
     int32_t ValidatePazzword(const std::string &pazzword);
+    std::string GetDevPathByVolumeId(const std::string& volumeId);
 };
 } // STORAGE_DAEMON
 } // OHOS
