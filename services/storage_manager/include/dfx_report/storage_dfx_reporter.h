@@ -72,6 +72,9 @@ private:
     std::vector<DirSpaceInfo> GetRootDirList();
     std::vector<DirSpaceInfo> GetSystemDirList();
     std::vector<DirSpaceInfo> GetFoundationDirList();
+    int32_t GetAllSubUserIds(std::vector<int32_t> &userIdVec);
+    void CollectSubUserStorageStats(std::ostringstream &extraData);
+    void PrintOverLongLog(std::string str);
 
     // Scan control helper methods
     bool CheckScanPreconditions();

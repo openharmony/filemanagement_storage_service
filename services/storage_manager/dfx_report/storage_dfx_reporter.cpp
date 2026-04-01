@@ -44,6 +44,8 @@ constexpr int64_t TIME_INTERVAL_HOURS = 24;
 constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
 constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char *OVP_CHUNKS = "/ovp_chunks";
+constexpr const char *OHOS_FUSION_MANAGER = "ohos_fusion_manager";
+constexpr size_t BOUNDARY = 3000;
 constexpr uint64_t FOUR_K = 4096;
 constexpr uint64_t BLOCK_COUNT = 512;
 
@@ -101,11 +103,75 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     }
     CollectMetadataAndAnco(extraData);
     ret = CollectBundleStatistics(userId, extraData);
-    LOGI("extraData is %{public}s", extraData.str().c_str());
+    CollectSubUserStorageStats(extraData);
+
+    PrintOverLongLog(extraData.str());
     StorageService::StorageRadar::ReportSpaceRadar("StartReportHapAndSaStorageStatus",
         E_STORAGE_STATUS, extraData.str());
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus end.");
     LOGI("Hap and Sa statistics thread completed.");
+}
+
+void StorageDfxReporter::PrintOverLongLog(std::string str)
+{
+    size_t len = str.size();
+    while (len > 0) {
+        std::string sub = str.substr(0, std::min(len, BOUNDARY));
+        LOGI("%{public}s", sub.c_str());
+        if (len <= BOUNDARY) {
+            return;
+        }
+        str = str.substr(BOUNDARY);
+        len -= BOUNDARY;
+    }
+}
+
+int32_t StorageDfxReporter::GetAllSubUserIds(std::vector<int32_t> &userIdVec)
+{
+    userIdVec.clear();
+    std::vector<AccountSA::OsAccountInfo> allOsAccounts;
+    ErrCode ret = AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(allOsAccounts);
+    if (ret != 0) {
+        LOGE("Get all created accounts error, ret: %{public}d", ret);
+        return ret;
+    }
+
+    for (const auto &u : allOsAccounts) {
+        if (u.GetLocalId() == 0 || u.GetLocalId() == StorageService::DEFAULT_USERID) {
+            continue;
+        }
+        userIdVec.push_back(u.GetLocalId());
+    }
+    return E_OK;
+}
+
+void StorageDfxReporter::CollectSubUserStorageStats(std::ostringstream &extraData)
+{
+    std::vector<int32_t> userIdVec;
+    if (GetAllSubUserIds(userIdVec) != E_OK) {
+        LOGE("Get all sub userId fail");
+        return;
+    }
+    for (const int32_t &id : userIdVec) {
+        StorageStats storageStatsInfo;
+        int32_t ret = GetStorageStatsInfo(id, storageStatsInfo);
+        if (ret != E_OK) {
+            LOGE("CollectSubUserStorageStats failed, userId=%{public}d, ret=%{public}d", id, ret);
+            continue;
+        }
+        ExtBundleStats stats;
+        stats.businessName_ = OHOS_FUSION_MANAGER;
+        StorageStatusManager::GetInstance().GetExtBundleStats(id, stats);
+
+        extraData << "{userId is:" << id << "}\n";
+        extraData << "{app size is:" << ConvertBytesToMB(storageStatsInfo.app_, ACCURACY_NUM) << "MB";
+        extraData << ",audio size is:" << ConvertBytesToMB(storageStatsInfo.audio_, ACCURACY_NUM) << "MB";
+        extraData << ",image size is:" << ConvertBytesToMB(storageStatsInfo.image_, ACCURACY_NUM) << "MB";
+        extraData << ",video size is:" << ConvertBytesToMB(storageStatsInfo.video_, ACCURACY_NUM) << "MB";
+        extraData << ",file size is:" << ConvertBytesToMB(storageStatsInfo.file_, ACCURACY_NUM) << "MB";
+        extraData << ",ext bundle size is:" << ConvertBytesToMB(stats.businessSize_,
+            ACCURACY_NUM) << "MB}" << std::endl;
+    }
 }
 
 int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstream &extraData)
@@ -119,9 +185,12 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     int64_t freeSize = 0;
     int64_t systemSize = 0;
     int64_t systemDataSize = 0;
+    ExtBundleStats stats;
+    stats.businessName_ = OHOS_FUSION_MANAGER;
     StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
     StorageStatusManager::GetInstance().GetSystemDataSize(systemDataSize);
+    StorageStatusManager::GetInstance().GetExtBundleStats(userId, stats);
 
     extraData << "{userId is:" << userId << "}\n";
     extraData << "{app size is:" << ConvertBytesToMB(storageStatsInfo.app_, ACCURACY_NUM) << "MB";
@@ -132,7 +201,8 @@ int32_t StorageDfxReporter::CollectStorageStats(int32_t userId, std::ostringstre
     extraData << ",total size is:" << std::to_string(ConvertBytesToMB(storageStatsInfo.total_, ACCURACY_NUM)) << "MB";
     extraData << ",sys size is:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB";
     extraData << ",free size is:" << ConvertBytesToMB(freeSize, ACCURACY_NUM) << "MB";
-    extraData << ",sys data size is:" << ConvertBytesToMB(systemDataSize, ACCURACY_NUM) << "MB}" << std::endl;
+    extraData << ",sys data size is:" << ConvertBytesToMB(systemDataSize, ACCURACY_NUM) << "MB";
+    extraData << ",ext bundle size is:" << ConvertBytesToMB(stats.businessSize_, ACCURACY_NUM) << "MB}" << std::endl;
     return E_OK;
 }
 
