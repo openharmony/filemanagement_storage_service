@@ -502,7 +502,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         LOGE("fork failed, errno is %{public}d.", errno);
         return E_FORK;
     } else if (pid == 0) {
-        if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
+        if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN) != E_OK) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
@@ -673,7 +673,7 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
         return E_ERR;
     } else if (pid == 0) {
         WritePidToPipe(pipe_fd, PIPE_FD_LEN);
-        if (RedirectStdToPipe(pipe_log_fd, PIPE_FD_LEN)) {
+        if (RedirectStdToPipe(pipe_log_fd, PIPE_FD_LEN) != E_OK) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
