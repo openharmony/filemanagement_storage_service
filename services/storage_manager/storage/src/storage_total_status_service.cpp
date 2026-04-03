@@ -136,7 +136,7 @@ int32_t StorageTotalStatusService::GetCurrentBundleInodes(int64_t &curInodes)
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (uid < 0) {
         LOGE("GetCurrentBundleInodes: uid %{public}d out of range", uid);
-        return E_PARAMS_INVALID;
+        return E_GET_BUNDLE_INODES_ERROR;
     }
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
     if (bundleMgr == nullptr) {

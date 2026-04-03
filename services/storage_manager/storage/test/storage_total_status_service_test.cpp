@@ -437,7 +437,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleIno
     int64_t curInodes = 0;
     int32_t result = service.GetCurrentBundleInodes(curInodes);
 
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_GET_BUNDLE_INODES_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetCurrentBundleInodes_0001";
 
     g_callingUid = 5523;
