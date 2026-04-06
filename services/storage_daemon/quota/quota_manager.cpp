@@ -49,6 +49,7 @@ constexpr const char* SYSTEM_DATA_KEY = "storage.statistic.systemdata";
 constexpr const char* HMFS_PATH = "/sys/fs/hmfs/userdata";
 constexpr const char* MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char* OVP_CHUNKS = "/ovp_chunks";
+constexpr const char* SCAN_EXCLUDE_PATH = "/data/local/tmp";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr double DIVISOR = 1000.0 * 1000.0;
@@ -922,6 +923,12 @@ int32_t QuotaManager::GetMetaDataSize(int64_t &metaDataSize)
 int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
     const std::vector<int32_t> &uids)
 {
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        std::string extraData = "path=" + path;
+        StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
+        LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag, current path=%{public}s", path.c_str());
+        return E_ERR;
+    }
     AddBlksMultiUids(path, blks, uids);
     if (!IsDir(path)) {
         return E_OK;
@@ -934,10 +941,24 @@ int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vect
 
     int ret = E_OK;
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            std::string extraData = "path=" + path;
+            StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
+            LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag in loop, "
+                 "current dir=%{public}s, next entry=%{public}s", path.c_str(), ent->d_name);
+            closedir(dir);
+            return E_ERR;
+        }
         if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..") == 0)) {
             continue;
         }
         std::string subPath = path + "/" + ent->d_name;
+
+        if (subPath == SCAN_EXCLUDE_PATH) {
+            LOGI("AddBlksRecurseMultiUids skip excluded path: %{public}s", subPath.c_str());
+            continue;
+        }
+
         int32_t retTmp = AddBlksRecurseMultiUids(subPath, blks, uids);
         if (retTmp != E_OK) {
             ret = retTmp;
@@ -981,14 +1002,26 @@ int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &pat
 
     for (size_t pathIdx = 0; pathIdx < paths.size(); ++pathIdx) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            LOGI("GetDirListSpaceByPaths stopped by stopScanFlag");
+            std::string extraData = "path=" + paths[pathIdx];
+            StorageService::StorageRadar::ReportSpaceRadar("GetDirListSpaceByPaths", E_ERR, extraData);
+            LOGE("GetDirListSpaceByPaths stopped by stopScanFlag");
             std::vector<DirSpaceInfo>().swap(resultDirs);
             return E_ERR;
         }
 
         const std::string &path = paths[pathIdx];
+        auto pathStartTime = std::chrono::steady_clock::now();
+
         std::vector<int64_t> blks(uids.size(), 0);
         int32_t ret = AddBlksRecurseMultiUids(path, blks, uids);
+        auto pathEndTime = std::chrono::steady_clock::now();
+        auto pathDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            pathEndTime - pathStartTime).count();
+        LOGE("GetDirListSpaceByPaths scan path[%{public}zu/%{public}zu] '%{public}s' "
+             "completed in %{public}lldms, ret=%{public}d",
+             pathIdx + 1, paths.size(), path.c_str(),
+             static_cast<long long>(pathDurationMs), ret);
+
         if (ret != E_OK) {
             LOGW("GetDirListSpaceByPaths AddBlksRecurseMultiUids failed for %{public}s, ret=%{public}d",
                  path.c_str(), ret);
@@ -1003,6 +1036,11 @@ int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &pat
             LOGD("GetDirListSpaceByIds path=%{public}s, uid=%{public}d, size=%{public}lld",
                  path.c_str(), uids[uidIdx], static_cast<long long>(dirSize));
         }
+    }
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        LOGE("GetDirListSpaceByPaths stopped by stopScanFlag after loop");
+        std::vector<DirSpaceInfo>().swap(resultDirs);
+        return E_ERR;
     }
 
     LOGI("GetDirListSpaceByPaths end, result dirs size=%{public}zu", resultDirs.size());

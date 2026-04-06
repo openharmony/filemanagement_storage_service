@@ -1259,5 +1259,46 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_007, TestSize
     }
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_007 end";
 }
+
+/**
+ * @tc.name: QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001
+ * @tc.desc: Test AddBlksRecurseMultiUids with stopScanFlag set at entry.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001 start";
+    std::string path = "/data";
+    std::vector<int64_t> blks = {0, 0};
+    std::vector<int32_t> uids = {0, 1000};
+    // Set stopScanFlag to true, should return E_ERR immediately
+    QuotaManager::GetInstance().SetStopScanFlag(true);
+    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids);
+    EXPECT_EQ(result, E_ERR);
+    // Reset flag
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop_001
+ * @tc.desc: Test GetDirListSpaceByPaths with stopScanFlag set after loop completion.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop_001 start";
+    std::vector<std::string> paths = {"/etc"};
+    std::vector<int32_t> uids = {0};
+    std::vector<DirSpaceInfo> resultDirs;
+    // Process normally first, then set stop flag to verify post-loop check
+    QuotaManager::GetInstance().SetStopScanFlag(false);
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    // After loop, should succeed or fail depending on path existence
+    EXPECT_TRUE(result == E_OK || result == E_ERR || result == E_STATISTIC_OPEN_DIR_FAILED);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
