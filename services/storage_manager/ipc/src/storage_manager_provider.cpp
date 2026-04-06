@@ -166,6 +166,7 @@ void StorageManagerProvider::OnStart()
     (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     StorageMonitorService::GetInstance().StartStorageMonitorTask();
+    StorageManagerScan::GetInstance().InitEventHandler();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }

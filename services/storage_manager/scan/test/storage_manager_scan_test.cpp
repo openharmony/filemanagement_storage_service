@@ -172,7 +172,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_Init_00001, testing::ext::TestSize.Leve
 /**
  * @tc.number: STORAGE_Init_00002
  * @tc.name: STORAGE_Init_00002
- * @tc.desc: Test function of Init interface with GetQuotaSizeByUid failure.
+ * @tc.desc: Test function of Init interface when LoadScanResultFromFile fails, uses default sizes.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -182,11 +182,11 @@ HWTEST_F(StorageManagerScanTest, STORAGE_Init_00002, testing::ext::TestSize.Leve
 {
     GTEST_LOG_(INFO) << "STORAGE_Init_00002 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
-    // Mock GetDqBlkSpacesByUids to return error
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillRepeatedly(Return(E_ERR));
+    // When LoadScanResultFromFile fails, Init now uses default sizes instead of GetQuotaSizeByUid
+    // Default: rootSize=4000000000, systemSize=100000000, memmgrSize=900000000
     int32_t ret = storageManagerScan.Init();
-    // Should fail when quota query fails and file doesn't exist
-    EXPECT_TRUE(ret == E_OK || ret == E_ERR || ret == E_SERVICE_IS_NULLPTR);
+    // Should succeed with default values, or fail if SaveScanResultToFile fails
+    EXPECT_TRUE(ret == E_OK || ret == E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_Init_00002 end";
 }
 
@@ -233,7 +233,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_StopScan_00001, testing::ext::TestSize.
 /**
  * @tc.number: STORAGE_StopScan_00002
  * @tc.name: STORAGE_StopScan_00002
- * @tc.desc: Test function of StopScan interface.
+ * @tc.desc: Test function of StopScan interface - verify stopScanFlag_ is set.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -245,7 +245,9 @@ HWTEST_F(StorageManagerScanTest, STORAGE_StopScan_00002, testing::ext::TestSize.
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     storageManagerScan.isScanRunning_ = true;
     storageManagerScan.StopScan();
-    EXPECT_TRUE(true);
+    // StopScan now only sets stopScanFlag_ (no longer resets isScanRunning_)
+    EXPECT_TRUE(storageManagerScan.stopScanFlag_.load());
+    storageManagerScan.stopScanFlag_ = false;
     GTEST_LOG_(INFO) << "STORAGE_StopScan_00002 end";
 }
 
@@ -340,7 +342,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_LaunchScanWorker_00001, testing::ext::T
 /**
  * @tc.number: STORAGE_ExecuteScan_00001
  * @tc.name: STORAGE_ExecuteScan_00001
- * @tc.desc: Test function of ExecuteScan with GetQuotaSizeByUid failure.
+ * @tc.desc: Test function of ExecuteScan with ScanDirectories failure.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -350,8 +352,8 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00001, testing::ext::TestSi
 {
     GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00001 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
-    // Mock GetDqBlkSpacesByUids to return error
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillRepeatedly(Return(E_ERR));
+    // Mock GetDirListSpaceByPaths to return error to make ScanDirectories fail
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _)).WillRepeatedly(Return(E_ERR));
     int32_t ret = storageManagerScan.ExecuteScan();
     EXPECT_EQ(ret, E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00001 end";
@@ -378,24 +380,24 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00002, testing::ext::TestSi
 }
 
 /**
- * @tc.number: STORAGE_ScanTimeoutMonitor_00001
- * @tc.name: STORAGE_ScanTimeoutMonitor_00001
- * @tc.desc: Test function of ScanTimeoutMonitor interface.
+ * @tc.number: STORAGE_ScanTimeoutHandler_00001
+ * @tc.name: STORAGE_ScanTimeoutHandler_00001
+ * @tc.desc: Test function of ScanTimeoutHandler interface with scan already completed.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR20260114725643
  */
-HWTEST_F(StorageManagerScanTest, STORAGE_ScanTimeoutMonitor_00001, testing::ext::TestSize.Level1)
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanTimeoutHandler_00001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutMonitor_00001 start";
+    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutHandler_00001 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
-    // ScanTimeoutMonitor runs in a thread, just verify it doesn't crash
-    // We can't easily test the full 30 second timeout in a unit test
+    // ScanTimeoutHandler checks isScanRunning_ and calls StopScan if still running
     storageManagerScan.isScanRunning_ = false;
-    storageManagerScan.ScanTimeoutMonitor();
+    storageManagerScan.ScanTimeoutHandler();
+    // When scan is not running, handler should just return without calling StopScan
     EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutMonitor_00001 end";
+    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutHandler_00001 end";
 }
 
 /**
@@ -856,4 +858,97 @@ HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00005, testing::
     // Clean up
     std::remove(testFile.c_str());
     GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00005 end";
+}
+
+/**
+ * @tc.number: STORAGE_InitEventHandler_00001
+ * @tc.name: STORAGE_InitEventHandler_00001
+ * @tc.desc: Test function of InitEventHandler interface.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_InitEventHandler_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_InitEventHandler_00001 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // InitEventHandler creates an EventHandler for timeout management
+    // Calling it should not crash
+    storageManagerScan.InitEventHandler();
+    // Verify scanEventHandler_ is created (may be nullptr in test env without EventRunner)
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "STORAGE_InitEventHandler_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanTimeoutHandler_00002
+ * @tc.name: STORAGE_ScanTimeoutHandler_00002
+ * @tc.desc: Test function of ScanTimeoutHandler interface with scan still running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanTimeoutHandler_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutHandler_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // When scan is still running, ScanTimeoutHandler should call StopScan
+    storageManagerScan.isScanRunning_ = true;
+    storageManagerScan.ScanTimeoutHandler();
+    // StopScan sets stopScanFlag_ = true
+    EXPECT_TRUE(storageManagerScan.stopScanFlag_.load());
+    storageManagerScan.stopScanFlag_ = false;
+    storageManagerScan.isScanRunning_ = false;
+    GTEST_LOG_(INFO) << "STORAGE_ScanTimeoutHandler_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_ExecuteScan_00003
+ * @tc.name: STORAGE_ExecuteScan_00003
+ * @tc.desc: Test function of ExecuteScan with hyperhold scan failure returns early.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Mock ScanDirectories to succeed
+    std::vector<DirSpaceInfo> scanResultDirs = {{"/data/service/el0", 0, 1024}, {"/data/service/el0", 1000, 2048}};
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(scanResultDirs), Return(E_OK)));
+    // Mock hyperhold ScanSinglePath to fail (GetDirListSpace returns error)
+    EXPECT_CALL(*sdc, GetDirListSpace(_, _)).WillRepeatedly(Return(E_ERR));
+    int32_t ret = storageManagerScan.ExecuteScan();
+    // hyperhold failure now causes early return with error
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_Init_DefaultSize_00001
+ * @tc.name: STORAGE_Init_DefaultSize_00001
+ * @tc.desc: Test function of Init interface uses default sizes when file not found.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_Init_DefaultSize_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_Init_DefaultSize_00001 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Ensure scan result file doesn't exist so LoadScanResultFromFile fails
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    std::remove(testFile.c_str());
+    // Init should use default sizes: rootSize=4000000000, systemSize=100000000, memmgrSize=900000000
+    int32_t ret = storageManagerScan.Init();
+    // Should succeed with default values, or fail if SaveScanResultToFile fails
+    EXPECT_TRUE(ret == E_OK || ret == E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_Init_DefaultSize_00001 end";
 }

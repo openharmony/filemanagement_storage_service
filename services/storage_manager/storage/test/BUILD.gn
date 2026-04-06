@@ -127,6 +127,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",

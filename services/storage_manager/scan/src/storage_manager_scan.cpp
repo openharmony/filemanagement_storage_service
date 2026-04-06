@@ -42,12 +42,66 @@ constexpr const char* HYPERHOLD_PATH = "/data/service/el1/0/hyperhold";
 constexpr const char* RGM_MANAGER_PATH = "/data/service/el1/public/rgm_manager";
 constexpr const char* SCAN_RESULT_DIR = "/data/service/el1/public/storage_manager/database";
 constexpr const char* SCAN_RESULT_FILE = "scan_result.json";
+constexpr const char* SCAN_TIMEOUT_TASK_NAME = "scan_timeout_task";
 
 constexpr double DIVISOR = 1000.0 * 1000.0;
 constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t SCAN_TIMEOUT_MS = 30000;       // The scanning times out after 30 seconds.
 constexpr int64_t TIME_INTERVAL_MS = 24 * 60 * 60 * 1000;  // Number of milliseconds in 24 hours
+constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
+constexpr int64_t DEFAULT_ROOT_SIZE = 4000000000;     // fallback root partition size
+constexpr int64_t DEFAULT_SYSTEM_SIZE = 100000000;     // fallback system size
+constexpr int64_t DEFAULT_MEMMGR_SIZE = 900000000;     // fallback memory manager size
+
+void StorageManagerScan::InitEventHandler()
+{
+    LOGI("InitEventHandler start");
+    std::unique_lock<std::mutex> lock(eventMutex_);
+    if (scanEventHandler_ != nullptr) {
+        LOGI("EventHandler already initialized");
+        return;
+    }
+
+    eventThread_ = std::thread([this]() {
+        pthread_setname_np(pthread_self(), "scan_timeout_event");
+        auto runner = AppExecFwk::EventRunner::Create(false);
+        if (runner == nullptr) {
+            LOGE("EventRunner create failed");
+            return;
+        }
+        {
+            std::lock_guard<std::mutex> lock(eventMutex_);
+            scanEventHandler_ = std::make_shared<AppExecFwk::EventHandler>(runner);
+        }
+        eventCon_.notify_one();
+        runner->Run();
+    });
+
+    eventCon_.wait_for(lock, std::chrono::milliseconds(WAIT_THREAD_TIMEOUT_MS), [this] {
+        return scanEventHandler_ != nullptr;
+    });
+
+    if (scanEventHandler_ == nullptr) {
+        LOGE("InitEventHandler failed, handler is nullptr");
+    } else {
+        LOGI("InitEventHandler success");
+    }
+}
+
+StorageManagerScan::~StorageManagerScan()
+{
+    LOGI("StorageManagerScan Destructor.");
+    std::unique_lock<std::mutex> lock(eventMutex_);
+    if ((scanEventHandler_ != nullptr) && (scanEventHandler_->GetEventRunner() != nullptr)) {
+        scanEventHandler_->RemoveAllEvents();
+        scanEventHandler_->GetEventRunner()->Stop();
+    }
+    if (eventThread_.joinable()) {
+        eventThread_.join();
+    }
+    scanEventHandler_ = nullptr;
+}
 
 int64_t StorageManagerScan::GetRootSize()
 {
@@ -79,19 +133,13 @@ int32_t StorageManagerScan::Init()
         return E_OK;
     }
 
-    LOGI("StorageManagerScan::Init LoadScanResultFromFile failed, ret=%{public}d, try quota query", ret);
-    std::vector<int32_t> uidsList = {ROOT_UID, SYSTEM_UID, MEMMGR_UID};
-    std::map<int32_t, int64_t> uidSizeMap;
-    ret = GetQuotaSizeByUid(uidsList, uidSizeMap);
-    if (ret != E_OK) {
-        LOGE("StorageManagerScan::Init GetQuotaSizeByUid failed, ret=%{public}d", ret);
-        return ret;
-    }
+    LOGI("StorageManagerScan::Init LoadScanResultFromFile failed, ret=%{public}d,"
+        "using default size", ret);
     {
         std::lock_guard<std::mutex> lock(calSizeMutex_);
-        rootSize_ = uidSizeMap[ROOT_UID];
-        systemSize_ = uidSizeMap[SYSTEM_UID];
-        memmgrSize_ = uidSizeMap[MEMMGR_UID];
+        rootSize_ = DEFAULT_ROOT_SIZE;
+        systemSize_ = DEFAULT_SYSTEM_SIZE;
+        memmgrSize_ = DEFAULT_MEMMGR_SIZE;
     }
     ret = SaveScanResultToFile();
     if (ret != E_OK) {
@@ -127,7 +175,6 @@ void StorageManagerScan::StopScan()
         return;
     }
     LOGI("StorageManagerScan::StopScan terminate the scanning thread");
-    isScanRunning_.store(false);
     stopScanFlag_.store(true);
     auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     if (sdCommunication == nullptr) {
@@ -152,7 +199,11 @@ bool StorageManagerScan::CheckScanPreconditions()
     auto currentTime = std::chrono::system_clock::now();
     auto currentTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         currentTime.time_since_epoch()).count();
-    int64_t timeDiff = currentTimeMs - lastScanTime_;
+    int64_t timeDiff = 0;
+    {
+        std::lock_guard<std::mutex> lock(lastScanTimeMutex_);
+        timeDiff = currentTimeMs - lastScanTime_;
+    }
 
     if (timeDiff >= TIME_INTERVAL_MS) {
         LOGI("CheckScanPreconditions: timeDiff=%{public}lldms >= 24h, allow to scan",
@@ -183,6 +234,8 @@ void StorageManagerScan::LaunchScanWorker()
             LOGI("Successfully reset stop scan flag.");
         }
     }
+
+    // Scan worker thread
     std::thread([this]() {
         pthread_setname_np(pthread_self(), "storage_mgr_scan");
         LOGI("Scan worker thread started");
@@ -190,15 +243,24 @@ void StorageManagerScan::LaunchScanWorker()
         if (ret != E_OK) {
             LOGE("Scan worker ExecuteScan failed, ret=%{public}d", ret);
         }
+        // Remove timeout task before resetting isScanRunning_ to avoid race condition
+        if (scanEventHandler_ != nullptr) {
+            scanEventHandler_->RemoveTask(SCAN_TIMEOUT_TASK_NAME);
+            LOGI("Removed scan timeout task");
+        }
         isScanRunning_.store(false);
         isFirstScan_ = false;
         LOGI("Scan worker thread completed");
     }).detach();
 
-    std::thread([this]() {
-        pthread_setname_np(pthread_self(), "scan_timeout_mon");
-        ScanTimeoutMonitor();
-    }).detach();
+    // Post delayed timeout task using EventHandler instead of detached thread
+    if (scanEventHandler_ != nullptr) {
+        auto timeoutHandler = [this]() { ScanTimeoutHandler(); };
+        scanEventHandler_->PostTask(timeoutHandler, SCAN_TIMEOUT_TASK_NAME, SCAN_TIMEOUT_MS);
+        LOGI("Posted scan timeout task, delay=%{public}dms", SCAN_TIMEOUT_MS);
+    } else {
+        LOGE("scanEventHandler_ is nullptr, cannot post timeout task");
+    }
 
     LOGI("LaunchScanWorker end");
 }
@@ -210,21 +272,11 @@ int32_t StorageManagerScan::ExecuteScan()
     auto startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         scanStartTime_.time_since_epoch()).count();
 
-    std::map<int32_t, int64_t> uidSizeMap;
-    int32_t ret = GetQuotaSizeByUid({MEMMGR_UID}, uidSizeMap);
-    if (ret != E_OK) {
-        LOGE("ExecuteScan GetMemmgrQuotaSize failed, ret=%{public}d", ret);
-        return ret;
-    }
-    {
-        std::lock_guard<std::mutex> lock(calSizeMutex_);
-        memmgrSize_ = uidSizeMap[MEMMGR_UID];
-    }
     std::vector<int32_t> scanUids = {ROOT_UID, SYSTEM_UID};
     std::vector<std::string> whiteList = GetDirWhiteList();
     int64_t dirScanRootSize = 0;
     int64_t dirScanSystemSize = 0;
-    ret = ScanDirectories(whiteList, scanUids, dirScanRootSize, dirScanSystemSize);
+    int32_t ret = ScanDirectories(whiteList, scanUids, dirScanRootSize, dirScanSystemSize);
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanDirectories failed, ret=%{public}d", ret);
         return ret;
@@ -235,6 +287,7 @@ int32_t StorageManagerScan::ExecuteScan()
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanSinglePath hyperhold failed, ret=%{public}d", ret);
         hyperholdRootSize = 0;
+        return ret;
     }
 
     int64_t rgmManagerRootSize = 0;
@@ -242,6 +295,17 @@ int32_t StorageManagerScan::ExecuteScan()
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanSinglePath rgm_manager failed, ret=%{public}d", ret);
         rgmManagerRootSize = 0;
+        return ret;
+    }
+    std::map<int32_t, int64_t> uidSizeMap;
+    ret = GetQuotaSizeByUid({MEMMGR_UID}, uidSizeMap);
+    if (ret != E_OK) {
+        LOGE("ExecuteScan GetMemmgrQuotaSize failed, ret=%{public}d", ret);
+        return ret;
+    }
+    {
+        std::lock_guard<std::mutex> lock(calSizeMutex_);
+        memmgrSize_ = uidSizeMap[MEMMGR_UID];
     }
     CalculateFinalSizes(startTimeMs, dirScanRootSize, hyperholdRootSize, rgmManagerRootSize, dirScanSystemSize);
     ret = SaveScanResultToFile();
@@ -255,19 +319,16 @@ int32_t StorageManagerScan::ExecuteScan()
     return E_OK;
 }
 
-void StorageManagerScan::ScanTimeoutMonitor()
+void StorageManagerScan::ScanTimeoutHandler()
 {
-    LOGI("ScanTimeoutMonitor start, will sleep %{public}dms", SCAN_TIMEOUT_MS);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(SCAN_TIMEOUT_MS));
+    LOGI("ScanTimeoutHandler: checking scan status after timeout");
     if (isScanRunning_.load()) {
-        LOGI("ScanTimeoutMonitor: scan still running after %{public}dms, stopping scan", SCAN_TIMEOUT_MS);
+        LOGI("ScanTimeoutHandler: scan still running after %{public}dms, stopping scan. "
+             "Check daemon log for current scanning path.", SCAN_TIMEOUT_MS);
         StopScan();
     } else {
-        LOGI("ScanTimeoutMonitor: scan already completed, no need to stop");
+        LOGI("ScanTimeoutHandler: scan already completed, no need to stop");
     }
-
-    LOGI("ScanTimeoutMonitor end");
 }
 
 void StorageManagerScan::ReportScanResult()
@@ -291,7 +352,10 @@ void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, int64_t dirSca
     auto endTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                scanEndTime_.time_since_epoch()).count();
     scanDurationMs_ = endTimeMs - startTimeMs;
-    lastScanTime_ = endTimeMs;
+    {
+        std::lock_guard<std::mutex> lock(lastScanTimeMutex_);
+        lastScanTime_ = endTimeMs;
+    }
 
     rootSize_ = dirScanRootSize - hyperholdRootSize - rgmManagerRootSize;
     systemSize_ = dirScanSystemSize;
