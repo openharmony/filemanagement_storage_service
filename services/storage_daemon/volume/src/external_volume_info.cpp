@@ -44,6 +44,7 @@ constexpr const char *NTFS_LABEL_DESC_PREFIX = "Volume label :  ";
 constexpr const char* MNT_EXTERNAL_FILE_CONTEXT = "context=u:object_r:mnt_external_file:s0";
 constexpr const char* MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS =
     "context=u:object_r:mnt_external_file:s0,errors=continue";
+constexpr const char* IO_CHAR_SET = "utf8";
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -348,7 +349,8 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4Iso9660(uint32_t mountFlags)
 {
     LOGI("[L3:ExternalVolumeInfo] DoMount4Iso9660: >>> ENTER <<<");
-    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
+    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s,iocharset=%s",
+        UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT, IO_CHAR_SET);
     std::vector<std::string> cmd = {
         "mount",
         "-t",
