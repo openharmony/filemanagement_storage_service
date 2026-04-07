@@ -220,18 +220,66 @@ int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostring
         LOGE("Get StorageDaemonCommunication instance failed.");
         return E_ERR;
     }
+    int64_t usedInodes = 0;
+    int32_t ret = StorageTotalStatusService::GetInstance().GetUsedInodes(usedInodes);
+    if (ret != E_OK) {
+        LOGE("GetUsedInodes failed, err=%{public}d", ret);
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
+    }
+    extraData << "{iNodes count is:" << usedInodes << ",iNodes size is:" <<
+        ConvertBytesToMB(usedInodes * FOUR_K, ACCURACY_NUM) <<"MB}" << std::endl;
+
     std::map<int32_t, std::string> bundleNameAndUid;
-    int32_t ret = StorageStatusManager::GetInstance().GetBundleNameAndUid(userId, bundleNameAndUid);
+    ret = StorageStatusManager::GetInstance().GetBundleNameAndUid(userId, bundleNameAndUid);
     if (ret != E_OK) {
         LOGE("GetBundleNameAndUid failed, ret=%{public}d", ret);
     }
-    std::string storageStatusRes = "";
-    ret = sdCommunication->QueryOccupiedSpaceForSa(storageStatusRes, bundleNameAndUid);
-    if (ret == E_OK) {
-        extraData << storageStatusRes;
+    AllAppVec allVec;
+    int64_t saTotalSize = 0;
+    int64_t othersTotalSize = 0;
+    if (sdCommunication->QueryOccupiedSpaceForSa(allVec.sysSaVec, saTotalSize,
+        bundleNameAndUid, StorageDaemon::AppType::SYS_SA) != E_OK ||
+        sdCommunication->QueryOccupiedSpaceForSa(allVec.sysAppVec, othersTotalSize,
+        bundleNameAndUid, StorageDaemon::AppType::SYS_APP) != E_OK ||
+        sdCommunication->QueryOccupiedSpaceForSa(allVec.userAppVec, othersTotalSize,
+        bundleNameAndUid, StorageDaemon::AppType::USER_APP) != E_OK ||
+        sdCommunication->QueryOccupiedSpaceForSa(allVec.otherAppVec, othersTotalSize,
+        bundleNameAndUid, StorageDaemon::AppType::OTHER_APP) != E_OK) {
+        extraData << "{bundleCount:" << bundleNameAndUid.size() << "}" << std::endl;
+        return E_OK;
     }
+    extraData << "{sa totalSize is:" << ConvertBytesToMB(saTotalSize, ACCURACY_NUM) << "MB}" << std::endl;
+    extraData << "{other totalSize is:" << ConvertBytesToMB(othersTotalSize, ACCURACY_NUM) << "MB}" << std::endl;
+
+    WriteUidInfoListToExtraData(allVec, extraData);
     extraData << "{bundleCount:" << bundleNameAndUid.size() << "}" << std::endl;
     return E_OK;
+}
+
+void StorageDfxReporter::WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData)
+{
+    for (const auto& info : vec) {
+        extraData << "{uid:" << info.uid
+            << ",saName:" << info.saName
+            << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
+            << "MB, iNodes:" << info.iNodes << "}" << std::endl;
+    }
+}
+
+void StorageDfxReporter::WriteUidInfoListToExtraData(AllAppVec &allVec, std::ostringstream &extraData)
+{
+    extraData << "{Sa data is:}" << std::endl;
+    WriteExtraData(allVec.sysSaVec, extraData);
+    extraData << "{SysApp data is:}" << std::endl;
+    WriteExtraData(allVec.sysAppVec, extraData);
+    extraData << "{UserApp data is:}" << std::endl;
+    WriteExtraData(allVec.userAppVec, extraData);
+    if (!allVec.otherAppVec.empty()) {
+        extraData << "{otherAppVec data is:}" << std::endl;
+        WriteExtraData(allVec.otherAppVec, extraData);
+    } else {
+        extraData << "{otherAppVec data is null}" << std::endl;
+    }
 }
 
 double StorageDfxReporter::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)

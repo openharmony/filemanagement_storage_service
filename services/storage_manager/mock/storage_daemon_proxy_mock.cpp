@@ -305,8 +305,8 @@ int32_t StorageDaemonProxy::UpdateUserPublicDirPolicy(uint32_t userId)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(std::string &storageStatus,
-    const std::map<int32_t, std::string> &bundleNameAndUid)
+int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+    const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type)
 {
     return E_OK;
 }

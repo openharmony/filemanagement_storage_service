@@ -102,3 +102,37 @@ DirSpaceInfo *DirSpaceInfo::Unmarshalling(Parcel &parcel)
 }
 } // StorageManager
 } // OHOS
+
+namespace OHOS {
+namespace StorageManager {
+bool UidSaInfo::Marshalling(Parcel &parcel) const
+{
+    if (!parcel.WriteInt32(uid)) {
+        return false;
+    }
+    if (!parcel.WriteString(saName)) {
+        return false;
+    }
+    if (!parcel.WriteInt64(size)) {
+        return false;
+    }
+    if (!parcel.WriteUint64(iNodes)) {
+        return false;
+    }
+    return true;
+}
+
+UidSaInfo *UidSaInfo::Unmarshalling(Parcel &parcel)
+{
+    UidSaInfo *info = new (std::nothrow) UidSaInfo();
+    if (info == nullptr) {
+        return nullptr;
+    }
+    info->uid = parcel.ReadInt32();
+    info->saName = parcel.ReadString();
+    info->size = parcel.ReadInt64();
+    info->iNodes = parcel.ReadUint64();
+    return info;
+}
+} // StorageManager
+} // OHOS

@@ -877,8 +877,8 @@ int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, st
     return storageDaemon_->MountUsbFuse(volumeId, fsUuid, fuseFd);
 }
 
-int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storageStatus,
-    const std::map<int32_t, std::string> &bundleNameAndUid)
+int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+    const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -889,7 +889,7 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storage
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->QueryOccupiedSpaceForSa(storageStatus, bundleNameAndUid);
+    return storageDaemon_->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
 }
 
 int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(

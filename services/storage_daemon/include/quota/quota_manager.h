@@ -31,20 +31,10 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-struct UidSaInfo {
-    int32_t uid;
-    std::string saName;
-    int64_t size;
-    uint64_t iNodes;
-
-    UidSaInfo(int32_t uid, const std::string& saName, int64_t size, uint64_t iNodes = 0)
-        : uid(uid), saName(saName), size(size), iNodes(iNodes) {}
-
-    UidSaInfo() : uid(0), saName(""), size(0), iNodes(0) {}
-};
-
 using NextDqBlk = OHOS::StorageManager::NextDqBlk;
 using DirSpaceInfo = OHOS::StorageManager::DirSpaceInfo;
+using UidSaInfo = OHOS::StorageManager::UidSaInfo;
+using AllAppVec = OHOS::StorageManager::AllAppVec;
 
 struct KernelNextDqBlk {
     uint64_t dqbHardLimit = 0;
@@ -59,13 +49,6 @@ struct KernelNextDqBlk {
     uint32_t dqbId = 0;
 };
 
-struct AllAppVec {
-    std::vector<struct UidSaInfo> sysSaVec;
-    std::vector<struct UidSaInfo> sysAppVec;
-    std::vector<struct UidSaInfo> userAppVec;
-    std::vector<struct UidSaInfo> otherAppVec;
-};
-
 class QuotaManager final {
 public:
     virtual ~QuotaManager() = default;
@@ -75,7 +58,8 @@ public:
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     void GetUidStorageStats(const std::string &storageStatus);
-    void GetUidStorageStats(std::string &storageStatus, const std::map<int32_t, std::string> &bundleNameAndUid);
+    void GetUidStorageStats(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+        const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type);
     int32_t GetFileData(const std::string &path, int64_t &size);
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
@@ -88,15 +72,14 @@ public:
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
-    void ProcessVecList(struct AllAppVec &allVec, const std::map<int32_t, std::string> &bundleNameAndUid);
-    void GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t &iNodes);
-    void SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec);
-    void AssembleSaInfoVec(std::vector<struct UidSaInfo> &vec,
+    void ProcessVecList(std::vector<UidSaInfo> &vec, bool isSa, const std::map<int32_t, std::string> &bundleNameAndUid);
+    void GetOccupiedSpaceForUidList(AllAppVec &allVec, uint64_t &iNodes);
+    void SortAndCutSaInfoVec(std::vector<UidSaInfo> &vec, bool isSa);
+    void AssembleSaInfoVec(std::vector<UidSaInfo> &vec,
         const std::map<int32_t, std::string> &bundleNameAndUid);
-    void WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData);
     bool GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName);
     bool StringToInt32(const std::string &strUid, int32_t &outUid32);
-    int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);
+    int32_t ParseConfigFile(const std::string &path, std::vector<UidSaInfo> &vec);
     int32_t ParseSystemDataConfigFile(std::vector<int32_t> &uidList);
     int32_t GetSystemCacheSize(const std::vector<int32_t> &uidList, int64_t &cacheSize);
     int32_t GetMetaDataSize(int64_t &metaDataSize);
@@ -107,8 +90,8 @@ private:
     bool StringToInt64(const std::string& str, int64_t& out_value);
     void GetCurrentTime(std::ostringstream &extraData);
     void AssembleSysAppVec(int32_t dqUid, const KernelNextDqBlk &dq,
-        std::map<int32_t, int64_t> &userAppSizeMap, std::vector<struct UidSaInfo> &sysAppVec);
-    void GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec);
+        std::map<int32_t, int64_t> &userAppSizeMap, std::vector<UidSaInfo> &sysAppVec);
+    int64_t GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec);
     void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
     void ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
         std::vector<DirSpaceInfo> &resultDirs);

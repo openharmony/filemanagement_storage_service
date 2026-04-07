@@ -22,6 +22,7 @@
 #include "mock/storage_status_manager_mock.h"
 #include "statistic_info.h"
 #include "storage_total_status_service_mock.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -120,7 +121,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_StartRep
     EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
     EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
 
     StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
     StorageDfxReporter::GetInstance().StartReportHapAndSaStorageStatus();
@@ -156,7 +157,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_ExecuteH
     EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
     EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
     StorageDfxReporter::GetInstance().ExecuteHapAndSaStatistics(userId);
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_ExecuteHapAndSaStatistics_001 end";
@@ -196,12 +197,12 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectB
     std::ostringstream extraData;
     int32_t userId = 100;
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
     int32_t ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
     EXPECT_EQ(ret, 0);
 
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(-1));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(-1));
     ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
     EXPECT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_001 end";
@@ -580,6 +581,113 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_StopScan
 }
 
 /**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_002
+ * @tc.desc: Verify the CollectBundleStatistics function with new signature.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_002 start";
+    std::ostringstream extraData;
+    int32_t userId = 100;
+
+    // Test case 1: All QueryOccupiedSpaceForSa calls succeed
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
+    int32_t ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+
+    // Test case 2: GetUsedInodes fails
+    extraData.str("");
+    extraData.clear();
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(Return(-1));
+    ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, E_GET_SYSTEM_DATA_SIZE_ERROR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_003
+ * @tc.desc: Verify the CollectBundleStatistics function with partial failures.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_003 start";
+    std::ostringstream extraData;
+    int32_t userId = 100;
+
+    // Test case: Some QueryOccupiedSpaceForSa calls fail
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _))
+        .WillOnce(Return(0))
+        .WillOnce(Return(0))
+        .WillOnce(Return(0))
+        .WillOnce(Return(-1));
+    int32_t ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _))
+        .WillOnce(Return(0))
+        .WillOnce(Return(0))
+        .WillOnce(Return(-1));
+    ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _))
+        .WillOnce(Return(0))
+        .WillOnce(Return(-1));
+    ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillOnce(Return(-1));
+    ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_004
+ * @tc.desc: Verify the CollectBundleStatistics function with empty bundle map.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_004 start";
+    std::ostringstream extraData;
+    int32_t userId = 100;
+
+    // Test case: GetBundleNameAndUid returns empty map
+    EXPECT_CALL(*stss, GetUsedInodes(_)).WillOnce(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
+    int32_t ret = StorageDfxReporter::GetInstance().CollectBundleStatistics(userId, extraData);
+    EXPECT_EQ(ret, 0);
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectBundleStatistics_004 end";
+}
+
+/**
  * @tc.name: Storage_Service_StorageDfxReporterTest_ExecuteHapAndSaStatistics_WithSubUser_001
  * @tc.desc: Verify the ExecuteHapAndSaStatistics function with sub-user stats collection.
  * @tc.type: FUNC
@@ -600,7 +708,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_ExecuteH
     EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
     EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
 
     StorageDfxReporter::GetInstance().ExecuteHapAndSaStatistics(userId);
 
@@ -628,7 +736,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_ExecuteH
     EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
     EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
     EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
     // Sub-user calls (different userId) will fail
     EXPECT_CALL(*sss, GetUserStorageStats(Ne(userId), _, _)).WillRepeatedly(Return(-1));
 

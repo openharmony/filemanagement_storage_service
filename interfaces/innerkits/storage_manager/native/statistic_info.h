@@ -86,6 +86,32 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static DirSpaceInfo *Unmarshalling(Parcel &parcel);
 };
+
+class UidSaInfo : public Parcelable {
+public:
+    UidSaInfo() = default;
+
+    int32_t uid;
+    std::string saName;
+    int64_t size;
+    uint64_t iNodes;
+
+    UidSaInfo(int32_t uid, const std::string& saName, int64_t size, uint64_t iNodes = 0)
+        : uid(uid), saName(saName), size(size), iNodes(iNodes) {}
+
+    bool Marshalling(Parcel &parcel) const override;
+    static UidSaInfo *Unmarshalling(Parcel &parcel);
+};
+
+class AllAppVec {
+public:
+    AllAppVec() = default;
+
+    std::vector<UidSaInfo> sysSaVec;
+    std::vector<UidSaInfo> sysAppVec;
+    std::vector<UidSaInfo> userAppVec;
+    std::vector<UidSaInfo> otherAppVec;
+};
 } // namespace StorageManager
 } // namespace OHOS
 #endif // OHOS_STORAGE_MANAGER_STATISTIC_INFO_H

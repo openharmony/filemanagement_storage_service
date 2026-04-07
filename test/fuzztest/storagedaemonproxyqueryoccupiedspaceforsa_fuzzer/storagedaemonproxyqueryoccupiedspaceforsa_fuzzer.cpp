@@ -58,12 +58,15 @@ bool QueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy,
         return true;
     }
     string storageStats(reinterpret_cast<const char *>(data), size);
+    std::vector<UidSaInfo> vec;
+    int64_t totalSize = 0;
     int pos = 0;
     int32_t key = TypeCast<int32_t>(data, &pos);
     size_t remaining = size - pos;
     string value(reinterpret_cast<const char *>(data + pos), remaining);
     map<int32_t, std::string> bundleNameAndUid {{key, value}};
-    proxy->QueryOccupiedSpaceForSa(storageStats, bundleNameAndUid);
+    int32_t type = TypeCast<int32_t>(data, &pos);
+    proxy->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
     return true;
 }
 

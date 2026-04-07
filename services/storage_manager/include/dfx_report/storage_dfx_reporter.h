@@ -55,6 +55,8 @@ private:
     int32_t CollectStorageStats(int32_t userId, std::ostringstream &extraData);
     void CollectMetadataAndAnco(std::ostringstream &extraData);
     int32_t CollectBundleStatistics(int32_t userId, std::ostringstream &extraData);
+    void WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData);
+    void WriteUidInfoListToExtraData(AllAppVec &allVec, std::ostringstream &extraData);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
 
     int32_t GetStorageStatsInfo(int32_t userId, StorageStats &storageStats);
