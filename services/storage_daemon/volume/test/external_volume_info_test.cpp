@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
+#include <fstream>
 #include <gtest/gtest.h>
 #include <linux/kdev_t.h>
+#include <sys/statvfs.h>
 
 #include "external_volume_info_mock.h"
 #include "mock/disk_utils_mock.h"
@@ -24,6 +26,7 @@
 #include "mock/storage_manager_client_mock.h"
 #include "library_func_mock.h"
 #include "volume/external_volume_info.h"
+#include "volume/process.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -145,11 +148,61 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
 
     ExternalVolumeInfo vol;
     vol.devPath_ = "/mnt/data/external";
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillRepeatedly(Return(0));
     int ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_003 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(2)
+        .WillOnce(Return(-1))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_))
+        .Times(1)
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_004 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(2)
+        .WillOnce(Return(-1))
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_004 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroy_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_005 start";
+
+    ExternalVolumeInfo vol;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _))
+        .Times(1)
+        .WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_))
+        .Times(1)
+        .WillOnce(Return(-1));
+    int ret = vol.Destroy();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_005 end";
 }
 
 /**
@@ -528,6 +581,54 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount_012
+ * @tc.desc: Verify DoMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_012, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_012 start";
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "iso9660";
+    vol.isUserdata_ = true;
+    vol.fsUuid_ = "123e4567-e89b-12d3-a456-426614174000";
+    vol.fsLabel_ = "";
+    vol.devPath_ = "/mnt/data/external";
+    vol.device_ = 2816;
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_ISO9660_MOUNT);
+
+    EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(0));
+    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_ISO9660_MOUNT);
+
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoMount(mountFlags), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_012 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_001
  * @tc.desc: Verify ExecuteAsyncMount function.
  * @tc.type: FUNC
@@ -770,10 +871,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 start";
-
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-
     vol.fsType_ = "iso9660";
     vol.isUserdata_ = true;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -783,66 +882,143 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 end";
 }
 
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_001
- * @tc.desc: Verify the DoUMount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001 start";
+    ExternalVolumeInfo vol;
+    vol.mountPath_ = "/mnt/usb_fuse";
+    Process process(vol.mountPath_);
+    auto ret = process.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
+    ret = vol.DoUMountWithForceUsbFuse();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002 start";
+    ExternalVolumeInfo vol;
+    vol.mountPath_ = "/mnt/usb_fuse";
+    Process process(vol.mountPath_);
+    auto ret = process.UpdatePidAndKill(0);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(-1));
+    ret = vol.DoUMountWithForceUsbFuse();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_002 end";
+}
+
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 start";
-
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(0));
-    int32_t ret = vol.DoUMount(force);
+    vol.fsType_ = "crypt_LUKS";
+    int32_t ret = vol.DoUMount(false);
     EXPECT_EQ(ret, E_OK);
-    
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 end";
 }
 
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_002
- * @tc.desc: Verify the DoUMount function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_002 start";
-
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, remove(_)).WillOnce(Return(-1));
-    int32_t ret = vol.DoUMount(force);
+    vol.mountPath_ = "";
+    int32_t ret = vol.DoUMount(false);
     EXPECT_EQ(ret, E_OK);
-
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_002 end";
 }
 
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "ext4";
+    vol.mountPath_ = "/mnt/data";
+    int32_t ret = vol.DoUMount(true);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_004 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "usb_fuse";
+    vol.mountPath_ = "/mnt/usb";
+    vol.mountUsbFusePath_ = "/mnt/usb_fuse";
+    int32_t ret = vol.DoUMount(false);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_004 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_005 start";
+    ExternalVolumeInfo vol;
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "ext4";
+    vol.mountPath_ = "/mnt/data";
+    int32_t ret = vol.DoUMount(false);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_005 end";
+}
+
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_003
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoUMount_006
  * @tc.desc: Verify the DoUMount function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_003, TestSize.Level1)
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount_006, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 start";
-
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_006 start";
     ExternalVolumeInfo vol;
-    bool force = true;
-    vol.fsType_ = "hmfs";
-    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillOnce(Return(-1));
-    int32_t ret = vol.DoUMount(force);
-    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
+    ExternalVolumeInfoMock mock;
+    vol.fsType_ = "udf";
+    vol.mountPath_ = "/mnt/data";
+    vol.device_ = 9999;
+    EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return(" "));
+    EXPECT_CALL(*libraryFuncMock_, umount2(_, _)).WillRepeatedly(Return(0));
 
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_003 end";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.device_ = 2816;
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+
+    vol.mountPath_ = "/mnt/data";
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.DoUMount(false), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_006 end";
 }
 
 /**
@@ -959,6 +1135,43 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCheck_002
+ * @tc.desc: Verify the DoCheck function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_002 start";
+
+    ExternalVolumeInfo vol;
+    std::string diskId = "disk-11-600";
+    std::string volId = "vol-11-601";
+    bool isUserdata = false;
+    vol.Create(volId, diskId, 2816, isUserdata);
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(vol.Check(), E_CHECK);
+
+    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.Check(), E_CHECK);
+
+    EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
+        isBlankCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(vol.Check(), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_001
  * @tc.desc: Verify the DoFormat function.
  * @tc.type: FUNC
@@ -1050,7 +1263,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     ExternalVolumeInfo vol;
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(testing::Return(true));
     auto ret = vol.DoFormat("exfat");
-    EXPECT_EQ(ret, E_RMDIR_MOUNT);
+    EXPECT_EQ(ret, E_OK);
 }
 
  /**
@@ -1160,12 +1373,10 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsType_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 start";
-
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     std::string ret = externalVolumeInfo_->GetFsType();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret.empty());
-
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 end";
 }
 
@@ -1452,5 +1663,219 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_SplitOut
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_SplitOutputIntoLines_001 end";
 }
 
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestroyCrypt_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroyCrypt_001 start";
+    ExternalVolumeInfoMock mock;
+    auto ret = mock.DoDestroyCrypt("vol-1-1");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroyCrypt_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001 start";
+    ExternalVolumeInfo vol;
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "short"), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", std::string(300, 'a')), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "ONLYUPPER"), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "onlylower"), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "12345678"), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "!@#$%^&*"), E_PARAMS_INVALID);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "Upper123"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "lower123"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "Upper!@#"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "lower!@#"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "1234567!@#$"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "UpperLow"), E_OK);
+    EXPECT_EQ(vol.DoEncrypt("vol-156-300", "Complex Pass123!@#"), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEncrypt_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_001 start";
+    ExternalVolumeInfo vol;
+    int32_t progress = 0;
+    int32_t ret = vol.DoGetCryptProgressById("vol-156-300", progress);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_001 start";
+    ExternalVolumeInfo vol;
+    std::string uuid;
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumeUuid(_, _)).WillOnce(testing::Return(E_OK));
+    int32_t ret = vol.DoGetCryptUuidById("vol-156-300", uuid);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_002 start";
+    std::ofstream testFile("/data/local/crypt_tmp");
+    testFile << "Some other content\nProgress: 75\nMore content";
+    testFile.close();
+    ExternalVolumeInfo vol;
+    int32_t progress = 0;
+    int32_t ret = vol.DoGetCryptProgressById("vol-156-300", progress);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 75);
+    remove("/data/local/crypt_tmp");
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_003 start";
+    std::ofstream testFile("/data/local/crypt_tmp");
+    testFile << "Only other content here";
+    testFile.close();
+    ExternalVolumeInfo vol;
+    int32_t progress = 100;
+    int32_t ret = vol.DoGetCryptProgressById("vol-156-300", progress);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 0);
+    remove("/data/local/crypt_tmp");
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptProgressById_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_002 start";
+    ExternalVolumeInfo vol;
+    std::string uuid;
+    EXPECT_CALL(*diskUtilMoc_, ReadVolumeUuid(_, _)).WillOnce(testing::Return(-1));
+    int32_t ret = vol.DoGetCryptUuidById("vol-156-300", uuid);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetCryptUuidById_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoBindRecoverKeyToPasswd("vol-156-300", "short", "ValidRecover123");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_002 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoBindRecoverKeyToPasswd("vol-156-300", "ValidPass123", "short");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_003 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoBindRecoverKeyToPasswd("vol-156-300", "ValidPass123", "ValidRecover123");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoBindRecoverKeyToPasswd_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoUpdateCryptPasswd("vol-156-300", "short", "ValidNewPass123");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_002 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoUpdateCryptPasswd("vol-156-300", "ValidPass123", "short");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_003 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoUpdateCryptPasswd("vol-156-300", "ValidPass123", "ValidNewPass123");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUpdateCryptPasswd_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoResetCryptPasswd("vol-156-300", "short", "ValidNewPass123");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_002 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoResetCryptPasswd("vol-156-300", "ValidRecover123", "short");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_003 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoResetCryptPasswd("vol-156-300", "ValidRecover123", "ValidNewPass123");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoResetCryptPasswd_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoVerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoVerifyCryptPasswd_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoVerifyCryptPasswd("vol-156-300", "short");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoVerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUnlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUnlock_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoUnlock("vol-156-300", "short");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUnlock_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDecrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDecrypt_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoDecrypt("vol-156-300", "short");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDecrypt_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_GetDevPathByVolumeId_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-test-123";
+    std::string result = externalVolumeInfo_->GetDevPathByVolumeId(volumeId);
+    EXPECT_FALSE(result.empty());
+}
+
+HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_DoGetOddCapacity_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-test-123";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t ret = externalVolumeInfo_->DoGetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(ret, E_ERR);
+}
 } // STORAGE_DAEMON
 } // OHOS

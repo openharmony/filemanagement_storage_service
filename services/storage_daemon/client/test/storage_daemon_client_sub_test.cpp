@@ -90,6 +90,12 @@ using namespace StorageDaemon;
 
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
 constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
+constexpr int32_t TEST_USER_ID = 100;
+constexpr uint32_t TEST_FLAGS = 1;
+constexpr uint32_t TEST_HASH_ID = 2;
+constexpr uint64_t TEST_SECURE_UID = 2000;
+constexpr uint32_t TEST_USER_TYPE = 3;
+constexpr uint32_t TEST_ENCRYPTION_LEVEL = 2;
 
 class StorageDaemonClientTest : public testing::Test {
 public:
@@ -752,6 +758,14 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Genera
     EXPECT_CALL(*sd, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_OK));
     ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
     EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_ERR));
+    ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
+    EXPECT_EQ(ret, E_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 end";
 }
 
@@ -783,7 +797,40 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Delete
     EXPECT_CALL(*sd, DeleteAppkey(_, _)).WillOnce(Return(E_OK));
     ret = StorageDaemonClient::DeleteAppkey(0, keyId);
     EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, DeleteAppkey(_, _)).WillOnce(Return(E_ERR));
+    ret = StorageDaemonClient::DeleteAppkey(0, keyId);
+    EXPECT_EQ(ret, E_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteAppkey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_DeleteAppkey_MaskKeyId_001
+* @tc.desc: Verify DeleteAppkey covers short and long keyId mask branches.
+* @tc.type: FUNC
+* @tc.require:
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_DeleteAppkey_MaskKeyId_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteAppkey_MaskKeyId_001 start";
+    const uint32_t userId = 0;
+    const std::string shortKeyId = "abc";
+    const std::string longKeyId = "0123456789";
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::DeleteAppkey(userId, shortKeyId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    ret = StorageDaemonClient::DeleteAppkey(userId, longKeyId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteAppkey_MaskKeyId_001 end";
 }
 
 /**
@@ -1119,5 +1166,168 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_ListUs
     EXPECT_EQ(ret, E_SA_IS_NULLPTR);
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ListUserdataDirInfo_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_NewErrBranches_UserOps_001
+ * @tc.desc: Verify new user operation branches when daemon returns E_ERR.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_NewErrBranches_UserOps_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_UserOps_001 start";
+    const std::string volumeId = "vol_test";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillRepeatedly(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillRepeatedly(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillRepeatedly(Return(sd));
+
+    EXPECT_CALL(*sd, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::PrepareUserDirs(TEST_USER_ID, TEST_FLAGS), E_ERR);
+
+    EXPECT_CALL(*sd, DestroyUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::DestroyUserDirs(TEST_USER_ID, TEST_FLAGS), E_ERR);
+
+    EXPECT_CALL(*sd, StartUser(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::StartUser(TEST_USER_ID), E_ERR);
+
+    EXPECT_CALL(*sd, StopUser(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::StopUser(TEST_USER_ID), E_ERR);
+
+    EXPECT_CALL(*sd, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::PrepareUserSpace(TEST_USER_ID, volumeId, TEST_FLAGS), E_ERR);
+
+    EXPECT_CALL(*sd, DestroyUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::DestroyUserSpace(TEST_USER_ID, volumeId, TEST_FLAGS), E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_UserOps_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_NewErrBranches_KeyOps_001
+ * @tc.desc: Verify new key operation branches when daemon returns E_ERR.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_NewErrBranches_KeyOps_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_KeyOps_001 start";
+    std::vector<int32_t> localIdList;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
+    std::vector<std::vector<uint8_t>> plainText;
+    bool lockScreenStatus = false;
+    bool needRemoveTmpKey = false;
+    std::string keyId;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillRepeatedly(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillRepeatedly(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillRepeatedly(Return(sd));
+
+    EXPECT_CALL(*sd, InitGlobalKey()).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::InitGlobalKey(), E_ERR);
+
+    EXPECT_CALL(*sd, InitGlobalUserKeys()).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::InitGlobalUserKeys(), E_ERR);
+
+    EXPECT_CALL(*sd, EraseAllUserEncryptedKeys(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::EraseAllUserEncryptedKeys(localIdList), E_ERR);
+
+    EXPECT_CALL(*sd, UpdateUserAuth(_, _, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::UpdateUserAuth(TEST_USER_ID, TEST_SECURE_UID, token, oldSecret, newSecret), E_ERR);
+
+    EXPECT_CALL(*sd, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(
+        StorageDaemonClient::UpdateUseAuthWithRecoveryKey(token, newSecret, TEST_SECURE_UID, TEST_USER_ID, plainText),
+        E_ERR);
+
+    EXPECT_CALL(*sd, ActiveUserKey(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::ActiveUserKey(TEST_USER_ID, token, newSecret), E_ERR);
+
+    EXPECT_CALL(*sd, InactiveUserKey(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::InactiveUserKey(TEST_USER_ID), E_ERR);
+
+    EXPECT_CALL(*sd, LockUserScreen(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::LockUserScreen(TEST_USER_ID), E_ERR);
+
+    EXPECT_CALL(*sd, UnlockUserScreen(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::UnlockUserScreen(TEST_USER_ID, token, newSecret), E_ERR);
+
+    EXPECT_CALL(*sd, GetLockScreenStatus(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::GetLockScreenStatus(TEST_USER_ID, lockScreenStatus), E_ERR);
+
+    EXPECT_CALL(*sd, UpdateKeyContext(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::UpdateKeyContext(TEST_USER_ID, needRemoveTmpKey), E_ERR);
+
+    EXPECT_CALL(*sd, CreateRecoverKey(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::CreateRecoverKey(TEST_USER_ID, TEST_USER_TYPE, token, newSecret), E_ERR);
+
+    EXPECT_CALL(*sd, SetRecoverKey(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::SetRecoverKey(newSecret), E_ERR);
+
+    EXPECT_CALL(*sd, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::GenerateAppkey(TEST_USER_ID, TEST_HASH_ID, keyId), E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_KeyOps_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_NewErrBranches_MiscOps_001
+ * @tc.desc: Verify new mount/status branches when daemon returns E_ERR.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_NewErrBranches_MiscOps_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_MiscOps_001 start";
+    const std::string relativePath = "doc/path";
+    const std::string networkId = "network";
+    const std::string deviceId = "device";
+    const std::string dirPath = "/data/service/test";
+    const std::string fusePath = "/data/service/fuse";
+    bool isEncrypted = false;
+    bool needCheckDirMount = false;
+    bool needActive = false;
+    int32_t fuseFd = 0;
+    bool isOccupy = false;
+    std::vector<std::string> input;
+    std::vector<std::string> output;
+    std::vector<OHOS::StorageManager::UserdataDirInfo> scanDirs;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillRepeatedly(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillRepeatedly(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillRepeatedly(Return(sd));
+
+    EXPECT_CALL(*sd, MountDfsDocs(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::MountDfsDocs(TEST_USER_ID, relativePath, networkId, deviceId), E_ERR);
+
+    EXPECT_CALL(*sd, UMountDfsDocs(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::UMountDfsDocs(TEST_USER_ID, relativePath, networkId, deviceId), E_ERR);
+
+    EXPECT_CALL(*sd, SetDirEncryptionPolicy(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(
+        StorageDaemonClient::SetDirEncryptionPolicy(TEST_USER_ID, dirPath, TEST_ENCRYPTION_LEVEL),
+        E_ERR);
+
+    EXPECT_CALL(*sd, GetFileEncryptStatus(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::GetFileEncryptStatus(TEST_USER_ID, isEncrypted, needCheckDirMount), E_ERR);
+
+    EXPECT_CALL(*sd, GetUserNeedActiveStatus(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::GetUserNeedActiveStatus(TEST_USER_ID, needActive), E_ERR);
+
+    EXPECT_CALL(*sd, MountFileMgrFuse(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::MountFileMgrFuse(TEST_USER_ID, fusePath, fuseFd), E_ERR);
+
+    EXPECT_CALL(*sd, UMountFileMgrFuse(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::UMountFileMgrFuse(TEST_USER_ID, fusePath), E_ERR);
+
+    EXPECT_CALL(*sd, IsFileOccupied(_, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::IsFileOccupied(fusePath, input, output, isOccupy), E_OK);
+    EXPECT_EQ(StorageDaemonClient::IsFileOccupied(fusePath, input, output, isOccupy), E_ERR);
+
+    EXPECT_CALL(*sd, ListUserdataDirInfo(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(StorageDaemonClient::ListUserdataDirInfo(scanDirs), E_OK);
+    EXPECT_EQ(StorageDaemonClient::ListUserdataDirInfo(scanDirs), E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_NewErrBranches_MiscOps_001 end";
 }
 }

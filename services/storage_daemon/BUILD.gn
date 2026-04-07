@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+# Copyright (c) 2024-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -90,6 +90,7 @@ config("storage_daemon_config") {
     "include/utils",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/hiaudit/include",
     "${storage_service_common_path}/include",
     "${target_gen_dir}",
     "${storage_daemon_path}/include/ipc",
@@ -129,6 +130,8 @@ ohos_executable("storage_daemon") {
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/storage_xcollie.cpp",
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
   ]
 
   defines = [
@@ -208,6 +211,7 @@ ohos_executable("storage_daemon") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "json:nlohmann_json_static",
+    "zlib:shared_libz"
   ]
 
   if (storage_service_user_crypto_manager) {
@@ -399,6 +403,7 @@ ohos_shared_library("storage_common_utils") {
     "utils/mount_argument_utils.cpp",
     "utils/storage_radar.cpp",
     "utils/storage_statistics_radar.cpp",
+    "utils/set_flag_utils.cpp",
     "utils/string_utils.cpp",
     "utils/memory_reclaim_manager.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
@@ -519,6 +524,11 @@ group("storage_daemon_unit_test") {
     deps += [
       "mtp/test:storage_daemon_mtp_test",
       "mtpfs/test:storage_daemon_mtpfs_test",
+    ]
+  }
+  if (support_open_source_libgphoto2) {
+    deps += [
+      "gphotofs/test:storage_daemon_gphoto_test",
     ]
   }
   if (enable_huks_hdi) {

@@ -41,6 +41,7 @@ public:
     virtual int32_t Partition(const std::string &diskId, int32_t type) override;
     virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
     virtual int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
+    virtual int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -144,6 +145,23 @@ public:
     virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum) override;
 
+    //disk crypt api
+    virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    virtual int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    virtual int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey) override;
+    virtual int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &newPazzword) override;
+    virtual int32_t ResetCryptPasswd(const std::string &volumeId,
+                                    const std::string &recoverKey,
+                                    const std::string &newPazzword) override;
+    virtual int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
+
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;
@@ -152,11 +170,12 @@ public:
         void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId);
     };
 
-    std::mutex mutex_;
-    std::mutex mutexStats_;
     void StorageRadarThd(void);
 
 private:
+    std::mutex mutex_;
+    std::mutex mutexStats_;
+
     std::atomic<bool> stopRadarReport_{false};
     std::condition_variable execRadarReportCon_;
     std::mutex onRadarReportLock_;
@@ -168,7 +187,6 @@ private:
     void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
     int32_t RawDataToStringVec(const StorageFileRawData &rawData, std::vector<std::string> &stringVec);
     void SetUserStatistics(uint32_t userId, RadarStatisticInfoType type);
-    bool IsFilePathInvalid(const std::string &filePath);
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // namespace StorageDaemon

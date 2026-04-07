@@ -373,7 +373,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_003, TestSize.Le
 
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_ERR));
 
-    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL2_KEY), E_MIGRETE_ELX_FAILED);
+    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL2_KEY), E_MIGRATE_ELX_FAILED);
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_ERR);
 }
 
@@ -388,7 +388,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_004, TestSize.Le
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_ERR);
 }
@@ -403,7 +403,11 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
 {
     ASSERT_TRUE(storageDaemon_ != nullptr);
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_OK));
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _)).WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_PARAMS_NULLPTR_ERR));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(_, _)).WillRepeatedly(Return(E_OK));
 
     // userId < START_APP_CLONE_USER_ID
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId_, EL1_KEY), E_OK);
@@ -419,6 +423,12 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
     CreateNeedRestoreFile(userId, EL3_KEY);
     EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId, EL3_KEY), E_OK);
     DeleteNeedRestoreFile(userId, EL3_KEY);
+
+    // userId > MAX_APP_CLONE_USER_ID
+    userId = StorageService::MAX_APP_CLONE_USER_ID + 1;
+    CreateNeedRestoreFile(userId, EL4_KEY);
+    EXPECT_EQ(storageDaemon_->RestoreOneUserKey(userId, EL4_KEY), E_PARAMS_NULLPTR_ERR);
+    DeleteNeedRestoreFile(userId, EL4_KEY);
 }
 
 /**
@@ -644,7 +654,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
     CreateNeedRestoreFile(StorageService::START_USER_ID, EL1_KEY);
 
     g_saveStringToFile = false;
-    EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), false);
+    EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), E_SAVE_KEY_TYPE_ERROR);
     g_saveStringToFile = true;
 
 #endif
@@ -994,7 +1004,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthVx
     auto natoPath = KeyManager::GetInstance().GetNatoNeedRestorePath(userId_, EL3_KEY) + FSCRYPT_VERSION_DIR;
     std::error_code errCode;
     std::filesystem::remove(natoPath, errCode);
-    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthVx(userId_, EL3_KEY, token_, secret_, "1"), E_ERR);
 }
@@ -1627,7 +1637,96 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveAppCloneUserKey_001, TestSiz
 
     DeleteNeedRestoreFile(StorageService::START_APP_CLONE_USER_ID, EL1_KEY);
 #endif
+    GTEST_LOG_(INFO) << "StorageDaemonTest_VerifyAncoUserDirs_003 end";
 }
+#ifdef PC_USER_MANAGER
+#ifdef USER_CRYPTO_MANAGER
+/**
+ * @tc.name: StorageDaemonTest_CreateRecoverKey_001
+ * @tc.desc: Verify the VerifyAncoUserDirs when all.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_CreateRecoverKey_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint32_t userId = 0;
+    uint32_t userTyp = 0;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    EXPECT_CALL(*keyManagerMock_, CreateRecoverKey(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->CreateRecoverKey(userId, userTyp, token, secret), E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, CreateRecoverKey(_, _, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(storageDaemon_->CreateRecoverKey(userId, userTyp, token, secret), -1);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_SetRecoverKey_001
+ * @tc.desc: Verify the VerifyAncoUserDirs when all.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetRecoverKey_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::vector<uint8_t> key;
+
+    EXPECT_CALL(*keyManagerMock_, SetRecoverKey(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->SetRecoverKey(key), E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, SetRecoverKey(_)).WillOnce(Return(-1));
+    EXPECT_EQ(storageDaemon_->SetRecoverKey(key), -1);
+}
+#endif
+#endif
+
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
+/**
+ * @tc.name: StorageDaemonTest_ResetSecretWithRecoveryKey_001
+ * @tc.desc: Verify the VerifyAncoUserDirs when all.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_ResetSecretWithRecoveryKey_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint32_t userId = 0;
+    uint32_t rkType = 0;
+    std::vector<uint8_t> key;
+
+    EXPECT_CALL(*keyManagerMock_, ResetSecretWithRecoveryKey(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key), E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, ResetSecretWithRecoveryKey(_, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key), -1);
+}
+#endif
+
+#ifdef EL5_FILEKEY_MANAGER
+
+/**
+ * @tc.name: StorageDaemonTest_RegisterUeceActivationCallback_001
+ * @tc.desc: Verify the VerifyAncoUserDirs when all.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    sptr<StorageManager::IUeceActivationCallback> ueceCallback = nullptr;
+
+    EXPECT_CALL(*keyManagerMock_, RegisterUeceActivationCallback(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(storageDaemon_->RegisterUeceActivationCallback(ueceCallback), E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, RegisterUeceActivationCallback(_)).WillOnce(Return(-1));
+    EXPECT_EQ(storageDaemon_->RegisterUeceActivationCallback(ueceCallback), -1);
+}
+#endif
 } // Test
 } // STORAGE_DAEMON
 } // OHOS

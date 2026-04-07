@@ -1133,4 +1133,142 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ListUserdataDirInf
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Encrypt_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Encrypt_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->Encrypt(volumeId, pazzword);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Encrypt_0000 SUCCESS";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptProgressById_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetCryptProgressById_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    string volumeId = "vol-2-5";
+    int32_t progress = 0;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->GetCryptProgressById(volumeId, progress);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetCryptProgressById_0000 SUCCESS";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptUuidById_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetCryptUuidById_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string uuid;
+    int32_t result = sdCommunication->GetCryptUuidById(volumeId, uuid);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetCryptUuidById_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_BindRecoverKeyToPasswd_0000,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_BindRecoverKeyToPasswd_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    std::string recoverKey = "testRecoverKey";
+    int32_t result = sdCommunication->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_BindRecoverKeyToPasswd_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateCryptPasswd_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateCryptPasswd_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "oldPasswd";
+    std::string newPazzword = "newPasswd";
+    int32_t result = sdCommunication->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateCryptPasswd_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetCryptPasswd_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ResetCryptPasswd_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string recoverKey = "testRecoverKey";
+    std::string newPazzword = "newPasswd";
+    int32_t result = sdCommunication->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ResetCryptPasswd_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyCryptPasswd_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_VerifyCryptPasswd_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    int32_t result = sdCommunication->VerifyCryptPasswd(volumeId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyCryptPasswd_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unlock_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Unlock_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    int32_t result = sdCommunication->Unlock(volumeId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unlock_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Decrypt_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Decrypt_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string pazzword = "testPasswd";
+    int32_t result = sdCommunication->Decrypt(volumeId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Decrypt_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOddCapacity_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOddCapacity_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "test-volume";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = sdCommunication->GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOddCapacity_0000";
+}
 } // namespace

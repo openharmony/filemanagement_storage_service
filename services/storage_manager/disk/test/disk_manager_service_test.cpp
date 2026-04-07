@@ -371,4 +371,92 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
     dmService.OnDiskDestroyed(diskId);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetAllDisks_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_GetInstance_0000
+ * @tc.name: Disk_manager_service_GetInstance_0000
+ * @tc.desc: Test function of GetInstance returns singleton.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetInstance_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetInstance_0000";
+
+    DiskManagerService& instance1 = DiskManagerService::GetInstance();
+    DiskManagerService& instance2 = DiskManagerService::GetInstance();
+
+    EXPECT_EQ(&instance1, &instance2);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetInstance_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_GetDiskById_0003
+ * @tc.name: Disk_manager_service_GetDiskById_0003
+ * @tc.desc: Test function of GetDiskById with non-existent diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0003";
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+
+    std::string nonExistentDiskId = "non-existent-disk-id";
+    std::shared_ptr<Disk> diskPtr = dmService.GetDiskById(nonExistentDiskId);
+
+    EXPECT_EQ(diskPtr, nullptr);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0003";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_GetDiskById_0004
+ * @tc.name: Disk_manager_service_GetDiskById_0004
+ * @tc.desc: Test function of GetDiskById with empty diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0004";
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+
+    std::string emptyDiskId = "";
+    std::shared_ptr<Disk> diskPtr = dmService.GetDiskById(emptyDiskId);
+
+    EXPECT_EQ(diskPtr, nullptr);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0004";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_GetDiskById_0005
+ * @tc.name: Disk_manager_service_GetDiskById_0005
+ * @tc.desc: Test function of GetDiskById reference version with non-existent diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR0000000
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetDiskById_0005";
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+
+    std::string nonExistentDiskId = "non-existent-disk-id-2";
+    Disk disk;
+    int32_t result = dmService.GetDiskById(nonExistentDiskId, disk);
+
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0005";
+}
 } // namespace

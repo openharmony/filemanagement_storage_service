@@ -65,7 +65,7 @@ HWTEST_F(AclTest, acl_entry_valid_test, TestSize.Level1)
     entry = {
         .tag = ACL_TAG::USER,
         .perm = 5,
-        .id = ACL_UNDEFINED_ID,
+        .id = AclXattrHeader::ACL_UNDEFINED_ID,
     };
     EXPECT_TRUE(!entry.IsValid());
     entry.id = 0;
@@ -74,7 +74,7 @@ HWTEST_F(AclTest, acl_entry_valid_test, TestSize.Level1)
     entry = {
         .tag = ACL_TAG::GROUP,
         .perm = 4,
-        .id = ACL_UNDEFINED_ID,
+        .id = AclXattrHeader::ACL_UNDEFINED_ID,
     };
     EXPECT_TRUE(!entry.IsValid());
     entry.id = 0;
@@ -129,19 +129,19 @@ HWTEST_F(AclTest, acl_valid_test, TestSize.Level1)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::USER_OBJ,
           .perm = 6,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && !acl.IsValid()); // invalid
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::GROUP_OBJ,
           .perm = 6,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && !acl.IsValid()); // still invalid
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::OTHER,
           .perm = 0,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
     EXPECT_TRUE(rc == 0 && acl.IsValid()); // valid!
 
@@ -207,7 +207,7 @@ int CreateValidBasicAcl(Acl &out)
     int rc = acl.InsertEntry(
         { .tag = ACL_TAG::USER_OBJ,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;
@@ -215,7 +215,7 @@ int CreateValidBasicAcl(Acl &out)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::GROUP_OBJ,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;
@@ -223,7 +223,7 @@ int CreateValidBasicAcl(Acl &out)
     rc = acl.InsertEntry(
         { .tag = ACL_TAG::OTHER,
           .perm = perm,
-          .id = ACL_UNDEFINED_ID, }
+          .id = AclXattrHeader::ACL_UNDEFINED_ID, }
         );
     if (rc != 0) {
         return rc;
@@ -324,4 +324,28 @@ HWTEST_F(AclTest, acl_serialize_test_2, TestSize.Level1)
         EXPECT_TRUE(rc != 0) << "de-serializing with wrong bufSize should fail";
     }
 }
+
+/**
+ * @tc.name: acl_deserialize_insert_failed_test
+ * @tc.desc: Verify DeSerialize returns failure when parsed entry cannot be inserted.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09ML
+ */
+HWTEST_F(AclTest, acl_deserialize_insert_failed_test, TestSize.Level1)
+{
+    Acl acl;
+    constexpr size_t rawSize = sizeof(AclXattrHeader) + sizeof(AclXattrEntry);
+    char raw[rawSize] = {0};
+    auto *header = reinterpret_cast<AclXattrHeader *>(raw);
+    *header = {0};
+
+    auto *entry = reinterpret_cast<AclXattrEntry *>(raw + sizeof(AclXattrHeader));
+    entry->tag = static_cast<ACL_TAG>(255);
+    entry->perm = 0;
+    entry->id = OHOS::StorageDaemon::AclXattrHeader::ACL_UNDEFINED_ID;
+
+    int rc = acl.DeSerialize(raw, rawSize);
+    EXPECT_EQ(rc, 0);
 }
+}
+

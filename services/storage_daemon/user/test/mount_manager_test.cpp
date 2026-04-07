@@ -162,6 +162,23 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountHmdfs_001, TestS
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountHmdfs_HasNoReturnOption_001
+ * @tc.desc: Verify the MountHmdfs function with multiple nodes where first has HasNoReturnOption.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountHmdfs_HasNoReturnOption_001, TestSize.Level1)
+{
+    int32_t userId = 100; // default userId
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillRepeatedly(Return(E_OK));
+
+    // When all mounts succeed, MountHmdfs should return E_OK
+    EXPECT_EQ(MountManager::GetInstance().MountHmdfs(userId), E_OK);
+}
+
+/**
  * @tc.name: Storage_Daemon_MountManagerTest_CheckMountFileByUser_001
  * @tc.desc: Verify the CheckMountFileByUser function.
  * @tc.type: FUNC

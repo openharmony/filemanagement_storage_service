@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,7 @@
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
 #include "volume/volume_manager.h"
+#include "volume/external_volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -1072,335 +1073,113 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.
 }
 
 /**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_004
- * @tc.desc: Verify the ReadPartition function.
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartitionCD_001
+ * @tc.desc: Verify the ReadPartitionCD function, when ejectStatus == "1".
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_004, TestSize.Level1)
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_004 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_001 start";
+    std::string devPath = "/devices/platform/xhci-hcd.1/";
+    std::string sysPath = "/sys" + devPath;
+    std::string volId = "vol-11-0";
+    std::string diskId = "disk-11-0";
+    dev_t device = makedev(11, 0);
     int flag = 0;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
-
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
-
-    EXPECT_CALL(*fileUtilMoc_,
-        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     diskInfo->volumeId_.push_back(volId);
-    int ret = diskInfo->ReadPartition("1");
-    EXPECT_TRUE(ret == E_ERR);
-    VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(testing::_, testing::_)).WillRepeatedly(testing::Return(""));
+    EXPECT_EQ(diskInfo->ReadPartition("1"), E_ERR);
+
+    auto &volManager = VolumeManager::Instance();
+    auto volInfo = std::make_shared<ExternalVolumeInfo>();
+    ASSERT_TRUE(volInfo != nullptr);
+    volInfo->Create(volId, diskId, device, false);
+    volManager.volumes_.Insert(volId, volInfo);
+    volInfo->mountState_ = REMOVED;
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(*diskUtilMoc_, DestroyDiskNode(testing::_)).WillRepeatedly(testing::Return(E_OK));
+    EXPECT_EQ(diskInfo->ReadPartition("1"), E_ERR);
+
+    volManager.volumes_.Insert(volId, volInfo);
+    volInfo->mountState_ = REMOVED;
+    EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_EQ(diskInfo->ReadPartition("1"), E_OK);
     diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_004 end";
+    volManager.volumes_.Clear();
+
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_001 end";
 }
 
 /**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_005
- * @tc.desc: Verify the ReadPartition function.
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartitionCD_002
+ * @tc.desc: Verify the ReadPartitionCD function, when ejectStatus == "1".
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_005, TestSize.Level1)
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_005 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_002 start";
+    std::string devPath = "/devices/platform/xhci-hcd.1/";
+    std::string sysPath = "/sys" + devPath;
+    std::string volId = "vol-11-0";
+    std::string diskId = "disk-11-0";
+    dev_t device = makedev(11, 0);
     int flag = 0;
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
+    EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
+        isExistCD = false;
+        return E_ERR;
+    });
+    EXPECT_EQ(diskInfo->ReadPartition("0"), E_OK);
 
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
-
-    EXPECT_CALL(*fileUtilMoc_,
-        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     diskInfo->volumeId_.push_back(volId);
-    int ret = diskInfo->ReadPartition("1");
-    EXPECT_TRUE(ret == E_OK);
-    VolumeManager::Instance().DestroyVolume(volId);
-    diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_005 end";
-}
+    EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
+        isExistCD = false;
+        return E_OK;
+    });
+    EXPECT_EQ(diskInfo->ReadPartition("0"), E_OK);
 
-/**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_006
- * @tc.desc: Verify the ReadPartition function.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    ASSERT_TRUE(diskInfo != nullptr);
-
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
+    auto &volManager = VolumeManager::Instance();
+    auto volInfo = std::make_shared<ExternalVolumeInfo>();
+    ASSERT_TRUE(volInfo != nullptr);
+    volInfo->Create(volId, diskId, device, false);
+    volManager.volumes_.Insert(volId, volInfo);
     diskInfo->volumeId_.push_back(volId);
-    VolumeManager::Instance().DestroyVolume(volId);
-    int ret = diskInfo->ReadPartition("1");
-    EXPECT_TRUE(ret == E_ERR);
-    diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_006 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_007
- * @tc.desc: Verify the ReadPartition function.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_007, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_007 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    ASSERT_TRUE(diskInfo != nullptr);
-    EXPECT_CALL(*fileUtilMoc_,
-        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    int ret = diskInfo->ReadPartition();
-    EXPECT_TRUE(ret == E_OK);
-    VolumeManager::Instance().DestroyVolume("vol-11-0");
-    diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_007 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_008
- * @tc.desc: Verify the ReadPartition function.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_008, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_008 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
-    ASSERT_TRUE(diskInfo != nullptr);
-
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1)
-        .WillRepeatedly([&](std::vector<std::string>& cmd,
-                           std::vector<std::string>* output,
-                           int* exitStatus) {
-            if (output) {
-                *output = {"550e8400-e29b-41d4-a716-446655440000\n"};
-            }
-            if (exitStatus) {
-                *exitStatus = 0;
-            }
-            return E_OK;
-        });
-    int ret = diskInfo->ReadPartition();
-    EXPECT_TRUE(ret == E_OK);
-    diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_008 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_009
- * @tc.desc: Verify the ReadPartition function.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_009, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_009 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
-    ASSERT_TRUE(diskInfo != nullptr);
-
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(1)
-        .WillRepeatedly([&](std::vector<std::string>& cmd,
-                           std::vector<std::string>* output,
-                           int* exitStatus) {
-            if (output) {
-                *output = {"550e8400-e29b-41d4-a716-446655440000\n"};
-            }
-            if (exitStatus) {
-                *exitStatus = 0;
-            }
-            return E_ERR;
-        });
-    diskInfo->volumeId_.push_back("vol-11-3");
-    int ret = diskInfo->ReadPartition();
-    EXPECT_TRUE(ret == E_OK);
-    diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_009 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_010
- * @tc.desc: Verify the ReadPartition function.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_010, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_010 start";
-    char msg[1024] = {
-        "change@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
-        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "ACTION=change\0"
-        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
-        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
-        "SUBSYSTEM=block\0"
-        "DISK_EJECT_REQUEST=1\0"
-        "MAJOR=11\0"
-        "MINOR=0\0"
-        "DEVNAME=sr0\0"
-        "DEVTYPE=disk\0"
-        "SEQNUM=6988\0"
-    };
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
-    ASSERT_TRUE(diskInfo != nullptr);
-
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume("vol-11-0", device, false);
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(testing::_, testing::_)).WillRepeatedly(testing::Return(""));
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
-    diskInfo->volumeId_.push_back(volId);
-    EXPECT_CALL(*fileUtilMoc_,
-        ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
-    int ret = diskInfo->ReadPartition();
-    EXPECT_TRUE(ret == E_OK);
-    VolumeManager::Instance().DestroyVolume(volId);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
+        isExistCD = true;
+        return E_ERR;
+    });
+    EXPECT_EQ(diskInfo->ReadPartition("0"), E_OK);
+
+
+    EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
+        isExistCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(diskInfo->ReadPartition("0"), E_OK);
+    
+    volManager.volumes_.Clear();
     diskInfo->volumeId_.clear();
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_010 end";
+    volManager.DestroyVolume(volId);
+    EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
+        isExistCD = true;
+        return E_OK;
+    });
+    EXPECT_EQ(diskInfo->ReadPartition("0"), E_ERR);
+
+    diskInfo->volumeId_.clear();
+    volManager.volumes_.Clear();
+    volManager.DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_002 end";
 }
 
 /**
@@ -1469,6 +1248,124 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_005, TestSize.Leve
     EXPECT_TRUE(ret == E_NOT_SUPPORT);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_001
+ * @tc.desc: Verify the ProcessPartitionChanges function with added lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_001 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07"};
+    std::vector<std::string> newLines = {"DISK mbr", "PART 1 0x07", "PART 2 0x07"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_002
+ * @tc.desc: Verify the ProcessPartitionChanges function with removed lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07", "PART 2 0x07"};
+    std::vector<std::string> newLines = {"DISK mbr", "PART 1 0x07"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_003
+ * @tc.desc: Verify the ProcessPartitionChanges function with both added and removed lines.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2", "PART 3"};
+    std::vector<std::string> newLines = {"DISK gpt", "PART 1", "PART 3", "PART 4"};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillRepeatedly(Return(E_OK));
+
+    diskInfo->ProcessPartitionChanges(newLines, 4, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ProcessPartitionChanges_004
+ * @tc.desc: Verify the ProcessPartitionChanges function with no changes.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_004 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2"};
+    std::vector<std::string> newLines = {"DISK gpt", "PART 1", "PART 2"};
+
+    diskInfo->ProcessPartitionChanges(newLines, 2, false);
+
+    EXPECT_EQ(diskInfo->sgdiskLines_.size(), newLines.size());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_004 end";
 }
 }
 }

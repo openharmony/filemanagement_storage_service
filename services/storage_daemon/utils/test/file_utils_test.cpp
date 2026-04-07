@@ -36,6 +36,7 @@ using namespace testing::ext;
 
 constexpr int NOT_EXIST_FD_1 = 45678;
 constexpr int NOT_EXIST_FD_2 = 45679;
+constexpr const char *READ_FILE_TEST_PATH = "/data/service/read_file_test.txt";
 namespace {
     const uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
     const std::string PATH_CHMOD = "/data/storage_daemon_chmod_test_dir";
@@ -48,6 +49,7 @@ namespace {
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t ChOwn(const std::string &path, uid_t uid, gid_t gid);
 int32_t MkDir(const std::string &path, mode_t mode);
+std::string MaskSensitiveInfo(const std::string &input);
 
 class FileUtilsTest : public testing::Test {
 public:
@@ -304,6 +306,35 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_DelFolder_001, TestSize.Level1)
     EXPECT_TRUE(rmdir(testPath.c_str()) == 0);
     EXPECT_TRUE(rmdir(testPath.c_str()) != 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ReadFile_001
+ * @tc.desc: Verify ReadFile branches for non-exist file, empty file and non-empty file.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFile_001 start";
+    std::string content;
+    EXPECT_FALSE(ReadFile("/data/service/not_exist_read_file_test.txt", &content));
+
+    std::ofstream emptyFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(emptyFile.is_open());
+    emptyFile.close();
+    content.clear();
+    EXPECT_FALSE(ReadFile(READ_FILE_TEST_PATH, &content));
+
+    std::ofstream textFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(textFile.is_open());
+    textFile << "hello world";
+    textFile.close();
+    content.clear();
+    EXPECT_TRUE(ReadFile(READ_FILE_TEST_PATH, &content));
+    EXPECT_FALSE(content.empty());
+    DeleteFile(READ_FILE_TEST_PATH);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFile_001 end";
 }
 
 /**
@@ -716,5 +747,276 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_GetRmgDataSize_002, TestSize.Level1)
     EXPECT_NE(ret, E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID);
     GTEST_LOG_(INFO) << "FileUtilsTest_GetRmgDataSize_002 end";
 }
-} // STORAGE_DAEMON
-} // OHOS
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_001
+ * @tc.desc: Verify MaskSensitiveInfo function with single UUID.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_001 start";
+    
+    std::string input = "EBD0A0A2-B9E5-4433-87C0-68B6B72699C7";
+    std::string result = MaskSensitiveInfo(input);
+    std::string expected = "EBD0****************************99C7";
+    EXPECT_EQ(result, expected);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_002
+ * @tc.desc: Verify MaskSensitiveInfo function with multiple UUIDs.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_002 start";
+    
+    std::string input =
+    "PART 1 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7 1965F076-B593-4262-AC27-80740D6E25BC Basic data partition";
+    std::string result = MaskSensitiveInfo(input);
+    std::string expected =
+    "PART 1 EBD0****************************99C7 1965****************************25BC Basic data partition";
+    EXPECT_EQ(result, expected);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_003
+ * @tc.desc: Verify MaskSensitiveInfo function with no UUID.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_003 start";
+    
+    std::string input = "This is a test string without UUID";
+    std::string result = MaskSensitiveInfo(input);
+    EXPECT_EQ(result, input);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_003 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_004
+ * @tc.desc: Verify MaskSensitiveInfo function with empty string.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_004 start";
+    
+    std::string input = "";
+    std::string result = MaskSensitiveInfo(input);
+    EXPECT_EQ(result, input);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_004 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_005
+ * @tc.desc: Verify MaskSensitiveInfo function with short string.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_005 start";
+    
+    std::string input = "short";
+    std::string result = MaskSensitiveInfo(input);
+    EXPECT_EQ(result, input);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_005 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_006
+ * @tc.desc: Verify MaskSensitiveInfo function with UUID in mixed case.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_006 start";
+    
+    std::string input = "ebd0a0a2-b9e5-4433-87c0-68b6b72699c7";
+    std::string result = MaskSensitiveInfo(input);
+    std::string expected = "ebd0****************************99c7";
+    EXPECT_EQ(result, expected);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_006 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_MaskSensitiveInfo_007
+ * @tc.desc: Verify MaskSensitiveInfo function with repeated UUIDs.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_MaskSensitiveInfo_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_007 start";
+    
+    std::string input = "EBD0A0A2-B9E5-4433-87C0-68B6B72699C7 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7";
+    std::string result = MaskSensitiveInfo(input);
+    std::string expected = "EBD0****************************99C7 EBD0****************************99C7";
+    EXPECT_EQ(result, expected);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_MaskSensitiveInfo_007 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DeleteFile_001
+ * @tc.desc: Verify DeleteFile function with empty directory.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DeleteFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_001 start";
+    
+    std::string testDir = "/data/test_delete_dir";
+    mkdir(testDir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    
+    EXPECT_TRUE(IsDir(testDir));
+    DeleteFile(testDir);
+    EXPECT_TRUE(IsDir(testDir));
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DeleteFile_002
+ * @tc.desc: Verify DeleteFile function with directory containing files.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DeleteFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_002 start";
+    
+    std::string testDir = "/data/test_delete_dir_with_files";
+    mkdir(testDir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+
+    std::string testFile1 = testDir + "/file1.txt";
+    std::string testFile2 = testDir + "/file2.txt";
+    std::ofstream file1(testFile1);
+    std::ofstream file2(testFile2);
+    ASSERT_TRUE(file1.is_open());
+    ASSERT_TRUE(file2.is_open());
+    file1 << "content1";
+    file2 << "content2";
+    file1.close();
+    file2.close();
+    
+    EXPECT_TRUE(IsDir(testDir));
+    EXPECT_TRUE(IsFile(testFile1));
+    EXPECT_TRUE(IsFile(testFile2));
+    
+    DeleteFile(testDir);
+    EXPECT_TRUE(IsDir(testDir));
+    EXPECT_FALSE(IsFile(testFile1));
+    EXPECT_FALSE(IsFile(testFile2));
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DeleteFile_003
+ * @tc.desc: Verify DeleteFile function with nested directory structure.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DeleteFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_003 start";
+    
+    std::string testDir = "/data/test_delete_nested";
+    mkdir(testDir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    
+    std::string subDir1 = testDir + "/subdir1";
+    std::string subDir2 = testDir + "/subdir2";
+    mkdir(subDir1.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    mkdir(subDir2.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    
+    std::string testFile1 = subDir1 + "/file1.txt";
+    std::string testFile2 = subDir2 + "/file2.txt";
+    std::ofstream file1(testFile1);
+    std::ofstream file2(testFile2);
+    ASSERT_TRUE(file1.is_open());
+    ASSERT_TRUE(file2.is_open());
+    file1 << "content1";
+    file2 << "content2";
+    file1.close();
+    file2.close();
+    
+    std::string subSubDir = subDir1 + "/subsubdir";
+    mkdir(subSubDir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    
+    std::string testFile3 = subSubDir + "/file3.txt";
+    std::ofstream file3(testFile3);
+    ASSERT_TRUE(file3.is_open());
+    file3 << "content3";
+    file3.close();
+    
+    EXPECT_TRUE(IsDir(testDir));
+    EXPECT_TRUE(IsDir(subDir1));
+    EXPECT_TRUE(IsDir(subDir2));
+    EXPECT_TRUE(IsDir(subSubDir));
+    EXPECT_TRUE(IsFile(testFile1));
+    EXPECT_TRUE(IsFile(testFile2));
+    EXPECT_TRUE(IsFile(testFile3));
+    
+    DeleteFile(testDir);
+    EXPECT_TRUE(IsDir(testDir));
+    EXPECT_FALSE(IsDir(subDir1));
+    EXPECT_FALSE(IsDir(subDir2));
+    EXPECT_FALSE(IsDir(subSubDir));
+    EXPECT_FALSE(IsFile(testFile1));
+    EXPECT_FALSE(IsFile(testFile2));
+    EXPECT_FALSE(IsFile(testFile3));
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_DeleteFile_003 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_Basic, TestSize.Level1)
+{
+    std::vector<std::string> cmd = {"echo", "test"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"y"};
+    int ret = ForkExecInteractive(cmd, &output, &input);
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_EdgeCases, TestSize.Level1)
+{
+    std::vector<std::string> cmd1 = {"echo", "test"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"y"};
+    EXPECT_EQ(ForkExecInteractive(cmd1, nullptr, nullptr), E_OK);
+    EXPECT_EQ(ForkExecInteractive(cmd1, nullptr, &input), E_OK);
+    EXPECT_EQ(ForkExecInteractive(cmd1, &output, nullptr), E_OK);
+    std::vector<std::string> invalidCmd = {"invalid_cmd"};
+    EXPECT_EQ(ForkExecInteractive(invalidCmd, nullptr, nullptr), E_OK);
+    std::vector<std::string> emptyCmd = {};
+    EXPECT_EQ(ForkExecInteractive(emptyCmd, nullptr, nullptr), E_OK);
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_RealInteraction, TestSize.Level1)
+{
+    std::vector<std::string> cmd = {"cat"};
+    std::vector<std::string> output;
+    std::vector<std::string> input = {"hello", "world"};
+    int ret = ForkExecInteractive(cmd, &output, &input);
+    EXPECT_EQ(ret, E_OK);
+}
+} // namespace StorageDaemon
+} // namespace OHOS

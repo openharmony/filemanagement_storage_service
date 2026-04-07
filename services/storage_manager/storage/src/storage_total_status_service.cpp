@@ -18,6 +18,8 @@
 #include "hitrace_meter.h"
 #include <sys/statvfs.h>
 
+#include "ipc_skeleton.h"
+#include "storage/bundle_manager_connector.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
@@ -126,6 +128,48 @@ int32_t StorageTotalStatusService::GetUsedInodes(int64_t &usedInodes)
     LOGI("StorageTotalStatusService::GetUsedInodes success, (/data)usedInodes=%{public}lld",
         static_cast<long long>(usedInodes));
     return ret;
+}
+
+int32_t StorageTotalStatusService::GetCurrentBundleInodes(int64_t &curInodes)
+{
+    LOGI("StorageTotalStatusService::GetCurrentBundleInodes start");
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (uid < 0) {
+        LOGE("GetCurrentBundleInodes: uid %{public}d out of range", uid);
+        return E_GET_BUNDLE_INODES_ERROR;
+    }
+    auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("GetCurrentBundleInodes: connect bundle manager sa proxy failed.");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    std::string bundleName;
+    int32_t appIndex = DEFAULT_APP_INDEX;
+    ErrCode getIndexRet = bundleMgr->GetNameAndIndexForUid(uid, bundleName, appIndex);
+    if (getIndexRet != ERR_OK || bundleName.empty()) {
+        LOGE("GetCurrentBundleInodes: GetNameAndIndexForUid failed, err=%{public}d", getIndexRet);
+        appIndex = DEFAULT_APP_INDEX;
+        return E_GET_BUNDLE_INODES_ERROR;
+    }
+    int32_t userId = GetCurrentUserId();
+    if (userId < 0) {
+        LOGE("GetCurrentBundleInodes: invalid userId=%{public}d", userId);
+        return E_GET_BUNDLE_INODES_ERROR;
+    }
+    uint64_t inodeCount = 0;
+    ErrCode ret = bundleMgr->GetBundleInodeCount(bundleName, appIndex, userId, inodeCount);
+    if (ret != ERR_OK) {
+        LOGE("GetCurrentBundleInodes: GetBundleInodeCount failed, err=%{public}d", ret);
+        StorageRadar::ReportGetStorageStatus("GetCurrentBundleInodes::GetBundleInodeCount", userId,
+            E_GET_BUNDLE_INODES_ERROR, "setting");
+        return E_GET_BUNDLE_INODES_ERROR;
+    }
+
+    curInodes = static_cast<int64_t>(inodeCount);
+    LOGI("StorageTotalStatusService::GetCurrentBundleInodes success, bundleName=%{public}s, "
+         "userId=%{public}d, appIndex=%{public}d, curInodes=%{public}lld",
+         bundleName.c_str(), userId, appIndex, static_cast<long long>(curInodes));
+    return E_OK;
 }
 
 int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type, int64_t &size)

@@ -49,11 +49,14 @@ public:
     int32_t UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove);
     int32_t PrepareMtpMountPath(const std::string &path);
 
+    MtpDeviceManager(const MtpDeviceManager &) = delete;
+    MtpDeviceManager &operator=(const MtpDeviceManager &) = delete;
+
 private:
     MtpDeviceManager();
     ~MtpDeviceManager();
 
-    bool isMounting = false;
+    bool isMounting_ = false;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

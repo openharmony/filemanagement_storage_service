@@ -31,12 +31,8 @@ struct UserTokenSecret {
 };
 class StorageDaemon {
 public:
+    static StorageDaemon &GetInstance(void);
 
-    static StorageDaemon &GetInstance(void)
-    {
-        static StorageDaemon instance;
-        return instance;
-    }
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t CompleteAddUser(int32_t userId);
@@ -142,6 +138,10 @@ private:
     void ClearAllNatoRestoreKey(uint32_t userId, bool isClearAll);
     void ClearKeyDirInfo(const std::string &path);
     void ClearKeyDir(const std::string &path);
+    int32_t DoStoreAndUpdate(uint32_t userId,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret,
+                             KeyType keyType);
 };
 } // StorageDaemon
 } // OHOS

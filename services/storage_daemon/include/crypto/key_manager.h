@@ -88,7 +88,7 @@ public:
                          const std::vector<uint8_t> &secret);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId, bool needReSet = false);
-    int DeleteAppkey(uint32_t user, const std::string keyId);
+    int32_t DeleteAppkey(uint32_t user, const std::string &keyId);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
@@ -123,6 +123,9 @@ public:
     friend class KeyManagerExt;
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, StorageService::EncryptionLevel level);
     bool IsDirRecursivelyEmpty(const char* dirPath);
+    bool GetSecureUid(uint32_t userId, uint64_t &secureUid);
+    int UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType);
+    int UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType);
 
 private:
     KeyManager()

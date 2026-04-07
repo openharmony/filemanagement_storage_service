@@ -35,12 +35,16 @@ constexpr int UPLOAD_RECORD_TRUE_LEN = 5;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 6;
 
 namespace {
-uint32_t g_FindParameter = 0;
+    uint32_t g_findParameter = 0;
+    int32_t g_doTryToCheck = 0;
+    int32_t g_doTryToFix = 0;
+    int32_t g_doCheck = 0;
+    int32_t g_doMount = 0;
 }
 
 uint32_t FindParameter(const char *key)
 {
-    return g_FindParameter;
+    return g_findParameter;
 }
 
 ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
@@ -60,6 +64,47 @@ ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
         return UPLOAD_RECORD_FALSE_LEN;
     }
     return 0;
+}
+
+namespace OHOS::StorageDaemon {
+class VolumeInfoTestMock : public VolumeInfo {
+public:
+    VolumeInfoTestMock() {};
+    virtual ~VolumeInfoTestMock() {};
+    void SetFsTypeBase(const std::string str) {fsTypeBase_ = str;}
+protected:
+    int32_t DoCreate(dev_t dev) override { return E_OK; };
+    int32_t DoDestroy() override { return E_OK; };
+    int32_t DoMount(uint32_t mountFlags) override { return g_doMount; };
+    int32_t DoUMount(bool force) override { return E_OK; };
+    int32_t DoUMountUsbFuse() override { return E_OK; };
+    int32_t DoCheck() override { return g_doCheck; };
+    int32_t DoFormat(std::string type) override { return E_OK; };
+    int32_t DoSetVolDesc(std::string description) override { return E_OK; };
+    int32_t DoTryToCheck() override { return g_doTryToCheck; };
+    int32_t DoTryToFix() override { return g_doTryToFix; };
+    std::string GetFsTypeByDev(dev_t dev) override { return ""; };
+    std::string GetFsType() override { return ""; };
+    int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize,
+            int64_t &freeSize) override { return E_OK; };
+    //disk crypt api
+    int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
+    int32_t DoGetCryptProgressById(const std::string &volumeId, int32_t &progress) override { return E_OK; };
+    int32_t DoGetCryptUuidById(const std::string &volumeId, std::string &uuid) override { return E_OK; };
+    int32_t DoBindRecoverKeyToPasswd(const std::string &volumeId,
+                                     const std::string &pazzword,
+                                     const std::string &recoverKey) override { return E_OK; };
+    int32_t DoUpdateCryptPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &newPazzword) override { return E_OK; };
+    int32_t DoResetCryptPasswd(const std::string &volumeId,
+                               const std::string &recoverKey,
+                               const std::string &newPazzword) override { return E_OK; };
+    int32_t DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
+    int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
+    int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
+    int32_t DoDestroyCrypt(const std::string &volumeId) override { return E_OK; };
+};
 }
 
 namespace OHOS {
@@ -524,7 +569,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
     volumeInfoMock->mountState_ = UNMOUNTED;
     EXPECT_CALL(*volumeInfoMock, DoCheck()).WillOnce(Return(0));
-    g_FindParameter = -1;
+    g_findParameter = -1;
     EXPECT_CALL(*volumeInfoMock, DoMount(_)).WillOnce(Return(-1));
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), -1);
 
@@ -687,7 +732,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_003, 
     // Create a volume for testing
     std::string diskId = "diskId-usb-fuse-003";
     bool isUserdata = false;
-    dev_t device = MKDEV(8, 4);
+    dev_t device = MKDEV(8, 14);
     std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     ASSERT_FALSE(volumeId.empty());
     int fuseFd = -1;
@@ -717,7 +762,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_004, 
     // Create a volume for testing
     std::string diskId = "diskId-usb-fuse-004";
     bool isUserdata = false;
-    dev_t device = MKDEV(8, 4);
+    dev_t device = MKDEV(8, 14);
     std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
     ASSERT_FALSE(volumeId.empty());
 
@@ -862,6 +907,458 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumeUuid_002
     VolumeManager::Instance().DestroyVolume(volumeId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ReadVolumeUuid_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_001 start";
+    std::string diskId = "diskId-1-6";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 6);
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    std::string pazzword = "testPasswd";
+    int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_001 start";
+    std::string diskId = "diskId-1-6";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    int32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().DestroyVolume(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_001 end";
+}
+
+ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_004, TestSize.Level1)
+ {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_004 start";
+    std::string volId = "mount_test";
+    uint32_t flags = 1;
+    auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
+    volumeInfoMock->SetFsTypeBase("crypt_LUKS");
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    g_doTryToCheck = 0;
+    volumeInfoMock->mountState_ = REMOVED;
+    EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_004 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_005 start";
+    std::string volId = "mount_test_crypt";
+    uint32_t flags = 1;
+    auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
+    volumeInfoMock->SetFsTypeBase("crypt_LUKS");
+    volumeInfoMock->mountState_ = REMOVED;
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    g_doTryToCheck = 0;
+    int32_t result = VolumeManager::Instance().Mount(volId, flags);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(volumeInfoMock->GetState(), ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_005 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_002 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_003 start";
+    std::string volId = "vol-encrypt-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeInfoMock->mountState_ = MOUNTED;
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_004 start";
+    std::string volId = "vol-encrypt-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeInfoMock->mountState_ = UNMOUNTED;
+    EXPECT_CALL(*volumeInfoMock, DoEncrypt(_, _)).WillOnce(Return(E_NOT_SUPPORT));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_004 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_002 start";
+    std::string volId = "vol-non-exist";
+    int32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressById_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_003 start";
+    std::string volId = "vol-progress-test";
+    int32_t progress = 0;
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoGetCryptProgressById(_, _)).WillOnce(Return(E_CHECK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
+    EXPECT_EQ(result, E_CHECK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressById_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_004 start";
+    std::string volId = "vol-progress-test";
+    int32_t progress = 50;
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoGetCryptProgressById(_, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_004 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_001 start";
+    std::string volId = "vol-non-exist";
+    std::string uuid;
+    int32_t result = VolumeManager::Instance().GetCryptUuidById(volId, uuid);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptUuidById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_002 start";
+    std::string volId = "vol-uuid-test";
+    std::string uuid;
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoGetCryptUuidById(_, _)).WillOnce(Return(E_CHECK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().GetCryptUuidById(volId, uuid);
+    EXPECT_EQ(result, E_CHECK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptUuidById_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_003 start";
+    std::string volId = "vol-uuid-test";
+    std::string uuid;
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoGetCryptUuidById(_, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().GetCryptUuidById(volId, uuid);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_001 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    std::string recoverKey = "recover456";
+    int32_t result = VolumeManager::Instance().BindRecoverKeyToPasswd(volId, pazzword, recoverKey);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_002 start";
+    std::string volId = "vol-bind-test";
+    std::string pazzword = "test123";
+    std::string recoverKey = "recover456";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoBindRecoverKeyToPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().BindRecoverKeyToPasswd(volId, pazzword, recoverKey);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_003 start";
+    std::string volId = "vol-bind-test";
+    std::string pazzword = "test123";
+    std::string recoverKey = "recover456";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoBindRecoverKeyToPasswd(_, _, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().BindRecoverKeyToPasswd(volId, pazzword, recoverKey);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_001 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    std::string newPazzword = "new456";
+    int32_t result = VolumeManager::Instance().UpdateCryptPasswd(volId, pazzword, newPazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UpdateCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_002 start";
+    std::string volId = "vol-update-test";
+    std::string pazzword = "test123";
+    std::string newPazzword = "new456";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoUpdateCryptPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().UpdateCryptPasswd(volId, pazzword, newPazzword);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UpdateCryptPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_003 start";
+    std::string volId = "vol-update-test";
+    std::string pazzword = "test123";
+    std::string newPazzword = "new456";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoUpdateCryptPasswd(_, _, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().UpdateCryptPasswd(volId, pazzword, newPazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_001 start";
+    std::string volId = "vol-non-exist";
+    std::string recoverKey = "recover456";
+    std::string newPazzword = "new789";
+    int32_t result = VolumeManager::Instance().ResetCryptPasswd(volId, recoverKey, newPazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ResetCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_002 start";
+    std::string volId = "vol-reset-test";
+    std::string recoverKey = "recover456";
+    std::string newPazzword = "new789";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoResetCryptPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().ResetCryptPasswd(volId, recoverKey, newPazzword);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ResetCryptPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_003 start";
+    std::string volId = "vol-reset-test";
+    std::string recoverKey = "recover456";
+    std::string newPazzword = "new789";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoResetCryptPasswd(_, _, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().ResetCryptPasswd(volId, recoverKey, newPazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_001 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    int32_t result = VolumeManager::Instance().VerifyCryptPasswd(volId, pazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_002 start";
+    std::string volId = "vol-verify-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoVerifyCryptPasswd(_, _)).WillOnce(Return(E_CHECK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().VerifyCryptPasswd(volId, pazzword);
+    EXPECT_EQ(result, E_CHECK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyCryptPasswd_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_003 start";
+    std::string volId = "vol-verify-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoVerifyCryptPasswd(_, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().VerifyCryptPasswd(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Unlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_001 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    int32_t result = VolumeManager::Instance().Unlock(volId, pazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Unlock_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_002 start";
+    std::string volId = "vol-unlock-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoUnlock(_, _)).WillOnce(Return(E_CHECK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Unlock(volId, pazzword);
+    EXPECT_EQ(result, E_CHECK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Unlock_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_003 start";
+    std::string volId = "vol-unlock-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    EXPECT_CALL(*volumeInfoMock, DoUnlock(_, _)).WillOnce(Return(E_OK));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Unlock(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_001 start";
+    std::string volId = "vol-non-exist";
+    std::string pazzword = "test123";
+    int32_t result = VolumeManager::Instance().Decrypt(volId, pazzword);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_002 start";
+    std::string volId = "vol-decrypt-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeInfoMock->mountState_ = MOUNTED;
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Decrypt(volId, pazzword);
+    EXPECT_EQ(result, E_OK);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_003 start";
+    std::string volId = "vol-decrypt-test";
+    std::string pazzword = "test123";
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeInfoMock->mountState_ = UNMOUNTED;
+    EXPECT_CALL(*volumeInfoMock, DoDecrypt(_, _)).WillOnce(Return(E_NOT_SUPPORT));
+    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    int32_t result = VolumeManager::Instance().Decrypt(volId, pazzword);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+    VolumeManager::Instance().volumes_.Erase(volId);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_001, TestSize.Level1)
+{
+    std::string volumeId = "vol-non-exist";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_NON_EXIST);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_002, TestSize.Level1)
+{
+    std::string diskId = "diskId-odd-capacity";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 10);
+    std::string volumeId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volumeId.empty());
+    
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().DestroyVolume(volumeId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003, TestSize.Level1)
+{
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    std::string volumeId = "vol-test-capacity";
+    VolumeManager::Instance().volumes_.Insert(volumeId, volumeInfoMock);
+    
+    EXPECT_CALL(*volumeInfoMock, DoGetOddCapacity(_, _, _)).WillOnce(Return(E_ERR));
+    
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_EQ(result, E_ERR);
+    
+    VolumeManager::Instance().volumes_.Erase(volumeId);
 }
 } // STORAGE_DAEMON
 } // OHOS

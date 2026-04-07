@@ -63,7 +63,7 @@ int32_t StorageDaemonCommunication::Connect()
         deathRecipient_ = new (std::nothrow) SdDeathRecipient();
         if (!deathRecipient_) {
             LOGE("StorageDaemonCommunication::Connect failed to create death recipient");
-            return E_DEATHRECIPIENT_IS_NULLPTR;
+            return E_DEATH_RECIPIENT_IS_NULLPTR;
         }
 
         storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
@@ -632,7 +632,7 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t has
     return storageDaemon_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
-int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -1077,6 +1077,161 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
+}
+
+int32_t StorageDaemonCommunication::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::GetOddCapacity nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetOddCapacity(volumeId, totalSize, freeSize);
+}
+
+int32_t StorageDaemonCommunication::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Encrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Encrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Encrypt(volumeId, pazzword);
+}
+
+int32_t StorageDaemonCommunication::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    LOGI("StorageDaemonCommunication::GetCryptProgressById start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::GetCryptProgressById connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetCryptProgressById(volumeId, progress);
+}
+
+int32_t StorageDaemonCommunication::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    LOGI("StorageDaemonCommunication::GetCryptUuidById start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::GetCryptUuidById connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetCryptUuidById(volumeId, uuid);
+}
+
+int32_t StorageDaemonCommunication::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                           const std::string &pazzword,
+                                                           const std::string &recoverKey)
+{
+    LOGI("StorageDaemonCommunication::Encrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Encrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+}
+
+int32_t StorageDaemonCommunication::UpdateCryptPasswd(const std::string &volumeId,
+                                                      const std::string &pazzword,
+                                                      const std::string &newPazzword)
+{
+    LOGI("StorageDaemonCommunication::UpdateCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::UpdateCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+}
+
+int32_t StorageDaemonCommunication::ResetCryptPasswd(const std::string &volumeId,
+                                                     const std::string &recoverKey,
+                                                     const std::string &newPazzword)
+{
+    LOGI("StorageDaemonCommunication::ResetCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::ResetCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+}
+
+int32_t StorageDaemonCommunication::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::VerifyCryptPasswd start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::VerifyCryptPasswd connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->VerifyCryptPasswd(volumeId, pazzword);
+}
+
+int32_t StorageDaemonCommunication::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Unlock start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Unlock connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Unlock(volumeId, pazzword);
+}
+
+int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    LOGI("StorageDaemonCommunication::Decrypt start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Decrypt connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Decrypt(volumeId, pazzword);
 }
 } // namespace StorageManager
 } // namespace OHOS

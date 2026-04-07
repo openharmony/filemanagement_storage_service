@@ -163,7 +163,7 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     return KeyManagerMock::iKeyManagerMock_->UpdateCeEceSeceKeyContext(userId, type);
 }
 
-int32_t KeyManager::InActiveUserKey(unsigned int user)
+int KeyManager::InActiveUserKey(unsigned int user)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;
@@ -201,7 +201,7 @@ int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string
     return KeyManagerMock::iKeyManagerMock_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
-int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;
@@ -212,18 +212,47 @@ int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->CreateRecoverKey(userId, userType, token, secret);
 }
+
+#ifdef EL5_FILEKEY_MANAGER
+int KeyManager::UnregisterUeceActivationCallback()
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UnregisterUeceActivationCallback();
+}
+
+int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->RegisterUeceActivationCallback(ueceCallback);
+}
+#endif
 
 int32_t KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->SetRecoverKey(key);
 }
 
+#if defined(USER_CRYPTO_MANAGER) && defined(PC_USER_MANAGER)
 int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
+#endif
 
 int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     const std::vector<FileList> &vec)
@@ -313,6 +342,30 @@ bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
         return E_OK;
     }
     return KeyManagerMock::iKeyManagerMock_->IsDirRecursivelyEmpty(dirPath);
+}
+
+bool KeyManager::GetSecureUid(uint32_t userId, uint64_t &secureUid)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return false;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetSecureUid(userId, secureUid);
+}
+
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuthByKeyType(user, userTokenSecret, keyType);
+}
+
+int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateKeyContextByKeyType(userId, keyType);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

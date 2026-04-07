@@ -88,6 +88,22 @@ HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_Start_Stop_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "NetlinkHandlerTest_Start_Stop_001 end";
 }
 
+/**
+ * @tc.name: NetlinkHandlerTest_Stop_002
+ * @tc.desc: Verify Stop function returns E_ERR for invalid socket handler.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_Stop_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Stop_002 start";
+    int32_t socket = -1;
+    std::shared_ptr<NetlinkHandler> handler = std::make_shared<NetlinkHandler>(socket);
+    int32_t ret = handler->Stop();
+    EXPECT_TRUE(ret != E_ERR);
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_Stop_002 end";
+}
+
 int32_t StartSocket(int32_t& socketFd)
 {
     struct sockaddr_nl addr;
@@ -125,3 +141,4 @@ int32_t StartSocket(int32_t& socketFd)
 }
 } // STORAGE_DAEMON
 } // OHOS
+

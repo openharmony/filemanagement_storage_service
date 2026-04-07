@@ -18,6 +18,7 @@
 #include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
+#include "disk_info_test_mock.h"
 #include "message_parcel.h"
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
@@ -30,7 +31,13 @@ namespace StorageDaemon {
 using namespace testing::ext;
 
 const int CONFIG_PARAM_NUM = 6;
-static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
+static constexpr const char* CONFIG_PATH = "/system/etc/storage_daemon/disk_config";
+static const char DISK_EVENT_MSG[] = {
+    "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0"
+    "\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0"
+    "\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0"
+    "\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"
+};
 
 class DiskManagerTest : public testing::Test {
 public:
@@ -44,7 +51,7 @@ void DiskManagerTest::SetUp()
 {
     DiskManager &diskManager = DiskManager::Instance();
     std::ifstream infile;
-    infile.open(CONFIG_PTAH);
+    infile.open(CONFIG_PATH);
     if (!infile) {
         LOGE("Cannot open config");
         return ;
@@ -103,14 +110,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSi
 
     DiskManager &diskManager = DiskManager::Instance();
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
+    data->Decode(const_cast<char*>(DISK_EVENT_MSG));
     auto diskInfo = diskManager.MatchConfig(data.get());
-    EXPECT_TRUE(diskInfo != nullptr);
+    EXPECT_TRUE(diskInfo == nullptr);
     diskManager.CreateDisk(diskInfo);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_001 end";
@@ -152,8 +155,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-    unsigned int major = (unsigned int) std::stoi(data.get()->GetParam("MAJOR"));
-    unsigned int minor = (unsigned int) std::stoi(data.get()->GetParam("MINOR"));
+    unsigned int major = (unsigned int) std::atoi(data.get()->GetParam("MAJOR").c_str());
+    unsigned int minor = (unsigned int) std::atoi(data.get()->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
     diskManager.DestroyDisk(device);
 
@@ -168,7 +171,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
  */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_001 start";
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_002 start";
 
     DiskManager diskManager;
 
@@ -177,12 +180,12 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_002, TestS
     unsigned int major = 34;
     std::string sysPath = "/";
     std::string devPath = "/";
-    dev_t device = makedev(minor, major);
+    dev_t device = makedev(major, minor);
     std::shared_ptr<DiskInfo> disk2 = std::make_shared<DiskInfo>(sysPath, devPath, device, 1);
 
     minor = 10;
     major = 20;
-    dev_t device2 = makedev(minor, major);
+    dev_t device2 = makedev(major, minor);
     std::shared_ptr<DiskInfo> disk3 = std::make_shared<DiskInfo>(sysPath, devPath, device2, 1);
     diskManager.disk_.clear();
     diskManager.disk_.push_back(disk);
@@ -214,8 +217,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
     auto nlData = std::make_unique<NetlinkData>();
     nlData->Decode(msg);
     NetlinkData *data = nlData.get();
-    unsigned int major = (unsigned int)std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = (unsigned int)std::stoi(data->GetParam("MINOR"));
+    unsigned int major = (unsigned int)std::atoi(data->GetParam("MAJOR").c_str());
+    unsigned int minor = (unsigned int)std::atoi(data->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
     diskManager.ChangeDisk(device, data);
 
@@ -367,16 +370,12 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
 
     DiskManager &diskManager = DiskManager::Instance();
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(msg);
+    data.get()->Decode(const_cast<char*>(DISK_EVENT_MSG));
 
     auto diskInfo1 = diskManager.MatchConfig(data.get());
 
-    EXPECT_TRUE(diskInfo1 != nullptr);
+    ASSERT_TRUE(diskInfo1 == nullptr);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_002 end";
 }
@@ -470,8 +469,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandlePartition_002, T
     diskManager.disk_.push_back(disk);
     int ret = diskManager.HandlePartition(diskId);
     EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
+

@@ -33,6 +33,7 @@ const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
 constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
 constexpr uint64_t MAX_PLAUSIBLE_STORAGE_SIZE = 1ULL * 1024 * 1024 * 1024 * 1024 * 1024;
+constexpr int32_t EVENT_FAIL_WAIT_MS = 1000 * 20;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
@@ -59,6 +60,14 @@ MtpFsDevice::~MtpFsDevice()
     LOGI("MtpFsDevice Destructor.");
     eventFlag_.store(false);
     SetTransferValue(false);
+    {
+        std::lock_guard<std::mutex> lock(eventMutex_);
+        eventCon_.notify_all();
+    }
+    if (eventThread_.joinable()) {
+        eventThread_.join();
+    }
+    
     Disconnect();
 }
 
@@ -212,13 +221,19 @@ void MtpFsDevice::ReadEvent()
         std::unique_lock<std::mutex> lock(eventMutex_);
         eventCon_.wait(lock, [this] { return !isTransferring_.load() || !eventFlag_.load(); });
         if (!eventFlag_.load()) {
+            LOGI("eventFlag_ is false, exit");
             break;
         }
         if (g_isEventDone.load()) {
             LOGI("Registering MTP event callback");
+            if (device_ == nullptr) {
+                LOGE("device_ is nullptr, exit");
+                break;
+            }
             int ret = LIBMTP_Read_Event_Async(device_, MtpEventCallback, nullptr);
             if (ret != 0) {
                 LOGE("Event registration failed, ret=%{public}d", ret);
+                usleep(EVENT_FAIL_WAIT_MS);
                 continue;
             }
             g_isEventDone.store(false);
@@ -230,7 +245,7 @@ void MtpFsDevice::ReadEvent()
 
 void MtpFsDevice::InitDevice()
 {
-    std::thread([this]() { ReadEvent(); }).detach();
+    eventThread_ = std::thread([this]() { ReadEvent(); });
 }
 
 bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)

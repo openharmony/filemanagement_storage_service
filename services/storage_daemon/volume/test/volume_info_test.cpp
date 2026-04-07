@@ -948,5 +948,281 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_002
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_SetVolumeDescription_002 end";
 }
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_DestroyCrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_DestroyCrypt_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoDestroyCrypt(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.DestroyCrypt("vol-1-1");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_DestroyCrypt_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_DestroyCrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_DestroyCrypt_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoDestroyCrypt(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.DestroyCrypt("vol-1-2");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_DestroyCrypt_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Encrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoEncrypt(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).
+        Times(2).WillRepeatedly(testing::Return(E_OK));
+    auto ret = mock.Encrypt("vol-1-3", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(mock.GetState() == ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Encrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoEncrypt(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Encrypt("vol-1-4", "test123");
+    EXPECT_TRUE(ret == E_ERR);
+    EXPECT_TRUE(mock.GetState() == UNMOUNTED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Encrypt_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_003 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoEncrypt(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).
+        Times(2).WillOnce(testing::Return(E_SERVICE_IS_NULLPTR)).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Encrypt("vol-1-21", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(mock.GetState() == ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_003 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Encrypt_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_004 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoEncrypt(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).
+        Times(2).WillOnce(testing::Return(E_OK)).WillOnce(testing::Return(E_SERVICE_IS_NULLPTR));
+    auto ret = mock.Encrypt("vol-1-22", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(mock.GetState() == ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_004 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Encrypt_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_005 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoEncrypt(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).
+        Times(2).WillRepeatedly(testing::Return(E_SERVICE_IS_NULLPTR));
+    auto ret = mock.Encrypt("vol-1-23", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(mock.GetState() == ENCRYPTED_AND_LOCKED);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Encrypt_005 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetCryptProgressById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptProgressById_001 start";
+    VolumeInfoMock mock;
+    int32_t progress = 0;
+    EXPECT_CALL(mock, DoGetCryptProgressById(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.GetCryptProgressById("vol-1-5", progress);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptProgressById_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetCryptProgressById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptProgressById_002 start";
+    VolumeInfoMock mock;
+    int32_t progress = 0;
+    EXPECT_CALL(mock, DoGetCryptProgressById(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.GetCryptProgressById("vol-1-6", progress);
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptProgressById_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetCryptUuidById_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptUuidById_001 start";
+    VolumeInfoMock mock;
+    std::string uuid;
+    EXPECT_CALL(mock, DoGetCryptUuidById(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.GetCryptUuidById("vol-1-7", uuid);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptUuidById_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetCryptUuidById_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptUuidById_002 start";
+    VolumeInfoMock mock;
+    std::string uuid;
+    EXPECT_CALL(mock, DoGetCryptUuidById(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.GetCryptUuidById("vol-1-8", uuid);
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetCryptUuidById_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoBindRecoverKeyToPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.BindRecoverKeyToPasswd("vol-1-9", "test123", "recover456");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoBindRecoverKeyToPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.BindRecoverKeyToPasswd("vol-1-10", "test123", "recover456");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_BindRecoverKeyToPasswd_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_UpdateCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_UpdateCryptPasswd_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoUpdateCryptPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.UpdateCryptPasswd("vol-1-11", "test123", "new456");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_UpdateCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_UpdateCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_UpdateCryptPasswd_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoUpdateCryptPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.UpdateCryptPasswd("vol-1-12", "test123", "new456");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_UpdateCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_ResetCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_ResetCryptPasswd_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoResetCryptPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.ResetCryptPasswd("vol-1-13", "recover456", "new789");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_ResetCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_ResetCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_ResetCryptPasswd_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoResetCryptPasswd(_, _, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.ResetCryptPasswd("vol-1-14", "recover456", "new789");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_ResetCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyCryptPasswd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyCryptPasswd_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoVerifyCryptPasswd(_, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.VerifyCryptPasswd("vol-1-15", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyCryptPasswd_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyCryptPasswd_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyCryptPasswd_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoVerifyCryptPasswd(_, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.VerifyCryptPasswd("vol-1-16", "test123");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyCryptPasswd_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Unlock_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Unlock_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoUnlock(_, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Unlock("vol-1-17", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Unlock_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Unlock_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Unlock_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoUnlock(_, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.Unlock("vol-1-18", "test123");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Unlock_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Decrypt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Decrypt_001 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoDecrypt(_, _)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Decrypt("vol-1-19", "test123");
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Decrypt_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Decrypt_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Decrypt_002 start";
+    VolumeInfoMock mock;
+    EXPECT_CALL(mock, DoDecrypt(_, _)).Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.Decrypt("vol-1-20", "test123");
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Decrypt_002 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOddCapacity_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_001 start";
+    VolumeInfoMock mock;
+    std::string volumeId = "vol-1-24";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    EXPECT_CALL(mock, DoGetOddCapacity(testing::_, testing::_, testing::_))
+        .Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_001 end";
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOddCapacity_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_002 start";
+    VolumeInfoMock mock;
+    std::string volumeId = "vol-1-25";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    EXPECT_CALL(mock, DoGetOddCapacity(testing::_, testing::_, testing::_))
+        .Times(1).WillOnce(testing::Return(E_ERR));
+    auto ret = mock.GetOddCapacity(volumeId, totalSize, freeSize);
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_002 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

@@ -40,6 +40,7 @@ public:
     virtual int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats);
     virtual int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
     virtual int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
+    virtual int32_t GetSystemDataSize(int64_t &systemDataSize);
     static inline std::shared_ptr<IStorageStatusManagerMock> storageStatusManager = nullptr;
 };
 
@@ -56,6 +57,7 @@ public:
     MOCK_METHOD(int32_t, GetAllExtBundleStats, (uint32_t, std::vector<ExtBundleStats> &));
     MOCK_METHOD(int32_t, GetBundleNameAndUid, (int32_t, (std::map<int32_t, std::string> &)));
     MOCK_METHOD(int32_t, DelBundleExtStats, (uint32_t, const std::string &));
+    MOCK_METHOD(int32_t, GetSystemDataSize, (int64_t &));
 };
 } // StorageManager
 } // OHOS

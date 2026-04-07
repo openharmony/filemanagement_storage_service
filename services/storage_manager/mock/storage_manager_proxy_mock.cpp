@@ -224,6 +224,21 @@ int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::GetTotalInodes(int64_t &totalInodes)
+{
+    return E_OK;
+}
+ 
+int32_t StorageManagerProxy::GetFreeInodes(int64_t &freeInodes)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetCurrentBundleInodes(int64_t &curInodes)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 {
     return E_OK;
@@ -446,6 +461,62 @@ int32_t StorageManagerProxy::ClearSecondMountPoint(uint32_t userId, const std::s
 }
 
 int32_t StorageManagerProxy::GetSystemDataSize(int64_t &systemDataSize)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                    const std::string &pazzword,
+                                                    const std::string &recoverKey)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UpdateCryptPasswd(const std::string &volumeId,
+                                               const std::string &pazzword,
+                                               const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::ResetCryptPasswd(const std::string &volumeId,
+                                              const std::string &recoverKey,
+                                              const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;
 }

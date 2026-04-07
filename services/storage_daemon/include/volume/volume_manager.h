@@ -26,17 +26,35 @@ public:
     virtual ~VolumeManager() = default;
     static VolumeManager &Instance();
 
-    std::string CreateVolume(const std::string diskId, dev_t device, bool isUserdata);
-    int32_t DestroyVolume(const std::string volId);
+    std::string CreateVolume(const std::string &diskId, dev_t device, bool isUserdata);
+    int32_t DestroyVolume(const std::string &volId);
 
-    int32_t Check(const std::string volId);
-    int32_t Mount(const std::string volId, uint32_t flags);
-    int32_t UMount(const std::string volId);
-    int32_t MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd);
-    int32_t TryToFix(const std::string volId, uint32_t flags);
-    int32_t Format(const std::string volId, const std::string fsType);
-    int32_t SetVolumeDescription(const std::string volId, const std::string description);
+    int32_t Check(const std::string &volId);
+    int32_t Mount(const std::string &volId, uint32_t flags);
+    int32_t UMount(const std::string &volId);
+    int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
+    int32_t TryToFix(const std::string &volId, uint32_t flags);
+    int32_t Format(const std::string &volId, const std::string &fsType);
+    int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
+
+    //disk crypt api
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid);
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey);
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                            const std::string &pazzword,
+                            const std::string &newPazzword);
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                            const std::string &recoverKey,
+                            const std::string &newPazzword);
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword);
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
 private:
     VolumeManager() = default;
@@ -45,9 +63,9 @@ private:
     bool IsMtpDeviceInUse(const std::string &diskPath);
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 
-    std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
-    int32_t CreateMountUsbFusePath(std::string fsUuid);
-    int32_t ReadVolumeUuid(std::string volumeId, std::string &fsUuid);
+    std::shared_ptr<VolumeInfo> GetVolume(const std::string &volId);
+    int32_t CreateMountUsbFusePath(std::string &fsUuid);
+    int32_t ReadVolumeUuid(const std::string &volumeId, std::string &fsUuid);
     std::string mountUsbFusePath_;
 };
 } // STORAGE_DAEMON

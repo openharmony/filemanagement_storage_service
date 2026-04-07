@@ -34,14 +34,18 @@ enum VolumeState {
     DAMAGED,
     FUSE_REMOVED,
     DAMAGED_MOUNTED,
+    ENCRYPTING,
+    ENCRYPTED_AND_LOCKED,
+    ENCRYPTED_AND_UNLOCKED,
+    DECRYPTING,
 };
 
 class VolumeInfoStr : public Parcelable {
 public:
     VolumeInfoStr() {};
     
-    VolumeInfoStr(std::string volumeId_, std::string fsTypeStr_, std::string fsUuid_,
-                  std::string path_, std::string description_, bool isDamaged_)
+    VolumeInfoStr(const std::string &volumeId_, const std::string &fsTypeStr_, const std::string &fsUuid_,
+                  const std::string &path_, const std::string &description_, bool isDamaged_)
         : volumeId(volumeId_),
           fsTypeStr(fsTypeStr_),
           fsUuid(fsUuid_),
@@ -63,14 +67,15 @@ public:
 class VolumeCore : public Parcelable {
 public:
     VolumeCore();
-    VolumeCore(std::string id, int32_t type, std::string diskId);
-    VolumeCore(std::string id, int32_t type, std::string diskId, int32_t state);
-    VolumeCore(std::string id, int32_t type, std::string diskId, int32_t state, std::string fsType);
+    VolumeCore(const std::string &id, int32_t type, const std::string &diskId);
+    VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state);
+    VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state,
+               const std::string &fsType);
 
     std::string GetId() const;
-    int32_t GetType();
-    std::string GetDiskId();
-    int32_t GetState();
+    int32_t GetType() const;
+    std::string GetDiskId() const;
+    int32_t GetState() const;
     std::string GetFsType() const;
     void SetState(int32_t state);
 
@@ -84,7 +89,7 @@ private:
     bool errorFlag_ = false;
     std::string fsType_;
 };
-} // StorageManager
-} // OHOS
+} // namespace StorageManager
+} // namespace OHOS
 
 #endif // OHOS_STORAGE_MANAGER_VOLUME_CORE_H

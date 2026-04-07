@@ -43,18 +43,29 @@ public:
     virtual int GenerateUserKeyByType(unsigned int user, KeyType type,
         const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret) = 0;
     virtual int NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey) = 0;
-    virtual int32_t InActiveUserKey(unsigned int user) = 0;
+    virtual int InActiveUserKey(unsigned int user) = 0;
     virtual int32_t LockUserScreen(uint32_t user) = 0;
     virtual int32_t UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
         const std::vector<uint8_t> &secret) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet) = 0;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) = 0;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) = 0;
     virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey) = 0;
     virtual int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount) = 0;
     virtual int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
         StorageService::EncryptionLevel level) = 0;
     virtual bool IsDirRecursivelyEmpty(const char* dirPath) = 0;
-
+    virtual bool GetSecureUid(uint32_t userId, uint64_t &secureUid) = 0;
+    virtual int UpdateUserAuthByKeyType(unsigned int user,
+        struct UserTokenSecret &userTokenSecret, KeyType keyType) = 0;
+    virtual int UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType) = 0;
+    virtual int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+        const std::vector<uint8_t> &secret) = 0;
+    virtual int SetRecoverKey(const std::vector<uint8_t> &key) = 0;
+    virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) = 0;
+#ifdef EL5_FILEKEY_MANAGER
+    virtual int UnregisterUeceActivationCallback() = 0;
+    virtual int RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback) = 0;
+#endif
 public:
     static inline std::shared_ptr<IKeyManagerMock> iKeyManagerMock_ = nullptr;
 };
@@ -78,15 +89,24 @@ public:
     MOCK_METHOD(int, GenerateUserKeyByType, (unsigned int, KeyType,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD(int, NotifyUeceActivation, (uint32_t, int32_t, bool));
-    MOCK_METHOD(int32_t, InActiveUserKey, (unsigned int));
+    MOCK_METHOD(int, InActiveUserKey, (unsigned int));
     MOCK_METHOD(int32_t, LockUserScreen, (uint32_t));
     MOCK_METHOD(int32_t, UnlockUserScreen, (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD(int32_t, GenerateAppkey, (uint32_t, uint32_t, std::string &, bool));
-    MOCK_METHOD(int32_t, DeleteAppkey, (uint32_t, const std::string));
+    MOCK_METHOD(int32_t, DeleteAppkey, (uint32_t, const std::string &));
     MOCK_METHOD(int32_t, UpdateKeyContext, (uint32_t, bool));
     MOCK_METHOD(int, GetFileEncryptStatus, (uint32_t, bool &, bool));
     MOCK_METHOD(int32_t, SetDirEncryptionPolicy, (uint32_t, const std::string &, StorageService::EncryptionLevel));
     MOCK_METHOD(bool, IsDirRecursivelyEmpty, (const char *));
+    MOCK_METHOD(bool, GetSecureUid, (uint32_t, uint64_t &));
+    MOCK_METHOD(int, UpdateUserAuthByKeyType, (unsigned int, struct UserTokenSecret &, KeyType));
+    MOCK_METHOD(int, UpdateKeyContextByKeyType, (uint32_t, KeyType));
+    MOCK_METHOD(int, SetRecoverKey, (const std::vector<uint8_t> &));
+    MOCK_METHOD(int, CreateRecoverKey, (uint32_t, uint32_t, const std::vector<uint8_t> &,
+        const std::vector<uint8_t> &));
+    MOCK_METHOD(int, UnregisterUeceActivationCallback, ());
+    MOCK_METHOD(int, RegisterUeceActivationCallback, (const sptr<StorageManager::IUeceActivationCallback> &));
+    MOCK_METHOD(int32_t, ResetSecretWithRecoveryKey, (uint32_t, uint32_t, const std::vector<uint8_t> &));
 };
 }
 }

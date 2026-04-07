@@ -41,7 +41,7 @@ constexpr int32_t ONE_MB = 1024 * 1024;
 constexpr int32_t ONE_GB = 1024 * 1024 * 1024;
 constexpr int32_t CONST_NUM_TWO = 2;
 constexpr int32_t CONST_NUM_ONE_HUNDRED = 100;
-constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
+constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
@@ -97,7 +97,7 @@ void StorageMonitorService::StartStorageMonitorTask()
     std::unique_lock<std::mutex> lock(eventMutex_);
     if (eventHandler_ == nullptr) {
         eventThread_ = std::thread(&StorageMonitorService::StartEventHandler, this);
-        eventCon_.wait_for(lock, std::chrono::seconds(WAIT_THREAD_TIMEOUT_MS), [this] {
+        eventCon_.wait_for(lock, std::chrono::milliseconds(WAIT_THREAD_TIMEOUT_MS), [this] {
             return eventHandler_ != nullptr;
         });
     }
@@ -445,27 +445,28 @@ void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalS
 {
     LOGI("Device storage or inode not enough, start to check and notify, freeSize=%{public}" PRId64
          ", freeInode=%{public}" PRId64, freeSize, freeInode);
-    std::string freeSizeStr = std::to_string(freeSize);
-    std::string totalSizeStr = std::to_string(totalSize);
-    std::string freeInodeStr = std::to_string(freeInode);
-    std::string totalInodeStr = std::to_string(totalInode);
-    std::string storageUsage = "storage usage not enough event notify freeSize = " + freeSizeStr + ", totalSize = " +
-                               totalSizeStr + ", freeInode = " + freeInodeStr + ", totalInode = " + totalInodeStr;
+    std::stringstream storageUsage;
+    storageUsage << "storage usage not enough event notify freeSize = " << freeSize
+                 << ", totalSize = " << totalSize
+                 << ", freeInode = " << freeInode
+                 << ", totalInode = " << totalInode;
     bool isCleanSpace = true;
     if (freeSize < thresholds["notify_l"] || freeInode < inodeThresholds_["notify_l"]) {
         isCleanSpace = freeSize < thresholds["notify_l"] ? true : false;
         EventNotifyFreqHandlerForLow(isCleanSpace, freeInode, totalInode);
-        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_l"]) + ", freeInode < " +
-                        std::to_string(inodeThresholds_["notify_l"]) + ", success notify event";
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_LOW, storageUsage);
+        storageUsage << ", freeSize < " << thresholds["notify_l"]
+                     << ", freeInode < " << inodeThresholds_["notify_l"]
+                     << ", success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_LOW, storageUsage.str());
         return;
     }
     if (freeSize < thresholds["notify_m"] || freeInode < inodeThresholds_["notify_m"]) {
         isCleanSpace = freeSize < thresholds["notify_m"] ? true : false;
         EventNotifyFreqHandlerForMedium(isCleanSpace, freeInode, totalInode);
-        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_m"]) + ", freeInode < " +
-                        std::to_string(inodeThresholds_["notify_m"]) + ", success notify event";
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM, storageUsage);
+        storageUsage << ", freeSize < " << thresholds["notify_m"]
+                     << ", freeInode < " << inodeThresholds_["notify_m"]
+                     << ", success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM, storageUsage.str());
         return;
     }
     isCleanSpace = freeSize < thresholds["notify_h"] ? true : false;

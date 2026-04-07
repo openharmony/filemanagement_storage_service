@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,9 @@ ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
         return 0;
     }
     if (strcmp(name, "user.getfriendlyname") == 0 && g_cnt == CNT_TWO) {
+        for (int i = 0; i < MTP_MAX_LEN; i++) {
+            static_cast<char *>(value)[i] = 'A';
+        }
         return MTP_MAX_LEN;
     }
     return 0;
@@ -690,6 +693,92 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0000, tes
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetAllVolumes_0001
+ * @tc.name: Volume_manager_service_GetAllVolumes_0001
+ * @tc.desc: Test function of GetAllVolumes interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetAllVolumes_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+    std::vector<VolumeExternal> result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 0);
+
+    std::string volumeId = "vol-8-1";
+    std::string diskId = "disk-8-1";
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId)));
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1)));
+    result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 1);
+
+    volumeId = "vol-11-1";
+    diskId = "disk-11-1";
+    std::shared_ptr<VolumeExternal> vc = make_shared<VolumeExternal>(VolumeCore(volumeId, UDF, diskId));
+    EXPECT_NE(vc, nullptr);
+    vc->SetFsType(UDF);
+    vmService.volumeMap_.Insert(volumeId, vc);
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 2);
+
+    volumeId = "vol-11-2";
+    diskId = "disk-11-2";
+    std::shared_ptr<VolumeExternal> vc1 = make_shared<VolumeExternal>(VolumeCore(volumeId, UDF, diskId));
+    EXPECT_NE(vc1, nullptr);
+    vc1->SetFsType(ISO9660);
+    vmService.volumeMap_.Insert(volumeId, vc1);
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 3);
+    vmService.volumeMap_.Clear();
+    dmService.diskMap_.Clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetAllVolumes_0002
+ * @tc.name: Volume_manager_service_GetAllVolumes_0002
+ * @tc.desc: Test function of GetAllVolumes interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetAllVolumes_0002";
+    auto &vmService = VolumeManagerService::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+
+    std::string volumeId = "vol-8-1";
+    std::string diskId = "disk-8-1";
+    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId)));
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1)));
+    std::vector<VolumeExternal> result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 1);
+
+    volumeId = "vol-11-1";
+    diskId = "disk-11-1";
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 2);
+
+    volumeId = "vol-11-2";
+    diskId = "disk-11-2";
+    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    result = vmService.GetAllVolumes();
+    EXPECT_EQ(result.size(), 3);
+    vmService.volumeMap_.Clear();
+    dmService.diskMap_.Clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0002";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0000
  * @tc.name: Volume_manager_service_GetVolumeByUuid_0000
  * @tc.desc: Test function of GetVolumeByUuid interface for SUCCESS.
@@ -1146,5 +1235,139 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0003, tes
     EXPECT_NE(result, E_OK);
     vmService.volumeMap_.Erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0003";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0001";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-1";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.Insert("vol-fuse", volumePtr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 7);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0001";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0002,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0002";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-1";
+    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, nullptr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 8);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0002";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0003,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0003";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-3";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    std::string diskId = "disk-1-6";
+    auto diskPtr = std::make_shared<Disk>();
+    diskPtr->flag_ = SD_FLAG;
+    volumePtr->diskId_ = diskId;
+    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0003";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0004,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0004";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-3";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    std::string diskId = "disk-1-6";
+    auto diskPtr = std::make_shared<Disk>();
+    diskPtr->flag_ = USB_FLAG;
+    volumePtr->diskId_ = diskId;
+    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0004";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0005,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0005";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-3";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    std::string diskId = "disk-1-6";
+    auto diskPtr = std::make_shared<Disk>();
+    diskPtr->flag_ = CD_FLAG;
+    volumePtr->diskId_ = diskId;
+    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0005";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeStateChanged_0006,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyEncryptVolumeStateChanged_0006";
+    auto &vmService =VolumeManagerService::GetInstance();
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "vol-fuse-3";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    std::string diskId = "disk-1-6";
+    auto diskPtr = std::make_shared<Disk>();
+    diskPtr->flag_ = 4;
+    volumePtr->diskId_ = diskId;
+    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0006";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_NotifyMtpMounted_0004
+ * @tc.name: Volume_manager_service_NotifyMtpMounted_0004
+ * @tc.desc: Test function of NotifyMtpMounted interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0004";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string id = "vol-1-7";
+    std::string path = "/mnt/data/external/1";
+    std::string desc = "description-1";
+    std::string uuid = "uuid-1";
+    std::string fsType = "mtpfs";
+    g_cnt = CNT_TWO;
+    vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
+
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(id);
+    std::string description(MTP_MAX_LEN, 'A');
+    EXPECT_EQ(volumePtr->description_, description);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0004";
 }
 } // namespace

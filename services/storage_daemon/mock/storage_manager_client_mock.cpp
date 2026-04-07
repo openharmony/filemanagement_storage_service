@@ -45,6 +45,11 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
     return 0;
 }
 
+int32_t StorageManagerClient::NotifyEncryptVolumeStateChanged(std::shared_ptr<VolumeInfo> volumeInfo)
+{
+    return 0;
+}
+
 int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state)
 {
     if (IStorageManagerClientMock::iStorageManagerClientMock_ == nullptr) {

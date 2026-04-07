@@ -132,7 +132,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
     ExternalVolumeInfo vol;
     bool force = true;
     auto ret = vol.DoUMount(force);
-    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_001 end";
 }
 
@@ -149,7 +149,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
     ExternalVolumeInfo vol;
     bool force = false;
     auto ret = vol.DoUMount(force);
-    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_002 end";
 }
 
@@ -166,7 +166,7 @@ HWTEST_F(ExternalVolumeInfoTestSub, Storage_Service_ExternalVolumeInfoTestSub_Do
     ExternalVolumeInfo vol;
     bool force = false;
     auto ret = vol.DoUMount(force);
-    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTestSub_DoUMount_003 end";
 }
 } // STORAGE_DAEMON

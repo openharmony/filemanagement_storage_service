@@ -205,10 +205,80 @@ ohos_shared_library("keymanager") {
   ]
 }
 
+ohos_shared_library("encryptedvolumemanager") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  relative_install_dir = "module/file"
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+
+  include_dirs = [
+    "include",
+    "${storage_service_path}/services/storage_manager/include",
+    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
+    "${storage_service_path}/services/common/include",
+  ]
+
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-Werror",
+    "-fPIC",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-Oz",
+    "-flto",
+  ]
+  ldflags = [ "-flto" ]
+
+  sources = [
+    "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/encrypted_volumemanager_n_exporter.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/encrypted_volumemanager_napi.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
+  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "file_api:filemgmt_libhilog",
+    "file_api:filemgmt_libn",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "napi:ace_napi",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+  if (storage_service_dfs_filemanager) {
+    defines += [ "HMDFS_FILE_MANAGER" ]
+    sources += [
+      "${storage_service_path}/services/storage_manager/kits_impl/src/napi_module_dfs_listener.cpp",
+      "${storage_service_path}/services/storage_manager/kits_impl/src/napi_module_dfs_service.cpp",
+    ]
+    external_deps += [ "dfs_service:distributed_file_daemon_kit_inner" ]
+  }
+}
+
 group("storage_js") {
   deps = [
     ":keymanager",
     ":storagestatistics",
     ":volumemanager",
+    ":encryptedvolumemanager",
   ]
 }

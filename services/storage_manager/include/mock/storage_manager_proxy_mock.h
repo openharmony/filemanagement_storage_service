@@ -39,6 +39,9 @@ public:
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
+    int32_t GetTotalInodes(int64_t &totalInodes) override;
+    int32_t GetFreeInodes(int64_t &freeInodes) override;
+    int32_t GetCurrentBundleInodes(int64_t &curInodes) override;
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string& type) override;
@@ -139,6 +142,23 @@ public:
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
+    //disk crypt api
+    int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &recoverKey) override;
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &newPazzword) override;
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                                const std::string &recoverKey,
+                                const std::string &newPazzword) override;
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

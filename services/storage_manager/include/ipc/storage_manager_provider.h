@@ -26,10 +26,6 @@ namespace StorageManager {
 class StorageManagerProvider : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManagerProvider)
 public:
-    const std::string PATH_INVALID_FLAG1 = "../";
-    const std::string PATH_INVALID_FLAG2 = "/..";
-    const uint32_t PATH_INVALID_FLAG_LEN = 3;
-    const char FILE_SEPARATOR_CHAR = '/';
     StorageManagerProvider(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate) {};
     ~StorageManagerProvider() = default;
 
@@ -51,6 +47,9 @@ public:
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
+    int32_t GetTotalInodes(int64_t &totalInodes) override;
+    int32_t GetFreeInodes(int64_t &freeInodes) override;
+    int32_t GetCurrentBundleInodes(int64_t &curInodes) override;
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
@@ -174,11 +173,28 @@ public:
     int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
-private:
+    //disk crypt api
+    int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey) override;
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &newPazzword) override;
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                                    const std::string &recoverKey,
+                                    const std::string &newPazzword) override;
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
+
+ private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
-    bool IsFilePathInvalid(const std::string &filePath);
     bool IsCalledByFileMgr();
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;

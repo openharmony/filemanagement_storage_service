@@ -34,6 +34,7 @@
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager_service.h"
 #include "volume/volume_manager_service.h"
+#include "volume/encrypted_volume_manager_service.h"
 #endif
 #include "scan/storage_manager_scan.h"
 #include "ipc/storage_manager_provider.h"
@@ -75,6 +76,8 @@ const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER"
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
+const std::string PERMISSION_ENCRYPT_VOLUME_MANAGER = "ohos.permission.ENCRYPT_VOLUME_MANAGER";
+
 bool CheckClientPermission(const std::string &permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -88,7 +91,7 @@ bool CheckClientPermission(const std::string &permissionStr)
     }
 
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGD("StorageMangaer permissionCheck pass!");
+        LOGD("StorageManager permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
@@ -111,7 +114,7 @@ bool CheckClientPermissionForCrypt(const std::string &permissionStr)
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller, permissionStr);
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGD("StorageMangaer permissionCheck pass!");
+        LOGD("StorageManager permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
@@ -122,7 +125,11 @@ bool CheckClientPermissionForShareFile()
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo nativeInfo;
-    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+    int32_t ret = Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+    if (ret != E_OK) {
+        LOGE("CheckClientPermissionForShareFile GetNativeTokenInfo failed, ret=%{public}d", ret);
+        return false;
+    }
 
     auto uid = IPCSkeleton::GetCallingUid();
     if (nativeInfo.processName != PROCESS_NAME_FOUNDATION || uid != FOUNDATION_UID) {
@@ -159,6 +166,7 @@ void StorageManagerProvider::OnStart()
     (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     StorageMonitorService::GetInstance().StartStorageMonitorTask();
+    StorageManagerScan::GetInstance().InitEventHandler();
 #endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
@@ -213,6 +221,14 @@ OHOS::StorageManager::VolumeState UintToState(uint32_t state)
             return OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED;
         case DAMAGED:
             return OHOS::StorageManager::VolumeState::DAMAGED;
+        case ENCRYPTING:
+            return OHOS::StorageManager::VolumeState::ENCRYPTING;
+        case ENCRYPTED_AND_LOCKED:
+            return OHOS::StorageManager::VolumeState::ENCRYPTED_AND_LOCKED;
+        case ENCRYPTED_AND_UNLOCKED:
+            return OHOS::StorageManager::VolumeState::ENCRYPTED_AND_UNLOCKED;
+        case DECRYPTING:
+            return OHOS::StorageManager::VolumeState::DECRYPTING;
         default:
             return OHOS::StorageManager::VolumeState::UNMOUNTED;
     }
@@ -220,7 +236,8 @@ OHOS::StorageManager::VolumeState UintToState(uint32_t state)
 
 int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
 {
-    StorageRadar::ReportFucBehavior("PrepareAddUser", userId, "PrepareAddUser Begin", E_OK);
+    std::string message = "PrepareAddUser Begin, flags:" + std::to_string(flags);
+    StorageRadar::ReportFucBehavior("PrepareAddUser", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
@@ -242,7 +259,8 @@ int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
 
 int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
 {
-    StorageRadar::ReportFucBehavior("RemoveUser", userId, "RemoveUser Begin", E_OK);
+    std::string message = "RemoveUser Begin, flags:" + std::to_string(flags);
+    StorageRadar::ReportFucBehavior("RemoveUser", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
@@ -405,7 +423,9 @@ int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo>
 
 int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t level)
 {
-    StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy Begin", E_OK);
+    std::string message =
+        "SetDirEncryptionPolicy Begin, dirPath: " + GetAnonyString(dirPath) + " level: " + std::to_string(level);
+    StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, message, E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -478,6 +498,51 @@ int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
 #endif
 }
 
+int32_t StorageManagerProvider::GetTotalInodes(int64_t &totalInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetTotalInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalInodes(totalInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+ 
+int32_t StorageManagerProvider::GetFreeInodes(int64_t &freeInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetFreeInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeInodes(freeInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCurrentBundleInodes(int64_t &curInodes)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    LOGI("StorageManagerProvider::GetCurrentBundleInodes start");
+    int32_t err = StorageTotalStatusService::GetInstance().GetCurrentBundleInodes(curInodes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetCurrentBundleInodes", DEFAULT_USERID, err,
+            "setting");
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t StorageManagerProvider::GetSystemDataSize(int64_t &systemDataSize)
 {
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize Begin", E_OK);
@@ -531,7 +596,12 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManagerProvider::GetUserStorageStats start");
-    int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    err = StorageStatusManager::GetInstance().GetUserStorageStats(userId, storageStats);
     StorageRadar::ReportFucBehavior("GetUserStorageStats", userId, "GetUserStorageStats End", err);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusManager::GetUserStorageStats", DEFAULT_USERID, err,
@@ -605,7 +675,8 @@ int32_t StorageManagerProvider::NotifyVolumeDamaged(const VolumeInfoStr &volumeI
 
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)
 {
-    StorageRadar::ReportFucBehavior("NotifyVolumeStateChanged", DEFAULT_USERID, "NotifyVolumeStateChanged Begin", E_OK);
+    std::string message = "NotifyVolumeStateChanged Begin, volumeId:" + volumeId + ", state:" + std::to_string(state);
+    StorageRadar::ReportFucBehavior("NotifyVolumeStateChanged", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -620,7 +691,8 @@ int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volu
 
 int32_t StorageManagerProvider::Mount(const std::string &volumeId)
 {
-    StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, "Mount Begin", E_OK);
+    std::string message = "Mount Begin, volumeId:" + volumeId;
+    StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -639,7 +711,8 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
 
 int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
 {
-    StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, "Unmount Begin", E_OK);
+    std::string message = "Unmount Begin, volumeId:" + volumeId;
+    StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -658,14 +731,12 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
 
 int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
 {
-    StorageRadar::ReportFucBehavior("TryToFix", DEFAULT_USERID, "TryToFix Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::TryToFix start");
     int result = VolumeManagerService::GetInstance().TryToFix(volumeId);
-    StorageRadar::ReportFucBehavior("TryToFix", DEFAULT_USERID, "TryToFix End", result);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
     }
@@ -683,6 +754,7 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetAllVolumes start");
     vecOfVol = VolumeManagerService::GetInstance().GetAllVolumes();
+    LOGI("StorageManagerProvider::GetAllVolumes end, size:%{public}zu", vecOfVol.size());
 #endif
     return E_OK;
 }
@@ -713,6 +785,7 @@ int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
     DiskManagerService& diskManager = DiskManagerService::GetInstance();
     diskManager.OnDiskDestroyed(diskId);
     StorageRadar::ReportFucBehavior("NotifyDiskDestroyed", DEFAULT_USERID, "NotifyDiskDestroyed End", E_OK);
+    VolumeManagerService::GetInstance().SetUsbDescription();
 #endif
     return E_OK;
 }
@@ -895,7 +968,10 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
                                                const std::vector<uint8_t> &oldSecret,
                                                const std::vector<uint8_t> &newSecret)
 {
-    StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, "UpdateUserAuth Begin", E_OK);
+    std::string message = "UpdateUserAuth Begin, secureUid: " + GetAnonyString(std::to_string(secureUid))
+        + ", token size:" + std::to_string(token.size()) + ", oldSecret size: " + std::to_string(oldSecret.size())
+        + ", newSecret size: " + std::to_string(newSecret.size());
+    StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -947,7 +1023,9 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
                                               const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
-    StorageRadar::ReportFucBehavior("ActiveUserKey", userId, "ActiveUserKey Begin", E_OK);
+    std::string message = "ActiveUserKey Begin, token size: " + std::to_string(token.size()) +
+                          ", secret size: " + std::to_string(secret.size());
+    StorageRadar::ReportFucBehavior("ActiveUserKey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
@@ -1011,7 +1089,6 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
 
 int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
 {
-    StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen Begin", E_OK);
     std::string bundleName;
     int32_t uid = IPCSkeleton::GetCallingUid();
     auto bundleMgr = BundleMgrConnector::GetInstance().GetBundleMgrProxy();
@@ -1045,29 +1122,10 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->LockUserScreen(userId);
-    StorageRadar::ReportFucBehavior("LockUserScreen", userId, "LockUserScreen End", err);
     return err;
 #else
     return E_OK;
 #endif
-}
-
-bool StorageManagerProvider::IsFilePathInvalid(const std::string &filePath)
-{
-    size_t pos = filePath.find(PATH_INVALID_FLAG1);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("Relative path is not allowed, path contain ../");
-            return true;
-        }
-        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
-    }
-    pos = filePath.rfind(PATH_INVALID_FLAG2);
-    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("Relative path is not allowed, path tail is /..");
-        return true;
-    }
-    return false;
 }
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
@@ -1086,7 +1144,9 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
-    StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, "GetFileEncryptStatus End", err);
+    std::string message = "GetFileEncryptStatus End, isEncrypted:" + std::to_string(isEncrypted) +
+                          ", needCheckDirMount" + std::to_string(needCheckDirMount);
+    StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, message, err);
     return err;
 #else
     return E_OK;
@@ -1095,7 +1155,6 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
 
 int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
-    StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, "GetUserNeedActiveStatus Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1110,7 +1169,6 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetUserNeedActiveStatus(userId, needActive);
-    StorageRadar::ReportFucBehavior("GetUserNeedActiveStatus", userId, "GetUserNeedActiveStatus End", err);
     return err;
 #else
     return E_OK;
@@ -1121,7 +1179,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
                                                  const std::vector<uint8_t> &token,
                                                  const std::vector<uint8_t> &secret)
 {
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen Begin", E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1135,7 +1192,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UnlockUserScreen(userId, token, secret);
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen End", err);
     return err;
 #else
     return E_OK;
@@ -1144,7 +1200,6 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
-    StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, "GetLockScreenStatus Begin", E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -1159,7 +1214,6 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
-    StorageRadar::ReportFucBehavior("GetLockScreenStatus", userId, "GetLockScreenStatus End", err);
     return err;
 #else
     return E_OK;
@@ -1168,7 +1222,9 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
 
 int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
-    StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "GenerateAppkey Begin", E_OK);
+    std::string message = "GenerateAppkey Begin, hashId: " + GetAnonyString(std::to_string(hashId)) +
+                          ", keyId: " + GetAnonyString(keyId) + ", needReSet:" + std::to_string(needReSet);
+    StorageRadar::ReportFucBehavior("GenerateAppkey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1191,7 +1247,8 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
 
 int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
 {
-    StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, "DeleteAppkey Begin", E_OK);
+    std::string message = "DeleteAppkey Begin, keyId: " + GetAnonyString(keyId);
+    StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1226,7 +1283,10 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
                                                  const std::vector<uint8_t> &token,
                                                  const std::vector<uint8_t> &secret)
 {
-    StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, "CreateRecoverKey Begin", E_OK);
+    std::string message = "CreateRecoverKey Begin, userType:" + std::to_string(userType) +
+                          ", token size: " + std::to_string(token.size()) +
+                          ", secret size: " + std::to_string(secret.size());
+    StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1281,7 +1341,8 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 
 int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
-    StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, "UpdateKeyContext Begin", E_OK);
+    std::string message = "UpdateKeyContext Begin, needRemoveTmpKey:" + std::to_string(needRemoveTmpKey);
+    StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1307,7 +1368,10 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
                                                 uint32_t flag,
                                                 std::vector<int32_t> &funcResult)
 {
-    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile Begin", E_OK);
+    std::string message = "CreateShareFile Begin, tokenId: " + GetAnonyString(std::to_string(tokenId)) +
+                          ", flag: " + std::to_string(flag) + ", rawData.size: " + std::to_string(rawData.size) +
+                          ", funcResult size: " + std::to_string(funcResult.size());
+    StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
@@ -1320,7 +1384,9 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
 
 int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
-    StorageRadar::ReportFucBehavior("DeleteShareFile", DEFAULT_USERID, "DeleteShareFile Begin", E_OK);
+    std::string message = "DeleteShareFile Begin, tokenId:" + GetAnonyString(std::to_string(tokenId)) +
+                          ", rawData.size: " + std::to_string(rawData.size);
+    StorageRadar::ReportFucBehavior("DeleteShareFile", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
@@ -1336,7 +1402,11 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
                                                const std::string &bundleDataDirPath,
                                                int32_t limitSizeMb)
 {
-    StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, "SetBundleQuota Begin", E_OK);
+    std::string message = "SetBundleQuota Begin, bundleName: " + GetAnonyString(bundleName) +
+                          ", uid: " + std::to_string(uid) +
+                          ", bundleDataDirPath: " + GetAnonyString(bundleDataDirPath) +
+                          ", limitSizeMb: " + std::to_string(limitSizeMb);
+    StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, message, E_OK);
     if (IsFilePathInvalid(bundleDataDirPath)) {
         return E_PARAMS_INVALID;
     }
@@ -1379,7 +1449,9 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
                                              const std::string &networkId,
                                              const std::string &deviceId)
 {
-    StorageRadar::ReportFucBehavior("MountDfsDocs", userId, "MountDfsDocs Begin", E_OK);
+    std::string message = "MountDfsDocs Begin, relativePath: " + GetAnonyString(relativePath) +
+                          ", networkId: " + GetAnonyString(networkId) + ", deviceId: " + GetAnonyString(deviceId);
+    StorageRadar::ReportFucBehavior("MountDfsDocs", userId, message, E_OK);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::MountDfsDocs userId %{public}d out of range", userId);
@@ -1408,7 +1480,9 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
                                               const std::string &networkId,
                                               const std::string &deviceId)
 {
-    StorageRadar::ReportFucBehavior("UMountDfsDocs", userId, "UMountDfsDocs Begin", E_OK);
+    std::string message = "UMountDfsDocs Begin, relativePath: " + GetAnonyString(relativePath) +
+                          ", networkId: " + GetAnonyString(networkId) + ", deviceId: " + GetAnonyString(deviceId);
+    StorageRadar::ReportFucBehavior("UMountDfsDocs", userId, message, E_OK);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UMountDfsDocs userId %{public}d out of range", userId);
@@ -1478,7 +1552,8 @@ int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, bool i
 
 int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
-    StorageRadar::ReportFucBehavior("MountMediaFuse", userId, "MountMediaFuse Begin", E_OK);
+    std::string message = "MountMediaFuse Begin, devFd: " + std::to_string(devFd);
+    StorageRadar::ReportFucBehavior("MountMediaFuse", userId, message, E_OK);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::MountMediaFuse userId %{public}d out of range", userId);
@@ -1553,7 +1628,9 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
 
 int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
-    StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, "MountFileMgrFuse Begin", E_OK);
+    std::string message =
+        "MountFileMgrFuse Begin, path:" + GetAnonyString(path) + ", fuseFd: " + std::to_string(fuseFd);
+    StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, message, E_OK);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
@@ -1575,7 +1652,8 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
 
 int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse Begin", E_OK);
+    std::string message = "UMountFileMgrFuse Begin, path:" + GetAnonyString(path);
+    StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, message, E_OK);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
@@ -1619,7 +1697,9 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
                                                            uint32_t rkType,
                                                            const std::vector<uint8_t> &key)
 {
-    StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, "ResetSecretWithRecoveryKey Begin", E_OK);
+    std::string message = "ResetSecretWithRecoveryKey Begin, rkType:" + std::to_string(rkType) +
+                          ", key size:" + std::to_string(key.size());
+    StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
@@ -1668,7 +1748,8 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
 
 int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
-    StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile Begin", E_OK);
+    std::string message = "UMountDisShareFile Begin, networkId: " + GetAnonyString(networkId);
+    StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, message, E_OK);
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (uid != DFS_UID) {
         LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
@@ -1780,7 +1861,9 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
 
 int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
-    StorageRadar::ReportFucBehavior("CreateUserDir", DEFAULT_USERID, "CreateUserDir Begin", E_OK);
+    std::string message = "CreateUserDir Begin, path: " + GetAnonyString(path) + ", mode: " + std::to_string(mode) +
+                          ", uid: " + std::to_string(uid) + ", gid: " + std::to_string(gid);
+    StorageRadar::ReportFucBehavior("CreateUserDir", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
@@ -1999,6 +2082,200 @@ bool StorageManagerProvider::IsCalledByFileMgr()
         return false;
     }
     return true;
+}
+
+int32_t StorageManagerProvider::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
+        "NotifyEncryptVolumeStateChanged Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::NotifyEncryptVolumeStateChanged start");
+    VolumeManagerService::GetInstance().NotifyEncryptVolumeStateChanged(volumeInfoStr);
+    StorageRadar::ReportFucBehavior("NotifyEncryptVolumeStateChanged", DEFAULT_USERID,
+        "NotifyEncryptVolumeStateChanged End", E_OK);
+#endif
+    return E_OK;
+}
+
+int32_t StorageManagerProvider::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::Encrypt start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Encrypt(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Encrypt", DEFAULT_USERID, "Encrypt End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Encrypt", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::GetCryptProgressById start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().GetCryptProgressById(volumeId, progress);
+    StorageRadar::ReportFucBehavior("GetCryptProgressById", DEFAULT_USERID, "GetCryptProgressById End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::GetCryptProgressById", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("GetCryptUuidById", DEFAULT_USERID, "GetCryptUuidById Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::GetCryptUuidById start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().GetCryptUuidById(volumeId, uuid);
+    StorageRadar::ReportFucBehavior("GetCryptUuidById", DEFAULT_USERID, "GetCryptUuidById End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::GetCryptUuidById", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                       const std::string &pazzword,
+                                                       const std::string &recoverKey)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("BindRecoverKeyToPasswd", DEFAULT_USERID, "BindRecoverKeyToPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::BindRecoverKeyToPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    StorageRadar::ReportFucBehavior("BindRecoverKeyToPasswd", DEFAULT_USERID, "BindRecoverKeyToPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::BindRecoverKeyToPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::UpdateCryptPasswd(const std::string &volumeId,
+                                                  const std::string &pazzword,
+                                                  const std::string &newPazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("UpdateCryptPasswd", DEFAULT_USERID, "UpdateCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::UpdateCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    StorageRadar::ReportFucBehavior("UpdateCryptPasswd", DEFAULT_USERID, "UpdateCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::UpdateCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::ResetCryptPasswd(const std::string &volumeId,
+                                                 const std::string &recoverKey,
+                                                 const std::string &newPazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("ResetCryptPasswd", DEFAULT_USERID, "ResetCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::ResetCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    StorageRadar::ReportFucBehavior("ResetCryptPasswd", DEFAULT_USERID, "ResetCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::ResetCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("VerifyCryptPasswd", DEFAULT_USERID, "VerifyCryptPasswd Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::VerifyCryptPasswd start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().VerifyCryptPasswd(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("VerifyCryptPasswd", DEFAULT_USERID, "VerifyCryptPasswd End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::VerifyCryptPasswd", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("Unlock", DEFAULT_USERID, "Unlock Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerProvider::Unlock start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Unlock(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Unlock", DEFAULT_USERID, "Unlock End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Unlock", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageRadar::ReportFucBehavior("Decrypt", DEFAULT_USERID, "Decrypt Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_ENCRYPT_VOLUME_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+
+    LOGI("StorageManagerProvider::Decrypt start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = EncryptedVolumeManagerService::GetInstance().Decrypt(volumeId, pazzword);
+    StorageRadar::ReportFucBehavior("Decrypt", DEFAULT_USERID, "Decrypt End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("EncryptedVolumeManagerService::Decrypt", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 } // namespace StorageManager
 } // namespace OHOS

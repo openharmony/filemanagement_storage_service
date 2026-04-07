@@ -36,37 +36,46 @@ constexpr int32_t DEFAULT_DEV_INDEX = 1;
 constexpr uid_t FILE_MANAGER_UID = 1006;
 constexpr gid_t FILE_MANAGER_GID = 1006;
 constexpr mode_t PUBLIC_DIR_MODE = 02770;
-MtpDeviceManager::MtpDeviceManager() {}
+
+MtpDeviceManager::MtpDeviceManager()
+{
+    LOGI("[L2:MtpDeviceManager] MtpDeviceManager: >>> ENTER <<<");
+}
 
 MtpDeviceManager::~MtpDeviceManager()
 {
-    LOGI("MtpDeviceManager Destructor.");
+    LOGI("[L2:MtpDeviceManager] ~MtpDeviceManager: >>> ENTER <<<");
 }
 
 int32_t MtpDeviceManager::PrepareMtpMountPath(const std::string &path)
 {
+    LOGI("[L2:MtpDeviceManager] PrepareMtpMountPath: >>> ENTER <<< path=%{public}s", path.c_str());
     if (!IsDir(path)) {
-        LOGI("PrepareMtpMountPath: mtp device mount path directory does not exist, creating it.");
+        LOGI("[L2:MtpDeviceManager] PrepareMtpMountPath: directory does not exist, creating");
         bool ret = PrepareDir(path, PUBLIC_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
         if (!ret) {
-            LOGE("Prepare directory for mtp device path = %{public}s failed.", path.c_str());
+            LOGE("[L2:MtpDeviceManager] PrepareMtpMountPath: <<< EXIT FAILED <<< path=%{public}s, PrepareDir failed",
+                path.c_str());
             return E_MTP_PREPARE_DIR_ERR;
         }
     }
+    LOGI("[L2:MtpDeviceManager] PrepareMtpMountPath: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     return E_OK;
 }
 
 int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 {
-    if (isMounting) {
+    LOGI("[L2:MtpDeviceManager] MountDevice: >>> ENTER <<< id=%{public}s, path=%{public}s",
+        device.id.c_str(), device.path.c_str());
+    if (isMounting_) {
         LOGI("MountDevice: mtp device is mounting, try again later.");
         return E_MTP_IS_MOUNTING;
     }
-    isMounting = true;
+    isMounting_ = true;
     int32_t ret = PrepareMtpMountPath(device.path);
     if (ret != E_OK) {
-        LOGI("PrepareMtpMountPath isMounting.");
-        isMounting = false;
+        isMounting_ = false;
+        LOGE("[L2:MtpDeviceManager] MountDevice: <<< EXIT FAILED <<< PrepareMtpMountPath failed, err=%{public}d", ret);
         return ret;
     }
     std::vector<std::string> cmdVec = {
@@ -91,18 +100,18 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     };
     std::vector<std::string> result;
     int32_t err = ForkExec(cmdVec, &result);
-    LOGI("result.size():%{public}lu.", result.size());
     for (auto str : result) {
-        LOGI("MountDevice result: %{public}s", str.c_str());
+        LOGI("[L2:MtpDeviceManager] MountDevice: result=%{public}s", str.c_str());
     }
     if ((err != 0) || (result.size() != 0)) {
-        LOGE("Run mtpfs cmd to mount mtp device failed.");
+        LOGE("[L2:MtpDeviceManager] MountDevice: <<< EXIT FAILED <<< mtpfs cmd failed, err=%{public}d", err);
         UmountDevice(device, false, false);
-        isMounting = false;
+        isMounting_ = false;
         return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
 
-    isMounting = false;
+    LOGI("[L2:MtpDeviceManager] MountDevice: <<< EXIT SUCCESS <<< id=%{public}s", device.id.c_str());
+    isMounting_ = false;
     StorageManagerClient client;
     client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid, device.type);
     return E_OK;
@@ -110,46 +119,51 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 
 int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove)
 {
-    LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
+    LOGI("[L2:MtpDeviceManager] UmountDevice: >>> ENTER <<< id=%{public}s, path=%{public}s, needNotify=%{public}d,"
+        "isBadRemove=%{public}d", device.id.c_str(), device.path.c_str(), needNotify, isBadRemove);
     if (isBadRemove) {
+        LOGI("[L2:MtpDeviceManager] UmountDevice: force umount mode");
         int ret = umount2(device.path.c_str(), MNT_DETACH);
         if (ret != 0) {
-            LOGW("umount2 failed in force mode, errno %{public}d", errno);
+            LOGW("[L2:MtpDeviceManager] UmountDevice: umount2 failed in force mode, errno=%{public}d", errno);
             if (needNotify) {
                 StorageManagerClient client;
                 client.NotifyMtpUnmounted(device.id, isBadRemove);
             }
+            LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< force mode completed");
             return E_OK;
         }
-        ret = remove(device.path.c_str());
+        ret = rmdir(device.path.c_str());
         if (ret != 0) {
-            LOGW("remove failed in force mode, errno %{public}d", errno);
+            LOGW("[L2:MtpDeviceManager] UmountDevice: remove failed in force mode, errno=%{public}d", errno);
         }
         if (needNotify) {
             StorageManagerClient client;
             client.NotifyMtpUnmounted(device.id, isBadRemove);
         }
-
         rmdir(device.path.c_str());
+        LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< force umount completed");
         return E_OK;
     }
 
     int ret = umount(device.path.c_str());
     if (ret != E_OK) {
-        LOGE("umount failed errno %{public}d", errno);
+        LOGE("[L2:MtpDeviceManager] UmountDevice: <<< EXIT FAILED <<< umount failed, errno=%{public}d", errno);
         return E_MTP_UMOUNT_FAILED;
     }
-    int err = remove(device.path.c_str());
+    int err = rmdir(device.path.c_str());
     if (err != E_OK) {
-        LOGE("failed to call remove(%{public}s) error, errno=%{public}d", device.path.c_str(), errno);
+        LOGE("[L2:MtpDeviceManager] UmountDevice: <<< EXIT FAILED <<< remove failed, path=%{public}s, errno=%{public}d",
+            device.path.c_str(), errno);
         return E_SYS_KERNEL_ERR;
     }
-    LOGI("Mtp device unmount success.");
+    LOGI("[L2:MtpDeviceManager] UmountDevice: unmount success");
     if (needNotify) {
         StorageManagerClient client;
         client.NotifyMtpUnmounted(device.id, isBadRemove);
     }
     rmdir(device.path.c_str());
+    LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< id=%{public}s", device.id.c_str());
     return E_OK;
 }
 } // namespace StorageDaemon

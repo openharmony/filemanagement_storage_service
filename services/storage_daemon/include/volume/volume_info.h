@@ -31,6 +31,10 @@ enum VolumeState {
     DAMAGED,
     FUSE_REMOVED,
     DAMAGED_MOUNTED,
+    ENCRYPTING,
+    ENCRYPTED_AND_LOCKED,
+    ENCRYPTED_AND_UNLOCKED,
+    DECRYPTING,
 };
 
 enum VolumeType {
@@ -53,13 +57,31 @@ public:
     int32_t SetVolumeDescription(const std::string description);
     int32_t TryToCheck();
     int32_t TryToFix();
-
     std::string GetVolumeId();
     int32_t GetVolumeType();
     std::string GetDiskId();
     int32_t GetState();
+    void SetState(VolumeState mountState);
     bool GetIsUserdata();
     std::string GetFsTypeBase();
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
+    //disk crypt api
+    int32_t DestroyCrypt(const std::string &volumeId);
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid);
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                   const std::string &pazzword,
+                                   const std::string &recoverKey);
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                              const std::string &pazzword,
+                              const std::string &newPazzword);
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                             const std::string &recoverKey,
+                             const std::string &newPazzword);
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword);
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -74,6 +96,26 @@ protected:
     virtual int32_t DoTryToFix() = 0;
     virtual std::string GetFsTypeByDev(dev_t dev) = 0;
     virtual bool IsUsbFuseByType(std::string fsType);
+    virtual std::string GetFsType() = 0;
+    virtual int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) = 0;
+
+    //disk crypt api
+    virtual int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) = 0;
+    virtual int32_t DoGetCryptProgressById(const std::string &volumeId, int32_t &progress) = 0;
+    virtual int32_t DoGetCryptUuidById(const std::string &volumeId, std::string &uuid) = 0;
+    virtual int32_t DoBindRecoverKeyToPasswd(const std::string &volumeId,
+                                             const std::string &pazzword,
+                                             const std::string &recoverKey) = 0;
+    virtual int32_t DoUpdateCryptPasswd(const std::string &volumeId,
+                                        const std::string &pazzword,
+                                        const std::string &newPazzword) = 0;
+    virtual int32_t DoResetCryptPasswd(const std::string &volumeId,
+                                       const std::string &recoverKey,
+                                       const std::string &newPazzword) = 0;
+    virtual int32_t DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) = 0;
+    virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) = 0;
+    virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) = 0;
+    virtual int32_t DoDestroyCrypt(const std::string &volumeId) = 0;
 
 private:
     std::string id_;

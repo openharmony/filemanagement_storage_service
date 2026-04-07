@@ -411,6 +411,7 @@ ErrCode BundleManagerAdapterProxy::GetParcelInfoFromAshMem(MessageParcel &reply,
     }
     if (memcpy_s(data, ashMemSize, ashDataPtr, ashMemSize) != EOK) {
         free(data);
+        data = nullptr;
         LOGE("failed due to memcpy_s failed");
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
@@ -434,10 +435,52 @@ bool BundleManagerAdapterProxy::GetData(void *&buffer, size_t size, const void *
     }
     if (memcpy_s(buffer, size, data, size) != EOK) {
         free(buffer);
+        buffer = nullptr;
         LOGE("GetData failed due to memcpy_s failed");
         return false;
     }
     return true;
+}
+
+ErrCode BundleManagerAdapterProxy::GetBundleInodeCount(const std::string &bundleName, int32_t appIndex,
+    int32_t userId, uint64_t &inodeCount)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        LOGE("fail to GetBundleInodeCount due to write InterfaceToken fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    if (!data.WriteString(bundleName)) {
+        LOGE("fail to GetBundleInodeCount due to write bundleName fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    if (!data.WriteInt32(appIndex)) {
+        LOGE("fail to GetBundleInodeCount due to write appIndex fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    if (!data.WriteInt32(userId)) {
+        LOGE("fail to GetBundleInodeCount due to write userId fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+
+    MessageParcel reply;
+    if (!SendTransactCmdWithLog(BundleMgrInterfaceCode::GET_BUNDLE_INODE_COUNT, data, reply)) {
+        LOGE("fail to GetBundleInodeCount from server");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    ErrCode ret = reply.ReadInt32();
+    if (ret != ERR_OK) {
+        LOGE("GetBundleInodeCount failed with ret=%{public}d", ret);
+        return ret;
+    }
+    if (!reply.ReadUint64(inodeCount)) {
+        LOGE("fail to GetBundleInodeCount due to read inodeCount fail");
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    LOGI("GetBundleInodeCount success, bundleName=%{public}s, userId=%{public}d, appIndex=%{public}d, "
+         "inodeCount=%{public}llu",
+         bundleName.c_str(), userId, appIndex, static_cast<unsigned long long>(inodeCount));
+    return ERR_OK;
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -43,6 +43,10 @@ using namespace testing;
 
 namespace {
     const std::string PATH_LATEST_BACKUP = "/latest_bak";
+    const std::string BASE_KEY_BLOB_DIR = "/data/test";
+    const std::string BASE_KEY_BLOB_SUCCESS_PATH = BASE_KEY_BLOB_DIR + "/base_key_save_blob.bin";
+    const std::string BASE_KEY_BLOB_FAIL_PATH = "/proc/1/base_key_save_blob.bin";
+    constexpr uint32_t BASE_KEY_BLOB_SIZE = 16;
 }
 
 namespace OHOS::StorageDaemon {
@@ -1056,5 +1060,63 @@ HWTEST_F(BaseKeyTest, BaseKey_RestoreKey_001, TestSize.Level1)
         .WillOnce(SetArgReferee<1>(fileNames));
     EXPECT_EQ(elKey->BaseKey::RestoreKey(auth), E_VERSION_ERROR);
     GTEST_LOG_(INFO) << "BaseKey_RestoreKey_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_CombKeyBlob_001
+ * @tc.desc: Verify the CombKeyBlob function with null pointer check.
+ * @tc.type: FUNC
+ */
+HWTEST_F(BaseKeyTest, BaseKey_CombKeyBlob_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyBlob_001 start";
+
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob encAad;
+    KeyBlob end(16);
+    KeyBlob keyOut(32);
+
+    elKey->BaseKey::CombKeyBlob(encAad, end, keyOut);
+
+    KeyBlob encAad2(16);
+    KeyBlob end2;
+    KeyBlob keyOut2(32);
+    elKey->BaseKey::CombKeyBlob(encAad2, end2, keyOut2);
+
+    KeyBlob encAad3(16);
+    KeyBlob end3(16);
+    KeyBlob keyOut3;
+    elKey->BaseKey::CombKeyBlob(encAad3, end3, keyOut3);
+
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyBlob_001 end";
+}
+
+
+ /**
+ * @tc.name: BaseKey_SaveKeyBlob_001
+ * @tc.desc: Verify SaveKeyBlob returns result by WriteFileSync success and fail paths.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_SaveKeyBlob_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_SaveKeyBlob_001 start";
+ 
+    KeyBlob blob(BASE_KEY_BLOB_SIZE);
+    ASSERT_FALSE(blob.IsEmpty());
+    for (uint32_t i = 0; i < blob.size; ++i) {
+        blob.data[i] = static_cast<uint8_t>(i);
+    }
+ 
+    EXPECT_FALSE(BaseKey::SaveKeyBlob(blob, BASE_KEY_BLOB_FAIL_PATH));
+ 
+    (void)ForceCreateDirectory(BASE_KEY_BLOB_DIR);
+    (void)unlink(BASE_KEY_BLOB_SUCCESS_PATH.c_str());
+    EXPECT_TRUE(BaseKey::SaveKeyBlob(blob, BASE_KEY_BLOB_SUCCESS_PATH));
+    EXPECT_EQ(access(BASE_KEY_BLOB_SUCCESS_PATH.c_str(), F_OK), 0);
+    (void)unlink(BASE_KEY_BLOB_SUCCESS_PATH.c_str());
+ 
+    GTEST_LOG_(INFO) << "BaseKey_SaveKeyBlob_001 end";
 }
 } // OHOS::StorageDaemon

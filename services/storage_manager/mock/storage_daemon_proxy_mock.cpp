@@ -66,6 +66,11 @@ int32_t StorageDaemonProxy::QueryUsbIsInUse(const std::string &diskPath, bool &i
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     return E_OK;
@@ -369,6 +374,58 @@ int32_t StorageDaemonProxy::GetDirListSpaceByPaths(const std::vector<std::string
 }
 
 int32_t StorageDaemonProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    progress = 0;
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                   const std::string &pazzword,
+                                                   const std::string &recoverKey)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UpdateCryptPasswd(const std::string &volumeId,
+                                              const std::string &pazzword,
+                                              const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::ResetCryptPasswd(const std::string &volumeId,
+                                             const std::string &recoverKey,
+                                             const std::string &newPazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;
 }

@@ -92,9 +92,9 @@ private:
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
     int32_t UMountHmdfsByList(int32_t userId, std::list<std::string> &list, std::list<std::string> &unMountFailList);
-    bool IsSysMountPoint(int32_t userId, std::string &path);
+    bool IsSysMountPoint(const int32_t userId, std::string &path);
     bool CheckSysFs(int32_t userId);
-    bool IsSysFsInUse(std::string &path);
+    bool IsSysFsInUse(const std::string &path);
     void ForbidOpen(int32_t userId);
     int32_t OpenProcForPath(const std::string &path, bool &isOccupy, bool isDir);
     int32_t OpenProcForMulti(const std::string &path, std::set<std::string> &occupyFiles);

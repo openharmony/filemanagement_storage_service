@@ -28,13 +28,12 @@ public:
 
     virtual int32_t DoTryToFix() override;
     virtual int32_t DoTryToCheck() override;
-    std::string GetFsType();
+    virtual std::string GetFsType() override;
     std::string GetFsUuid();
     std::string GetFsLabel();
     bool GetDamagedFlag();
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
-
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
     virtual int32_t DoDestroy() override;
@@ -45,22 +44,41 @@ protected:
     virtual int32_t DoFormat(std::string type) override;
     virtual int32_t DoSetVolDesc(std::string description) override;
     virtual std::string GetFsTypeByDev(dev_t dev) override;
+    virtual int32_t DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) override;
 
+    //disk crypt api
+    virtual int32_t DoEncrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoGetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    virtual int32_t DoGetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    virtual int32_t DoBindRecoverKeyToPasswd(const std::string &volumeId,
+                                             const std::string &pazzword,
+                                             const std::string &recoverKey) override;
+    virtual int32_t DoUpdateCryptPasswd(const std::string &volumeId,
+                                        const std::string &pazzword,
+                                        const std::string &newPazzword) override;
+    virtual int32_t DoResetCryptPasswd(const std::string &volumeId,
+                                       const std::string &recoverKey,
+                                       const std::string &newPazzword) override;
+    virtual int32_t DoVerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t DoDestroyCrypt(const std::string &volumeId) override;
 private:
     std::string devPath_;
+    std::string devBackupPath_;
     std::string fsLabel_;
     std::string fsUuid_;
     std::string fsType_;
     std::string mountPath_;
     std::string mountUsbFusePath_;
     std::string mountBackupPath_;
-
     dev_t device_;
 
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/data/external/%s";
     const std::string mountFusePathDir_ = "/mnt/data/external_fuse/%s";
-    std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs", "udf", "iso9660"};
+    std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs", "udf",
+        "iso9660", "crypt_LUKS"};
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
     int32_t ReadMetadata();
@@ -81,6 +99,9 @@ private:
     std::string GetVolDescByNtfsLabel(std::vector<std::string> &cmd);
     std::string SplitOutputIntoLines(std::vector<std::string> &output);
     int32_t ExecuteAsyncMount(uint32_t mountFlags);
+    int32_t DoUMountWithForceUsbFuse();
+    int32_t ValidatePazzword(const std::string &pazzword);
+    std::string GetDevPathByVolumeId(const std::string& volumeId);
 };
 } // STORAGE_DAEMON
 } // OHOS

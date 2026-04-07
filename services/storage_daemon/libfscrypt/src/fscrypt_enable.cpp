@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,9 +30,11 @@ constexpr char SPLIT_CHAR = ' ';
 extern "C" {
 bool IsFsCryptEnableByOemInfo()
 {
+    LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: >>> ENTER <<<");
     std::ifstream file(PARAM_FILE);
     if (!file.is_open()) {
-        LOGE("Open %{public}s failed. ", PARAM_FILE.c_str());
+        LOGE("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: <<< EXIT FAILED <<< Open %{public}s failed",
+            PARAM_FILE.c_str());
         return true;
     }
     std::string cmdline;
@@ -41,7 +43,8 @@ bool IsFsCryptEnableByOemInfo()
 
     size_t pos = cmdline.find(PARAM_NAME);
     if (pos == std::string::npos) {
-        LOGE("Not config PARAM_NAME.");
+        LOGE("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: Not config PARAM_NAME");
+        LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: <<< EXIT SUCCESS <<< default enabled");
         return true;
     }
 
@@ -52,10 +55,13 @@ bool IsFsCryptEnableByOemInfo()
     }
     std::string paramValue = cmdline.substr(start, end - start);
     if (paramValue == CRYPTED_DISABLE || paramValue == CRYPTED_NOT_ENABLE || paramValue == CRYPTED_FORCE_DISABLE) {
-        LOGI("config not crypted");
+        LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: config not crypted, paramValue=%{public}s",
+            paramValue.c_str());
+        LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: <<< EXIT SUCCESS <<< disabled");
         return false;
     } else {
-        LOGI("config crypted");
+        LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: config crypted, paramValue=%{public}s", paramValue.c_str());
+        LOGI("[L9:FscryptEnable] IsFsCryptEnableByOemInfo: <<< EXIT SUCCESS <<< enabled");
         return true;
     }
 }

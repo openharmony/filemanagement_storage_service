@@ -18,6 +18,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -25,6 +26,7 @@
 #include <thread>
 #include <vector>
 
+#include "event_handler.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "statistic_info.h"
 
@@ -39,6 +41,7 @@ public:
         return instance;
     }
     int32_t Init();
+    void InitEventHandler();
     void StartScan();
     void StopScan();
     int64_t GetRootSize();
@@ -48,14 +51,14 @@ public:
 
 private:
     StorageManagerScan() = default;
-    ~StorageManagerScan() = default;
+    ~StorageManagerScan();
     StorageManagerScan(const StorageManagerScan&) = delete;
     StorageManagerScan& operator=(const StorageManagerScan&) = delete;
 
     bool CheckScanPreconditions();
     void LaunchScanWorker();
     int32_t ExecuteScan();
-    void ScanTimeoutMonitor();
+    void ScanTimeoutHandler();
     void ReportScanResult();
     void CalculateFinalSizes(int64_t startTimeMs, int64_t dirScanRootSize, int64_t hyperholdRootSize,
     int64_t rgmManagerRootSize, int64_t dirScanSystemSize);
@@ -74,6 +77,12 @@ private:
     std::mutex scanMutex_;                          // Scanning for mutexes
     std::mutex fileMutex_;                          // File operation mutex lock
     std::mutex calSizeMutex_;
+    std::mutex lastScanTimeMutex_;
+    // EventHandler related members
+    std::mutex eventMutex_;
+    std::condition_variable eventCon_;
+    std::thread eventThread_;
+    std::shared_ptr<AppExecFwk::EventHandler> scanEventHandler_ = nullptr;
 
     std::chrono::system_clock::time_point scanStartTime_;  // Scan start time
     std::chrono::system_clock::time_point scanEndTime_;    // Scan End Time

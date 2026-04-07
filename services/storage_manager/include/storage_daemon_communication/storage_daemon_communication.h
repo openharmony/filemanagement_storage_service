@@ -42,6 +42,7 @@ public:
     int32_t Format(std::string volumeId, std::string type);
     int32_t SetVolumeDescription(std::string volumeId, std::string description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
 
     // fscrypt api
     int32_t EraseAllUserEncryptedKeys();
@@ -70,7 +71,7 @@ public:
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet = false);
-    int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
+    int32_t DeleteAppkey(uint32_t userId, const std::string &keyId);
     int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
                              const std::vector<uint8_t> &token,
@@ -132,6 +133,23 @@ public:
     int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
 
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
+
+    //disk crypt api
+    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
+    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
+    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid);
+    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                            const std::string &pazzword,
+                            const std::string &recoverKey);
+    int32_t UpdateCryptPasswd(const std::string &volumeId,
+                        const std::string &pazzword,
+                        const std::string &newPazzword);
+    int32_t ResetCryptPasswd(const std::string &volumeId,
+                        const std::string &recoverKey,
+                        const std::string &newPazzword);
+    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword);
+    int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
+    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

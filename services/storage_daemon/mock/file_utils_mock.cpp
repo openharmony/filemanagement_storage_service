@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -104,22 +104,13 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, output, exitStatus);
 }
 
+int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output,
+                        std::vector<std::string> *input)
+{
+    return IFileUtilMoc::fileUtilMoc->ForkExecInteractive(cmd, output, input);
+}
+
 void TraverseDirUevent(const std::string &path, bool flag)
-{
-    return;
-}
-
-int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
-{
-    return IFileUtilMoc::fileUtilMoc->IsSameGidUid(dir, uid, gid);
-}
-
-void MoveFileManagerData(const std::string &filesPath)
-{
-    return;
-}
-
-void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
 {
     return;
 }
@@ -153,5 +144,5 @@ void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<Proces
 {
     return;
 }
-}
-}
+} // namespace StorageDaemon
+} // namespace OHOS

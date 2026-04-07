@@ -42,6 +42,7 @@ public:
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids);
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists);
+    int32_t NotifyEncryptVolumeStateChanged(std::shared_ptr<VolumeInfo> volumeInfo);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

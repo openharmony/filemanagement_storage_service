@@ -44,12 +44,14 @@ public:
     int32_t GetTotalInodes(int64_t &totalInodes);
     int32_t GetFreeInodes(int64_t &freeInodes);
     int32_t GetUsedInodes(int64_t &usedInodes);
+    int32_t GetCurrentBundleInodes(int64_t &curInodes);
 
 private:
     StorageTotalStatusService();
     ~StorageTotalStatusService();
     int32_t GetSizeOfPath(const char *path, int32_t type, int64_t &size);
     int32_t GetInodeOfPath(const char *path, int32_t type, int64_t &inodeCnt);
+    const int DEFAULT_APP_INDEX = 0;
     const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
         "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",
         "/vendor/modem/modem_driver", "/data"};

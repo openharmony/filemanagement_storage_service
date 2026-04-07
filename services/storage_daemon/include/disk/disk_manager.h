@@ -27,18 +27,13 @@ namespace OHOS {
 namespace StorageDaemon {
 class DiskManager final {
 public:
-    static DiskManager &Instance(void)
-    {
-        static DiskManager instance;
-        return instance;
-    }
-
-    virtual ~DiskManager();
+    static DiskManager &Instance(void);
+    ~DiskManager();
     void CreateDisk(std::shared_ptr<DiskInfo> &diskInfo);
     void DestroyDisk(dev_t device);
     void ChangeDisk(dev_t device, NetlinkData *data);
     void HandleDiskEvent(NetlinkData *data);
-    int32_t HandlePartition(std::string diskId);
+    int32_t HandlePartition(const std::string &diskId);
     void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
     void ReplayUevent();
     std::shared_ptr<DiskInfo> MatchConfig(NetlinkData *data);

@@ -92,12 +92,14 @@ ohos_unittest("volume_storage_status_service_test") {
   sources = [
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_manager_path}/disk/src/disk_notification.cpp",
+    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
     "volume_storage_status_service_test.cpp",
   ]
@@ -125,6 +127,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",

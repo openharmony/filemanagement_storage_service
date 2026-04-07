@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -64,7 +64,7 @@ int32_t StorageManagerConnect::Connect()
     return E_OK;
 }
 
-int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &BundleStats,
+int32_t StorageManagerConnect::GetBundleStats(const std::string &pkgName, BundleStats &bundleStats,
     int32_t appIndex, uint32_t statFlag)
 {
     int32_t err = Connect();
@@ -76,24 +76,10 @@ int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &Bundl
         LOGE("StorageManagerConnect::GetBundleStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->GetBundleStats(pkgName, BundleStats, appIndex, statFlag);
+    return storageManager_->GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
 }
 
-int32_t StorageManagerConnect::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
-{
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageManagerConnect::ListUserdataDirInfo:Connect error");
-        return err;
-    }
-    if (storageManager_ == nullptr) {
-        LOGE("StorageManagerConnect::ListUserdataDirInfo service == nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageManager_->ListUserdataDirInfo(scanDirs);
-}
-
-int32_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
+int32_t StorageManagerConnect::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -107,7 +93,7 @@ int32_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid, int64_t &f
     return storageManager_->GetFreeSizeOfVolume(volumeUuid, freeSize);
 }
 
-int32_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid, int64_t &totalSize)
+int32_t StorageManagerConnect::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -121,7 +107,7 @@ int32_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid, int64_t &
     return storageManager_->GetTotalSizeOfVolume(volumeUuid, totalSize);
 }
 
-int32_t StorageManagerConnect::Mount(std::string volumeId)
+int32_t StorageManagerConnect::Mount(const std::string &volumeId)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -135,7 +121,7 @@ int32_t StorageManagerConnect::Mount(std::string volumeId)
     return storageManager_->Mount(volumeId);
 }
 
-int32_t StorageManagerConnect::Unmount(std::string volumeId)
+int32_t StorageManagerConnect::Unmount(const std::string &volumeId)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -205,6 +191,48 @@ int32_t StorageManagerConnect::GetFreeSize(int64_t &freeSize)
     return storageManager_->GetFreeSize(freeSize);
 }
 
+int32_t StorageManagerConnect::GetTotalInodes(int64_t &totalInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetTotalInodes::Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetTotalInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetTotalInodes(totalInodes);
+}
+ 
+int32_t StorageManagerConnect::GetFreeInodes(int64_t &freeInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetFreeInodes::Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetFreeInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetFreeInodes(freeInodes);
+}
+ 
+int32_t StorageManagerConnect::GetCurrentBundleInodes(int64_t &curInodes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCurrentBundleInodes:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCurrentBundleInodes service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCurrentBundleInodes(curInodes);
+}
+
 int32_t StorageManagerConnect::GetSystemDataSize(int64_t &systemDataSize)
 {
     int32_t err = Connect();
@@ -262,7 +290,7 @@ int32_t StorageManagerConnect::GetCurrentBundleStats(BundleStats &bundleStats, u
     return storageManager_->GetCurrentBundleStats(bundleStats, statFlag);
 }
 
-int32_t StorageManagerConnect::GetVolumeByUuid(std::string uuid, VolumeExternal &vol)
+int32_t StorageManagerConnect::GetVolumeByUuid(const std::string &uuid, VolumeExternal &vol)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -276,7 +304,7 @@ int32_t StorageManagerConnect::GetVolumeByUuid(std::string uuid, VolumeExternal 
     return storageManager_->GetVolumeByUuid(uuid, vol);
 }
 
-int32_t StorageManagerConnect::GetVolumeById(std::string volumeId, VolumeExternal &vol)
+int32_t StorageManagerConnect::GetVolumeById(const std::string &volumeId, VolumeExternal &vol)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -290,7 +318,7 @@ int32_t StorageManagerConnect::GetVolumeById(std::string volumeId, VolumeExterna
     return storageManager_->GetVolumeById(volumeId, vol);
 }
 
-int32_t StorageManagerConnect::SetVolumeDescription(std::string uuid, std::string description)
+int32_t StorageManagerConnect::SetVolumeDescription(const std::string &uuid, const std::string &description)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -304,7 +332,7 @@ int32_t StorageManagerConnect::SetVolumeDescription(std::string uuid, std::strin
     return storageManager_->SetVolumeDescription(uuid, description);
 }
 
-int32_t StorageManagerConnect::Format(std::string volumeId, std::string fsType)
+int32_t StorageManagerConnect::Format(const std::string &volumeId, const std::string &fsType)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -318,7 +346,7 @@ int32_t StorageManagerConnect::Format(std::string volumeId, std::string fsType)
     return storageManager_->Format(volumeId, fsType);
 }
 
-int32_t StorageManagerConnect::Partition(std::string diskId, int32_t type)
+int32_t StorageManagerConnect::Partition(const std::string &diskId, int32_t type)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -394,12 +422,15 @@ int32_t Convert2JsErrNum(int32_t errNum)
         { E_SERVICE_IS_NULLPTR, E_IPCSS},
         { E_BUNDLEMGR_ERROR, E_IPCSS},
         { E_MEDIALIBRARY_ERROR, E_IPCSS},
+        { E_DEATH_RECIPIENT_IS_NULLPTR, E_IPCSS },
         { E_PARAMS_INVALID, E_JS_PARAMS_INVALID},
         { E_SYS_APP_PERMISSION_DENIED, E_PERMISSION_SYS},
         { E_SET_EXT_BUNDLE_STATS_ERROR, E_JS_SET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_EXT_BUNDLE_STATS_ERROR, E_JS_GET_EXT_BUNDLE_STATS_ERROR},
         { E_GET_ALL_EXT_BUNDLE_STATS_ERROR, E_JS_GET_ALL_EXT_BUNDLE_STATS_ERROR},
         { E_GET_SYSTEM_DATA_SIZE_ERROR, E_JS_GET_SYSTEM_DATA_SIZE_ERROR},
+        { E_GET_INODE_ERROR, E_JS_GET_INODE_ERROR },
+        { E_GET_BUNDLE_INODES_ERROR, E_JS_GET_BUNDLE_INODES_ERROR },
     };
 
     if (errCodeTable.find(errNum) != errCodeTable.end()) {
@@ -409,7 +440,8 @@ int32_t Convert2JsErrNum(int32_t errNum)
     }
 }
 
-int32_t StorageManagerConnect::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+int32_t StorageManagerConnect::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats,
+                                                         const std::string &type)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -463,6 +495,152 @@ int32_t StorageManagerConnect::GetAllExtBundleStats(uint32_t userId, std::vector
         return E_SERVICE_IS_NULLPTR;
     }
     return storageManager_->GetAllExtBundleStats(userId, statsVec);
+}
+
+int32_t StorageManagerConnect::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::ListUserdataDirInfo:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::ListUserdataDirInfo service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->ListUserdataDirInfo(scanDirs);
+}
+
+int32_t StorageManagerConnect::Encrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Encrypt:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Encrypt service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Encrypt(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCryptProgressById:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCryptProgressById service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCryptProgressById(volumeId, progress);
+}
+
+int32_t StorageManagerConnect::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetCryptUuidById:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetCryptUuidById service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetCryptUuidById(volumeId, uuid);
+}
+
+int32_t StorageManagerConnect::BindRecoverKeyToPasswd(const std::string &volumeId,
+                                                      const std::string &pazzword,
+                                                      const std::string &recoverKey)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::BindRecoverKeyToPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::BindRecoverKeyToPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+}
+
+int32_t StorageManagerConnect::UpdateCryptPasswd(const std::string &volumeId,
+                                                 const std::string &pazzword,
+                                                 const std::string &newPazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::UpdateCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::UpdateCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+}
+
+int32_t StorageManagerConnect::ResetCryptPasswd(const std::string &volumeId,
+                                                const std::string &recoverKey,
+                                                const std::string &newPazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::ResetCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::ResetCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+}
+
+int32_t StorageManagerConnect::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::VerifyCryptPasswd:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::VerifyCryptPasswd service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->VerifyCryptPasswd(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::Unlock(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Unlock:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Unlock service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Unlock(volumeId, pazzword);
+}
+
+int32_t StorageManagerConnect::Decrypt(const std::string &volumeId, const std::string &pazzword)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Decrypt:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Decrypt service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Decrypt(volumeId, pazzword);
 }
 } // StorageManager
 } // OHOS

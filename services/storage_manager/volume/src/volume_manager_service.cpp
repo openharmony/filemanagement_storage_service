@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,8 +39,18 @@ namespace OHOS {
 namespace StorageManager {
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
+char g_usbDes = 'A';
+
 VolumeManagerService::VolumeManagerService() {}
 VolumeManagerService::~VolumeManagerService() {}
+
+void VolumeManagerService::SetUsbDescription(void)
+{
+    if (g_usbDes > 'A') {
+        g_usbDes--;
+    }
+    return ;
+}
 
 void VolumeManagerService::VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume)
 {
@@ -68,6 +78,7 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
         return;
     }
     std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    volumePtr->SetState(state);
     VolumeStateNotify(state, volumePtr);
     if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
         volumeMap_.Erase(volumeId);
@@ -110,6 +121,47 @@ void VolumeManagerService::OnVolumeMounted(const VolumeInfoStr &volumeInfoStr)
     LOGI("volumePtr OnVolumeMounted Info %{public}s, %{public}s, %{public}d in VolumeManagerService::OnVolumeMounted",
         volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
     VolumeStateNotify(volumeInfoStr.isDamaged == true ? VolumeState::DAMAGED_MOUNTED : VolumeState::MOUNTED, volumePtr);
+}
+
+void VolumeManagerService::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
+{
+    if (!volumeMap_.Contains(volumeInfoStr.volumeId)) {
+        LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists",
+            volumeInfoStr.volumeId.c_str());
+        return;
+    }
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeInfoStr.volumeId);
+    if (volumePtr == nullptr) {
+        LOGE("volumePtr is nullptr for volumeId");
+        return;
+    }
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(volumeInfoStr.fsTypeStr));
+    volumePtr->SetFsUuid(volumeInfoStr.fsUuid);
+    volumePtr->SetPath(volumeInfoStr.path);
+    std::string des = volumeInfoStr.description;
+    auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
+    if (disk != nullptr) {
+        if (des == "") {
+            if (disk->GetFlag() == SD_FLAG) {
+                des = "MySDCard";
+            } else if (disk->GetFlag() == USB_FLAG) {
+                des = "MyUSB";
+            } else if (disk->GetFlag() == CD_FLAG) {
+                des = "MyDVD";
+            } else {
+                des = "Default";
+            }
+        }
+        volumePtr->SetFlags(disk->GetFlag());
+    }
+    des = des + "(" + g_usbDes + ")";
+    g_usbDes++;
+    volumePtr->SetDescription(des);
+    volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
+    LOGI("volumePtr NotifyEncryptVolumeStateChanged Info %{public}s, %{public}s,"
+        " %{public}d in VolumeManagerService::NotifyEncryptVolumeStateChanged",
+        volumePtr->GetDiskId().c_str(), volumePtr->GetId().c_str(), volumePtr->GetState());
+    VolumeStateNotify(VolumeState::ENCRYPTED_AND_LOCKED, volumePtr);
 }
 
 void VolumeManagerService::OnVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
@@ -158,7 +210,8 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         LOGE("volumePtr is nullptr for volumeId");
         return E_VOLUMEEX_IS_NULLPTR;
     }
-    if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
+    if ((volumePtr->GetState() != VolumeState::UNMOUNTED) &&
+        (volumePtr->GetState() != VolumeState::DECRYPTING)) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
         return E_VOL_MOUNT_ERR;
     }
@@ -231,7 +284,9 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         return E_VOLUMEEX_IS_NULLPTR;
     }
     if (volumePtr->GetState() != VolumeState::MOUNTED &&
-        volumePtr->GetState() != VolumeState::DAMAGED_MOUNTED) {
+        volumePtr->GetState() != VolumeState::DAMAGED_MOUNTED &&
+        volumePtr->GetState() != VolumeState::ENCRYPTED_AND_LOCKED &&
+        volumePtr->GetState() != VolumeState::ENCRYPTED_AND_UNLOCKED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted, %{public}d", volumeId.c_str(),
             volumePtr->GetState());
         return E_VOL_UMOUNT_ERR;
@@ -300,9 +355,33 @@ int32_t VolumeManagerService::Check(std::string volumeId)
 vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
 {
     vector<VolumeExternal> result;
+    vector<std::string> dvdDiskIds;
     for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
         VolumeExternal vc = *(it->second);
+        if (vc.GetFsType() == UDF || vc.GetFsType() == ISO9660) {
+            dvdDiskIds.push_back(vc.GetDiskId());
+        }
         result.push_back(vc);
+    }
+    vector<Disk> disks = DiskManagerService::GetInstance().GetAllDisks();
+    for (auto &disk : disks) {
+        if (disk.GetFlag() != CD_FLAG) {
+            continue;
+        }
+        auto it = std::find(dvdDiskIds.begin(), dvdDiskIds.end(), disk.GetDiskId());
+        if (it != dvdDiskIds.end()) {
+            LOGE("This disk has real volume, diskId: %{public}s", disk.GetDiskId().c_str());
+            continue;
+        }
+        VolumeCore core("0", CD_FLAG, disk.GetDiskId(), MOUNTED);
+        auto volumePtr = make_shared<VolumeExternal>(core);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr !");
+            continue;
+        }
+        volumePtr->SetFsType(volumePtr->GetFsTypeByStr("udf"));
+        volumePtr->SetDescription("DVD RW");
+        result.push_back(*volumePtr);
     }
     return result;
 }
@@ -402,11 +481,11 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
     std::string key = "user.getfriendlyname";
-    char *value = (char *)malloc(sizeof(char) * MTP_DEVICE_NAME_LEN);
+    char *value = (char *)malloc(sizeof(char) * (MTP_DEVICE_NAME_LEN + 1));
     int32_t len = 0;
     if (value != nullptr) {
         len = getxattr(path.c_str(), key.c_str(), value, MTP_DEVICE_NAME_LEN);
-        if (len >= 0 && len < MTP_DEVICE_NAME_LEN) {
+        if (len >= 0 && len <= MTP_DEVICE_NAME_LEN) {
             value[len] = '\0';
             LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
         }

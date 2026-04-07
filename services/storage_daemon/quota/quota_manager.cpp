@@ -49,7 +49,7 @@ constexpr const char* SYSTEM_DATA_KEY = "storage.statistic.systemdata";
 constexpr const char* HMFS_PATH = "/sys/fs/hmfs/userdata";
 constexpr const char* MAIN_BLKADDR = "/main_blkaddr";
 constexpr const char* OVP_CHUNKS = "/ovp_chunks";
-constexpr uint64_t FOUR_K = 4096;
+constexpr const char* SCAN_EXCLUDE_PATH = "/data/local/tmp";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
 constexpr double DIVISOR = 1000.0 * 1000.0;
@@ -63,6 +63,7 @@ constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
 constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
 constexpr int32_t MAX_WHITE_UID_COUNT = 3;
+constexpr int32_t FOUR_K = 4096;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 
@@ -78,12 +79,13 @@ QuotaManager &QuotaManager::GetInstance()
 
 static bool InitialiseQuotaMounts()
 {
+    LOGD("[L2:QuotaManager] InitialiseQuotaMounts: >>> ENTER <<<");
     std::lock_guard<std::recursive_mutex> lock(mMountsLock);
     mQuotaReverseMounts.clear();
     std::ifstream in(PROC_MOUNTS_PATH);
 
     if (!in.is_open()) {
-        LOGE("Failed to open mounts file");
+        LOGE("[L2:QuotaManager] InitialiseQuotaMounts: <<< EXIT FAILED <<< open mounts file failed");
         return false;
     }
     std::string source;
@@ -102,6 +104,7 @@ static bool InitialiseQuotaMounts()
         }
     }
 
+    LOGD("[L2:QuotaManager] InitialiseQuotaMounts: <<< EXIT SUCCESS <<<");
     return true;
 }
 
@@ -117,32 +120,36 @@ static std::string GetQuotaSrcMountPath(const std::string &target)
 
 static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
-    LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForUid: >>> ENTER <<< uid=%{public}d", uid);
     struct dqblk dq;
 #ifdef ENABLE_EMULATOR
     if (!InitialiseQuotaMounts()) {
-        LOGE("Failed to initialise quota mounts");
+        LOGE("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT FAILED <<< initialise quota mounts failed");
         return E_INIT_QUOTA_MOUNTS_FAILED;
     }
     std::string device = "";
     device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
-        LOGE("skip when device no quotas present");
+        LOGI("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT SUCCESS <<< no quotas present, skipped");
         return E_OK;
     }
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) == 0) {
         size = static_cast<int64_t>(dq.dqb_curspace);
-        LOGE("get size for emulator by quota success, size is %{public}s", std::to_string(size).c_str());
+        LOGI("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT SUCCESS <<< uid=%{public}d, size=%{public}lld",
+            uid, static_cast<long long>(size));
         return E_OK;
     }
-    LOGE("get size for emulator by quota failed, errno is %{public}d", errno);
+    LOGE("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT FAILED <<< uid=%{public}d, errno=%{public}d",
+        uid, errno);
 #else
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char*>(&dq)) == 0) {
         size = static_cast<int64_t>(dq.dqb_curspace);
-        LOGE("get size by quota success, size is %{public}s", std::to_string(size).c_str());
+        LOGI("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT SUCCESS <<< uid=%{public}d, size=%{public}lld",
+            uid, static_cast<long long>(size));
         return E_OK;
     }
-    LOGE("get size by quota failed, errno is %{public}d", errno);
+    LOGE("[L2:QuotaManager] GetOccupiedSpaceForUid: <<< EXIT FAILED <<< uid=%{public}d, errno=%{public}d",
+        uid, errno);
 #endif
     return E_QUOTA_CTL_KERNEL_ERR;
 }
@@ -150,11 +157,11 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 void QuotaManager::GetUidStorageStats(std::string &storageStatus,
     const std::map<int32_t, std::string> &bundleNameAndUid)
 {
-    LOGI("GetUidStorageStats begin!");
+    LOGI("[L2:QuotaManager] GetUidStorageStats: >>> ENTER <<<");
     struct AllAppVec allVec;
     auto ret = ParseConfigFile(CONFIG_FILE_PATH, allVec.sysSaVec);
     if (ret != E_OK) {
-        LOGE("parsePasswd File failed.");
+        LOGE("[L2:QuotaManager] GetUidStorageStats: <<< EXIT FAILED <<< parse passwd file failed");
         return;
     }
     uint64_t iNodes = 0;
@@ -184,7 +191,7 @@ void QuotaManager::GetUidStorageStats(std::string &storageStatus,
         extraData << "{otherAppVec data is null}" << std::endl;
     }
     storageStatus = extraData.str();
-    LOGI("GetUidStorageStats end!");
+    LOGI("[L2:QuotaManager] GetUidStorageStats: <<< EXIT SUCCESS <<<");
 }
 
 void QuotaManager::GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData, bool isSaVec)
@@ -202,23 +209,28 @@ void QuotaManager::GetSaOrOtherTotal(const std::vector<UidSaInfo> &vec, std::ost
 
 int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
 {
+    LOGD("[L2:QuotaManager] GetFileData: >>> ENTER <<< path=%{public}s", path.c_str());
     if (path.empty() || path.size() >= PATH_MAX) {
+        LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< path is invalid or too long");
         return E_FILE_PATH_INVALID;
     }
 
     char realPath[PATH_MAX] = {0x00};
     if (!realpath(path.c_str(), realPath)) {
+        LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< realpath failed, errno=%{public}d", errno);
         return E_FILE_PATH_INVALID;
     }
 
     // 确保规范化后的路径在预期范围内
     std::string normalizedPath(realPath);
     if (normalizedPath != path) {
+        LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< normalized path mismatch");
         return E_FILE_PATH_INVALID;
     }
 
     std::ifstream infile(normalizedPath, std::ios::in);
     if (!infile.is_open()) {
+        LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< open file failed, errno=%{public}d", errno);
         return E_OPEN_JSON_FILE_ERROR;
     }
 
@@ -229,6 +241,8 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
         }
         // 添加长度限制
         if (line.size() > LINE_MAX_LEN) {
+            LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< line too long, len=%{public}zu",
+                line.size());
             return E_NON_ACCESS;
         }
 
@@ -236,33 +250,37 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
         if (StringToInt64(line, listNum)) {
             // 检查加法溢出
             if (size > INT64_MAX - listNum) {
+                LOGE("[L2:QuotaManager] GetFileData: <<< EXIT FAILED <<< size overflow");
                 return E_NON_ACCESS;
             }
             size += listNum;
         }
     }
+    LOGD("[L2:QuotaManager] GetFileData: <<< EXIT SUCCESS <<< size=%{public}lld",
+        static_cast<long long>(size));
     return E_OK;
 }
 
 bool QuotaManager::StringToInt64(const std::string& str, int64_t& out_value)
 {
     if (str.empty() || str.size() > 20) { // 20是INT64_MAX的字符串长度
-        LOGE("Invalid input length");
+        LOGE("[L2:QuotaManager] StringToInt64: <<< EXIT FAILED <<< invalid input length, len=%{public}zu",
+            str.size());
         return false;
     }
     auto result = std::from_chars(str.data(), str.data() + str.size(), out_value);
     if (result.ec == std::errc::invalid_argument) {
-        LOGE("Invalid argument");
+        LOGE("[L2:QuotaManager] StringToInt64: <<< EXIT FAILED <<< invalid argument");
         return false;
     }
 
     if (result.ec == std::errc::result_out_of_range) {
-        LOGE("Integer overflow");
+        LOGE("[L2:QuotaManager] StringToInt64: <<< EXIT FAILED <<< integer overflow");
         return false;
     }
 
     if (result.ptr != str.data() + str.size()) {
-        LOGE("The string contains invalid characters");
+        LOGE("[L2:QuotaManager] StringToInt64: <<< EXIT FAILED <<< invalid characters in string");
         return false;
     }
 
@@ -354,16 +372,16 @@ bool QuotaManager::GetUid32FromEntry(const std::string &entry, int32_t &outUid32
 
 int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec)
 {
-    LOGI("pasePasswdFile begin!");
+    LOGI("[L2:QuotaManager] ParseConfigFile: >>> ENTER <<< path=%{private}s", path.c_str());
     char realPath[PATH_MAX] = {0x00};
     if (realpath(path.c_str(), realPath) == nullptr) {
-        LOGE("path not valid, path = %{private}s", path.c_str());
+        LOGE("[L2:QuotaManager] ParseConfigFile: <<< EXIT FAILED <<< path invalid, errno=%{public}d", errno);
         return E_JSON_PARSE_ERROR;
     }
 
     std::ifstream infile(std::string(realPath), std::ios::in);
     if (!infile.is_open()) {
-        LOGE("Open file failed, errno = %{public}d", errno);
+        LOGE("[L2:QuotaManager] ParseConfigFile: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
         return E_OPEN_JSON_FILE_ERROR;
     }
 
@@ -378,7 +396,7 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struc
         }
     }
     infile.close();
-    LOGI("pasePasswdFile end!");
+    LOGI("[L2:QuotaManager] ParseConfigFile: <<< EXIT SUCCESS <<< entries=%{public}zu", vec.size());
     return E_OK;
 }
 
@@ -418,14 +436,15 @@ void QuotaManager::SortAndCutSaInfoVec(std::vector<struct UidSaInfo> &vec)
 
 void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t &iNodes)
 {
-    LOGI("GetOccupiedSpaceForUidList begin!");
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForUidList: >>> ENTER <<<");
     int32_t curUid = 0;
     int32_t count = 0;
     std::map<int32_t, int64_t> userAppSizeMap;
     while (count < MAX_UID_COUNT) {
         KernelNextDqBlk dq;
         if (quotactl(QCMD(Q_GETNEXTQUOTA_LOCAL, USRQUOTA), DATA_DEV_PATH, curUid, reinterpret_cast<char*>(&dq)) != 0) {
-            LOGE("failed to get next quota, uid is %{public}d, errno is %{public}d,", curUid, errno);
+            LOGE("[L2:QuotaManager] GetOccupiedSpaceForUidList: <<< EXIT FAILED <<< uid=%{public}d, errno=%{public}d",
+                curUid, errno);
             break;
         }
         int32_t dqUid = static_cast<int32_t>(dq.dqbId);
@@ -463,7 +482,8 @@ void QuotaManager::GetOccupiedSpaceForUidList(struct AllAppVec &allVec, uint64_t
         UidSaInfo info = {pair.first, "userId", pair.second};
         allVec.sysSaVec.push_back(info);
     }
-    LOGI("GetOccupiedSpaceForUidList end!");
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForUidList: <<< EXIT SUCCESS <<< count=%{public}d, iNodes=%{public}llu",
+        count, static_cast<unsigned long long>(iNodes));
 }
 
 void QuotaManager::AssembleSysAppVec(int32_t dqUid, const KernelNextDqBlk &dq,
@@ -480,86 +500,105 @@ void QuotaManager::AssembleSysAppVec(int32_t dqUid, const KernelNextDqBlk &dq,
 
 static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
 {
-    LOGE("GetOccupiedSpaceForGid gid:%{public}d", gid);
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForGid: >>> ENTER <<< gid=%{public}d", gid);
+
     if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
+        LOGE("[L2:QuotaManager] GetOccupiedSpaceForGid: <<< EXIT FAILED <<< initialise quota mounts failed");
         return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
     device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
-        LOGE("skip when device no quotas present");
+        LOGI("[L2:QuotaManager] GetOccupiedSpaceForGid: <<< EXIT SUCCESS <<< no quotas present, skipped");
         return E_OK;
     }
 
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), device.c_str(), gid, reinterpret_cast<char*>(&dq)) != 0) {
-        LOGE("Failed to get quotactl, errno : %{public}d", errno);
+        LOGE("[L2:QuotaManager] GetOccupiedSpaceForGid: <<< EXIT FAILED <<< gid=%{public}d, errno=%{public}d",
+            gid, errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForGid size:%{public}s", std::to_string(size).c_str());
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForGid: <<< EXIT SUCCESS <<< gid=%{public}d, size=%{public}lld",
+        gid, static_cast<long long>(size));
     return E_OK;
 }
 
 
 static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
 {
-    LOGE("GetOccupiedSpaceForPrjId prjId:%{public}d", prjId);
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForPrjId: >>> ENTER <<< prjId=%{public}d", prjId);
+
     if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
+        LOGE("[L2:QuotaManager] GetOccupiedSpaceForPrjId: <<< EXIT FAILED <<< initialise quota mounts failed");
         return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
     device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
-        LOGE("skip when device no quotas present");
+        LOGI("[L2:QuotaManager] GetOccupiedSpaceForPrjId: <<< EXIT SUCCESS <<< no quotas present, skipped");
         return E_OK;
     }
 
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, PRJQUOTA), device.c_str(), prjId, reinterpret_cast<char*>(&dq)) != 0) {
-        LOGE("Failed to get quotactl, errno : %{public}d", errno);
+        LOGE("[L2:QuotaManager] GetOccupiedSpaceForPrjId: <<< EXIT FAILED <<< prjId=%{public}d, errno=%{public}d",
+            prjId, errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForPrjId size:%{public}s", std::to_string(size).c_str());
+    LOGI("[L2:QuotaManager] GetOccupiedSpaceForPrjId: <<< EXIT SUCCESS <<< prjId=%{public}d, size=%{public}lld",
+        prjId, static_cast<long long>(size));
     return E_OK;
 }
 
 int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
+    LOGI("[L2:QuotaManager] GetOccupiedSpace: >>> ENTER <<< idType=%{public}d, id=%{public}d", idType, id);
+
+    int32_t ret;
     switch (idType) {
         case USRID:
-            return GetOccupiedSpaceForUid(id, size);
+            ret = GetOccupiedSpaceForUid(id, size);
             break;
         case GRPID:
-            return GetOccupiedSpaceForGid(id, size);
+            ret = GetOccupiedSpaceForGid(id, size);
             break;
         case PRJID:
-            return GetOccupiedSpaceForPrjId(id, size);
+            ret = GetOccupiedSpaceForPrjId(id, size);
             break;
         default:
+            LOGE("[L2:QuotaManager] GetOccupiedSpace: <<< EXIT FAILED <<< invalid idType=%{public}d", idType);
             return E_NON_EXIST;
     }
-    return E_OK;
+
+    if (ret == E_OK) {
+        LOGI("[L2:QuotaManager] GetOccupiedSpace: <<< EXIT SUCCESS <<< idType=%{public}d, id=%{public}d,"
+            "size=%{public}lld", idType, id, static_cast<long long>(size));
+    } else {
+        LOGE("[L2:QuotaManager] GetOccupiedSpace: <<< EXIT FAILED <<< idType=%{public}d, id=%{public}d, ret=%{public}d",
+            idType, id, ret);
+    }
+    return ret;
 }
 
 int32_t QuotaManager::SetBundleQuota(int32_t uid, const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
+    LOGI("[L2:QuotaManager] SetBundleQuota: >>> ENTER <<< uid=%{public}d, path=%{public}s, limit=%{public}dMB",
+        uid, bundleDataDirPath.c_str(), limitSizeMb);
+
     if (bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
-        LOGE("Calling the function SetBundleQuota with invalid param");
+        LOGE("[L2:QuotaManager] SetBundleQuota: <<< EXIT FAILED <<< invalid params");
         return E_PARAMS_INVALID;
     }
 
-    LOGE("SetBundleQuota Start, uid is %{public}d, bundleDataDirPath is %{public}s, "
-         "limit is %{public}d.", uid, bundleDataDirPath.c_str(), limitSizeMb);
     if (InitialiseQuotaMounts() != true) {
-        LOGE("Failed to initialise quota mounts");
+        LOGE("[L2:QuotaManager] SetBundleQuota: <<< EXIT FAILED <<< initialise quota mounts failed");
         return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
@@ -568,65 +607,74 @@ int32_t QuotaManager::SetBundleQuota(int32_t uid, const std::string &bundleDataD
         device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     }
     if (device.empty()) {
-        LOGE("skip when device no quotas present");
+        LOGI("[L2:QuotaManager] SetBundleQuota: <<< EXIT SUCCESS <<< no quotas present, skipped");
         return E_OK;
     }
 
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
-        LOGE("Failed to get hard quota, errno : %{public}d", errno);
+        LOGE("[L2:QuotaManager] SetBundleQuota: <<< EXIT FAILED <<< get quota failed, uid=%{public}d, errno=%{public}d",
+             uid, errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     // dqb_bhardlimit is count of 1kB blocks, dqb_curspace is bytes
     struct statvfs stat;
     if (statvfs(bundleDataDirPath.c_str(), &stat) != 0) {
-        LOGE("Failed to statvfs, errno : %{public}d", errno);
+        LOGE("[L2:QuotaManager] SetBundleQuota: <<< EXIT FAILED <<< statvfs failed, errno=%{public}d", errno);
         return E_STAT_VFS_KERNEL_ERR;
     }
 
     dq.dqb_valid = QIF_LIMITS;
     dq.dqb_bhardlimit = (uint32_t)limitSizeMb * ONE_MB;
     if (quotactl(QCMD(Q_SETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
-        LOGE("Failed to set hard quota, errno : %{public}d", errno);
+        LOGE("[L2:QuotaManager] SetBundleQuota: <<< EXIT FAILED <<< set quota failed, uid=%{public}d, errno=%{public}d",
+             uid, errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     } else {
-        LOGD("Applied hard quotas ok");
+        LOGI("[L2:QuotaManager] SetBundleQuota: <<< EXIT SUCCESS <<< uid=%{public}d, limit=%{public}dMB",
+             uid, limitSizeMb);
         return E_OK;
     }
 }
 
 int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit)
 {
+    LOGI("[L2:QuotaManager] SetQuotaPrjId: >>> ENTER <<< path=%{public}s, prjId=%{public}d, inherit=%{public}d",
+        path.c_str(), prjId, inherit);
+
     struct fsxattr fsx;
     char *realPath = realpath(path.c_str(), nullptr);
     if (realPath == nullptr) {
-        LOGE("realpath failed");
+        LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< realpath failed, errno=%{public}d", errno);
         return E_PARAMS_NULLPTR_ERR;
     }
     FILE *f = fopen(realPath, "r");
     free(realPath);
     if (f == nullptr) {
-        LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< open failed, path=%{public}s, errno=%{public}d",
+            path.c_str(), errno);
         return E_SYS_KERNEL_ERR;
     }
     int fd = fileno(f);
     if (fd < 0) {
         (void)fclose(f);
+        LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< fileno failed");
         return E_SYS_KERNEL_ERR;
     }
     if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
-        LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< get xattr failed, errno=%{public}d", errno);
         (void)fclose(f);
         return E_SYS_KERNEL_ERR;
     }
     if (fsx.fsx_projid == static_cast<uint32_t>(prjId)) {
         (void)fclose(f);
+        LOGI("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT SUCCESS <<< already set, prjId=%{public}d", prjId);
         return E_OK;
     }
     fsx.fsx_projid = static_cast<uint32_t>(prjId);
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
-        LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< set xattr failed, errno=%{public}d", errno);
         (void)fclose(f);
         return E_SYS_KERNEL_ERR;
     }
@@ -634,18 +682,20 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     if (inherit) {
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
-            LOGE("Failed to get flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< get flags failed, errno=%{public}d", errno);
             (void)fclose(f);
             return E_SYS_KERNEL_ERR;
         }
         flags |= FS_PROJINHERIT_FL;
         if (ioctl(fd, FS_IOC_SETFLAGS, &flags) == -1) {
-            LOGE("Failed to set flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            LOGE("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT FAILED <<< set flags failed, errno=%{public}d", errno);
             (void)fclose(f);
             return E_SYS_KERNEL_ERR;
         }
     }
     (void)fclose(f);
+    LOGI("[L2:QuotaManager] SetQuotaPrjId: <<< EXIT SUCCESS <<< path=%{public}s, prjId=%{public}d",
+        path.c_str(), prjId);
     return E_OK;
 }
 
@@ -657,7 +707,8 @@ int32_t QuotaManager::AddBlksRecurse(const std::string &path, int64_t &blks, uid
     }
     DIR *dir = opendir(path.c_str());
     if (!dir) {
-        LOGE("open dir %{public}s failed, errno %{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] AddBlksRecurse: <<< EXIT FAILED <<< open dir failed, path=%{public}s, errno=%{public}d",
+            path.c_str(), errno);
         return E_STATISTIC_OPEN_DIR_FAILED;
     }
     int ret = E_OK;
@@ -682,7 +733,8 @@ int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
         int32_t errnoTmp = errno;
         std::string extraData = "path=" + path + ",kernelCode=" + std::to_string(errnoTmp);
         StorageService::StorageRadar::ReportSpaceRadar("AddBlks", E_STATISTIC_STAT_FAILED, extraData);
-        LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] AddBlks: <<< EXIT FAILED <<< lstat failed, path=%{public}s, errno=%{public}d",
+            path.c_str(), errno);
         return E_STATISTIC_STAT_FAILED;
     }
     if (uid == st.st_uid) {
@@ -693,11 +745,12 @@ int32_t QuotaManager::AddBlks(const std::string &path, int64_t &blks, uid_t uid)
 
 int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks)
 {
-    LOGI("GetDqBlkSpacesByUids start, uids size: %{public}zu", uids.size());
+    LOGI("[L2:QuotaManager] GetDqBlkSpacesByUids: >>> ENTER <<< uids size=%{public}zu", uids.size());
+
     dqBlks.clear();
     for (auto &uid : uids) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            LOGI("GetDqBlkSpacesByUids stopped by stopScanFlg");
+            LOGI("[L2:QuotaManager] GetDqBlkSpacesByUids: stopped by stopScanFlag");
             std::vector<NextDqBlk>().swap(dqBlks);
             return E_ERR;
         }
@@ -706,7 +759,8 @@ int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std
         return E_NOT_SUPPORT;
 #else
         if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char *>(&dq)) != 0) {
-            LOGE("get size by quota failed, size is %{public}s", std::to_string(dq.dqb_curspace).c_str());
+            LOGE("[L2:QuotaManager] GetDqBlkSpacesByUids: <<< EXIT FAILED <<< uid=%{public}d, errno=%{public}d",
+                uid, errno);
             std::vector<NextDqBlk>().swap(dqBlks);
             return E_ERR;
         }
@@ -717,36 +771,36 @@ int32_t QuotaManager::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std
                          uid);
         dqBlks.push_back(nextDq);
     }
-    LOGI("GetDqBlkSpacesByUids end, dqBlks size: %{public}zu", dqBlks.size());
+    LOGI("[L2:QuotaManager] GetDqBlkSpacesByUids: end, dqBlks size: %{public}zu", dqBlks.size());
     return E_OK;
 }
 
 int32_t QuotaManager::GetSystemDataSize(int64_t &otherUidSizeSum)
 {
-    LOGI("QuotaManager::GetSystemDataSize start");
+    LOGI("[L2:QuotaManager] GetSystemDataSize: >>> ENTER <<<");
     otherUidSizeSum = 0;
     std::vector<int32_t> uidList;
     int32_t ret = ParseSystemDataConfigFile(uidList);
     if (ret != E_OK) {
-        LOGE("GetSystemDataSize ParseSystemDataConfigFile failed, ret=%{public}d", ret);
+        LOGE("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
         return E_GET_SYSTEM_DATA_SIZE_ERROR;
     }
     int64_t systemCacheSize = 0;
     ret = GetSystemCacheSize(uidList, systemCacheSize);
     if (ret != E_OK) {
-        LOGE("GetSystemDataSize GetSystemCacheSize failed, ret=%{public}d", ret);
+        LOGE("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
         systemCacheSize = 0;
     }
-    LOGI("GetSystemDataSize system_cache=%{public}lld", static_cast<long long>(systemCacheSize));
+    LOGI("[L2:QuotaManager] GetSystemDataSize: system_cache=%{public}lld", static_cast<long long>(systemCacheSize));
     int64_t metaDataSize = 0;
     ret = GetMetaDataSize(metaDataSize);
     if (ret != E_OK) {
-        LOGW("GetSystemDataSize GetMetaDataSize failed, ret=%{public}d", ret);
+        LOGW("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
         metaDataSize = 0;
     }
-    LOGI("GetSystemDataSize filesystem_metadata=%{public}lld", static_cast<long long>(metaDataSize));
+    LOGI("[L2:QuotaManager] GetSystemDataSize: filesystem_metadata=%{public}lld", static_cast<long long>(metaDataSize));
     otherUidSizeSum = systemCacheSize + metaDataSize;
-    LOGI("GetSystemDataSize end, total=%{public}lld (cache=%{public}lld + meta=%{public}lld)",
+    LOGI("[L2:QuotaManager] GetSystemDataSize: end, total=%{public}lld (cache=%{public}lld + meta=%{public}lld)",
         static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemCacheSize),
         static_cast<long long>(metaDataSize));
     return E_OK;
@@ -758,20 +812,21 @@ int32_t QuotaManager::ParseSystemDataConfigFile(std::vector<int32_t> &uidList)
     char buf[MAX_PATH_LEN] = { 0 };
     char *configPath = GetOneCfgFile(path.c_str(), buf, MAX_PATH_LEN);
     if (configPath == NULL) {
-        LOGE("config path is NULL");
+        LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: config path is NULL");
         return E_PARAMS_INVALID;
     }
     char canonicalBuf[PATH_MAX] = { 0 };
     char *canonicalPath = realpath(configPath, canonicalBuf);
     if (canonicalPath == NULL || canonicalPath[0] == '\0' || strlen(canonicalPath) >= MAX_PATH_LEN) {
-        LOGE("get ccm config file path failed");
+        LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: get ccm config file path failed");
         canonicalPath = NULL;
         return E_PARAMS_INVALID;
     }
     canonicalBuf[PATH_MAX - 1] = '\0';
     std::ifstream configFile(canonicalBuf);
     if (!configFile.is_open()) {
-        LOGE("ParseSystemDataConfigFile cannot open config file: %{public}s, errno: %{public}d", canonicalPath, errno);
+        LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: ParseSystemDataConfigFile cannot open config file:"
+            "%{public}s, errno: %{public}d", canonicalPath, errno);
         canonicalPath = NULL;
         return E_PARAMS_INVALID;
     }
@@ -780,12 +835,12 @@ int32_t QuotaManager::ParseSystemDataConfigFile(std::vector<int32_t> &uidList)
     canonicalPath = NULL;
     cJSON* root = cJSON_Parse(jsonString.c_str());
     if (root == NULL) {
-        LOGE("ParseSystemDataConfigFile cJSON_Parse failed");
+        LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: ParseSystemDataConfigFile cJSON_Parse failed");
         return E_PARAMS_INVALID;
     }
     cJSON* uidArray = cJSON_GetObjectItem(root, SYSTEM_DATA_KEY);
     if (uidArray == NULL || !cJSON_IsArray(uidArray)) {
-        LOGE("ParseSystemDataConfigFile uidArray is null or not an array");
+        LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: ParseSystemDataConfigFile uidArray is null or not an array");
         cJSON_Delete(root);
         return E_PARAMS_INVALID;
     }
@@ -798,13 +853,14 @@ int32_t QuotaManager::ParseSystemDataConfigFile(std::vector<int32_t> &uidList)
         }
     }
     cJSON_Delete(root);
-    LOGI("ParseSystemDataConfigFile loaded %{public}zu UIDs from config file", uidList.size());
+    LOGI("[L2:QuotaManager] ParseSystemDataConfigFile: ParseSystemDataConfigFile loaded %{public}zu"
+        "UIDs from config file", uidList.size());
     return E_OK;
 }
 
 int32_t QuotaManager::GetSystemCacheSize(const std::vector<int32_t> &uidList, int64_t &cacheSize)
 {
-    LOGI("GetSystemCacheSize start, uidList size=%{public}zu", uidList.size());
+    LOGI("[L2:QuotaManager] GetSystemCacheSize: start, uidList size=%{public}zu", uidList.size());
 #ifdef ENABLE_EMULATOR
     LOGW("GetSystemCacheSize not support on emulator");
     return E_NOT_SUPPORT;
@@ -816,17 +872,19 @@ int32_t QuotaManager::GetSystemCacheSize(const std::vector<int32_t> &uidList, in
         }
         struct dqblk dq;
         if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), DATA_DEV_PATH, uid, reinterpret_cast<char *>(&dq)) != 0) {
-            LOGW("GetSystemCacheSize quotactl failed for uid=%{public}d, errno=%{public}d", uid, errno);
+            LOGW("[L2:QuotaManager] GetSystemCacheSize: quotactl failed for uid=%{public}d,"
+                "errno=%{public}d", uid, errno);
             StorageService::StorageRadar::ReportSpaceRadar("GetSystemCacheSize", E_GET_SYSTEM_DATA_SIZE_ERROR,
                 "uid:" + std::to_string(uid) + ",errno:" + std::to_string(errno));
             continue;
         }
         int64_t uidSize = static_cast<int64_t>(dq.dqb_curspace);
         cacheSize += uidSize;
-        LOGD("GetSystemCacheSize uid=%{public}d, size=%{public}lld", uid, static_cast<long long>(uidSize));
+        LOGD("[L2:QuotaManager] GetSystemCacheSize: uid=%{public}d, size=%{public}lld",
+            uid, static_cast<long long>(uidSize));
     }
 
-    LOGI("GetSystemCacheSize end, cacheSize=%{public}lld", static_cast<long long>(cacheSize));
+    LOGI("[L2:QuotaManager] GetSystemCacheSize: end, cacheSize=%{public}lld", static_cast<long long>(cacheSize));
     return E_OK;
 #endif
 }
@@ -865,6 +923,12 @@ int32_t QuotaManager::GetMetaDataSize(int64_t &metaDataSize)
 int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
     const std::vector<int32_t> &uids)
 {
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        std::string extraData = "path=" + path;
+        StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
+        LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag, current path=%{public}s", path.c_str());
+        return E_ERR;
+    }
     AddBlksMultiUids(path, blks, uids);
     if (!IsDir(path)) {
         return E_OK;
@@ -877,10 +941,24 @@ int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vect
 
     int ret = E_OK;
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if (stopScanFlag_.load(std::memory_order_relaxed)) {
+            std::string extraData = "path=" + path;
+            StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
+            LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag in loop, "
+                 "current dir=%{public}s, next entry=%{public}s", path.c_str(), ent->d_name);
+            closedir(dir);
+            return E_ERR;
+        }
         if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..") == 0)) {
             continue;
         }
         std::string subPath = path + "/" + ent->d_name;
+
+        if (subPath == SCAN_EXCLUDE_PATH) {
+            LOGI("AddBlksRecurseMultiUids skip excluded path: %{public}s", subPath.c_str());
+            continue;
+        }
+
         int32_t retTmp = AddBlksRecurseMultiUids(subPath, blks, uids);
         if (retTmp != E_OK) {
             ret = retTmp;
@@ -924,14 +1002,26 @@ int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &pat
 
     for (size_t pathIdx = 0; pathIdx < paths.size(); ++pathIdx) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            LOGI("GetDirListSpaceByPaths stopped by stopScanFlag");
+            std::string extraData = "path=" + paths[pathIdx];
+            StorageService::StorageRadar::ReportSpaceRadar("GetDirListSpaceByPaths", E_ERR, extraData);
+            LOGE("GetDirListSpaceByPaths stopped by stopScanFlag");
             std::vector<DirSpaceInfo>().swap(resultDirs);
             return E_ERR;
         }
 
         const std::string &path = paths[pathIdx];
+        auto pathStartTime = std::chrono::steady_clock::now();
+
         std::vector<int64_t> blks(uids.size(), 0);
         int32_t ret = AddBlksRecurseMultiUids(path, blks, uids);
+        auto pathEndTime = std::chrono::steady_clock::now();
+        auto pathDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            pathEndTime - pathStartTime).count();
+        LOGE("GetDirListSpaceByPaths scan path[%{public}zu/%{public}zu] '%{public}s' "
+             "completed in %{public}lldms, ret=%{public}d",
+             pathIdx + 1, paths.size(), path.c_str(),
+             static_cast<long long>(pathDurationMs), ret);
+
         if (ret != E_OK) {
             LOGW("GetDirListSpaceByPaths AddBlksRecurseMultiUids failed for %{public}s, ret=%{public}d",
                  path.c_str(), ret);
@@ -946,6 +1036,11 @@ int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &pat
             LOGD("GetDirListSpaceByIds path=%{public}s, uid=%{public}d, size=%{public}lld",
                  path.c_str(), uids[uidIdx], static_cast<long long>(dirSize));
         }
+    }
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        LOGE("GetDirListSpaceByPaths stopped by stopScanFlag after loop");
+        std::vector<DirSpaceInfo>().swap(resultDirs);
+        return E_ERR;
     }
 
     LOGI("GetDirListSpaceByPaths end, result dirs size=%{public}zu", resultDirs.size());
@@ -969,11 +1064,16 @@ void QuotaManager::ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::
     uid_t uid = dirInfo.uid;
     for (const int32_t userId : userIds) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            LOGI("GetDirListSpace stopped by stopScanFlag, userIds");
+            LOGI("[L2:QuotaManager] ProcessDirWithUserId: stopped by stopScanFlag");
             std::vector<DirSpaceInfo>().swap(resultDirs);
             return;
         }
-        std::string userPath = StringPrintf(path.c_str(), userId);
+        std::string userPath = path;
+        std::string_view uidPlaceHolder = "%d";
+        auto pos = path.find(uidPlaceHolder);
+        if (pos != std::string::npos) {
+            userPath.replace(pos, uidPlaceHolder.size(), std::to_string(userId));
+        }
         int64_t blks = 0;
         AddBlksRecurse(userPath, blks, uid);
         int64_t dirSize = blks * BLOCK_BYTE;
@@ -983,7 +1083,8 @@ void QuotaManager::ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::
 
 int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
 {
-    LOGI("GetDirListSpace start, input dirs size: %{public}zu", dirs.size());
+    LOGI("[L2:QuotaManager] GetDirListSpace: >>> ENTER <<< input dirs size=%{public}zu", dirs.size());
+
     std::vector<int32_t> userIds;
     GetAllUserIds(userIds);
     if (userIds.empty()) {
@@ -992,7 +1093,7 @@ int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
     std::vector<DirSpaceInfo> resultDirs;
     for (const auto &dirInfo : dirs) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            LOGI("GetDirListSpace stopped by stopScanFlag, dirs");
+            LOGI("[L2:QuotaManager] GetDirListSpace: stopped by stopScanFlag");
             std::vector<DirSpaceInfo>().swap(resultDirs);
             return E_ERR;
         }
@@ -1006,23 +1107,24 @@ int32_t QuotaManager::GetDirListSpace(std::vector<DirSpaceInfo> &dirs)
         return a.size > b.size;
     });
     dirs = resultDirs;
-    LOGI("GetDirListSpace end, result dirs size: %{public}zu", dirs.size());
+    LOGI("[L2:QuotaManager] GetDirListSpace: <<< EXIT SUCCESS <<< result dirs size=%{public}zu", dirs.size());
     return E_OK;
 }
 
 void QuotaManager::SetStopScanFlag(bool stop)
 {
     stopScanFlag_.store(stop);
-    LOGI("QuotaManager::SetStopScanFlag called with stop=%{public}d", stop);
+    LOGI("[L2:QuotaManager] SetStopScanFlag: stop=%{public}d", stop);
 }
 
 void QuotaManager::GetAncoSizeData(std::string &extraData)
 {
+    LOGI("[L2:QuotaManager] GetAncoSizeData: >>> ENTER <<<");
+
     if (stopScanFlag_.load(std::memory_order_relaxed)) {
-        LOGI("GetAncoSize stopped by stopScanFlg");
+        LOGI("[L2:QuotaManager] GetAncoSizeData: stopped by stopScanFlag");
         return;
     }
-    LOGI("begin get Anco info.");
     std::ostringstream oss;
     uint64_t imageSize = 0;
     GetRmgResourceSize("rgm_hmos", imageSize);
@@ -1041,7 +1143,7 @@ void QuotaManager::GetAncoSizeData(std::string &extraData)
     oss << "{anco dir size:" << ConvertBytesToMB(dirSize, ACCURACY_NUM) << "MB" << std::endl;
     oss << "{anco total size:" << ConvertBytesToMB((imageSize + dirSize), ACCURACY_NUM) << "MB}" << std::endl;
     extraData = oss.str();
-    LOGI("end get Anco info.");
+    LOGI("[L2:QuotaManager] GetAncoSizeData: <<< EXIT SUCCESS <<<");
 }
 
 static std::string HumanReadableSize(long long size)
@@ -1072,12 +1174,13 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
     UserdataDirInfo dirInfo = {path, 0, 0};
 
     if (IsExcludeDir(path.c_str())) {
-        LOGE("scan skip %{public}s", path.c_str());
+        LOGD("[L2:QuotaManager] ScanDirRecurse: skip excluded path=%{public}s", path.c_str());
         return dirInfo;
     }
 
     if (lstat(path.c_str(), &statbuf) != 0) {
-        LOGE(" lstat %{public}s failed, errno:%{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] ScanDirRecurse: lstat failed, path=%{public}s, errno=%{public}d",
+            path.c_str(), errno);
         StorageService::StorageRadar::ReportSpaceRadar("ScanDirRecurse", E_STATISTIC_STAT_FAILED,
             "path:" + path + ",errno:" + std::to_string(errno));
         return dirInfo;
@@ -1090,7 +1193,8 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
     }
     dir = opendir(path.c_str());
     if (dir == nullptr) {
-        LOGE("opendir %{public}s failed, errno:%{public}d", path.c_str(), errno);
+        LOGE("[L2:QuotaManager] ScanDirRecurse: opendir failed, path=%{public}s, errno=%{public}d",
+            path.c_str(), errno);
         return dirInfo;
     }
 
@@ -1110,14 +1214,20 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
     if (dirInfo.totalSize_ >= BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB) {
         scanDirs.push_back(dirInfo);
         std::string sizeStr = HumanReadableSize(dirInfo.totalSize_);
-        LOGE("%{public}s  %{public}d  %{public}s", sizeStr.c_str(), dirInfo.totalCnt_, path.c_str());
+        LOGE("[L2:QuotaManager] ScanDirRecurse: large dir found, size=%{public}s, cnt=%{public}d, path=%{public}s",
+            sizeStr.c_str(), dirInfo.totalCnt_, path.c_str());
     }
     return dirInfo;
 }
 
 int32_t QuotaManager::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
 {
+    LOGI("[L2:QuotaManager] ListUserdataDirInfo: >>> ENTER <<<");
+
     ScanDirRecurse("/data", scanDirs);
+
+    LOGI("[L2:QuotaManager] ListUserdataDirInfo: <<< EXIT SUCCESS <<< scanDirs size=%{public}zu",
+        scanDirs.size());
     return E_OK;
 }
 } // namespace STORAGE_DAEMON

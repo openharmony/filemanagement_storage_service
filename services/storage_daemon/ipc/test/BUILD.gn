@@ -60,6 +60,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
   ]
 
@@ -212,6 +213,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/src",
     "${storage_daemon_path}/ipc/test",
     "${storage_daemon_path}/include/crypto",
+    "${storage_service_common_path}/hiaudit/include",
   ]
 
   sources = [
@@ -222,18 +224,20 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
+    "${storage_daemon_path}/ipc/test/hi_audit_test.cpp",
     "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/mock/mount_manager_mock.cpp",
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
-    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/mock/user_manager_mock.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
+    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
+    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
@@ -274,7 +278,8 @@ ohos_unittest("storage_daemon_provider_test") {
     "ipc:libdbinder",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy"
+    "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_cloud_fuse) {

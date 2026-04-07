@@ -34,6 +34,7 @@ public:
     virtual int32_t Partition(const std::string &diskId, int32_t type) override;
     virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
     virtual int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
+    virtual int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -125,6 +126,23 @@ public:
     virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
         const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
+
+    //disk crypt api
+    virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
+    virtual int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
+    virtual int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
+                                const std::string &pazzword,
+                                const std::string &recoverKey) override;
+    virtual int32_t UpdateCryptPasswd(const std::string &volumeId,
+                                    const std::string &pazzword,
+                                    const std::string &newPazzword) override;
+    virtual int32_t ResetCryptPasswd(const std::string &volumeId,
+                                    const std::string &recoverKey,
+                                    const std::string &newPazzword) override;
+    virtual int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
+    virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

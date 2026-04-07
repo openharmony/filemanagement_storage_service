@@ -40,23 +40,24 @@ constexpr static uint32_t RECOVERY_USER_ID = 300;
 
 RecoveryManager::RecoveryManager()
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] RecoveryManager: >>> ENTER <<< Constructor");
     isSessionOpened = false;
+    LOGI("[L4:RecoverManager] RecoveryManager: <<< EXIT SUCCESS <<< Constructor");
 }
 
 RecoveryManager::~RecoveryManager()
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] ~RecoveryManager: Destructor finished");
 }
 
 bool RecoveryManager::IsEncryptionEnabled()
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] IsEncryptionEnabled: >>> ENTER <<<");
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_Context createKeyContext = {};
     TEEC_Session createKeySession = {};
     if (!OpenSession(createKeyContext, createKeySession)) {
-        LOGE("Open session failed !");
+        LOGE("[L4:RecoverManager] IsEncryptionEnabled: <<< EXIT FAILED <<< Open session failed");
         return true;
     }
 
@@ -68,9 +69,10 @@ bool RecoveryManager::IsEncryptionEnabled()
     uint32_t origin = 0;
     TEEC_Result result = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GET_FULL_DISK_ENCRYPTION_POLICY,
                                             &operation, &origin);
-    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", result, origin);
+    LOGI("[L4:RecoverManager] IsEncryptionEnabled: InvokeCmd ret=%{public}d, origin=%{public}d", result, origin);
     if (result != TEEC_SUCCESS) {
-        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", result, origin);
+        LOGE("[L4:RecoverManager] IsEncryptionEnabled: <<< EXIT FAILED <<< InvokeCmd failed, ret=%{public}d,"
+             "origin=%{public}d", result, origin);
         CloseSession(createKeyContext, createKeySession);
         std::string extraData = "cmd=RK_CMD_ID_GET_FULL_DISK_ENCRYPTION_POLICY,ret=" + std::to_string(result) +
             ",origin=" + std::to_string(origin);
@@ -80,9 +82,10 @@ bool RecoveryManager::IsEncryptionEnabled()
     CloseSession(createKeyContext, createKeySession);
 
     auto policy = std::bitset<sizeof(uint32_t)>(operation.params[TEE_PARAM_INDEX_0].value.a);
+    LOGI("[L4:RecoverManager] IsEncryptionEnabled: <<< EXIT SUCCESS <<< policy.test(0)=%{public}d", policy.test(0));
     return policy.test(0);
 #endif
-    LOGI("success");
+    LOGI("[L4:RecoverManager] IsEncryptionEnabled: <<< EXIT SUCCESS <<< RECOVER_KEY_TEE_ENVIRONMENT not enabled");
     return true;
 }
 
@@ -92,12 +95,13 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
                                       const std::vector<uint8_t> &secret,
                                       const std::vector<KeyBlob> &originIv)
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] CreateRecoverKey: >>> ENTER <<< userId=%{public}u, userType=%{public}u",
+         userId, userType);
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_Context createKeyContext = {};
     TEEC_Session createKeySession = {};
     if (!OpenSession(createKeyContext, createKeySession)) {
-        LOGE("Open session failed !");
+        LOGE("[L4:RecoverManager] CreateRecoverKey: <<< EXIT FAILED <<< Open session failed");
         return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
     uint32_t createKeyOrigin = 0;
@@ -109,6 +113,8 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     if (!token.empty()) {
         auto err = memcpy_s(recoverKeyStr.authToken, AUTH_TOKEN_LEN, token.data(), token.size());
         if (err != EOK) {
+            LOGE("[L4:RecoverManager] CreateRecoverKey: <<< EXIT FAILED <<< memcpy_s failed for token, err=%{public}d",
+                 err);
             CloseSession(createKeyContext, createKeySession);
             return E_MEMORY_OPERATION_ERR;
         }
@@ -116,6 +122,8 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     for (size_t i = 0; i < originIv.size(); ++i) {
         auto err = memcpy_s(recoverKeyStr.rndToTee[i], RND_AND_KEY2_LEN, originIv[i].data.get(), originIv[i].size);
         if (err != EOK) {
+            LOGE("[L4:RecoverManager] CreateRecoverKey: <<< EXIT FAILED <<< memcpy_s failed for"
+                 "originIv[%{public}zu], err=%{public}d", i, err);
             CloseSession(createKeyContext, createKeySession);
             return E_MEMORY_OPERATION_ERR;
         }
@@ -125,11 +133,13 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     operation.params[TEE_PARAM_INDEX_0].tmpref.size = sizeof(recoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GEN_RECOVERY_KEY,
                                          &operation, &createKeyOrigin);
-    LOGW("SD_DURATION: InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}zu, delay = %{public}s",
+    LOGW("[L4:RecoverManager] CreateRecoverKey: SD_DURATION: InvokeCmd ret=%{public}d, origin=%{public}d, token"
+         "size=%{public}zu, delay=%{public}s",
         ret, createKeyOrigin, token.size(), StorageService::StorageRadar::ReportDuration("CREATE RECOVERY KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId).c_str());
     if (ret != TEEC_SUCCESS) {
-        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
+        LOGE("[L4:RecoverManager] CreateRecoverKey: <<< EXIT FAILED <<< InvokeCmd failed, ret=%{public}d,"
+             "origin=%{public}d", ret, createKeyOrigin);
         CloseSession(createKeyContext, createKeySession);
         std::string extraData = "cmd=RK_CMD_ID_GEN_RECOVERY_KEY,ret=" + std::to_string(ret) +
             ",origin=" + std::to_string(createKeyOrigin);
@@ -137,28 +147,33 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
         return E_TEEC_GEN_RECOVERY_KEY_ERR;
     }
     CloseSession(createKeyContext, createKeySession);
+#else
+    LOGI("[L4:RecoverManager] CreateRecoverKey: RECOVER_KEY_TEE_ENVIRONMENT not enabled");
 #endif
-    LOGI("success");
+    LOGI("[L4:RecoverManager] CreateRecoverKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return 0;
 }
 
 int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
+    LOGI("[L4:RecoverManager] SetRecoverKey: >>> ENTER <<< keySize=%{public}zu", key.size());
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     SetRecoverKeyStr setRecoverKeyStr;
     int ret = SetRecoverKeyToTee(key, setRecoverKeyStr);
     if (ret != 0) {
-        LOGE("Set recover key to tee failed !");
+        LOGE("[L4:RecoverManager] SetRecoverKey: <<< EXIT FAILED <<< Set recover key to tee failed, ret=%{public}d",
+            ret);
         return ret;
     }
     if (sizeof(setRecoverKeyStr.key2FromTee) != sizeof(setRecoverKeyStr.rndFromTee)) {
-        LOGE("key2 size dose not match iv size !");
+        LOGE("[L4:RecoverManager] SetRecoverKey: <<< EXIT FAILED <<< key2 size dose not match iv size");
         return E_PARAMS_INVALID;
     }
     int rndNum = sizeof(setRecoverKeyStr.rndFromTee) / RND_AND_KEY2_LEN;
     int key2Num = sizeof(setRecoverKeyStr.key2FromTee) / RND_AND_KEY2_LEN;
     if (rndNum != RND_AND_KEY2_NUMS || key2Num != RND_AND_KEY2_NUMS) {
-        LOGE("rnd and key2 num is not match ! rndNum: %{public}d, key2Num: %{public}d", rndNum, key2Num);
+        LOGE("[L4:RecoverManager] SetRecoverKey: <<< EXIT FAILED <<< rnd and key2 num is not match,"
+            "rndNum=%{public}d, key2Num=%{public}d", rndNum, key2Num);
         return E_PARAMS_INVALID;
     }
 
@@ -172,7 +187,8 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
         KeyBlob keyDesc;
         auto errNo = GenerateKeyDesc(ivBlob, keyDesc);
         if (errNo != E_OK) {
-            LOGE("Generate key desc failed !");
+            LOGE("[L4:RecoverManager] SetRecoverKey: <<< EXIT FAILED <<< Generate key desc failed, i=%{public}d,"
+                "errNo=%{public}d", i, errNo);
             return errNo;
         }
         auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -181,28 +197,33 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
             ivBlob.Clear();
             keyDesc.Clear();
             key2Blob.Clear();
-            LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
+            LOGE("[L4:RecoverManager] SetRecoverKey: <<< EXIT FAILED <<< install type %{public}d to keyring failed",
+                ELX_TYPE_ARR[i]);
             return ret;
         }
         (void)KeyManagerExt::GetInstance().SetRecoverKey(RECOVERY_USER_ID, ELX_TYPE_ARR[i], ivBlob);
         auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING", startTime);
-        LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());
+        LOGI("[L4:RecoverManager] SetRecoverKey: SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime=%{public}s",
+            delay.c_str());
         ivBlob.Clear();
         keyDesc.Clear();
         key2Blob.Clear();
     }
+    LOGI("[L4:RecoverManager] SetRecoverKey: <<< EXIT SUCCESS <<<");
+#else
+    LOGI("[L4:RecoverManager] SetRecoverKey: RECOVER_KEY_TEE_ENVIRONMENT not enabled");
 #endif
     return 0;
 }
 
 int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetRecoverKeyStr &setRecoverKeyStr)
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] SetRecoverKeyToTee: >>> ENTER <<< keySize=%{public}zu", key.size());
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_Context setKeyContext = {};
     TEEC_Session setKeySession = {};
     if (!OpenSession(setKeyContext, setKeySession)) {
-        LOGE("Open session failed !");
+        LOGE("[L4:RecoverManager] SetRecoverKeyToTee: <<< EXIT FAILED <<< Open session failed");
         return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -216,9 +237,10 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
     operation.params[TEE_PARAM_INDEX_1].tmpref.size = sizeof(setRecoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&setKeySession, TaCmdId::RK_CMD_ID_DECRYPT_CLASS_KEY, &operation,
                                          &setKeyOrigin);
-    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+    LOGI("[L4:RecoverManager] SetRecoverKeyToTee: InvokeCmd ret=%{public}d, origin=%{public}d", ret, setKeyOrigin);
     if (ret != TEEC_SUCCESS) {
-        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+        LOGE("[L4:RecoverManager] SetRecoverKeyToTee: <<< EXIT FAILED <<< InvokeCmd failed, ret=%{public}d,"
+            "origin=%{public}d", ret, setKeyOrigin);
         CloseSession(setKeyContext, setKeySession);
         std::string extraData = "cmd=RK_CMD_ID_DECRYPT_CLASS_KEY,ret=" + std::to_string(ret) +
             ",origin=" + std::to_string(setKeyOrigin);
@@ -228,8 +250,11 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
     }
     auto delay = StorageService::StorageRadar::ReportDuration("SET RECOVERY KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
-    LOGI("SD_DURATION: SET RECOVERY KEY, delayTime = %{public}s", delay.c_str());
+    LOGI("[L4:RecoverManager] SetRecoverKeyToTee: SD_DURATION: SET RECOVERY KEY, delayTime=%{public}s", delay.c_str());
     CloseSession(setKeyContext, setKeySession);
+    LOGI("[L4:RecoverManager] SetRecoverKeyToTee: <<< EXIT SUCCESS <<<");
+#else
+    LOGI("[L4:RecoverManager] SetRecoverKeyToTee: RECOVER_KEY_TEE_ENVIRONMENT not enabled");
 #endif
     return 0;
 }
@@ -237,23 +262,26 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
 int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
     const std::vector<uint8_t> &key, std::vector<KeyBlob> &originIvs)
 {
-    LOGI("reset secret userId: %{public}d", userId);
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKey: >>> ENTER <<< userId=%{public}u, rkType=%{public}u",
+        userId, rkType);
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     SetRecoverKeyStr setRecoverKeyStr;
     int ret = ResetSecretWithRecoveryKeyToTee(userId, rkType, key, setRecoverKeyStr);
     if (ret != 0) {
-        LOGE("Set recover key to tee failed !");
+        LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< Set recover key to tee failed,"
+            "ret=%{public}d", ret);
         return ret;
     }
 
     if (sizeof(setRecoverKeyStr.key2FromTee) != sizeof(setRecoverKeyStr.rndFromTee)) {
-        LOGE("key2 size dose not match iv size !");
+        LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< key2 size dose not match iv size");
         return E_PARAMS_INVALID;
     }
     int rndNum = sizeof(setRecoverKeyStr.rndFromTee) / RND_AND_KEY2_LEN;
     int key2Num = sizeof(setRecoverKeyStr.key2FromTee) / RND_AND_KEY2_LEN;
     if (rndNum != RND_AND_KEY2_NUMS || key2Num != RND_AND_KEY2_NUMS) {
-        LOGE("rnd and key2 num is not match ! rndNum: %{public}d, key2Num: %{public}d", rndNum, key2Num);
+        LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< rnd and key2 num is not match,"
+            "rndNum=%{public}d, key2Num=%{public}d", rndNum, key2Num);
         return E_PARAMS_INVALID;
     }
 
@@ -267,21 +295,27 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rk
         KeyBlob keyDesc;
         auto errNo = GenerateKeyDesc(ivBlob, keyDesc);
         if (errNo != E_OK) {
-            LOGE("Generate key desc failed !");
+            LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< Generate key desc failed,"
+                "i=%{public}d, errNo=%{public}d", i, errNo);
             return errNo;
         }
         auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
         if (ret != E_OK) {
-            LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
+            LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< install type %{public}d to"
+                "keyring failed", ELX_TYPE_ARR[i]);
             return ret;
         }
         (void)KeyManagerExt::GetInstance().SetRecoverKey(userId, ELX_TYPE_ARR[i], ivBlob);
         auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING",
             startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
-        LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());
+        LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKey: SD_DURATION: INSTALL KEY DESC TO KEYRING,"
+            "delayTime=%{public}s", delay.c_str());
         originIvs.emplace_back(ivBlob);
     }
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+#else
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKey: RECOVER_KEY_TEE_ENVIRONMENT not enabled");
 #endif
     return E_OK;
 }
@@ -289,12 +323,13 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rk
 int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32_t rkType,
     const std::vector<uint8_t> &key, SetRecoverKeyStr &setRecoverKeyStr)
 {
-    LOGI("reset secret with recovery key");
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: >>> ENTER <<< userId=%{public}u, rkType=%{public}u",
+         userId, rkType);
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_Context setKeyContext = {};
     TEEC_Session setKeySession = {};
     if (!OpenSession(setKeyContext, setKeySession)) {
-        LOGE("Open session failed !");
+        LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: <<< EXIT FAILED <<< Open session failed");
         return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
 
@@ -312,9 +347,11 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32
     operation.params[TEE_PARAM_INDEX_2].tmpref.size = sizeof(setRecoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&setKeySession, TaCmdId::RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD, &operation,
                                          &setKeyOrigin);
-    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: InvokeCmd ret=%{public}d, origin=%{public}d",
+         ret, setKeyOrigin);
     if (ret != TEEC_SUCCESS) {
-        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+        LOGE("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: <<< EXIT FAILED <<< InvokeCmd failed,"
+             "ret=%{public}d, origin=%{public}d", ret, setKeyOrigin);
         CloseSession(setKeyContext, setKeySession);
         std::string extraData = "cmd=RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD,ret=" + std::to_string(ret) +
             ",origin=" + std::to_string(setKeyOrigin);
@@ -324,8 +361,12 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32
     }
     auto delay = StorageService::StorageRadar::ReportDuration("RESET SECRET WITH RECOVERY KEY",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("SD_DURATION: RESET SECRET WITH RECOVERY KEY, delayTime = %{public}s", delay.c_str());
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: SD_DURATION: RESET SECRET WITH RECOVERY KEY,"
+         "delayTime=%{public}s", delay.c_str());
     CloseSession(setKeyContext, setKeySession);
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+#else
+    LOGI("[L4:RecoverManager] ResetSecretWithRecoveryKeyToTee: RECOVER_KEY_TEE_ENVIRONMENT not enabled");
 #endif
     return E_OK;
 }
@@ -333,29 +374,29 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 bool RecoveryManager::OpenSession(TEEC_Context &context, TEEC_Session &session)
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] OpenSession: >>> ENTER <<<");
     if (isSessionOpened) {
-        LOGE("Tee session has Opened !");
+        LOGE("[L4:RecoverManager] OpenSession: <<< EXIT SUCCESS <<< Tee session has Opened");
         return true;
     }
     TEEC_Result ret = TEEC_InitializeContext(NULL, &context);
     if (ret != TEEC_SUCCESS) {
-        LOGE("recovery tee ctx init failed !");
+        LOGE("[L4:RecoverManager] OpenSession: <<< EXIT FAILED <<< recovery tee ctx init failed, ret=%{public}d", ret);
         TEEC_FinalizeContext(&context);
         isSessionOpened = false;
         StorageRadar::ReportTEEClientResult("OpenSession::TEEC_InitializeContext", ret, DEFAULT_USERID, "");
         return false;
     }
     TEEC_Operation operation;
-    LOGI("Prepare session operation.");
+    LOGI("[L4:RecoverManager] OpenSession: Prepare session operation");
     operation.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
     if (memset_s(&operation, sizeof(TEEC_Operation), 0, sizeof(TEEC_Operation)) != EOK) {
-        LOGE("[OpenSession] memset_s failed !");
+        LOGE("[L4:RecoverManager] OpenSession: <<< EXIT FAILED <<< memset_s failed");
         TEEC_FinalizeContext(&context);
         isSessionOpened = false;
         return false;
     }
-    LOGI("Prepare open session.");
+    LOGI("[L4:RecoverManager] OpenSession: Prepare open session");
     operation.started = SESSION_START_DEFAULT;
     operation.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
     uint32_t retErr = 0;
@@ -363,39 +404,40 @@ bool RecoveryManager::OpenSession(TEEC_Context &context, TEEC_Session &session)
     while (retryCount < MAX_RETRY_COUNT) {
         ret = TEEC_OpenSession(&context, &session, recoverUuid_, TEEC_LOGIN_IDENTIFY, nullptr, &operation, &retErr);
         if (ret == TEEC_SUCCESS) {
-            LOGI("Open session success, has try %{public}u times.", retryCount);
+            LOGI("[L4:RecoverManager] OpenSession: Open session success, has try %{public}u times", retryCount);
             break;
         }
         retryCount++;
-        LOGE("has retry %{public}d times, ret: %{public}d", retryCount, ret);
+        LOGE("[L4:RecoverManager] OpenSession: has retry %{public}u times, ret=%{public}d", retryCount, ret);
         usleep(RETRY_INTERVAL);
     }
 
     if (ret != TEEC_SUCCESS) {
-        LOGE("open session failed !");
+        LOGE("[L4:RecoverManager] OpenSession: <<< EXIT FAILED <<< open session failed, ret=%{public}d", ret);
         CloseSession(context, session);
         StorageRadar::ReportTEEClientResult("OpenSession::TEEC_OpenSession", ret, DEFAULT_USERID, "");
         return false;
     }
     isSessionOpened = true;
-    LOGI("open session success");
+    LOGI("[L4:RecoverManager] OpenSession: <<< EXIT SUCCESS <<<");
     return true;
 }
 
 void RecoveryManager::CloseSession(TEEC_Context &context, TEEC_Session &session)
 {
+    LOGI("[L4:RecoverManager] CloseSession: >>> ENTER <<<");
     TEEC_CloseSession(&session);
     TEEC_FinalizeContext(&context);
     isSessionOpened = false;
-    LOGI("close session success");
+    LOGI("[L4:RecoverManager] CloseSession: <<< EXIT SUCCESS <<<");
 }
 #endif
 
 int32_t RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc)
 {
-    LOGI("enter");
+    LOGI("[L4:RecoverManager] GenerateKeyDesc: >>> ENTER <<<");
     if (ivBlob.IsEmpty()) {
-        LOGE("key is empty");
+        LOGE("[L4:RecoverManager] GenerateKeyDesc: <<< EXIT FAILED <<< key is empty");
         return E_KEY_BLOB_ERROR;
     }
     SHA512_CTX c;
@@ -414,15 +456,16 @@ int32_t RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc
     keyDesc.Alloc(CRYPTO_KEY_DESC_SIZE);
     auto err = memcpy_s(keyDesc.data.get(), keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
     if (err != EOK) {
-        LOGE("memcpy failed ret %{public}d", err);
+        LOGE("[L4:RecoverManager] GenerateKeyDesc: <<< EXIT FAILED <<< memcpy failed, err=%{public}d", err);
         return err;
     }
-    LOGI("succeed");
+    LOGI("[L4:RecoverManager] GenerateKeyDesc: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
+    LOGI("[L4:RecoverManager] InstallKeyDescToKeyring: >>> ENTER <<< keyType=%{public}zu", keyType);
     int ret = E_OK;
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         uint32_t sdpClass;
@@ -433,64 +476,70 @@ int32_t RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &
         }
         ret = InstallEceSece(sdpClass, key2Blob, keyDesc);
         if (ret != E_OK) {
-            LOGE("InstallKeyDescToKeyring failed");
+            LOGE("[L4:RecoverManager] InstallKeyDescToKeyring: <<< EXIT FAILED <<< InstallEceSece failed,"
+                 "keyType=%{public}zu, ret=%{public}d", keyType, ret);
             return ret;
         }
     } else {
         ret = InstallDeCe(key2Blob, keyDesc);
         if (ret != E_OK) {
-            LOGE("InstallKeyToKeyring failed");
+            LOGE("[L4:RecoverManager] InstallKeyDescToKeyring: <<< EXIT FAILED <<< InstallDeCe failed,"
+                 "keyType=%{public}zu, ret=%{public}d", keyType, ret);
             return ret;
         }
     }
+    LOGI("[L4:RecoverManager] InstallKeyDescToKeyring: <<< EXIT SUCCESS <<< keyType=%{public}zu", keyType);
     return E_OK;
 }
 
 
 int32_t RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
+    LOGI("[L4:RecoverManager] InstallDeCe: >>> ENTER <<<");
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
     fskey.size = key2Blob.size;
     auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, key2Blob.data.get(), key2Blob.size);
     if (err != EOK) {
-        LOGE("memcpy failed ret %{public}d", err);
+        LOGE("[L4:RecoverManager] InstallDeCe: <<< EXIT FAILED <<< memcpy failed, err=%{public}d", err);
         return err;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
-        LOGI("no session keyring for fscrypt");
+        LOGI("[L4:RecoverManager] InstallDeCe: no session keyring for fscrypt");
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
-            LOGE("failed to add session keyring");
+            LOGE("[L4:RecoverManager] InstallDeCe: <<< EXIT FAILED <<< failed to add session keyring");
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyDesc.ToString();
-        LOGI("InstallDeCe: prefix: %{public}s", prefix.c_str());
+        LOGI("[L4:RecoverManager] InstallDeCe: prefix=%{public}s", prefix.c_str());
         key_serial_t ks = KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s to keyring, errno %{public}d", prefix.c_str(), errno);
+            LOGE("[L4:RecoverManager] InstallDeCe: Failed to AddKey %{public}s to keyring, errno=%{public}d",
+                 prefix.c_str(), errno);
         }
     }
-    LOGI("success");
+    LOGI("[L4:RecoverManager] InstallDeCe: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
+    LOGI("[L4:RecoverManager] InstallEceSece: >>> ENTER <<< sdpClass=%{public}u", sdpClass);
     EncryptionKeySdp fskey;
     if (key2Blob.size != sizeof(fskey.raw)) {
-        LOGE("Wrong key size is %{public}d", key2Blob.size);
+        LOGE("[L4:RecoverManager] InstallEceSece: <<< EXIT FAILED <<< Wrong key size=%{public}d", key2Blob.size);
         return E_KEY_BLOB_ERROR;
     }
     fskey.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
     auto err = memcpy_s(fskey.raw, sizeof(fskey.raw), key2Blob.data.get(), key2Blob.size);
     if (err != EOK) {
-        LOGE("memcpy failed ret %{public}d", err);
+        LOGE("[L4:RecoverManager] InstallEceSece: <<< EXIT FAILED <<< memcpy failed, err=%{public}d", err);
         return err;
     }
     fskey.size = EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING;
@@ -498,10 +547,10 @@ int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Bl
     fskey.version = 0;
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
-        LOGI("no session keyring for fscrypt");
+        LOGI("[L4:RecoverManager] InstallEceSece: no session keyring for fscrypt");
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
-            LOGE("failed to add session keyring");
+            LOGE("[L4:RecoverManager] InstallEceSece: <<< EXIT FAILED <<< failed to add session keyring");
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
@@ -510,10 +559,11 @@ int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Bl
         key_serial_t ks = KeyCtrlAddKeySdp("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring, errno %{public}d", prefix.c_str(), errno);
+            LOGE("[L4:RecoverManager] InstallEceSece: Failed to AddKey %{public}s into keyring, errno=%{public}d",
+                 prefix.c_str(), errno);
         }
     }
-    LOGI("success");
+    LOGI("[L4:RecoverManager] InstallEceSece: <<< EXIT SUCCESS <<< sdpClass=%{public}u", sdpClass);
     return E_OK;
 }
 } // namespace StorageDaemon

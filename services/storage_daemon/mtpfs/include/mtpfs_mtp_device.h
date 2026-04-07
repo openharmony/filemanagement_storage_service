@@ -17,6 +17,7 @@
 #define MTPFS_MTP_DEVICE_H
 
 #include <condition_variable>
+#include <thread>
 #include "mtpfs_type_dir.h"
 #include "mtpfs_type_file.h"
 #include <map>
@@ -147,6 +148,7 @@ private:
     std::atomic<bool> eventFlag_;
     static std::mutex setMutex_;
     static std::set<std::string> removingFileSet_;
+    std::thread eventThread_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H

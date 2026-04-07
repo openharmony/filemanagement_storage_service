@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,8 @@ NetlinkManager &NetlinkManager::Instance()
 
 int32_t NetlinkManager::Start()
 {
+    LOGI("[L2:NetlinkManager] Start: >>> ENTER <<<");
+
     struct sockaddr_nl addr;
     int32_t bufferSize = 256 * ONE_KB;
     int32_t passCred = 1;
@@ -47,41 +49,48 @@ int32_t NetlinkManager::Start()
 
     socketFd_ = socket(PF_NETLINK, SOCK_DGRAM | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT);
     if (socketFd_ < 0) {
-        LOGE("Create netlink socket failed, errno %{public}d", errno);
+        LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< create socket failed, errno=%{public}d", errno);
         return E_ERR;
     }
 
     if (setsockopt(socketFd_, SOL_SOCKET, SO_RCVBUFFORCE, &bufferSize, sizeof(bufferSize)) != 0) {
-        LOGE("Set SO_RCVBUFFORCE failed, errno %{public}d", errno);
+        LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< setsockopt SO_RCVBUFFORCE failed, errno=%{public}d",
+             errno);
         (void)close(socketFd_);
         return E_ERR;
     }
 
     if (setsockopt(socketFd_, SOL_SOCKET, SO_PASSCRED, &passCred, sizeof(passCred)) != 0) {
-        LOGE("Set SO_PASSCRED failed, errno %{public}d", errno);
+        LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< setsockopt SO_PASSCRED failed, errno=%{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;
     }
 
     if (bind(socketFd_, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
-        LOGE("Socket bind failed, errno %{public}d", errno);
+        LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< bind failed, errno=%{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;
     }
 
     nlHandler_ = new NetlinkHandler(socketFd_);
-    if (nlHandler_->Start()) {
+    if (nlHandler_->Start() != E_OK) {
+        LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< NetlinkHandler::Start failed");
         (void)close(socketFd_);
         return E_ERR;
     }
+
+    LOGI("[L2:NetlinkManager] Start: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t NetlinkManager::Stop()
 {
-    int32_t ret = 0;
+    LOGI("[L2:NetlinkManager] Stop: >>> ENTER <<<");
+
+    int32_t ret = E_OK;
     if (nlHandler_ != nullptr) {
-        if (nlHandler_->Stop()) {
+        if (nlHandler_->Stop() != E_OK) {
+            LOGE("[L2:NetlinkManager] Stop: NetlinkHandler::Stop failed");
             ret = E_ERR;
         }
         delete nlHandler_;
@@ -90,7 +99,13 @@ int32_t NetlinkManager::Stop()
     (void)close(socketFd_);
     socketFd_ = -1;
 
+    if (ret == E_OK) {
+        LOGI("[L2:NetlinkManager] Stop: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L2:NetlinkManager] Stop: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
     return ret;
 }
 } // StorageDaemon
 } // OHOS
+

@@ -21,6 +21,13 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+
+enum class DeviceType {
+    UNKNOWN = 0,
+    CAMERA = 1,
+    MOBILE = 2
+};
+
 class MtpDeviceMonitor : public NoCopyable  {
 public:
     static MtpDeviceMonitor &GetInstance()
@@ -30,15 +37,20 @@ public:
     }
 
     void StartMonitor();
-    void UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc);
+    void UmountDetachedMtpDevice(uint32_t busLocation, uint8_t devNum);
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
-    void MountMtpDeviceByBroadcast();
-    
+    void MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t busLocation, uint8_t devNum);
+
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
-    static void OnMtpDisableParamChange(const char *key, const  char *value, void *context);
-    static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
+    static void OnMtpDisableParamChange(const char *key, const char *value, void *context);
+    static void OnEnterpriseParamChange(const char *key, const char *value, void *context);
+    DeviceType GetDeviceType(uint16_t vendorId, uint16_t productId);
+
+    MtpDeviceMonitor(const MtpDeviceMonitor &) = delete;
+    MtpDeviceMonitor &operator=(const MtpDeviceMonitor &) = delete;
+
 private:
     MtpDeviceMonitor();
     ~MtpDeviceMonitor();
@@ -49,12 +61,17 @@ private:
     bool IsHwitDevice();
     int32_t HasMTPDevice(bool &hasMtp);
     int32_t MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
-    int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos);
-    int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos);
+    int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
+    int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
+    bool IsCameraDevice(uint16_t vendorId, uint16_t productId);
+    int32_t MountDeviceByType(DeviceType deviceType, std::vector<MtpDeviceInfo> &devInfos,
+                              const std::string &deviceTypeName, uint32_t busLocation, uint8_t devNum);
+    void SetPtpMode(const std::vector<MtpDeviceInfo> &devInfos, bool isCamera);
 
 private:
     std::mutex listMutex_;
     std::vector<MtpDeviceInfo> lastestMtpDevList_;
+    std::vector<MtpDeviceInfo> pendingMtpDevList_;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

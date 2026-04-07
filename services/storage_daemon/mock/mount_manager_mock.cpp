@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "mount_manager_mock.h"
+#include "mock/mount_manager_mock.h"
 
 using namespace std;
 
@@ -39,4 +39,97 @@ int32_t MountManager::PrepareAppdataDir(int32_t userId)
         return -1;
     }
     return IMountManagerMoc::mountManagerMoc->PrepareAppdataDir(userId);
+}
+
+int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountDisShareFile(userId, networkId);
+}
+
+int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountCryptoPathAgain(userId);
+}
+
+int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountDfsDocs(userId, relativePath,
+        networkId, deviceId);
+}
+
+int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountDfsDocs(userId, relativePath,
+        networkId, deviceId);
+}
+
+int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountMediaFuse(userId, devFd);
+}
+
+int32_t MountManager::UMountMediaFuse(int32_t userId)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountMediaFuse(userId);
+}
+
+int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountFileMgrFuse(userId, path, fuseFd);
+}
+
+int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountFileMgrFuse(userId, path);
+}
+
+int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
+
+int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->ClearSecondMountPoint(userId, bundleName);
 }

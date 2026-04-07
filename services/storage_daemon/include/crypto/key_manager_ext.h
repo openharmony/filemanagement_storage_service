@@ -55,6 +55,9 @@ public:
     int UpdateUserPublicDirPolicy(uint32_t userId);
     int SetRecoverKey(uint32_t userId, uint32_t keyType, const KeyBlob& ivBlob);
 
+    KeyManagerExt(const KeyManagerExt &) = delete;
+    KeyManagerExt &operator=(const KeyManagerExt &) = delete;
+
 private:
     KeyManagerExt();
     ~KeyManagerExt();

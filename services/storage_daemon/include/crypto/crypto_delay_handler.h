@@ -34,7 +34,7 @@ public:
 
 private:
     uint32_t timerId_;
-    Utils::Timer timer_ {"DeativationEl3El4El5_Task_Timer"};
+    Utils::Timer timer_ {"DeactivationEl3El4El5_Task_Timer"};
 
     std::atomic<bool> cancelled_;
     std::shared_ptr<BaseKey> el4Key_;
