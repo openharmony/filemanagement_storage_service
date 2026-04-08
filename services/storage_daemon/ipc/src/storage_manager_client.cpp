@@ -13,9 +13,11 @@
  * limitations under the License.
  */
 
+#include "ipc/storage_manager_client.h"
+
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
-#include "ipc/storage_manager_client.h"
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
