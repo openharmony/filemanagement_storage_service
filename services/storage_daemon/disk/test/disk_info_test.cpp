@@ -1097,19 +1097,19 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_001, TestSiz
     auto volInfo = std::make_shared<ExternalVolumeInfo>();
     ASSERT_TRUE(volInfo != nullptr);
     volInfo->Create(volId, diskId, device, false);
-    volManager.volumes_.Insert(volId, volInfo);
+    volManager.volumes_.insert(make_pair(volId, volInfo));
     volInfo->mountState_ = REMOVED;
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_ERR));
     EXPECT_CALL(*diskUtilMoc_, DestroyDiskNode(testing::_)).WillRepeatedly(testing::Return(E_OK));
     EXPECT_EQ(diskInfo->ReadPartition("1"), E_ERR);
 
-    volManager.volumes_.Insert(volId, volInfo);
+    volManager.volumes_.insert(make_pair(volId, volInfo));
     volInfo->mountState_ = REMOVED;
     EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_EQ(diskInfo->ReadPartition("1"), E_OK);
     diskInfo->volumeId_.clear();
-    volManager.volumes_.Clear();
+    volManager.volumes_.clear();
 
     VolumeManager::Instance().DestroyVolume(volId);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_001 end";
@@ -1149,7 +1149,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSiz
     auto volInfo = std::make_shared<ExternalVolumeInfo>();
     ASSERT_TRUE(volInfo != nullptr);
     volInfo->Create(volId, diskId, device, false);
-    volManager.volumes_.Insert(volId, volInfo);
+    volManager.volumes_.insert(make_pair(volId, volInfo));
     diskInfo->volumeId_.push_back(volId);
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(testing::_, testing::_)).WillRepeatedly(testing::Return(""));
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
@@ -1167,7 +1167,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSiz
     });
     EXPECT_EQ(diskInfo->ReadPartition("0"), E_OK);
     
-    volManager.volumes_.Clear();
+    volManager.volumes_.clear();
     diskInfo->volumeId_.clear();
     volManager.DestroyVolume(volId);
     EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
@@ -1177,7 +1177,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSiz
     EXPECT_EQ(diskInfo->ReadPartition("0"), E_ERR);
 
     diskInfo->volumeId_.clear();
-    volManager.volumes_.Clear();
+    volManager.volumes_.clear();
     volManager.DestroyVolume(volId);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartitionCD_002 end";
 }

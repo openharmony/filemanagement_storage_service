@@ -48,7 +48,12 @@ VolumeManager &VolumeManager::Instance()
 
 std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string &volId)
 {
-    return volumes_.GetShared(volId);
+    std::lock_guard<std::mutex> lock(volumesMutex_);
+    if (volumes_.find(volId) == volumes_.end()) {
+        LOGE("VolumeManager::GetVolume the volume %{public}s doesn't exist", volId.c_str());
+        return nullptr;
+    }
+    return volumes_[volId];
 }
 
 std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata)
@@ -72,7 +77,10 @@ std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device,
         return "";
     }
 
-    volumes_.Insert(volId, info);
+    {
+        std::lock_guard<std::mutex> lock(volumesMutex_);
+        volumes_.insert(make_pair(volId, info));
+    }
 
     StorageManagerClient client;
     ret = client.NotifyVolumeCreated(info);
@@ -104,7 +112,10 @@ int32_t VolumeManager::DestroyVolume(const std::string &volId)
     }
     destroyNode->DestroyUsbFuse();
 
-    volumes_.Erase(volId);
+    {
+        std::lock_guard<std::mutex> lock(volumesMutex_);
+        volumes_.erase(volId);
+    }
     destroyNode.reset();
 
     LOGI("[L2:VolumeManager] DestroyVolume: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());

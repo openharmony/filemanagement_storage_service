@@ -548,11 +548,11 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 start";
     std::string volId = "volId";
     uint32_t flags = 1;
-    VolumeManager::Instance().volumes_.Clear();
+    VolumeManager::Instance().volumes_.clear();
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), E_NON_EXIST);
 
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(-1));
     volumeInfoMock->mountState_ = MOUNTED;
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), 0);
@@ -944,7 +944,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressBy
     uint32_t flags = 1;
     auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
     volumeInfoMock->SetFsTypeBase("crypt_LUKS");
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     g_doTryToCheck = 0;
     volumeInfoMock->mountState_ = REMOVED;
     EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), E_OK);
@@ -959,7 +959,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_005, TestSiz
     auto volumeInfoMock = std::make_shared<VolumeInfoTestMock>();
     volumeInfoMock->SetFsTypeBase("crypt_LUKS");
     volumeInfoMock->mountState_ = REMOVED;
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     g_doTryToCheck = 0;
     int32_t result = VolumeManager::Instance().Mount(volId, flags);
     EXPECT_EQ(result, E_OK);
@@ -984,10 +984,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_003, TestS
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     volumeInfoMock->mountState_ = MOUNTED;
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_003 end";
 }
 
@@ -999,10 +999,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Encrypt_004, TestS
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     volumeInfoMock->mountState_ = UNMOUNTED;
     EXPECT_CALL(*volumeInfoMock, DoEncrypt(_, _)).WillOnce(Return(E_NOT_SUPPORT));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Encrypt(volId, pazzword);
     EXPECT_EQ(result, E_NOT_SUPPORT);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Encrypt_004 end";
 }
 
@@ -1023,10 +1023,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressBy
     int32_t progress = 0;
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoGetCryptProgressById(_, _)).WillOnce(Return(E_CHECK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
     EXPECT_EQ(result, E_CHECK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_003 end";
 }
 
@@ -1037,10 +1037,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptProgressBy
     int32_t progress = 50;
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoGetCryptProgressById(_, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().GetCryptProgressById(volId, progress);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptProgressById_004 end";
 }
 
@@ -1061,10 +1061,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptUuidById_0
     std::string uuid;
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoGetCryptUuidById(_, _)).WillOnce(Return(E_CHECK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().GetCryptUuidById(volId, uuid);
     EXPECT_EQ(result, E_CHECK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_002 end";
 }
 
@@ -1075,10 +1075,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetCryptUuidById_0
     std::string uuid;
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoGetCryptUuidById(_, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().GetCryptUuidById(volId, uuid);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetCryptUuidById_003 end";
 }
 
@@ -1101,10 +1101,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_BindRecoverKeyToPa
     std::string recoverKey = "recover456";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoBindRecoverKeyToPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().BindRecoverKeyToPasswd(volId, pazzword, recoverKey);
     EXPECT_EQ(result, E_NOT_SUPPORT);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_002 end";
 }
 
@@ -1116,10 +1116,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_BindRecoverKeyToPa
     std::string recoverKey = "recover456";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoBindRecoverKeyToPasswd(_, _, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().BindRecoverKeyToPasswd(volId, pazzword, recoverKey);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_BindRecoverKeyToPasswd_003 end";
 }
 
@@ -1142,10 +1142,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UpdateCryptPasswd_
     std::string newPazzword = "new456";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoUpdateCryptPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().UpdateCryptPasswd(volId, pazzword, newPazzword);
     EXPECT_EQ(result, E_NOT_SUPPORT);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_002 end";
 }
 
@@ -1157,10 +1157,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UpdateCryptPasswd_
     std::string newPazzword = "new456";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoUpdateCryptPasswd(_, _, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().UpdateCryptPasswd(volId, pazzword, newPazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UpdateCryptPasswd_003 end";
 }
 
@@ -1183,10 +1183,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ResetCryptPasswd_0
     std::string newPazzword = "new789";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoResetCryptPasswd(_, _, _)).WillOnce(Return(E_NOT_SUPPORT));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().ResetCryptPasswd(volId, recoverKey, newPazzword);
     EXPECT_EQ(result, E_NOT_SUPPORT);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_002 end";
 }
 
@@ -1198,10 +1198,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ResetCryptPasswd_0
     std::string newPazzword = "new789";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoResetCryptPasswd(_, _, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().ResetCryptPasswd(volId, recoverKey, newPazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ResetCryptPasswd_003 end";
 }
 
@@ -1222,10 +1222,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyCryptPasswd_
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoVerifyCryptPasswd(_, _)).WillOnce(Return(E_CHECK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().VerifyCryptPasswd(volId, pazzword);
     EXPECT_EQ(result, E_CHECK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_002 end";
 }
 
@@ -1236,10 +1236,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyCryptPasswd_
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoVerifyCryptPasswd(_, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().VerifyCryptPasswd(volId, pazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyCryptPasswd_003 end";
 }
 
@@ -1260,10 +1260,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Unlock_002, TestSi
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoUnlock(_, _)).WillOnce(Return(E_CHECK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Unlock(volId, pazzword);
     EXPECT_EQ(result, E_CHECK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_002 end";
 }
 
@@ -1274,10 +1274,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Unlock_003, TestSi
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     EXPECT_CALL(*volumeInfoMock, DoUnlock(_, _)).WillOnce(Return(E_OK));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Unlock(volId, pazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Unlock_003 end";
 }
 
@@ -1298,10 +1298,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_002, TestS
     std::string pazzword = "test123";
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     volumeInfoMock->mountState_ = MOUNTED;
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Decrypt(volId, pazzword);
     EXPECT_EQ(result, E_OK);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_002 end";
 }
 
@@ -1313,10 +1313,10 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Decrypt_003, TestS
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     volumeInfoMock->mountState_ = UNMOUNTED;
     EXPECT_CALL(*volumeInfoMock, DoDecrypt(_, _)).WillOnce(Return(E_NOT_SUPPORT));
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     int32_t result = VolumeManager::Instance().Decrypt(volId, pazzword);
     EXPECT_EQ(result, E_NOT_SUPPORT);
-    VolumeManager::Instance().volumes_.Erase(volId);
+    VolumeManager::Instance().volumes_.erase(volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Decrypt_003 end";
 }
 
@@ -1349,7 +1349,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003
 {
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
     std::string volumeId = "vol-test-capacity";
-    VolumeManager::Instance().volumes_.Insert(volumeId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volumeId, volumeInfoMock));
     
     EXPECT_CALL(*volumeInfoMock, DoGetOddCapacity(_, _, _)).WillOnce(Return(E_ERR));
     
@@ -1358,7 +1358,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003
     int32_t result = VolumeManager::Instance().GetOddCapacity(volumeId, totalSize, freeSize);
     EXPECT_EQ(result, E_ERR);
     
-    VolumeManager::Instance().volumes_.Erase(volumeId);
+    VolumeManager::Instance().volumes_.erase(volumeId);
 }
 } // STORAGE_DAEMON
 } // OHOS

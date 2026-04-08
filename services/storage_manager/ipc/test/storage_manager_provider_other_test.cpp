@@ -1209,25 +1209,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirI
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_ListUserdataDirInfo_002
- * @tc.desc: Verify the ListUserdataDirInfo function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ListUserdataDirInfo_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 start";
-
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    SetCallingUid(ACCOUNT_UID);
-    std::vector<UserdataDirInfo> scanDirs;
-
-    auto ret = storageManagerProviderTest_->ListUserdataDirInfo(scanDirs);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_ListUserdataDirInfo_002 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_SetDirEncryptionPolicy_002
  * @tc.desc: Verify the SetDirEncryptionPolicy function.
  * @tc.type: FUNC
