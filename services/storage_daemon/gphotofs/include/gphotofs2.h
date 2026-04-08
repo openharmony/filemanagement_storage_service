@@ -18,10 +18,10 @@
 #include <string>
 #include <fuse.h>
 #include <unistd.h>
-#include "dir.h"
-#include "file.h"
-#include "utils.h"
-#include "context.h"
+#include "gphotofs_dir.h"
+#include "gphotofs_file.h"
+#include "gphotofs_utils.h"
+#include "gphotofs_context.h"
 
 struct Options {
     std::string port;

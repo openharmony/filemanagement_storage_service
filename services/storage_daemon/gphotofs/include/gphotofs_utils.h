@@ -28,15 +28,15 @@ void Warn(const std::string& msg);
 void Debug(const std::string& msg);
 off_t SizeToBlocks(off_t size);
 int GpresultToErrno(int result);
-std::string SmtpfsDirName(const std::string &path);
-std::string SmtpfsBaseName(const std::string &path);
+std::string GphotoDirName(const std::string &path);
+std::string GphotoBaseName(const std::string &path);
 bool IsFilePathValid(const std::string &filePath);
-bool SmtpfsCreateDir(const std::string &dirName);
+bool GphotoCreateDir(const std::string &dirName);
 bool CreateTmpDir();
 bool RemoveTmpDir();
-bool SmtpfsRemoveDir(const std::string &dirName);
-bool SmtpfsCheckDir(const std::string &path);
+bool GphotoRemoveDir(const std::string &dirName);
+bool GphotoCheckDir(const std::string &path);
 void DelTemp(const std::string &path);
-std::string SmtpfsGetTmpDir();
+std::string GphotoGetTmpDir();
 
 #endif // GPHOTOFS2_UTILS_H

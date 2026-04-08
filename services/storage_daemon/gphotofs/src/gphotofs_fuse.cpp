@@ -16,7 +16,7 @@
 
 #include "gphotofs2.h"
 #include "storage_service_log.h"
-#include "utils.h"
+#include "gphotofs_utils.h"
 
 GphotoFileSystem::GphotoFileSystem() : args_(FUSE_ARGS_INIT(0, nullptr)) {}
 GphotoFileSystem::~GphotoFileSystem()
@@ -58,7 +58,7 @@ bool GphotoFileSystem::Exec()
         LOGE("gphoto exec return options not good ret");
         return false;
     }
-    if (!SmtpfsCheckDir(options_.mountPoint_)) {
+    if (!GphotoCheckDir(options_.mountPoint_)) {
         LOGE("gphoto exec return mountpoint not good");
         return false;
     }
@@ -80,15 +80,15 @@ bool GphotoFileSystem::Exec()
 
 bool GphotoFileSystem::ParseOptions(int argc, char **argv)
 {
-    auto smtpfsOptKey = [](const char* templ, size_t offset, int value) -> fuse_opt {
+    auto gphotoOptKey = [](const char* templ, size_t offset, int value) -> fuse_opt {
         return {templ, offset, value};
     };
 
-    static struct fuse_opt smtpfs_opts[] = {
-        smtpfsOptKey("enable-move", offsetof(GphotoFileSystemOptions, enableMove_), 1),
-        smtpfsOptKey("--device %i", offsetof(GphotoFileSystemOptions, deviceNo_), 0),
-        smtpfsOptKey("-v", offsetof(GphotoFileSystemOptions, verbose_), 1),
-        smtpfsOptKey("--verbose", offsetof(GphotoFileSystemOptions, verbose_), 1),
+    static struct fuse_opt gphoto_opts[] = {
+        gphotoOptKey("enable-move", offsetof(GphotoFileSystemOptions, enableMove_), 1),
+        gphotoOptKey("--device %i", offsetof(GphotoFileSystemOptions, deviceNo_), 0),
+        gphotoOptKey("-v", offsetof(GphotoFileSystemOptions, verbose_), 1),
+        gphotoOptKey("--verbose", offsetof(GphotoFileSystemOptions, verbose_), 1),
         FUSE_OPT_END
         };
 
@@ -101,7 +101,7 @@ bool GphotoFileSystem::ParseOptions(int argc, char **argv)
 
     fuse_opt_free_args(&args_);
     args_ = FUSE_ARGS_INIT(argc, argv);
-    if (fuse_opt_parse(&args_, &options_, smtpfs_opts, GphotoFileSystemOptions::OptProc) == -1) {
+    if (fuse_opt_parse(&args_, &options_, gphoto_opts, GphotoFileSystemOptions::OptProc) == -1) {
         LOGE("gphoto wrong fuse_opt_parse ret");
         options_.good_ = false;
         return false;
