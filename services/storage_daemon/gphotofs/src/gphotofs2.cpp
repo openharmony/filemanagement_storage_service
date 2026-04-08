@@ -19,6 +19,7 @@
 #include <mutex>
 #include <cstring>
 #include <securec.h>
+#include <thread>
 #include "storage_service_log.h"
 #include "gphotofs_utils.h"
 
@@ -30,6 +31,7 @@ static constexpr int32_t UPLOAD_RECORD_FALSE_LEN = 5;
 static constexpr const char *GPHOTO_THM_FLAG = "?MTP_THM";
 static constexpr size_t MAX_MALLOC_SIZE = 100 * 1024 * 1024;
 static constexpr size_t MAX_WRITE_SIZE = 10 * 1024 * 1024;
+static constexpr size_t PROGRESS_THREAD_THRESHOLD = 50 * 1024 * 1024;
 static constexpr size_t KB_TO_BYTES = 1024;
 static constexpr size_t DOUBLE_DOT_LENGTH = 2;
 static constexpr size_t PATH_DOT_LENGTH = 2;
@@ -45,11 +47,31 @@ static bool g_readOnlyMode = true;
 static std::mutex g_gphotoMutex;
 static int g_err;
 static std::mutex g_errMutex;
+static const int DEFAULT_COUNT = 10;
+static constexpr int MONITOR_INTERVAL_MS = 500;
+static const unsigned int FORCE_REFESH_FLAG = 0x1;
+static std::atomic<bool> g_loadOnGoing{false};
+static std::atomic<bool> g_running{true};
+static std::atomic<int> g_gphotoLockDepth{0};
+
+struct LockGuard {
+    LockGuard()
+    {
+        g_gphotoLockDepth.fetch_add(1);
+    }
+    ~LockGuard()
+    {
+        g_gphotoLockDepth.fetch_sub(1);
+    }
+    LockGuard(const LockGuard&) = delete;
+    LockGuard& operator=(const LockGuard&) = delete;
+};
 
 template<typename F>
 auto WithCameraLocked(F&& f) -> decltype(f())
 {
     std::lock_guard<std::mutex> guard(g_gphotoMutex);
+    LockGuard depthGuard;
     return f();
 }
 
@@ -90,120 +112,145 @@ static inline time_t NormalizeMtime(time_t cameraMtime)
     return cameraMtime - GetLocalUtcOffset();
 }
 
-static int ListSubFolders(const char *path, Dir *dir, Context *ctx)
+static Context *GetContext()
 {
-    if (dir == nullptr) {
-        LOGE("ListSubFolders: dir is null");
-        return -EINVAL;
+    struct fuse_context *ctxStruct = fuse_get_context();
+    if (ctxStruct == nullptr || ctxStruct->private_data == nullptr) {
+        return nullptr;
     }
-    if (ctx == nullptr) {
-        LOGE("ListSubFolders: ctx is null");
-        return -EINVAL;
-    }
-    CameraList *list = NULL;
-    int ret = gp_list_new(&list);
-    if (ret != GP_OK) {
-        LOGE("ListSubFolders gp_list_new failed, ret=%{public}d", ret);
-        return GpresultToErrno(ret);
-    }
-
-    ret = WithCameraLocked([&ctx, &path, &list] {
-        return gp_camera_folder_list_folders(ctx->camera(),
-            path, list, ctx->context());
-    });
-    if (ret != 0) {
-        LOGE("gphoto listdir return err by ret = %{public}d", ret);
-        if (list != NULL) {
-            gp_list_free(list);
-        }
-        return GpresultToErrno(ret);
-    }
-    LOGI("gphoto listdir dir.list.count = %{public}d", gp_list_count(list));
-    int32_t count = gp_list_count(list);
-    for (int32_t i = 0; i < count; i++) {
-        const char *name;
-        gp_list_get_name(list, i, &name);
-        if (!name) {
-            LOGW("ListSubFolders: empty folder name, skipping");
-            continue;
-        }
-        auto subDir = std::make_unique<Dir>(name);
-        dir->addDir(subDir.release());
-        LOGI("gphoto listdir dirs child dir");
-    }
-    gp_list_free(list);
-    return GP_OK;
+    return static_cast<Context *>(ctxStruct->private_data);
 }
 
-static int ListFiles(const char *path, Dir *dir, Context *ctx)
+static int FillToDir(CameraList *list, Dir *dir, Context *ctx, const char *path, bool isDir)
 {
-    if (dir == nullptr) {
-        LOGE("ListFiles: dir is null");
+    if (!list || !dir || !ctx || !path) {
         return -EINVAL;
     }
-    if (ctx == nullptr) {
-        LOGE("ListFiles: ctx is null");
-        return -EINVAL;
-    }
-    CameraList *list = NULL;
-    int ret = gp_list_new(&list);
-    if (ret != GP_OK) {
-        LOGE("ListFiles gp_list_new failed, ret=%{public}d", ret);
-        return GpresultToErrno(ret);
-    }
-
-    ret = WithCameraLocked([&ctx, &path, &list] {
-        return gp_camera_folder_list_files(ctx->camera(),
-            path, list, ctx->context());
-    });
-    if (ret != GP_OK) {
-        LOGE("gphoto listdir files return err by ret = %{public}d", ret);
-        if (list != NULL) {
-            gp_list_free(list);
-        }
-        return GpresultToErrno(ret);
-    }
-    LOGI("gphoto listdir enter file.list.count = %{public}d", gp_list_count(list));
-    for (int32_t fileIdx = 0; fileIdx < gp_list_count(list); fileIdx++) {
+    int count = gp_list_count(list);
+    for (int k = 0; k < count; k++) {
         const char *name = nullptr;
-        CameraFileInfo info;
-
-        gp_list_get_name(list, fileIdx, &name);
-        if (!name) {
-            LOGW("ListFiles: empty file name, skipping");
+        gp_list_get_name(list, k, &name);
+        if (!name || !name[0]) {
             continue;
         }
-        int getInfoResult = WithCameraLocked([&ctx, &path, &name, &info] {
-            return gp_camera_file_get_info(ctx->camera(), path, name, &info,
-                ctx->context());
+        if (isDir) {
+            if (dir->GetDir(name)) {
+                continue;
+            }
+            auto subDir = std::make_unique<Dir>(name);
+            dir->AddDir(subDir.release());
+            continue;
+        }
+        if (dir->GetFile(name)) {
+            continue;
+        }
+        CameraFileInfo info;
+        int ret = WithCameraLocked([ctx, path, name, &info] {
+            return gp_camera_file_get_info(ctx->camera(), path, name, &info, ctx->context());
         });
-        if (getInfoResult != GP_OK) {
-            LOGW("ListFiles: failed to get file info gp_ret=%{public}d", getInfoResult);
+        if (ret != GP_OK) {
+            LOGE("gp_camera_file_get_info failed ret=%{public}d", ret);
             continue;
         }
 
         auto file = std::make_unique<File>(name, info);
-        dir->addFile(file.release());
-        LOGI("gphoto listdir files child file");
+        dir->AddFile(file.release());
+        }
+    return 0;
     }
 
-    gp_list_free(list);
+static int CreateLists(CameraList **files, CameraList **dirs)
+{
+    int ret = gp_list_new(files);
+    if (ret != GP_OK) {
+        return GpresultToErrno(ret);
+    }
+    ret = gp_list_new(dirs);
+    if (ret != GP_OK) {
+        gp_list_free(*files);
+        *files = nullptr;
+        return GpresultToErrno(ret);
+    }
+    return 0;
+}
+
+static bool NeedListDir(Dir *dir)
+{
+    if (dir == nullptr) {
+        return false;
+    }
+    if (g_loadOnGoing.load()) {
+        return false;
+    }
+    return dir->TryBeginLoad();
+}
+
+static int FetchOnePage(const char *path, Dir *dir, Context *ctx, int &start, unsigned int &flags)
+{
+    CameraList *listFile = nullptr;
+    CameraList *listDir = nullptr;
+    int ret = CreateLists(&listFile, &listDir);
+    if (ret != 0) {
+        return ret;
+    }
+    PartialListRequest req = { path, start, DEFAULT_COUNT, listFile, listDir, flags };
+    ret = WithCameraLocked([ctx, &req] {
+        return gp_camera_folder_list_partial(ctx->camera(), ctx->context(), &req);
+    });
+    if (ret != GP_OK) {
+        gp_list_free(listFile);
+        gp_list_free(listDir);
+        return GpresultToErrno(ret);
+    }
+    int got = gp_list_count(listFile) + gp_list_count(listDir);
+    FillToDir(listFile, dir, ctx, path, false);
+    FillToDir(listDir, dir, ctx, path, true);
+    gp_list_free(listFile);
+    gp_list_free(listDir);
+    if (got > 0) {
+        if (start > INT_MAX - got) {
+            return -EOVERFLOW;
+        }
+        start += got;
+        dir->SetNextOffset(start);
+    }
+    flags = 0;
+    return got;
+}
+
+static int ListFolderPartial(const char *path, Dir *dir, Context *ctx, bool total)
+{
+    if (!path || !dir || !ctx) {
+        return -EINVAL;
+    }
+    int start = dir->GetNextOffset();
+    unsigned int flags = 0;
+    if (dir->GetRefresh() && start == 0) {
+        flags = FORCE_REFESH_FLAG;
+        dir->Clear();
+    }
+    bool continueLoop = true;
+    while (continueLoop) {
+        int got = FetchOnePage(path, dir, ctx, start, flags);
+        if (got < 0) {
+            return got;
+        }
+        if (got <= 0 || got < DEFAULT_COUNT) {
+            dir->SetListed(true);
+            continueLoop = false;
+        }
+        if (!total) {
+            continueLoop = false;
+        }
+    }
     return GP_OK;
 }
 
 static int ListDir(const char *path, Dir *dir, Context *ctx)
 {
     LOGI("gphoto listdir enter");
-    if (path == nullptr) {
-        LOGE("gphoto ListDir invalid args, path=nullptr");
-        return -EINVAL;
-    }
-    if (dir == nullptr) {
-        LOGE("gphoto ListDir invalid args, dir=nullptr");
-        return -EINVAL;
-    }
-    if (ctx == nullptr) {
-        LOGE("gphoto ListDir invalid args, ctx=nullptr");
+    if (!path || !ctx || !dir) {
+        LOGE("gphoto ListDir invalid args, path/ctx/dir=nullptr");
         return -EINVAL;
     }
 
@@ -211,19 +258,12 @@ static int ListDir(const char *path, Dir *dir, Context *ctx)
         LOGE("gphoto ListDir invalid path");
         return -EINVAL;
     }
-
-    int ret = ListSubFolders(path, dir, ctx);
+    g_loadOnGoing.store(true);
+    int ret = ListFolderPartial(path, dir, ctx, true);
+    g_loadOnGoing.store(false);
     if (ret != GP_OK) {
         return ret;
     }
-
-    ret = ListFiles(path, dir, ctx);
-    if (ret != GP_OK) {
-        return ret;
-    }
-
-    dir->listed = true;
-    LOGI("gphoto listdir success");
     return 0;
 }
 
@@ -238,10 +278,11 @@ static Dir *FindSubDir(Dir *currentDir, const std::string &name, const std::stri
         LOGE("FindSubDir: ctx is null");
         return nullptr;
     }
-    if (!currentDir->listed) {
+    if (NeedListDir(currentDir)) {
         ListDir(dirPath.c_str(), currentDir, ctx);
+        currentDir->EndLoad();
     }
-    return currentDir->getDir(name);
+    return currentDir->GetDir(name);
 }
 
 static std::string UpdateDirPath(const std::string &currentPath, const std::string &name)
@@ -260,7 +301,6 @@ Dir *FindDir(const std::string &path, Context *ctx)
     }
     Dir *dir = &ctx->root();
     std::string dirPath = "/";
-    LOGI("gphoto finddir enter");
     if (!IsFilePathValid(path)) {
         LOGE("gphoto FindDir invalid path");
         return nullptr;
@@ -275,8 +315,8 @@ Dir *FindDir(const std::string &path, Context *ctx)
     bool continueLoop = true;
     while (continueLoop) {
         size_t next = path.find('/', last + 1);
-        if (next == string::npos) {
-            string name = path.substr(last + 1);
+        if (next == std::string::npos) {
+            std::string name = path.substr(last + 1);
             if (name == "") {
                 return dir;
             }
@@ -322,8 +362,9 @@ File *FindFile(const std::string &path, Context *ctx)
             return nullptr;
         }
         name = path;
-        if (!dir->listed) {
+        if (NeedListDir(dir)) {
             int ret = ListDir("/", dir, ctx);
+            dir->EndLoad();
             if (ret != 0) {
                 LOGE("FindFile ListDir failed, ret=%{public}d", ret);
                 return nullptr;
@@ -337,15 +378,16 @@ File *FindFile(const std::string &path, Context *ctx)
             return nullptr;
         }
         name = path.substr(pos + 1);
-        if (!dir->listed) {
+        if (NeedListDir(dir)) {
             int ret = ListDir(parentPath.c_str(), dir, ctx);
+            dir->EndLoad();
             if (ret != 0) {
                 LOGE("FindFile ListDir failed, ret=%{public}d", ret);
                 return nullptr;
             }
         }
     }
-    return dir->getFile(name);
+    return dir->GetFile(name);
 }
 
 static int CreateTempFile(File *file, const std::string &filePath)
@@ -402,6 +444,7 @@ static int CreateTempFile(File *file, const std::string &filePath)
 
 static void CleanupTempFile(File *file)
 {
+    file->downloading.store(false);
     if (file->tmpFd >= 0) {
         close(file->tmpFd);
         file->tmpFd = -1;
@@ -413,10 +456,35 @@ static void CleanupTempFile(File *file)
     }
 
     file->tmpFileCreated = false;
+    file->downloadedSize.store(0);
 }
 
-static int SaveCameraFileToTemp(File *file, const char *path)
+static void MonitorDownloadProgress(File *file)
 {
+    if (!file) {
+        LOGE("MonitorDownloadProgress file is null");
+        return;
+    }
+    off_t cur = 0;
+    while (file->downloading.load() && g_running.load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(MONITOR_INTERVAL_MS));
+        struct stat st {};
+        if (file->tmpFd >= 0 && fstat(file->tmpFd, &st) == 0) {
+            if (st.st_size > 0) {
+                cur = st.st_size;
+                file->downloadedSize.store(cur);
+            }
+        }
+        LOGI("MonitorDownloadProgress downloadedSize: %{public}lld", cur);
+    }
+    LOGI("MonitorDownloadProgress exit loop");
+}
+
+static int PrepareTempFileForSave(File *file, const char *path)
+{
+    if (!file || !path) {
+        return -EINVAL;
+    }
     if (!file->tmpFileCreated) {
         std::string tempPath = "/" + file->name;
         int ret = CreateTempFile(file, tempPath.c_str());
@@ -432,28 +500,43 @@ static int SaveCameraFileToTemp(File *file, const char *path)
         CleanupTempFile(file);
         return -errno;
     }
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
-    std::string dirName(GphotoDirName(path));
-    std::string fileName(GphotoBaseName(path));
-    CameraFile *cf = nullptr;
+    return 0;
+}
 
+static int CreateCameraFileFromTmpFd(File *file, CameraFile **cf)
+{
     int dupFd = dup(file->tmpFd);
     if (dupFd < 0) {
         CleanupTempFile(file);
         return -errno;
     }
-    int gpResult = gp_file_new_from_fd(&cf, dupFd);
+    int gpResult = gp_file_new_from_fd(cf, dupFd);
     if (gpResult != GP_OK) {
         close(dupFd);
+        CleanupTempFile(file);
         return GpresultToErrno(gpResult);
     }
-    gpResult = WithCameraLocked([&ctx, &dirName, &fileName, &cf] {
-        return gp_camera_file_get(ctx->camera(), dirName.c_str(), fileName.c_str(),
-                                  GP_FILE_TYPE_NORMAL, cf, ctx->context());
-    });
-    gp_file_unref(cf);
-    if (gpResult != GP_OK) {
-        return GpresultToErrno(gpResult);
+    return 0;
+}
+
+static void TryStartProgressThread(File *file, std::thread &progressThread)
+{
+    if (!file) {
+        return;
+    }
+    file->downloadedSize.store(0);
+
+    if (file->size < PROGRESS_THREAD_THRESHOLD) {
+        return;
+    }
+    file->downloading.store(true);
+    progressThread = std::thread(MonitorDownloadProgress, file);
+}
+
+static int FinalizeSavedTempFile(File *file)
+{
+    if (!file) {
+        return -EINVAL;
     }
     off_t end = lseek(file->tmpFd, 0, SEEK_END);
     if (end < 0) {
@@ -461,9 +544,51 @@ static int SaveCameraFileToTemp(File *file, const char *path)
         return -errno;
     }
 
+    file->downloadedSize.store(end);
     file->size = end;
     file->tmpFileCreated = true;
     return 0;
+}
+
+static int SaveCameraFileToTemp(File *file, const char *path)
+{
+    int ret = PrepareTempFileForSave(file, path);
+    if (ret < 0) {
+        return ret;
+    }
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        CleanupTempFile(file);
+        return -EIO;
+    }
+    std::string dirName(GphotoDirName(path));
+    std::string fileName(GphotoBaseName(path));
+    if (dirName.empty() || fileName.empty()) {
+        CleanupTempFile(file);
+        return -EINVAL;
+    }
+    CameraFile *cf = nullptr;
+    ret = CreateCameraFileFromTmpFd(file, &cf);
+    if (ret < 0) {
+        return ret;
+    }
+    std::thread progressThread;
+    TryStartProgressThread(file, progressThread);
+    int gpResult = WithCameraLocked([&ctx, &dirName, &fileName, &cf] {
+        return gp_camera_file_get(ctx->camera(), dirName.c_str(), fileName.c_str(),
+                                  GP_FILE_TYPE_NORMAL, cf, ctx->context());
+    });
+    file->downloading.store(false);
+    if (progressThread.joinable()) {
+        progressThread.join();
+    }
+    gp_file_unref(cf);
+    if (gpResult != GP_OK) {
+        CleanupTempFile(file);
+        return GpresultToErrno(gpResult);
+    }
+
+    return FinalizeSavedTempFile(file);
 }
 
 static inline bool IsThumbPath(const char *path)
@@ -494,11 +619,11 @@ static inline std::string StripThumbFlag(const std::string &thumbPath)
     return thumbPath.substr(0, realPathLen);
 }
 
-static int FillThumbStat(struct stat *st, const File *file, unsigned long dataSize, Context *ctx)
+static int FillThumbStat(struct stat *st, time_t mtime, unsigned long dataSize, Context *ctx)
 {
     memset_s(st, sizeof(*st), 0, sizeof(*st));
     st->st_mode = S_IFREG | DEFAULT_FILE_MODE;
-    st->st_mtime = NormalizeMtime(file->mtime);
+    st->st_mtime = NormalizeMtime(mtime);
     st->st_nlink = FILE_NLINK_COUNT;
     if (dataSize > static_cast<unsigned long>(std::numeric_limits<off_t>::max())) {
         LOGE("FillThumbStat: dataSize too large for off_t, size=%{public}lu", dataSize);
@@ -518,12 +643,16 @@ static int GetThumbAttr(const char *path, struct stat *st, Context *ctx)
         LOGE("GetThumbAttr invalid path");
         return -EINVAL;
     }
-    File *file = FindFile(real, ctx);
-    if (!file) {
-        LOGE("GetThumbAttr file not found");
-        return -ENOENT;
+    time_t mtime = 0;
+    {
+        File *file = FindFile(real, ctx);
+        if (!file) {
+            LOGE("GetThumbAttr file not found");
+            return -ENOENT;
+        }
+        std::lock_guard<std::mutex> fileGuard(file->lock);
+        mtime = file->mtime;
     }
-
     std::string dirName(GphotoDirName(real.c_str()));
     std::string fileName(GphotoBaseName(real.c_str()));
     CameraFile *thm = nullptr;
@@ -553,20 +682,75 @@ static int GetThumbAttr(const char *path, struct stat *st, Context *ctx)
         gp_file_unref(thm);
         return GpresultToErrno(ret);
     }
-
-    ret = FillThumbStat(st, file, dataSize, ctx);
+    ret = FillThumbStat(st, mtime, dataSize, ctx);
     gp_file_unref(thm);
     return ret;
 }
 
+static int FillDirStat(struct stat *st, Context *ctx)
+{
+    st->st_mode = S_IFDIR | DEFAULT_DIR_MODE;
+    st->st_nlink = DIR_NLINK_COUNT;
+    st->st_uid = ctx->uid();
+    st->st_gid = ctx->gid();
+    return 0;
+}
+
+static int FillFileStat(struct stat *st, off_t size, time_t mtime, Context *ctx)
+{
+    st->st_mode = S_IFREG | DEFAULT_FILE_MODE;
+    st->st_nlink = FILE_NLINK_COUNT;
+    st->st_size = size;
+    st->st_blocks = SizeToBlocks(size);
+    st->st_mtime = NormalizeMtime(mtime);
+    st->st_uid = ctx->uid();
+    st->st_gid = ctx->gid();
+    return 0;
+}
+
+static int GetRegularAttr(const char *path, struct stat *st, Context *ctx)
+{
+    if (path == nullptr || st == nullptr || ctx == nullptr) {
+        return -EINVAL;
+    }
+    std::string dirName = GphotoDirName(path);
+    std::string baseName = GphotoBaseName(path);
+    if (dirName.empty() || baseName.empty()) {
+        LOGE("Getattr dir/base name empty");
+        return -EINVAL;
+    }
+
+    Dir *parent = FindDir(dirName, ctx);
+    if (parent == nullptr) {
+        return -ENOENT;
+    }
+    if (parent->GetDir(baseName) != nullptr) {
+        return FillDirStat(st, ctx);
+    }
+    off_t size = 0;
+    time_t mtime = 0;
+    {
+        File *file = parent->GetFile(baseName);
+        if (file == nullptr) {
+            LOGE("Getattr: path not found");
+            return -ENOENT;
+        }
+        std::lock_guard<std::mutex> lockGuard(file->lock);
+        size = file->size;
+        mtime = file->mtime;
+    }
+    FillFileStat(st, size, mtime, ctx);
+    return 0;
+}
+
 static int Getattr(const char *path, struct stat *st, struct fuse_file_info *fi)
 {
-    if (path == nullptr) {
-        LOGE("Getattr path is null");
+    if (path == nullptr || st == nullptr) {
+        LOGE("Getattr path/st is null");
         return -EINVAL;
     }
     LOGI("gphoto getattr enter");
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (ctx == nullptr) {
         LOGE("Getattr ctx nullptr");
         return -EIO;
@@ -583,29 +767,11 @@ static int Getattr(const char *path, struct stat *st, struct fuse_file_info *fi)
         LOGE("Getattr: Invalid path");
         return -EINVAL;
     }
-
-    Dir *dir = FindDir(path, ctx);
-    if (dir != nullptr) {
-        st->st_mode = S_IFDIR | DEFAULT_DIR_MODE;
-        st->st_nlink = DIR_NLINK_COUNT;
-        st->st_uid = ctx->uid();
-        st->st_gid = ctx->gid();
-        return 0;
+    memset_s(st, sizeof(*st), 0, sizeof(*st));
+    if (strcmp(path, "/") == 0) {
+        return FillDirStat(st, ctx);
     }
-
-    File *file = FindFile(path, ctx);
-    if (file != nullptr) {
-        st->st_mode = S_IFREG | DEFAULT_FILE_MODE;
-        st->st_nlink = FILE_NLINK_COUNT;
-        st->st_size = file->size;
-        st->st_blocks = SizeToBlocks(file->size);
-        st->st_mtime = NormalizeMtime(file->mtime);
-        st->st_uid = ctx->uid();
-        st->st_gid = ctx->gid();
-        return 0;
-    }
-    LOGE("Getattr: path not found");
-    return -ENOENT;
+    return GetRegularAttr(path, st, ctx);
 }
 
 static int AllocateAndCopyThumbData(ThumbDesc *td, const char *data,
@@ -692,7 +858,7 @@ static int LoadThumbPreviewData(Context *ctx, const std::string &dirName,
 
 static int OpenThumb(const char *path, struct fuse_file_info *fi)
 {
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (ctx == nullptr) {
         LOGE("OpenThumb ctx nullptr");
         return -EIO;
@@ -798,10 +964,8 @@ static int InitializeNewFile(File *file, const char *path, Context *ctx)
     return 0;
 }
 
-static int Create(const char *path, mode_t mode,
-                  struct fuse_file_info *fileInfo)
+static int CheckCreateCommon(const char *path, Context *&ctx)
 {
-    LOGI("gphoto create enter");
     if (g_readOnlyMode) {
         LOGE("Create: operation denied in read-only mode");
         return -EROFS;
@@ -812,12 +976,28 @@ static int Create(const char *path, mode_t mode,
         return -EINVAL;
     }
 
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("Create ctx nullptr");
+        return -EIO;
+    }
+
+    return 0;
+}
+
+static int Create(const char *path, mode_t mode,
+                  struct fuse_file_info *fileInfo)
+{
+    Context *ctx = nullptr;
+    int ret = CheckCreateCommon(path, ctx);
+    if (ret != 0) {
+        return ret;
+    }
     std::string dirName(GphotoDirName(path));
     std::string fileName(GphotoBaseName(path));
 
     Dir *dir = FindDir(dirName, ctx);
-    if (dir == nullptr || dir->getFile(fileName) != nullptr) {
+    if (dir == nullptr || dir->GetFile(fileName) != nullptr) {
         LOGE("Create: parent directory failed");
         return dir == nullptr ? -ENOENT : -EEXIST;
     }
@@ -827,13 +1007,14 @@ static int Create(const char *path, mode_t mode,
         LOGE("gphoto create failed to allocate File");
         return -ENOMEM;
     }
-    file->size = 0;
-    file->changed = true;
-    dir->addFile(file);
-
-    int ret = InitializeNewFile(file, path, ctx);
+    {
+        std::lock_guard<std::mutex> fileGuard(file->lock);
+        file->size = 0;
+        file->changed = true;
+    }
+    
+    ret = InitializeNewFile(file, path, ctx);
     if (ret < 0) {
-        dir->removeFile(file);
         delete file;
         LOGE("gphoto create InitializeNewFile failed ret=%{public}d", ret);
         return ret;
@@ -842,15 +1023,18 @@ static int Create(const char *path, mode_t mode,
     FileDesc *fd = new (std::nothrow) FileDesc();
     if (fd == nullptr) {
         LOGE("gphoto create failed to allocate FileDesc");
-        dir->removeFile(file);
         delete file;
         return -ENOMEM;
     }
-    fd->writable = true;
-    fd->file = file;
-    file->ref++;
+    {
+        std::lock_guard<std::mutex> fileGuard(file->lock);
+        fd->writable = true;
+        fd->file = file;
+        file->ref++;
+    }
+    dir->AddFile(file);
+    fileInfo->direct_io = true;
     fileInfo->fh = PtrToFh(fd);
-    LOGI("gphoto create success");
     return 0;
 }
 
@@ -879,7 +1063,7 @@ static Dir *FindDirNoFetch(const std::string &path, Context *ctx)
             if (name.empty()) {
                 return dir;
             }
-            return dir ? dir->getDir(name) : nullptr;
+            return dir ? dir->GetDir(name) : nullptr;
         }
         std::string name = normalizedPath.substr(last + 1, next - last - 1);
         if (name.empty()) {
@@ -887,7 +1071,7 @@ static Dir *FindDirNoFetch(const std::string &path, Context *ctx)
             continue;
         }
 
-        dir = dir ? dir->getDir(name) : nullptr;
+        dir = dir ? dir->GetDir(name) : nullptr;
         if (!dir) {
             return nullptr;
         }
@@ -926,12 +1110,11 @@ static int IsDirFetchedGphoto(const std::string &path, Context *ctx, char *out, 
     if (!dir) {
         return writeBool(false);
     }
-    return writeBool(dir->listed);
+    return writeBool(dir->GetListed());
 }
 
 static int Open(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("gphoto open enter");
     if (IsThumbPath(path)) {
         std::string real = StripThumbFlag(path);
         if (!IsFilePathValid(real)) {
@@ -952,31 +1135,30 @@ static int Open(const char *path, struct fuse_file_info *fileInfo)
             return -EROFS;
         }
     }
-
     if (!IsFilePathValid(path)) {
         LOGE("gphoto Open: Invalid path");
         return -EINVAL;
     }
 
     fileInfo->direct_io = true;
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        return -EIO;
+    }
+
     File *file = FindFile(path, ctx);
     if (file == nullptr) {
         LOGE("Open: file not found");
         return -ENOENT;
     }
-    std::lock_guard<std::mutex> fileGuard(file->lock);
-
     FileDesc *fd = new (std::nothrow) FileDesc();
     if (fd == nullptr) {
         LOGE("gphoto open failed to allocate FileDesc");
         return -ENOMEM;
     }
-    if (mode == O_RDONLY) {
-        fd->writable = false;
-    } else {
-        fd->writable = true;
-    }
+
+    std::lock_guard<std::mutex> fileGuard(file->lock);
+    fd->writable = mode == O_RDONLY ? false : true;
     fd->file = file;
     file->ref++;
     fileInfo->fh = PtrToFh(fd);
@@ -1007,7 +1189,6 @@ static int UploadChangedFile(File *file, const char *path, Context *ctx)
     CameraFile *upload = nullptr;
     int dupFd = dup(file->tmpFd);
     if (dupFd < 0) {
-        CleanupTempFile(file);
         return -errno;
     }
     int gpResult = gp_file_new_from_fd(&upload, dupFd);
@@ -1039,23 +1220,15 @@ static int Release(const char *path, struct fuse_file_info *fileInfo)
         return -EINVAL;
     }
     if (IsThumbPath(path)) {
-        int ret = ReleaseThumb(path, fileInfo);
-        if (ret != 0) {
-            LOGE("Release ReleaseThumb fail ret=%{public}d", ret);
-        }
-        return ret;
+        return ReleaseThumb(path, fileInfo);
     }
 
-    struct fuse_context *ctxStruct = fuse_get_context();
-    if (ctxStruct == nullptr) {
-        LOGE("Release: fuse_get_context() returned null");
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("Release: ctx is null");
         return -EIO;
     }
-    if (ctxStruct->private_data == nullptr) {
-        LOGE("Release: fuse_context private_data is null");
-        return -EIO;
-    }
-    Context *ctx = static_cast<Context *>(ctxStruct->private_data);
+
     FileDesc *fd = FhToPtr<FileDesc>(fileInfo->fh);
     if (fd == nullptr) {
         LOGE("Release: file descriptor is null");
@@ -1064,26 +1237,32 @@ static int Release(const char *path, struct fuse_file_info *fileInfo)
     File *file = fd->file;
     if (file == nullptr) {
         delete fd;
+        fileInfo->fh = 0;
         LOGI("Release: file is null");
         return -EIO;
     }
-    std::lock_guard<std::mutex> fileGuard(file->lock);
-    delete fd;
-    file->ref--;
-
-    int ret = UploadChangedFile(file, path, ctx);
-    if (ret != 0) {
-        return ret;
+    {
+        std::lock_guard<std::mutex> fileGuard(file->lock);
+        ret = UploadChangedFile(file, path, ctx);
+        delete fd;
+        fileInfo->fh = 0;
+        if (file->ref <= 0) {
+            LOGE("Release: invalid ref count %{public}d", file->ref);
+            return -EIO;
+        }
+        file->ref--;
+        if (ret != 0) {
+            return ret;
+        }
+        CleanupTempFile(file);
     }
-
-    CleanupTempFile(file);
     LOGI("gphoto release success");
     return 0;
 }
 
 static File *ValidateAndGetFile(struct fuse_file_info *fileInfo, const char *path)
 {
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (!ctx || !fileInfo || !fileInfo->fh) {
         LOGE("gphoto Read bad fd fileInfo");
         return nullptr;
@@ -1127,14 +1306,16 @@ static int Read(const char *path, char *buf, size_t size, off_t offset,
         }
         return ret;
     }
+    if (g_loadOnGoing.load()) {
+        LOGE("loadongoing, not allow read full");
+        return -EBUSY;
+    }
 
     File *file = ValidateAndGetFile(fileInfo, path);
     if (!file) {
         return -EIO;
     }
-
     std::lock_guard<std::mutex> lockGuard(file->lock);
-
     if (!file->tmpFileCreated) {
         int ret = SaveCameraFileToTemp(file, path);
         LOGI("gphoto read enter SaveCameraFileToTemp ret = %{public}d", ret);
@@ -1148,7 +1329,8 @@ static int Read(const char *path, char *buf, size_t size, off_t offset,
         return static_cast<int>(bytesRead);
     }
 
-    LOGI("gphoto read return size = %{public}zd", bytesRead);
+    LOGI("gphoto read return size = %{public}zd, want size/offset=%{public}zu/%{public}lld",
+        bytesRead, size, static_cast<long long>(offset));
     return static_cast<int>(bytesRead);
 }
 
@@ -1194,6 +1376,9 @@ static int ExtendFileIfNeeded(File *file, size_t needSize)
 
 static int PrepareFileWrite(File *file, const char *path, size_t size, off_t offset)
 {
+    if (!file || !path) {
+        return -EINVAL;
+    }
     if (!file->tmpFileCreated) {
         LOGI("gphoto write creating new temp file");
         int ret = CreateTempFile(file, path);
@@ -1249,7 +1434,7 @@ static int Write(const char *path, const char *buf, size_t size, off_t offset,
         return -EINVAL;
     }
 
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (ctx == nullptr) {
         LOGE("gphoto Write ctx nullptr");
         return -EIO;
@@ -1265,9 +1450,7 @@ static int Write(const char *path, const char *buf, size_t size, off_t offset,
     if (!file) {
         return -EBADF;
     }
-
     std::lock_guard<std::mutex> lockGuard(file->lock);
-
     int ret = PrepareFileWrite(file, path, size, offset);
     if (ret < 0) {
         return ret;
@@ -1301,7 +1484,7 @@ static int Truncate(const char *path, off_t size, struct fuse_file_info *fi)
         LOGE("gphoto Truncate: Invalid path");
         return -EINVAL;
     }
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (!ctx) {
         LOGE("gphoto Truncate ctx nullptr");
         return -EIO;
@@ -1312,7 +1495,6 @@ static int Truncate(const char *path, off_t size, struct fuse_file_info *fi)
         return -ENOENT;
     }
     std::lock_guard<std::mutex> lockGuard(file->lock);
-
     if (!file->tmpFileCreated) {
         int ret = SaveCameraFileToTemp(file, path);
         if (ret < 0) {
@@ -1341,11 +1523,11 @@ static int FillOneEntry(FillState *state, const char *name, const struct stat *s
     }
 
     int ret = state->filler(state->buf, name, st, state->idx + 1, state->fillFlags);
-    if (ret < 0) {
+    if (ret != 0) {
         return ret;
     }
     state->idx++;
-    return ret;
+    return 0;
 }
 
 static int FillDirSubentries(Dir *dir, FillState *state, Context *ctx)
@@ -1356,8 +1538,11 @@ static int FillDirSubentries(Dir *dir, FillState *state, Context *ctx)
         st.st_nlink = DIR_NLINK_COUNT;
         st.st_uid = ctx->uid();
         st.st_gid = ctx->gid();
-        
+
         int ret = FillOneEntry(state, subDir->name.c_str(), &st);
+        if (ret == 1) {
+            return 0;
+        }
         if (ret < 0) {
             return ret;
         }
@@ -1376,8 +1561,11 @@ static int FillDirFiles(Dir *dir, FillState *state, Context *ctx)
         st.st_size = file->size;
         st.st_mtime = NormalizeMtime(file->mtime);
         st.st_blocks = (file->size / SIZE_TO_BLOCK) + (file->size % SIZE_TO_BLOCK > 0 ? 1 : 0);
-        
+
         int ret = FillOneEntry(state, file->name.c_str(), &st);
+        if (ret == 1) {
+            return 0;
+        }
         if (ret < 0) {
             return ret;
         }
@@ -1388,16 +1576,15 @@ static int FillDirFiles(Dir *dir, FillState *state, Context *ctx)
 static int Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
                    off_t offset, struct fuse_file_info *fileInfo, FuseReaddirFlags flags)
 {
-    LOGI("gphoto Readdir enter");
     static std::atomic<uint64_t> g_rd_seq{0};
     uint64_t seq = ++g_rd_seq;
-    
+
     if (!IsFilePathValid(std::string(path))) {
         LOGE("gphoto Readdir invalid ");
         return -EINVAL;
     }
 
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (ctx == nullptr) {
         LOGE("gphoto readdir return by ctx = null");
         return -EIO;
@@ -1408,17 +1595,15 @@ static int Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         LOGE("gphoto readdir return by finddir = null");
         return -ENOENT;
     }
-    
-    LOGI("readdir seq=%{public}llu listed=%{public}d dirs=%{public}zu files=%{public}zu",
-        static_cast<unsigned long long>(seq), dir->listed, dir->dirs.size(), dir->files.size());
-
-    if (!dir->listed) {
-        int ret = ListDir(path, dir, ctx);
-        if (ret) {
-            LOGE("gphoto readdir return by listdir = %{public}d\n", ret);
-            return ret;
-        }
+    if (dir->GetDirty()) {
+        LOGI("dir is dirty, not show");
+        return 0;
     }
+
+    LOGI("readdir seq=%{public}llu listed=%{public}d dirs=%{public}zu files=%{public}zu",
+        static_cast<unsigned long long>(seq), dir->GetListed(), dir->dirs.size(), dir->files.size());
+
+    std::lock_guard<std::mutex> fileGuard(dir->lock);
 
     FillState state = {
         .buf = buf,
@@ -1437,19 +1622,31 @@ static int Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     if (ret != 0) {
         return ret;
     }
-
-    LOGI("gphoto readdir success\n");
     return 0;
 }
 
-static int Unlink(const char *path)
+static int CheckUnlinkCommon(const char *path, Context *&ctx)
 {
     LOGI("gphoto unlink enter");
     if (!IsFilePathValid(path)) {
         LOGE("Unlink: Invalid path");
         return -EINVAL;
     }
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("unlink ctx nullptr");
+        return -EIO;
+    }
+    return 0;
+}
+
+static int Unlink(const char *path)
+{
+    Context *ctx = nullptr;
+    int ret = CheckUnlinkCommon(path, ctx);
+    if (ret != 0) {
+        return ret;
+    }
     std::string dirName(GphotoDirName(path));
     std::string fileName(GphotoBaseName(path));
 
@@ -1459,14 +1656,22 @@ static int Unlink(const char *path)
         LOGE("Unlink: path not found");
         return -ENOENT;
     }
-
-    std::lock_guard<std::mutex> fileGuard(file->lock);
-    if (file->ref > 0) {
-        LOGE("Unlink: file is still in use (ref count > 0)");
-        return -EBUSY;
+    {
+        std::lock_guard<std::mutex> fileGuard(file->lock);
+        if (g_gphotoLockDepth.load() > 0) {
+            return -EBUSY;
+        }
+        if (file->ref > 0) {
+            LOGE("Unlink: file is still open, ref=%{public}d", file->ref);
+            return -EBUSY;
+        }
+        if (file->downloading.load()) {
+            LOGE("Unlink: file is downloading");
+            return -EBUSY;
+        }
     }
 
-    int ret = WithCameraLocked([&ctx, &dirName, &fileName] {
+    ret = WithCameraLocked([&ctx, &dirName, &fileName] {
         return gp_camera_file_delete(ctx->camera(), dirName.c_str(), fileName.c_str(),
             ctx->context());
     });
@@ -1475,7 +1680,7 @@ static int Unlink(const char *path)
         return GpresultToErrno(ret);
     }
 
-    dir->removeFile(file);
+    dir->RemoveFile(file);
     delete file;
     LOGI("gphoto unlink success");
     return 0;
@@ -1493,7 +1698,11 @@ static int Mkdir(const char *path, mode_t mode)
         LOGE("gphoto Mkdir: Invalid path");
         return -EINVAL;
     }
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("mkdir ctx nullptr");
+        return -EIO;
+    }
     std::string parentName(GphotoDirName(path));
     std::string dirName(GphotoBaseName(path));
     Dir *parent = FindDir(parentName, ctx);
@@ -1514,7 +1723,7 @@ static int Mkdir(const char *path, mode_t mode)
         LOGE("gphoto mkdir failed to allocate Dir");
         return -ENOMEM;
     }
-    parent->addDir(dir);
+    parent->AddDir(dir);
     LOGI("gphoto mkdir success");
     return 0;
 }
@@ -1526,7 +1735,11 @@ static int Rmdir(const char *path)
         LOGE("Rmdir: Invalid path");
         return -EINVAL;
     }
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("rmdir ctx nullptr");
+        return -EIO;
+    }
 
     std::string parentName(GphotoDirName(path));
     std::string dirName(GphotoBaseName(path));
@@ -1537,7 +1750,7 @@ static int Rmdir(const char *path)
         LOGE("gphoto rmdir return by parent or dir null");
         return -ENOENT;
     }
-    if (!dir->empty()) {
+    if (!dir->Empty()) {
         LOGE("gphoto rmdir return by dir->empty");
         return -ENOTEMPTY;
     }
@@ -1551,7 +1764,7 @@ static int Rmdir(const char *path)
         return GpresultToErrno(ret);
     }
     LOGI("gphoto rmdir success");
-    parent->removeDir(dir);
+    parent->RemoveDir(dir);
     delete dir;
     return 0;
 }
@@ -1559,15 +1772,16 @@ static int Rmdir(const char *path)
 static void *Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("gphoto init enter");
+    g_running.store(true);
     return new Context();
 }
 
 static void Destroy(void *voidContext)
 {
     LOGI("gphoto destroy enter");
+    g_running.store(false);
     Context *context = static_cast<Context *>(voidContext);
     delete context;
-    context = nullptr;
     LOGI("gphoto destroy end");
 }
 
@@ -1596,13 +1810,16 @@ static int Statfs(const char *path, struct statvfs *stat)
         LOGE("Statfs: stat is null");
         return -EINVAL;
     }
-    LOGI("gphoto statfs enter");
     if (!IsFilePathValid(std::string(path))) {
         LOGE("gphoto Statfs invalid path");
         return -EINVAL;
     }
 
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("Statfs: ctx is null");
+        return -EINVAL;
+    }
     CameraStorageInformation *storageInfo = nullptr;
     int numInfo = 0;
     int res = WithCameraLocked([&ctx, &storageInfo, &numInfo] {
@@ -1632,7 +1849,6 @@ static int Statfs(const char *path, struct statvfs *stat)
         FillStatfsFromStorageInfo(stat, storageInfo);
     }
     ctx->cacheStat(stat);
-    LOGI("gphoto statfs success");
     return 0;
 }
 
@@ -1650,7 +1866,35 @@ static int Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *
 
 static int GpOpendir(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("gphoto gp_opendir enter");
+    static std::atomic<uint64_t> g_rd_seq{0};
+    uint64_t seq = ++g_rd_seq;
+    if (!IsFilePathValid(std::string(path))) {
+        LOGE("gphoto gp_opendir invalid ");
+        return -EINVAL;
+    }
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("gphoto gp_opendir return by ctx = null");
+        return -EIO;
+    }
+    Dir *dir = FindDir(path, ctx);
+    if (dir == nullptr) {
+        LOGE("gphoto gp_opendir return by finddir = null");
+        return -ENOENT;
+    }
+    LOGI("gp_opendir seq=%{public}llu listed=%{public}d dirs=%{public}zu files=%{public}zu",
+        static_cast<unsigned long long>(seq), dir->GetListed(), dir->dirs.size(), dir->files.size());
+    g_loadOnGoing.store(true);
+    int ret = ListFolderPartial(path, dir, ctx, false);
+    if (!ret && dir->GetDirty()) {
+        dir->SetDirty(false);
+    }
+    if (ret) {
+        dir->SetListed(true);
+        dir->SetDirty(true);
+        LOGE("gphoto gp_opendir return 0 err = %{public}d", ret);
+    }
+    g_loadOnGoing.store(!dir->GetListed());
     return 0;
 }
 
@@ -1721,7 +1965,7 @@ static int GpWriteBoolXattr(bool boolValue, char *out, size_t size)
 
 static int GpDirFetched(const char *path, const char *in, char *out, size_t size)
 {
-    Context *ctx = static_cast<Context *>(fuse_get_context()->private_data);
+    Context *ctx = GetContext();
     if (ctx == nullptr) {
         LOGE("gphoto gp_getxattr return ctx is null");
         return -EIO;
@@ -1736,18 +1980,46 @@ static int GpDirFetched(const char *path, const char *in, char *out, size_t size
         return GpWriteBoolXattr(false, out, size);
     }
 
-    return GpWriteBoolXattr(dir->listed, out, size);
+    return GpWriteBoolXattr(dir->GetListed(), out, size);
+}
+
+static int GpDirToFlush(const char *path)
+{
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("GpDirToFlush return ctx is null");
+        return -EIO;
+    }
+
+    Dir *dir = FindDirNoFetch(std::string(path), ctx);
+    if (dir == nullptr) {
+        return 0;
+    }
+    if (dir->GetListed() && g_gphotoLockDepth.load() == 0) {
+        dir->SetListed(false);
+        dir->SetNextOffset(0);
+        dir->SetRefresh(true);
+    }
+    LOGI("GpDirToFlush, nextoffset = %{public}d, g_gphotoLockDepth = %{public}d",
+         dir->GetNextOffset(), g_gphotoLockDepth.load());
+    return 0;
+}
+
+static int QueryPtpIsInUse(char *out, size_t size)
+{
+    if (g_gphotoLockDepth.load() > 0) {
+        return GpWriteBoolXattr(true, out, size);
+    }
+    return GpWriteBoolXattr(false, out, size);
 }
 
 static int GpGetxattr(const char *path, const char *in, char *out, size_t size)
 {
-    LOGI("gphoto gp_getxattr enter, in = %{public}s", in);
-
     if (path == nullptr || in == nullptr) {
         LOGE("gphoto gp_getxattr invalid args");
         return -EINVAL;
     }
-
+    LOGI("gphoto gp_getxattr enter, in = %{public}s", in);
     if (!IsFilePathValid(path)) {
         LOGE("Getxattr: invalid path");
         return -EINVAL;
@@ -1756,15 +2028,22 @@ static int GpGetxattr(const char *path, const char *in, char *out, size_t size)
     if (strcmp(in, "user.isDirFetched") == 0) {
         LOGI("gphoto gp_getxattr: user.isDirFetched");
         return GpDirFetched(path, in, out, size);
+    } else if (strcmp(in, "user.queryMtpIsInUse") == 0) {
+        return QueryPtpIsInUse(out, size);
     }
-
     return 0;
 }
 
 static int GpSetxattr(const char *path, const char *in, const char *out, size_t size, int flags)
 {
+    if (!path || !in) {
+        return -EINVAL;
+    }
     LOGI("gphoto gp_setxattr enter in = %{public}s, size = %{public}zu, flags = %{public}d",
         in, size, flags);
+    if (strcmp(in, "user.fetchcontent") == 0) {
+        return GpDirToFlush(path);
+    }
     return -EROFS;
 }
 

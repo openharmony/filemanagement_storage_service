@@ -28,19 +28,23 @@ struct File {
     int tmpFd;
     std::string tmpPath;
     off_t size;
-    int mtime;
+    time_t mtime;
     int ref;
     bool changed;
     bool tmpFileCreated;
     std::mutex lock;
+    std::atomic<off_t> downloadedSize;
+    std::atomic<bool> downloading;
 
     File(const std::string& name, const CameraFileInfo& info)
         : name(name), mtime(info.file.mtime), size(info.file.size),
-          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr) {}
+          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr),
+          downloadedSize(0), downloading(false) {}
 
     File(const std::string& name)
         : name(name), mtime(Now()), size(0),
-          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr) {}
+          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr),
+          downloadedSize(0), downloading(false) {}
 
     File(const File&) = delete;
     File& operator=(const File&) = delete;
@@ -55,7 +59,10 @@ struct File {
             unlink(tmpPath.c_str());
             tmpPath.clear();
         }
-        if (camFile) gp_file_unref(camFile);
+        if (camFile) {
+            gp_file_unref(camFile);
+            camFile = nullptr;
+        }
     }
 };
 
