@@ -13,9 +13,12 @@
  * limitations under the License.
  */
 
+#include <atomic>
+#include <chrono>
 #include <cstdio>
 #include <gtest/gtest.h>
 #include <sys/xattr.h>
+#include <thread>
 
 #include "volume/volume_manager_service.h"
 #include "disk/disk_manager_service.h"
@@ -177,7 +180,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
     int32_t result;
     vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
     volumePtr->SetFsType(FsType::MTP);
     result = vmService.Mount(volumeId);
@@ -207,7 +210,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
     int32_t result;
     vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
     volumePtr->SetFsType(FsType::MTP);
     result = vmService.Mount(volumeId);
@@ -236,7 +239,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0005, testing::e
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
     int32_t result;
     vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
     volumePtr->SetFsType(FsType::MTP);
     result = vmService.Mount(volumeId);
@@ -265,7 +268,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0006, testing::e
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
     int32_t result;
     vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
     volumePtr->SetFsType(FsType::MTP);
     result = vmService.Mount(volumeId);
@@ -342,7 +345,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0002, testing
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     int32_t result;
     result = vmService.TryToFix(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -559,15 +562,15 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
-    dmService.diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService.volumeMap_.Clear();
+    vmService.volumeMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0001";
 }
 
@@ -600,15 +603,15 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
-    dmService.diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService.volumeMap_.Clear();
+    vmService.volumeMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0002";
 }
 
@@ -641,15 +644,15 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
 
-    dmService.diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.OnVolumeDamaged(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, true});
     VolumeExternal ve;
     int32_t res = vmService.GetVolumeById(volumeId, ve);
     EXPECT_EQ(res, E_OK);
-    vmService.volumeMap_.Clear();
+    vmService.volumeMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0003";
 }
 
@@ -711,8 +714,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
 
     std::string volumeId = "vol-8-1";
     std::string diskId = "disk-8-1";
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId)));
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1)));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId))));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1))));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 1);
 
@@ -721,8 +724,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     std::shared_ptr<VolumeExternal> vc = make_shared<VolumeExternal>(VolumeCore(volumeId, UDF, diskId));
     EXPECT_NE(vc, nullptr);
     vc->SetFsType(UDF);
-    vmService.volumeMap_.Insert(volumeId, vc);
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    vmService.volumeMap_.insert(make_pair(volumeId, vc));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 2);
 
@@ -731,12 +734,12 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     std::shared_ptr<VolumeExternal> vc1 = make_shared<VolumeExternal>(VolumeCore(volumeId, UDF, diskId));
     EXPECT_NE(vc1, nullptr);
     vc1->SetFsType(ISO9660);
-    vmService.volumeMap_.Insert(volumeId, vc1);
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    vmService.volumeMap_.insert(make_pair(volumeId, vc1));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 3);
-    vmService.volumeMap_.Clear();
-    dmService.diskMap_.Clear();
+    vmService.volumeMap_.clear();
+    dmService.diskMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0001";
 }
 
@@ -757,24 +760,24 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0002, tes
 
     std::string volumeId = "vol-8-1";
     std::string diskId = "disk-8-1";
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId)));
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1)));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId))));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1))));
     std::vector<VolumeExternal> result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 1);
 
     volumeId = "vol-11-1";
     diskId = "disk-11-1";
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 2);
 
     volumeId = "vol-11-2";
     diskId = "disk-11-2";
-    dmService.diskMap_.Insert(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3)));
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 3);
-    vmService.volumeMap_.Clear();
-    dmService.diskMap_.Clear();
+    vmService.volumeMap_.clear();
+    dmService.diskMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0002";
 }
 
@@ -968,8 +971,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
     vmService.OnVolumeCreated(vc);
     std::string fsUuid = "uuid-2";
     std::string description = "description-2";
-    ASSERT_NE(vmService.volumeMap_.Contains(volumeId), false);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(volumeId);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     volumePtr->SetFsUuid(fsUuid);
     int32_t result = vmService.SetVolumeDescription(fsUuid, description);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -1178,10 +1180,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0001, tes
     std::string diskId = "disk-fuse-3";
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::MOUNTED);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     int32_t result = vmService.MountUsbFuse(volumeId);
     EXPECT_EQ(result, E_NON_EXIST);
-    vmService.volumeMap_.Erase(volumeId);
+    vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0001";
 }
 
@@ -1203,11 +1205,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0002, tes
     std::string diskId = "disk-fuse-4";
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::UNMOUNTED);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     int32_t result = vmService.MountUsbFuse(volumeId);
     // Check method will fail because volume is not properly setup
     EXPECT_NE(result, E_OK);
-    vmService.volumeMap_.Erase(volumeId);
+    vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0002";
 }
 
@@ -1229,11 +1231,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0003, tes
     std::string diskId = "disk-fuse-5";
     VolumeCore vc(volumeId, fsType, diskId);
     vc.SetState(VolumeState::UNMOUNTED);
-    vmService.volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(vc)));
     int32_t result = vmService.MountUsbFuse(volumeId);
     // The communication will fail due to lack of proper setup
     EXPECT_NE(result, E_OK);
-    vmService.volumeMap_.Erase(volumeId);
+    vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0003";
 }
 
@@ -1245,9 +1247,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     VolumeInfoStr volumeInfoStr;
     volumeInfoStr.volumeId = "vol-fuse-1";
     auto volumePtr = make_shared<VolumeExternal>();
-    vmService.volumeMap_.Insert("vol-fuse", volumePtr);
+    vmService.volumeMap_.insert(make_pair("vol-fuse", volumePtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 7);
+    EXPECT_EQ(vmService.volumeMap_.size(), 7);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0001";
 }
 
@@ -1258,9 +1260,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     auto &vmService =VolumeManagerService::GetInstance();
     VolumeInfoStr volumeInfoStr;
     volumeInfoStr.volumeId = "vol-fuse-1";
-    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, nullptr);
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, nullptr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 8);
+    EXPECT_EQ(vmService.volumeMap_.size(), 8);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0002";
 }
 
@@ -1273,14 +1275,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     volumeInfoStr.volumeId = "vol-fuse-3";
     volumeInfoStr.description = "";
     auto volumePtr = make_shared<VolumeExternal>();
-    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
     diskPtr->flag_ = SD_FLAG;
     volumePtr->diskId_ = diskId;
-    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    EXPECT_EQ(vmService.volumeMap_.size(), 9);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0003";
 }
 
@@ -1293,14 +1295,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     volumeInfoStr.volumeId = "vol-fuse-3";
     volumeInfoStr.description = "";
     auto volumePtr = make_shared<VolumeExternal>();
-    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
     diskPtr->flag_ = USB_FLAG;
     volumePtr->diskId_ = diskId;
-    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    EXPECT_EQ(vmService.volumeMap_.size(), 9);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0004";
 }
 
@@ -1313,14 +1315,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     volumeInfoStr.volumeId = "vol-fuse-3";
     volumeInfoStr.description = "";
     auto volumePtr = make_shared<VolumeExternal>();
-    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
     diskPtr->flag_ = CD_FLAG;
     volumePtr->diskId_ = diskId;
-    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    EXPECT_EQ(vmService.volumeMap_.size(), 9);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0005";
 }
 
@@ -1333,14 +1335,14 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     volumeInfoStr.volumeId = "vol-fuse-3";
     volumeInfoStr.description = "";
     auto volumePtr = make_shared<VolumeExternal>();
-    vmService.volumeMap_.Insert(volumeInfoStr.volumeId, volumePtr);
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
     diskPtr->flag_ = 4;
     volumePtr->diskId_ = diskId;
-    DiskManagerService::GetInstance().diskMap_.Insert(diskId, diskPtr);
+    DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
-    EXPECT_EQ(vmService.volumeMap_.Size(), 9);
+    EXPECT_EQ(vmService.volumeMap_.size(), 9);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyEncryptVolumeStateChanged_0006";
 }
 
@@ -1365,9 +1367,200 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0004, testin
     g_cnt = CNT_TWO;
     vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
 
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(id);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[id];
     std::string description(MTP_MAX_LEN, 'A');
     EXPECT_EQ(volumePtr->description_, description);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0004";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeStateChanged_0001
+ * @tc.name: Volume_manager_service_OnVolumeStateChanged_0001
+ * @tc.desc: Test function for OnVolumeStateChanged
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeStateChanged_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+    VolumeState state = VolumeState::UNMOUNTED;
+    std::string volumeId = "volumeId-nullptr";
+    vmService.volumeMap_.insert(make_pair(volumeId, nullptr));
+    EXPECT_EQ(vmService.volumeMap_.size(), 1);
+    vmService.OnVolumeStateChanged(volumeId, state);
+
+    vmService.volumeMap_.clear();
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Check_0001
+ * @tc.name: Volume_manager_service_Check_0001
+ * @tc.desc: Test function for Check
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Check_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Check_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    std::string volumeId = "volumeId-nullptr";
+    int32_t res = vmService.Check(volumeId);
+    EXPECT_EQ(res, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Check_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Format_0004
+ * @tc.name: Volume_manager_service_Format_0004
+ * @tc.desc: Test function for Format
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Format_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Format_0004";
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+    std::string volumeId = "volumeId-nullptr";
+    std::string fsType = "exfat";
+    int32_t res = vmService.Format(volumeId, fsType);
+    EXPECT_EQ(res, E_NON_EXIST);
+
+    vmService.volumeMap_.insert(make_pair(volumeId, nullptr));
+    EXPECT_EQ(vmService.volumeMap_.size(), 1);
+    res = vmService.Format(volumeId, fsType);
+    EXPECT_EQ(res, E_PARAMS_INVALID);
+
+    vmService.volumeMap_.clear();
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "volumeId-1234";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    volumePtr->fsType_ = FsType::MTP;
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
+    res = vmService.Format(volumeInfoStr.volumeId, fsType);
+    EXPECT_EQ(res, E_NOT_SUPPORT);
+
+    vmService.volumeMap_.clear();
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Format_0004";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_NotifyMtpUnmounted_0001
+ * @tc.name: Volume_manager_service_NotifyMtpUnmounted_0001
+ * @tc.desc: Test function for NotifyMtpUnmounted
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyMtpUnmounted_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyMtpUnmounted_0001";
+
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+    std::string id = "volumeId-nullptr";
+    bool isBadRemove = true;
+    vmService.NotifyMtpUnmounted(id, isBadRemove);
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    VolumeInfoStr volumeInfoStr;
+    volumeInfoStr.volumeId = "volumeId-1234";
+    volumeInfoStr.description = "";
+    auto volumePtr = make_shared<VolumeExternal>();
+    vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
+    EXPECT_EQ(vmService.volumeMap_.size(), 1);
+
+    vmService.NotifyMtpUnmounted(volumeInfoStr.volumeId, isBadRemove);
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyMtpUnmounted_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetAllVolumes_ThreadSafety_0001
+ * @tc.name: Volume_manager_service_GetAllVolumes_ThreadSafety_0001
+ * @tc.desc: Concurrent GetAllVolumes + OnVolumeCreated + OnVolumeStateChanged(REMOVED)
+ *           to verify thread safety of volumeMap_ access with mutex protection.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_GetAllVolumes_ThreadSafety_0001, testing::ext::TestSize.Level1)
+{
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+
+    int32_t loopCount = 100;
+    int32_t volumeCount = 20;
+    std::atomic<bool> startFlag{false};
+    auto getAllVolumesThread = [&startFlag, &loopCount, &vmService]() {
+        while (!startFlag.load()) {
+            std::this_thread::yield();
+        }
+        for (int32_t i = 0; i < loopCount; i++) {
+            auto result = vmService.GetAllVolumes();
+        }
+    };
+
+    auto insertThread = [&startFlag, &loopCount, &volumeCount, &vmService]() {
+        while (!startFlag.load()) {
+            std::this_thread::yield();
+        }
+        for (int32_t i = 0; i < loopCount; i++) {
+            for (int32_t j = 0; j < volumeCount; j++) {
+                std::string volumeId = "vol-thread-ins-" + std::to_string(i) + "-" + std::to_string(j);
+                std::string diskId = "disk-thread-ins-" + std::to_string(i) + "-" + std::to_string(j);
+                VolumeCore vc(volumeId, 1, diskId);
+                auto volumePtr = make_shared<VolumeExternal>(vc);
+                std::lock_guard<std::mutex> lock(vmService.volumeMapMutex_);
+                vmService.volumeMap_.insert(make_pair(volumePtr->GetId(), volumePtr));
+            }
+        }
+    };
+
+    auto deleteThread = [&startFlag, &loopCount, &volumeCount, &vmService]() {
+        while (!startFlag.load()) {
+            std::this_thread::yield();
+        }
+        for (int32_t i = 0; i < loopCount; i++) {
+            for (int32_t j = 0; j < volumeCount; j++) {
+                std::string volumeId = "vol-thread-ins-" + std::to_string(i) + "-" + std::to_string(j);
+                std::lock_guard<std::mutex> lock(vmService.volumeMapMutex_);
+                vmService.volumeMap_.erase(volumeId);
+            }
+        }
+    };
+
+    std::thread t1(getAllVolumesThread);
+    std::thread t2(insertThread);
+    std::thread t3(deleteThread);
+
+    startFlag.store(true);
+
+    t1.join();
+    t2.join();
+    t3.join();
 }
 } // namespace

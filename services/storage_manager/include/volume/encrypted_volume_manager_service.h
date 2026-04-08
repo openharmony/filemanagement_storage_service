@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_MANAGER_ENCRYPTED_VOLUME_MANAGER_SERVICE_H
 
 #include "volume_external.h"
-#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
