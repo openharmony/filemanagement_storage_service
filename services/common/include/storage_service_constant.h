@@ -89,6 +89,14 @@ enum IStorageDaemonEnum {
     CRYPTO_FLAG_EL4 = 8,
     CRYPTO_FLAG_EL5 = 16,
 };
+
+enum AppType {
+    SYS_SA = 1,
+    SYS_APP = 2,
+    USER_APP = 3,
+    OTHER_APP = 4,
+};
+
 extern const std::map<std::string, KeyType> EL_DIR_MAP;
 }
 }

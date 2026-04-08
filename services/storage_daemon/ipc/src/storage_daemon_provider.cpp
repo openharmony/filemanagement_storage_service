@@ -46,7 +46,6 @@
 #endif
 #include "file_sharing/file_sharing.h"
 #include "hi_audit.h"
-#include "quota/quota_manager.h"
 #include "user/mount_manager.h"
 #include "user/system_mount_manager.h"
 #include "user/user_manager.h"
@@ -1440,12 +1439,12 @@ int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     return ret;
 }
 
-int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::string &storageStatus,
-    const std::map<int32_t, std::string> &bundleNameAndUid)
+int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+    const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type)
 {
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: >>> ENTER <<< bundleNameAndUid.size=%{public}zu",
         bundleNameAndUid.size());
-    QuotaManager::GetInstance().GetUidStorageStats(storageStatus, bundleNameAndUid);
+    QuotaManager::GetInstance().GetUidStorageStats(vec, totalSize, bundleNameAndUid, type);
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: <<< EXIT SUCCESS <<<");
     return E_OK;
 }

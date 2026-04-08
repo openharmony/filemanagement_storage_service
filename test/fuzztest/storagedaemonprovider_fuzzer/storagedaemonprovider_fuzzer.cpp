@@ -654,7 +654,10 @@ static void HandleQuotaMemoryOps(FuzzedDataProvider& provider,
             }
             std::string value(reinterpret_cast<const char*>(dataPtr + valueOffset), valueLength);
             std::map<int32_t, std::string> bundleNameAndUid{{key, value}};
-            providerObj->QueryOccupiedSpaceForSa(storageStatus, bundleNameAndUid);
+            std::vector<UidSaInfo> vec;
+            int64_t totalSize = 0;
+            int32_t type = 1;
+            providerObj->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
             break;
         }
         default: break;

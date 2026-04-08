@@ -1314,17 +1314,19 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpace
 {
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    std::string str;
+    std::vector<UidSaInfo> vec;
+    int64_t totalSize = 0;
     std::map<int32_t, std::string> bundleNameAndUid;
+    int32_t type = 1;
     MockConnectFail();
-    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_SA_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type), E_SA_IS_NULLPTR);
 
     MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type), E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, QueryOccupiedSpaceForSa(_, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(str, bundleNameAndUid), E_OK);
+    EXPECT_CALL(*sd, QueryOccupiedSpaceForSa(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type), E_OK);
 }
 
 /**

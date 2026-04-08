@@ -29,8 +29,8 @@ public:
     virtual int32_t GetDataSizeByPath(const std::string &path, int64_t &size);
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize);
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
-    virtual int32_t QueryOccupiedSpaceForSa(std::string &storageStatus,
-        const std::map<int32_t, std::string> &bundleNameAndUid);
+    virtual int32_t QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+        const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type);
     virtual int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs, std::vector<DirSpaceInfo> &outDirs);
     virtual int32_t SetStopScanFlag(bool stop = false);
@@ -46,8 +46,8 @@ public:
     MOCK_METHOD(int32_t, GetDataSizeByPath, (const std::string &, int64_t &), (override));
     MOCK_METHOD(int32_t, GetRmgResourceSize, (const std::string &, uint64_t &), (override));
     MOCK_METHOD(int32_t, GetFileEncryptStatus, (uint32_t, bool &, bool), (override));
-    MOCK_METHOD(int32_t, QueryOccupiedSpaceForSa, (std::string &, (const std::map<int32_t, std::string> &)),
-        (override));
+    MOCK_METHOD(int32_t, QueryOccupiedSpaceForSa, (std::vector<UidSaInfo> &, int64_t &,
+        (const std::map<int32_t, std::string> &), int32_t), (override));
     MOCK_METHOD(int32_t, GetDqBlkSpacesByUids, (const std::vector<int32_t> &, std::vector<NextDqBlk> &));
     MOCK_METHOD(int32_t, GetDirListSpace, (const std::vector<DirSpaceInfo> &, std::vector<DirSpaceInfo> &));
     MOCK_METHOD(int32_t, SetStopScanFlag, (bool));

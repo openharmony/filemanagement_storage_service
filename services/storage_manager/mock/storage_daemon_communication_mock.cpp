@@ -56,11 +56,11 @@ int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmNam
     return StorageDaemonCommunicationMock::storageDaemonCommunication->GetRmgResourceSize(rgmName, totalSize);
 }
 
-int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::string &storageStatus,
-    const std::map<int32_t, std::string> &bundleNameAndUid)
+int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
+    const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type)
 {
-    return StorageDaemonCommunicationMock::storageDaemonCommunication->QueryOccupiedSpaceForSa(storageStatus,
-        bundleNameAndUid);
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->QueryOccupiedSpaceForSa(vec, totalSize,
+        bundleNameAndUid, type);
 }
 
 int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
