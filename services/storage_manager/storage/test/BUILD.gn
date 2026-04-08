@@ -97,6 +97,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
