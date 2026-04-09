@@ -38,31 +38,47 @@ namespace StorageManager {
     void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
     {
         auto volumePtr = make_shared<VolumeExternal>(vc);
-        volumeMap_.Insert(volumePtr->GetId(), volumePtr);
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            volumeMap_.insert(make_pair(volumePtr->GetId(), volumePtr));
+        }
         Mount(volumePtr->GetId());
     }
 
     void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState state)
     {
-        if (!volumeMap_.Contains(volumeId)) {
-            LOGE("VolumeManagerService::OnVolumeDestroyed volumeId %{public}s not exists", volumeId.c_str());
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+            LOGE("VolumeManagerService::OnVolumeStateChanged volumeId %{public}s not exists", volumeId.c_str());
             return;
         }
-        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_[volumeId];
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return;
+        }
         VolumeStateNotify(state, volumePtr);
         if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
-            volumeMap_.Erase(volumeId);
+            volumeMap_.erase(volumeId);
         }
     }
 
     void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
         std::string path, std::string description)
     {
-        if (!volumeMap_.Contains(volumeId)) {
-            LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists", volumeId.c_str());
+        std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+                LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists", volumeId.c_str());
+                return;
+            }
+            volumePtr = volumeMap_[volumeId];
+        }
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return;
         }
-        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         volumePtr->SetFsType(fsType);
         volumePtr->SetFsUuid(fsUuid);
         volumePtr->SetPath(path);
@@ -86,11 +102,19 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::Mount(std::string volumeId)
     {
-        if (!volumeMap_.Contains(volumeId)) {
-            LOGE("VolumeManagerService::Mount volumeId %{public}s not exists", volumeId.c_str());
+        std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+                LOGE("VolumeManagerService::Mount volumeId %{public}s not exists", volumeId.c_str());
+                return E_NON_EXIST;
+            }
+            volumePtr = volumeMap_[volumeId];
+        }
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return E_NON_EXIST;
         }
-        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
             LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
             return E_MOUNT;
@@ -111,11 +135,19 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::Unmount(std::string volumeId)
     {
-        if (!volumeMap_.Contains(volumeId)) {
-            LOGE("VolumeManagerService::Unmount volumeId %{public}s not exists", volumeId.c_str());
+        std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+                LOGE("VolumeManagerService::Unmount volumeId %{public}s not exists", volumeId.c_str());
+                return E_NON_EXIST;
+            }
+            volumePtr = volumeMap_[volumeId];
+        }
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return E_NON_EXIST;
         }
-        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr->GetState() != VolumeState::MOUNTED) {
             LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted", volumeId.c_str());
             return E_UMOUNT;
@@ -135,7 +167,19 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::Check(std::string volumeId)
     {
-        std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+                LOGE("VolumeManagerService::Check volumeId %{public}s not exists", volumeId.c_str());
+                return E_NON_EXIST;
+            }
+            volumePtr = volumeMap_[volumeId];
+        }
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return E_NON_EXIST;
+        }
         std::shared_ptr<StorageDaemonCommunication> sdCommunication;
         sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
         volumePtr->SetState(VolumeState::CHECKING);
@@ -146,7 +190,8 @@ namespace StorageManager {
     vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
     {
         vector<VolumeExternal> result;
-        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        for (auto it = volumeMap_.begin(); it != volumeMap_.end(); ++it) {
             VolumeExternal vc = *(it->second);
             result.push_back(vc);
         }
@@ -155,7 +200,8 @@ namespace StorageManager {
 
     std::shared_ptr<VolumeExternal> VolumeManagerService::GetVolumeByUuid(std::string volumeUuid)
     {
-        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        for (auto it = volumeMap_.begin(); it != volumeMap_.end(); ++it) {
             auto vc = it->second;
             if (vc->GetUuid() == volumeUuid) {
                 LOGE("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists", volumeUuid.c_str());
@@ -167,7 +213,8 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
     {
-        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        for (auto it = volumeMap_.begin(); it != volumeMap_.end(); ++it) {
             auto volume = it->second;
             if (volume->GetUuid() == fsUuid) {
                 LOGI("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists", fsUuid.c_str());
@@ -180,16 +227,19 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::GetVolumeById(std::string volumeId, VolumeExternal &vc)
     {
-        if (volumeMap_.Contains(volumeId)) {
-            vc = *volumeMap_.ReadVal(volumeId);
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        if (volumeMap_.find(volumeId) != volumeMap_.end()) {
+            vc = *volumeMap_[volumeId];
             return E_OK;
         }
+        LOGE("VolumeManagerService::GetVolumeById volumeId %{public}s not exists", volumeId.c_str());
         return E_NON_EXIST;
     }
 
     int32_t VolumeManagerService::SetVolumeDescription(std::string fsUuid, std::string description)
     {
-        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        for (auto it = volumeMap_.begin(); it != volumeMap_.end(); ++it) {
             auto volume = it->second;
             if (volume->GetUuid() == fsUuid) {
                 LOGI("VolumeManagerService::SetVolumeDescription volumeUuid %{public}s exists", fsUuid.c_str());
@@ -207,10 +257,20 @@ namespace StorageManager {
 
     int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     {
-        if (volumeMap_.Find(volumeId) == volumeMap_.End()) {
+        std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(volumeMapMutex_);
+            if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+                LOGE("VolumeManagerService::Format volumeId %{public}s not exists", volumeId.c_str());
+                return E_NON_EXIST;
+            }
+            volumePtr = volumeMap_[volumeId];
+        }
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return E_NON_EXIST;
         }
-        if (volumeMap_.ReadVal(volumeId)->GetState() != VolumeState::UNMOUNTED) {
+        if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
             LOGE("VolumeManagerService::SetVolumeDescription volume state is not unmounted!");
             return E_VOL_STATE;
         }
