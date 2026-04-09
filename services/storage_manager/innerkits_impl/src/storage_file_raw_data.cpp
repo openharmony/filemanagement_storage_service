@@ -25,14 +25,11 @@ int32_t StorageFileRawData::RawDataCpy(const void* readdata)
         return ERR_INVALID_DATA;
     }
     void* newData = malloc(size);
-    isMalloc = true;
     if (newData == nullptr) {
-        isMalloc = false;
         return ERR_INVALID_DATA;
     }
     if (memcpy_s(newData, size, readdata, size) != EOK) {
         free(newData);
-        isMalloc = false;
         return ERR_INVALID_DATA;
     }
     if (data != nullptr) {
@@ -40,6 +37,7 @@ int32_t StorageFileRawData::RawDataCpy(const void* readdata)
         data = nullptr;
     }
     data = newData;
+    isMalloc = true;
     return ERR_NONE;
 }
 
