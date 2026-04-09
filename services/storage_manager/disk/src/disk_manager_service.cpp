@@ -27,37 +27,44 @@ DiskManagerService::~DiskManagerService() {}
 
 std::shared_ptr<Disk> DiskManagerService::GetDiskById(std::string diskId)
 {
-    if (!diskMap_.Contains(diskId)) {
+    std::lock_guard<std::mutex> lock(diskMapMutex_);
+    if (diskMap_.find(diskId) == diskMap_.end()) {
+        LOGE("DiskManagerService::GetDiskById id %{public}s not exists", diskId.c_str());
         return nullptr;
     }
-    return diskMap_.ReadVal(diskId);
+    return diskMap_[diskId];
 }
 
 void DiskManagerService::OnDiskCreated(Disk disk)
 {
-    if (diskMap_.Contains(disk.GetDiskId())) {
+    std::lock_guard<std::mutex> lock(diskMapMutex_);
+    if (diskMap_.find(disk.GetDiskId()) != diskMap_.end()) {
         LOGE("DiskManagerService::OnDiskCreated the disk %{public}s already exists",
             GetAnonyString(disk.GetDiskId()).c_str());
         return;
     }
     auto diskPtr = std::make_shared<Disk>(disk);
-    diskMap_.Insert(diskPtr->GetDiskId(), diskPtr);
+    diskMap_.insert(make_pair(diskPtr->GetDiskId(), diskPtr));
 }
 
 void DiskManagerService::OnDiskDestroyed(std::string diskId)
 {
-    if (!diskMap_.Contains(diskId)) {
+    std::lock_guard<std::mutex> lock(diskMapMutex_);
+    if (diskMap_.find(diskId) == diskMap_.end()) {
         LOGE("DiskManagerService::OnDiskDestroyed the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
         return;
     }
-    diskMap_.Erase(diskId);
+    diskMap_.erase(diskId);
 }
 
 int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 {
-    if (!diskMap_.Contains(diskId)) {
-        LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
-        return E_NON_EXIST;
+    {
+        std::lock_guard<std::mutex> lock(diskMapMutex_);
+        if (diskMap_.find(diskId) == diskMap_.end()) {
+            LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
+            return E_NON_EXIST;
+        }
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -67,8 +74,9 @@ int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 
 std::vector<Disk> DiskManagerService::GetAllDisks()
 {
+    std::lock_guard<std::mutex> lock(diskMapMutex_);
     std::vector<Disk> result;
-    for (auto it = diskMap_.Begin(); it != diskMap_.End(); ++it) {
+    for (auto it = diskMap_.begin(); it != diskMap_.end(); ++it) {
         Disk disk = *(it->second);
         result.push_back(disk);
     }
@@ -77,10 +85,12 @@ std::vector<Disk> DiskManagerService::GetAllDisks()
 
 int32_t DiskManagerService::GetDiskById(std::string diskId, Disk &disk)
 {
-    if (diskMap_.Contains(diskId)) {
-        disk = *diskMap_.ReadVal(diskId);
+    std::lock_guard<std::mutex> lock(diskMapMutex_);
+    if (diskMap_.find(diskId) != diskMap_.end()) {
+        disk = *diskMap_[diskId];
         return E_OK;
     }
+    LOGE("DiskManagerService::GetDiskById the disk %{public}s doesn't exist", diskId.c_str());
     return E_NON_EXIST;
 }
 }
