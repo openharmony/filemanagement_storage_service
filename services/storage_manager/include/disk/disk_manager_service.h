@@ -16,9 +16,10 @@
 #ifndef OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 
+#include <map>
+#include <mutex>
 #include <singleton.h>
 #include "disk.h"
-#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -39,7 +40,8 @@ private:
     DiskManagerService();
     ~DiskManagerService();
     
-    StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
+    std::map<std::string, std::shared_ptr<Disk>> diskMap_;
+    std::mutex diskMapMutex_;
 };
 } // StorageManager
 } // OHOS
