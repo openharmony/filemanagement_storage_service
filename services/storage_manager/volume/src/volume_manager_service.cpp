@@ -380,11 +380,11 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
     std::string key = "user.getfriendlyname";
-    char *value = (char *)malloc(sizeof(char) * MTP_DEVICE_NAME_LEN);
+    char *value = (char *)malloc(sizeof(char) * (MTP_DEVICE_NAME_LEN + 1));
     int32_t len = 0;
     if (value != nullptr) {
         len = getxattr(path.c_str(), key.c_str(), value, MTP_DEVICE_NAME_LEN);
-        if (len >= 0 && len < MTP_DEVICE_NAME_LEN) {
+        if (len >= 0 && len <= MTP_DEVICE_NAME_LEN) {
             value[len] = '\0';
             LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
         }
