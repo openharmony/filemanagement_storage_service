@@ -40,6 +40,9 @@ ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
         return 0;
     }
     if (strcmp(name, "user.getfriendlyname") == 0 && g_cnt == CNT_TWO) {
+        for (int i = 0; i < MTP_MAX_LEN; i++) {
+            static_cast<char *>(value)[i] = 'A';
+        }
         return MTP_MAX_LEN;
     }
     return 0;
@@ -1149,5 +1152,31 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_MountUsbFuse_0003, tes
     EXPECT_NE(result, E_OK);
     vmService.volumeMap_.Erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_MountUsbFuse_0003";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_NotifyMtpMounted_0004
+ * @tc.name: Volume_manager_service_NotifyMtpMounted_0004
+ * @tc.desc: Test function of NotifyMtpMounted interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0004";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string id = "vol-1-7";
+    std::string path = "/mnt/data/external/1";
+    std::string desc = "description-1";
+    std::string uuid = "uuid-1";
+    g_cnt = CNT_TWO;
+    vmService.NotifyMtpMounted(id, path, desc, uuid);
+
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_.ReadVal(id);
+    std::string description(MTP_MAX_LEN, 'A');
+    EXPECT_EQ(volumePtr->description_, description);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0004";
 }
 } // namespace
