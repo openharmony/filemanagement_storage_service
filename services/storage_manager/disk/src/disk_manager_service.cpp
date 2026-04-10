@@ -60,7 +60,7 @@ int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
     {
         std::lock_guard<std::mutex> lock(diskMapMutex_);
         if (diskMap_.find(diskId) == diskMap_.end()) {
-            LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
+            LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", diskId.c_str());
             return E_NON_EXIST;
         }
     }
