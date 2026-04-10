@@ -16,7 +16,10 @@
 #ifndef OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 #define OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 
-#include "storage_rl_map.h"
+#include <map>
+#include <mutex>
+#include <nocopyable.h>
+
 #include "volume/volume_info.h"
 
 namespace OHOS {
@@ -40,7 +43,8 @@ private:
     DISALLOW_COPY_AND_MOVE(VolumeManager);
 
     static VolumeManager* instance_;
-    StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
+    std::map<std::string, std::shared_ptr<VolumeInfo>> volumes_;
+    std::mutex volumesMutex_;
 
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
 };
