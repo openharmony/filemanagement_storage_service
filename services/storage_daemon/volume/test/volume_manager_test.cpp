@@ -359,7 +359,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_003, TestSiz
     volumeInfoMock->userIdOwner_ = 100;
     volumeInfoMock->isUserdata_ = false;
 
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     EXPECT_CALL(*volumeInfoMock, DoTryToCheck()).WillOnce(Return(0));
     EXPECT_EQ(VolumeManager::Instance().Mount(volId, flags), 0);
 
@@ -540,11 +540,11 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
 
     std::string volId = "volId";
     uint32_t flags = 1;
-    VolumeManager::Instance().volumes_.Clear();
+    VolumeManager::Instance().volumes_.clear();
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), E_NON_EXIST);
 
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(-1));
     volumeInfoMock->mountState_ = MOUNTED;
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), -1);
