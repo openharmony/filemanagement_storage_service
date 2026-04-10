@@ -16,11 +16,12 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 
+#include <map>
+#include <mutex>
 #include <singleton.h>
 #include <nocopyable.h>
 #include "volume_core.h"
 #include "volume_external.h"
-#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -40,7 +41,8 @@ public:
     int32_t SetVolumeDescription(std::string fsUuid, std::string description);
     int32_t Format(std::string volumeId, std::string fsType);
 private:
-    StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
+    std::map<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
+    std::mutex volumeMapMutex_;
     void VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);
 };
