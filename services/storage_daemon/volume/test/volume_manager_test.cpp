@@ -503,11 +503,11 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 start";
     std::string volId = "volId";
     uint32_t flags = 1;
-    VolumeManager::Instance().volumes_.Clear();
+    VolumeManager::Instance().volumes_.clear();
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), E_NON_EXIST);
 
     auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
-    VolumeManager::Instance().volumes_.Insert(volId, volumeInfoMock);
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
     EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(-1));
     volumeInfoMock->mountState_ = MOUNTED;
     EXPECT_EQ(VolumeManager::Instance().TryToFix(volId, flags), 0);
