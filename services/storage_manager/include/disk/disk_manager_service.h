@@ -16,11 +16,12 @@
 #ifndef OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 
+#include <map>
+#include <mutex>
 #include <unordered_map>
 #include <singleton.h>
 #include <nocopyable.h>
 #include "disk.h"
-#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -34,7 +35,8 @@ public:
     std::vector<Disk> GetAllDisks();
     int32_t GetDiskById(std::string diskId, Disk &disk);
 private:
-    StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
+    std::map<std::string, std::shared_ptr<Disk>> diskMap_;
+    std::mutex diskMapMutex_;
 };
 } // StorageManager
 } // OHOS
