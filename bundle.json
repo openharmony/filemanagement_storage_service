@@ -53,9 +53,11 @@
         "data_share",
         "dfs_service",
         "drivers_interface_huks",
-        "exfatprogs",
+        "e2fsprogs",
         "eventhandler",
+        "exfatprogs",
         "FreeBSD",
+        "f2fs-tools",
         "file_api",
         "gptfdisk",
         "hicollie",
@@ -86,10 +88,6 @@
         "usb_manager",
         "runtime_core",
         "json"
-      ],
-      "third_party": [
-        "e2fsprogs",
-        "f2fs-tools"
       ]
     },
     "build": {
