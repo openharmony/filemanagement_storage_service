@@ -29,6 +29,7 @@ constexpr const char *DEV_PRODUCT_ID_KEY = "productId";
 constexpr const char *DEV_CLASS_KEY = "clazz";
 constexpr int USB_CLASS_IMAGE = 6;
 constexpr int USB_CLASS_VENDOR_SPEC = 255;
+constexpr int USB_CLASS_PRINTER = 0x07;
 std::atomic<bool> UsbEventSubscriber::isPtp_ = true;
 
 UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
@@ -190,13 +191,13 @@ bool UsbEventSubscriber::CheckAllInterfaces(const cJSON* configs)
         LOGD("[L2:UsbEventSubscriber] CheckAllInterfaces: <<< EXIT SUCCESS <<< configs is null or not array");
         return false;
     }
-
+    bool hasMtp = false;
+    bool hasPrinter = false;
     cJSON* config = nullptr;
     cJSON_ArrayForEach(config, configs) {
         if (config == nullptr) {
             continue;
         }
-
         cJSON* name = cJSON_GetObjectItemCaseSensitive(config, "name");
         if (name != nullptr && cJSON_IsString(name) && name->valuestring) {
             const std::string configName = ToLowerString(name->valuestring);
@@ -217,14 +218,18 @@ bool UsbEventSubscriber::CheckAllInterfaces(const cJSON* configs)
         }
         cJSON* iface = nullptr;
         cJSON_ArrayForEach(iface, interfaces) {
+            cJSON* clazz = cJSON_GetObjectItemCaseSensitive(iface, "clazz");
+            if (clazz != nullptr && cJSON_IsNumber(clazz) && clazz->valueint == USB_CLASS_PRINTER) {
+                hasPrinter = true;
+                LOGI("[L2:UsbEventSubscriber] CheckAllInterfaces: found printer interface");
+            }
             if (CheckMtpInterface(iface)) {
-                LOGD("[L2:UsbEventSubscriber] CheckAllInterfaces: <<< EXIT SUCCESS <<< MTP interface found");
-                return true;
+                hasMtp = true;
+                LOGI("[L2:UsbEventSubscriber] CheckAllInterfaces: found MTP interface");
             }
         }
     }
-    LOGD("[L2:UsbEventSubscriber] CheckAllInterfaces: <<< EXIT SUCCESS <<< no MTP interface found");
-    return false;
+    return hasMtp && !hasPrinter;
 }
 
 bool UsbEventSubscriber::ParseMtpDeviceIds(const cJSON* usbJson, uint8_t &deviceClass,
@@ -241,7 +246,10 @@ bool UsbEventSubscriber::ParseMtpDeviceIds(const cJSON* usbJson, uint8_t &device
         return false;
     }
     deviceClass = static_cast<uint8_t>(classObj->valueint);
-
+    if (deviceClass == USB_CLASS_PRINTER) {
+        LOGI("[L2:UsbEventSubscriber] ParseMtpDeviceIds: device class is printer");
+        return false;
+    }
     cJSON *vendorObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_VENDOR_ID_KEY);
     if (vendorObj == nullptr || !cJSON_IsNumber(vendorObj)) {
         LOGE("[L2:UsbEventSubscriber] ParseMtpDeviceIds: <<< EXIT FAILED <<< vendorId not found");
@@ -288,11 +296,9 @@ bool UsbEventSubscriber::ShouldHandleMtpDevice(const std::string &usbInfo, Devic
     uint16_t productId = 0;
     if (!ParseMtpDeviceIds(usbJson, deviceClass, vendorId, productId)) {
         LOGE("[L2:UsbEventSubscriber] ShouldHandleMtpDevice: ParseMtpDeviceIds failed, set deviceType to UNKNOWN");
-        deviceType = DeviceType::UNKNOWN;
         cJSON_Delete(usbJson);
-        return true;
+        return false;
     }
-
     if (!shouldHandle) {
         if (LIBMTP_check_is_mtp_device(deviceClass, vendorId, productId)) {
             shouldHandle = true;
