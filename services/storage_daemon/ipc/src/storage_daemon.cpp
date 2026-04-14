@@ -536,7 +536,7 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
             .keyElxLevel = "ELx",
             .errorCode = E_EL5_UPDATE_CLASS_ERROR
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
         return E_EL5_UPDATE_CLASS_ERROR;
     }
 #endif
@@ -552,7 +552,7 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
             .keyElxLevel = "ELx",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
     }
     LOGI("[L1:StorageDaemon] UpdateUserAuth: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return ret;
@@ -1376,7 +1376,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
             .keyElxLevel = "EL1",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
@@ -1409,7 +1409,7 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
             .keyElxLevel = "EL1",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
     }
     if (ret == E_OK) {
         int32_t result = KeyManagerExt::GetInstance().InActiveUserKey(userId);
@@ -1447,7 +1447,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
             .keyElxLevel = (ret == E_UNLOCK_APP_KEY2_FAILED) ? "EL5" : "EL3/EL4",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
         return ret;
     }
     if (ret == E_OK) {
@@ -1601,7 +1601,7 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
             .keyElxLevel = "ELx",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
         return ret;
     }
     LOGI("[L1:StorageDaemon] UpdateKeyContext: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
@@ -1631,7 +1631,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
             .keyElxLevel = "ELx",
             .errorCode = ret
         };
-        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::GetInstance().RecordFunctionResult(parameterRes);
         return ret;
     }
     LOGI("[L1:StorageDaemon] GetFileEncryptStatus: <<< EXIT SUCCESS <<< userId=%{public}u, isEncrypted=%{public}d",

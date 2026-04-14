@@ -24,20 +24,49 @@
 
 namespace OHOS {
 namespace StorageService {
-constexpr const char *FILE_STORAGE_MANAGER_FAULT = "FILE_STORAGE_MANAGER_FAULT";
-constexpr const char *FILE_STORAGE_FAULT = "FILE_STORAGE_FAULT";
 constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
-constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
+constexpr const char *FILE_STORAGE_BEHAVIOR_EVENTS = "FILE_BACKUP_EVENTS";
+constexpr char STORAGESERVICE_DOMAIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
 constexpr int32_t GLOBAL_USER_ID = 0;
 constexpr int32_t PARAMS_LEN = 12;
-constexpr int32_t DISK_INFO_INDEX = 9;
-constexpr int32_t STAGE_RES_INDEX = 10;
-constexpr int32_t BIZ_STATE_INDEX = 11;
+constexpr int32_t BEHAVIOR_PARAMS_LEN = 4;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
+
+namespace {
+void WriteAuditLog(const RadarParameter &parRes)
+{
+    AuditLog auditLog;
+    auditLog.isUserBehavior = false;
+    auditLog.operationCount = 1;
+    auditLog.cause = parRes.orgPkg;
+    auditLog.operationType = parRes.funcName;
+    auditLog.operationScenario = "bizScene:" + std::to_string(static_cast<int32_t>(parRes.bizScene)) +
+        ",bizStage:" + std::to_string(static_cast<int32_t>(parRes.bizStage));
+    auditLog.operationStatus = (parRes.errorCode == E_OK) ? "success" : "fail";
+    auditLog.extend = "userId:" + std::to_string(parRes.userId) + ",keyElxLevel:" + parRes.keyElxLevel +
+        ",toCallPkg:" + parRes.toCallPkg + ",extraData:" + parRes.extraData +
+        ",errorCode:" + std::to_string(parRes.errorCode);
+    HiAudit::GetInstance().Write(auditLog);
+}
+
+void WriteBehaviorEvent(const std::string &funcName, const std::string &userId,
+                        int32_t ret, const std::string &extraData)
+{
+    HiSysEventParam params[BEHAVIOR_PARAMS_LEN] = {
+        {.name = "BUNDLENAME", .t = HISYSEVENT_STRING, .v = { .s = (char *)(userId.c_str()) }, .arraySize = 0, },
+        {.name = "PROC_NAME", .t = HISYSEVENT_STRING, .v = { .s = (char *)funcName.c_str() }, .arraySize = 0, },
+        {.name = "TIME", .t = HISYSEVENT_STRING, .v = { .s = (char *)extraData.c_str() }, .arraySize = 0, },
+        {.name = "PID", .t = HISYSEVENT_INT32, .v = { .i32 = ret }, .arraySize = 0 },
+    };
+    size_t len = sizeof(params) / sizeof(params[0]);
+    OH_HiSysEvent_Write(STORAGESERVICE_DOMAIN, FILE_STORAGE_BEHAVIOR_EVENTS,
+        HISYSEVENT_BEHAVIOR, params, len);
+}
+}
 
 void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
                                        const std::string &keyLevel)
@@ -51,7 +80,7 @@ void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t use
         .keyElxLevel = keyLevel,
         .errorCode = ret
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
@@ -66,7 +95,7 @@ void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t 
         .keyElxLevel = "NA",
         .errorCode = ret
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
@@ -80,7 +109,7 @@ void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
         .keyElxLevel = "NA",
         .errorCode = ret
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_FAULT);
 }
 
 void StorageRadar::ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
@@ -96,7 +125,7 @@ void StorageRadar::ReportUserKeyResult(const std::string &funcName, uint32_t use
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userId, int ret,
@@ -112,7 +141,7 @@ void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userI
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData)
@@ -127,7 +156,7 @@ void StorageRadar::ReportSaSizeResult(const std::string &funcName, int ret, cons
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData)
@@ -142,7 +171,7 @@ void StorageRadar::ReportSpaceRadar(const std::string &funcName, int ret, const 
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret,
@@ -158,7 +187,7 @@ void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t us
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
@@ -175,7 +204,7 @@ void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId
         .extraData = extraData,
         .toCallPkg = "fbex"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId, int ret)
@@ -190,7 +219,7 @@ void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId,
         .errorCode = ret,
         .toCallPkg = "iam"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
@@ -205,7 +234,7 @@ void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
         .errorCode = ret,
         .toCallPkg = "huks"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportMtpResult(const std::string &funcName, int ret, const std::string &extraData)
@@ -220,7 +249,7 @@ void StorageRadar::ReportMtpResult(const std::string &funcName, int ret, const s
         .errorCode = ret,
         .extraData = extraData,
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_FAULT);
 }
 
 void StorageRadar::ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData)
@@ -235,7 +264,7 @@ void StorageRadar::ReportKeyRingResult(const std::string &funcName, int ret, con
         .errorCode = ret,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId)
@@ -250,7 +279,7 @@ void StorageRadar::ReportOsAccountResult(const std::string &funcName, int32_t re
         .errorCode = ret,
         .toCallPkg = "os_account"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
@@ -267,7 +296,7 @@ void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t re
         .extraData = extraData,
         .toCallPkg = "el5_file_key_manager"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t ret, unsigned int userId,
@@ -284,7 +313,7 @@ void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t re
         .extraData = extraData,
         .toCallPkg = "tee_client"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportCommonResult(const std::string &funcName, int32_t ret, unsigned int userId,
@@ -300,7 +329,7 @@ void StorageRadar::ReportCommonResult(const std::string &funcName, int32_t ret, 
         .errorCode = ret,
         .extraData = extraData,
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_FAULT);
 }
 
 void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
@@ -317,7 +346,7 @@ void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t re
         .extraData = extraData,
         .toCallPkg = "bundle_mgr"
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &extraData)
@@ -332,10 +361,10 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
         .errorCode = E_STORAGE_USAGE_NOT_ENOUGH,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
-bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
+bool StorageRadar::RecordFunctionResult(const RadarParameter &parRes, const std::string &eventName)
 {
     int32_t res = E_OK;
     const char* DISK_VOLUME_INFO_STR = "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}";
@@ -354,37 +383,15 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
         {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
             .arraySize = 0, },
         {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode }, .arraySize = 0 },
-        {},
+        {.name = "DISK_VOLUME_INFO", .t = HISYSEVENT_STRING, .v = { .s = (char *)DISK_VOLUME_INFO_STR },
+            .arraySize = 0, },
+        {.name = "STAGE_RES", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_FAIL) },
+            .arraySize = 0, },
+        {.name = "BIZ_STATE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) },
+            .arraySize = 0, },
     };
-    size_t len = 9;
-    if (parRes.errorCode == E_OK) {
-        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_FAULT,
-            HISYSEVENT_FAULT, params, len);
-    } else {
-        params[DISK_INFO_INDEX] = {.name = "DISK_VOLUME_INFO", .t = HISYSEVENT_STRING,
-            .v = { .s = (char *)DISK_VOLUME_INFO_STR }, .arraySize = 0, };
-        params[STAGE_RES_INDEX] = {.name = "STAGE_RES", .t = HISYSEVENT_INT32,
-            .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_FAIL) }, .arraySize = 0, };
-        params[BIZ_STATE_INDEX] = {.name = "BIZ_STATE", .t = HISYSEVENT_INT32,
-            .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) }, .arraySize = 0, };
-        len = PARAMS_LEN;
-        res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_FAULT,
-            HISYSEVENT_FAULT, params, len);
-    }
-
-    AuditLog auditLog;
-    auditLog.isUserBehavior = false;
-    auditLog.operationCount = 1;
-    auditLog.cause = parRes.orgPkg;
-    auditLog.operationType = parRes.funcName;
-    auditLog.operationScenario = "bizScene:" + std::to_string(static_cast<int32_t>(parRes.bizScene)) +
-        ",bizStage:" + std::to_string(static_cast<int32_t>(parRes.bizStage));
-    auditLog.operationStatus = (parRes.errorCode == E_OK) ? "success" : "fail";
-    auditLog.extend = "userId:" + std::to_string(parRes.userId) + ",keyElxLevel:" + parRes.keyElxLevel +
-        ",toCallPkg:" + parRes.toCallPkg + ",extraData:" + parRes.extraData +
-        ",errorCode:" + std::to_string(parRes.errorCode);
-    HiAudit::GetInstance().Write(auditLog);
-
+    res = OH_HiSysEvent_Write(STORAGESERVICE_DOMAIN, eventName.c_str(), HISYSEVENT_FAULT, params, PARAMS_LEN);
+    WriteAuditLog(parRes);
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
         return false;
@@ -436,7 +443,7 @@ void StorageRadar::ReportStatistics(uint32_t userId, StorageDaemon::RadarStatist
             .arraySize = 0, },
     };
     size_t len = sizeof(params) / sizeof(params[0]);
-    int32_t res = OH_HiSysEvent_Write(STORAGESERVICE_DOAMIN, FILE_STORAGE_MANAGER_STATISTIC,
+    int32_t res = OH_HiSysEvent_Write(STORAGESERVICE_DOMAIN, FILE_STORAGE_MANAGER_STATISTIC,
         HISYSEVENT_STATISTIC, params, len);
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
@@ -460,16 +467,7 @@ std::string StorageRadar::ReportDuration(const std::string &funcName, int64_t st
     }
     std::string tag = TAG_PREFIX + std::to_string(delay_threshold) + TAG_UNIT_SUFFIX;
     std::string extraData = ret + tag;
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = funcName,
-        .bizScene = BizScene::USER_KEY_ENCRYPTION,
-        .keyElxLevel = "NA",
-        .errorCode = E_DURATION_EXCEED_THRESH,
-        .extraData = extraData
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    WriteBehaviorEvent(funcName, std::to_string(userId), 0, extraData);
     return ret;
 }
 
@@ -485,7 +483,7 @@ void StorageRadar::ReportSetQuotaByBaseline(const std::string &funcName, const s
         .errorCode = E_SET_QUOTA_UID_FAILED,
         .extraData = extraData
     };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
 void StorageRadar::ReportFucBehavior(const std::string &funcName,
@@ -493,18 +491,7 @@ void StorageRadar::ReportFucBehavior(const std::string &funcName,
                                      const std::string &extraData,
                                      int32_t ret)
 {
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = funcName,
-        .bizScene = BizScene::STORAGE_START,
-        .bizStage = BizStage::BIZ_STAGE_SA_START,
-        .keyElxLevel = "NA",
-        .errorCode = ret,
-        .extraData = extraData,
-        .toCallPkg = "NA"
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
+    WriteBehaviorEvent(funcName, std::to_string(userId), ret, extraData);
 }
 } // namespace StorageService
 } // namespace OHOS
