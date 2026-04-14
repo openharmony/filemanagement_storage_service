@@ -299,8 +299,10 @@ bool UsbEventSubscriber::ShouldHandleMtpDevice(const std::string &usbInfo, Devic
         cJSON_Delete(usbJson);
         return false;
     }
+
+    deviceType = MtpDeviceMonitor::GetInstance().GetDeviceType(deviceClass, vendorId, productId);
     if (!shouldHandle) {
-        if (LIBMTP_check_is_mtp_device(deviceClass, vendorId, productId)) {
+        if (deviceType == DeviceType::CAMERA || deviceType == DeviceType::MOBILE) {
             shouldHandle = true;
             LOGI("[L2:UsbEventSubscriber] ShouldHandleMtpDevice: MTP device found by LIBMTP check");
         }
@@ -312,13 +314,7 @@ bool UsbEventSubscriber::ShouldHandleMtpDevice(const std::string &usbInfo, Devic
         return false;
     }
     cJSON_Delete(usbJson);
-
-    if (shouldHandle) {
-        deviceType = MtpDeviceMonitor::GetInstance().GetDeviceType(vendorId, productId);
-        return true;
-    }
-    LOGE("[L2:UsbEventSubscriber] ShouldHandleMtpDevice: <<< EXIT FAILED <<< not MTP device");
-    return false;
+    return true;
 }
 
 bool UsbEventSubscriber::IsPtpMode()

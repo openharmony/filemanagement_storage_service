@@ -46,7 +46,7 @@ public:
     void RemoveMTPParamListener();
     static void OnMtpDisableParamChange(const char *key, const char *value, void *context);
     static void OnEnterpriseParamChange(const char *key, const char *value, void *context);
-    DeviceType GetDeviceType(uint16_t vendorId, uint16_t productId);
+    DeviceType GetDeviceType(uint8_t deviceClass, uint16_t vendorId, uint16_t productId);
 
     MtpDeviceMonitor(const MtpDeviceMonitor &) = delete;
     MtpDeviceMonitor &operator=(const MtpDeviceMonitor &) = delete;
