@@ -508,6 +508,23 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (IsNeedRestorePathExist(userId, true)) {
+        LOGE("[L1:StorageDaemon] UpdateUserAuth: <<< EXIT FAILED <<< RestorePathExist userId:%{public}u, \
+            ret:%{public}d", userId, E_EL5_UPDATE_CLASS_ERROR);
+        RadarParameter parameterRes = {
+            .orgPkg = "account_mgr",
+            .userId = userId,
+            .funcName = "UpdateUserAuth",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_UPDATE_USER_AUTH,
+            .keyElxLevel = "ELx",
+            .errorCode = E_EL5_UPDATE_CLASS_ERROR
+        };
+        StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        return E_EL5_UPDATE_CLASS_ERROR;
+    }
+#endif
     int32_t ret = KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d", userId, ret);
@@ -579,7 +596,20 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         ret = PrepareUserDirsAndUpdateUserAuthOld(userId, type, token, secret);
     } else {
         LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuth: New DOUBLE_2_SINGLE");
+        std::string backupVersion = "";
+        std::string needRestorePath = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+        (void)OHOS::LoadStringFromFile(needRestorePath, backupVersion);
         ret = PrepareUserDirsAndUpdateUserAuthVx(userId, type, token, secret, need_restore_version);
+        if (ret != E_OK) {
+            std::string errMsg = "";
+            StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::PrepareUserDirsAndUpdateUserAuthVx",
+                userId, ret, std::to_string(type), "rollback version" + backupVersion);
+            LOGE("PrepareUserDirsAndUpdateUserAuthVx failed, rollback version: %{public}s", backupVersion.c_str());
+            if (!SaveStringToFileSync(needRestorePath, backupVersion, errMsg)) {
+                LOGE("SaveStringToFileSync failed, write version: %{public}s, errMsg: %{public}s",
+                    backupVersion.c_str(), errMsg.c_str());
+            }
+        }
     }
     // for double2single update el2-4 with secret
     UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
@@ -691,31 +721,28 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
             "userId=%{public}u, type=%{public}u, ret=%{public}d", userId, type, ret);
         return ret;
     }
-
     std::error_code errCode;
     std::string newVersion = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type) + FSCRYPT_VERSION_DIR;
     if (std::filesystem::exists(newVersion, errCode)) {
         ClearNatoRestoreKey(userId, type, true);
         LOGI("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: <<< EXIT SUCCESS <<< userId=%{public}u,"
             "type=%{public}u, nato exists", userId, type);
-        return E_OK;
     }
-
-    LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: try to destory dir first, userId=%{public}u,"
+    LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: try to prepare dir for update, userId=%{public}u,"
         "flags=%{public}u", userId, flags);
     ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, flags);
     if (ret != E_OK) {
         LOGE("prepare user dirs for update failed, user:%{public}u, flags:%{public}u", userId, flags);
         return ret;
     }
+    if (flags == IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
+        PrepareUeceDir(userId);
+    }
     ret = DoStoreAndUpdate(userId, token, secret, type);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: <<< EXIT FAILED <<< PrepareUserDirs"
             "userId=%{public}u, ret=%{public}d", userId, ret);
         return ret;
-    }
-    if (flags == IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
-        PrepareUeceDir(userId);
     }
     LOGI("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: <<< EXIT SUCCESS <<< userId=%{public}u,"
         "type=%{public}u", userId, type);
@@ -788,10 +815,7 @@ bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
 int32_t StorageDaemon::PrepareUeceDir(uint32_t userId)
 {
     LOGI("[L1:StorageDaemon] PrepareUeceDir: >>> ENTER <<< userId=%{public}u", userId);
-    int32_t ret = UserManager::GetInstance().DestroyUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
-    LOGI("[L1:StorageDaemon] delete user %{public}u uece %{public}u, ret %{public}d",
-        userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5, ret);
-    ret = UserManager::GetInstance().PrepareUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
+    int32_t ret = UserManager::GetInstance().PrepareUserDirsForUpdate(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
     LOGI("[L1:StorageDaemon] prepare user %{public}u uece %{public}u, ret %{public}d",
         userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5, ret);
     if (ret == E_OK) {
@@ -1090,7 +1114,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
         return ret;
     }
     LOGI("[L1:StorageDaemon] ActiveUserKey4Nato: el4 success, userId=%{public}d", userId);
-    ClearAllNatoRestoreKey(userId, false);
+    ClearAllNatoRestoreKey(userId, true);
 
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     LOGI("[L1:StorageDaemon] ActiveUserKey4Nato: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
