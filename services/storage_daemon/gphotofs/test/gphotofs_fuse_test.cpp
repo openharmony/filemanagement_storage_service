@@ -309,7 +309,7 @@ HWTEST_F(GphotofsFuseTest, DirOpsFixedReturn_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "DirOpsFixedReturn_001 start";
 
     struct fuse_file_info fi {};
-    EXPECT_EQ(fuseOperations_.opendir("/any", &fi), 0);
+    EXPECT_EQ(fuseOperations_.opendir("/a/../b", &fi), -EINVAL);
     EXPECT_EQ(fuseOperations_.releasedir("/any", &fi), 0);
     EXPECT_EQ(fuseOperations_.fsyncdir("/any", 0, &fi), 0);
 

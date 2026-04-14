@@ -26,21 +26,37 @@ struct Dir {
     std::string name;
 
     bool listed;
+    bool refresh;
+    bool loading;
+    bool dirty;
+    int offset;
     std::map<std::string, File*> files;
     std::map<std::string, Dir*> dirs;
     std::mutex lock;
 
-    explicit Dir(const std::string& name) : name(name), listed(false) {}
+    explicit Dir(const std::string& name) : name(name), listed(false),
+        refresh(false), loading(false), dirty(false), offset(0) {}
     ~Dir();
 
-    void addFile(File *file);
-    void removeFile(File *file);
-    File* getFile(const std::string& name);
-    void addDir(Dir *dir);
-    void removeDir(Dir *dir);
-    Dir* getDir(const std::string& name);
-    std::string getPath(Dir *dir);
-    bool empty();
+    void AddFile(File *file);
+    void RemoveFile(File *file);
+    File* GetFile(const std::string& name);
+    void AddDir(Dir *dir);
+    void RemoveDir(Dir *dir);
+    Dir* GetDir(const std::string& name);
+    std::string GetPath(Dir *dir);
+    bool Empty();
+    void Clear();
+    void SetListed(bool stat);
+    bool GetListed();
+    void SetNextOffset(int next);
+    int GetNextOffset();
+    void SetRefresh(bool stat);
+    bool GetRefresh();
+    bool TryBeginLoad();
+    void EndLoad();
+    void SetDirty(bool stat);
+    bool GetDirty();
 };
 
 #endif // GPHOTOFS2_DIR_H
