@@ -526,8 +526,8 @@ int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
     unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
     int cmd_len = GET_CD_TOTAL_CAPACITY_CMD_LEN;
     unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
-    int data_len = GET_CD_TOTAL_CAPACITY_DATA_LEN;
-    int actual_len = 0;
+    unsigned int data_len = GET_CD_TOTAL_CAPACITY_DATA_LEN;
+    unsigned int actual_len = 0;
     int ret = 0;
     double total_seconds = 0;
     /**
@@ -559,7 +559,7 @@ int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
  
     total_seconds = (double)data_buf[12] * SECONDS_PER_MINUTES + data_buf[13] +
                     (double)data_buf[14] / CD_SECTORS_PER_SECOND;
-    cdTotalCapacity = (unsigned long long)(total_seconds * CD_SECTORS_PER_SECOND * ODD_LOGICAL_SECTOR_SIZE);
+    cdTotalCapacity = static_cast<int64_t>(total_seconds * CD_SECTORS_PER_SECOND * ODD_LOGICAL_SECTOR_SIZE);
     LOGI("cd total_seconds: %{public}f, total_capacity: %{public}" PRIu64, total_seconds, cdTotalCapacity);
     return E_OK;
 }
@@ -569,7 +569,7 @@ int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity)
     unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
     int cmd_len = GET_CD_USED_CAPACITY_CMD_LEN;
     unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
-    int data_len = GET_CD_USED_CAPACITY_DATA_LEN;
+    unsigned int data_len = GET_CD_USED_CAPACITY_DATA_LEN;
     int ret = 0;
     /*
     * 使用 SCSI READ TRACK INFORMATION 指令 (0x52) 获取cd光盘轨道/逻辑分区信息
@@ -647,7 +647,7 @@ int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity)
                     data_buf[19];
     }
     if (phys_end > phys_start) {
-        dvdTotalCapacity = (phys_end - phys_start + 1) * ODD_LOGICAL_SECTOR_SIZE;
+        dvdTotalCapacity = static_cast<int64_t>(phys_end - phys_start + 1) * ODD_LOGICAL_SECTOR_SIZE;
     } else {
         dvdTotalCapacity = 0;
         LOGI("phys_end is less than phys_start, error data");
@@ -662,7 +662,7 @@ int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapcity)
     unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
     int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
     unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
-    int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    unsigned int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
     int ret = 0;
     unsigned int blk_cnt = 0;
     unsigned int blk_size = 0;
@@ -693,7 +693,7 @@ int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapcity)
                ((unsigned int)data_buf[5] << 16) |
                ((unsigned int)data_buf[6] << 8) |
                data_buf[7];
-    dvdUsedCapcity = (unsigned long long)(blk_cnt + 1) * blk_size;
+    dvdUsedCapcity = static_cast<int64_t>(blk_cnt + 1) * blk_size;
     LOGI("dvd used_capacity: %{public}u * %{public}u = %{public}" PRIu64, blk_cnt + 1, blk_size, dvdUsedCapcity);
     return E_OK;
 }
@@ -703,7 +703,7 @@ int GetDvdConfiguration(int fd, int &dvdMedia)
     unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
     int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
     unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
-    int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    unsigned int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
     int ret = 0;
     /*
      * 使用 SCSI GET CONFIGURATION 指令 (0x46) 获取光驱设备的功能列表。
@@ -728,7 +728,8 @@ int GetDvdConfiguration(int fd, int &dvdMedia)
         return E_ERR;
     }
  
-    dvdMedia = ((int)data_buf[6] << 8) | data_buf[7];
+    dvdMedia = static_cast<int>((unsigned int)data_buf[DISC_TYPE_OFFSET_HIGH] << DISC_TYPE_OFFSET) |
+        data_buf[DISC_TYPE_OFFSET_LOW];
     LOGI("dvd_media: %{public}#x", dvdMedia);
     return E_OK;
 }
