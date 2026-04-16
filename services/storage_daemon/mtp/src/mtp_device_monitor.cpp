@@ -49,6 +49,7 @@ constexpr int32_t MTP_TRUE_LEN = 5;
 constexpr int32_t DETECT_CNT = 4;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+constexpr int USB_CLASS_IMAGE = 6;
 
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
@@ -103,24 +104,24 @@ bool MtpDeviceMonitor::IsNeedDisableMtp()
     return false;
 }
 
-DeviceType MtpDeviceMonitor::GetDeviceType(uint16_t vendorId, uint16_t productId)
+DeviceType MtpDeviceMonitor::GetDeviceType(uint8_t deviceClass, uint16_t vendorId, uint16_t productId)
 {
     LOGI("[L2:MtpDeviceMonitor] GetMtpDevices: >>> ENTER <<<");
 #ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
     if (IsCameraDevice(vendorId, productId)) {
-        LOGI("[L2:MtpDeviceMonitor] GetMtpDevices: device is camera, VID=%{public}04x, PID=%{public}04x",
+        LOGI("[L2:MtpDeviceMonitor] GetDeviceType: device is camera, VID=%{public}04x, PID=%{public}04x",
             vendorId, productId);
         return DeviceType::CAMERA;
     }
 #endif
 
-    if (LIBMTP_check_is_mtp_device(0, vendorId, productId)) {
-        LOGI("[L2:MtpDeviceMonitor] GetMtpDevices: device is MTP mobile, VID=%{public}04x, PID=%{public}04x", vendorId,
+    if (LIBMTP_check_is_mtp_device(deviceClass, vendorId, productId)) {
+        LOGI("[L2:MtpDeviceMonitor] GetDeviceType: device is MTP mobile, VID=%{public}04x, PID=%{public}04x", vendorId,
             productId);
         return DeviceType::MOBILE;
     }
-    
-    LOGI("[L2:MtpDeviceMonitor] GetMtpDevices: unknown device type, VID=%{public}04x, PID=%{public}04x", vendorId,
+
+    LOGI("[L2:MtpDeviceMonitor] GetDeviceType: unknown device type, VID=%{public}04x, PID=%{public}04x", vendorId,
         productId);
     return DeviceType::UNKNOWN;
 }
@@ -563,8 +564,8 @@ int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
         uint16_t idProduct = static_cast<uint16_t>(dev.GetProductId());
         LOGI("[L2:MtpDeviceMonitor] HasMTPDevice: deviceClass=%{public}u, vendorId=%{public}u, productId=%{public}u",
              deviceClass, idVendor, idProduct);
-        if (LIBMTP_check_is_mtp_device(deviceClass, idVendor, idProduct)) {
-            LOGE("[L2:MtpDeviceMonitor] HasMTPDevice: MTP device detected");
+        DeviceType deviceType = GetDeviceType(deviceClass, idVendor, idProduct);
+        if (deviceType == DeviceType::CAMERA || deviceType == DeviceType::MOBILE || deviceClass == USB_CLASS_IMAGE) {
             hasMtp = true;
             LOGD("[L2:MtpDeviceMonitor] HasMTPDevice: <<< EXIT SUCCESS <<< hasMtp=true");
             return E_OK;
