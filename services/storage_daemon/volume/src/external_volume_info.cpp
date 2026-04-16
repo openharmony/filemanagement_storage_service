@@ -140,7 +140,7 @@ std::string ExternalVolumeInfo::GetDevPathByVolumeId(const std::string& volumeId
     std::string cmdDevPath = StringPrintf(devPathDir_.c_str(), (volumeId).c_str());
     return cmdDevPath;
 }
- 
+
 int32_t ExternalVolumeInfo::DoGetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
 {
     std::string cmdDevPath = GetDevPathByVolumeId(volumeId);
@@ -229,7 +229,7 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
         LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: umount failed, errno=%{public}d", errno);
         return ret;
     }
- 
+
     auto mountDataWithoutOpt = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT);
     ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountDataWithoutOpt.c_str());
     if (ret != E_OK) {
@@ -316,6 +316,21 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
     }
     LOGI("[L3:ExternalVolumeInfo] DoMount4Exfat: <<< EXIT SUCCESS <<<");
     return E_OK;
+#endif
+}
+
+int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
+{
+#ifdef PC_EXT4_ENABLE
+    auto mountData = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT);
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
+    if (ret != E_OK) {
+        LOGE("do mount for ext4 failed, errno is %{public}d.", errno);
+        return E_EXT_MOUNT;
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -573,7 +588,7 @@ int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
     std::thread mountThread([this, mountFlags, p = std::move(promise)]() mutable {
         LOGI("[L3:ExternalVolumeInfo] ExecuteAsyncMount: Ready to mount: volume fstype"
             "is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
-        
+
         int retValue = E_OK;
         if (fsType_ == "ntfs") {
             retValue = DoMount4Ntfs(mountFlags);
@@ -587,6 +602,8 @@ int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
             retValue = DoMount4Iso9660(mountFlags);
         } else if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
             retValue = E_OK;
+        } else if (fsType_ == "ext4") {
+            retValue = DoMount4Ext(mountFlags);
         } else {
             retValue = E_OTHER_MOUNT;
         }
@@ -608,7 +625,7 @@ int32_t ExternalVolumeInfo::ExecuteAsyncMount(uint32_t mountFlags)
     } else {
         LOGI("[L3:ExternalVolumeInfo] ExecuteAsyncMount: <<< EXIT SUCCESS <<<");
     }
-    
+
     return ret;
 }
 
@@ -836,6 +853,26 @@ int32_t ExternalVolumeInfo::DoCheck()
     return E_NOT_SUPPORT;
 }
 
+int32_t ExternalVolumeInfo::DoFormatExt4()
+{
+#ifdef PC_EXT4_ENABLE
+    std::vector<std::string> cmd = {
+        "mke2fs",
+        "-t",
+        "ext4",
+        devPath_
+    };
+    std::vector<std::string> output;
+    int32_t err = ForkExec(cmd, &output);
+    for (const auto& str : output) {
+        LOGI("DoFormatExt4 output: %{public}s", GetAnonyString(str).c_str());
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     LOGI("[L3:ExternalVolumeInfo] DoFormat: >>> ENTER <<< type=%{public}s", type.c_str());
@@ -865,6 +902,8 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
         for (auto str : output) {
             LOGI("DoFormat with-A output: %{public}s", str.c_str());
         }
+    } else if (type == "ext4") {
+        err = DoFormatExt4();
     } else {
         std::vector<std::string> cmd = {
             iter->second,

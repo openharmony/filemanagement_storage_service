@@ -216,9 +216,9 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_CreateMo
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_CreateMountPath_001 start";
 
     ExternalVolumeInfo vol;
-    
+
     EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(-1));
-    
+
     int32_t ret = vol.CreateMountPath();
     EXPECT_EQ(ret, E_MKDIR_MOUNT);
 
@@ -640,7 +640,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = MS_RDONLY;
-    
+
     vol.fsType_ = "ntfs";
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(testing::Return(0));
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -661,7 +661,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = MS_NOEXEC;
-    
+
     vol.fsType_ = "exfat";
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(testing::Return(0));
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -682,7 +682,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = MS_NOSUID;
-    
+
     vol.fsType_ = "vfat";
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -703,7 +703,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = MS_NODEV;
-    
+
     vol.fsType_ = "fat32";
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -724,7 +724,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    
+
     vol.fsType_ = "hmfs";
     vol.isUserdata_ = false;
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -745,7 +745,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    
+
     vol.fsType_ = "f2fs";
     vol.isUserdata_ = false;
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -766,7 +766,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    
+
     vol.fsType_ = "hmfs";
     vol.isUserdata_ = true;
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -787,7 +787,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
 
     ExternalVolumeInfo vol;
     uint32_t mountFlags = 0;
-    
+
     vol.fsType_ = "f2fs";
     vol.isUserdata_ = true;
     int32_t ret = vol.ExecuteAsyncMount(mountFlags);
@@ -880,6 +880,30 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteA
     EXPECT_EQ(ret, E_ISO9660_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0013 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0014
+ * @tc.desc: Verify ExecuteAsyncMount function.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0014, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0014 start";
+
+    ExternalVolumeInfo vol;
+    uint32_t mountFlags = 0;
+
+    vol.fsType_ = "ext4";
+    vol.isUserdata_ = true;
+    int32_t ret = vol.ExecuteAsyncMount(mountFlags);
+#ifdef PC_EXT4_ENABLE
+    EXPECT_EQ(ret, E_OK);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_ExecuteAsyncMount_0014 end";
 }
 
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMountWithForceUsbFuse_001, TestSize.Level1)
@@ -1052,7 +1076,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToF
     ret = mock.DoFix4Exfat();
     EXPECT_TRUE(ret == (E_OK));
 
-    
+
     mock.fsType_ = "vfat";
     EXPECT_CALL(mock, DoTryToFix()).Times(1).WillOnce(testing::Return(E_VOL_FIX_NOT_SUPPORT));
     ret = mock.DoTryToFix();
@@ -1337,6 +1361,55 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     ret = vol.DoFormat("exfat");
     EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_007
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_009 start";
+
+    ExternalVolumeInfo vol;
+#ifdef PC_EXT4_ENABLE
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+#endif
+    auto ret = vol.DoFormat("ext4");
+#ifdef PC_EXT4_ENABLE
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_009 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_010
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_010 start";
+    ExternalVolumeInfo vol;
+
+    vol.supportFormatType_.insert(std::make_pair("ext4", "mke2fs"));
+#ifdef PC_EXT4_ENABLE
+    EXPECT_CALL(*fileUtilMoc_,
+        ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
+#endif
+    auto ret = vol.DoFormat("ext4");
+#ifdef PC_EXT4_ENABLE
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_010 end";
 }
 
 /**

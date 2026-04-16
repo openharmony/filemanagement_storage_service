@@ -121,6 +121,30 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToCheck_0
 }
 
 /**
+* @tc.name: ExternalVolumeInfoOtherTest_DoTryToCheck_002
+* @tc.desc: Verify the DoTryToCheck function.
+* @tc.type: FUNC
+* @tc.require: AR000H09L6
+*/
+HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToCheck_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToCheck_002 start";
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+
+    externalVolumeInfo_->fsLabel_ = "test";
+    externalVolumeInfo_->fsType_ = "ext4";
+    g_readMetadata = 0;
+
+#ifdef PC_EXT4_ENABLE
+    EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_VOL_FIX_NOT_SUPPORT);
+#else
+    EXPECT_EQ(externalVolumeInfo_->DoTryToCheck(), E_DOCHECK_MOUNT);
+#endif
+
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToCheck_002 end";
+}
+
+/**
 * @tc.name: ExternalVolumeInfoOtherTest_DoTryToFix_001
 * @tc.desc: Verify the DoTryToFix function.
 * @tc.type: FUNC
@@ -152,6 +176,30 @@ HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToFix_001
     EXPECT_EQ(externalVolumeInfo_->DoTryToFix(), E_VOL_FIX_FAILED);
 
     GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToFix_001 end";
+}
+
+/**
+* @tc.name: ExternalVolumeInfoOtherTest_DoTryToFix_002
+* @tc.desc: Verify the DoTryToFix function.
+* @tc.type: FUNC
+* @tc.require: AR000H09L6
+*/
+HWTEST_F(ExternalVolumeInfoOtherTest, ExternalVolumeInfoOtherTest_DoTryToFix_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToFix_002 start";
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+
+    externalVolumeInfo_->fsLabel_ = "test";
+    externalVolumeInfo_->fsType_ = "ext4";
+    g_readMetadata = 0;
+
+#ifdef PC_EXT4_ENABLE
+    EXPECT_EQ(externalVolumeInfo_->DoTryToFix(), E_VOL_FIX_NOT_SUPPORT);
+#else
+    EXPECT_EQ(externalVolumeInfo_->DoTryToFix(), E_DOCHECK_MOUNT);
+#endif
+
+    GTEST_LOG_(INFO) << "ExternalVolumeInfoOtherTest_DoTryToFix_002 end";
 }
 
 /**
