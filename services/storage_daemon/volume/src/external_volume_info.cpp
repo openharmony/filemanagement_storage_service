@@ -146,7 +146,12 @@ int32_t ExternalVolumeInfo::DoGetOddCapacity(const std::string& volumeId, int64_
     std::string cmdDevPath = GetDevPathByVolumeId(volumeId);
     int64_t usedSize = 0;
     LOGI("dev path is %{public}s", cmdDevPath.c_str());
-    int cmdFd = open(cmdDevPath.c_str(), O_RDONLY|O_NONBLOCK);
+    char realPath[PATH_MAX] = {0};
+    if ((cmdDevPath.length() >= PATH_MAX) || realpath(cmdDevPath.c_str(), realPath) == nullptr) {
+        LOGE("DoGetOddCapacity realpath failed, errno: %{public}d.", errno);
+        return E_ERR;
+    }
+    int cmdFd = open(realPath, O_RDONLY|O_NONBLOCK);
     if (cmdFd < 0) {
         return E_ERR;
     }
