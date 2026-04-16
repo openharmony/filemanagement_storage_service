@@ -116,8 +116,6 @@ ohos_fuzztest("StorageDaemonProviderActiveUserKeyFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "${storage_daemon_path}/utils/hi_audit.cpp",
-    "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovideractiveuserkey_fuzzer/storagedaemonprovideractiveuserkey_fuzzer.cpp",
   ]
 
