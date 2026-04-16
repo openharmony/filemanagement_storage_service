@@ -33,18 +33,14 @@ struct File {
     bool changed;
     bool tmpFileCreated;
     std::mutex lock;
-    std::atomic<off_t> downloadedSize;
-    std::atomic<bool> downloading;
 
     File(const std::string& name, const CameraFileInfo& info)
         : name(name), mtime(info.file.mtime), size(info.file.size),
-          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr),
-          downloadedSize(0), downloading(false) {}
+          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr) {}
 
     File(const std::string& name)
         : name(name), mtime(Now()), size(0),
-          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr),
-          downloadedSize(0), downloading(false) {}
+          tmpFd(-1), tmpFileCreated(false), ref(0), changed(false), camFile(nullptr) {}
 
     File(const File&) = delete;
     File& operator=(const File&) = delete;

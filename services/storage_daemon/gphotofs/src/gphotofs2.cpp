@@ -19,7 +19,6 @@
 #include <mutex>
 #include <cstring>
 #include <securec.h>
-#include <thread>
 #include "storage_service_log.h"
 #include "gphotofs_utils.h"
 
@@ -31,7 +30,6 @@ static constexpr int32_t UPLOAD_RECORD_FALSE_LEN = 5;
 static constexpr const char *GPHOTO_THM_FLAG = "?MTP_THM";
 static constexpr size_t MAX_MALLOC_SIZE = 100 * 1024 * 1024;
 static constexpr size_t MAX_WRITE_SIZE = 10 * 1024 * 1024;
-static constexpr size_t PROGRESS_THREAD_THRESHOLD = 50 * 1024 * 1024;
 static constexpr size_t KB_TO_BYTES = 1024;
 static constexpr size_t DOUBLE_DOT_LENGTH = 2;
 static constexpr size_t PATH_DOT_LENGTH = 2;
@@ -48,10 +46,8 @@ static std::mutex g_gphotoMutex;
 static int g_err;
 static std::mutex g_errMutex;
 static const int DEFAULT_COUNT = 10;
-static constexpr int MONITOR_INTERVAL_MS = 500;
 static const unsigned int FORCE_REFESH_FLAG = 0x1;
 static std::atomic<bool> g_loadOnGoing{false};
-static std::atomic<bool> g_running{true};
 static std::atomic<int> g_gphotoLockDepth{0};
 
 struct LockGuard {
@@ -444,7 +440,6 @@ static int CreateTempFile(File *file, const std::string &filePath)
 
 static void CleanupTempFile(File *file)
 {
-    file->downloading.store(false);
     if (file->tmpFd >= 0) {
         close(file->tmpFd);
         file->tmpFd = -1;
@@ -456,28 +451,6 @@ static void CleanupTempFile(File *file)
     }
 
     file->tmpFileCreated = false;
-    file->downloadedSize.store(0);
-}
-
-static void MonitorDownloadProgress(File *file)
-{
-    if (!file) {
-        LOGE("MonitorDownloadProgress file is null");
-        return;
-    }
-    off_t cur = 0;
-    while (file->downloading.load() && g_running.load()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(MONITOR_INTERVAL_MS));
-        struct stat st {};
-        if (file->tmpFd >= 0 && fstat(file->tmpFd, &st) == 0) {
-            if (st.st_size > 0) {
-                cur = st.st_size;
-                file->downloadedSize.store(cur);
-            }
-        }
-        LOGI("MonitorDownloadProgress downloadedSize: %{public}lld", cur);
-    }
-    LOGI("MonitorDownloadProgress exit loop");
 }
 
 static int PrepareTempFileForSave(File *file, const char *path)
@@ -519,37 +492,6 @@ static int CreateCameraFileFromTmpFd(File *file, CameraFile **cf)
     return 0;
 }
 
-static void TryStartProgressThread(File *file, std::thread &progressThread)
-{
-    if (!file) {
-        return;
-    }
-    file->downloadedSize.store(0);
-
-    if (file->size < PROGRESS_THREAD_THRESHOLD) {
-        return;
-    }
-    file->downloading.store(true);
-    progressThread = std::thread(MonitorDownloadProgress, file);
-}
-
-static int FinalizeSavedTempFile(File *file)
-{
-    if (!file) {
-        return -EINVAL;
-    }
-    off_t end = lseek(file->tmpFd, 0, SEEK_END);
-    if (end < 0) {
-        CleanupTempFile(file);
-        return -errno;
-    }
-
-    file->downloadedSize.store(end);
-    file->size = end;
-    file->tmpFileCreated = true;
-    return 0;
-}
-
 static int SaveCameraFileToTemp(File *file, const char *path)
 {
     int ret = PrepareTempFileForSave(file, path);
@@ -572,23 +514,25 @@ static int SaveCameraFileToTemp(File *file, const char *path)
     if (ret < 0) {
         return ret;
     }
-    std::thread progressThread;
-    TryStartProgressThread(file, progressThread);
     int gpResult = WithCameraLocked([&ctx, &dirName, &fileName, &cf] {
         return gp_camera_file_get(ctx->camera(), dirName.c_str(), fileName.c_str(),
                                   GP_FILE_TYPE_NORMAL, cf, ctx->context());
     });
-    file->downloading.store(false);
-    if (progressThread.joinable()) {
-        progressThread.join();
-    }
     gp_file_unref(cf);
     if (gpResult != GP_OK) {
         CleanupTempFile(file);
         return GpresultToErrno(gpResult);
     }
 
-    return FinalizeSavedTempFile(file);
+    off_t end = lseek(file->tmpFd, 0, SEEK_END);
+    if (end < 0) {
+        CleanupTempFile(file);
+        return -errno;
+    }
+
+    file->size = end;
+    file->tmpFileCreated = true;
+    return 0;
 }
 
 static inline bool IsThumbPath(const char *path)
@@ -644,15 +588,13 @@ static int GetThumbAttr(const char *path, struct stat *st, Context *ctx)
         return -EINVAL;
     }
     time_t mtime = 0;
-    {
-        File *file = FindFile(real, ctx);
-        if (!file) {
-            LOGE("GetThumbAttr file not found");
-            return -ENOENT;
-        }
-        std::lock_guard<std::mutex> fileGuard(file->lock);
-        mtime = file->mtime;
+    File *file = FindFile(real, ctx);
+    if (!file) {
+        LOGE("GetThumbAttr file not found");
+        return -ENOENT;
     }
+    mtime = file->mtime;
+
     std::string dirName(GphotoDirName(real.c_str()));
     std::string fileName(GphotoBaseName(real.c_str()));
     CameraFile *thm = nullptr;
@@ -689,6 +631,9 @@ static int GetThumbAttr(const char *path, struct stat *st, Context *ctx)
 
 static int FillDirStat(struct stat *st, Context *ctx)
 {
+    if (st ==nullptr || ctx == nullptr) {
+        return -EINVAL;
+    }
     st->st_mode = S_IFDIR | DEFAULT_DIR_MODE;
     st->st_nlink = DIR_NLINK_COUNT;
     st->st_uid = ctx->uid();
@@ -698,6 +643,9 @@ static int FillDirStat(struct stat *st, Context *ctx)
 
 static int FillFileStat(struct stat *st, off_t size, time_t mtime, Context *ctx)
 {
+    if (st ==nullptr || ctx == nullptr) {
+        return -EINVAL;
+    }
     st->st_mode = S_IFREG | DEFAULT_FILE_MODE;
     st->st_nlink = FILE_NLINK_COUNT;
     st->st_size = size;
@@ -729,17 +677,16 @@ static int GetRegularAttr(const char *path, struct stat *st, Context *ctx)
     }
     off_t size = 0;
     time_t mtime = 0;
-    {
-        File *file = parent->GetFile(baseName);
-        if (file == nullptr) {
-            LOGE("Getattr: path not found");
-            return -ENOENT;
-        }
-        std::lock_guard<std::mutex> lockGuard(file->lock);
-        size = file->size;
-        mtime = file->mtime;
+    File *file = parent->GetFile(baseName);
+    if (file == nullptr) {
+        LOGE("Getattr: path not found");
+        return -ENOENT;
     }
+    size = file->size;
+    mtime = file->mtime;
+
     FillFileStat(st, size, mtime, ctx);
+    LOGI("gphoto getattr end");
     return 0;
 }
 
@@ -1012,7 +959,7 @@ static int Create(const char *path, mode_t mode,
         file->size = 0;
         file->changed = true;
     }
-    
+
     ret = InitializeNewFile(file, path, ctx);
     if (ret < 0) {
         delete file;
@@ -1243,7 +1190,7 @@ static int Release(const char *path, struct fuse_file_info *fileInfo)
     }
     {
         std::lock_guard<std::mutex> fileGuard(file->lock);
-        ret = UploadChangedFile(file, path, ctx);
+        int ret = UploadChangedFile(file, path, ctx);
         delete fd;
         fileInfo->fh = 0;
         if (file->ref <= 0) {
@@ -1553,6 +1500,10 @@ static int FillDirSubentries(Dir *dir, FillState *state, Context *ctx)
 static int FillDirFiles(Dir *dir, FillState *state, Context *ctx)
 {
     for (const auto& [unused, file] : dir->files) {
+        if (file == nullptr) {
+            continue;
+        }
+        std::lock_guard<std::mutex> fileGuard(file->lock);
         struct stat st = {};
         st.st_mode = S_IFREG | DEFAULT_FILE_MODE;
         st.st_nlink = 1;
@@ -1665,10 +1616,6 @@ static int Unlink(const char *path)
             LOGE("Unlink: file is still open, ref=%{public}d", file->ref);
             return -EBUSY;
         }
-        if (file->downloading.load()) {
-            LOGE("Unlink: file is downloading");
-            return -EBUSY;
-        }
     }
 
     ret = WithCameraLocked([&ctx, &dirName, &fileName] {
@@ -1772,14 +1719,12 @@ static int Rmdir(const char *path)
 static void *Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("gphoto init enter");
-    g_running.store(true);
     return new Context();
 }
 
 static void Destroy(void *voidContext)
 {
     LOGI("gphoto destroy enter");
-    g_running.store(false);
     Context *context = static_cast<Context *>(voidContext);
     delete context;
     LOGI("gphoto destroy end");
@@ -2013,6 +1958,46 @@ static int QueryPtpIsInUse(char *out, size_t size)
     return GpWriteBoolXattr(false, out, size);
 }
 
+static int QueryDownloadedSize(const char *path, char *out, size_t size)
+{
+    if (path == nullptr || out == nullptr || size == 0) {
+        LOGE("querydownloaded params err");
+        return -EINVAL;
+    }
+    Context *ctx = GetContext();
+    if (ctx == nullptr) {
+        LOGE("QueryDownloadedSize return ctx is null");
+        return -EIO;
+    }
+    File *file = FindFile(path, ctx);
+    if (file == nullptr) {
+        LOGE("getxattr downloadedSize file not found");
+        return -ENOENT;
+    }
+    struct stat st {};
+    off_t downloaded = 0;
+    int tmpFd = file->tmpFd;
+    if (tmpFd >= 0 && fstat(tmpFd, &st) == 0) {
+        if (st.st_size > 0) {
+            downloaded = st.st_size;
+        }
+    }
+    if (downloaded < 0) {
+        downloaded = 0;
+    }
+
+    int ret = snprintf_s(out, size, size - 1, "%lld", static_cast<long long>(downloaded));
+    if (ret < 0) {
+        LOGE("querydownloaded err ret = %{public}d", ret);
+        return -EIO;
+    }
+    if (static_cast<size_t>(ret) >= size) {
+        LOGI("querydownloaded err size ret = %{public}d", ret);
+        return -ERANGE;
+    }
+    return ret;
+}
+
 static int GpGetxattr(const char *path, const char *in, char *out, size_t size)
 {
     if (path == nullptr || in == nullptr) {
@@ -2030,6 +2015,8 @@ static int GpGetxattr(const char *path, const char *in, char *out, size_t size)
         return GpDirFetched(path, in, out, size);
     } else if (strcmp(in, "user.queryMtpIsInUse") == 0) {
         return QueryPtpIsInUse(out, size);
+    } else if (strcmp(in, "user.queryDownloadedSize") == 0) {
+        return QueryDownloadedSize(path, out, size);
     }
     return 0;
 }

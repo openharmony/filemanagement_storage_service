@@ -276,9 +276,10 @@ bool VolumeManagerService::IsUsbFuseByType(const std::string &fsType)
     if (enabledByCcm) {
         enabledByType = VolumeManagerServiceExt::GetInstance().IsUsbFuseByType(fsType);
     }
-    LOGI("VolumeManagerService::IsUsbFuseByType. enabledByCcm: %{public}d, enabledByType: %{public}d", enabledByCcm,
-         enabledByType);
-    return enabledByCcm && enabledByType;
+    LOGI("enabledByCcm: %{public}d, enabledByType: %{public}d, fsType: %{public}s",
+        enabledByCcm, enabledByType, fsType.c_str());
+    // When the CD is a blank disc, fsType is empty. Do not mount by fuse.
+    return enabledByCcm && enabledByType && !fsType.empty();
 }
 
 int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)

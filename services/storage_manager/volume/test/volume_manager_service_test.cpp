@@ -173,8 +173,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0003, testing::e
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0003";
     system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
     system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(true));
-    auto &vmService =VolumeManagerService::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);
@@ -203,8 +202,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0004, testing::e
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Mount_0004";
     system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
     system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
-    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(testing::_)).WillOnce(testing::Return(false));
-    auto &vmService =VolumeManagerService::GetInstance();
+    auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-1-3";
     std::string diskId = "disk-1-3";
     VolumeCore vc(volumeId, FsType::MTP, diskId, VolumeState::UNMOUNTED);

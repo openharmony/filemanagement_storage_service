@@ -16,7 +16,7 @@
 #include "gphotofs_file.h"
 #include "storage_service_log.h"
 
-void Dir::addFile(File *file)
+void Dir::AddFile(File *file)
 {
     if (file == nullptr) {
         return;
@@ -30,7 +30,7 @@ void Dir::addFile(File *file)
     files[file->name] = file;
 }
 
-void Dir::removeFile(File *file)
+void Dir::RemoveFile(File *file)
 {
     if (file == nullptr) {
         return;
@@ -39,7 +39,7 @@ void Dir::removeFile(File *file)
     files.erase(file->name);
 }
 
-void Dir::addDir(Dir *dir)
+void Dir::AddDir(Dir *dir)
 {
     if (dir == nullptr) {
         return;
@@ -53,7 +53,7 @@ void Dir::addDir(Dir *dir)
     dirs[dir->name] = dir;
 }
 
-void Dir::removeDir(Dir *dir)
+void Dir::RemoveDir(Dir *dir)
 {
     if (dir == nullptr) {
         return;
@@ -62,7 +62,7 @@ void Dir::removeDir(Dir *dir)
     dirs.erase(dir->name);
 }
 
-File* Dir::getFile(const std::string& name)
+File* Dir::GetFile(const std::string& name)
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     auto it = files.find(name);
@@ -70,7 +70,7 @@ File* Dir::getFile(const std::string& name)
     return it->second;
 }
 
-std::string Dir::getPath(Dir *dir)
+std::string Dir::GetPath(Dir *dir)
 {
     if (dir == nullptr) {
         return "";
@@ -84,7 +84,7 @@ std::string Dir::getPath(Dir *dir)
     return "";
 }
 
-Dir* Dir::getDir(const std::string& name)
+Dir* Dir::GetDir(const std::string& name)
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     auto it = dirs.find(name);
@@ -92,7 +92,91 @@ Dir* Dir::getDir(const std::string& name)
     return it->second;
 }
 
-bool Dir::empty()
+void Dir::SetListed(bool stat)
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    listed = stat;
+}
+
+bool Dir::GetListed()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    return listed;
+}
+
+void Dir::SetNextOffset(int next)
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    offset = next;
+}
+
+int Dir::GetNextOffset()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    return offset;
+}
+
+void Dir::SetRefresh(bool stat)
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    refresh = stat;
+}
+
+bool Dir::GetRefresh()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    return refresh;
+}
+
+bool Dir::TryBeginLoad()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    if (listed || loading) {
+        return false;
+    }
+    loading = true;
+    return true;
+}
+
+void Dir::EndLoad()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    loading = false;
+}
+
+void Dir::SetDirty(bool stat)
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    dirty = stat;
+}
+
+bool Dir::GetDirty()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    return dirty;
+}
+
+void Dir::Clear()
+{
+    std::lock_guard<std::mutex> lockGuard(lock);
+    for (auto &it : files) {
+        delete it.second;
+        it.second = nullptr;
+    }
+    files.clear();
+    for (auto &it : dirs) {
+        delete it.second;
+        it.second = nullptr;
+    }
+    dirs.clear();
+    offset = 0;
+    listed = false;
+    refresh = false;
+    dirty = false;
+    LOGI("dir clear end");
+}
+
+bool Dir::Empty()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     return files.empty() && dirs.empty();
@@ -100,17 +184,5 @@ bool Dir::empty()
 
 Dir::~Dir()
 {
-    std::lock_guard<std::mutex> lockGuard(lock);
-    for (auto& it : files) {
-        if (it.second != nullptr) {
-            delete it.second;
-            it.second = nullptr;
-        }
-    }
-    for (auto& it : dirs) {
-        if (it.second != nullptr) {
-            delete it.second;
-            it.second = nullptr;
-        }
-    }
+    Clear();
 }

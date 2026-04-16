@@ -729,7 +729,10 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
         (void)close(pipeFd[1]);
         (void)close(pipeFd[0]);
         waitpid(pid, &status, 0);
-        LOGE("[L8:FileUtils] ForkExecWithExit: Process exits %{public}d", errno);
+        if (errno == ECHILD) {
+            LOGE("[L8:FileUtils] ForkExecWithExit: Process exits %{public}d", errno);
+            return E_NO_CHILD;
+        }
         if (!WIFEXITED(status)) {
             LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< Process exits abnormally, status=%{public}d",
                 status);

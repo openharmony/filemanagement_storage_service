@@ -44,6 +44,7 @@ ohos_unittest("storage_total_status_service_test") {
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_service_path}/services/storage_manager:storage_manager",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   external_deps = [
@@ -70,7 +71,6 @@ ohos_unittest("storage_total_status_service_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "selinux_adapter:librestorecon",
-    "storage_service:storage_manager_sa_proxy",
   ]
 
   if (enable_screenlock_manager) {
@@ -97,6 +97,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
@@ -120,7 +121,10 @@ ohos_unittest("volume_storage_status_service_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
-  deps = [ "${storage_daemon_path}:storage_daemon_header" ]
+  deps = [ 
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
@@ -137,7 +141,6 @@ ohos_unittest("volume_storage_status_service_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "storage_service:storage_manager_sa_proxy",
     "cJSON:cjson",
     "hicollie:libhicollie",
     "hisysevent:libhisysevent",
