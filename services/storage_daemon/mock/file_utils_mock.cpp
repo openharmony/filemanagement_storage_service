@@ -144,5 +144,9 @@ void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<Proces
 {
     return;
 }
+bool IsFilePathInvalid(const std::string &filePath)
+{
+    return IFileUtilMoc::fileUtilMoc->IsFilePathInvalid(filePath);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -17,17 +17,30 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
+#include <string>
+#include <unistd.h>
 
 #include "file_sharing/acl.h"
 #include "securec.h"
 #include "storage_service_log.h"
-#include "utils/file_utils.h"
 
 constexpr int BUF_SIZE = 400;
-
+using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 namespace {
+bool IsDir(const std::string &path)
+{
+    // check whether the path exists
+    struct stat st;
+    int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
+    if (ret) {
+        return false;
+    }
+
+    return S_ISDIR(st.st_mode);
+}
+
 int AclEntryParseTag(const std::string &tagTxt, AclXattrEntry &entry)
 {
     if (tagTxt.empty()) {

@@ -1866,20 +1866,23 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     StorageRadar::ReportFucBehavior("CreateUserDir", DEFAULT_USERID, message, E_OK);
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         LOGE("Permission check failed, for storage_manager_crypt");
+        StorageRadar::ReportCommonResult("CreateUserDir", E_PERMISSION_DENIED, 0, "CheckClientPermission failed");
         return E_PERMISSION_DENIED;
     }
 
     auto callingUid = IPCSkeleton::GetCallingUid();
     if (callingUid != AOCO_UID) {
         LOGE("Permission check failed, the UID is not in the trustlist, uid: %{public}d", callingUid);
+        StorageRadar::ReportCommonResult("CreateUserDir", E_PERMISSION_DENIED, 0, "callingUid not in trustlist");
         return E_PERMISSION_DENIED;
     }
 
     if (IsFilePathInvalid(path)) {
         LOGE("The path: %{public}s is invalid.", path.c_str());
+        StorageRadar::ReportCommonResult("CreateUserDir", E_PARAMS_INVALID, 0, "path invalid");
         return E_PARAMS_INVALID;
     }
-
+    
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     auto ret = sdCommunication->CreateUserDir(path, mode, uid, gid);

@@ -92,14 +92,20 @@ bool BaseKey::InitKey(bool needGenerateKey)
     if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA)) {
         LOGE("[L4:BaseKey] InitKey: <<< EXIT FAILED <<< dir=%{public}s, invalid version=%{public}u",
             dir_.c_str(), keyInfo_.version);
+        StorageService::StorageRadar::ReportUserKeyResult("InitKey", 0, E_PARAMS_INVALID, "",
+            "keyInfo_.version =" + std::to_string(keyInfo_.version) + " dir_ =" + dir_);
         return false;
     }
     if (!keyInfo_.key.IsEmpty()) {
         LOGE("[L4:BaseKey] InitKey: <<< EXIT FAILED <<< dir=%{public}s, key already exists", dir_.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("InitKey", 0, E_PARAMS_INVALID, "",
+            "key is not empty. dir_ = " + dir_);
         return false;
     }
     if (needGenerateKey && !GenerateKeyBlob(keyInfo_.key, keyLen_)) {
         LOGE("[L4:BaseKey] InitKey: <<< EXIT FAILED <<< dir=%{public}s, GenerateKeyBlob failed", dir_.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("InitKey", 0, E_KEY_BLOB_ERROR, "",
+            "GenerateKeyBlob raw key failed dir_ = " + dir_ + " keyLen_ = " + std::to_string(keyLen_));
         return false;
     }
     LOGI("[L4:BaseKey] InitKey: <<< EXIT SUCCESS <<< dir=%{public}s", dir_.c_str());
@@ -109,6 +115,10 @@ bool BaseKey::InitKey(bool needGenerateKey)
 bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 {
     blob = HuksMaster::GenerateRandomKey(size);
+    if (blob.IsEmpty()) {
+        StorageService::StorageRadar::ReportUserKeyResult("GenerateKeyBlob", 0,
+            E_KEY_BLOB_ERROR, "", "blob Is Empty");
+    }
     return !blob.IsEmpty();
 }
 
@@ -116,6 +126,7 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 {
     if (blob.IsEmpty()) {
         LOGE("[L4:BaseKey] SaveKeyBlob: <<< EXIT FAILED <<< path=%{public}s, blob is empty", path.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("SaveKeyBlob", 0, E_KEY_BLOB_ERROR, "", "blob is empty");
         return false;
     }
     LOGI("[L4:BaseKey] SaveKeyBlob: >>> ENTER <<< path=%{public}s, size=%{public}u", path.c_str(), blob.size);
@@ -125,6 +136,8 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         LOGI("[L4:BaseKey] SaveKeyBlob: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     } else {
         LOGE("[L4:BaseKey] SaveKeyBlob: <<< EXIT FAILED <<< path=%{public}s, WriteFileSync failed", path.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("SaveKeyBlob", 0, E_SAVE_KEY_BLOB_ERROR, "",
+            "WriteFileSync failed, path=" + path);
     }
     return ret;
 }
@@ -132,6 +145,8 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
 {
     if (!GenerateKeyBlob(blob, size)) {
+        StorageService::StorageRadar::ReportUserKeyResult("GenerateAndSaveKeyBlob", 0,
+            E_KEY_BLOB_ERROR, "", "GenerateKeyBlob failed");
         return false;
     }
     return SaveKeyBlob(blob, path);
@@ -144,6 +159,8 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     if (file.fail()) {
         LOGE("[L4:BaseKey] LoadKeyBlob: <<< EXIT FAILED <<< path=%{public}s, open failed, errno=%{public}d",
             path.c_str(), errno);
+        StorageService::StorageRadar::ReportUserKeyResult("LoadKeyBlob", 0, E_LOAD_KEY_BLOB_ERROR, "",
+            "open file failed, path=" + path + ", errno=" + std::to_string(errno));
         return false;
     }
 
@@ -153,9 +170,14 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     if ((size != 0) && (length != size)) {
         LOGE("[L4:BaseKey] LoadKeyBlob: <<< EXIT FAILED <<< path=%{public}s, size mismatch, expected=%{public}u,"
             "actual=%{public}u", path.c_str(), size, length);
+        StorageService::StorageRadar::ReportUserKeyResult("LoadKeyBlob", 0, E_LOAD_KEY_BLOB_ERROR, "",
+            "file size error, path=" + path + ", expected=" + std::to_string(size) +
+            ",real=" + std::to_string(length));
         return false;
     }
     if (!blob.Alloc(length)) {
+        StorageService::StorageRadar::ReportUserKeyResult("LoadKeyBlob", 0, E_LOAD_KEY_BLOB_ERROR, "",
+            "blob Alloc failed, length=" + std::to_string(length));
         LOGE("[L4:BaseKey] LoadKeyBlob: <<< EXIT FAILED <<< path=%{public}s, alloc failed", path.c_str());
         return false;
     }
@@ -164,6 +186,8 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     if (file.read(reinterpret_cast<char *>(blob.data.get()), length).fail()) {
         LOGE("[L4:BaseKey] LoadKeyBlob: <<< EXIT FAILED <<< path=%{public}s, read failed, errno=%{public}d",
             path.c_str(), errno);
+        StorageService::StorageRadar::ReportUserKeyResult("LoadKeyBlob", 0, E_LOAD_KEY_BLOB_ERROR, "",
+            "read file failed, path=" + path + ", errno=" + std::to_string(errno));
         return false;
     }
     return true;
@@ -265,8 +289,12 @@ int32_t  BaseKey::DoStoreKey(const UserAuth &auth)
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     if (!MkDirRecurse(pathTemp, S_IRWXU)) {
         LOGE("[L4:BaseKey] DoStoreKey: <<< EXIT FAILED <<< dir=%{public}s, MkDirRecurse failed", dir_.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("DoStoreKey", 0, E_MKDIR_ERROR, "",
+            "MkDirRecurse failed, pathTemp=" + pathTemp);
     }
     if (!CheckAndUpdateVersion()) {
+        StorageService::StorageRadar::ReportUserKeyResult("DoStoreKey", 0, E_VERSION_ERROR, "",
+            "CheckAndUpdateVersion failed");
         LOGE("[L4:BaseKey] DoStoreKey: <<< EXIT FAILED <<< dir=%{public}s, CheckAndUpdateVersion failed", dir_.c_str());
         return E_VERSION_ERROR;
     }
@@ -284,6 +312,8 @@ int32_t  BaseKey::DoStoreKey(const UserAuth &auth)
         auto ret = InitKeyContext(auth, pathTemp, keyCtx);
         if (ret != E_OK) {
             LOGE("[L4:BaseKey] DoStoreKey: <<< EXIT FAILED <<< dir=%{public}s, InitKeyContext failed", dir_.c_str());
+            StorageService::StorageRadar::ReportUserKeyResult("DoStoreKey", 0, ret, "",
+                "InitKeyContext failed, pathTemp=" + pathTemp);
             return ret;
         }
 
@@ -291,12 +321,16 @@ int32_t  BaseKey::DoStoreKey(const UserAuth &auth)
         if (ret != E_OK) {
             LOGE("[L4:BaseKey] DoStoreKey: <<< EXIT FAILED <<< dir=%{public}s, EncryptEceSece failed", dir_.c_str());
             ClearKeyContext(keyCtx);
+            StorageService::StorageRadar::ReportUserKeyResult("DoStoreKey", 0, ret, "",
+                "EncryptEceSece failed, keyType=" + std::to_string(keyType));
             return ret;
         }
         // save key buff nonce+rndEnc+aad
         if (!SaveAndCleanKeyBuff(pathTemp, keyCtx)) {
             LOGE("[L4:BaseKey] DoStoreKey: <<< EXIT FAILED <<< dir=%{public}s, SaveAndCleanKeyBuff failed",
                 dir_.c_str());
+            StorageService::StorageRadar::ReportUserKeyResult("DoStoreKey", 0, E_SAVE_KEY_BUFFER_ERROR, "",
+                "SaveAndCleanKeyBuff failed, pathTemp=" + pathTemp);
             return E_SAVE_KEY_BUFFER_ERROR;
         }
     }
@@ -313,6 +347,8 @@ bool BaseKey::CheckAndUpdateVersion()
         if (version != std::to_string(keyInfo_.version)) {
             LOGE("[L4:BaseKey] CheckAndUpdateVersion: version already exist %{public}s, not expected %{public}d",
                 version.c_str(), keyInfo_.version);
+            StorageService::StorageRadar::ReportUserKeyResult("CheckAndUpdateVersion", 0, 0,
+                "", "version =" + version);
             return false;
         }
     } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version), errMsg) == false) {
@@ -485,6 +521,8 @@ int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
     ret = HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true);
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] EncryptDe: <<< EXIT FAILED <<< Encrypt by hks failed");
+        StorageService::StorageRadar::ReportUserKeyResult("EncryptDe", 0, ret, "",
+            "Encrypt by hks failed");
         ClearKeyContext(ctxDe);
         return ret;
     }
@@ -509,6 +547,8 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
     auto ret = HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx);
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] EncryptEceSece: <<< EXIT FAILED <<< Encrypt by hks failed");
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::EncryptEceSece", 0, ret, "",
+            "Encrypt by hks failed");
         return ret;
     }
     LOGE("[L4:BaseKey] EncryptEceSece: Huks encrypt end");
@@ -543,11 +583,13 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, 0, "", "candidate is empty");
         auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth);
         if (ret == 0) {
             LOGI("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
             return E_OK;
         }
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
         LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
         return ret;
     }
@@ -687,6 +729,8 @@ int32_t BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] DoRestoreKeyDe: <<< EXIT FAILED <<< Decrypt by hks failed");
         ClearKeyContext(ctxNone);
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::DoRestoreKeyDe", 0, ret, "",
+            "Decrypt by hks failed");
         return ret;
     }
     ClearKeyContext(ctxNone);
@@ -739,6 +783,8 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
             if (ret != E_OK) {
                 LOGE("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT FAILED <<< Decrypt by hks failed");
                 ClearKeyContext(tempCtx);
+                StorageService::StorageRadar::ReportUserKeyResult("BaseKey::DoRestoreKeyCeEceSece", 0, ret, "",
+                    "Decrypt by hks failed");
                 return ret;
             }
             ClearKeyContext(tempCtx);
@@ -861,6 +907,7 @@ int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyCo
     ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
     if (ret != E_OK) { // rndEnc -> rnd
         LOGE("[L4:BaseKey] DecryptReal: <<< EXIT FAILED <<< Decrypt by hks failed");
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::DecryptReal", 0, ret, "", "Decrypt by hks failed");
         return ret;
     }
     auto delay = StorageService::StorageRadar::ReportDuration("HUKS: DECRYPT KEY EX", startTime);
@@ -882,6 +929,10 @@ int32_t BaseKey::Decrypt(const UserAuth &auth)
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("[L4:BaseKey] Decrypt: Huks decrypt key start");
             ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true);
+            if (ret != E_OK) {
+                StorageService::StorageRadar::ReportUserKeyResult("BaseKey::Decrypt", 0, ret, "",
+                    "Huks decrypt key failed");
+            }
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL:
             LOGI("[L4:BaseKey] Decrypt: Huks openssl decrypt key, skip");
@@ -898,6 +949,8 @@ bool BaseKey::ClearKey(const std::string &mnt)
     auto ret = InactiveKey(USER_DESTROY, mnt);
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] ClearKey: InactiveKey failed, ret=%{public}d", ret);
+        StorageService::StorageRadar::ReportUserKeyResult("ClearKey", 0, ret, "",
+            "InactiveKey failed, ret=" + std::to_string(ret) + ", mnt=" + mnt);
     }
     keyInfo_.key.Clear();
     keyInfo_.keyHash.Clear();
@@ -929,6 +982,8 @@ bool BaseKey::ClearKey(const std::string &mnt)
         bool removeRet = OHOS::ForceRemoveDirectory(dir_);
         if (!removeRet) {
             LOGE("[L4:BaseKey] ClearKey: ForceRemoveDirectory failed");
+            StorageService::StorageRadar::ReportUserKeyResult("ClearKey", 0, E_RENAME_FILE_ERROR, "",
+                "ForceRemoveDirectory failed, dir_=" + dir_);
             return removeRet;
         }
         // use F2FS_IOC_SEC_TRIM_FILE
@@ -1032,6 +1087,8 @@ bool BaseKey::GetOriginKey(KeyBlob &originKey)
     LOGI("[L4:BaseKey] GetOriginKey: >>> ENTER <<<");
     if (keyInfo_.key.IsEmpty()) {
         LOGE("[L4:BaseKey] GetOriginKey: <<< EXIT FAILED <<< origin key is empty, need restore");
+        StorageService::StorageRadar::ReportUserKeyResult("GetOriginKey", 0, E_KEY_BLOB_ERROR, "",
+            "origin key is empty, need restore");
         return false;
     }
     KeyBlob key(keyInfo_.key);
@@ -1053,6 +1110,8 @@ bool BaseKey::GetHashKey(KeyBlob &hashKey)
     LOGI("[L4:BaseKey] GetHashKey: >>> ENTER <<<");
     if (keyInfo_.keyHash.IsEmpty()) {
         LOGE("[L4:BaseKey] GetHashKey: <<< EXIT FAILED <<< hash key is empty");
+        StorageService::StorageRadar::ReportUserKeyResult("GetHashKey", 0, E_KEY_BLOB_ERROR, "",
+            "hash key is empty");
         return false;
     }
     KeyBlob key(keyInfo_.keyHash);
@@ -1065,6 +1124,8 @@ bool BaseKey::GenerateHashKey()
 {
     LOGI("[L4:BaseKey] GenerateHashKey: >>> ENTER <<<");
     if (keyInfo_.key.IsEmpty()) {
+        StorageService::StorageRadar::ReportUserKeyResult("GenerateHashKey", 0, E_KEY_BLOB_ERROR, "",
+            "origin key is empty");
         LOGE("[L4:BaseKey] GenerateHashKey: <<< EXIT FAILED <<< origin key is empty, Generate error");
         return false;
     }
@@ -1106,6 +1167,8 @@ int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath
         keyCtx.shield.Clear();
         keyCtx.secDiscard.Clear();
         LOGE("[L4:BaseKey] EncryptKeyBlob: <<< EXIT FAILED <<< HUKS encrypt key failed");
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::EncryptKeyBlob", 0, ret, "",
+            "HUKS encrypt key failed");
         return ret;
     }
     CombKeyBlob(keyCtx.rndEnc, keyCtx.nonce, encryptedKey);
@@ -1144,6 +1207,8 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
         keyCtx.shield.Clear();
         keyCtx.rndEnc.Clear();
         LOGE("[L4:BaseKey] DecryptKeyBlob: <<< EXIT FAILED <<< HUKS decrypt key failed");
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::DecryptKeyBlob", 0, ret, "",
+            "HUKS decrypt key failed");
         return ret;
     }
 
@@ -1161,6 +1226,8 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
     LOGI("[L4:BaseKey] RenameKeyPath: rename %{public}s to %{public}s", keyPath.c_str(), candidate.c_str());
     if (rename(keyPath.c_str(), candidate.c_str()) != 0) {
         LOGE("[L4:BaseKey] RenameKeyPath: rename %{public}s to %{public}s failed", keyPath.c_str(), candidate.c_str());
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RenameKeyPath", 0, errno, "",
+            "rename key path failed");
         return false;
     }
     SyncKeyDir();
@@ -1218,6 +1285,8 @@ bool BaseKey::CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyB
     LOGI("[L4:BaseKey] CombKeyCtx: >>> ENTER <<<");
     if (nonce.IsEmpty() || aad.IsEmpty() || rndEnc.IsEmpty()) {
         LOGE("[L4:BaseKey] CombKeyCtx: <<< EXIT FAILED <<< Invalid param, can not combine");
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::CombKeyCtx", 0, E_PARAMS_INVALID, "",
+            "Invalid param, can not combine !");
         return false;
     }
     LOGE("[L4:BaseKey] CombKeyCtx: rndEncEnc: %{public}u", rndEnc.size);
@@ -1238,6 +1307,9 @@ bool BaseKey::SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc,
 {
     LOGI("[L4:BaseKey] SplitKeyCtx: >>> ENTER <<<");
     if (keyIn.size < (nonce.size + aad.size)) {
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::SplitKeyCtx", 0, E_PARAMS_INVALID, "",
+            "Invalid param, can not split ! keyIn size=" + std::to_string(keyIn.size) + "nonce size:" +
+            std::to_string(nonce.size) + "aad size:" + std::to_string(aad.size));
         LOGE("[L4:BaseKey] SplitKeyCtx: <<< EXIT FAILED <<< Invalid keyIn size is too small");
         return false;
     }

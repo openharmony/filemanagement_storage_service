@@ -297,7 +297,14 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
-    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    int32_t destroyRet = UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    if (destroyRet != E_OK) {
+        LOGE("[L1:StorageDaemon] PrepareUserDirs: <<< EXIT FAILED <<< UserManager::DestroyUserDirs userId=%{public}d,"
+            "ret=%{public}d", userId, destroyRet);
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::DestroyUserDirs", userId, destroyRet,
+            extraData);
+    }
     int32_t prepareRet = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (prepareRet != E_OK) {
         LOGE("[L1:StorageDaemon] PrepareUserDirs: <<< EXIT FAILED <<< UserManager::PrepareUserDirs userId=%{public}d,"
@@ -312,6 +319,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (result != E_OK) {
             LOGE("[L1:StorageDaemon] PrepareUserDirs: KeyManagerExt GenerateUserKeys failed, userId=%{public}u,"
                 "ret=%{public}d", userId, result);
+            std::string extraData = "flags=" + std::to_string(flags);
+            StorageRadar::ReportUserManager("PrepareUserDirs::KeyManagerExt::GenerateUserKeys", userId, result,
+                extraData);
         }
     }
 #endif
@@ -406,7 +416,10 @@ int32_t StorageDaemon::InitGlobalKey(void)
         StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
     }
 #ifdef USE_LIBRESTORECON
-    RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
+    int32_t restoreRet = RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
+    if (restoreRet != E_OK) {
+        LOGE("RestoreconRecurse failed, ret=%{public}d", restoreRet);
+    }
 #endif
     return ret;
 #else
@@ -442,6 +455,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
             doubleVersion.c_str(), newSingleVersion, isRead);
         if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
             LOGE("[L1:StorageDaemon] InitGlobalUserKeys: <<< EXIT FAILED <<< Save NEW_DOUBLE_2_SINGLE file failed");
+            StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::SaveStringToFile", START_USER_ID,
+                E_SAVE_STRING_TO_FILE_ERR, "EL1", "path=" + el0NeedRestorePath);
             return E_SAVE_KEY_TYPE_ERROR;
         }
     }
@@ -546,6 +561,7 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
     } else {
         LOGE("[L1:StorageDaemon] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
             userId, ret);
+        StorageRadar::ReportUpdateUserAuth("UpdateUseAuthWithRecoveryKey", userId, ret, "ELx", "recovery_key");
     }
     return ret;
 #else
@@ -749,7 +765,11 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
             ret);
         return E_KEY_TYPE_INVALID;
     }
-    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    if (ret != E_OK) {
+        StorageRadar::ReportUserKeyResult("PrepareUserDirsAndUpdateAuth4Nato::DestroyUserDirs", userId, ret,
+            std::to_string(type), "DestroyUserDirs failed, flags =" + std::to_string(flags));
+    }
     ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] PrepareUserDirsAndUpdateAuth4Nato: <<< EXIT FAILED <<< PrepareUserDirs"
@@ -817,6 +837,9 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId,
     LOGI("[L1:StorageDaemon] enter:");
     ret = KeyManager::GetInstance().GenerateUserKeyByType(userId, type, token, secret);
     if (ret != E_OK) {
+        std::string extraData = std::string("userId=") + std::to_string(userId) + ", type=" + std::to_string(type);
+        StorageRadar::ReportUserKeyResult("GenerateKeyAndPrepareUserDirs", userId, ret,
+            "", extraData);
         LOGE("[L1:StorageDaemon] GenerateKeyAndPrepareUserDirs: <<< EXIT FAILED <<< GenerateUserKeyByType"
             "userId=%{public}u, type=%{public}u, ret=%{public}d", userId, type, ret);
         return ret;
@@ -839,7 +862,11 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId,
 #endif
         return ret;
     }
-    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    if (ret != E_OK) {
+        StorageRadar::ReportUserKeyResult("GenerateKeyAndPrepareUserDirs::DestroyUserDirs", userId, ret,
+            std::to_string(type), "DestroyUserDirs failed, flags =" + std::to_string(flags));
+    }
     ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] GenerateKeyAndPrepareUserDirs: <<< EXIT FAILED <<< PrepareUserDirs"
@@ -978,6 +1005,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
 #endif
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] ActiveUserKey: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d", userId, ret);
+        StorageRadar::ReportUserKeyResult("ActiveUserKey", userId, ret, "",
+            "ActiveUserKey4Update/4Single failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
         return ret;
     }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
@@ -989,6 +1018,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     if (result != E_OK) {
         LOGE("[L1:StorageDaemon] ActiveUserKey: KeyManagerExt ActiveUserKey failed, "
             "userId=%{public}u, ret=%{public}d", userId, result);
+        StorageRadar::ReportUserKeyResult("ActiveUserKey::KeyManagerExt", userId, result, "",
+            "KeyManagerExt ActiveUserKey failed, userId=" + std::to_string(userId) +
+            ", ret=" + std::to_string(result));
     }
 #endif
     LOGI("[L1:StorageDaemon] ActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
@@ -1253,25 +1285,50 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 {
     LOGI("[L1:StorageDaemon] RestoreconElX: >>> ENTER <<< userId=%{public}d", userId);
 #ifdef USE_LIBRESTORECON
-    RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
+    int32_t ret = RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
+    if (ret != E_OK) {
+        LOGE("RestoreconRecurse el2 public failed, ret=%{public}d", ret);
+        StorageRadar::ReportUserKeyResult("RestoreconElX::RestoreconRecurse", userId, ret, "EL2",
+            "path=" + std::string(DATA_SERVICE_EL2) + "public");
+    }
     const std::string &path = std::string(DATA_SERVICE_EL2) + std::to_string(userId);
     LOGI("[L1:StorageDaemon] RestoreconRecurse el2 public end, userId = %{public}d", userId);
     UserManager::GetInstance().RestoreconSystemServiceDirs(userId);
     LOGI("[L1:StorageDaemon] RestoreconSystemServiceDirs el2 end, userId = %{public}d", userId);
-    RestoreconRecurse((std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share").c_str());
+    ret = RestoreconRecurse((std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share").c_str());
+    if (ret != E_OK) {
+        LOGE("RestoreconRecurse el2 share failed, ret=%{public}d", ret);
+        StorageRadar::ReportUserKeyResult("RestoreconElX::RestoreconRecurse", userId, ret, "EL2",
+            "path=" + std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share");
+    }
     LOGI("[L1:StorageDaemon] RestoreconRecurse el2 share end, userId = %{public}d", userId);
     const std::string &DATA_SERVICE_EL2_HMDFS = std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/hmdfs/";
-    Restorecon(DATA_SERVICE_EL2_HMDFS.c_str());
+    ret = Restorecon(DATA_SERVICE_EL2_HMDFS.c_str());
+    if (ret != E_OK) {
+        LOGE("Restorecon el2 DATA_SERVICE_EL2_HMDFS failed, ret=%{public}d", ret);
+        StorageRadar::ReportUserKeyResult("RestoreconElX::Restorecon", userId, ret, "EL2",
+            "path=" + DATA_SERVICE_EL2_HMDFS);
+    }
     LOGI("[L1:StorageDaemon] Restorecon el2 DATA_SERVICE_EL2_HMDFS end, userId = %{public}d", userId);
     const std::string &ACCOUNT_FILES = "/hmdfs/account/files/";
     const std::string &EL2_HMDFS_ACCOUNT_FILES = std::string(DATA_SERVICE_EL2) + std::to_string(userId) +
         ACCOUNT_FILES;
-    Restorecon(EL2_HMDFS_ACCOUNT_FILES.c_str());
+    ret = Restorecon(EL2_HMDFS_ACCOUNT_FILES.c_str());
+    if (ret != E_OK) {
+        LOGE("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES failed, ret=%{public}d", ret);
+        StorageRadar::ReportUserKeyResult("RestoreconElX::Restorecon", userId, ret, "EL2",
+            "path=" + EL2_HMDFS_ACCOUNT_FILES);
+    }
     LOGI("[L1:StorageDaemon] Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES end, userId = %{public}d", userId);
     const std::string &FILES_RECENT = "/hmdfs/account/files/.Recent";
     const std::string &EL2_HMDFS_ACCOUNT_FILES_RECENT = std::string(DATA_SERVICE_EL2) + std::to_string(userId) +
         FILES_RECENT;
-    Restorecon(EL2_HMDFS_ACCOUNT_FILES_RECENT.c_str());
+    ret = Restorecon(EL2_HMDFS_ACCOUNT_FILES_RECENT.c_str());
+    if (ret != E_OK) {
+        LOGE("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES_RECENT failed, ret=%{public}d", ret);
+        StorageRadar::ReportUserKeyResult("RestoreconElX::Restorecon", userId, ret, "EL2",
+            "path=" + EL2_HMDFS_ACCOUNT_FILES_RECENT);
+    }
     LOGI("[L1:StorageDaemon] Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES_RECENT end, "
         "userId = %{public}d", userId);
 #endif

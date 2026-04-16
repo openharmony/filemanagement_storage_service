@@ -140,7 +140,8 @@ public:
     static void ReportStorageUsage(enum BizStage stage, const std::string &extraData);
     static void ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId);
-    static void ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId);
+    static void ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
+        const std::string &extraData);
     static void ReportTEEClientResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,

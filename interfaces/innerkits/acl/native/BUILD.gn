@@ -24,7 +24,6 @@ config("private_config") {
     "${storage_manager_path}/include",
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 }
 
@@ -42,8 +41,6 @@ ohos_shared_library("storage_manager_acl") {
   sources = [
     "${storage_daemon_path}/file_sharing/src/acl.cpp",
     "${storage_daemon_path}/file_sharing/src/setacl.cpp",
-    "${storage_daemon_path}/utils/file_utils.cpp",
-    "${storage_daemon_path}/utils/storage_radar.cpp",
   ]
 
   defines = [

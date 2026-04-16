@@ -54,6 +54,7 @@ int32_t UserManager::StartUser(int32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L2:UserManager] StartUser: <<< EXIT FAILED <<< userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("StartUser", userId, err, "userId out of range");
         return err;
     }
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
@@ -284,8 +285,11 @@ int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &pa
             continue;
         }
         FileList temp{.userId = userId, .path = path};
-        if (KeyManager::GetInstance().SetDirectoryElPolicy(userId, level.second, {temp}) != E_OK) {
+        int32_t ret = KeyManager::GetInstance().SetDirectoryElPolicy(userId, level.second, {temp});
+        if (ret != E_OK) {
             LOGE("[L2:UserManager] SetElDirFscryptPolicy: <<< EXIT FAILED <<< Set user dir el1 policy error");
+            std::string extraData = "path=" + path + ",Code=" + to_string(E_SET_POLICY);
+            StorageRadar::ReportUserManager("SetElDirFscryptPolicy", userId, ret, extraData);
             return E_SET_POLICY;
         }
         LOGI("[L2:UserManager] SetElDirFscryptPolicy: <<< EXIT SUCCESS <<< userId=%{public}d, path=%{public}s",

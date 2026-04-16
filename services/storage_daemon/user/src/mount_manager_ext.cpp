@@ -88,6 +88,7 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
     if (ret != E_OK) {
         LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< FilterNotMountedPath failed, ret=%{public}d",
             ret);
+        StorageRadar::ReportUserManager("MountDisShareFile", userId, ret, "FilterNotMountedPath failed");
         return ret;
     }
     for (const auto &item: notMountPaths) {
@@ -95,6 +96,7 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
         std::string srcPath = item.second;
         if (!IsDir(srcPath)) {
             LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< src path invalid, errno=%{public}d", errno);
+            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST, "errno=" + to_string(errno));
             return E_NON_EXIST;
         }
         if (!MatchesDisSharePath(dstPath)) {
@@ -102,6 +104,7 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
             return E_NON_EXIST;
         }
         if (!IsDir(dstPath) && !MkDirRecurse(dstPath, SHARE_FILE_0771)) {
+            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST, "errno=" + to_string(errno));
             LOGE("[L2:MountManager] MountDisShareFile: mount share file, dst path mkdir failed,"
                 "errno is %{public}d", errno);
             return E_NON_EXIST;

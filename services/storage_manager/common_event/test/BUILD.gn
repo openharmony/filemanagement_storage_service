@@ -32,7 +32,6 @@ ohos_unittest("storage_common_event_subscriber_test") {
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "${storage_daemon_path}/utils/storage_radar.cpp",
   ]
 
   include_dirs = [
@@ -41,7 +40,6 @@ ohos_unittest("storage_common_event_subscriber_test") {
     "${storage_manager_path}/include",
     "${storage_manager_path}/include/storage",
     "${storage_daemon_path}/include",
-    "${storage_daemon_path}/utils",
   ]
 
   defines = [
@@ -73,6 +71,7 @@ ohos_unittest("storage_common_event_subscriber_test") {
       "hilog:libhilog",
       "hisysevent:libhisysevent",
       "hitrace:hitrace_meter",
+      "init:libbegetutil",
       "ipc:ipc_single",
       "json:nlohmann_json_static",
       "os_account:os_account_innerkits",

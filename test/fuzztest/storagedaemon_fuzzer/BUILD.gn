@@ -51,6 +51,8 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemon_fuzzer/storagedaemon_fuzzer.cpp",
   ]
 
@@ -84,6 +86,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (storage_service_cloud_fuse) {

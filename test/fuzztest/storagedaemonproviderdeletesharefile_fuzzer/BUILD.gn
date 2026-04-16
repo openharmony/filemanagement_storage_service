@@ -36,8 +36,8 @@ ohos_fuzztest("StorageDaemonProviderDeleteShareFileFuzzTest") {
   ]
   sources = [
    "${storage_daemon_path}/crypto/src/key_manager.cpp",
-    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
-    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",

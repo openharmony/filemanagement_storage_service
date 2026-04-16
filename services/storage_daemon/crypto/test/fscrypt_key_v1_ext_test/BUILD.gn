@@ -35,6 +35,7 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
@@ -44,6 +45,8 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
     "fscrypt_key_v1_ext_test.cpp",
   ]
 
@@ -58,6 +61,7 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
+    "zlib:shared_libz",
   ]
 }
 

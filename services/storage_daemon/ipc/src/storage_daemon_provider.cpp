@@ -397,12 +397,16 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::StopUser userId %{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("StopUser", userId, err, "userId out of range");
         return err;
     }
     isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("[L1:StorageDaemonProvider] StopUser end, ret is %{public}d.", ret);
-    StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "");
+    if (ret != E_OK) {
+        StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "StopUser failed");
+    }
+
     HiAudit::GetInstance().WriteEnd("StopUser", ret);
     SetUserStatistics(userId, ret != E_OK ? USER_STOP_FAIL : USER_STOP_SUCCESS);
     if (ret == E_OK) {
@@ -422,6 +426,7 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("[L1:StorageDaemonProvider] PrepareUserDirs: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("PrepareUserDirs", userId, error, "userId out of range");
         return error;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -449,6 +454,7 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("[L1:StorageDaemonProvider] DestroyUserDirs: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("DestroyUserDirs", userId, error, "userId out of range");
         return error;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -613,6 +619,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ActiveUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("ActiveUserKey", userId, error, "userId out of range");
         return error;
     }
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
@@ -640,6 +647,7 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] InactiveUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("InactiveUserKey", userId, err, "userId out of range");
         return err;
     }
     int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", INACTIVE_USER_KEY_OUT_SECONDS);
@@ -666,6 +674,7 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UpdateKeyContext userId %{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("UpdateKeyContext", userId, err, "userId out of range");
         return E_USERID_RANGE;
     }
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
@@ -717,6 +726,7 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("LockUserScreen", userId, err, "userId out of range");
         return err;
     }
     int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
@@ -758,11 +768,16 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     if (ret != E_OK) { //unlock EL3-5 failed
         LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
             userId, ret);
+        StorageService::StorageRadar::ReportUserManager("UnlockUserScreen", userId, ret,
+            "UnlockUserScreen EL3-5 failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
         return ret;
     }
     if (cbRet != E_OK) { // unlock userAppkeys failed
         LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, cbRet=%{public}d",
             userId, cbRet);
+        StorageService::StorageRadar::ReportUserManager("UnlockUserScreen", userId, cbRet,
+            "UnlockUserScreen userAppkeys failed, userId=" + std::to_string(userId) +
+            ", cbRet=" + std::to_string(cbRet));
         return cbRet;
     }
 #endif
@@ -780,6 +795,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}d out of range",
             userId);
+        StorageService::StorageRadar::ReportUserManager("GetLockScreenStatus", userId, err, "userId out of range");
         return err;
     }
     lockScreenStatus = false;
@@ -1361,11 +1377,15 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
     HiAudit::GetInstance().WriteStart("MountDisShareFile", message);
     if (userId <= 0) {
         LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d is invalid", userId);
+        StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
+            userId, "userId invalid");
         return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
         if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
             LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< shareFiles is invalid");
+            StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
+                userId, "shareFiles invalid");
             return E_PARAMS_INVALID;
         }
     }
@@ -1376,6 +1396,7 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
     } else {
         LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d",
             userId, ret);
+        StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", ret, userId, "MountManager failed");
     }
     return ret;
 }
@@ -1388,10 +1409,14 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
     HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
     if (userId <= 0) {
         LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d is invalid", userId);
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
+            userId, "userId invalid");
         return E_PARAMS_INVALID;
     }
     if (networkId.empty() || networkId.find("..") != std::string::npos) {
         LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< networkId is invalid");
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
+            userId, "networkId invalid");
         return E_PARAMS_INVALID;
     }
     int32_t ret = MountManager::GetInstance().UMountDisShareFile(userId, networkId);
@@ -1401,6 +1426,7 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
     } else {
         LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d",
             userId, ret);
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", ret, userId, "MountManager failed");
     }
     return ret;
 }

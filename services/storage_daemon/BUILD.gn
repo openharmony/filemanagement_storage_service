@@ -90,7 +90,6 @@ config("storage_daemon_config") {
     "include/utils",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_service_common_path}/hiaudit/include",
     "${storage_service_common_path}/include",
     "${target_gen_dir}",
     "${storage_daemon_path}/include/ipc",
@@ -130,8 +129,6 @@ ohos_executable("storage_daemon") {
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/storage_xcollie.cpp",
-    "${storage_service_common_path}/hiaudit/src/hi_audit.cpp",
-    "${storage_service_common_path}/hiaudit/src/zip_utils.cpp",
   ]
 
   defines = [
@@ -211,7 +208,6 @@ ohos_executable("storage_daemon") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "json:nlohmann_json_static",
-    "zlib:shared_libz"
   ]
 
   if (storage_service_user_crypto_manager) {
@@ -407,6 +403,8 @@ ohos_shared_library("storage_common_utils") {
     "utils/string_utils.cpp",
     "utils/memory_reclaim_manager.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
+    "utils/hi_audit.cpp",
+    "utils/zip_utils.cpp",
   ]
 
   external_deps = [
@@ -416,6 +414,7 @@ ohos_shared_library("storage_common_utils") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "openssl:libcrypto_shared",
+    "zlib:shared_libz"
   ]
 
   if (build_selinux) {
