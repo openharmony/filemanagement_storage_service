@@ -586,7 +586,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_001, TestSize.Le
 {
     GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_001 start";
     std::vector<UidSaInfo> vec = {
-        {1001, "sa1", 1024 * BYTES_PRE_MB},
+        {1001, "sa1", 1024},
         {2002, "sa2", 4096 * BYTES_PRE_MB},
         {3003, "sa3", 2048 * BYTES_PRE_MB},
         {4004, "sa4", 8192 * BYTES_PRE_MB}

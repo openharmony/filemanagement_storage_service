@@ -795,5 +795,100 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CollectS
     EXPECT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CollectStorageStats_WithExtBundle_002 end";
 }
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_WriteExtraData_001
+ * @tc.desc: Verify the WriteExtraData function with empty vector.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_WriteExtraData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_001 start";
+    std::ostringstream extraData;
+    std::vector<UidSaInfo> emptyVec;
+    StorageDfxReporter::GetInstance().WriteExtraData(emptyVec, extraData);
+    std::string output = extraData.str();
+    EXPECT_TRUE(output.empty());
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_WriteExtraData_002
+ * @tc.desc: Verify the WriteExtraData function with single element vector.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_WriteExtraData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_002 start";
+    std::ostringstream extraData;
+    std::vector<UidSaInfo> vec;
+    UidSaInfo info(1001, "TestService", 1024, 500);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().WriteExtraData(vec, extraData);
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+    EXPECT_NE(output.find("uid:1001"), std::string::npos);
+    EXPECT_NE(output.find("saName:TestService"), std::string::npos);
+    EXPECT_NE(output.find("size:"), std::string::npos);
+    EXPECT_NE(output.find("iNodes:500"), std::string::npos);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_WriteExtraData_003
+ * @tc.desc: Verify the WriteExtraData function with multiple elements.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_WriteExtraData_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_003 start";
+    std::ostringstream extraData;
+    std::vector<UidSaInfo> vec;
+    vec.push_back(UidSaInfo(1001, "ServiceA", 1024, 100));
+    vec.push_back(UidSaInfo(2002, "ServiceB", 2048, 200));
+    vec.push_back(UidSaInfo(3003, "ServiceC", 4096, 300));
+    StorageDfxReporter::GetInstance().WriteExtraData(vec, extraData);
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+    EXPECT_NE(output.find("uid:1001"), std::string::npos);
+    EXPECT_NE(output.find("uid:2002"), std::string::npos);
+    EXPECT_NE(output.find("uid:3003"), std::string::npos);
+    EXPECT_NE(output.find("saName:ServiceA"), std::string::npos);
+    EXPECT_NE(output.find("saName:ServiceB"), std::string::npos);
+    EXPECT_NE(output.find("saName:ServiceC"), std::string::npos);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteExtraData_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_WriteUidInfoListToExtraData_001
+ * @tc.desc: Verify the WriteUidInfoListToExtraData function when otherAppVec is not empty (line 278 branch).
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_WriteUidInfoListToExtraData_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteUidInfoListToExtraData_001 start";
+    std::ostringstream extraData;
+    AllAppVec allVec;
+    allVec.sysSaVec.push_back(UidSaInfo(1001, "SysSa", 1024, 100));
+    allVec.sysAppVec.push_back(UidSaInfo(2002, "SysApp", 2048, 200));
+    allVec.userAppVec.push_back(UidSaInfo(3003, "UserApp", 4096, 300));
+    allVec.otherAppVec.push_back(UidSaInfo(4004, "OtherApp", 8192, 400));
+    StorageDfxReporter::GetInstance().WriteUidInfoListToExtraData(allVec, extraData);
+    std::string output = extraData.str();
+    EXPECT_FALSE(output.empty());
+    EXPECT_NE(output.find("{Sa data is:}"), std::string::npos);
+    EXPECT_NE(output.find("{SysApp data is:}"), std::string::npos);
+    EXPECT_NE(output.find("{UserApp data is:}"), std::string::npos);
+    EXPECT_NE(output.find("{otherAppVec data is:}"), std::string::npos);
+    EXPECT_EQ(output.find("{otherAppVec data is null}"), std::string::npos);
+    EXPECT_NE(output.find("{uid:4004"), std::string::npos);
+    EXPECT_NE(output.find("saName:OtherApp"), std::string::npos);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteUidInfoListToExtraData_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
