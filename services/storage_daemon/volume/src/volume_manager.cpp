@@ -613,7 +613,7 @@ int32_t VolumeManager::Eject(const std::string &volId)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
-        LOGE("the volume %{public}s does not exist.",volId.c_str());
+        LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
     }
 
@@ -630,7 +630,7 @@ int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
-        LOGE("the volume %{public}s does not exist.",volId.c_str());
+        LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
     }
 

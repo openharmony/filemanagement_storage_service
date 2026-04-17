@@ -122,7 +122,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 78] void  VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
      [ipccode 79] void  Unlock([in] String volumeId, [in] String pazzword);
      [ipccode 80] void  Decrypt([in] String volumeId, [in] String pazzword);
-     [ipccode 81] void GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
-     [ipccode 81] void Eject([in] String volId);
-     [ipccode 82] void GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
+     [ipccode 81] void  GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
+     [ipccode 81] void  Eject([in] String volId);
+     [ipccode 82] void  GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
 }

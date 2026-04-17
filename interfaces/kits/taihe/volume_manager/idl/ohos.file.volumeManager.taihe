@@ -64,7 +64,7 @@ function SetVolumeDescriptionSync(uuid: String, description: String): void;
 
 @gen_async("eject")
 @gen_promise("eject")
-function ejectSync(volumeId String):void;
+function ejectSync(volumeId: String):void;
 
 @gen_async("getOpticalDriveOpsProgress")
 @gen_promise("getOpticalDriveOpsProgress")
