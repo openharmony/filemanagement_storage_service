@@ -1239,11 +1239,11 @@ int32_t StorageDaemonCommunication::Eject(const std::string &volumeId)
     LOGI("StorageDaemonCommunication::Eject start");
     int32_t err = Connect();
     if (err != E_OK) {
-        LOGI("StorageDaemonCommunication::Eject connect failed");
+        LOGE("StorageDaemonCommunication::Eject connect failed");
         return err;
     }
     if (storageDaemon_ == nullptr) {
-        LOGI("StorageDaemonCommunication::Eject service nullptr");
+        LOGE("StorageDaemonCommunication::Eject service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->Eject(volumeId);
@@ -1254,11 +1254,11 @@ int32_t StorageDaemonCommunication::GetOpticalDriveOpsProgress(const std::string
     LOGI("StorageDaemonCommunication::GetOpticalDriveOpsProgress start");
     int32_t err =Connect();
     if (err != E_OK) {
-        LOGI("StorageDaemonCommunication::GetOpticalDriveOpsProgress connect failed");
+        LOGE("StorageDaemonCommunication::GetOpticalDriveOpsProgress connect failed");
         return err;
     }
     if (storageDaemon_ == nullptr) {
-        LOGI("StorageDaemonCommunication::GetOpticalDriveOpsProgress service nullptr");
+        LOGE("StorageDaemonCommunication::GetOpticalDriveOpsProgress service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->GetOpticalDriveOpsProgress(volumeId, progress);

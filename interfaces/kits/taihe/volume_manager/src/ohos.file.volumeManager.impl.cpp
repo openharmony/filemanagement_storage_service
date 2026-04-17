@@ -195,7 +195,7 @@ void EjectSync(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
     if (volumeIdStr.empty()) {
-        LOGE("Invalid paramter, volumeIdStr is empty");
+        LOGE("Invalid parameter, volumeIdStr is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
@@ -217,7 +217,7 @@ void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
     if (volumeIdStr.empty()) {
-        LOGE("Invalid paramter, volumeIdStr is empty");
+        LOGE("Invalid parameter, volumeIdStr is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }

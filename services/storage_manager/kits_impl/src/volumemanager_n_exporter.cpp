@@ -476,8 +476,8 @@ napi_value Eject(napi_env env, napi_callback_info info)
     std::unique_ptr<char []> uuid;
     tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
+        LOGE("Eject uuid err");
         NError(E_PARAMS).ThrowErr(env);
-        LOGE("Eject volumeId err");
         return nullptr;
     }
 
@@ -522,8 +522,8 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
     std::unique_ptr<char []> uuid;
     tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
+        LOGE("GetOpticalDriveOpsProgress uuid err");
         NError(E_PARAMS).ThrowErr(env);
-        LOGE("GetOpticalDriveOpsProgress volumeId err");
         return nullptr;
     }
 

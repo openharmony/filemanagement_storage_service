@@ -1765,7 +1765,7 @@ int32_t StorageDaemonProvider::Eject(const std::string &volId)
     int32_t ret = VolumeManager::Instance().Eject(volId);
     if (ret != E_OK) {
         LOGE("Eject failed, please check ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManger::Eject", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Eject", ret);
     }
     return ret;
 #else
@@ -1784,7 +1784,7 @@ int32_t StorageDaemonProvider::GetOpticalDriveOpsProgress(const std::string &vol
     int32_t ret = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
     if (ret != E_OK) {
         LOGE("GetOpticalDriveOpsProgress failed, please check");
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManger::GetOpticalDriveOpsProgress", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::GetOpticalDriveOpsProgress", ret);
     }
     return ret;
 #else

@@ -1907,7 +1907,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     EXPECT_CALL(*libraryFuncMock_, open(_, _)).WillOnce(Return(-1));
     
     int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
 }
@@ -1924,7 +1924,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     EXPECT_CALL(*libraryFuncMock_, close(_)).WillOnce(Return(0));
     
     int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_003 end";
 }
