@@ -494,7 +494,7 @@ int32_t VolumeInfo::Eject(const std::string &volId)
     }
     if (volId != GetVolumeId()) {
         LOGE("Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
 
     int32_t err = DoEject(volId);

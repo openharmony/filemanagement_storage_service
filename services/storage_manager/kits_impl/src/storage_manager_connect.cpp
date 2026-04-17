@@ -664,7 +664,7 @@ int32_t StorageManagerConnect::GetOpticalDriveOpsProgress(const std::string &vol
         LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress::Connect error");
         return err;
     }
-    if (StorageManager_== nullptr) {
+    if (storageManager_== nullptr) {
         LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
