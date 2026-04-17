@@ -151,8 +151,8 @@ public:
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
-    int32_t Eject(const std::string volumeId);
-    int32_t GetOpticalDriveOpsProgress(const std::string volumeId, uint32_t &progress);
+    int32_t Eject(const std::string &volumeId);
+    int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

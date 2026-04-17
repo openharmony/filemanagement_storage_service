@@ -200,13 +200,13 @@ void EjectSync(::taihe::string_view volumeId)
         return;
     }
 
-    auto instacne = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instacne == nullptr) {
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
         LOGE("Get StorageMangerContect instace fialed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-    int32_t errNum = instacne-> Eject(volumeIdStr);
+    int32_t errNum = instance-> Eject(volumeIdStr);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
@@ -216,17 +216,17 @@ void EjectSync(::taihe::string_view volumeId)
 void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
-    if(volumeIdStr.empty()){
+    if (volumeIdStr.empty()) {
         LOGE("Invalid paramter, volumeIdStr is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
 
     auto progress = std::make_shared<uint32_t>(0);
-    auto instacne = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageMangerContect instacne fialed");
-       OHOS::storageManager::SetStorageTaiheError(OHOS::E_PARAMS);
+        LOGE("Get StorageMangerContect instance fialed");
+       OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
        return;
     }
     int32_t errNum = instance->GetOpticalDriveOpsProgress(volumeIdStr, *progress);

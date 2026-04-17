@@ -513,7 +513,7 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
     }
     if (volId != GetVolumeId()) {
         LOGE("GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
 
     uint32_t progressDefaultValue = 0;

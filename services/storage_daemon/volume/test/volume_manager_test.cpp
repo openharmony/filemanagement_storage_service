@@ -104,8 +104,8 @@ protected:
     int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDestroyCrypt(const std::string &volumeId) override { return E_OK; };
-    int32_t DoEject(const std::string volId) override { return E_OK; };
-    int32_t DoGetOpticalDriveOpsProgress(const std::string volId, uint32_t &progress) override { return E_OK; };
+    int32_t DoEject(const std::string &volId) override { return E_OK; };
+    int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override { return E_OK; };
 };
 }
 

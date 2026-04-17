@@ -1244,7 +1244,7 @@ int32_t StorageDaemonCommunication::Eject(const std::string &volumeId)
     }
     if (storageDaemon_ == nullptr) {
         LOGI("StorageDaemonCommunication::Eject service nullptr");
-        ret E_SERVICE_IS_NULLPTR;
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->Eject(volumeId);
 }

@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/sysmacros.h>
+#include <fstream>
 
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
@@ -1270,7 +1271,7 @@ bool ExternalVolumeInfo::IsFilePathValid(const std::string &filePath)
             LOGE("filePath has invalid prefix path");
             return false;
         }
-        pos = filePath.find(INVALID_PREFIX_PATH, pos + INVALID_PREFIX_PATH);
+        pos = filePath.find(INVALID_PREFIX_PATH, pos + INVALID_PREFIX_PATH.size());
     }
 
     pos = filePath.find(INVALID_SUFFIX_PATH);
@@ -1291,15 +1292,15 @@ int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
     string nodePath;
     if (!GetRealPath("/dev/block/" + volId, nodePath)) {
         LOGE("DoEject GetRealPath failed for volId: %{public}s", volId.c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
     if (!IsFilePathValid(nodePath)) {
         LOGE("DoEject invalid nodePath: %{public}s", nodePath.c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
     LOGI("DoEject nodePath = %{public}s", nodePath.c_str());
 
-    std::vector<std:string> output;
+    std::vector<std::string> output;
     std::vector<std::string> cmd = {"eject", "-s", nodePath};
     err = ForkExec(cmd, &output);
     if(err == E_NO_CHILD){
@@ -1347,11 +1348,11 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
     string filePath;
     if (!GetRealPath("/data/local/tmp/" + volId, filePath)) {
         LOGE("DoGetOpticalDriveOpsProgress GetRealPath failed for volId: %{public}s", volId.c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
     if (!IsFilePathValid(filePath)) {
         LOGE("DoGetOpticalDriveOpsProgress invalid filePath: %{public}s", filePath.c_str());
-        return E_PARAM_INVALID;
+        return E_PARAMS_INVALID;
     }
     LOGI("DoGetOpticalDriveOpsProgress filePath = %{public}s", filePath.c_str());
 
