@@ -522,8 +522,9 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
     int32_t err = DoGetOpticalDriveOpsProgress(volId, progressDefaultValue);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeInfo::DoGetOpticalDriveOpsProgress", err);
+    } else {
+        progress = progressDefaultValue;
     }
-    progress = progressDefaultValue;
     return err;
 }
 } // StorageDaemon
