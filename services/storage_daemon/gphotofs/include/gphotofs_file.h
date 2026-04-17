@@ -28,7 +28,7 @@ struct File {
     int tmpFd;
     std::string tmpPath;
     off_t size;
-    int mtime;
+    time_t mtime;
     int ref;
     bool changed;
     bool tmpFileCreated;
@@ -55,7 +55,10 @@ struct File {
             unlink(tmpPath.c_str());
             tmpPath.clear();
         }
-        if (camFile) gp_file_unref(camFile);
+        if (camFile) {
+            gp_file_unref(camFile);
+            camFile = nullptr;
+        }
     }
 };
 

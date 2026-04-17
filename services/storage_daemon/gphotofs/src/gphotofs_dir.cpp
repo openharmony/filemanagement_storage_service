@@ -97,37 +97,37 @@ void Dir::SetListed(bool stat)
     std::lock_guard<std::mutex> lockGuard(lock);
     listed = stat;
 }
- 
+
 bool Dir::GetListed()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     return listed;
 }
- 
+
 void Dir::SetNextOffset(int next)
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     offset = next;
 }
- 
+
 int Dir::GetNextOffset()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     return offset;
 }
- 
+
 void Dir::SetRefresh(bool stat)
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     refresh = stat;
 }
- 
+
 bool Dir::GetRefresh()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     return refresh;
 }
- 
+
 bool Dir::TryBeginLoad()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
@@ -137,25 +137,25 @@ bool Dir::TryBeginLoad()
     loading = true;
     return true;
 }
- 
+
 void Dir::EndLoad()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     loading = false;
 }
 
- void Dir::SetDirty(bool stat)
+void Dir::SetDirty(bool stat)
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     dirty = stat;
 }
- 
+
 bool Dir::GetDirty()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
     return dirty;
 }
- 
+
 void Dir::Clear()
 {
     std::lock_guard<std::mutex> lockGuard(lock);
