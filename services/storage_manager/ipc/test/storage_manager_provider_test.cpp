@@ -1838,7 +1838,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_001, TestS
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "vol-1-1";
-    g_accessTokenType = 1;
     auto ret = storageManagerProviderTest_->Eject(volumeId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 end";
@@ -1849,7 +1848,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_002, TestS
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "";
-    g_accessTokenType = 1;
     auto ret = storageManagerProviderTest_->Eject(volumeId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_002 end";
@@ -1864,6 +1862,18 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_003, TestS
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_003 end";
 }
+
+#ifdef EXTERNAL_STORAGE_MANAGER
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-1-1";
+    auto ret = storageManagerProviderTest_->Eject(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_004 end";
+}
+#endif
 
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
 {
@@ -1908,5 +1918,18 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveO
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_004 end";
 }
+
+#ifdef EXTERNAL_STORAGE_MANAGER
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-8-2";
+    uint32_t progress = 50;
+    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_004 end";
+}
+#endif
 } // namespace StorageManager
 } // namespace OHOS

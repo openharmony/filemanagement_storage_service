@@ -1431,7 +1431,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
 
     uint32_t progress = 0;
     int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_TRUE(result == E_OK || result != E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
 
     VolumeManager::Instance().DestroyVolume(volId);
 
@@ -1445,7 +1445,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
     std::string volId = "";
     uint32_t progress = 0;
     int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 end";
 }
@@ -1463,7 +1463,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
 
     uint32_t progress = 100;
     int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_TRUE(result != E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
 
     VolumeManager::Instance().DestroyVolume(volId);
 

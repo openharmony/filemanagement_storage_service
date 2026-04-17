@@ -1315,14 +1315,14 @@ int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
 int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint32_t &progress){
     std::ifstream file(filePath);
     if (!file.is_open()) {
-        LOGI("GetLatestProgressFromFile open failed");
+        LOGE("GetLatestProgressFromFile open failed");
         return E_NOT_SUPPORT;
     }
 
     std::string content;
     std::getline(file, content);
     if (file.fail()&&!file.eof()) {
-        LOGI("GetLatestProgressFromFile getline failed");
+        LOGE("GetLatestProgressFromFile getline failed");
         file.close();
         return E_NOT_SUPPORT;
     }
@@ -1331,8 +1331,8 @@ int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint
     std::istringstream iss(content);
     iss >> progress;
 
-    if (iss.fail()||!iss.eof()) {
-        LOGI("GetLatestProgressFromFile iss failed");
+    if (iss.fail()) {
+        LOGE("GetLatestProgressFromFile iss failed");
         file.close();
         return E_NOT_SUPPORT;
     }

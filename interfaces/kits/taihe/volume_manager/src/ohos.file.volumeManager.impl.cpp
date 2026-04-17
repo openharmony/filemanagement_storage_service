@@ -195,14 +195,14 @@ void EjectSync(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
     if (volumeIdStr.empty()) {
-        LOGE("Invalid paramter, volumeIdStr is empty");
+        LOGE("Invalid parameter, volumeIdStr is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageMangerContect instace fialed");
+        LOGE("Get StorageManagerContect instace failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -217,7 +217,7 @@ void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
     if (volumeIdStr.empty()) {
-        LOGE("Invalid paramter, volumeIdStr is empty");
+        LOGE("Invalid parameter, volumeIdStr is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
         return;
     }
@@ -225,7 +225,7 @@ void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
     auto progress = std::make_shared<uint32_t>(0);
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageMangerContect instance fialed");
+        LOGE("Get StorageManagerContect instance failed");
        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
        return;
     }

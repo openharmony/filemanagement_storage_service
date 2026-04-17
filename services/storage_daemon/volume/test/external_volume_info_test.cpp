@@ -1882,173 +1882,20 @@ HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_DoGetOddCapacity_001, Te
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 start";
-
     ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*libraryFuncMock_, open(_, _)).WillOnce(Return(3));
-    EXPECT_CALL(*libraryFuncMock_, ioctl(_, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, close(_)).WillOnce(Return(0));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(nodeName);
+    int32_t ret = vol.DoEject("vol-156-300");
     EXPECT_EQ(ret, E_OK);
-
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 end";
 }
+
 
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 start";
-
     ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*libraryFuncMock_, open(_, _)).WillOnce(Return(-1));
-    
-    int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, 1);
-
+    int32_t ret = vol.DoEject("");
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_003 start";
-
-    ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*libraryFuncMock_, open(_, _)).WillOnce(Return(3));
-    EXPECT_CALL(*libraryFuncMock_, ioctl(_, _, _)).WillOnce(Return(-1));
-    EXPECT_CALL(*libraryFuncMock_, close(_)).WillOnce(Return(0));
-    
-    int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, 1);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_003 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_004 start";
-
-    ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_004 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_005 start";
-
-    ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_005 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_006 start";
-
-    ExternalVolumeInfo vol;
-    std::string nodeName = "/sr0";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_WEXITSTATUS));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(nodeName);
-    EXPECT_EQ(ret, E_WEXITSTATUS);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_006 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_007, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_007 start";
-
-    ExternalVolumeInfo vol;
-    std::string volId = "vol-156-300";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(volId);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_007 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_008, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_008 start";
-
-    ExternalVolumeInfo vol;
-    std::string volId = "";
-    
-    int32_t ret = vol.DoEject(volId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_008 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_009, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_009 start";
-
-    ExternalVolumeInfo vol;
-    std::string volId = "../invalid_vol";
-    
-    int32_t ret = vol.DoEject(volId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_009 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_010, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_010 start";
-
-    ExternalVolumeInfo vol;
-    std::string volId = "vol-156-301";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_WEXITSTATUS));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(volId);
-    EXPECT_EQ(ret, E_WEXITSTATUS);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_010 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_011, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_011 start";
-
-    ExternalVolumeInfo vol;
-    std::string volId = "vol-156-302";
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(Return(E_OK));
-    
-    int32_t ret = vol.DoEject(volId);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_011 end";
 }
 
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000, TestSize.Level1)

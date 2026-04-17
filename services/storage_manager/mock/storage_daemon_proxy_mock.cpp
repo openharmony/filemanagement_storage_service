@@ -437,6 +437,7 @@ int32_t StorageDaemonProxy::Eject(const std::string &volumeId)
 
 int32_t StorageDaemonProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
 {
+    progress = 100;
     return E_OK;
 }
 } // StorageDaemon
