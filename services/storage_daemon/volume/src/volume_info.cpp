@@ -493,7 +493,8 @@ int32_t VolumeInfo::Eject(const std::string &volId)
         return E_NON_EXIST;
     }
     if (volId != GetVolumeId()) {
-        LOGE("Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
+        LOGE("Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", 
+                volId.c_str(), GetVolumeId().c_str());
         return E_PARAMS_INVALID;
     }
 
@@ -512,7 +513,8 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
         return E_NON_EXIST;
     }
     if (volId != GetVolumeId()) {
-        LOGE("GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
+        LOGE("GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", 
+                volId.c_str(), GetVolumeId().c_str());
         return E_PARAMS_INVALID;
     }
 

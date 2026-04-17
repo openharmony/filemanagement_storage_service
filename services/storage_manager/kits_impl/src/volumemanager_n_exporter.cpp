@@ -504,7 +504,8 @@ napi_value Eject(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbexec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__).Schedule(procedureName, cbexec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbexec, cbComplete).val_;
     }
 }
 
@@ -529,7 +530,8 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
     auto progress = std::make_shared<uint32_t>(0);
     std::string uuidString(uuid.get());
     auto cbexec = [uuidString, progress]() -> NError {
-        int32_t errNum =DelayedSingleton<StorageManagerConnect>::GetInstance()->GetOpticalDriveOpsProgress(uuidString, *progress);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+                            GetOpticalDriveOpsProgress(uuidString, *progress);
         LOGI("errNum return %{public}d", errNum);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -550,7 +552,8 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbexec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
-        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__).Schedule(procedureName, cbexec, cbComplete).val_;
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbexec, cbComplete).val_;
     }
 }
 } // namespace ModuleVolumeManager
