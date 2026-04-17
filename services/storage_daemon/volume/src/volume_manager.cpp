@@ -608,5 +608,39 @@ int32_t VolumeManager::Decrypt(const std::string &volumeId, const std::string &p
     }
     return E_OK;
 }
+
+int32_t VolumeManager::Eject(const std::string &volId)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.",volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->Eject(volId);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s Eject failed", volId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Eject", err);
+        return err;
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.",volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->GetOpticalDriveOpsProgress(volId, progress);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s GetOpticalDriveOpsProgress failed.", volId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::GetOpticalDriveOpsProgress", err);
+        return err;
+    }
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

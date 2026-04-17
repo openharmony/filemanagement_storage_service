@@ -104,6 +104,8 @@ protected:
     int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDestroyCrypt(const std::string &volumeId) override { return E_OK; };
+    int32_t DoEject(const std::string volId) override { return E_OK; };
+    int32_t DoGetOpticalDriveOpsProgress(const std::string volId, uint32_t &progress) override { return E_OK; };
 };
 }
 
@@ -1359,6 +1361,113 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003
     EXPECT_EQ(result, E_ERR);
     
     VolumeManager::Instance().volumes_.erase(volumeId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_001 start";
+
+    std::string volId = "vol-non-exist-eject";
+    int32_t result = VolumeManager::Instance().Eject(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_002 start";
+
+    std::string diskId = "diskId-eject-001";
+    bool isUserdata = false;
+    dev_t device = MKDEV(8, 1);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volId.empty());
+
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
+        .WillRepeatedly(Return(E_OK));
+    int32_t result = VolumeManager::Instance().Eject(volId);
+    EXPECT_EQ(result, E_OK);
+
+    VolumeManager::Instance().DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_003 start";
+
+    std::string volId = "";
+    int32_t result = VolumeManager::Instance().Eject(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_001 start";
+
+    std::string volId = "vol-non-exist-progress";
+    uint32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_001 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 start";
+
+    std::string diskId = "diskId-progress-001";
+    bool isUserdata = false;
+    dev_t device = MKDEV(8, 2);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volId.empty());
+
+    uint32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_TRUE(result == E_OK || result != E_NON_EXIST);
+
+    VolumeManager::Instance().DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 start";
+
+    std::string volId = "";
+    uint32_t progress = 0;
+    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004 start";
+
+    std::string diskId = "diskId-progress-002";
+    bool isUserdata = false;
+    dev_t device = MKDEV(8, 3);
+    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volId.empty());
+
+    uint32_t progress = 100;
+    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_TRUE(result != E_NON_EXIST);
+
+    VolumeManager::Instance().DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

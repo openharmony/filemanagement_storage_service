@@ -50,6 +50,8 @@ public:
     void NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
     void NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr);
 
+    int32_t Eject(const std::string &volumeId);
+    int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
 private:
     VolumeManagerService();
     ~VolumeManagerService();

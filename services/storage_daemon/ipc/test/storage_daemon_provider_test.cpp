@@ -2465,13 +2465,100 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOddCapacity_002
     std::string volumeId = "";
     int64_t totalSize = 0;
     int64_t freeSize = 0;
-    
+
     auto ret = storageDaemonProviderTest_->GetOddCapacity(volumeId, totalSize, freeSize);
 #ifdef EXTERNAL_STORAGE_MANAGER
     EXPECT_NE(ret, E_OK);
 #else
     EXPECT_EQ(ret, E_OK);
 #endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_001 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "vol-eject-001";
+    auto ret = storageDaemonProviderTest_->Eject(volId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_002 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "";
+    auto ret = storageDaemonProviderTest_->Eject(volId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_003 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "invalid_volume_id_not_exist";
+    auto ret = storageDaemonProviderTest_->Eject(volId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_003 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_001 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "vol-optical-001";
+    uint32_t progress = 0;
+    autopoint ret = storageDaemonProviderTest_->GetOpticalDriveOpsProgress(volId, progress);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOpsProgress_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_002 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "";
+    uint32_t progress = 0;
+    autopoint ret = storageDaemonProviderTest_->GetOpticalDriveOpsProgress(volId, progress);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOpsProgress_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_003 start";
+    ASSER_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "invalid_volume_id_not_exist";
+    uint32_t progress = 50;
+    autopoint ret = storageDaemonProviderTest_->GetOpticalDriveOpsProgress(volId, progress);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_003 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

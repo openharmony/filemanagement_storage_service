@@ -605,5 +605,29 @@ void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const bool 
     }
     volumeMap_.erase(id);
 }
+
+int32_t VolumeManagerService::Eject(const std::string &volumeId)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("Eject sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    int32_t result =sdCommunication->Eject(volumeId);
+    return result;
+}
+
+int32_t VolumeManagerService::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("GetOpticalDriveOpsProgress sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    int32_t result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
+    return result;
+}
 } // StorageManager
 } // OHOS

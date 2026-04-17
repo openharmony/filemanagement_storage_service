@@ -485,5 +485,44 @@ int32_t VolumeInfo::Decrypt(const std::string &volumeId, const std::string &pazz
     }
     return E_OK;
 }
+
+int32_t VolumeInfo::Eject(const std::string &volId)
+{
+    if (volId.empty()) {
+        LOGE("Eject volId is empty");
+        return E_NON_EXIST;
+    }
+    if (volId != GetVolumeId()) {
+        LOGE("Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
+        return E_PARAM_INVALID;
+    }
+
+    int32_t err = DoEject(volId);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Doeject", err);
+        LOGE("VolumeInfo::DoEject failed, err: %{public}d", err);
+    }
+    return err;
+}
+
+int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+    if (volId.empty()) {
+        LOGE("GetOpticalDriveOpsProgress volId is empty");
+        return E_NON_EXIST;
+    }
+    if (volId != GetVolumeId()) {
+        LOGE("GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", volId.c_str(), GetVolumeId().c_str());
+        return E_PARAM_INVALID;
+    }
+
+    uint32_t progressDefaultValue = 0;
+    int32_t err = DoGetOpticalDriveOpsProgress(volId, progressDefaultValue);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoGetOpticalDriveOpsProgress", err);
+    }
+    progress = progressDefaultValue;
+    return err;
+}
 } // StorageDaemon
 } // OHOS

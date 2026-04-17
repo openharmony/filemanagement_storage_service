@@ -522,5 +522,74 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundle
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCurrentBundleInodes_001 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-1-1";
+    g_accessTokenType = 1;
+    auto ret = storageManagerProviderTest_->Eject(volumeId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "";
+    g_accessTokenType = 1;
+    auto ret = storageManagerProviderTest_->Eject(volumeId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-non-exist";
+    g_accessTokenType = 0;
+    auto ret = storageManagerProviderTest_->Eject(volumeId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_003 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-1-1";
+    uint32_t progress = 100;
+    g_accessTokenType = 1;
+    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "";
+    uint32_t progress = 100;
+    g_accessTokenType = 1;
+    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-non-exist";
+    uint32_t progress = 100;
+    g_accessTokenType = 1;
+    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_003 end";
+}
 }
 }

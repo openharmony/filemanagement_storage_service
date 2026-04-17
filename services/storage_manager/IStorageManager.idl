@@ -142,4 +142,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 100] void VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
     [ipccode 101] void Unlock([in] String volumeId, [in] String pazzword);
     [ipccode 102] void Decrypt([in] String volumeId, [in] String pazzword);
+    [ipccode 103] void Eject([in] String volId);
+    [ipccode 104] void GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
 }

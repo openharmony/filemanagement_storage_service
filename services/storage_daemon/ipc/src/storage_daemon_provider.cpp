@@ -1753,5 +1753,43 @@ int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64
     return E_OK;
 #endif
 }
+
+int32_t StorageDaemonProvider::Eject(const std::string &volId)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGE("Handle Eject");
+    if (volId.empty()) {
+        LOGE("Eject volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().Eject(volId);
+    if (ret != E_OK) {
+        LOGE("Eject failed, please check ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManger::Eject", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle GetOpticalDriveOpsProgress");
+    if (volId.empty()) {
+        LOGE("GetOpticalDriveOpsProgress volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    if (ret != E_OK) {
+        LOGE("GetOpticalDriveOpsProgress failed, please check");
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManger::GetOpticalDriveOpsProgress", ret);
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

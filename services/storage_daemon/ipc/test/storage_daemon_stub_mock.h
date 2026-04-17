@@ -112,6 +112,8 @@ public:
     MOCK_METHOD2(VerifyCryptPasswd, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Unlock, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Decrypt, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD1(Eject, int32_t(const std::string &));
+    MOCK_METHOD2(GetOpticalDriveOpsProgress, int32_t(const std::string &, uint32_t &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS
