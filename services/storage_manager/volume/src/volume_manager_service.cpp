@@ -338,18 +338,7 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
     }
     volumePtr->SetState(VolumeState::EJECTING);
 
-    // Get and save freeSize before unmount
-    int64_t freeSize = 0;
-    auto &statusService = VolumeStorageStatusService::GetInstance();
-    int32_t ret = statusService.GetFreeSizeOfVolume(volumePtr->GetUuid(), freeSize);
-    if (ret == E_OK) {
-        volumePtr->SetFreeSize(freeSize);
-        LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
-            (long long)freeSize, volumePtr->GetId().c_str());
-    } else {
-        LOGW("Unmount: failed to get freeSize for volumeId=%{public}s, ret=%{public}d",
-            volumePtr->GetId().c_str(), ret);
-    }
+    SaveVolumeFreeSize(volumePtr);
 
     int32_t result = sdCommunication->Unmount(volumeId);
     if (result == E_OK) {
@@ -359,6 +348,21 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         volumePtr->SetState(VolumeState::MOUNTED);
     }
     return result;
+}
+
+void VolumeManagerService::SaveVolumeFreeSize(std::shared_ptr<VolumeExternal> volume)
+{
+    int64_t freeSize = 0;
+    auto &statusService = VolumeStorageStatusService::GetInstance();
+    int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
+    if (ret == E_OK) {
+        volume->SetFreeSize(freeSize);
+        LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
+            (long long)freeSize, volume->GetId().c_str());
+    } else {
+        LOGW("Unmount: failed to get freeSize for volumeId=%{public}s, ret=%{public}d",
+            volume->GetId().c_str(), ret);
+    }
 }
 
 int32_t VolumeManagerService::TryToFix(std::string volumeId)
