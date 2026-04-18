@@ -172,7 +172,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
             "actual=%{public}u", path.c_str(), size, length);
         StorageService::StorageRadar::ReportUserKeyResult("LoadKeyBlob", 0, E_LOAD_KEY_BLOB_ERROR, "",
             "file size error, path=" + path + ", expected=" + std::to_string(size) +
-            ",real=" + std::to_string(length));
+            ",real len=" + std::to_string(length));
         return false;
     }
     if (!blob.Alloc(length)) {
