@@ -264,8 +264,8 @@ void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t re
         .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
         .keyElxLevel = "EL5",
         .errorCode = ret,
-        .toCallPkg = "el5_file_key_manager",
-        .extraData = extraData
+        .extraData = extraData,
+        .toCallPkg = "el5_file_key_manager"
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }

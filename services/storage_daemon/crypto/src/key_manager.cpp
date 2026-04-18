@@ -2268,7 +2268,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     int32_t getElxKeyPathRet = getElxKeyPath(user, type, eceSeceKeyPath);
     if (getElxKeyPathRet != 0) {
         LOGE("[L3:KeyManager] SetDirectoryElPolicy: failed to get ece/sece key path");
-        StorageRadar::ReportUpdateUserAuth("SetDirectoryElPolicy::getElxKeyPath", user, ENOENT, "EL" +
+        StorageRadar::ReportUpdateUserAuth("SetDirectoryElPolicy::getElxKeyPath", user, -ENOENT, "EL" +
             std::to_string(type), "getElxKeyPath ret =" + std::to_string(getElxKeyPathRet));
         return -ENOENT;
     }
