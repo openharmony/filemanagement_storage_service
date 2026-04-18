@@ -99,7 +99,6 @@ ohos_unittest("storage_manager_provider_test") {
     "cJSON:cjson",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
- 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -197,7 +196,6 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "cJSON:cjson",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
- 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -325,7 +323,6 @@ sources = [
     "cJSON:cjson",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
- 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -427,7 +424,6 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "cJSON:cjson",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
- 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -528,7 +524,6 @@ ohos_unittest("storage_manager_provider_other_test") {
     "samgr:samgr_proxy",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
-    "samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
