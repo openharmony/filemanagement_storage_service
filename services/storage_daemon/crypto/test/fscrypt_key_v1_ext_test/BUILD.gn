@@ -62,6 +62,8 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+    "samgr:samgr_proxy"
   ]
 }
 

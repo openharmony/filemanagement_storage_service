@@ -23,6 +23,8 @@
 #include <memory>
 #include <sstream>
 
+#include "res_type.h"
+#include "res_sched_client.h"
 #include "securec.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
@@ -32,6 +34,8 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
+static constexpr int32_t THREAD_QOS_HIGH_LEVEL = 7; // 设置 qos 7 优先级41
+static constexpr int32_t THREAD_QOS_LOW_LEVEL = -1; // 取消 qos 7
 static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
