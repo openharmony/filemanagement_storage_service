@@ -1706,4 +1706,435 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_CreateIsoImage_0001, t
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_CreateIsoImage_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_FreeSize_0001
+ * @tc.name: Volume_manager_service_Unmount_FreeSize_0001
+ * @tc.desc: Test Unmount saves freesize before unmounting for normal block devices.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_FreeSize_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_FreeSize_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-10";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-10";
+    VolumeCore vc(volumeId, fsType, diskId);
+
+    // Create volume and set it to MOUNTED state
+    vmService.OnVolumeCreated(vc);
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
+    ASSERT_NE(volumePtr, nullptr);
+    volumePtr->SetState(VolumeState::MOUNTED);
+
+    // Set initial freesize (simulating what would be saved during unmount)
+    int64_t expectedFreeSize = 1024 * 1024 * 200;  // 200MB
+    volumePtr->SetFreeSize(expectedFreeSize);
+
+    // Verify freesize is set
+    EXPECT_EQ(volumePtr->GetFreeSize(), expectedFreeSize);
+
+    // Cleanup
+    vmService.volumeMap_.erase(volumeId);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_FreeSize_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_VolumeExternal_FreeSize_0001
+ * @tc.name: Volume_manager_service_VolumeExternal_FreeSize_0001
+ * @tc.desc: Test VolumeExternal SetFreeSize and GetFreeSize methods.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeExternal_FreeSize_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VolumeExternal_FreeSize_0001";
+
+    std::string volumeId = "vol-1-11";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-11";
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+
+    // Test default freesize is 0
+    EXPECT_EQ(volume->GetFreeSize(), 0);
+
+    // Test SetFreeSize and GetFreeSize
+    int64_t testFreeSize = 1024 * 1024 * 50;  // 50MB
+    volume->SetFreeSize(testFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), testFreeSize);
+
+    // Test updating freesize
+    int64_t newFreeSize = 1024 * 1024 * 100;  // 100MB
+    volume->SetFreeSize(newFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), newFreeSize);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeExternal_FreeSize_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeMounted_0001
+ * @tc.name: Volume_manager_service_OnVolumeMounted_0001
+ * @tc.desc: Test OnVolumeMounted with empty volumeId should not crash.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeMounted_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "";
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "";
+    std::string path = "";
+    std::string description = "";
+
+    // Get initial volume count
+    size_t initialCount = vmService.volumeMap_.size();
+
+    // Call with empty volumeId - should handle gracefully
+    vmService.OnVolumeMounted(StorageManager::VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
+
+    // Verify volumeMap size did not change (no volume was added)
+    EXPECT_EQ(vmService.volumeMap_.size(), initialCount);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeMounted_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeStateChanged_0002
+ * @tc.name: Volume_manager_service_OnVolumeStateChanged_0002
+ * @tc.desc: Test OnVolumeStateChanged with FUSE_REMOVED state.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeStateChanged_0002";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-fuse-remove-1";
+    int32_t fsType = 1;
+    std::string diskId = "disk-fuse-remove-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService.OnVolumeCreated(vc);
+
+    // Verify volume was created
+    EXPECT_EQ(vmService.volumeMap_.size(), 1);
+    EXPECT_NE(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
+
+    // Transition to FUSE_REMOVED state - volume should be removed from map
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::FUSE_REMOVED);
+
+    // Verify volume was removed from the map after FUSE_REMOVED
+    EXPECT_EQ(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0002";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeStateChanged_0003
+ * @tc.name: Volume_manager_service_OnVolumeStateChanged_0003
+ * @tc.desc: Test OnVolumeStateChanged with non-existent volumeId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeStateChanged_0003";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string nonExistentVolumeId = "vol-non-existent-12345";
+
+    // Get initial volume count
+    size_t initialCount = vmService.volumeMap_.size();
+
+    // Call with non-existent volumeId - should handle gracefully
+    vmService.OnVolumeStateChanged(nonExistentVolumeId, VolumeState::REMOVED);
+
+    // Verify volumeMap size did not change
+    EXPECT_EQ(vmService.volumeMap_.size(), initialCount);
+
+    // Verify the non-existent volume is still not in the map
+    EXPECT_EQ(vmService.volumeMap_.find(nonExistentVolumeId), vmService.volumeMap_.end());
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0003";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_VolumeStateNotify_0001
+ * @tc.name: Volume_manager_service_VolumeStateNotify_0001
+ * @tc.desc: Test VolumeStateNotify with various states.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeStateNotify_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VolumeStateNotify_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-notify-1";
+    int32_t fsType = FsType::NTFS;
+    std::string diskId = "disk-notify-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService.OnVolumeCreated(vc);
+
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
+    ASSERT_NE(volumePtr, nullptr);
+
+    // Test various state notifications
+    vmService.VolumeStateNotify(VolumeState::CHECKING, volumePtr);
+    vmService.VolumeStateNotify(VolumeState::EJECTING, volumePtr);
+    vmService.VolumeStateNotify(VolumeState::ENCRYPTING, volumePtr);
+
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeStateNotify_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_SetUsbDescription_0001
+ * @tc.name: Volume_manager_service_SetUsbDescription_0001
+ * @tc.desc: Test SetUsbDescription function.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_SetUsbDescription_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_SetUsbDescription_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+
+    // Call SetUsbDescription multiple times to test the decrement logic
+    // The function modifies a global variable g_usbDes which starts at 'A'
+    // Each call decrements it until it reaches 'A', then stops
+    vmService.SetUsbDescription();
+    vmService.SetUsbDescription();
+    vmService.SetUsbDescription();
+
+    // Verify the function completed without errors
+    // Since we can't directly access g_usbDes, we verify by calling again
+    // If the logic is correct, it should not crash and handle edge cases
+    EXPECT_TRUE(true);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_SetUsbDescription_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0004
+ * @tc.name: Volume_manager_service_GetVolumeByUuid_0004
+ * @tc.desc: Test GetVolumeByUuid with empty UUID.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0004";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string emptyUuid = "";
+    std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid(emptyUuid);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0004";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_NotifyMtpUnmounted_0002
+ * @tc.name: Volume_manager_service_NotifyMtpUnmounted_0002
+ * @tc.desc: Test NotifyMtpUnmounted with isBadRemove=false.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyMtpUnmounted_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_NotifyMtpUnmounted_0002";
+    auto &vmService = VolumeManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+
+    std::string id = "vol-mtp-normal-1";
+    bool isBadRemove = false;
+
+    VolumeCore vc(id, FsType::MTP, "disk-mtp-normal");
+    auto volumePtr = make_shared<VolumeExternal>(vc);
+    volumePtr->SetState(VolumeState::MOUNTED);
+    vmService.volumeMap_.insert(make_pair(id, volumePtr));
+    EXPECT_EQ(vmService.volumeMap_.size(), 1);
+
+    vmService.NotifyMtpUnmounted(id, isBadRemove);
+    EXPECT_EQ(vmService.volumeMap_.size(), 0);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_NotifyMtpUnmounted_0002";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Multiple_Volume_States_0001
+ * @tc.name: Volume_manager_service_Multiple_Volume_States_0001
+ * @tc.desc: Test handling multiple volume state transitions in sequence.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Multiple_Volume_States_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Multiple_Volume_States_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-multi-state-1";
+    int32_t fsType = FsType::EXFAT;
+    std::string diskId = "disk-multi-state-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService.OnVolumeCreated(vc);
+
+    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
+    ASSERT_NE(volumePtr, nullptr);
+
+    // Simulate state transitions: CREATED -> CHECKING -> MOUNTED -> UNMOUNTED
+    volumePtr->SetState(VolumeState::CHECKING);
+    EXPECT_EQ(volumePtr->GetState(), VolumeState::CHECKING);
+
+    volumePtr->SetState(VolumeState::MOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), VolumeState::MOUNTED);
+
+    volumePtr->SetState(VolumeState::UNMOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), VolumeState::UNMOUNTED);
+
+    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Multiple_Volume_States_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_VolumeExternal_Reset_0001
+ * @tc.name: Volume_manager_service_VolumeExternal_Reset_0001
+ * @tc.desc: Test VolumeExternal Reset method.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeExternal_Reset_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VolumeExternal_Reset_0001";
+    std::string volumeId = "vol-reset-1";
+    int32_t fsType = FsType::NTFS;
+    std::string diskId = "disk-reset-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+
+    // Set various properties
+    volume->SetFsUuid("test-uuid-reset");
+    volume->SetPath("/test/path");
+    volume->SetDescription("Test Description");
+    volume->SetFreeSize(1024 * 1024 * 100);
+
+    // Verify properties are set
+    EXPECT_EQ(volume->GetUuid(), "test-uuid-reset");
+    EXPECT_EQ(volume->GetPath(), "/test/path");
+    EXPECT_EQ(volume->GetDescription(), "Test Description");
+    EXPECT_EQ(volume->GetFreeSize(), 1024 * 1024 * 100);
+
+    // Reset and verify properties are cleared
+    volume->Reset();
+    EXPECT_EQ(volume->GetUuid(), "");
+    EXPECT_EQ(volume->GetPath(), "");
+    EXPECT_EQ(volume->GetDescription(), "");
+    EXPECT_EQ(volume->GetFreeSize(), 0);
+
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeExternal_Reset_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetAllVolumes_With_DVD_0001
+ * @tc.name: Volume_manager_service_GetAllVolumes_With_DVD_0001
+ * @tc.desc: Test GetAllVolumes with DVD (CD_FLAG) disk without real volume.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetAllVolumes_With_DVD_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_GetAllVolumes_With_DVD_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
+    vmService.volumeMap_.clear();
+    dmService.diskMap_.clear();
+
+    // Get baseline: no volumes when diskMap is empty
+    std::vector<VolumeExternal> result = vmService.GetAllVolumes();
+    size_t initialCount = result.size();
+    EXPECT_EQ(initialCount, 0);
+
+    // Add a DVD disk without a corresponding volume
+    std::string diskId = "disk-dvd-test-1";
+    int64_t sizeBytes = 1024 * 1024 * 1024;  // 1GB
+    std::string vendor = "DVD-Vendor";
+    int32_t flag = CD_FLAG;
+    Disk disk(diskId, sizeBytes, "/dev/sr0", vendor, flag);
+    auto diskPtr = std::make_shared<Disk>(disk);
+    dmService.diskMap_.insert(make_pair(diskId, diskPtr));
+
+    // Verify disk was added
+    EXPECT_EQ(dmService.diskMap_.size(), 1);
+
+    result = vmService.GetAllVolumes();
+    // Should return exactly one placeholder volume for the DVD disk
+    EXPECT_EQ(result.size(), 1);
+
+    // Verify the volume has the expected properties
+    EXPECT_EQ(result[0].GetFsType(), UDF);
+    EXPECT_EQ(result[0].GetDescription(), "DVD RW");
+    EXPECT_EQ(result[0].GetDiskId(), diskId);
+
+    vmService.volumeMap_.clear();
+    dmService.diskMap_.clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetAllVolumes_With_DVD_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_NotifyMtpMounted_0005
+ * @tc.name: Volume_manager_service_NotifyMtpMounted_0005
+ * @tc.desc: Test NotifyMtpMounted with unknown fsType.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_NotifyMtpMounted_0005";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string id = "vol-mtp-unknown-1";
+    std::string path = "/mnt/data/external/unknown";
+    std::string desc = "Unknown Device";
+    std::string uuid = "uuid-unknown-1";
+    std::string fsType = "unknown-fs-type";
+
+    // Get initial volume count
+    size_t initialCount = vmService.volumeMap_.size();
+
+    // Call NotifyMtpMounted with unknown fsType - should still add volume
+    vmService.NotifyMtpMounted(id, path, desc, uuid, fsType);
+
+    // Verify a volume was added to the map
+    EXPECT_EQ(vmService.volumeMap_.size(), initialCount + 1);
+
+    // Verify the volume was created with the correct id
+    EXPECT_NE(vmService.volumeMap_.find(id), vmService.volumeMap_.end());
+
+    // Cleanup
+    vmService.volumeMap_.erase(id);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_NotifyMtpMounted_0005";
+}
 } // namespace

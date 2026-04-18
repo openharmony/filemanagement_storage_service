@@ -31,6 +31,7 @@
 #include "utils/disk_utils.h"
 #include "utils/string_utils.h"
 #include "volume/notification.h"
+#include "storage/volume_storage_status_service.h"
 
 using namespace std;
 using namespace OHOS::StorageService;
@@ -336,6 +337,20 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         return E_PARAMS_NULLPTR_ERR;
     }
     volumePtr->SetState(VolumeState::EJECTING);
+
+    // Get and save freeSize before unmount
+    int64_t freeSize = 0;
+    auto &statusService = VolumeStorageStatusService::GetInstance();
+    int32_t ret = statusService.GetFreeSizeOfVolume(volumePtr->GetUuid(), freeSize);
+    if (ret == E_OK) {
+        volumePtr->SetFreeSize(freeSize);
+        LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
+            (long long)freeSize, volumePtr->GetId().c_str());
+    } else {
+        LOGW("Unmount: failed to get freeSize for volumeId=%{public}s, ret=%{public}d",
+            volumePtr->GetId().c_str(), ret);
+    }
+
     int32_t result = sdCommunication->Unmount(volumeId);
     if (result == E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);

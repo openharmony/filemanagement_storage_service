@@ -47,6 +47,11 @@ void VolumeExternal::SetDescription(const std::string &description)
     description_ = description;
 }
 
+void VolumeExternal::SetFreeSize(int64_t freeSize)
+{
+    freeSize_ = freeSize;
+}
+
 int32_t VolumeExternal::GetFlags() const
 {
     return flags_;
@@ -79,6 +84,11 @@ std::string VolumeExternal::GetPath() const
 std::string VolumeExternal::GetDescription() const
 {
     return description_;
+}
+
+int64_t VolumeExternal::GetFreeSize() const
+{
+    return freeSize_;
 }
 
 int32_t VolumeExternal::GetFsTypeByStr(const std::string &fsTypeStr) const
@@ -122,6 +132,10 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
         return false;
     }
 
+    if (!parcel.WriteInt64(freeSize_)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -137,6 +151,7 @@ VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
     obj->fsUuid_ = parcel.ReadString();
     obj->path_ = parcel.ReadString();
     obj->description_ = parcel.ReadString();
+    obj->freeSize_ = parcel.ReadInt64();
     return obj;
 }
 }

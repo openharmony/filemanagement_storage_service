@@ -53,6 +53,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     volumeexternal.SetPath(path);
     volumeexternal.SetDescription(description);
     volumeexternal.SetFlags(flags);
+    volumeexternal.SetFreeSize(1024 * 1024 * 100);  // 100MB
     auto result1 = volumeexternal.GetFsType();
     EXPECT_EQ(result1, fsType);
     auto result2 = volumeexternal.GetUuid();
@@ -64,6 +65,9 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
 
     auto result5 = volumeexternal.GetFsTypeString();
     EXPECT_EQ(result5, FS_TYPE_MAP[fsType]);
+
+    auto result8 = volumeexternal.GetFreeSize();
+    EXPECT_EQ(result8, 1024 * 1024 * 100);
 
     volumeexternal.SetFsType(FsType::UNDEFINED);
     auto result6 = volumeexternal.GetFsTypeString();
@@ -103,6 +107,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     volumeexternal.SetFsUuid(fsUuid);
     volumeexternal.SetPath(path);
     volumeexternal.SetDescription(description);
+    volumeexternal.SetFreeSize(2048 * 1024);  // 2MB
     auto result = volumeexternal.Marshalling(parcel);
     GTEST_LOG_(INFO) << parcel.ReadInt32();
     GTEST_LOG_(INFO) << parcel.ReadInt32();
@@ -115,6 +120,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     EXPECT_EQ(parcel.ReadString(), fsUuid);
     EXPECT_EQ(parcel.ReadString(), path);
     EXPECT_EQ(parcel.ReadString(), description);
+    EXPECT_EQ(parcel.ReadInt64(), 2048 * 1024);  // Verify freeSize in parcel
     EXPECT_EQ(result, true);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Marshalling_0000";
 }
@@ -142,6 +148,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     std::string fsUuid = "300";
     std::string path = "/";
     std::string description = "";
+    int64_t freeSize = 512 * 1024;  // 512KB
     Parcel parcel;
     parcel.WriteString(id);
     parcel.WriteInt32(type);
@@ -154,6 +161,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     parcel.WriteString(fsUuid);
     parcel.WriteString(path);
     parcel.WriteString(description);
+    parcel.WriteInt64(freeSize);
     VolumeExternal volumeexternal;
     volumeexternal.SetFlags(2);
     volumeexternal.SetFsType(2);
@@ -167,6 +175,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetUuid(), fsUuid);
     EXPECT_EQ(result->GetPath(), path);
     EXPECT_EQ(result->GetDescription(), description);
+    EXPECT_EQ(result->GetFreeSize(), freeSize);  // Verify freeSize unmarshalling
     EXPECT_EQ(result->GetFsTypeString(), FS_TYPE_MAP[fsType]);
     EXPECT_EQ(result->VolumeCore::GetFsType(), fsTypeStr);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
