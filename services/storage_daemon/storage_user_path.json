@@ -5,7 +5,8 @@
           "path": "/data/service/el1/<userId>",
           "mode": "0711",
           "uid": 0,
-          "gid": 0
+          "gid": 0,
+          "options": "check_dir"
         },
         {
           "path": "/data/chipset/el1/<userId>",
@@ -17,7 +18,8 @@
             "path": "/data/app/el1/<userId>",
             "mode": "0711",
             "uid": 0,
-            "gid": 0
+            "gid": 0,
+            "options": "check_dir"
         },
         {
             "path": "/data/app/el1/<userId>/base",
@@ -45,7 +47,8 @@
             "path": "/data/service/el2/<userId>",
             "mode": "0711",
             "uid": 0,
-            "gid": 0
+            "gid": 0,
+            "options": "check_dir"
         },
         {
             "path": "/data/chipset/el2/<userId>",
@@ -57,7 +60,8 @@
               "path": "/data/app/el2/<userId>",
               "mode": "0711",
               "uid": 0,
-              "gid": 0
+              "gid": 0,
+              "options": "check_dir"
         },
         {
             "path": "/data/app/el2/<userId>/base",
@@ -79,13 +83,15 @@
             "path": "/data/service/el3/<userId>",
             "mode": "0711",
             "uid": 0,
-            "gid": 0
+            "gid": 0,
+            "options": "check_dir"
         },
         {
               "path": "/data/app/el3/<userId>",
               "mode": "0711",
               "uid": 0,
-              "gid": 0
+              "gid": 0,
+              "options": "check_dir"
         },
         {
             "path": "/data/app/el3/<userId>/base",
@@ -107,13 +113,15 @@
             "path": "/data/service/el4/<userId>",
             "mode": "0711",
             "uid": 0,
-            "gid": 0
+            "gid": 0,
+            "options": "check_dir"
         },
         {
               "path": "/data/app/el4/<userId>",
               "mode": "0711",
               "uid": 0,
-              "gid": 0
+              "gid": 0,
+              "options": "check_dir"
         },
         {
             "path": "/data/app/el4/<userId>/base",
@@ -135,13 +143,15 @@
             "path": "/data/service/el5/<userId>",
             "mode": "0711",
             "uid": 0,
-            "gid": 0
+            "gid": 0,
+            "options": "check_dir"
         },
         {
               "path": "/data/app/el5/<userId>",
               "mode": "0711",
               "uid": 0,
-              "gid": 0
+              "gid": 0,
+              "options": "check_dir"
         },
         {
             "path": "/data/app/el5/<userId>/base",
