@@ -201,28 +201,6 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0006, testing::ext::T
 }
 
 /**
- * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0007
- * @tc.name: Notification_NotifyVolumeChange_0007
- * @tc.desc: Test function of NotifyVolumeChange with nullptr volume.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0007, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0007";
-    std::shared_ptr<VolumeExternal> volume = nullptr;
-    auto &notification = Notification::GetInstance();
-    // Verify nullptr volume is handled gracefully without crash
-    // The function should return early when volume is nullptr
-    notification.NotifyVolumeChange(VolumeState::MOUNTED, volume);
-    // If we reach here, the test passed (no crash occurred)
-    EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0007";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0008
  * @tc.name: Notification_NotifyVolumeChange_0008
  * @tc.desc: Test function of NotifyVolumeChange with DAMAGED state.

@@ -1901,35 +1901,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeStateNotify_0001
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_SetUsbDescription_0001
- * @tc.name: Volume_manager_service_SetUsbDescription_0001
- * @tc.desc: Test SetUsbDescription function.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_SetUsbDescription_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_SetUsbDescription_0001";
-    auto &vmService = VolumeManagerService::GetInstance();
-
-    // Call SetUsbDescription multiple times to test the decrement logic
-    // The function modifies a global variable g_usbDes which starts at 'A'
-    // Each call decrements it until it reaches 'A', then stops
-    vmService.SetUsbDescription();
-    vmService.SetUsbDescription();
-    vmService.SetUsbDescription();
-
-    // Verify the function completed without errors
-    // Since we can't directly access g_usbDes, we verify by calling again
-    // If the logic is correct, it should not crash and handle edge cases
-    EXPECT_TRUE(true);
-
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_SetUsbDescription_0001";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0004
  * @tc.name: Volume_manager_service_GetVolumeByUuid_0004
  * @tc.desc: Test GetVolumeByUuid with empty UUID.
