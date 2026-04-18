@@ -214,15 +214,15 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
         dstPathInfo->MakeDir(currentDst);
     }
 
-    if (!src.empty() && !IsDir(src)) {
-        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< src path invalid, %{public}s",
-            src.c_str());
+    if (currentDst.empty() || !IsDir(currentDst)) {
+        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< dst path invalid, %{public}s",
+             currentDst.c_str());
         return E_NON_EXIST;
     }
 
-    if (currentDst.empty() || !IsDir(currentDst)) {
-        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< dst path invalid, %{public}s",
-            currentDst.c_str());
+    if (!src.empty() && !IsDir(src)) {
+        LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< src path invalid, %{public}s",
+            src.c_str());
         return E_NON_EXIST;
     }
 

@@ -87,7 +87,8 @@
         "qos_manager",
         "usb_manager",
         "runtime_core",
-        "json"
+        "json",
+        "resource_schedule_service"
       ]
     },
     "build": {

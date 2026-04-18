@@ -38,6 +38,7 @@ ohos_unittest("storage_manager_provider_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
     "storage_manager_provider_test.cpp",
   ]
 
@@ -97,6 +98,8 @@ ohos_unittest("storage_manager_provider_test") {
     "eventhandler:libeventhandler",
     "cJSON:cjson",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+ 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -133,6 +136,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
     "storage_manager_provider_permission_test.cpp",
   ]
 
@@ -192,6 +196,8 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "eventhandler:libeventhandler",
     "cJSON:cjson",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+ 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -318,6 +324,8 @@ sources = [
     "eventhandler:libeventhandler",
     "cJSON:cjson",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+ 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -357,6 +365,7 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
     "storage_manager_provider_communication_test.cpp",
   ]
 
@@ -417,6 +426,8 @@ ohos_unittest("storage_manager_provider_communication_test") {
     "eventhandler:libeventhandler",
     "cJSON:cjson",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+ 	"samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {
@@ -454,6 +465,7 @@ ohos_unittest("storage_manager_provider_other_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_daemon_path}/utils/string_utils.cpp",
     "storage_manager_provider_other_test.cpp",
     
   ]
@@ -515,6 +527,8 @@ ohos_unittest("storage_manager_provider_other_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+    "samgr:samgr_proxy"
   ]
 
   if (storage_service_media_fuse) {

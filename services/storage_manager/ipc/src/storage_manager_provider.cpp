@@ -47,6 +47,7 @@
 #include "system_ability_definition.h"
 #include "utils/memory_reclaim_manager.h"
 #include "utils/storage_utils.h"
+#include "utils/string_utils.h"
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
@@ -282,9 +283,11 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
 
 int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
 {
+    StorageDaemon::IncreaseThreadPriority("storage_manager");
     StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser Begin", E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::PrepareStartUser, userId:%{public}d", userId);
@@ -292,12 +295,14 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
     if (err != E_OK) {
         LOGE("StorageManagerProvider::PrepareStartUser userId %{public}d out of range", userId);
         StorageRadar::ReportUserManager("PrepareStartUser::CheckUserIdRange", userId, err, "");
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->PrepareStartUser(userId);
     StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser End", err);
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
 }
 
@@ -1023,11 +1028,13 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
                                               const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
+    StorageDaemon::IncreaseThreadPriority("storage_manager");
     std::string message = "ActiveUserKey Begin, token size: " + std::to_string(token.size()) +
                           ", secret size: " + std::to_string(secret.size());
     StorageRadar::ReportFucBehavior("ActiveUserKey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
@@ -1035,6 +1042,7 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -1051,8 +1059,10 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
         StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, ret, "EL2-EL5");
     }
     StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::ACTIVE_USER_KEY_DELAY_SECOND);
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
 #else
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return E_OK;
 #endif
 }
@@ -1222,10 +1232,12 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
 
 int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
+    StorageDaemon::IncreaseThreadPriority("storage_manager");
     std::string message = "GenerateAppkey Begin, hashId: " + GetAnonyString(std::to_string(hashId)) +
                           ", keyId: " + GetAnonyString(keyId) + ", needReSet:" + std::to_string(needReSet);
     StorageRadar::ReportFucBehavior("GenerateAppkey", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
@@ -1233,14 +1245,17 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "GenerateAppkey End", err);
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
 #else
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return E_OK;
 #endif
 }
@@ -1895,16 +1910,19 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
 
 int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t eventType)
 {
+    StorageDaemon::IncreaseThreadPriority("storage_manager");
     StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent Begin", E_OK);
     pid_t callingUid = IPCSkeleton::GetCallingUid();
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) && callingUid != ACCOUNT_UID) {
         LOGE("NotifyUserChangedEvent permission denied ! uid: %{public}d", callingUid);
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
     StorageService::UserChangedEventType enumType = static_cast<StorageService::UserChangedEventType>(eventType);
     if (enumType != StorageService::UserChangedEventType::EVENT_USER_UNLOCKED &&
         enumType != StorageService::UserChangedEventType::EVENT_USER_SWITCHED) {
         LOGE("NotifyUserChangedEvent event type invalid ! type: %{public}u", eventType);
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
@@ -1913,6 +1931,7 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
     StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent End", E_OK);
 #endif
     LOGI("NotifyUserChangedEvent Not support !");
+    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return E_OK;
 }
 
