@@ -1920,15 +1920,15 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveO
 }
 
 #ifdef EXTERNAL_STORAGE_MANAGER
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_004, TestSize.Level1)
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_005, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_004 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_005 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "vol-8-2";
     uint32_t progress = 50;
     auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_004 end";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_005 end";
 }
 #endif
 } // namespace StorageManager
