@@ -202,7 +202,7 @@ void EjectSync(::taihe::string_view volumeId)
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageManagerContect instace failed");
+        LOGE("Get StorageManagerConnect instace failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -225,7 +225,7 @@ void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
     auto progress = std::make_shared<uint32_t>(0);
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageManagerContect instance failed");
+        LOGE("Get StorageManagerConnect instance failed");
        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
        return;
     }
@@ -248,5 +248,5 @@ TH_EXPORT_CPP_API_UnmountSync(ANI::VolumeManager::UnmountSync);
 TH_EXPORT_CPP_API_PartitionSync(ANI::VolumeManager::PartitionSync);
 TH_EXPORT_CPP_API_SetVolumeDescriptionSync(ANI::VolumeManager::SetVolumeDescriptionSync);
 TH_EXPORT_CPP_API_EjectSync(ANI::VolumeManager::EjectSync);
-TH_EXPORT_CPP_API_GetOpticalDriveOpsProgressSync(ANI::VolumeManager::GetOpticalDriveOpsProgress);
+TH_EXPORT_CPP_API_GetOpticalDriveOpsProgressSync(ANI::VolumeManager::GetOpticalDriveOpsProgressSync);
 // NOLINTEND

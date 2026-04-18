@@ -1277,6 +1277,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0000, testin
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Eject_0000";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "vol-8-1";
     if (sdCommunication != nullptr) {
@@ -1291,6 +1292,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0001, testin
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Eject_0001";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "";
     if (sdCommunication != nullptr) {
@@ -1305,6 +1307,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0002, testin
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Eject_0002";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "vol-non-exist";
     if (sdCommunication != nullptr) {
@@ -1319,6 +1322,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOpticalDriveOpsProgress_0000";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "vol-8-1";
     uint32_t progress = 0;
@@ -1334,6 +1338,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOpticalDriveOpsProgress_0001";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "";
     uint32_t progress = 0;
@@ -1349,6 +1354,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOpticalDriveOpsProgress_0002";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
     int32_t result = -1;
     std::string volumeId = "vol-non-exist";
     uint32_t progress = 100;

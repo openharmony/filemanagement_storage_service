@@ -1578,7 +1578,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Eject_0001, testing::e
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "";
     int32_t result = vmService.Eject(volumeId);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Eject_0001";
 }
 
@@ -1588,7 +1588,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Eject_0002, testing::e
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-non-exist";
     int32_t result = vmService.Eject(volumeId);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Eject_0002";
 }
 
@@ -1610,7 +1610,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     std::string volumeId = "";
     uint32_t progress = 0;
     int32_t result = vmService.GetOpticalDriveOpsProgress(volumeId, progress);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0001";
 }
 
@@ -1621,7 +1621,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     std::string volumeId = "vol-non-exist";
     uint32_t progress = 100;
     int32_t result = vmService.GetOpticalDriveOpsProgress(volumeId, progress);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0002";
 }
 
