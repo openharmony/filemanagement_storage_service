@@ -1907,7 +1907,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLates
     uint32_t progress = 0;
     
     std::ofstream testFile(filePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "75";
     testFile.close();
     
@@ -1929,7 +1929,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLates
     uint32_t progress = 100;
     
     std::ofstream testFile(filePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "0";
     testFile.close();
     
@@ -1951,7 +1951,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLates
     uint32_t progress = 0;
     
     std::ofstream testFile(filePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "100";
     testFile.close();
     
@@ -1974,7 +1974,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     
     const char* testFilePath = "/data/local/tmp/optical_vol_001";
     std::ofstream testFile(testFilePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "50";
     testFile.close();
     
@@ -2042,7 +2042,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     
     const char* testFilePath = "/data/local/tmp/invalid_content_vol";
     std::ofstream testFile(testFilePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "invalid_content";
     testFile.close();
     
@@ -2087,7 +2087,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     
     const char* testFilePath = "/data/local/tmp/full_progress_vol";
     std::ofstream testFile(testFilePath);
-    ASSERT_TRUE(testFile.is_open() << "Failed to open file" << filePath);
+    ASSERT_TRUE(testFile.is_open());
     testFile << "100";
     testFile.close();
     

@@ -50,7 +50,6 @@ public:
 
     std::unique_ptr<StorageManagerProvider> storageManagerProviderTest_;
 };
-int g_accessTokenType = 0;
 
 void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRawData &rawData)
 {

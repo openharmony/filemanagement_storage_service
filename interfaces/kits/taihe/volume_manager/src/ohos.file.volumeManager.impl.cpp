@@ -202,7 +202,7 @@ void EjectSync(::taihe::string_view volumeId)
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instace failed");
+        LOGE("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
@@ -213,7 +213,7 @@ void EjectSync(::taihe::string_view volumeId)
     }
 }
 
-void GetOpticalDriveOpsProgress(::taihe::string_view volumeId)
+void GetOpticalDriveOpsProgressSync(::taihe::string_view volumeId)
 {
     std::string volumeIdStr = std::string(volumeId);
     if (volumeIdStr.empty()) {
