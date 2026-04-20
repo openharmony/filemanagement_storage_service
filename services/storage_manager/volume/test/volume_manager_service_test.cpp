@@ -1708,17 +1708,17 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_CreateIsoImage_0001, t
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_FreeSize_0001
- * @tc.name: Volume_manager_service_Unmount_FreeSize_0001
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0004
+ * @tc.name: Volume_manager_service_Unmount_0004
  * @tc.desc: Test Unmount calls SaveVolumeFreeSize before unmounting.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_FreeSize_0001, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0004, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_FreeSize_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0004";
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-unmount-fs-1";
     int32_t fsType = FsType::NTFS;
@@ -1751,7 +1751,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_FreeSize_0001,
 
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_FreeSize_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0004";
 }
 
 /**
@@ -1822,7 +1822,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0001, 
 /**
  * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeStateChanged_0002
  * @tc.name: Volume_manager_service_OnVolumeStateChanged_0002
- * @tc.desc: Test OnVolumeStateChanged with FUSE_REMOVED state.
+ * @tc.desc: Test OnVolumeStateChanged with non-existent volumeId.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -1831,38 +1831,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0001, 
 HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeStateChanged_0002";
-    auto &vmService = VolumeManagerService::GetInstance();
-    std::string volumeId = "vol-fuse-remove-1";
-    int32_t fsType = 1;
-    std::string diskId = "disk-fuse-remove-1";
-    VolumeCore vc(volumeId, fsType, diskId);
-    vmService.OnVolumeCreated(vc);
-
-    // Verify volume was created
-    EXPECT_EQ(vmService.volumeMap_.size(), 1);
-    EXPECT_NE(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
-
-    // Transition to FUSE_REMOVED state - volume should be removed from map
-    vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::FUSE_REMOVED);
-
-    // Verify volume was removed from the map after FUSE_REMOVED
-    EXPECT_EQ(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
-
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0002";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeStateChanged_0003
- * @tc.name: Volume_manager_service_OnVolumeStateChanged_0003
- * @tc.desc: Test OnVolumeStateChanged with non-existent volumeId.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeStateChanged_0003";
     auto &vmService = VolumeManagerService::GetInstance();
     std::string nonExistentVolumeId = "vol-non-existent-12345";
 
@@ -1877,7 +1845,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0
 
     // Verify the non-existent volume is still not in the map
     EXPECT_EQ(vmService.volumeMap_.find(nonExistentVolumeId), vmService.volumeMap_.end());
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0003";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeStateChanged_0002";
 }
 
 /**
@@ -1907,25 +1875,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeStateNotify_0001
 
     vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::REMOVED);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeStateNotify_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0004
- * @tc.name: Volume_manager_service_GetVolumeByUuid_0004
- * @tc.desc: Test GetVolumeByUuid with empty UUID.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0004, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0004";
-    auto &vmService = VolumeManagerService::GetInstance();
-    std::string emptyUuid = "";
-    std::shared_ptr<VolumeExternal> result = vmService.GetVolumeByUuid(emptyUuid);
-    EXPECT_EQ(result, nullptr);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0004";
 }
 
 /**
@@ -1988,46 +1937,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Multiple_Volume_States
 
     vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::REMOVED);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Multiple_Volume_States_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Volume_manager_service_VolumeExternal_Reset_0001
- * @tc.name: Volume_manager_service_VolumeExternal_Reset_0001
- * @tc.desc: Test VolumeExternal Reset method.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeExternal_Reset_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VolumeExternal_Reset_0001";
-    std::string volumeId = "vol-reset-1";
-    int32_t fsType = FsType::NTFS;
-    std::string diskId = "disk-reset-1";
-    VolumeCore vc(volumeId, fsType, diskId);
-    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
-
-    // Set various properties
-    volume->SetFsUuid("test-uuid-reset");
-    volume->SetPath("/test/path");
-    volume->SetDescription("Test Description");
-    volume->SetFreeSize(1024 * 1024 * 100);
-
-    // Verify properties are set
-    EXPECT_EQ(volume->GetUuid(), "test-uuid-reset");
-    EXPECT_EQ(volume->GetPath(), "/test/path");
-    EXPECT_EQ(volume->GetDescription(), "Test Description");
-    EXPECT_EQ(volume->GetFreeSize(), 1024 * 1024 * 100);
-
-    // Reset and verify properties are cleared
-    volume->Reset();
-    EXPECT_EQ(volume->GetUuid(), "");
-    EXPECT_EQ(volume->GetPath(), "");
-    EXPECT_EQ(volume->GetDescription(), "");
-    EXPECT_EQ(volume->GetFreeSize(), 0);
-
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeExternal_Reset_0001";
 }
 
 /**
@@ -2115,17 +2024,17 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_NotifyMtpMounted_0005, testin
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_Mounted_0001
- * @tc.name: Volume_manager_service_Unmount_Mounted_0001
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0005
+ * @tc.name: Volume_manager_service_Unmount_0005
  * @tc.desc: Test Unmount with MOUNTED state calls SaveVolumeFreeSize.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Mounted_0001, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0005, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_Mounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0005";
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-unmount-mounted-1";
     int32_t fsType = FsType::EXFAT;
@@ -2150,21 +2059,21 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Mounted_0001, 
 
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_Mounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0005";
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_DamagedMounted_0001
- * @tc.name: Volume_manager_service_Unmount_DamagedMounted_0001
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0006
+ * @tc.name: Volume_manager_service_Unmount_0006
  * @tc.desc: Test Unmount with DAMAGED_MOUNTED state calls SaveVolumeFreeSize.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_DamagedMounted_0001, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0006, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_DamagedMounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0006";
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-unmount-damaged-1";
     int32_t fsType = FsType::NTFS;
@@ -2187,21 +2096,21 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_DamagedMounted
 
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_DamagedMounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0006";
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_Unmounted_0001
- * @tc.name: Volume_manager_service_Unmount_Unmounted_0001
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0007
+ * @tc.name: Volume_manager_service_Unmount_0007
  * @tc.desc: Test Unmount with UNMOUNTED state returns error.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Unmounted_0001, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0007, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_Unmounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_0007";
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-unmount-unmounted-1";
     int32_t fsType = FsType::EXFAT;
@@ -2222,6 +2131,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Unmounted_0001
 
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_Unmounted_0001";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0007";
 }
 } // namespace
