@@ -34,7 +34,7 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
-static void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetMountedEventParams: volume is nullptr");
@@ -57,7 +57,7 @@ static void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr
     }
 }
 
-static void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetUnmountedEventParams: volume is nullptr");
