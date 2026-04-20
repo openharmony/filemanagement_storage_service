@@ -1729,7 +1729,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_FreeSize_0001,
     vmService.OnVolumeCreated(vc);
     std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::MOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::MOUNTED);
     volumePtr->SetFsUuid("uuid-unmount-fs-1");
 
     // Set initial freesize
@@ -1738,7 +1738,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_FreeSize_0001,
     EXPECT_EQ(volumePtr->GetFreeSize(), initialFreeSize);
 
     // Verify volume is in MOUNTED state before unmount
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::MOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::MOUNTED);
 
     // Call Unmount - this should call SaveVolumeFreeSize internally
     // Note: In test environment, GetFreeSizeOfVolume may return E_NON_EXIST
@@ -1843,7 +1843,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0
     EXPECT_NE(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
 
     // Transition to FUSE_REMOVED state - volume should be removed from map
-    vmService.OnVolumeStateChanged(volumeId, VolumeState::FUSE_REMOVED);
+    vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::FUSE_REMOVED);
 
     // Verify volume was removed from the map after FUSE_REMOVED
     EXPECT_EQ(vmService.volumeMap_.find(volumeId), vmService.volumeMap_.end());
@@ -1870,7 +1870,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeStateChanged_0
     size_t initialCount = vmService.volumeMap_.size();
 
     // Call with non-existent volumeId - should handle gracefully
-    vmService.OnVolumeStateChanged(nonExistentVolumeId, VolumeState::REMOVED);
+    vmService.OnVolumeStateChanged(nonExistentVolumeId, OHOS::StorageManager::VolumeState::REMOVED);
 
     // Verify volumeMap size did not change
     EXPECT_EQ(vmService.volumeMap_.size(), initialCount);
@@ -1903,11 +1903,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VolumeStateNotify_0001
     ASSERT_NE(volumePtr, nullptr);
 
     // Test various state notifications
-    vmService.VolumeStateNotify(VolumeState::CHECKING, volumePtr);
-    vmService.VolumeStateNotify(VolumeState::EJECTING, volumePtr);
-    vmService.VolumeStateNotify(VolumeState::ENCRYPTING, volumePtr);
+    vmService.VolumeStateNotify(OHOS::StorageManager::VolumeState::EJECTING, volumePtr);
 
-    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
+    vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::REMOVED);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VolumeStateNotify_0001";
 }
 
@@ -1950,7 +1948,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyMtpUnmounted_000
 
     VolumeCore vc(id, FsType::MTP, "disk-mtp-normal");
     auto volumePtr = make_shared<VolumeExternal>(vc);
-    volumePtr->SetState(VolumeState::MOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::MOUNTED);
     vmService.volumeMap_.insert(make_pair(id, volumePtr));
     EXPECT_EQ(vmService.volumeMap_.size(), 1);
 
@@ -1982,17 +1980,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Multiple_Volume_States
     std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
 
-    // Simulate state transitions: CREATED -> CHECKING -> MOUNTED -> UNMOUNTED
-    volumePtr->SetState(VolumeState::CHECKING);
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::CHECKING);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::MOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::MOUNTED);
 
-    volumePtr->SetState(VolumeState::MOUNTED);
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::MOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::UNMOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::UNMOUNTED);
 
-    volumePtr->SetState(VolumeState::UNMOUNTED);
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::UNMOUNTED);
-
-    vmService.OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
+    vmService.OnVolumeStateChanged(volumeId, OHOS::StorageManager::VolumeState::REMOVED);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Multiple_Volume_States_0001";
 }
 
@@ -2141,11 +2135,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Mounted_0001, 
     vmService.OnVolumeCreated(vc);
     std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::MOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::MOUNTED);
     volumePtr->SetFsUuid("uuid-unmount-mounted-1");
 
     // Verify initial state
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::MOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::MOUNTED);
     EXPECT_EQ(volumePtr->GetFreeSize(), 0);
 
     // Call Unmount - SaveVolumeFreeSize should be called
@@ -2180,11 +2174,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_DamagedMounted
     vmService.OnVolumeCreated(vc);
     std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::DAMAGED_MOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED);
     volumePtr->SetFsUuid("uuid-unmount-damaged-1");
 
     // Verify DAMAGED_MOUNTED state
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::DAMAGED_MOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::DAMAGED_MOUNTED);
 
     // Call Unmount - SaveVolumeFreeSize should be called
     int32_t result = vmService.Unmount(volumeId);
@@ -2194,43 +2188,6 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_DamagedMounted
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_DamagedMounted_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_EncryptedLocked_0001
- * @tc.name: Volume_manager_service_Unmount_EncryptedLocked_0001
- * @tc.desc: Test Unmount with ENCRYPTED_AND_LOCKED state calls SaveVolumeFreeSize.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_EncryptedLocked_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_EncryptedLocked_0001";
-    auto &vmService = VolumeManagerService::GetInstance();
-    std::string volumeId = "vol-unmount-enc-1";
-    int32_t fsType = FsType::VFAT;
-    std::string diskId = "disk-unmount-enc-1";
-    VolumeCore vc(volumeId, fsType, diskId);
-
-    vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
-    ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::ENCRYPTED_AND_LOCKED);
-    volumePtr->SetFsUuid("uuid-unmount-enc-1");
-
-    // Verify ENCRYPTED_AND_LOCKED state
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::ENCRYPTED_AND_LOCKED);
-
-    // Call Unmount - SaveVolumeFreeSize should be called
-    int32_t result = vmService.Unmount(volumeId);
-
-    EXPECT_TRUE(result == E_OK || result == E_NON_EXIST);
-
-    // Cleanup
-    vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_EncryptedLocked_0001";
 }
 
 /**
@@ -2254,10 +2211,10 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Unmounted_0001
     vmService.OnVolumeCreated(vc);
     std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
     ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::UNMOUNTED);
+    volumePtr->SetState(OHOS::StorageManager::VolumeState::UNMOUNTED);
 
     // Verify UNMOUNTED state - cannot unmount
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::UNMOUNTED);
+    EXPECT_EQ(volumePtr->GetState(), OHOS::StorageManager::VolumeState::UNMOUNTED);
 
     // Call Unmount - should return error
     int32_t result = vmService.Unmount(volumeId);
@@ -2266,41 +2223,5 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Unmounted_0001
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_Unmounted_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_Checking_0001
- * @tc.name: Volume_manager_service_Unmount_Checking_0001
- * @tc.desc: Test Unmount with CHECKING state returns error.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000GGUPF
- */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_Checking_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Unmount_Checking_0001";
-    auto &vmService = VolumeManagerService::GetInstance();
-    std::string volumeId = "vol-unmount-checking-1";
-    int32_t fsType = FsType::NTFS;
-    std::string diskId = "disk-unmount-checking-1";
-    VolumeCore vc(volumeId, fsType, diskId);
-
-    vmService.OnVolumeCreated(vc);
-    std::shared_ptr<VolumeExternal> volumePtr = vmService.volumeMap_[volumeId];
-    ASSERT_NE(volumePtr, nullptr);
-    volumePtr->SetState(VolumeState::CHECKING);
-
-    // Verify CHECKING state - cannot unmount
-    EXPECT_EQ(volumePtr->GetState(), VolumeState::CHECKING);
-
-    // Call Unmount - should return error
-    int32_t result = vmService.Unmount(volumeId);
-    EXPECT_EQ(result, E_VOL_UMOUNT_ERR);
-
-    // Cleanup
-    vmService.volumeMap_.erase(volumeId);
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_Checking_0001";
-}
 }
 } // namespace
