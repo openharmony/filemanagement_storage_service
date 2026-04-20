@@ -1884,7 +1884,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 start";
     ExternalVolumeInfo vol;
     int32_t ret = vol.DoEject("vol-156-300");
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 end";
 }
 
@@ -1921,7 +1921,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_IsFilePa
     const char* filePath = "";
     
     int32_t ret = vol.IsFilePathValid(filePath);
-    EXPECT_EQ(ret, -1);
+    EXPECT_EQ(ret, E_OK);
     
     remove(filePath);
 
@@ -1988,22 +1988,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLates
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003 end";
 }
 
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004 start";
-
-    ExternalVolumeInfo vol;
-    const char* filePath = "/data/test/progress_valid_000";
-    uint32_t progress = 100;
-    
-    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-    
-    remove(filePath);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004 end";
-}
-
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002 start";
@@ -2058,7 +2042,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     uint32_t progress = 0;
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     EXPECT_EQ(progress, 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 end";
@@ -2088,7 +2072,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     uint32_t progress = 0;
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(progress, 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_003 end";

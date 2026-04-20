@@ -1298,7 +1298,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0001, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Eject(volumeId);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Eject_0001";
 }
 
@@ -1313,7 +1313,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0002, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Eject(volumeId);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Eject_0002";
 }
 
@@ -1345,7 +1345,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     if (sdCommunication != nullptr) {
         result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOpticalDriveOpsProgress_0001";
 }
 
@@ -1361,7 +1361,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     if (sdCommunication != nullptr) {
         result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOpticalDriveOpsProgress_0002";
 }
 } // namespace

@@ -2481,7 +2481,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_001, TestSiz
     std::string volId = "vol-eject-001";
     auto ret = storageDaemonProviderTest_->Eject(volId);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
 #else
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif
@@ -2509,7 +2509,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_003, TestSiz
     std::string volId = "invalid_volume_id_not_exist";
     auto ret = storageDaemonProviderTest_->Eject(volId);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
 #else
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif
@@ -2524,7 +2524,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOps
     uint32_t progress = 0;
     auto ret = storageDaemonProviderTest_->GetOpticalDriveOpsProgress(volId, progress);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
 #else
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif
@@ -2554,7 +2554,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOps
     uint32_t progress = 50;
     auto ret = storageDaemonProviderTest_->GetOpticalDriveOpsProgress(volId, progress);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
 #else
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif

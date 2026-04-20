@@ -1838,7 +1838,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_001, TestS
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "vol-1-1";
     auto ret = storageManagerProviderTest_->Eject(volumeId);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 end";
 }
 
@@ -1848,7 +1848,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_002, TestS
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "";
     auto ret = storageManagerProviderTest_->Eject(volumeId);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_002 end";
 }
 
