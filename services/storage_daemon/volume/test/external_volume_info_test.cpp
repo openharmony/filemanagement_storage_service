@@ -1898,6 +1898,36 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
 }
 
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "/data/test/progress_valid_000";
+    
+    int32_t ret = vol.IsFilePathValid(filePath);
+    EXPECT_EQ(ret, 1);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "";
+    
+    int32_t ret = vol.IsFilePathValid(filePath);
+    EXPECT_EQ(ret, -1);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001 end";
+}
+
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000 start";
@@ -1940,6 +1970,38 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLates
     remove(filePath);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "";
+    uint32_t progress = 0;
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "/data/test/progress_valid_000";
+    uint32_t progress = 100;
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_004 end";
 }
 
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002, TestSize.Level1)
