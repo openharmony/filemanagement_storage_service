@@ -15,6 +15,7 @@
 
 #include "volume/notification.h"
 
+#include "storage_service_errno.h"
 #include "storage/volume_storage_status_service.h"
 
 #include "common_event_data.h"
