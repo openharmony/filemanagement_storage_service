@@ -21,7 +21,6 @@
 #include <unistd.h>
 #include <memory>
 #include <sstream>
-#include <inttypes.h>
 
 #include "securec.h"
 #include "storage_service_log.h"
