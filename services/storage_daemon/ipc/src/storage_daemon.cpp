@@ -1035,7 +1035,6 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority(); // set tid priority to 40
     LOGW("[L1:StorageDaemon] userId %{public}u, tok empty %{public}d sec empty %{public}d",
         userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();

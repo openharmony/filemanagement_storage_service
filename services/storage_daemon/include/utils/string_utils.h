@@ -42,6 +42,8 @@ bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base = B
 std::unordered_map<std::string, std::string> ParseKeyValuePairs(const std::string &input, char delimiter);
 int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::string &replacement);
 bool ConvertStringToInt32(const std::string &context, int32_t &value);
+void IncreaseThreadPriority(const std::string &processName);
+void DecreaseThreadPriority(const std::string &processName);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H

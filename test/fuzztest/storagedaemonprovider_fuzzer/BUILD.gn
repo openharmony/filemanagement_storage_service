@@ -110,6 +110,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "access_token:el5_filekey_manager_sdk",
     "ability_runtime:app_manager",
     "os_account:os_account_innerkits",
+    "resource_schedule_service:ressched_client",
   ]
 
   if (storage_service_cloud_fuse) {

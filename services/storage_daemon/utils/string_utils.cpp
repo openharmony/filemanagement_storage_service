@@ -15,6 +15,7 @@
 
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
+#include "utils/hi_audit.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <regex>
@@ -22,6 +23,8 @@
 #include <memory>
 #include <sstream>
 
+#include "res_type.h"
+#include "res_sched_client.h"
 #include "securec.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
@@ -31,6 +34,8 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t BUFF_SIZE = 1024;
+static constexpr int32_t THREAD_QOS_HIGH_LEVEL = 7; // 设置 qos 7 优先级41
+static constexpr int32_t THREAD_QOS_LOW_LEVEL = -1; // 取消 qos 7
 static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 std::string StringPrintf(const char *format, ...)
 {
@@ -305,6 +310,34 @@ bool ConvertStringToInt32(const std::string &context, int32_t &value)
     value = static_cast<int32_t>(tollRes);
     LOGD("[L8:StringUtils] ConvertStringToInt32: <<< EXIT SUCCESS <<< value=%{public}d", value);
     return true;
+}
+
+void IncreaseThreadPriority(const std::string &processName)
+{
+    HiAudit::GetInstance().WriteStart("IncreaseThreadPriority", "processName=" + processName);
+    LOGI("IncreaseThreadPriority start");
+    std::unordered_map<std::string, std::string> mapPayLoad;
+    mapPayLoad["pid"] = std::to_string(getpid()); // 提升优先级的进程id
+    mapPayLoad[std::to_string(gettid())] = std::to_string(THREAD_QOS_HIGH_LEVEL); // 提升优先级的线程id
+    mapPayLoad["bundleName"] = processName;
+    uint32_t type = OHOS::ResourceSchedule::ResType::RES_TYPE_THREAD_QOS_CHANGE;
+    OHOS::ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, mapPayLoad);
+    LOGI("IncreaseThreadPriority end");
+    HiAudit::GetInstance().WriteEnd("IncreaseThreadPriority", 0);
+}
+
+void DecreaseThreadPriority(const std::string &processName)
+{
+    HiAudit::GetInstance().WriteStart("DecreaseThreadPriority", "processName=" + processName);
+    LOGI("DecreaseThreadPriority start");
+    std::unordered_map<std::string, std::string> mapPayLoad;
+    mapPayLoad["pid"] = std::to_string(getpid()); // 提升优先级的进程id
+    mapPayLoad[std::to_string(gettid())] = std::to_string(THREAD_QOS_LOW_LEVEL); // 提升优先级的线程id
+    mapPayLoad["bundleName"] = processName;
+    uint32_t type = OHOS::ResourceSchedule::ResType::RES_TYPE_THREAD_QOS_CHANGE;
+    OHOS::ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, mapPayLoad);
+    LOGI("DecreaseThreadPriority end");
+    HiAudit::GetInstance().WriteEnd("DecreaseThreadPriority", 0);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

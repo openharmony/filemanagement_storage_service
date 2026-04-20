@@ -305,10 +305,8 @@ HWTEST_F(UserPathResolverTest, UserPathResolverTest_MountDir_002, TestSize.Level
         .srcPath = "test",
         .createDstPath = false,
     };
-    EXPECT_CALL(*fileUtilMock_, IsDir(_)).WillOnce(Return(true));
     EXPECT_EQ(nodeInfo.MountDir(), E_NON_EXIST);
 
-    nodeInfo.dstPath = "";
     nodeInfo.dstPath = "test";
     EXPECT_CALL(*fileUtilMock_, IsDir(_)).WillOnce(Return(false));
     EXPECT_EQ(nodeInfo.MountDir(), E_NON_EXIST);

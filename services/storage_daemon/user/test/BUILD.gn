@@ -158,6 +158,8 @@ ohos_unittest("mount_manager_test") {
     "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
+    "resource_schedule_service:ressched_client",
+    "samgr:samgr_proxy"
   ]
 
   if (storage_service_cloud_fuse) {
@@ -211,6 +213,8 @@ ohos_unittest("user_path_resolver_test") {
     "googletest:gtest_main",
     "json:nlohmann_json_static",
     "hilog:libhilog",
+    "resource_schedule_service:ressched_client",
+    "samgr:samgr_proxy"
   ]
 }
 

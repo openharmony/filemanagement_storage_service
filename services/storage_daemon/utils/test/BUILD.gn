@@ -180,6 +180,8 @@ ohos_unittest("string_utils_test") {
     "ipc:ipc_single",
     "ipc:libdbinder",
     "init:libbegetutil",
+    "resource_schedule_service:ressched_client",
+    "samgr:samgr_proxy"
   ]
 }
 
