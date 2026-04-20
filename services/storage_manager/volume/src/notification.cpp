@@ -60,7 +60,6 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volume
 void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
-
         LOGE("SetUnmountedEventParams: volume is nullptr");
         return;
     }
