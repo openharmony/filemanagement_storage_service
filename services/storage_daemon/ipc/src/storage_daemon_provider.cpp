@@ -1757,7 +1757,7 @@ int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64
 int32_t StorageDaemonProvider::Eject(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGE("Handle Eject");
+    LOGI("Handle Eject");
     if (volId.empty()) {
         LOGE("Eject volId is empty");
         return E_PARAMS_INVALID;

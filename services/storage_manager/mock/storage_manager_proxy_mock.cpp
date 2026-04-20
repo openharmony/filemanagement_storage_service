@@ -528,7 +528,6 @@ int32_t StorageManagerProxy::Eject(const std::string &volumeId)
 
 int32_t StorageManagerProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
 {
-    progress = 100;
     return E_OK;
 }
 } // StorageManager

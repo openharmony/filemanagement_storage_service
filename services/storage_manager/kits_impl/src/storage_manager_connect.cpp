@@ -650,7 +650,7 @@ int32_t StorageManagerConnect::Eject(const std::string &volumeId)
         LOGE("StorageManagerConnect::Eject:Connect error");
         return err;
     }
-    if (storageManager_== nullptr) {
+    if (storageManager_ == nullptr) {
         LOGE("StorageManagerConnect::Eject service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
@@ -664,7 +664,7 @@ int32_t StorageManagerConnect::GetOpticalDriveOpsProgress(const std::string &vol
         LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress:Connect error");
         return err;
     }
-    if (storageManager_== nullptr) {
+    if (storageManager_ == nullptr) {
         LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
