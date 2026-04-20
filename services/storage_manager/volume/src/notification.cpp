@@ -137,5 +137,5 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     EventFwk::CommonEventData commonData { want };
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);
 }
-}
+} // namespace StorageManager
 } // namespace OHOS
