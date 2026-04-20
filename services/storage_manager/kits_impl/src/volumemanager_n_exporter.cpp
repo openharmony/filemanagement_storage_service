@@ -543,7 +543,7 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
         if (err) {
             return {env, err.GetNapiErr(env)};
         }
-        return NVal::CreateUndefined(env);
+        return NVal::CreateUndefined(env, *progress);
     };
 
     std::string procedureName = "GetOpticalDriveOpsProgress";
