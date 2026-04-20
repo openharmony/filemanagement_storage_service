@@ -34,7 +34,8 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
-void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+void Notification::SetMountedEventParams(AAFwk::WantParams &wantParams,
+                                         std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetMountedEventParams: volume is nullptr");
@@ -57,7 +58,8 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volume
     }
 }
 
-void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+void Notification::SetUnmountedEventParams(AAFwk::WantParams &wantParams,
+                                           std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetUnmountedEventParams: volume is nullptr");
@@ -78,11 +80,7 @@ void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volu
     }
 }
 
-static const struct VolumeStateInfo {
-    VolumeState state;
-    const char* logMessage;
-    std::string eventAction;
-} STATE_INFOS[] = {
+const Notification::VolumeStateInfo Notification::STATE_INFOS[] = {
     {VolumeState::REMOVED, "VOLUME_REMOVED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_REMOVED},
     {VolumeState::UNMOUNTED, "VOLUME_UNMOUNTED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_UNMOUNTED},
     {VolumeState::MOUNTED, "VOLUME_MOUNTED", EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED},
@@ -114,7 +112,7 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     wantParams.SetParam("flags", AAFwk::Integer::Box(volume->GetFlags()));
     wantParams.SetParam("volumeState", AAFwk::Integer::Box(notifyCode));
 
-    for (const auto& info : STATE_INFOS) {
+    for (const auto& info : Notification::STATE_INFOS) {
         if (info.state == notifyCode) {
             LOGI("notifycode: %{public}s, id:%{public}s", info.logMessage, volume->GetId().c_str());
             want.SetAction(info.eventAction);
@@ -123,11 +121,11 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     }
 
     if (notifyCode == VolumeState::MOUNTED) {
-        SetMountedEventParams(wantParams, volume);
+        Notification::SetMountedEventParams(wantParams, volume);
     }
 
     if (notifyCode == VolumeState::UNMOUNTED) {
-        SetUnmountedEventParams(wantParams, volume);
+        Notification::SetUnmountedEventParams(wantParams, volume);
     }
 
     want.SetParams(wantParams);

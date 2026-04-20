@@ -31,6 +31,19 @@ public:
 private:
     Notification();
     ~Notification();
+
+    static void SetMountedEventParams(AAFwk::WantParams &wantParams,
+                                      std::shared_ptr<VolumeExternal> volume);
+    static void SetUnmountedEventParams(AAFwk::WantParams &wantParams,
+                                        std::shared_ptr<VolumeExternal> volume);
+
+    struct VolumeStateInfo {
+        VolumeState state;
+        const char* logMessage;
+        std::string eventAction;
+    };
+    static const VolumeStateInfo STATE_INFOS[];
+
     Notification(const Notification &) = delete;
     Notification &operator=(const Notification &) = delete;
     Notification(const Notification &&) = delete;
