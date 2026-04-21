@@ -1011,7 +1011,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
-    std::thread([this, userId]() { UserManager::GetInstance().CheckDirsFromVec(userId); }).detach();
+    UserManager::GetInstance().CheckDirsFromVec(userId);
 
 #ifdef USER_CRYPTO_MANAGER
     int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);

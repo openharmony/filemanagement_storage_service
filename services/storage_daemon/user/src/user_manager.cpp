@@ -248,7 +248,13 @@ void UserManager::CheckDirsFromVec(int32_t userId)
         if (options.find("check_dir") == options.end()) {
             continue;
         }
-        dirInfo.MakeDir();
+        ret = dirInfo.MakeDir();
+        if (ret != E_OK) {
+            LOGE("[L2:UserManager] CheckDirsFromVec: makeDir failed, path=%{public}s, ret=%{public}d",
+                dirInfo.path.c_str(), ret);
+            std::string extraData = "path=" + dirInfo.path;
+            StorageRadar::ReportUserManager("CheckDirsFromVec", userId, ret, extraData);
+        }
     }
     LOGI("[L2:UserManager] CheckDirsFromVec: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
 }
