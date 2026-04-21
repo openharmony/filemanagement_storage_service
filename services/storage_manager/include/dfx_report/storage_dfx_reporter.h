@@ -77,6 +77,7 @@ private:
     int32_t GetAllSubUserIds(std::vector<int32_t> &userIdVec);
     void CollectSubUserStorageStats(std::ostringstream &extraData);
     void PrintOverLongLog(std::string str);
+    void CorrectSaFromWhiteList(std::vector<UidSaInfo> &vec);
 
     // Scan control helper methods
     bool CheckScanPreconditions();
