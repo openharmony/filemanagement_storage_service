@@ -71,6 +71,10 @@ ohos_unittest("external_volume_info_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+
+  if (pc_ext4_enable) {
+    defines += [ "PC_EXT4_ENABLE" ]
+  }
 }
 
 ohos_unittest("process_test") {

@@ -77,10 +77,16 @@ private:
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/data/external/%s";
     const std::string mountFusePathDir_ = "/mnt/data/external_fuse/%s";
+#ifdef PC_EXT4_ENABLE
+    std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs", "udf",
+        "iso9660", "crypt_LUKS", "ext4"};
+    std::map<std::string, std::string> supportFormatType_ = {
+        {"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}, {"ext4", "mke2fs"}};
+#else
     std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs", "udf",
         "iso9660", "crypt_LUKS"};
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
-
+#endif
     int32_t ReadMetadata();
     int32_t DoMount4Ext(uint32_t mountFlags);
     int32_t DoMount4Hmfs(uint32_t mountFlags);
@@ -102,6 +108,7 @@ private:
     int32_t DoUMountWithForceUsbFuse();
     int32_t ValidatePazzword(const std::string &pazzword);
     std::string GetDevPathByVolumeId(const std::string& volumeId);
+    int32_t DoFormatExt4();
 };
 } // STORAGE_DAEMON
 } // OHOS

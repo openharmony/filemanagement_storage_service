@@ -64,3 +64,9 @@ if ("${target_platform}" == "pc" || "${target_platform}" == "2in1" || "${target_
 } else {
   pc_device_enable = false
 }
+
+if ("${target_platform}" == "pc") {
+  pc_ext4_enable = true
+} else {
+  pc_ext4_enable = false
+}
