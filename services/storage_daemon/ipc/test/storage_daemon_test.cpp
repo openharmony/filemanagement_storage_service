@@ -759,7 +759,10 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_GenerateUserKeys_001, TestSize.Lev
     std::vector<uint8_t> oldSecret;
     std::vector<uint8_t> newSecret;
     EXPECT_CALL(*keyManagerMock_, UpdateUserAuth(_, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
-
+    DeleteNeedRestoreFile(userId_, EL1_KEY);
+    DeleteNeedRestoreFile(userId_, EL2_KEY);
+    DeleteNeedRestoreFile(userId_, EL3_KEY);
+    DeleteNeedRestoreFile(userId_, EL4_KEY);
     EXPECT_EQ(storageDaemon_->UpdateUserAuth(userId_, secureUid, token_, oldSecret, newSecret), E_ERR);
     EXPECT_EQ(storageDaemon_->UpdateUserAuth(userId_, secureUid, token_, oldSecret, newSecret), E_OK);
 #endif
@@ -1726,6 +1729,233 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RegisterUeceActivationCallback_001
     EXPECT_CALL(*keyManagerMock_, RegisterUeceActivationCallback(_)).WillOnce(Return(-1));
     EXPECT_EQ(storageDaemon_->RegisterUeceActivationCallback(ueceCallback), -1);
 }
+#endif
+
+#ifdef USER_CRYPTO_MANAGER
+#ifdef USER_CRYPTO_MIGRATE_KEY
+/**
+ * @tc.name: StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_001
+ * @tc.desc: Verify the UpdateUserAuth function when IsNeedRestorePathExist returns true
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint64_t secureUid = 1;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
+
+    // Create need_restore file for EL2_KEY
+    CreateNeedRestoreFile(userId_, EL2_KEY);
+
+    // When IsNeedRestorePathExist returns true, UpdateUserAuth should return E_EL5_UPDATE_CLASS_ERROR
+    auto ret = storageDaemon_->UpdateUserAuth(userId_, secureUid, token_, oldSecret, newSecret);
+    EXPECT_EQ(ret, E_EL5_UPDATE_CLASS_ERROR);
+
+    DeleteNeedRestoreFile(userId_, EL2_KEY);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_002
+ * @tc.desc: Verify the UpdateUserAuth function when IsNeedRestorePathExist returns false
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint64_t secureUid = 1;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
+
+    // Make sure no need_restore files exist
+    DeleteNeedRestoreFile(userId_, EL1_KEY);
+    DeleteNeedRestoreFile(userId_, EL2_KEY);
+    DeleteNeedRestoreFile(userId_, EL3_KEY);
+    DeleteNeedRestoreFile(userId_, EL4_KEY);
+
+    // When IsNeedRestorePathExist returns false, UpdateUserAuth should call KeyManager::UpdateUserAuth
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuth(_, _)).WillOnce(Return(E_OK));
+
+    auto ret = storageDaemon_->UpdateUserAuth(userId_, secureUid, token_, oldSecret, newSecret);
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_003
+ * @tc.desc: Verify the UpdateUserAuth function with EL1_KEY need_restore file
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserAuth_WithIsNeedRestorePathExist_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint64_t secureUid = 1;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
+
+    // Create need_restore file for EL1_KEY
+    CreateNeedRestoreFile(userId_, EL1_KEY);
+
+    // When IsNeedRestorePathExist returns true (including EL1), UpdateUserAuth should return E_EL5_UPDATE_CLASS_ERROR
+    auto ret = storageDaemon_->UpdateUserAuth(userId_, secureUid, token_, oldSecret, newSecret);
+    EXPECT_EQ(ret, E_EL5_UPDATE_CLASS_ERROR);
+
+    DeleteNeedRestoreFile(userId_, EL1_KEY);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_001
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function with version rollback on error
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL1_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "5";  // Version > NEW_DOUBLE_2_SINGLE (4)
+    file.close();
+
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL1_KEY), "5");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+
+    // When PrepareUserDirsAndUpdateUserAuthVx fails, version should be rolled back
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL1_KEY, token_, secret_), E_ERR);
+
+    // Verify version is rolled back
+    std::string rolledBackVersion;
+    OHOS::LoadStringFromFile(path, rolledBackVersion);
+    EXPECT_EQ(rolledBackVersion, "5");
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_002
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function with version rollback on SaveStringToFileSync failure
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL2_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "6";  // Version > NEW_DOUBLE_2_SINGLE (4)
+    file.close();
+
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL2_KEY), "6");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+
+    // Mock SaveStringToFileSync to fail
+    g_saveStringToFileSync = false;
+
+    // When PrepareUserDirsAndUpdateUserAuthVx fails and SaveStringToFileSync fails
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL2_KEY, token_, secret_), E_ERR);
+
+    // Restore mock
+    g_saveStringToFileSync = true;
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_003
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function when PrepareUserDirsAndUpdateUserAuthVx succeeds
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL3_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "7";  // Version > NEW_DOUBLE_2_SINGLE (4)
+    file.close();
+
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL3_KEY), "7");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
+
+    auto el3NatoPath = KeyManager::GetInstance().GetNatoNeedRestorePath(userId_, EL3_KEY) + FSCRYPT_VERSION_DIR;
+    std::error_code errCode;
+    std::filesystem::remove(el3NatoPath, errCode);
+    EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
+
+    // When PrepareUserDirsAndUpdateUserAuthVx succeeds, no rollback should occur
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL3_KEY, token_, secret_), E_OK);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_004
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function with old version (no rollback needed)
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL4_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "3";  // Version <= NEW_DOUBLE_2_SINGLE (4)
+    file.close();
+
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL4_KEY), "3");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+
+    // When using old version path (PrepareUserDirsAndUpdateUserAuthOld), no version rollback should occur
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL4_KEY, token_, secret_), E_ERR);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_005
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function with empty version file
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL1_KEY) + RESTORE_DIR;
+    // Create an empty version file
+    std::ofstream file(path);
+    file.close();
+
+    // Empty version will be treated as 0, which is <= NEW_DOUBLE_2_SINGLE (4)
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+
+    // Should use old version path (PrepareUserDirsAndUpdateUserAuthOld)
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL1_KEY, token_, secret_), E_ERR);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_006
+ * @tc.desc: Verify the PrepareUserDirsAndUpdateUserAuth function with EL5_KEY
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_WithVersionRollback_006, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId_, EL5_KEY) + RESTORE_DIR;
+    std::ofstream file(path);
+    file << "8";  // Version > NEW_DOUBLE_2_SINGLE (4)
+    file.close();
+
+    EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL5_KEY), "8");
+    EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR));
+
+    // EL5_KEY should also trigger version rollback on error
+    EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuth(userId_, EL5_KEY, token_, secret_), E_ERR);
+}
+#endif
 #endif
 } // Test
 } // STORAGE_DAEMON

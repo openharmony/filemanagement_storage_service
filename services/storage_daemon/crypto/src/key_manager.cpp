@@ -488,6 +488,8 @@ void KeyManager::ProcUpgradeKey(const std::vector<FileList> &dirInfo)
     for (const auto &it : dirInfo) {
         std::string needRestorePath = it.path + "/latest/need_restore";
         if (IsNeedClearKeyFile(needRestorePath)) {
+            StorageRadar::ReportUserKeyResult("ProcUpgradeKey::IsNeedClearKeyFile", it.userId,
+                E_OK, "ELx", "user elx path: " + it.path);
             ClearKeyFilesForPath(it.path);
         }
     }
