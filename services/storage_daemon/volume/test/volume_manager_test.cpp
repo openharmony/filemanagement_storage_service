@@ -1445,7 +1445,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
     std::string volId = "";
     uint32_t progress = 0;
     int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 end";
 }
