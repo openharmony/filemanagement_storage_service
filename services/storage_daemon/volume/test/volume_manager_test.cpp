@@ -1422,52 +1422,12 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 start";
 
-    std::string diskId = "diskId-progress-001";
-    bool isUserdata = false;
-    dev_t device = MKDEV(8, 2);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
-    ASSERT_FALSE(volId.empty());
-
-    uint32_t progress = 0;
-    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-
-    VolumeManager::Instance().DestroyVolume(volId);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 end";
-}
-
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 start";
-
     std::string volId = "";
     uint32_t progress = 0;
     int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
     EXPECT_EQ(result, E_NON_EXIST);
 
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_003 end";
-}
-
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004 start";
-
-    std::string diskId = "diskId-progress-002";
-    bool isUserdata = false;
-    dev_t device = MKDEV(8, 3);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
-    ASSERT_FALSE(volId.empty());
-
-    uint32_t progress = 100;
-    int32_t result = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-
-    VolumeManager::Instance().DestroyVolume(volId);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_004 end";
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

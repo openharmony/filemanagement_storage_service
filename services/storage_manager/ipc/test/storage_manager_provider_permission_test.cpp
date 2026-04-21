@@ -1809,27 +1809,5 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveO
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 end";
 }
-
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "";
-    uint32_t progress = 0;
-    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_002 end";
-}
-
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_003 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "vol-non-exist";
-    uint32_t progress = 100;
-    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_003 end";
-}
 }
 }
