@@ -1254,7 +1254,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Eject_002, TestSize.Leve
 
     std::string invalidVolId = "vol-1-2";
     ret = mock.Eject(invalidVolId);
-    EXPECT_TRUE(ret 1= E_OK);
+    EXPECT_TRUE(ret != E_OK);
 
     StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_002 end";
