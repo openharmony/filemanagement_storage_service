@@ -44,17 +44,21 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volume
     wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
     wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
 
-    // Get free size using VolumeStorageStatusService
-    int64_t freeSize = 0;
-    auto &statusService = VolumeStorageStatusService::GetInstance();
-    int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
-    if (ret == E_OK) {
-        wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
-        LOGI("Volume mounted: id=%{public}s, freeSize=%{public}lld",
-            volume->GetId().c_str(), (long long)freeSize);
+    if (volume->GetFsType() == FsType::MTP || volume->GetFsType() == FsType::PTP) {
+        LOGI("Volume mounted: id=%{public}s, fsType=%{public}d (MTP/PTP device, freeSize not set)",
+            volume->GetId().c_str(), volume->GetFsType());
     } else {
-        LOGW("Volume mounted: id=%{public}s, failed to get freeSize, ret=%{public}d",
-            volume->GetId().c_str(), ret);
+        int64_t freeSize = 0;
+        auto &statusService = VolumeStorageStatusService::GetInstance();
+        int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
+        if (ret == E_OK) {
+            wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
+            LOGI("Volume mounted: id=%{public}s, freeSize=%{public}lld",
+                volume->GetId().c_str(), (long long)freeSize);
+        } else {
+            LOGW("Volume mounted: id=%{public}s, failed to get freeSize, ret=%{public}d",
+                volume->GetId().c_str(), ret);
+        }
     }
 }
 
@@ -71,7 +75,6 @@ void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volu
         LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d (MTP/PTP device, freeSize not set)",
             volume->GetId().c_str(), volume->GetFsType());
     } else {
-        // Use the freeSize saved before unmount for normal block devices
         int64_t freeSize = volume->GetFreeSize();
         wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
         LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",

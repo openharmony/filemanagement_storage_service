@@ -358,6 +358,10 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
 
 void VolumeManagerService::SaveVolumeFreeSize(std::shared_ptr<VolumeExternal> volume)
 {
+    if (volume == nullptr) {
+        LOGE("SaveVolumeFreeSize volume is nullptr");
+        return;
+    }
     int64_t freeSize = 0;
     auto &statusService = VolumeStorageStatusService::GetInstance();
     int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
