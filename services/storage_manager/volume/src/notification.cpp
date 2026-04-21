@@ -34,8 +34,8 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
-void SetMountedEventParams(AAFwk::WantParams &wantParams,
-                                         std::shared_ptr<VolumeExternal> volume)
+namespace {
+void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetMountedEventParams: volume is nullptr");
@@ -58,8 +58,7 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams,
     }
 }
 
-void SetUnmountedEventParams(AAFwk::WantParams &wantParams,
-                                           std::shared_ptr<VolumeExternal> volume)
+void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
 {
     if (volume == nullptr) {
         LOGE("SetUnmountedEventParams: volume is nullptr");
@@ -101,6 +100,7 @@ const VolumeStateInfo STATE_INFOS[] = {
         EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL},
     {VolumeState::DECRYPTING, "DeskDecrypting", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL}
 };
+} // anonymous namespace
 
 
 void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume)
