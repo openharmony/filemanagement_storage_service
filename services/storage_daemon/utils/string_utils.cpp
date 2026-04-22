@@ -243,7 +243,7 @@ bool ConvertStringToInt(const std::string &str, int64_t &value, int32_t base)
         return false;
     }
     value = result;
-    LOGD("[L8:StringUtils] ConvertStringToInt: <<< EXIT SUCCESS <<< value=%{public}lld", value);
+    LOGD("[L8:StringUtils] ConvertStringToInt: <<< EXIT SUCCESS <<< value=%{public}" PRId64, value);
     return true;
 }
 
