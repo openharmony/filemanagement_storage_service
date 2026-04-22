@@ -1316,7 +1316,6 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
     LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress filePath = %{public}s", filePath.c_str());
 
     err = GetLatestProgressFromFile(filePath.c_str(), progress);
-
     LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
