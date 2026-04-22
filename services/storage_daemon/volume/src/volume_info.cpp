@@ -488,32 +488,35 @@ int32_t VolumeInfo::Decrypt(const std::string &volumeId, const std::string &pazz
 
 int32_t VolumeInfo::Eject(const std::string &volId)
 {
+    LOGI("[L3:VolumeInfo] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
     if (volId.empty()) {
-        LOGE("Eject volId is empty");
+        LOGE("[L3:VolumeInfo] Eject volId is empty");
         return E_NON_EXIST;
     }
     if (volId != GetVolumeId()) {
-        LOGE("Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", 
-                volId.c_str(), GetVolumeId().c_str());
+        LOGE("[L3:VolumeInfo] Eject volId is invalid, volId: %{public}s, current volume id: %{public}s", 
+            volId.c_str(), GetVolumeId().c_str());
         return E_PARAMS_INVALID;
     }
 
     int32_t err = DoEject(volId);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeInfo::Doeject", err);
-        LOGE("VolumeInfo::DoEject failed, err: %{public}d", err);
+        LOGE("[L3:VolumeInfo] DoEject failed, err: %{public}d", err);
     }
+    LOGI("[L3:VolumeInfo] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId_.c_str());
     return err;
 }
 
 int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
 {
+    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
     if (volId.empty()) {
-        LOGE("GetOpticalDriveOpsProgress volId is empty");
+        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress volId is empty");
         return E_NON_EXIST;
     }
     if (volId != GetVolumeId()) {
-        LOGE("GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", 
+        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress volId is invalid, volId: %{public}s, current volume id: %{public}s", 
                 volId.c_str(), GetVolumeId().c_str());
         return E_PARAMS_INVALID;
     }
@@ -522,8 +525,10 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
     int32_t err = DoGetOpticalDriveOpsProgress(volId, progressDefaultValue);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeInfo::DoGetOpticalDriveOpsProgress", err);
+        LOGE("[L3:VolumeInfo] DoGetOpticalDriveOpsProgress failed, err: %{public}d", err);
     }
     progress = progressDefaultValue;
+    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId_.c_str());
     return err;
 }
 } // StorageDaemon

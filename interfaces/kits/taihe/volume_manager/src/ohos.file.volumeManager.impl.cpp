@@ -206,7 +206,7 @@ void EjectSync(::taihe::string_view volumeId)
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-    int32_t errNum = instance-> Eject(volumeIdStr);
+    int32_t errNum = instance->Eject(volumeIdStr);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
@@ -226,8 +226,8 @@ void GetOpticalDriveOpsProgressSync(::taihe::string_view volumeId)
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
         LOGE("Get StorageManagerConnect instance failed");
-       OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-       return;
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
     }
     int32_t errNum = instance->GetOpticalDriveOpsProgress(volumeIdStr, *progress);
     if (errNum != OHOS::E_OK) {

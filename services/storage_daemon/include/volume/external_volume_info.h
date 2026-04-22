@@ -35,8 +35,6 @@ public:
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
     int32_t GetLatestProgressFromFile(const char* filePath, uint32_t &progress);
-    bool GetRealPath(const std::string &path, std::string &realPath);
-    bool IsFilePathValid(const std::string &filePath);
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
     virtual int32_t DoDestroy() override;

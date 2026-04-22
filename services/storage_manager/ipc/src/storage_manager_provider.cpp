@@ -2297,7 +2297,7 @@ int32_t StorageManagerProvider::Eject(const std::string &volumeId)
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -2319,7 +2319,7 @@ int32_t StorageManagerProvider::GetOpticalDriveOpsProgress(const std::string &vo
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 } // namespace StorageManager

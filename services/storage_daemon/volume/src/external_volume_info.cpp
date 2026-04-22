@@ -27,7 +27,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/sysmacros.h>
-#include <fstream>
 
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
@@ -1247,92 +1246,51 @@ int32_t ExternalVolumeInfo::DoDecrypt(const std::string &volumeId, const std::st
     return E_OK;
 }
 
-bool ExternalVolumeInfo::GetRealPath(const std::string &path, std::string &realPath)
-{
-    char resolvedPath[PATH_MAX] = {0};
-    if (path.size() >= PATH_MAX || !realpath(path.c_str(), resolvedPath)) {
-        LOGE("%{public}s realpath failed", path.c_str());
-        return false;
-    }
-    realPath = std::string(resolvedPath);
-    return true;
-}
-
-bool ExternalVolumeInfo::IsFilePathValid(const std::string &filePath)
-{
-    if (filePath.empty()) {
-        LOGE("filePath is empty");
-        return false;
-    }
-   
-    size_t pos = filePath.find(INVALID_PREFIX_PATH);
-    while (pos != std::string::npos) {
-        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("filePath has invalid prefix path");
-            return false;
-        }
-        pos = filePath.find(INVALID_PREFIX_PATH, pos + INVALID_PREFIX_PATH.size());
-    }
-
-    pos = filePath.find(INVALID_SUFFIX_PATH);
-    if (pos != std::string::npos && (pos == filePath.size() - INVALID_SUFFIX_PATH.size() ||
-        filePath[pos + INVALID_SUFFIX_PATH.size()] == FILE_SEPARATOR_CHAR)) {
-        LOGE("filePath has invalid suffix path");
-        return false;
-    }
-
-    return true;
-}
-
 int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
 {
-    LOGI("DoEject enter");
+    LOGI("[L3:ExternalVolumeInfo] DoEject:>>> ENTER <<< volId=%{public}s", volId.c_str());
     int32_t err = 0;
 
     string nodePath;
     if (!GetRealPath("/dev/block/" + volId, nodePath)) {
-        LOGE("DoEject GetRealPath failed for volId: %{public}s", volId.c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
         return E_PARAMS_INVALID;
     }
-    if (!IsFilePathValid(nodePath)) {
-        LOGE("DoEject invalid nodePath: %{public}s", nodePath.c_str());
+    if (!IsFilePathInvalid(nodePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
         return E_PARAMS_INVALID;
     }
-    LOGI("DoEject nodePath = %{public}s", nodePath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoEject nodePath = %{public}s", nodePath.c_str());
 
     std::vector<std::string> output;
     std::vector<std::string> cmd = {"eject", "-s", nodePath};
     err = ForkExec(cmd, &output);
-    if(err == E_NO_CHILD){
-       err = E_OK;
-    }
 
-    ReadMetadata();
-    LOGI("DoEject end, err is %{public}d.", err);
+    LOGI("[L3:ExternalVolumeInfo] DoEject:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
 
 int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint32_t &progress){
     std::ifstream file(filePath);
     if (!file.is_open()) {
-        LOGE("GetLatestProgressFromFile open failed");
+        LOGE("[L3:ExternalVolumeInfo] GetLatestProgressFromFile:<<< EXIT FAILED <<< open failed");
         return E_NOT_SUPPORT;
     }
 
     std::string content;
     std::getline(file, content);
     if (file.fail()&&!file.eof()) {
-        LOGE("GetLatestProgressFromFile getline failed");
+        LOGE("[L3:ExternalVolumeInfo] GetLatestProgressFromFile:<<< EXIT FAILED <<< getline failed");
         file.close();
         return E_NOT_SUPPORT;
     }
-    LOGI("GetLatestProgressFromFile content = %{public}s", content.c_str());
+    LOGI("[L3:ExternalVolumeInfo] GetLatestProgressFromFile content = %{public}s", content.c_str());
 
     std::istringstream iss(content);
     iss >> progress;
 
     if (iss.fail()) {
-        LOGE("GetLatestProgressFromFile iss failed");
+        LOGE("[L3:ExternalVolumeInfo] GetLatestProgressFromFile:<<< EXIT FAILED <<< iss failed");
         file.close();
         return E_NOT_SUPPORT;
     }
@@ -1343,20 +1301,24 @@ int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint
 
 int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
 {
-    LOGI("DoGetOpticalDriveOpsProgress enter");
+    LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = 0;
 
     string filePath;
     if (!GetRealPath("/data/local/tmp/" + volId, filePath)) {
-        LOGE("DoGetOpticalDriveOpsProgress GetRealPath failed for volId: %{public}s", volId.c_str());
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
         return E_PARAMS_INVALID;
     }
-    if (!IsFilePathValid(filePath)) {
-        LOGE("DoGetOpticalDriveOpsProgress invalid filePath: %{public}s", filePath.c_str());
+    if (!IsFilePathInvalid(filePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<<filePath: %{public}s", filePath.c_str());
         return E_PARAMS_INVALID;
     }
-    LOGI("DoGetOpticalDriveOpsProgress filePath = %{public}s", filePath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress filePath = %{public}s", filePath.c_str());
 
-    return GetLatestProgressFromFile(filePath.c_str(), progress);
+    err = GetLatestProgressFromFile(filePath.c_str(), progress);
+
+    LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return err;
 }
 } // StorageDaemon
 } // OHOS

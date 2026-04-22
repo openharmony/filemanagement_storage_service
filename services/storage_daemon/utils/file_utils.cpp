@@ -1376,5 +1376,16 @@ bool IsFilePathInvalid(const std::string &filePath)
     }
     return false;
 }
+
+bool GetRealPath(const std::string &path, std::string &realPath)
+{
+    char resolvedPath[PATH_MAX] = { 0 };
+    if (path.size() >= PATH_MAX || !realpath(path.c_str(), resolvedPath)) {
+        LOGE("[L8:FileUtils] GetRealPath: %{public}s realpath failed", path.c_str());
+        return false;
+    }
+    realPath = std::string(resolvedPath);
+    return true;
+}
 } // namespace StorageDaemon
 } // namespace OHOS
