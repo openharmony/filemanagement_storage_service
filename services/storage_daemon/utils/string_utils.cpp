@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <memory>
 #include <sstream>
+#include <cinttypes>
 
 #include "res_type.h"
 #include "res_sched_client.h"
