@@ -50,6 +50,7 @@ ohos_unittest("account_subscriber_test") {
   ]
 
   external_deps = [
+    "ability_base:base",
     "ability_base:want",
     "appspawn:appspawn_client",
     "cJSON:cjson",
