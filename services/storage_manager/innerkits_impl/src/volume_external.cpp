@@ -132,10 +132,6 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
         return false;
     }
 
-    if (!parcel.WriteInt64(freeSize_)) {
-        return false;
-    }
-
     return true;
 }
 
@@ -151,7 +147,6 @@ VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
     obj->fsUuid_ = parcel.ReadString();
     obj->path_ = parcel.ReadString();
     obj->description_ = parcel.ReadString();
-    obj->freeSize_ = parcel.ReadInt64();
     return obj;
 }
 }

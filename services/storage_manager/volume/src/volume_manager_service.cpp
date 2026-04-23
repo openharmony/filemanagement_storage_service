@@ -366,9 +366,14 @@ void VolumeManagerService::SaveVolumeFreeSize(std::shared_ptr<VolumeExternal> vo
     auto &statusService = VolumeStorageStatusService::GetInstance();
     int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
     if (ret == E_OK) {
-        volume->SetFreeSize(freeSize);
-        LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
-            (long long)freeSize, volume->GetId().c_str());
+        if (freeSize < 0) {
+            LOGW("Unmount: invalid freeSize=%{public}lld for volumeId=%{public}s, skip saving",
+                (long long)freeSize, volume->GetId().c_str());
+        } else {
+            volume->SetFreeSize(freeSize);
+            LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
+                (long long)freeSize, volume->GetId().c_str());
+        }
     } else {
         LOGW("Unmount: failed to get freeSize for volumeId=%{public}s, ret=%{public}d",
             volume->GetId().c_str(), ret);

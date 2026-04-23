@@ -52,9 +52,14 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volume
         auto &statusService = VolumeStorageStatusService::GetInstance();
         int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
         if (ret == E_OK) {
-            wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
-            LOGI("Volume mounted: id=%{public}s, freeSize=%{public}lld",
-                volume->GetId().c_str(), (long long)freeSize);
+            if (freeSize < 0) {
+                LOGW("Volume mounted: id=%{public}s, invalid freeSize=%{public}lld, skip setting",
+                    volume->GetId().c_str(), (long long)freeSize);
+            } else {
+                wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
+                LOGI("Volume mounted: id=%{public}s, freeSize=%{public}lld",
+                    volume->GetId().c_str(), (long long)freeSize);
+            }
         } else {
             LOGW("Volume mounted: id=%{public}s, failed to get freeSize, ret=%{public}d",
                 volume->GetId().c_str(), ret);
@@ -76,9 +81,14 @@ void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volu
             volume->GetId().c_str(), volume->GetFsType());
     } else {
         int64_t freeSize = volume->GetFreeSize();
-        wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
-        LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",
-            volume->GetId().c_str(), volume->GetFsType(), (long long)freeSize);
+        if (freeSize < 0) {
+            LOGW("Volume unmounted: id=%{public}s, invalid freeSize=%{public}lld, skip setting",
+                volume->GetId().c_str(), (long long)freeSize);
+        } else {
+            wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
+            LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",
+                volume->GetId().c_str(), volume->GetFsType(), (long long)freeSize);
+        }
     }
 }
 
