@@ -1253,10 +1253,6 @@ static int Read(const char *path, char *buf, size_t size, off_t offset,
         }
         return ret;
     }
-    if (g_loadOnGoing.load()) {
-        LOGE("loadongoing, not allow read full");
-        return -EBUSY;
-    }
 
     File *file = ValidateAndGetFile(fileInfo, path);
     if (!file) {
