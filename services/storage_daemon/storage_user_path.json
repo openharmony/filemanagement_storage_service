@@ -470,8 +470,8 @@
         {
             "path": "/data/service/el2/<userId>/fusion_awareness",
             "mode": "0711",
-            "uid": 5520,
-            "gid": 5520
+            "uid": 7634,
+            "gid": 7634
         },
         {
             "path": "/data/service/el2/<userId>/av_session",
