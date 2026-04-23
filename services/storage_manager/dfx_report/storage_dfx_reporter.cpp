@@ -30,6 +30,7 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "storage/bundle_manager_connector.h"
+#include "scan/storage_manager_scan.h"
 #include "os_account_manager.h"
 
 namespace OHOS {
@@ -51,7 +52,9 @@ constexpr uint64_t BLOCK_COUNT = 512;
 
 constexpr int32_t ROOT_UID = 0;
 constexpr int32_t SYSTEM_UID = 1000;
+constexpr int32_t MEMMGR_UID = 1111;
 constexpr int32_t FOUNDATION_UID = 5523;
+const std::string SA_NAME_USERID = "userId";
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 
 void StorageDfxReporter::StartReportHapAndSaStorageStatus()
@@ -251,9 +254,32 @@ int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostring
     extraData << "{sa totalSize is:" << ConvertBytesToMB(saTotalSize, ACCURACY_NUM) << "MB}" << std::endl;
     extraData << "{other totalSize is:" << ConvertBytesToMB(othersTotalSize, ACCURACY_NUM) << "MB}" << std::endl;
 
+    CorrectSaFromWhiteList(allVec.sysSaVec);
     WriteUidInfoListToExtraData(allVec, extraData);
     extraData << "{bundleCount:" << bundleNameAndUid.size() << "}" << std::endl;
     return E_OK;
+}
+
+void StorageDfxReporter::CorrectSaFromWhiteList(std::vector<UidSaInfo> &vec)
+{
+    for (auto &it : vec) {
+        if (it.saName == SA_NAME_USERID) {
+            continue;
+        }
+        switch (it.uid) {
+            case ROOT_UID :
+                it.size = StorageManagerScan::GetInstance().GetRootSize();
+                break;
+            case SYSTEM_UID :
+                it.size = StorageManagerScan::GetInstance().GetSystemSize();
+                break;
+            case MEMMGR_UID :
+                it.size = StorageManagerScan::GetInstance().GetMemmgrSize();
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void StorageDfxReporter::WriteExtraData(const std::vector<UidSaInfo> &vec, std::ostringstream &extraData)

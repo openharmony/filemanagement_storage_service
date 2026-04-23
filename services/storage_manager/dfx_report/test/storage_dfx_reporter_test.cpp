@@ -890,5 +890,139 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_WriteUid
     EXPECT_NE(output.find("saName:OtherApp"), std::string::npos);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_WriteUidInfoListToExtraData_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_001
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with empty vector.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_001 start";
+    std::vector<UidSaInfo> emptyVec;
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(emptyVec);
+    EXPECT_TRUE(emptyVec.empty());
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_002
+ * @tc.desc: Verify the CorrectSaFromWhiteList function when saName is userId (should skip).
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_002 start";
+    std::vector<UidSaInfo> vec;
+    int64_t originalSize = 1024;
+    UidSaInfo info(0, "userId", originalSize, 100);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].size, originalSize);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_003
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with ROOT_UID.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_003 start";
+    std::vector<UidSaInfo> vec;
+    UidSaInfo info(0, "RootService", 0, 100);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].uid, 0);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_004
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with SYSTEM_UID.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_004 start";
+    std::vector<UidSaInfo> vec;
+    UidSaInfo info(1000, "SystemService", 0, 200);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].uid, 1000);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with MEMMGR_UID.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005 start";
+    std::vector<UidSaInfo> vec;
+    UidSaInfo info(1111, "MemmgrService", 0, 300);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].uid, 1111);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_006
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with other UID (should not update size).
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_006 start";
+    std::vector<UidSaInfo> vec;
+    int64_t originalSize = 2048;
+    UidSaInfo info(9999, "OtherService", originalSize, 400);
+    vec.push_back(info);
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].size, originalSize);
+    EXPECT_EQ(vec[0].uid, 9999);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_006 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_007
+ * @tc.desc: Verify the CorrectSaFromWhiteList function with mixed elements.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_007 start";
+    std::vector<UidSaInfo> vec;
+    int64_t userIdOriginalSize = 1000;
+    int64_t otherOriginalSize = 5000;
+    vec.push_back(UidSaInfo(0, "userId", userIdOriginalSize, 100));
+    vec.push_back(UidSaInfo(0, "RootService", 0, 200));
+    vec.push_back(UidSaInfo(1000, "SystemService", 0, 300));
+    vec.push_back(UidSaInfo(1111, "MemmgrService", 0, 400));
+    vec.push_back(UidSaInfo(9999, "OtherService", otherOriginalSize, 500));
+    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
+    EXPECT_EQ(vec[0].size, userIdOriginalSize);
+    EXPECT_EQ(vec[0].saName, "userId");
+    EXPECT_EQ(vec[1].uid, 0);
+    EXPECT_EQ(vec[1].saName, "RootService");
+    EXPECT_EQ(vec[2].uid, 1000);
+    EXPECT_EQ(vec[2].saName, "SystemService");
+    EXPECT_EQ(vec[3].uid, 1111);
+    EXPECT_EQ(vec[3].saName, "MemmgrService");
+    EXPECT_EQ(vec[4].size, otherOriginalSize);
+    EXPECT_EQ(vec[4].saName, "OtherService");
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_007 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
