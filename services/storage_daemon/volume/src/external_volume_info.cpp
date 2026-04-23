@@ -1256,7 +1256,7 @@ int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
         LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
         return E_PARAMS_INVALID;
     }
-    if (!IsFilePathInvalid(nodePath)) {
+    if (IsFilePathInvalid(nodePath)) {
         LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
         return E_PARAMS_INVALID;
     }
@@ -1314,7 +1314,7 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
             volId.c_str());
         return E_PARAMS_INVALID;
     }
-    if (!IsFilePathInvalid(filePath)) {
+    if (IsFilePathInvalid(filePath)) {
         LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<<filePath: %{public}s", 
             filePath.c_str());
         return E_PARAMS_INVALID;
