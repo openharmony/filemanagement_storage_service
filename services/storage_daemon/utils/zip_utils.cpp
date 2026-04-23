@@ -23,7 +23,7 @@
 #include "utils/file_utils.h"
 #include "storage_service_errno.h"
 
-namespace OHOS::Storage::DistributedFile {
+namespace OHOS::Storage::StorageDaemon {
 namespace {
 constexpr int READ_MORE_LENGTH = 100 * 1024;
 };
@@ -87,10 +87,10 @@ int ZipUtil::AddFileInZip(
         }
     }
     (void)fclose(srcFp);
-    int zipCloseRet = zipCloseFileInZip(zipfile);
-    if (zipCloseRet) {
-        LOGE("zipCloseFileInZip failed, zipCloseRet: %{public}d, errno: %{public}d.", zipCloseRet, errno);
-        return zipCloseRet;
+    int closeRet = zipCloseFileInZip(zipfile);
+    if (closeRet != ZIP_OK && errcode == 0) {
+        LOGE("zipCloseFileInZip failed, ret: %{public}d.", closeRet);
+        errcode = closeRet;
     }
     return errcode;
 }
@@ -109,7 +109,7 @@ std::string ZipUtil::GetDestFilePath(
     const std::string& srcFile, const std::string& destFilePath, KeepStatus keepParentPathStatus)
 {
     if (!destFilePath.empty()) {
-        if (StorageDaemon::IsFilePathInvalid(destFilePath)) {
+        if (OHOS::StorageDaemon::IsFilePathInvalid(destFilePath)) {
             LOGE("Invalid destFilePath: %{public}s, contains path traversal characters", destFilePath.c_str());
             return "";
         }
@@ -136,4 +136,4 @@ std::string ZipUtil::GetDestFilePath(
     }
     return result;
 }
-}
+} // namespace OHOS::Storage::StorageDaemon

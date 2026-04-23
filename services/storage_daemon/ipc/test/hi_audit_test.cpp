@@ -30,8 +30,8 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
-using OHOS::Storage::DistributedFile::KeepStatus;
-using OHOS::Storage::DistributedFile::ZipUtil;
+using OHOS::Storage::StorageDaemon::KeepStatus;
+using OHOS::Storage::StorageDaemon::ZipUtil;
 
 class HiAuditStateGuard {
 public:
