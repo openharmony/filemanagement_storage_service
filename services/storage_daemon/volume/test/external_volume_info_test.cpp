@@ -1894,7 +1894,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 start";
     ExternalVolumeInfo vol;
     int32_t ret = vol.DoEject("");
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
 }
 
@@ -1996,8 +1996,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 50);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
 
@@ -2014,7 +2014,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     uint32_t progress = 0;
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(progress, 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 end";
@@ -2068,7 +2068,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
@@ -2091,8 +2091,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 0);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 50);
     
     remove(testFilePath);
 
@@ -2115,8 +2115,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 100);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
 

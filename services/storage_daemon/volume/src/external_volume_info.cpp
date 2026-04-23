@@ -1311,12 +1311,12 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
 
     string filePath;
     if (!GetRealPath("/data/local/tmp/" + volId, filePath)) {
-        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s", 
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s",
             volId.c_str());
         return E_PARAMS_INVALID;
     }
     if (IsFilePathInvalid(filePath)) {
-        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<<filePath: %{public}s", 
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<<filePath: %{public}s",
             filePath.c_str());
         return E_PARAMS_INVALID;
     }
@@ -1324,7 +1324,7 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
 
     err = GetLatestProgressFromFile(filePath.c_str(), progress);
     if (err != E_OK) {
-        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s", 
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s",
             volId.c_str());
         return err;
     }

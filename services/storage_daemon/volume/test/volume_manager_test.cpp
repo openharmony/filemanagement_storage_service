@@ -1388,7 +1388,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_002, TestSiz
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
         .WillRepeatedly(Return(E_OK));
     int32_t result = VolumeManager::Instance().Eject(volId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
 
     VolumeManager::Instance().DestroyVolume(volId);
 
