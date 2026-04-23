@@ -1265,6 +1265,10 @@ int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
     std::vector<std::string> output;
     std::vector<std::string> cmd = {"eject", "-s", nodePath};
     err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<< failed for volId: %{public}s", volId.c_str());
+        return err;
+    }
 
     LOGI("[L3:ExternalVolumeInfo] DoEject:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
@@ -1318,6 +1322,11 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
     LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress filePath = %{public}s", filePath.c_str());
 
     err = GetLatestProgressFromFile(filePath.c_str(), progress);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s", 
+            volId.c_str());
+        return err;
+    }
     LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
