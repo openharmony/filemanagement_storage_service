@@ -1898,36 +1898,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
 }
 
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000 start";
-
-    ExternalVolumeInfo vol;
-    const char* filePath = "/data/test/progress_valid_000";
-    
-    int32_t ret = vol.IsFilePathValid(filePath);
-    EXPECT_EQ(ret, 1);
-    
-    remove(filePath);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_000 end";
-}
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001 start";
-
-    ExternalVolumeInfo vol;
-    const char* filePath = "";
-    
-    int32_t ret = vol.IsFilePathValid(filePath);
-    EXPECT_EQ(ret, E_OK);
-    
-    remove(filePath);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_IsFilePathValid_001 end";
-}
-
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000 start";

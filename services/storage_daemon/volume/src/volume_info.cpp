@@ -504,7 +504,7 @@ int32_t VolumeInfo::Eject(const std::string &volId)
         StorageRadar::ReportVolumeOperation("VolumeInfo::Doeject", err);
         LOGE("[L3:VolumeInfo] DoEject failed, err: %{public}d", err);
     }
-    LOGI("[L3:VolumeInfo] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId_.c_str());
+    LOGI("[L3:VolumeInfo] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
 
@@ -528,7 +528,7 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
         LOGE("[L3:VolumeInfo] DoGetOpticalDriveOpsProgress failed, err: %{public}d", err);
     }
     progress = progressDefaultValue;
-    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId_.c_str());
+    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
 } // StorageDaemon
