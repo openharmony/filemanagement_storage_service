@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-#ifndef FILEMANAGEMENT_DFS_ZIP_UTILS_H
-#define FILEMANAGEMENT_DFS_ZIP_UTILS_H
+#ifndef FILEMANAGEMENT_ZIP_UTILS_H
+#define FILEMANAGEMENT_ZIP_UTILS_H
 
 #include <string>
 #include <contrib/minizip/zip.h>
 
-namespace OHOS::Storage::DistributedFile {
+namespace OHOS::Storage::StorageDaemon {
 enum class KeepStatus {
     KEEP_NONE_PARENT_PATH,
     KEEP_ONE_PARENT_PATH,
@@ -37,5 +37,5 @@ public:
 private:
     static FILE* GetFileHandle(const std::string& file);
 };
-} // namespace OHOS::Storage::DistributedFile
-#endif // FILEMANAGEMENT_DFS_ZIP_UTILS_H
+} // namespace OHOS::Storage::StorageDaemon
+#endif // FILEMANAGEMENT_ZIP_UTILS_H

@@ -123,13 +123,10 @@ void HiAudit::Write(const AuditLog& auditLog)
     std::string writeLog = GetFormattedTimestampEndWithMilli() + ", " +
         HIAUDIT_CONFIG.logName + ", NO, " + auditLog.ToString();
     LOGD("write %{public}s.", writeLog.c_str());
-    writeLog = writeLog + "\n";
-
-    if (writeLogSize_ + writeLog.length() > HIAUDIT_CONFIG.fileSize) {
-        LOGW("Log file size will exceed limit after write, rotate log file.");
-        GetWriteFilePath();
+    if (writeLog.length() > HIAUDIT_CONFIG.logSize) {
+        writeLog = writeLog.substr(0, HIAUDIT_CONFIG.logSize);
     }
-    
+    writeLog = writeLog + "\n";
     WriteToFile(writeLog);
 }
 
@@ -216,7 +213,6 @@ void HiAudit::WriteToFile(const std::string& content)
 {
     GetWriteFilePath();
     if (writeFd_ < 0) {
-        LOGE("writeFd_ invalid.");
         return;
     }
     size_t len = content.length();
@@ -236,15 +232,15 @@ void HiAudit::ZipAuditLog()
         LOGW("rename audit log file failed, errno: %{public}d.", errno);
         return;
     }
-    zipFile compressZip = Storage::DistributedFile::ZipUtil::CreateZipFile(zipFileName + ".zip");
+    zipFile compressZip = Storage::StorageDaemon::ZipUtil::CreateZipFile(zipFileName + ".zip");
     if (compressZip == nullptr) {
         LOGW("open zip file failed.");
         return;
     }
-    if (Storage::DistributedFile::ZipUtil::AddFileInZip(compressZip, zipFileName + ".csv",
-        Storage::DistributedFile::KeepStatus::KEEP_NONE_PARENT_PATH) == 0) {
+    if (Storage::StorageDaemon::ZipUtil::AddFileInZip(compressZip, zipFileName + ".csv",
+        Storage::StorageDaemon::KeepStatus::KEEP_NONE_PARENT_PATH) == 0) {
         remove((zipFileName + ".csv").c_str());
     }
-    Storage::DistributedFile::ZipUtil::CloseZipFile(compressZip);
+    Storage::StorageDaemon::ZipUtil::CloseZipFile(compressZip);
 }
 } // namespace OHOS

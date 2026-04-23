@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FILEMANAGEMENT_DFS_HI_AUDIT_H
-#define FILEMANAGEMENT_DFS_HI_AUDIT_H
+#ifndef FILEMANAGEMENT_HI_AUDIT_H
+#define FILEMANAGEMENT_HI_AUDIT_H
 #include <cstdio>
 #include <mutex>
 #include <sys/stat.h>
@@ -70,4 +70,4 @@ private:
     std::atomic<uint32_t> writeLogSize_ = 0;
 };
 } // namespace OHOS
-#endif // FILEMANAGEMENT_DFS_HI_AUDIT_H
+#endif // FILEMANAGEMENT_HI_AUDIT_H
