@@ -614,7 +614,7 @@ int32_t VolumeManagerService::Eject(const std::string &volumeId)
         LOGE("Eject sdCommunication is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    int32_t result =sdCommunication->Eject(volumeId);
+    int32_t result = sdCommunication->Eject(volumeId);
     return result;
 }
 

@@ -633,14 +633,14 @@ int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint
     LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
-        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s does not exist.", 
+        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s does not exist.",
             volId.c_str());
         return E_NON_EXIST;
     }
 
     int32_t err = info->GetOpticalDriveOpsProgress(volId, progress);
     if (err != E_OK) {
-        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s failed err: %{public}d", 
+        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
             volId.c_str(), err);
         StorageRadar::ReportVolumeOperation("VolumeInfo::GetOpticalDriveOpsProgress", err);
         return err;

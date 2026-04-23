@@ -2312,7 +2312,7 @@ int32_t StorageManagerProvider::GetOpticalDriveOpsProgress(const std::string &vo
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetOpticalDriveOpsProgress start, volumeId: %{public}s", volumeId.c_str());
     int32_t err = VolumeManagerService::GetInstance().GetOpticalDriveOpsProgress(volumeId, progress);
-    StorageRadar::ReportFucBehavior("GetOpticalDriveOpsProgress", 
+    StorageRadar::ReportFucBehavior("GetOpticalDriveOpsProgress",
         DEFAULT_USERID, "GetOpticalDriveOpsProgress End", err);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::GetOpticalDriveOpsProgress", err);

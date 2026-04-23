@@ -1592,7 +1592,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Eject_0002, testing::e
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Eject_0002";
 }
 
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0000, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0000,
+    testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_GetOpticalDriveOpsProgress_0000";
     auto &vmService = VolumeManagerService::GetInstance();
@@ -1603,7 +1604,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0000";
 }
 
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0001, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0001,
+    testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_GetOpticalDriveOpsProgress_0001";
     auto &vmService = VolumeManagerService::GetInstance();
@@ -1614,7 +1616,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0001";
 }
 
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0002, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0002,
+    testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_GetOpticalDriveOpsProgress_0002";
     auto &vmService = VolumeManagerService::GetInstance();
@@ -1625,7 +1628,8 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0002";
 }
 
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0003, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProgress_0003,
+    testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_GetOpticalDriveOpsProgress_0003";
     auto &vmService = VolumeManagerService::GetInstance();

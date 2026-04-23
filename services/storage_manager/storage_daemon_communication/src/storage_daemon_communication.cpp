@@ -1252,7 +1252,7 @@ int32_t StorageDaemonCommunication::Eject(const std::string &volumeId)
 int32_t StorageDaemonCommunication::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
 {
     LOGI("StorageDaemonCommunication::GetOpticalDriveOpsProgress start");
-    int32_t err =Connect();
+    int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::GetOpticalDriveOpsProgress connect failed");
         return err;

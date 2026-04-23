@@ -1274,7 +1274,8 @@ int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
     return err;
 }
 
-int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint32_t &progress){
+int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint32_t &progress)
+{
     std::ifstream file(filePath);
     if (!file.is_open()) {
         LOGE("[L3:ExternalVolumeInfo] GetLatestProgressFromFile:<<< EXIT FAILED <<< open failed");
