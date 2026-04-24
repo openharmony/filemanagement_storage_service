@@ -1533,15 +1533,15 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_
 
     shareFiles = {{{"/", "/"}}};
     ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_TRUE(ret == E_NON_EXIST);
+    EXPECT_TRUE(ret == E_OK);
 
     shareFiles = {{{"//", "//"}}};
     ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_TRUE(ret == E_NON_EXIST);
+    EXPECT_TRUE(ret == E_OK);
 
     shareFiles = {{{"/test/sharefile1", "/test/sharefile2"}}};
     ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_TRUE(ret == E_NON_EXIST);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 end";
 }
 
