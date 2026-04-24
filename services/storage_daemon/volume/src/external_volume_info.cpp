@@ -60,9 +60,6 @@ constexpr const char *REMOVE_CMD = "remove";
 constexpr int MIN_PASSWORD_LENGTH = 8;
 constexpr int MAX_PASSWORD_LENGTH = 256;
 constexpr int PWD_TYPE_NUMBER = 2;
-static const char FILE_SEPARATOR_CHAR = '/';
-static const std::string INVALID_PREFIX_PATH = "../";
-static const std::string INVALID_SUFFIX_PATH = "/..";
 
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
