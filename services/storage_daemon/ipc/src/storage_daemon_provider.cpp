@@ -19,6 +19,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <fstream>
+#include <regex>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <thread>
@@ -1375,14 +1376,18 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
         userId, shareFiles.size());
     std::string message = "userId: " + std::to_string(userId);
     HiAudit::GetInstance().WriteStart("MountDisShareFile", message);
-    if (userId <= 0) {
-        LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d is invalid", userId);
-        StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
-            userId, "userId invalid");
+    if (CheckUserIdRange(userId) != E_OK) {
+        StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_USERID_RANGE, userId, "userId invalid");
+        return E_USERID_RANGE;
+    }
+    if (shareFiles.empty()) {
+        LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< shareFiles empty");
+        StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID, userId,
+            "shareFiles empty");
         return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
-        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
+        if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
             LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< shareFiles is invalid");
             StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
                 userId, "shareFiles invalid");
@@ -1407,14 +1412,21 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
          userId, networkId.c_str());
     std::string message = "userId: " + std::to_string(userId) + " networkId: " + GetAnonyString(networkId);
     HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
-    if (userId <= 0) {
-        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< userId=%{public}d is invalid", userId);
+    if (CheckUserIdRange(userId) != E_OK) {
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_USERID_RANGE, userId,
+            "userId invalid");
+        return E_USERID_RANGE;
+    }
+    if (networkId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< networkId empty");
         StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
-            userId, "userId invalid");
+            userId, "networkId empty");
         return E_PARAMS_INVALID;
     }
-    if (networkId.empty() || networkId.find("..") != std::string::npos) {
-        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< networkId is invalid");
+    std::string networkIdPattern = R"([0-9a-zA-Z]{1,65})";
+    std::regex networkIdRegex(networkIdPattern);
+    if (!std::regex_match(networkId, networkIdRegex)) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< networkId invalid");
         StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
             userId, "networkId invalid");
         return E_PARAMS_INVALID;

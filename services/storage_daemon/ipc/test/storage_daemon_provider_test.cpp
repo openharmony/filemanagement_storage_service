@@ -1514,14 +1514,34 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = 100;
-    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    int32_t userId = -1;
+    std::map<std::string, std::string> shareFiles;
     auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_USERID_RANGE);
+
+    userId = 100;
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    shareFiles = {{{"../", "/test/sharefile2"}}};
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    shareFiles = {{{"/test/sharefile2", "../"}}};
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    shareFiles = {{{"/", "/"}}};
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
     EXPECT_TRUE(ret == E_OK);
 
-    EXPECT_CALL(*mountManagerMoc_, MountDisShareFile(_, _)).WillOnce(Return(-1));
+    shareFiles = {{{"//", "//"}}};
     ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_TRUE(ret == -1);
+    EXPECT_TRUE(ret == E_OK);
+
+    shareFiles = {{{"/test/sharefile1", "/test/sharefile2"}}};
+    ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 end";
 }
 
@@ -1535,14 +1555,26 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = 100;
-    std::string networkId = "sharefile1";
+    int32_t userId = -1;
+    std::string networkId;
     auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
-    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(ret == E_USERID_RANGE);
 
-    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_, _)).WillOnce(Return(-1));
+    userId = 100;
     ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
-    EXPECT_TRUE(ret == -1);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    networkId = "testsharefile1+";
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    networkId = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    networkId = "testsharefile1";
+    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 end";
 }
 
@@ -1903,48 +1935,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     int32_t result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(userId, rkType, key);
     EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_MountDisShareFile_002
- * @tc.desc: Verify the MountDisShareFile function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = -1;
-    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
-    auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_002
- * @tc.desc: Verify the UMountDisShareFile function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int32_t userId = -1;
-    std::string networkId;
-    auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    userId = 100;
-    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-
-    networkId = "../";
-    ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 end";
 }
 
 /**

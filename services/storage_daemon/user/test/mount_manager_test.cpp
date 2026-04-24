@@ -1046,33 +1046,38 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_RemoveDisSharePath
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_RemoveDisSharePath_001 start";
     std::string path;
     std::string networkId;
-    MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    bool ret = MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    EXPECT_FALSE(ret);
 
     path = "test";
-    MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    ret = MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    EXPECT_FALSE(ret);
 
     path = "/data/testrmdisshare";
     networkId = "testnetworkId";
-    MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    ret = MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    EXPECT_FALSE(ret);
 
+    path = "/data/testnetworkId";
     ForceCreateDirectory(path);
-    std::string testDisFile = "/data/testrmdisshare/testDisFile";
+    std::string testDisFile = "/data/testnetworkId/testDisFile";
     std::ofstream file1(testDisFile);
     file1.close();
-    MountManager::GetInstance().RemoveDisSharePath(testDisFile, networkId);
+    ret = MountManager::GetInstance().RemoveDisSharePath(testDisFile, networkId);
+    EXPECT_FALSE(ret);
     std::filesystem::remove(testDisFile);
 
-    std::string notEmptyPath = "/data/testrmdisshare/test";
+    std::string notEmptyPath = "/data/testnetworkId/test";
     ForceCreateDirectory(notEmptyPath);
-    MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    ret = MountManager::GetInstance().RemoveDisSharePath(path, networkId);
+    EXPECT_FALSE(ret);
     ForceRemoveDirectory(notEmptyPath);
 
-    std::string emptyPath = "/data/testrmdisshare/testnetworkId";
+    std::string emptyPath = "/data/testnetworkId/test";
     ForceCreateDirectory(emptyPath);
-    MountManager::GetInstance().RemoveDisSharePath(emptyPath, networkId);
-
+    ret = MountManager::GetInstance().RemoveDisSharePath(emptyPath, networkId);
+    EXPECT_TRUE(ret);
     ForceRemoveDirectory(path);
-    EXPECT_TRUE(true);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_RemoveDisSharePath_001 end";
 }
 
