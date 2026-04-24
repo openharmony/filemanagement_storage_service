@@ -135,7 +135,6 @@ private:
     MtpFileSystemOptions options_;
     MtpFsDevice device_;
     std::mutex fuseMutex_;
-    std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
     std::mutex mtpClientMutex_;
     int32_t currentUid = 0;
     std::map<uid_t, bool> mtpClientWriteMap_ {};

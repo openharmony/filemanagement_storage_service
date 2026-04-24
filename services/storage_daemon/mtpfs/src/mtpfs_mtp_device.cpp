@@ -531,6 +531,22 @@ void MtpFsDevice::FreeObjectHandles(MtpFsTypeDir *dir)
     }
 }
 
+void MtpFsDevice::FreeAllObjectHandlesRecursive(MtpFsTypeDir *dir)
+{
+    if (dir == nullptr) {
+        return;
+    }
+    FreeObjectHandles(dir);
+    for (const auto &child : dir->Dirs()) {
+        FreeAllObjectHandlesRecursive(const_cast<MtpFsTypeDir *>(&child));
+    }
+}
+
+void MtpFsDevice::FreeAllObjectHandles()
+{
+    FreeAllObjectHandlesRecursive(&rootDir_);
+}
+
 void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
 {
     if (!dir || !device_) {

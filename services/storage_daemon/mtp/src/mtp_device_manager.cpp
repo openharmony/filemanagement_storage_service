@@ -105,7 +105,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     }
     if ((err != 0) || (result.size() != 0)) {
         LOGE("[L2:MtpDeviceManager] MountDevice: <<< EXIT FAILED <<< mtpfs cmd failed, err=%{public}d", err);
-        UmountDevice(device, false, false);
+        rmdir(device.path.c_str());
         isMounting_ = false;
         return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
