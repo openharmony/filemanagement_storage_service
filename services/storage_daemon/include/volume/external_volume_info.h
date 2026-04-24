@@ -34,6 +34,7 @@ public:
     bool GetDamagedFlag();
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
+    int32_t GetLatestProgressFromFile(const char* filePath, uint32_t &progress);
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
     virtual int32_t DoDestroy() override;
@@ -63,6 +64,8 @@ protected:
     virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) override;
+    virtual int32_t DoEject(const std::string &volId) override;
+    virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
 private:
     std::string devPath_;
     std::string devBackupPath_;

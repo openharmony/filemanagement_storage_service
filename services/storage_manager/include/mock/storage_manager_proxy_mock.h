@@ -159,6 +159,8 @@ public:
     int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
+    int32_t Eject(const std::string &volumeId) override;
+    int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

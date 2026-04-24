@@ -642,5 +642,33 @@ int32_t StorageManagerConnect::Decrypt(const std::string &volumeId, const std::s
     }
     return storageManager_->Decrypt(volumeId, pazzword);
 }
+
+int32_t StorageManagerConnect::Eject(const std::string &volumeId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Eject:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Eject service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Eject(volumeId);
+}
+
+int32_t StorageManagerConnect::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetOpticalDriveOpsProgress service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetOpticalDriveOpsProgress(volumeId, progress);
+}
 } // StorageManager
 } // OHOS

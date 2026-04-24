@@ -1831,5 +1831,26 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Decrypt_001, Tes
     EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Decrypt_001 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Eject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-1-1";
+    auto ret = storageManagerProviderTest_->Eject(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Eject_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "vol-8-1";
+    uint32_t progress = 0;
+    auto ret = storageManagerProviderTest_->GetOpticalDriveOpsProgress(volumeId, progress);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

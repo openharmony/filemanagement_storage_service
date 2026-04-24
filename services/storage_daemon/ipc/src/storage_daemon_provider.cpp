@@ -1765,5 +1765,45 @@ int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64
     return E_OK;
 #endif
 }
+
+int32_t StorageDaemonProvider::Eject(const std::string &volId)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    if (volId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().Eject(volId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Eject", ret);
+    }
+    LOGI("[L1:StorageDaemonProvider] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    if (volId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT FAILED <<< ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::GetOpticalDriveOpsProgress", ret);
+    }
+    LOGI("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

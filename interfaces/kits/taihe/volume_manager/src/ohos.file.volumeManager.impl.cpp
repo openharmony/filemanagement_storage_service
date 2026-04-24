@@ -190,6 +190,51 @@ void SetVolumeDescriptionSync(::taihe::string_view uuid, ::taihe::string_view de
         return;
     }
 }
+
+void EjectSync(::taihe::string_view volumeId)
+{
+    std::string volumeIdStr = std::string(volumeId);
+    if (volumeIdStr.empty()) {
+        LOGE("Invalid parameter, volumeIdStr is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
+        return;
+    }
+
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
+    }
+    int32_t errNum = instance->Eject(volumeIdStr);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return;
+    }
+}
+
+void GetOpticalDriveOpsProgressSync(::taihe::string_view volumeId)
+{
+    std::string volumeIdStr = std::string(volumeId);
+    if (volumeIdStr.empty()) {
+        LOGE("Invalid parameter, volumeIdStr is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
+        return;
+    }
+
+    auto progress = std::make_shared<uint32_t>(0);
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
+    }
+    int32_t errNum = instance->GetOpticalDriveOpsProgress(volumeIdStr, *progress);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return;
+    }
+}
 } // namespace ANI::VolumeManager
 
 // Since these macros are auto-generate, lint will cause false positive.
@@ -202,4 +247,6 @@ TH_EXPORT_CPP_API_MountSync(ANI::VolumeManager::MountSync);
 TH_EXPORT_CPP_API_UnmountSync(ANI::VolumeManager::UnmountSync);
 TH_EXPORT_CPP_API_PartitionSync(ANI::VolumeManager::PartitionSync);
 TH_EXPORT_CPP_API_SetVolumeDescriptionSync(ANI::VolumeManager::SetVolumeDescriptionSync);
+TH_EXPORT_CPP_API_EjectSync(ANI::VolumeManager::EjectSync);
+TH_EXPORT_CPP_API_GetOpticalDriveOpsProgressSync(ANI::VolumeManager::GetOpticalDriveOpsProgressSync);
 // NOLINTEND

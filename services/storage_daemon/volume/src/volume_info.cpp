@@ -485,5 +485,52 @@ int32_t VolumeInfo::Decrypt(const std::string &volumeId, const std::string &pazz
     }
     return E_OK;
 }
+
+int32_t VolumeInfo::Eject(const std::string &volId)
+{
+    LOGI("[L3:VolumeInfo] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    if (volId.empty()) {
+        LOGE("[L3:VolumeInfo] Eject volId is empty");
+        return E_NON_EXIST;
+    }
+    if (volId != GetVolumeId()) {
+        LOGE("[L3:VolumeInfo] Eject:<<< EXIT FAILED <<< volId: %{public}s, volume id: %{public}s",
+            volId.c_str(), GetVolumeId().c_str());
+        return E_PARAMS_INVALID;
+    }
+
+    int32_t err = DoEject(volId);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Doeject", err);
+        LOGE("[L3:VolumeInfo] DoEject failed, err: %{public}d", err);
+    }
+    LOGI("[L3:VolumeInfo] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return err;
+}
+
+int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    if (volId.empty()) {
+        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress volId is empty");
+        return E_NON_EXIST;
+    }
+    if (volId != GetVolumeId()) {
+        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress:<<< EXIT FAILED <<<"
+            "volId: %{public}s, volume id: %{public}s",
+            volId.c_str(), GetVolumeId().c_str());
+        return E_PARAMS_INVALID;
+    }
+
+    uint32_t progressDefaultValue = 0;
+    int32_t err = DoGetOpticalDriveOpsProgress(volId, progressDefaultValue);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoGetOpticalDriveOpsProgress", err);
+        LOGE("[L3:VolumeInfo] DoGetOpticalDriveOpsProgress failed, err: %{public}d", err);
+    }
+    progress = progressDefaultValue;
+    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return err;
+}
 } // StorageDaemon
 } // OHOS

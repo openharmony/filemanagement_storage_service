@@ -20,6 +20,7 @@
 #include "n_func_arg.h"
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 using namespace OHOS::StorageManager;
 using namespace OHOS::FileManagement::LibN;
@@ -459,6 +460,100 @@ napi_value Partition(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
         return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
             .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+
+napi_value Eject(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        LOGI("Eject InitArgs err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+
+    std::unique_ptr<char []> uuid;
+    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        LOGE("Eject uuid err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    std::string uuidString(uuid.get());
+    auto cbexec = [uuidString]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->Eject(uuidString);
+        LOGI("errNum return %{public}d", errNum);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+
+    auto cbComplete = [](napi_env env, NError err)-> NVal {
+        if (err) {
+            return {env, err.GetNapiErr(env)};
+        }
+        return NVal::CreateUndefined(env);
+    };
+
+    std::string procedureName = "Eject";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbexec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbexec, cbComplete).val_;
+    }
+}
+
+napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        LOGI("GetOpticalDriveOpsProgress InitArgs err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+
+    std::unique_ptr<char []> uuid;
+    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        LOGE("GetOpticalDriveOpsProgress uuid err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto progress = std::make_shared<uint32_t>(0);
+    std::string uuidString(uuid.get());
+    auto cbexec = [uuidString, progress]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+                            GetOpticalDriveOpsProgress(uuidString, *progress);
+        LOGI("errNum return %{public}d", errNum);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+
+    auto cbComplete = [progress](napi_env env, NError err)-> NVal {
+        if (err) {
+            return {env, err.GetNapiErr(env)};
+        }
+        return NVal::CreateInt32(env, *progress);
+    };
+
+    std::string procedureName = "GetOpticalDriveOpsProgress";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbexec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbexec, cbComplete).val_;
     }
 }
 } // namespace ModuleVolumeManager

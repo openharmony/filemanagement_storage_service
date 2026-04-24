@@ -83,6 +83,9 @@ public:
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
+    int32_t Eject(const std::string &volId);
+    int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
+
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
     virtual int32_t DoDestroy() = 0;
@@ -116,6 +119,8 @@ protected:
     virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) = 0;
     virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) = 0;
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) = 0;
+    virtual int32_t DoEject(const std::string &volId) = 0;
+    virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) = 0;
 
 private:
     std::string id_;

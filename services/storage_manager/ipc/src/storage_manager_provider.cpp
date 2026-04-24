@@ -2306,5 +2306,47 @@ int32_t StorageManagerProvider::Decrypt(const std::string &volumeId, const std::
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageManagerProvider::Eject(const std::string &volumeId)
+{
+    StorageRadar::ReportFucBehavior("Eject", DEFAULT_USERID, "Eject Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        LOGE("Eject permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Eject start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().Eject(volumeId);
+    StorageRadar::ReportFucBehavior("Eject", DEFAULT_USERID, "Eject End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Eject", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
+{
+    StorageRadar::ReportFucBehavior("GetOpticalDriveOpsProgress",
+        DEFAULT_USERID, "GetOpticalDriveOpsProgress Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        LOGE("GetOpticalDriveOpsProgress permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::GetOpticalDriveOpsProgress start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().GetOpticalDriveOpsProgress(volumeId, progress);
+    StorageRadar::ReportFucBehavior("GetOpticalDriveOpsProgress",
+        DEFAULT_USERID, "GetOpticalDriveOpsProgress End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetOpticalDriveOpsProgress", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageManager
 } // namespace OHOS

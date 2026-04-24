@@ -61,3 +61,11 @@ function PartitionSync(diskId: String, type: i32): void;
 @gen_async("setVolumeDescription")
 @gen_promise("setVolumeDescription")
 function SetVolumeDescriptionSync(uuid: String, description: String): void;
+
+@gen_async("eject")
+@gen_promise("eject")
+function EjectSync(volumeId: String):void;
+
+@gen_async("getOpticalDriveOpsProgress")
+@gen_promise("getOpticalDriveOpsProgress")
+function GetOpticalDriveOpsProgressSync(volumeId: String):void;

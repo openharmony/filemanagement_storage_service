@@ -52,6 +52,7 @@ public:
     MOCK_METHOD2(statvfs, int(const char *path, struct statvfs *buf));
     MOCK_METHOD2(open, int(const char *path, int flags));
     MOCK_METHOD1(close, int(int));
+    MOCK_METHOD3(ioctl, int(int fd, unsigned long request, void *data));
 };
 }
 }

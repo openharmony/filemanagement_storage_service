@@ -608,5 +608,45 @@ int32_t VolumeManager::Decrypt(const std::string &volumeId, const std::string &p
     }
     return E_OK;
 }
+
+int32_t VolumeManager::Eject(const std::string &volId)
+{
+    LOGI("[L2:VolumeManager] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("[L2:VolumeManager] Eject:<<< EXIT FAILED <<< %{public}s does not exist.", volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->Eject(volId);
+    if (err != E_OK) {
+        LOGE("[L2:VolumeManager] Eject:<<< EXIT FAILED <<< %{public}s failed err: %{public}d", volId.c_str(), err);
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Eject", err);
+        return err;
+    }
+    LOGI("[L2:VolumeManager] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return E_OK;
+}
+
+int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
+{
+    LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s does not exist.",
+            volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->GetOpticalDriveOpsProgress(volId, progress);
+    if (err != E_OK) {
+        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
+            volId.c_str(), err);
+        StorageRadar::ReportVolumeOperation("VolumeInfo::GetOpticalDriveOpsProgress", err);
+        return err;
+    }
+    LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

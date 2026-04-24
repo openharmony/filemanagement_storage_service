@@ -429,5 +429,15 @@ int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::stri
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::Eject(const std::string &volumeId)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

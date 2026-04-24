@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include <linux/kdev_t.h>
 #include <sys/statvfs.h>
+#include <fstream>
 
 #include "external_volume_info_mock.h"
 #include "mock/disk_utils_mock.h"
@@ -1949,6 +1950,250 @@ HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_DoGetOddCapacity_001, Te
     int64_t freeSize = 0;
     int32_t ret = externalVolumeInfo_->DoGetOddCapacity(volumeId, totalSize, freeSize);
     EXPECT_EQ(ret, E_ERR);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoEject("vol-156-300");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 end";
+}
+
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 start";
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoEject("");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "/data/test/progress_valid_000";
+    uint32_t progress = 0;
+    
+    std::ofstream testFile(filePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "75";
+    testFile.close();
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 75);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_001 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "/data/test/progress_zero";
+    uint32_t progress = 100;
+    
+    std::ofstream testFile(filePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "0";
+    testFile.close();
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 0);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "";
+    uint32_t progress = 0;
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002 start";
+
+    ExternalVolumeInfo vol;
+    const char* filePath = "/data/test/progress_hundred";
+    uint32_t progress = 0;
+    
+    std::ofstream testFile(filePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "100";
+    testFile.close();
+    
+    int32_t ret = vol.GetLatestProgressFromFile(filePath, progress);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 100);
+    
+    remove(filePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_000,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_000 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "optical_vol_001";
+    uint32_t progress = 0;
+    
+    const char* testFilePath = "/data/local/tmp/optical_vol_001";
+    std::ofstream testFile(testFilePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "50";
+    testFile.close();
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+    
+    remove(testFilePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_000 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "";
+    uint32_t progress = 0;
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_002,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_002 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "../invalid_path";
+    uint32_t progress = 0;
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_002 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_003,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_003 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "non_exist_vol";
+    uint32_t progress = 0;
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_003 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_004,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_004 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "invalid_content_vol";
+    uint32_t progress = 0;
+    
+    const char* testFilePath = "/data/local/tmp/invalid_content_vol";
+    std::ofstream testFile(testFilePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "invalid_content";
+    testFile.close();
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+    
+    remove(testFilePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_004 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_005,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_005 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "zero_progress_vol";
+    uint32_t progress = 50;
+    
+    const char* testFilePath = "/data/local/tmp/zero_progress_vol";
+    std::ofstream testFile(testFilePath);
+    testFile << "0";
+    testFile.close();
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 50);
+    
+    remove(testFilePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_005 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_006,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_006 start";
+
+    ExternalVolumeInfo vol;
+    std::string volId = "full_progress_vol";
+    uint32_t progress = 0;
+    
+    const char* testFilePath = "/data/local/tmp/full_progress_vol";
+    std::ofstream testFile(testFilePath);
+    ASSERT_TRUE(testFile.is_open());
+    testFile << "100";
+    testFile.close();
+    
+    int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
+    
+    remove(testFilePath);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_006 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

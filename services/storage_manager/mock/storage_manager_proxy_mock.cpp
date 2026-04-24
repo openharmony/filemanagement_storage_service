@@ -520,5 +520,15 @@ int32_t StorageManagerProxy::Decrypt(const std::string &volumeId, const std::str
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::Eject(const std::string &volumeId)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS
