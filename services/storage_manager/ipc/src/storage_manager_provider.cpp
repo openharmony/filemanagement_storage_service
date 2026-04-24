@@ -18,6 +18,7 @@
 
 #include "utils/storage_radar.h"
 #include <singleton.h>
+#include <regex>
 #ifdef STORAGE_STATISTICS_MANAGER
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_manager.h"
@@ -1743,20 +1744,22 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
         LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("StorageManagerProvider::MountDisShareFile userId %{public}d out of range", userId);
-        return err;
+    if (CheckUserIdRange(userId) != E_OK) {
+        return E_USERID_RANGE;
+    }
+    if (shareFiles.empty()) {
+        LOGE("shareFiles is empty");
+        return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
-        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
-            LOGE("mount share file, shareFiles is invalid.");
+        if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
+            LOGE("shareFiles is invalid");
             return E_PARAMS_INVALID;
         }
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->MountDisShareFile(userId, shareFiles);
+    int32_t err = sdCommunication->MountDisShareFile(userId, shareFiles);
     StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile End", err);
     return err;
 }
@@ -1770,18 +1773,22 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("StorageManagerProvider::UMountDisShareFile userId %{public}d out of range", userId);
-        return err;
+    if (CheckUserIdRange(userId) != E_OK) {
+        return E_USERID_RANGE;
     }
-    if (networkId.empty() || networkId.find("..") != std::string::npos) {
-        LOGE("networkId %{public}s is invalid.", networkId.c_str());
+    if (networkId.empty()) {
+        LOGE("networkId is empty");
+        return E_PARAMS_INVALID;
+    }
+    std::string networkIdPattern = R"([0-9a-zA-Z]{1,65})";
+    std::regex networkIdRegex(networkIdPattern);
+    if (!std::regex_match(networkId, networkIdRegex)) {
+        LOGE("networkId is invalid");
         return E_PARAMS_INVALID;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UMountDisShareFile(userId, networkId);
+    int32_t err = sdCommunication->UMountDisShareFile(userId, networkId);
     StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile End", err);
     return err;
 }
