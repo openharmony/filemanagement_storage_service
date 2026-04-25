@@ -670,5 +670,33 @@ int32_t StorageManagerConnect::GetOpticalDriveOpsProgress(const std::string &vol
     }
     return storageManager_->GetOpticalDriveOpsProgress(volumeId, progress);
 }
+
+int32_t StorageManagerConnect::Erase(const std::string &volumeId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Erase:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Erase service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Erase(volumeId);
+}
+
+int32_t StorageManagerConnect::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::CreateIsoImage:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::CreateIsoImage service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->CreateIsoImage(volumeId, filePath);
+}
 } // StorageManager
 } // OHOS

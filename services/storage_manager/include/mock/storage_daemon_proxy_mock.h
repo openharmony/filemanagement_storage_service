@@ -145,6 +145,8 @@ public:
     virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t Eject(const std::string &volId) override;
     virtual int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
+    virtual int32_t Erase(const std::string &volId) override;
+    virtual int32_t CreateIsoImage(const std::string &volId, const std::string &filePath) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

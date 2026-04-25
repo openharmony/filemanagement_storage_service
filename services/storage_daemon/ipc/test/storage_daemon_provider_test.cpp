@@ -2550,5 +2550,51 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOpticalDriveOps
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOpticalDriveOpsProgress_003 end";
 }
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Erase_001, TestSize.Level1)
+{
+    std::string volId = "vol-erase-001";
+    auto ret = storageDaemonProviderTest_->Erase(volId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_NON_EXIST);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Erase_002, TestSize.Level1)
+{
+    std::string volId = "";
+    auto ret = storageDaemonProviderTest_->Erase(volId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_001, TestSize.Level1)
+{
+    std::string volId = "vol-iso-001";
+    std::string filePath = "/path/to/file";
+    auto ret = storageDaemonProviderTest_->CreateIsoImage(volId, filePath);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_NON_EXIST);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_002, TestSize.Level1)
+{
+    std::string volId = "";
+    std::string filePath = "/path/to/file";
+    auto ret = storageDaemonProviderTest_->CreateIsoImage(volId, filePath);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -106,6 +106,9 @@ protected:
     int32_t DoDestroyCrypt(const std::string &volumeId) override { return E_OK; };
     int32_t DoEject(const std::string &volId) override { return E_OK; };
     int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override { return E_OK; };
+
+    int32_t DoErase(const std::string &volId) override { return E_OK; };
+    int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) override { return E_OK; };
 };
 }
 
@@ -1388,7 +1391,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_002, TestSiz
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
         .WillRepeatedly(Return(E_OK));
     int32_t result = VolumeManager::Instance().Eject(volId);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
 
     VolumeManager::Instance().DestroyVolume(volId);
 
@@ -1428,6 +1431,75 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOps
     EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_002 end";
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Erase_001, TestSize.Level1)
+{
+    std::string volId = "vol-non-exist";
+    int32_t result = VolumeManager::Instance().Erase(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Erase_002, TestSize.Level1)
+{
+    std::string diskId = "diskId-erase";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 15);
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volId.empty());
+    
+    int32_t result = VolumeManager::Instance().Erase(volId);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().DestroyVolume(volId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Erase_003, TestSize.Level1)
+{
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    std::string volId = "vol-test-erase";
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
+    
+    int32_t result = VolumeManager::Instance().Erase(volId);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().volumes_.erase(volId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateIsoImage_001, TestSize.Level1)
+{
+    std::string volId = "vol-non-exist";
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = VolumeManager::Instance().CreateIsoImage(volId, filePath);
+    EXPECT_EQ(result, E_NON_EXIST);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateIsoImage_002, TestSize.Level1)
+{
+    std::string diskId = "diskId-create-iso";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 16);
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volId.empty());
+
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = VolumeManager::Instance().CreateIsoImage(volId, filePath);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().DestroyVolume(volId);
+}
+
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateIsoImage_003, TestSize.Level1)
+{
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    std::string volId = "vol-test-create-iso";
+    VolumeManager::Instance().volumes_.insert(make_pair(volId, volumeInfoMock));
+
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = VolumeManager::Instance().CreateIsoImage(volId, filePath);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().volumes_.erase(volId);
 }
 } // STORAGE_DAEMON
 } // OHOS

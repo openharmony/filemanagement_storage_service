@@ -1639,4 +1639,46 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetOpticalDriveOpsProg
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_GetOpticalDriveOpsProgress_0003";
 }
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Erase_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Erase_0000";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-1";
+    int32_t result = vmService.Erase(volumeId);
+    EXPECT_NE(result, E_OK);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Erase_0000";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Erase_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Erase_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "";
+    int32_t result = vmService.Erase(volumeId);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Erase_0001";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_CreateIsoImage_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_CreateIsoImage_0000";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-1";
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = vmService.CreateIsoImage(volumeId, filePath);
+    EXPECT_NE(result, E_OK);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_CreateIsoImage_0000";
+}
+
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_CreateIsoImage_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_CreateIsoImage_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "";
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = vmService.CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_CreateIsoImage_0001";
+}
 } // namespace

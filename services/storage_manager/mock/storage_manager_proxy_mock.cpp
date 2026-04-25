@@ -530,5 +530,15 @@ int32_t StorageManagerProxy::GetOpticalDriveOpsProgress(const std::string &volum
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::Erase(const std::string &volumeId)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

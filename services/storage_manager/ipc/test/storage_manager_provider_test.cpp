@@ -1852,5 +1852,58 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetOpticalDriveO
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetOpticalDriveOpsProgress_001 end";
 }
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Erase_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Erase_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "testVolumeId";
+    auto ret = storageManagerProviderTest_->Erase(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Erase_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Erase_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Erase_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "";
+    auto ret = storageManagerProviderTest_->Erase(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Erase_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateIsoImage_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "testVolumeId";
+    std::string filePath = "/path/to/file.iso";
+    auto ret = storageManagerProviderTest_->CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateIsoImage_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "";
+    std::string filePath = "/path/to/file.iso";
+    auto ret = storageManagerProviderTest_->CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateIsoImage_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeId = "testVolumeId";
+    std::string filePath = "";
+    auto ret = storageManagerProviderTest_->CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_003 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

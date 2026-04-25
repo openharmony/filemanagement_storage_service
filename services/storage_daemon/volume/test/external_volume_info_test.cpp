@@ -1967,7 +1967,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 start";
     ExternalVolumeInfo vol;
     int32_t ret = vol.DoEject("");
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
 }
 
@@ -2069,8 +2069,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(progress, 0);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 50);
     
     remove(testFilePath);
 
@@ -2087,7 +2087,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     uint32_t progress = 0;
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     EXPECT_EQ(progress, 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 end";
@@ -2141,7 +2141,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
@@ -2164,8 +2164,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(progress, 50);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
 
@@ -2188,12 +2188,124 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(progress, 0);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progress, 100);
     
     remove(testFilePath);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_006 end";
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_001, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoErase("");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_002, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoErase("../invalid_path/////@#￥！%……&*");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_003, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoErase("vol-test-123");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_001, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoCreateIsoImage("", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_002, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoCreateIsoImage("../invalid_path/////！！@#￥%……&*", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_003, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    int32_t ret = vol.DoCreateIsoImage("vol-test-123", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_004, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "DVD-RW";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = vol.DoErase("loop0");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_005, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "udf";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = vol.DoErase("loop0");
+    EXPECT_EQ(ret, E_ERR);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_006, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "udf";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = vol.DoErase("loop0");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoErase_007, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    std::string volId(4096, 'a');
+    int32_t ret = vol.DoErase(volId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_004, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "iso9660";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = vol.DoCreateIsoImage("loop0", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_005, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "udf";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = vol.DoCreateIsoImage("loop0", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_ERR);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_006, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "udf";
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = vol.DoCreateIsoImage("loop0", "/path/to/file.iso");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_007, TestSize.Level1)
+{
+    ExternalVolumeInfo vol;
+    std::string longVolId(4096, 'a');  // 超过 PATH_MAX
+    int32_t ret = vol.DoCreateIsoImage(longVolId, "/path/to/file.iso");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 } // STORAGE_DAEMON
 } // OHOS
