@@ -1583,9 +1583,8 @@ bool KeyManager::IsAppCloneUser(unsigned int user)
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
 {
-    std::string keyUeceDir = std::string(UECE_DIR) + "/" + std::to_string(user);
-    if (!IsDir(keyDir) || !IsDir(keyUeceDir)) {
-        LOGE("[L3:KeyManager] CheckAndDeleteEmptyEl5Directory: el5 directory not found for user %{public}u", user);
+    if (!IsDir(keyDir)) {
+        LOGE("[L3:KeyManager] CheckAndDeleteEmptyEl5Directory: el5 keyDir not found for user %{public}u", user);
         return -ENOENT;
     }
 
