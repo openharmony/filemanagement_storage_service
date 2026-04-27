@@ -171,15 +171,22 @@ std::string GphotoRealPath(const std::string &path)
 
 std::string GphotoGetTmpDir()
 {
+    if (!GphotoCheckDir(TMP_FULL_PATH)) {
+        if (!GphotoCreateDir(TMP_FULL_PATH)) {
+            LOGE("GphotoGetTmpDir: create base tmp dir failed errno=%{public}d", errno);
+            return "";
+        }
+    }
     DelTemp(TMP_FULL_PATH);
 
-    std::string tmpDir = GphotoRealPath(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
+    std::string tmpDir = std::string(TMP_FULL_PATH) + "/simple-gphotofs-XXXXXX";
     if (tmpDir.length() > PATH_MAX) {
         LOGE("GphotoGetTmpDir: path too long");
         return "";
     }
     char *cTempDir = ::strdup(tmpDir.c_str());
     if (cTempDir == nullptr) {
+        LOGE("GphotoGetTmpDir: strdup failed");
         return "";
     }
     char *cTmpDir = ::mkdtemp(cTempDir);
@@ -209,7 +216,7 @@ void DelTemp(const std::string &path)
             }
             std::string filePath;
             filePath.append(path).append("/").append(dirinfo->d_name);
-            if (OHOS::StorageDaemon::IsTempFolder(filePath, "simple-mtpfs")) {
+            if (OHOS::StorageDaemon::IsTempFolder(filePath, "simple-gphotofs")) {
                 OHOS::StorageDaemon::DeleteFile(filePath.c_str());
                 rmdir(filePath.c_str());
             }
@@ -309,7 +316,13 @@ bool GphotoRemoveDir(const std::string &dirName)
 
 bool GphotoCreateDir(const std::string &dirName)
 {
-    return ::mkdir(dirName.c_str(), S_IRWXU) == 0;
+    if (::mkdir(dirName.c_str(), S_IRWXU) == 0) {
+        return true;
+    }
+    if (errno == EEXIST) {
+        return GphotoCheckDir(dirName) && (::access(dirName.c_str(), W_OK | X_OK) == 0);
+    }
+    return false;
 }
 
 bool CreateTmpDir()
