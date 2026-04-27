@@ -47,7 +47,9 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     Parcel parcel;
     StorageManager::ExtBundleStats extbundlestats(businessName, businessSize, showFlag);
     extbundlestats.Marshalling(parcel);
-    extbundlestats.Unmarshalling(parcel);
+    auto result = extbundlestats.Unmarshalling(parcel);
+    delete result;
+    result = nullptr;
     return true;
 }
 } // namespace OHOS
