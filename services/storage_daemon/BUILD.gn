@@ -164,6 +164,9 @@ ohos_executable("storage_daemon") {
       "disk/src/disk_config.cpp",
       "disk/src/disk_info.cpp",
       "disk/src/disk_manager.cpp",
+      "disk_manager/src/disk/disk_utils.cpp",
+      "disk_manager/src/volume/volume_utils.cpp",
+      "disk_manager/src/volume/ivolume_operator.cpp",
       "netlink/src/netlink_data.cpp",
       "netlink/src/netlink_handler.cpp",
       "netlink/src/netlink_listener.cpp",
@@ -521,6 +524,7 @@ group("storage_daemon_unit_test") {
   if (storage_service_external_storage_manager) {
     deps += [
       "disk/test:storage_daemon_disk_test",
+      "disk_manager/test:storage_daemon_ext_storage_test",
       "netlink/test:storage_daemon_netlink_test",
       "volume/test:storage_daemon_volume_test",
     ]
