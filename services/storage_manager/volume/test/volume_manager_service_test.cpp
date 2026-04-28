@@ -1161,6 +1161,31 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_IsUsbFuseByType_0001, 
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_IsUsbFuseByType_0002
+ * @tc.name: Volume_manager_service_IsUsbFuseByType_0002
+ * @tc.desc: Test function of IsUsbFuseByType interface for success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_IsUsbFuseByType_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_IsUsbFuseByType_0002";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string fsType = "exfat";
+    system::SetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, true);
+    auto enabled = vmService.IsUsbFuseByType(fsType);
+    EXPECT_TRUE(enabled);
+
+    std::string fsTypeEmpty = "";
+    enabled = vmService.IsUsbFuseByType(fsTypeEmpty);
+    EXPECT_FALSE(enabled);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_IsUsbFuseByType_0002";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_MountUsbFuse_0001
  * @tc.name: Volume_manager_service_MountUsbFuse_0001
  * @tc.desc: Test function of MountUsbFuse interface for volume state is not unmounted.
