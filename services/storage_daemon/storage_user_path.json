@@ -464,6 +464,12 @@
             "gid": 7634
         },
         {
+            "path": "/data/service/el2/<userId>/fusion_awareness/rdb",
+            "mode": "0711",
+            "uid": 7634,
+            "gid": 7634
+        },
+        {
             "path": "/data/service/el2/<userId>/av_session",
             "mode": "0711",
             "uid": 6700,
