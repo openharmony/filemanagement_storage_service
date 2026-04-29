@@ -57,8 +57,8 @@ void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<Volume
                     volume->GetId().c_str(), (long long)freeSize);
             } else {
                 wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
-                LOGI("Volume mounted: id=%{public}s, freeSize=%{public}lld",
-                    volume->GetId().c_str(), (long long)freeSize);
+                LOGI("Volume mounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",
+                    volume->GetId().c_str(), volume->GetFsType(), (long long)freeSize);
             }
         } else {
             LOGW("Volume mounted: id=%{public}s, failed to get freeSize, ret=%{public}d",
