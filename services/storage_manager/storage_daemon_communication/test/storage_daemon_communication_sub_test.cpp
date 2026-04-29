@@ -1742,4 +1742,31 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Decrypt_0000, Test
     MockAllSuccess();
     EXPECT_EQ(sdCommunication->Decrypt(volumeId, pazzword), E_OK);
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Erase_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->Erase(volumeId), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->Erase(volumeId), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_CALL(*sd, Erase(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->Erase(volumeId), E_OK);
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_0000, TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+    std::string volumeId = "vol-2-5";
+    std::string filePath = "/data/test.iso";
+    MockConnectFail();
+    EXPECT_EQ(sdCommunication->CreateIsoImage(volumeId, filePath), E_SA_IS_NULLPTR);
+    MockStorageDaemonNullptr();
+    EXPECT_EQ(sdCommunication->CreateIsoImage(volumeId, filePath), E_SERVICE_IS_NULLPTR);
+    MockAllSuccess();
+    EXPECT_CALL(*sd, CreateIsoImage(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->CreateIsoImage(volumeId, filePath), E_OK);
+}
 }

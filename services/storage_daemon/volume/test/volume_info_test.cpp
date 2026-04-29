@@ -1396,5 +1396,133 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOpticalDriveOpsProgre
     StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOpticalDriveOpsProgress_004 end";
 }
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Erase_001, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "";
+    auto ret = mock.Erase(volId);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Erase_002, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-1";
+    std::string diskId = "disk-1-1";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 1);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string invalidVolId = "vol-1-2";
+    ret = mock.Erase(invalidVolId);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Erase_003, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 3);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoErase(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    ret = mock.Erase(volId);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Erase_004, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-4";
+    std::string diskId = "disk-1-4";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 4);
+    std::string diskType = "HDD";
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoErase(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    ret = mock.Erase(volId);
+    EXPECT_TRUE(ret == E_ERR);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_CreateIsoImage_001, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "";
+    std::string filePath = "/path/to/file.iso";
+
+    auto ret = mock.CreateIsoImage(volId, filePath);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_CreateIsoImage_002, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-5";
+    std::string diskId = "disk-1-5";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 5);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string invalidVolId = "vol-1-6";
+    std::string filePath = "/path/to/file.iso";
+    ret = mock.CreateIsoImage(invalidVolId, filePath);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_CreateIsoImage_003, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-7";
+    std::string diskId = "disk-1-7";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 7);
+    std::string filePath = "/path/to/file.iso";
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCreateIsoImage(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    ret = mock.CreateIsoImage(volId, filePath);
+    EXPECT_TRUE(ret == E_OK);
+}
+
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_CreateIsoImage_004, TestSize.Level1)
+{
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-8";
+    std::string diskId = "disk-1-8";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 8);
+    std::string filePath = "/path/to/file.iso";
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCreateIsoImage(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
+    EXPECT_TRUE(ret == E_OK);
+
+    ret = mock.CreateIsoImage(volId, filePath);
+    EXPECT_TRUE(ret == E_ERR);
+}
 } // STORAGE_DAEMON
 } // OHOS

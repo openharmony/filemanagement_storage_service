@@ -125,4 +125,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 81] void  GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
      [ipccode 82] void  Eject([in] String volId);
      [ipccode 83] void  GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
+ 	[ipccode 84] void Erase([in] String volId);
+ 	[ipccode 85] void CreateIsoImage([in] String volId, [in] String filePath);
 }

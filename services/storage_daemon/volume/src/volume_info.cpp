@@ -532,5 +532,31 @@ int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_
     LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
+
+int32_t VolumeInfo::Erase(const std::string &volId)
+{
+    LOGI("[L3:VolumeInfo] Erase: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = DoErase(volId);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoErase", err);
+        LOGE("[L3:VolumeInfo] DoErase :<<< EXIT FAILED <<<err: %{public}d", err);
+    } else {
+        LOGI("[L3:VolumeInfo] Erase: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return err;
+}
+
+int32_t VolumeInfo::CreateIsoImage(const std::string &volId, const std::string &filePath)
+{
+    LOGI("[L3:VolumeInfo] CreateIsoImage: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = DoCreateIsoImage(volId, filePath);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoCreateIsoImage", err);
+        LOGE("[L3:VolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<<err: %{public}d", err);
+    } else {
+        LOGI("[L3:VolumeInfo] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return err;
+}
 } // StorageDaemon
 } // OHOS

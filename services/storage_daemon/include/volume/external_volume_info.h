@@ -66,6 +66,8 @@ protected:
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) override;
     virtual int32_t DoEject(const std::string &volId) override;
     virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
+    virtual int32_t DoErase(const std::string &volId) override;
+    virtual int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) override;
 private:
     std::string devPath_;
     std::string devBackupPath_;

@@ -473,17 +473,17 @@ napi_value Eject(napi_env env, napi_callback_info info)
     }
     bool succ = false;
 
-    std::unique_ptr<char []> uuid;
-    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    std::unique_ptr<char []> volId;
+    tie(succ, volId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
-        LOGE("Eject uuid err");
+        LOGE("Eject volId err");
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
-    std::string uuidString(uuid.get());
-    auto cbexec = [uuidString]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->Eject(uuidString);
+    std::string volumeIdStr(volId.get());
+    auto cbexec = [volumeIdStr]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->Eject(volumeIdStr);
         LOGI("errNum return %{public}d", errNum);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -519,19 +519,19 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
     }
     bool succ = false;
 
-    std::unique_ptr<char []> uuid;
-    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    std::unique_ptr<char []> volId;
+    tie(succ, volId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
-        LOGE("GetOpticalDriveOpsProgress uuid err");
+        LOGE("GetOpticalDriveOpsProgress volId err");
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto progress = std::make_shared<uint32_t>(0);
-    std::string uuidString(uuid.get());
-    auto cbexec = [uuidString, progress]() -> NError {
+    std::string volumeIdStr(volId.get());
+    auto cbexec = [volumeIdStr, progress]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->
-                            GetOpticalDriveOpsProgress(uuidString, *progress);
+                            GetOpticalDriveOpsProgress(volumeIdStr, *progress);
         LOGI("errNum return %{public}d", errNum);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -554,6 +554,95 @@ napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
                 .Schedule(procedureName, cbexec, cbComplete).val_;
+    }
+}
+
+napi_value Erase(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        LOGI("Erase InitArgs err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+    std::unique_ptr<char []> volId;
+    tie(succ, volId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        LOGE("Erase volId err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    std::string volumeIdStr(volId.get());
+    auto cbexec = [volumeIdStr]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->Erase(volumeIdStr);
+        LOGI("errNum return %{public}d", errNum);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [](napi_env env, NError err)-> NVal {
+        if (err) {
+            return {env, err.GetNapiErr(env)};
+        }
+        return { NVal::CreateUndefined(env) };
+    };
+    std::string procedureName = "Erase";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbexec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbexec, cbComplete).val_;
+    }
+}
+
+napi_value CreateIsoImage(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+    std::unique_ptr<char []> volId;
+    tie(succ, volId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    std::unique_ptr<char []> filePath;
+    tie(succ, filePath, std::ignore) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUTF8String();
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    std::string volIdStr(volId.get());
+    std::string filePathStr(filePath.get());
+    auto cbExec = [volIdStr, filePathStr]() -> NError {
+        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->CreateIsoImage(volIdStr, filePathStr);
+        if (result != E_OK) {
+            return NError(Convert2JsErrNum(result));
+        }
+        return NError(ERRNO_NOERR);
+    };
+    auto cbComplete = [](napi_env env, NError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateUndefined(env) };
+    };
+
+    std::string procedureName = "CreateIsoImage";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+            .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 } // namespace ModuleVolumeManager

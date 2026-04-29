@@ -629,5 +629,27 @@ int32_t VolumeManagerService::GetOpticalDriveOpsProgress(const std::string &volu
     int32_t result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
     return result;
 }
+
+int32_t VolumeManagerService::Erase(const std::string &volumeId)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("Erase sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    return sdCommunication->Erase(volumeId);
+}
+
+int32_t VolumeManagerService::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("CreateIsoImage sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    return sdCommunication->CreateIsoImage(volumeId, filePath);
+}
 } // StorageManager
 } // OHOS

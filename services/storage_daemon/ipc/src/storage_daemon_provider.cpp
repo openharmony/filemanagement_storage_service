@@ -1805,5 +1805,49 @@ int32_t StorageDaemonProvider::GetOpticalDriveOpsProgress(const std::string &vol
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::Erase(const std::string &volId)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Erase: >>> ENTER <<< volId=%{public}s",
+        volId.c_str());
+    if (volId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().Erase(volId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<<  ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Erase", ret);
+    } else {
+        LOGI("[L1:StorageDaemonProvider] Erase: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::CreateIsoImage(const std::string &volId, const std::string &filePath)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreateIsoImage: >>> ENTER <<< volId=%{public}s,"
+        " filePath=%{public}s", volId.c_str(), filePath.c_str());
+    if (volId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().CreateIsoImage(volId, filePath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<<  ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::CreateIsoImage", ret);
+    } else {
+        LOGI("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

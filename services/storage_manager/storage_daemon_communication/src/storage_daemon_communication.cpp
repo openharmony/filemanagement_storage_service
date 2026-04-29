@@ -1263,5 +1263,35 @@ int32_t StorageDaemonCommunication::GetOpticalDriveOpsProgress(const std::string
     }
     return storageDaemon_->GetOpticalDriveOpsProgress(volumeId, progress);
 }
+
+int32_t StorageDaemonCommunication::Erase(const std::string &volumeId)
+{
+    LOGI("StorageDaemonCommunication::Erase start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Erase connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Erase service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Erase(volumeId);
+}
+
+int32_t StorageDaemonCommunication::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
+{
+    LOGI("StorageDaemonCommunication::CreateIsoImage start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::CreateIsoImage connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::CreateIsoImage service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->CreateIsoImage(volumeId, filePath);
+}
 } // namespace StorageManager
 } // namespace OHOS

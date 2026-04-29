@@ -2348,5 +2348,47 @@ int32_t StorageManagerProvider::GetOpticalDriveOpsProgress(const std::string &vo
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageManagerProvider::Erase(const std::string &volumeId)
+{
+    StorageRadar::ReportFucBehavior("Erase", DEFAULT_USERID, "Erase Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        LOGE("Erase permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Erase start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().Erase(volumeId);
+    StorageRadar::ReportFucBehavior("Erase", DEFAULT_USERID, "Erase End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Erase", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
+{
+    StorageRadar::ReportFucBehavior("CreateIsoImage", DEFAULT_USERID, "CreateIsoImage Begin", E_OK);
+    if (IsFilePathInvalid(filePath)) {
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER) || !IsCalledByFileMgr()) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::CreateIsoImage start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().CreateIsoImage(volumeId, filePath);
+    StorageRadar::ReportFucBehavior("CreateIsoImage", DEFAULT_USERID, "CreateIsoImage End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::CreateIsoImage", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageManager
 } // namespace OHOS

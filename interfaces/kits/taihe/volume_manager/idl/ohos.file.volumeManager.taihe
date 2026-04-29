@@ -69,3 +69,11 @@ function EjectSync(volumeId: String):void;
 @gen_async("getOpticalDriveOpsProgress")
 @gen_promise("getOpticalDriveOpsProgress")
 function GetOpticalDriveOpsProgressSync(volumeId: String):void;
+ 	 
+@gen_async("erase")
+@gen_promise("erase")
+function EraseSync(volumeId: String):void;
+ 	 
+@gen_async("createIsoImage")
+@gen_promise("createIsoImage")
+function CreateIsoImageSync(volumeId: String, filePath: String):void;

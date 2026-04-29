@@ -61,6 +61,8 @@ public:
 
     int32_t Eject(const std::string &volId);
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
+    int32_t Erase(const std::string &volId);
+    int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
 
 private:
     VolumeManager() = default;

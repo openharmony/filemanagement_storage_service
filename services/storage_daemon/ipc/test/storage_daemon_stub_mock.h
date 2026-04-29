@@ -114,6 +114,8 @@ public:
     MOCK_METHOD2(Decrypt, int32_t(const std::string &, const std::string &));
     MOCK_METHOD1(Eject, int32_t(const std::string &));
     MOCK_METHOD2(GetOpticalDriveOpsProgress, int32_t(const std::string &, uint32_t &));
+    MOCK_METHOD1(Erase, int32_t(const std::string &));
+    MOCK_METHOD2(CreateIsoImage, int32_t(const std::string &, const std::string &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS

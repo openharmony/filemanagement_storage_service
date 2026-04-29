@@ -85,6 +85,8 @@ public:
 
     int32_t Eject(const std::string &volId);
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
+    int32_t Erase(const std::string &volId);
+    int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -121,6 +123,8 @@ protected:
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) = 0;
     virtual int32_t DoEject(const std::string &volId) = 0;
     virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) = 0;
+    virtual int32_t DoErase(const std::string &volId) = 0;
+    virtual int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) = 0;
 
 private:
     std::string id_;

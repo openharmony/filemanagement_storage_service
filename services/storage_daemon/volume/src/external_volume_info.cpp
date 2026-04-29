@@ -1367,5 +1367,70 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
     LOGI("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return err;
 }
+
+int32_t ExternalVolumeInfo::DoErase(const std::string &volId)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoErase:>>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = 0;
+    string nodePath;
+    if (!GetRealPath("/dev/block/" + volId, nodePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoErase:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (IsFilePathInvalid(nodePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoErase:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L3:ExternalVolumeInfo] DoErase nodePath = %{public}s", nodePath.c_str());
+
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {};
+    std::string oddLabel = GetCDType(nodePath);
+    if (oddLabel.find("DVD") != std::string::npos) {
+        cmd = {"dvd+rw-format", "-force", nodePath};
+    } else {
+        cmd = {"wodim", "-v", "-eject", nodePath, "blank=fast"};
+    }
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoErase:<<< EXIT FAILED <<< failed for volId: %{public}s", volId.c_str());
+        return err;
+    } else {
+        LOGI("[L3:ExternalVolumeInfo] DoErase:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoCreateIsoImage(const std::string &volId, const std::string &filePath)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage:>>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = 0;
+    string nodePath;
+    if (!GetRealPath("/dev/block/" + volId, nodePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (IsFilePathInvalid(nodePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage nodePath = %{public}s", nodePath.c_str());
+
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {};
+    if (fsType_ == "iso9660") {
+        cmd = {"genisoimage", "-J", "-r", "-o", filePath, nodePath};
+    } else {
+        cmd = {"genisoimage", "-udf", "-o", filePath, nodePath};
+    }
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<< failed for volId: %{public}s",
+            volId.c_str());
+    } else {
+        LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    }
+    return err;
+}
 } // StorageDaemon
 } // OHOS

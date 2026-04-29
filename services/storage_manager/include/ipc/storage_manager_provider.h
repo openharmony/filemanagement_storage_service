@@ -193,6 +193,8 @@ public:
 
     int32_t Eject(const std::string &volumeId) override;
     int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress) override;
+    int32_t Erase(const std::string &volumeId) override;
+    int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath) override;
 
 private:
     StorageManagerProvider();

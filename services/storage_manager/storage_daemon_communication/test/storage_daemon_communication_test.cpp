@@ -1367,4 +1367,50 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOpticalDriveOpsProgress_0002";
 }
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Erase_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Erase_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "vol-1-1";
+    int32_t result = sdCommunication->Erase(volumeId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Erase_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Erase_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Erase_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "";
+    int32_t result = sdCommunication->Erase(volumeId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Erase_0001";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateIsoImage_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "vol-1-1";
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = sdCommunication->CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateIsoImage_0000";
+}
+
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateIsoImage_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string volumeId = "";
+    std::string filePath = "/path/to/file.iso";
+    int32_t result = sdCommunication->CreateIsoImage(volumeId, filePath);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateIsoImage_0001";
+}
 } // namespace
