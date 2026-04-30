@@ -34,7 +34,6 @@ namespace StorageManager {
 
 constexpr int32_t ARGC_COUNT_TWO = 2;
 constexpr int32_t ARGC_COUNT_THREE = 3;
-constexpr int32_t ARGC_COUNT_FOUR = 4;
 constexpr int32_t ARGC_COUNT_FIVE = 5;
 constexpr int32_t BITS_UNIT = 1024;
 constexpr int32_t SIGNIFICAND = 2;
