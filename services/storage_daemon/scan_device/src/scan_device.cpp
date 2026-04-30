@@ -572,7 +572,7 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
             continue;
         }
         if (totalSectors > UINT64_MAX - sectors) {
-            LOGE("GetUsedBytes: total sectors %{public}ld overflow detected for %{public}s", totalSectors,
+            LOGE("GetUsedBytes: total sectors %{public}llu overflow detected for %{public}s", totalSectors,
                  deviceName.c_str());
             closedir(dir);
             return 0;
@@ -582,7 +582,7 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
     }
     closedir(dir);
     uint64_t usedBytes = totalSectors * SECTOR_SIZE;
-    LOGI("GetUsedBytes success: %{public}ld", usedBytes);
+    LOGI("GetUsedBytes success: %{public}llu", usedBytes);
     return usedBytes;
 }
 
@@ -595,7 +595,7 @@ uint64_t ScanDevice::GetAvailableBytes(const std::string &deviceName)
         return 0;
     }
     uint64_t availableBytes = sizeBytes - usedBytes;
-    LOGI("GetAvailableBytes success: %{public}ld", availableBytes);
+    LOGI("GetAvailableBytes success: %{public}llu", availableBytes);
     return availableBytes;
 }
 
