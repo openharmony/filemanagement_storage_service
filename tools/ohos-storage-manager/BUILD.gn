@@ -16,7 +16,7 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_executable("ohos-storageManager") {
   branch_protector_ret = "pac_ret"
-
+  relative_install_dir = "cli_tool/executable"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -68,4 +68,11 @@ ohos_executable("ohos-storageManager") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+}
+
+ohos_prebuilt_etc("ohos_storageManager_config") {
+  source = "ohos-storageManager.json"
+  relative_install_dir = "../bin/cli_tool/configs"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
 }
