@@ -15,43 +15,44 @@
 
 #include "scan_device.h"
 
-#include <dirent.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/hdreg.h>
-#include <linux/nvme_ioctl.h>
-#include <cstring>
-#include <regex>
-#include <fstream>
-#include <sstream>
-#include <cstdlib>
+#include "storage_service_log.h"
 #include <cerrno>
 #include <charconv>
-#include "storage_service_log.h"
+#include <cstdlib>
+#include <cstring>
+#include <dirent.h>
+#include <fcntl.h>
+#include <fstream>
+#include <linux/hdreg.h>
+#include <linux/nvme_ioctl.h>
+#include <regex>
+#include <sstream>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr const char* ZERO_STRING = "0";
-constexpr const char* ONE_STRING = "1";
-constexpr const char* SPLIT_STRING = "/";
-constexpr const char* DEVICE_NUMBER_SPLIT = ":";
-constexpr const char* REMOVABLE_NODE = "/removable";
-constexpr const char* SD_STRING = "sd";
-constexpr const char* UFS_STRING = "ufs";
-constexpr const char* NVME_STRING = "nvme";
-constexpr const char* NVME0_STRING = "nvme0";
-constexpr const char* SIZE_NODE = "/size";
-constexpr const char* DEV_NODE = "/dev";
-constexpr const char* ROTATIONAL_NODE = "/queue/rotational";
-constexpr const char* STATE_NODE = "/device/state";
-constexpr const char* MODEL_NODE = "/device/model";
-constexpr const char* VENDOR_NODE = "/device/vendor";
+constexpr const char *ZERO_STRING = "0";
+constexpr const char *ONE_STRING = "1";
+constexpr const char *SPLIT_STRING = "/";
+constexpr const char *DEVICE_NUMBER_SPLIT = ":";
+constexpr const char *REMOVABLE_NODE = "/removable";
+constexpr const char *SD_STRING = "sd";
+constexpr const char *UFS_STRING = "ufs";
+constexpr const char *NVME_STRING = "nvme";
+constexpr const char *NVME0_STRING = "nvme0";
+constexpr const char *SIZE_NODE = "/size";
+constexpr const char *DEV_NODE = "/dev";
+constexpr const char *ROTATIONAL_NODE = "/queue/rotational";
+constexpr const char *STATE_NODE = "/device/state";
+constexpr const char *MODEL_NODE = "/device/model";
+constexpr const char *VENDOR_NODE = "/device/vendor";
 // 磁盘 ID 格式前缀
-constexpr const char* DISK_ID_PREFIX = "disk-";
-constexpr const char* DISK_ID_CONTACT = "-";
+constexpr const char *DISK_ID_PREFIX = "disk-";
+constexpr const char *DISK_ID_CONTACT = "-";
 // 用于匹配 SATA 端口标识符的正则表达式，例如 "ata1", "ata2"
-constexpr const char* ATA_PORT_PATTERN = "ata([0-9]+)";
+constexpr const char *ATA_PORT_PATTERN = "ata([0-9]+)";
 
 constexpr int NVME_IDENTIFY_DATA_SIZE = 4096;
 constexpr uint8_t NVME_ADMIN_IDENTIFY = 0x06;
@@ -61,7 +62,7 @@ const size_t NVME_BASE_LEN = 4;
 const char NVME_LINK = 'n';
 constexpr uint32_t NVME_SERIAL_NUMBER_OFFSET = 0x40;
 constexpr uint32_t NVME_SERIAL_NUMBER_LENGTH = 20;
-// 单个扇区上限
+ // 单个扇区上限
 constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
@@ -123,16 +124,13 @@ bool ScanDevice::IsValidNvmeDevice(const std::string &deviceName)
         LOGI("Ignore nvme0* node: %{public}s", deviceName.c_str());
         return false;
     }
-
     // 基础长度检查：nvmeXnY 至少需要 7 个字符 (nvme0n1)
     if (deviceName.size() < 7) {
         LOGI("Ignore nvme name too short: %{public}s", deviceName.c_str());
         return false;
     }
-
     // 验证格式为 nvme[数字]n[分区]
     size_t pos = NVME_BASE_LEN;
-
     // 验证并跳过控制器编号 (至少1位数字)
     if (!std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         LOGI("Ignore invalid nvme format: missing controller ID in %{public}s", deviceName.c_str());
@@ -141,14 +139,12 @@ bool ScanDevice::IsValidNvmeDevice(const std::string &deviceName)
     while (pos < deviceName.size() && std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         ++pos;
     }
-
     // 验证 'n' 字符存在
     if (pos >= deviceName.size() || deviceName[pos] != NVME_LINK) {
         LOGI("Ignore invalid nvme format: missing 'n' in %{public}s", deviceName.c_str());
         return false;
     }
     ++pos; // 跳过 'n'
-
     // 验证分区编号 (至少1位数字)
     if (pos >= deviceName.size() || !std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         LOGI("Ignore invalid nvme format: missing partition ID in %{public}s", deviceName.c_str());
@@ -160,20 +156,18 @@ bool ScanDevice::IsValidNvmeDevice(const std::string &deviceName)
 std::vector<BlockInfo> ScanDevice::GetDataDisks()
 {
     std::vector<BlockInfo> dataDisks;
-    DIR* dir = opendir(sysBlockPath.c_str());
+    DIR *dir = opendir(sysBlockPath.c_str());
     if (!dir) {
         LOGE("%{public}s open failed", sysBlockPath.c_str());
         return dataDisks;
     }
-
-    struct dirent* entry;
+    struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr) {
         std::string deviceName = entry->d_name;
         if (deviceName == "." || deviceName == "..") {
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-
         // 判断是否为 s* 节点或 nvme* 节点
         bool isSDevice = (deviceName.length() > 0 && deviceName[0] == 's');
         bool isNvmeDevice = (deviceName.find(NVME_STRING) == 0);
@@ -201,7 +195,6 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             dataDisks.push_back(blockInfo);
         }
     }
-
     closedir(dir);
     return dataDisks;
 }
@@ -214,7 +207,6 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks()
         LOGE("%{public}s open failed", sysBlockPath.c_str());
         return externalDisks;
     }
-
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr) {
         std::string deviceName = entry->d_name;
@@ -222,7 +214,6 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks()
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-
         // 判断是否为 s* 节点
         bool isSDevice = (deviceName.length() > 0 && deviceName[0] == 's');
         if (!isSDevice) {
@@ -241,53 +232,25 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks()
             externalDisks.push_back(blockInfo);
         }
     }
-
     closedir(dir);
     return externalDisks;
 }
 
-int ScanDevice::GetBlockInfo(const std::string& deviceName, const bool isNvmeDevice, BlockInfo& blockInfo)
+int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo)
 {
-    // 获取磁盘容量
     blockInfo.sizeBytes = GetDiskSize(deviceName);
-
-    // 获取厂家信息
     blockInfo.vendor = GetVendor(deviceName);
-
-    // 获取设备型号
     blockInfo.model = GetModel(deviceName);
-
-    // 获取接口类型
     blockInfo.interfaceType = GetInterfaceType(deviceName);
-
-    // 获取机械硬盘转速
     blockInfo.rpm = GetDiskRpm(deviceName, isNvmeDevice);
-
-    // 获取磁盘状态
     blockInfo.state = GetDiskState(deviceName);
-
-    // 获取介质类型
     blockInfo.mediaType = GetMediaType(deviceName, isNvmeDevice);
-
-    // 获取序列号
     blockInfo.serialNumber = GetSerialNumber(deviceName, isNvmeDevice);
-
-    // 获取PCIe路径
     blockInfo.pciePath = GetPciePath(deviceName);
-
-    // 获取磁盘ID
     blockInfo.diskId = GetDiskId(deviceName);
-
-    // 获取已使用容量
     blockInfo.usedBytes = GetUsedBytes(deviceName);
-
-    // 获取可用容量
     blockInfo.availableBytes = GetAvailableBytes(deviceName);
-
-    // 获取设备路径
     blockInfo.devicePath = GetDevicePath(deviceName);
-
-    // 获取物理接口
     blockInfo.port = GetPort(blockInfo.pciePath, isNvmeDevice);
 
     return 0;
@@ -310,11 +273,9 @@ bool ScanDevice::ParseStringToUlongLong(const std::string &str, unsigned long lo
     if (str.empty()) {
         return false;
     }
-
     result = 0;
     const char *begin = str.data();
     const char *end = str.data() + str.size();
-
     auto res = std::from_chars(begin, end, result, NUMBER_BASE);
     if (res.ec != std::errc{} || res.ptr == begin) {
         return false;
@@ -335,7 +296,6 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
 {
     std::string sizePath = sysBlockPath + SPLIT_STRING + deviceName + SIZE_NODE;
     std::string content;
-
     if (!ReadSysfsNode(sizePath, content)) {
         LOGE("GetDiskSize failed: read node of disk size failed");
         return 0;
@@ -365,11 +325,10 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
     return static_cast<uint64_t>(sectors) * SECTOR_SIZE;
 }
 
-std::string ScanDevice::GetVendor(const std::string& deviceName)
+std::string ScanDevice::GetVendor(const std::string &deviceName)
 {
     std::string vendorPath = sysBlockPath + SPLIT_STRING + deviceName + VENDOR_NODE;
     std::string content;
-
     if (ReadSysfsNode(vendorPath, content)) {
         LOGI("GetVendor success: %{public}s", content.c_str());
         return content;
@@ -378,11 +337,10 @@ std::string ScanDevice::GetVendor(const std::string& deviceName)
     return "Unknown";
 }
 
-std::string ScanDevice::GetModel(const std::string& deviceName)
+std::string ScanDevice::GetModel(const std::string &deviceName)
 {
     std::string modelPath = sysBlockPath + SPLIT_STRING + deviceName + MODEL_NODE;
     std::string content;
-
     if (ReadSysfsNode(modelPath, content)) {
         LOGI("GetModel success: %{public}s", content.c_str());
         return content;
@@ -391,7 +349,7 @@ std::string ScanDevice::GetModel(const std::string& deviceName)
     return "Unknown";
 }
 
-std::string ScanDevice::GetInterfaceType(const std::string& deviceName)
+std::string ScanDevice::GetInterfaceType(const std::string &deviceName)
 {
     if (deviceName.find(NVME_STRING) == 0) {
         return "NVMe";
@@ -403,7 +361,7 @@ std::string ScanDevice::GetInterfaceType(const std::string& deviceName)
     return "Unknown";
 }
 
-uint32_t ScanDevice::GetDiskRpm(const std::string& deviceName, const bool isNvmeDevice)
+uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice)
 {
     // NVME设备不用获取转速
     if (isNvmeDevice) {
@@ -422,16 +380,14 @@ uint32_t ScanDevice::GetDiskRpm(const std::string& deviceName, const bool isNvme
         close(fd);
         return 0;
     }
-
     close(fd);
     return static_cast<uint64_t>(hdId.cur_cyls);
 }
 
-std::string ScanDevice::GetDiskState(const std::string& deviceName)
+std::string ScanDevice::GetDiskState(const std::string &deviceName)
 {
     std::string statePath = sysBlockPath + SPLIT_STRING + deviceName + STATE_NODE;
     std::string content;
-
     if (ReadSysfsNode(statePath, content)) {
         LOGI("GetDiskState success: %{public}s", content.c_str());
         return content;
@@ -440,7 +396,7 @@ std::string ScanDevice::GetDiskState(const std::string& deviceName)
     return "Unknown";
 }
 
-MediaType ScanDevice::GetMediaType(const std::string& deviceName, const bool isNvmeDevice)
+MediaType ScanDevice::GetMediaType(const std::string &deviceName, const bool isNvmeDevice)
 {
     // Nvme结点暂定是SSD
     if (isNvmeDevice) {
@@ -448,7 +404,6 @@ MediaType ScanDevice::GetMediaType(const std::string& deviceName, const bool isN
     }
     std::string rotationalPath = sysBlockPath + SPLIT_STRING + deviceName + ROTATIONAL_NODE;
     std::string content;
-
     if (ReadSysfsNode(rotationalPath, content)) {
         LOGI("GetMediaType success: %{public}s", content.c_str());
         if (content == "0") {
@@ -462,7 +417,7 @@ MediaType ScanDevice::GetMediaType(const std::string& deviceName, const bool isN
 }
 
 // 去除字符串尾部空格
-std::string TrimTrailingSpaces(const std::string& str)
+std::string TrimTrailingSpaces(const std::string &str)
 {
     size_t len = str.length();
     while (len > 0 && str[len - 1] == ' ') {
@@ -480,7 +435,6 @@ std::string ScanDevice::GetSataSerialNumber(int fd)
         LOGE("GetSataSsdSerialNumber: execute ioctl failed");
         return "Unknown";
     }
-
     size_t len = sizeof(hdId.serial_no);
     std::string serial(reinterpret_cast<const char *>(hdId.serial_no), len);
     return TrimTrailingSpaces(serial);
@@ -505,8 +459,8 @@ std::string ScanDevice::GetNvmeSerialNumber(int fd)
         return "Unknown";
     }
     // 序列号位于偏移 0x40 (64) 处，长度为 20 字节
-    const char *serial_ptr = reinterpret_cast<const char *>(identifyData) + NVME_SERIAL_NUMBER_OFFSET;
-    std::string serial(serial_ptr, NVME_SERIAL_NUMBER_LENGTH);
+    const char *serialPtr = reinterpret_cast<const char *>(identifyData) + NVME_SERIAL_NUMBER_OFFSET;
+    std::string serial(serialPtr, NVME_SERIAL_NUMBER_LENGTH);
     return TrimTrailingSpaces(serial);
     // LCOV_EXCL_STOP
 }
@@ -537,13 +491,12 @@ std::string ScanDevice::GetSerialNumber(const std::string &deviceName, const boo
     return serial;
 }
 
-std::string ScanDevice::GetPciePath(const std::string& deviceName)
+std::string ScanDevice::GetPciePath(const std::string &deviceName)
 {
     // PCIe路径根据/sys/block/sda软链接指向的路径
     std::string devicePath = sysBlockPath + SPLIT_STRING + deviceName;
     char linkTarget[PATH_MAX];
     ssize_t len = readlink(devicePath.c_str(), linkTarget, sizeof(linkTarget) - 1);
-
     if (len > 0) {
         linkTarget[len] = '\0';
         LOGI("GetPciePath success: %{public}s", linkTarget);
@@ -553,30 +506,26 @@ std::string ScanDevice::GetPciePath(const std::string& deviceName)
     return "";
 }
 
-std::string ScanDevice::GetDiskId(const std::string& deviceName)
+std::string ScanDevice::GetDiskId(const std::string &deviceName)
 {
     std::string devPath = sysBlockPath + SPLIT_STRING + deviceName + DEV_NODE;
     std::string content;
-
     if (!ReadSysfsNode(devPath, content)) {
         LOGE("GetDiskId failed: read dev node failed");
         return "";
     }
-
     // 内容格式为 "主设备号:次设备号"
     size_t colonPos = content.find(DEVICE_NUMBER_SPLIT);
     if (colonPos == std::string::npos) {
         LOGE("GetDiskId failed: invalid dev node format");
         return "";
     }
-
     std::string major = content.substr(0, colonPos);
     std::string minor = content.substr(colonPos + 1);
     // 去除可能的换行符
     if (!minor.empty() && minor.back() == '\n') {
         minor.pop_back();
     }
-
     std::string diskId = DISK_ID_PREFIX + major + DISK_ID_CONTACT + minor;
     LOGI("GetDiskId success: %{public}s", diskId.c_str());
     return diskId;
@@ -590,7 +539,6 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
         LOGE("GetUsedBytes failed: open %{public}s failed", blockPath.c_str());
         return 0;
     }
-
     uint64_t totalSectors = 0;
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr) {
@@ -624,8 +572,8 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
             continue;
         }
         if (totalSectors > UINT64_MAX - sectors) {
-            LOGE("GetUsedBytes: total sectors %{public}ld overflow detected for %{public}s", deviceName.c_str(),
-                 totalSectors);
+            LOGE("GetUsedBytes: total sectors %{public}ld overflow detected for %{public}s", totalSectors,
+                 deviceName.c_str());
             closedir(dir);
             return 0;
         }
@@ -638,7 +586,7 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
     return usedBytes;
 }
 
-uint64_t ScanDevice::GetAvailableBytes(const std::string& deviceName)
+uint64_t ScanDevice::GetAvailableBytes(const std::string &deviceName)
 {
     uint64_t sizeBytes = GetDiskSize(deviceName);
     uint64_t usedBytes = GetUsedBytes(deviceName);
@@ -646,13 +594,12 @@ uint64_t ScanDevice::GetAvailableBytes(const std::string& deviceName)
         LOGE("GetAvailableBytes warning: sizeBytes < usedBytes");
         return 0;
     }
-
     uint64_t availableBytes = sizeBytes - usedBytes;
     LOGI("GetAvailableBytes success: %{public}ld", availableBytes);
     return availableBytes;
 }
 
-std::string ScanDevice::GetDevicePath(const std::string& deviceName)
+std::string ScanDevice::GetDevicePath(const std::string &deviceName)
 {
     std::string devicePath = devBlockPath + SPLIT_STRING + deviceName;
     LOGI("GetDevicePath success: %{public}s", devicePath.c_str());
@@ -670,7 +617,6 @@ std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDe
         LOGE("GetPort failed: pciePath is empty");
         return "";
     }
-
     // 查找 ata[数字] 模式
     std::regex ataPattern(ATA_PORT_PATTERN);
     std::smatch match;
@@ -679,7 +625,6 @@ std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDe
         LOGI("GetPort success: %{public}s", port.c_str());
         return port;
     }
-
     LOGE("GetPort failed: no ata* found in pciePath");
     return "";
 }

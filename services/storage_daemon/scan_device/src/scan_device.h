@@ -16,18 +16,14 @@
 #ifndef OHOS_STORAGE_DAEMON_SCAN_DEVICE_H
 #define OHOS_STORAGE_DAEMON_SCAN_DEVICE_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 namespace OHOS {
 namespace StorageDaemon {
 
-enum class MediaType {
-    SSD = 0,
-    HDD = 1,
-    UNKNOWN = 2
-};
+enum class MediaType { SSD = 0, HDD = 1, UNKNOWN = 2 };
 
 struct BlockInfo {
     uint64_t sizeBytes;        // 磁盘容量
@@ -66,14 +62,13 @@ public:
     std::vector<BlockInfo> GetExternalDisks();
 
 private:
-
     /**
      * 获取设备信息
      * @param deviceName 设备名称
      * @param blockInfo 输出的设备信息
      * @return 成功返回0，失败返回-1
      */
-    int GetBlockInfo(const std::string& deviceName, const bool isNvmeDevice, BlockInfo& blockInfo);
+    int GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo);
 
     /**
      * 读取sysfs节点内容
@@ -81,7 +76,7 @@ private:
      * @param content 输出内容
      * @return 成功返回true，失败返回false
      */
-    bool ReadSysfsNode(const std::string& path, std::string& content);
+    bool ReadSysfsNode(const std::string &path, std::string &content);
 
     /**
      * 读取removable节点内容
@@ -89,7 +84,7 @@ private:
      * @param isRemovable 是否可以移除
      * @return 读取成功返回true，失败返回false
      */
-    bool ReadRemovableNode(const std::string& deviceName, bool &isRemovable);
+    bool ReadRemovableNode(const std::string &deviceName, bool &isRemovable);
 
     /**
      * 判断是否是数据盘
@@ -105,49 +100,49 @@ private:
      * @param deviceName 设备名称
      * @return 容量（字节）
      */
-    uint64_t GetDiskSize(const std::string& deviceName);
+    uint64_t GetDiskSize(const std::string &deviceName);
 
     /**
      * 获取厂家信息
      * @param deviceName 设备名称
      * @return 厂家名称
      */
-    std::string GetVendor(const std::string& deviceName);
+    std::string GetVendor(const std::string &deviceName);
 
     /**
      * 获取设备型号
      * @param deviceName 设备名称
      * @return 设备型号
      */
-    std::string GetModel(const std::string& deviceName);
+    std::string GetModel(const std::string &deviceName);
 
     /**
      * 获取接口类型
      * @param deviceName 设备名称
      * @return 接口类型
      */
-    std::string GetInterfaceType(const std::string& deviceName);
+    std::string GetInterfaceType(const std::string &deviceName);
 
     /**
      * 获取机械硬盘转速
      * @param deviceName 设备名称
      * @return 转速（RPM）
      */
-    uint32_t GetDiskRpm(const std::string& deviceName, const bool isNvmeDevice);
+    uint32_t GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice);
 
     /**
      * 获取磁盘状态
      * @param deviceName 设备名称
      * @return 磁盘状态
      */
-    std::string GetDiskState(const std::string& deviceName);
+    std::string GetDiskState(const std::string &deviceName);
 
     /**
      * 获取介质类型
      * @param deviceName 设备名称
      * @return 介质类型
      */
-    MediaType GetMediaType(const std::string& deviceName, const bool isNvmeDevice);
+    MediaType GetMediaType(const std::string &deviceName, const bool isNvmeDevice);
 
     /**
      * 获取SATA类型设备序列号
@@ -168,42 +163,42 @@ private:
      * @param deviceName 设备名称
      * @return 序列号
      */
-    std::string GetSerialNumber(const std::string& deviceName, const bool isNvmeDevice);
+    std::string GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice);
 
     /**
      * 获取PCIe路径
      * @param deviceName 设备名称
      * @return PCIe路径
      */
-    std::string GetPciePath(const std::string& deviceName);
+    std::string GetPciePath(const std::string &deviceName);
 
     /**
      * 获取磁盘ID
      * @param deviceName 设备名称
      * @return 磁盘ID
      */
-    std::string GetDiskId(const std::string& deviceName);
+    std::string GetDiskId(const std::string &deviceName);
 
     /**
      * 获取已使用容量
      * @param deviceName 设备名称
      * @return 已使用容量（字节）
      */
-    uint64_t GetUsedBytes(const std::string& deviceName);
+    uint64_t GetUsedBytes(const std::string &deviceName);
 
     /**
      * 获取可用容量
      * @param deviceName 设备名称
      * @return 可用容量（字节）
      */
-    uint64_t GetAvailableBytes(const std::string& deviceName);
+    uint64_t GetAvailableBytes(const std::string &deviceName);
 
     /**
      * 获取设备路径
      * @param deviceName 设备名称
      * @return 设备路径
      */
-    std::string GetDevicePath(const std::string& deviceName);
+    std::string GetDevicePath(const std::string &deviceName);
 
     /**
      * 获取物理接口
@@ -214,7 +209,7 @@ private:
 
     bool IsValidNvmeDevice(const std::string &deviceName);
 
-    bool ParseStringToUlongLong(const std::string& str, unsigned long long& result);
+    bool ParseStringToUlongLong(const std::string &str, unsigned long long &result);
 
     std::string sysBlockPath;
     std::string devBlockPath;

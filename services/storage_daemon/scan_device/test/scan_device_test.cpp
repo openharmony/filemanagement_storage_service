@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
+#include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #include "scan_device.h"
@@ -26,6 +26,8 @@ namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
 
+constexpr int CREATE_MODE = 0755;
+
 class ScanDeviceTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -33,12 +35,10 @@ public:
     void SetUp();
     void TearDown();
 
-    // 创建模拟sysfs节点
-    void CreateMockSysfsNodes(const std::string& deviceName, bool removable = false,
-                              bool isUfs = false);
-
-    // 删除模拟sysfs节点
-    void DeleteMockSysfsNodes(const std::string& deviceName);
+    void CreateDirectory(const std::string &path);
+    void CreateFileWithContent(const std::string &filePath, const std::string &content);
+    void CreateMockSysfsNodes(const std::string &deviceName, bool removable = false, bool isUfs = false);
+    void DeleteMockSysfsNodes(const std::string &deviceName);
 
     std::string mockSysPath;
 };
@@ -63,102 +63,55 @@ void ScanDeviceTest::TearDown()
     system(("rm -rf " + mockSysPath).c_str());
 }
 
-void ScanDeviceTest::CreateMockSysfsNodes(const std::string& deviceName,
-                                          bool removable, bool isUfs)
+void ScanDeviceTest::CreateDirectory(const std::string &path)
 {
-    mkdir(mockSysPath.c_str(), 0755);
-    std::string devicePath = mockSysPath + "/" + deviceName;
-    if (mkdir(devicePath.c_str(), 0755) != 0) {
-        GTEST_LOG_(ERROR) << "Failed to create directory: " << devicePath;
-        return;
+    if (mkdir(path.c_str(), CREATE_MODE) != 0) {
+        GTEST_LOG_(ERROR) << "Failed to create directory: " << path;
     }
-    GTEST_LOG_(INFO) << "Created directory: " << devicePath;
-
-    // 创建device目录
-    std::string deviceDir = devicePath + "/device";
-    mkdir(deviceDir.c_str(), 0755);
-
-    // 创建queue目录
-    std::string queueDir = devicePath + "/queue";
-    mkdir(queueDir.c_str(), 0755);
-
-    // 创建size节点
-    std::string sizeFile = devicePath + "/size";
-    FILE* fp = fopen(sizeFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "2097152\n"); // 1GB
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: sizeFile open failed";
-    }
-
-    // 创建vendor节点
-    std::string vendorFile = deviceDir + "/vendor";
-    fp = fopen(vendorFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "TestVendor\n");
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: vendorFile open failed";
-    }
-
-    // 创建model节点
-    std::string modelFile = deviceDir + "/model";
-    fp = fopen(modelFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "TestModel\n");
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: modelFile open failed";
-    }
-
-    // 创建state节点
-    std::string stateFile = deviceDir + "/state";
-    fp = fopen(stateFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "running\n");
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: stateFile open failed";
-    }
-
-    // 创建rotational节点
-    std::string rotationalFile = queueDir + "/rotational";
-    fp = fopen(rotationalFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "0\n"); // SSD
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: rotationalFile open failed";
-    }
-
-    // 创建removable节点
-    std::string removableFile = devicePath + "/removable";
-    fp = fopen(removableFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, removable ? "1\n" : "0\n");
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: removableFile open failed";
-    }
-
-    // 创建dev节点
-    std::string devFile = devicePath + "/dev";
-    fp = fopen(devFile.c_str(), "w");
-    if (fp) {
-        fprintf(fp, "8:16\n");
-        fclose(fp);
-    } else {
-        GTEST_LOG_(INFO) << "ScanDeviceTest CreateMockSysfsNodes: devFile open failed";
-    }
-
-    // 创建软链接模拟PCIe路径
-    std::string linkTarget = isUfs ? "../../devices/ufs/ufs0/host0/target0:00:0/0:00:00:0/block/" + deviceName :
-                                     "../../devices/pci0000:00/0000:00:02.0/0000:01:00.0/host0/target0:00:0/0:00:00:0/block/" + deviceName;
-    symlink(linkTarget.c_str(), devicePath.c_str());
 }
 
-void ScanDeviceTest::DeleteMockSysfsNodes(const std::string& deviceName)
+void ScanDeviceTest::CreateFileWithContent(const std::string &filePath, const std::string &content)
+{
+    FILE *fp = fopen(filePath.c_str(), "w");
+    if (fp) {
+        fprintf(fp, "%s", content.c_str());
+        fclose(fp);
+    } else {
+        GTEST_LOG_(ERROR) << "Failed to create file: " << filePath;
+    }
+}
+
+void ScanDeviceTest::CreateMockSysfsNodes(const std::string &deviceName, bool removable, bool isUfs)
+{
+    CreateDirectory(mockSysPath);
+    std::string devicePath = mockSysPath + "/" + deviceName;
+    CreateDirectory(devicePath);
+    CreateDirectory(devicePath + "/device");
+    CreateDirectory(devicePath + "/queue");
+    CreateFileWithContent(devicePath + "/size", "2097152\n");
+    CreateFileWithContent(devicePath + "/device/vendor", "TestVendor\n");
+    CreateFileWithContent(devicePath + "/device/model", "TestModel\n");
+    CreateFileWithContent(devicePath + "/device/state", "running\n");
+    CreateFileWithContent(devicePath + "/queue/rotational", "0\n");
+    std::string removableContent = removable ? "1\n" : "0\n";
+    CreateFileWithContent(devicePath + "/removable", removableContent);
+    CreateFileWithContent(devicePath + "/dev", "8:16\n");
+
+    // 创建软链接模拟PCIe路径
+    std::string linkTarget;
+    if (isUfs) {
+        linkTarget = "/sys/devices/ufs/ufs0/host0/target0:00:0/0:00:00:0/block/" + deviceName;
+    } else {
+        linkTarget =
+            "/sys/devices/pci0000:00/0000:00:02.0/0000:01:00.0/host0/target0:00:0/0:00:00:0/block/" + deviceName;
+    }
+    unlink(devicePath.c_str());
+    if (symlink(linkTarget.c_str(), devicePath.c_str()) != 0) {
+        GTEST_LOG_(ERROR) << "Failed to create symlink for " << devicePath;
+    }
+}
+
+void ScanDeviceTest::DeleteMockSysfsNodes(const std::string &deviceName)
 {
     std::string devicePath = mockSysPath + "/" + deviceName;
     system(("rm -rf " + devicePath).c_str());
@@ -210,7 +163,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_003, TestSi
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
-    for (const auto& disk : result) {
+    for (const auto &disk : result) {
         EXPECT_TRUE(disk.pciePath.find("nvme0") == std::string::npos);
     }
 
@@ -228,9 +181,8 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_004, TestSi
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
-    for (const auto& disk : result) {
-        EXPECT_TRUE(disk.pciePath.empty() || disk.pciePath.find("nvme") != 0 ||
-                    disk.pciePath.find("nvme0") == 0 ||
+    for (const auto &disk : result) {
+        EXPECT_TRUE(disk.pciePath.empty() || disk.pciePath.find("nvme") != 0 || disk.pciePath.find("nvme0") == 0 ||
                     (disk.pciePath.find("nvme") == 0 && disk.pciePath.find('n') > 4));
     }
 
@@ -305,12 +257,12 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetExternalDisks_004, Te
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetExternalDisks_004 start";
     CreateMockSysfsNodes("sdb", true, false);
     std::string sizeFile = mockSysPath + "/sdb/size";
-    FILE* fp = fopen(sizeFile.c_str(), "w");
+    FILE *fp = fopen(sizeFile.c_str(), "w");
     if (fp) {
         fprintf(fp, "invalid_number\n");
         fclose(fp);
     }
-    
+
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetExternalDisks();
     EXPECT_EQ(result.size(), 1);
@@ -452,7 +404,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_IsDataDisk_005, TestSize
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_IsDataDisk_005 start";
     std::string devicePath = mockSysPath + "/sda";
     mkdir(devicePath.c_str(), 0755);
-    
+
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.IsDataDisk("sda", true, false);
     EXPECT_FALSE(ret);
@@ -646,7 +598,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_002, TestSi
 
     CreateMockSysfsNodes("sdc", true, false);
     std::string rotationalFile = mockSysPath + "/sdc/queue/rotational";
-    FILE* fp = fopen(rotationalFile.c_str(), "w");
+    FILE *fp = fopen(rotationalFile.c_str(), "w");
     if (fp) {
         fprintf(fp, "1\n");
         fclose(fp);
@@ -688,7 +640,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_004, TestSi
     mkdir(devicePath.c_str(), 0755);
     std::string deviceDir = devicePath + "/device";
     mkdir(deviceDir.c_str(), 0755);
-    
+
     ScanDevice scanner(mockSysPath);
     MediaType type = scanner.GetMediaType("sda", false);
     EXPECT_EQ(type, MediaType::UNKNOWN);
@@ -1022,7 +974,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_002, TestSize.
 
     CreateMockSysfsNodes("sdc", true, false);
     std::string devFile = mockSysPath + "/sdc/dev";
-    FILE* fp = fopen(devFile.c_str(), "w");
+    FILE *fp = fopen(devFile.c_str(), "w");
     if (fp) {
         fprintf(fp, "invalid_format\n");
         fclose(fp);
@@ -1046,7 +998,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_003, TestSize.
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_003 start";
     CreateMockSysfsNodes("sdc", true, false);
     std::string devFile = mockSysPath + "/sdc/dev";
-    FILE* fp = fopen(devFile.c_str(), "w");
+    FILE *fp = fopen(devFile.c_str(), "w");
     if (fp) {
         fprintf(fp, "8:32\n");
         fclose(fp);
@@ -1073,7 +1025,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetUsedBytes_001, TestSi
     std::string sdb1Dir = mockSysPath + "/sdb/sdb1";
     mkdir(sdb1Dir.c_str(), 0755);
     std::string sdb1Size = sdb1Dir + "/size";
-    FILE* fp = fopen(sdb1Size.c_str(), "w");
+    FILE *fp = fopen(sdb1Size.c_str(), "w");
     if (fp) {
         fprintf(fp, "1048576\n");
         fclose(fp);
@@ -1108,7 +1060,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetUsedBytes_002, TestSi
     std::string invalidDir = mockSysPath + "/sdb/sdb_invalid";
     mkdir(invalidDir.c_str(), 0755);
     std::string invalidSize = invalidDir + "/size";
-    FILE* fp = fopen(invalidSize.c_str(), "w");
+    FILE *fp = fopen(invalidSize.c_str(), "w");
     if (fp) {
         fprintf(fp, "1000\n");
         fclose(fp);
@@ -1144,7 +1096,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_001, T
     std::string sdb1Dir = mockSysPath + "/sdb/sdb1";
     mkdir(sdb1Dir.c_str(), 0755);
     std::string sdb1Size = sdb1Dir + "/size";
-    FILE* fp = fopen(sdb1Size.c_str(), "w");
+    FILE *fp = fopen(sdb1Size.c_str(), "w");
     if (fp) {
         fprintf(fp, "1048576\n");
         fclose(fp);
@@ -1168,7 +1120,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_002, T
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetAvailableBytes_002 start";
     CreateMockSysfsNodes("sdc", true, false);
     std::string sizeFile = mockSysPath + "/sdc/size";
-    FILE* fp = fopen(sizeFile.c_str(), "w");
+    FILE *fp = fopen(sizeFile.c_str(), "w");
     if (fp) {
         fprintf(fp, "1000\n");
         fclose(fp);
@@ -1213,7 +1165,9 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDevicePath_001, TestS
 HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetPort_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPort_001 start";
-    std::string linkTarget = "/sys/devices/platform/b8000000.hi_pcie/pci0001:00/0001:00:00.0/0001:01:00.0/ata1/host0/target0:0:0/0:0:0:0/block/sda";
+    std::string linkTarget =
+        "/sys/devices/platform/b8000000.hi_pcie/pci0001:00/0001:00:00.0/0001:01:00.0/ata1/host0/target0:0:0/0:0:0:0/"
+        "block/sda";
 
     ScanDevice scanner(mockSysPath);
     std::string port = scanner.GetPort(linkTarget, false);
@@ -1260,14 +1214,15 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_NewFields_001, TestSize.
     std::string sdb1Dir = mockSysPath + "/sdb/sdb1";
     mkdir(sdb1Dir.c_str(), 0755);
     std::string sdb1Size = sdb1Dir + "/size";
-    FILE* fp = fopen(sdb1Size.c_str(), "w");
+    FILE *fp = fopen(sdb1Size.c_str(), "w");
     if (fp) {
         fprintf(fp, "1048576\n");
         fclose(fp);
     }
     std::string devicePath = mockSysPath + "/sdb";
     remove(devicePath.c_str());
-    std::string linkTarget = "../../devices/pci0000:00/0000:00:02.0/0000:01:00.0/ata1/host0/target0:00:0/0:00:00:0/block/sdb";
+    std::string linkTarget =
+        "../../devices/pci0000:00/0000:00:02.0/0000:01:00.0/ata1/host0/target0:00:0/0:00:00:0/block/sdb";
     symlink(linkTarget.c_str(), devicePath.c_str());
 
     ScanDevice scanner(mockSysPath);
@@ -1297,7 +1252,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_TRUE(ret);
     EXPECT_EQ(result, 12345);
 
@@ -1316,7 +1271,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_FALSE(ret);
     EXPECT_EQ(result, 0);
 
@@ -1335,7 +1290,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_FALSE(ret);
     EXPECT_EQ(result, 0);
 
@@ -1355,7 +1310,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_TRUE(ret);
     EXPECT_EQ(result, 12345);
 
@@ -1375,7 +1330,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_FALSE(ret);
     EXPECT_EQ(result, 0);
 
@@ -1394,7 +1349,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_FALSE(ret);
     EXPECT_EQ(result, 123);
 
@@ -1413,7 +1368,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_TRUE(ret);
     EXPECT_EQ(result, 12345);
 
@@ -1432,7 +1387,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseStringToUlongLong_0
     unsigned long long result = 0;
     ScanDevice scanner(mockSysPath);
     bool ret = scanner.ParseStringToUlongLong(input, result);
-    
+
     EXPECT_FALSE(ret);
     EXPECT_EQ(result, 0);
 
@@ -1647,7 +1602,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_IsValidNvmeDevice_08, Te
 
     // nvme1nn: 长度7, 控制器是1, 但'n'后面是'n'而不是数字
     EXPECT_FALSE(scanner.IsValidNvmeDevice("nvme1nn"));
-    
+
     // nvme1n0: 长度7, 合法
     EXPECT_TRUE(scanner.IsValidNvmeDevice("nvme1n0"));
 
@@ -1667,7 +1622,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_IsValidNvmeDevice_09, Te
     // nvme123: 长度6, 小于7，已被长度检查拦截，但为了覆盖逻辑，测试更长的
     // nvme12345: 长度8, 控制器是12345, 后面没有'n'
     EXPECT_FALSE(scanner.IsValidNvmeDevice("nvme12345"));
-    
+
     // nvme123n: 长度8, 控制器123, 有'n', 但没有分区ID
     EXPECT_FALSE(scanner.IsValidNvmeDevice("nvme123n"));
 
