@@ -61,6 +61,8 @@ const size_t NVME_BASE_LEN = 4;
 const char NVME_LINK = 'n';
 constexpr uint32_t NVME_SERIAL_NUMBER_OFFSET = 0x40;
 constexpr uint32_t NVME_SERIAL_NUMBER_LENGTH = 20;
+// 单个扇区上限
+constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
     : sysBlockPath(sysBlockPath), devBlockPath(DEV_NODE)
@@ -609,10 +611,21 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
         if (!ParseStringToUlongLong(content, sectors)) {
             continue;
         }
+        // LCOV_EXCL_START
+        if (sectors > MAX_SAFE_SECTORS_PER_PARTITION) {
+            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}llu sectors, skipping.", 
+                 name.c_str(), sectors);
+            continue;
+        }
+        if (totalSectors > UINT64_MAX - sectors) {
+            LOGE("GetUsedBytes: total sectors overflow detected for %{public}s", deviceName.c_str());
+            closedir(dir);
+            return 0;
+        }
+        // LCOV_EXCL_STOP
         totalSectors += sectors;
     }
     closedir(dir);
-
     uint64_t usedBytes = totalSectors * SECTOR_SIZE;
     LOGI("GetUsedBytes success: %{public}ld", usedBytes);
     return usedBytes;
