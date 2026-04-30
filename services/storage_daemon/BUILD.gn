@@ -129,7 +129,7 @@ ohos_executable("storage_daemon") {
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/storage_xcollie.cpp",
-	"scan_device/src/scan_device.cpp",
+    "scan_device/src/scan_device.cpp",
   ]
 
   defines = [
@@ -510,7 +510,7 @@ group("storage_daemon_unit_test") {
     "quota/test:storage_daemon_quota_test",
     "user/test:storage_daemon_user_test",
     "utils/test:storage_daemon_utils_test",
-	"scan_device/test:storage_daemon_scan_device_test",
+    "scan_device/test:storage_daemon_scan_device_test",
   ]
 
   if (storage_service_user_crypto_manager) {
