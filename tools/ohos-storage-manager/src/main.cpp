@@ -36,6 +36,8 @@ constexpr int32_t ARGC_COUNT_TWO = 2;
 constexpr int32_t ARGC_COUNT_THREE = 3;
 constexpr int32_t ARGC_COUNT_FOUR = 4;
 constexpr int32_t ARGC_COUNT_FIVE = 5;
+constexpr int32_t BITS_UNIT = 1024;
+constexpr int32_t SIGNIFICAND = 2;
 
 
 std::string FormatBytes(int64_t bytes)
@@ -43,12 +45,12 @@ std::string FormatBytes(int64_t bytes)
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
     int32_t i = 0;
     double size = static_cast<double>(bytes);
-    while (size >= 1024 && i < 4) {
-        size /= 1024;
+    while (size >= BITS_UNIT && i < 4) {
+        size /= BITS_UNIT;
         i++;
     }
     std::ostringstream ss;
-    ss << std::fixed << std::setprecision(2) << size << units[i];
+    ss << std::fixed << std::setprecision(SIGNIFICAND) << size << units[i];
     return ss.str();
 }
 
