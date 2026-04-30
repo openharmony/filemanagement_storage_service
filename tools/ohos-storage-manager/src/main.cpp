@@ -38,14 +38,15 @@ constexpr int32_t ARGC_COUNT_FOUR = 4;
 constexpr int32_t ARGC_COUNT_FIVE = 5;
 constexpr int32_t BITS_UNIT = 1024;
 constexpr int32_t SIGNIFICAND = 2;
+constexpr int32_t UNITS_SIZE = 5;
 
 
 std::string FormatBytes(int64_t bytes)
 {
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-    int32_t i = 0;
+    int32_t i = 1;
     double size = static_cast<double>(bytes);
-    while (size >= BITS_UNIT && i < 4) {
+    while (size >= BITS_UNIT && i < UNITS_SIZE) {
         size /= BITS_UNIT;
         i++;
     }
