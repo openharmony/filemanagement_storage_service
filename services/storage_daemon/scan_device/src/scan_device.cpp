@@ -356,10 +356,12 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         LOGE("GetDiskSize: failed to parse size value from %{public}s", content.c_str());
         return 0;
     }
+    // LCOV_EXCL_START
     if (sectors > UINT64_MAX / SECTOR_SIZE) {
         LOGE("GetDiskSize: used bytes overflow detected for %{public}s", deviceName.c_str());
         return 0;
     }
+    // LCOV_EXCL_STOP
     return static_cast<uint64_t>(sectors) * SECTOR_SIZE;
 }
 
