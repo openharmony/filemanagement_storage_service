@@ -448,7 +448,7 @@ std::string ScanDevice::GetNvmeSerialNumber(int fd)
     struct nvme_admin_cmd cmd = {0};
     cmd.opcode = NVME_ADMIN_IDENTIFY;
     cmd.nsid = 0;
-    cmd.addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(identifyData));
+    cmd.addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(identifyData));
     cmd.data_len = NVME_IDENTIFY_DATA_SIZE;
     cmd.cdw10 = 1;
     cmd.cdw11 = 0;
