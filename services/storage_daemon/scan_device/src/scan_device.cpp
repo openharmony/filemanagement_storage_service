@@ -356,6 +356,10 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         LOGE("GetDiskSize: failed to parse size value from %{public}s", content.c_str());
         return 0;
     }
+    if (sectors > UINT64_MAX / SECTOR_SIZE) {
+        LOGE("GetDiskSize: used bytes overflow detected for %{public}s", deviceName.c_str());
+        return 0;
+    }
     return static_cast<uint64_t>(sectors) * SECTOR_SIZE;
 }
 
@@ -613,12 +617,13 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
         }
         // LCOV_EXCL_START
         if (sectors > MAX_SAFE_SECTORS_PER_PARTITION) {
-            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}llu sectors, skipping.", 
+            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}llu sectors, skipping.",
                  name.c_str(), sectors);
             continue;
         }
         if (totalSectors > UINT64_MAX - sectors) {
-            LOGE("GetUsedBytes: total sectors overflow detected for %{public}s", deviceName.c_str());
+            LOGE("GetUsedBytes: total sectors %{public}ld overflow detected for %{public}s", deviceName.c_str(),
+                 totalSectors);
             closedir(dir);
             return 0;
         }
