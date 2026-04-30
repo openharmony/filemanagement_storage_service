@@ -257,8 +257,6 @@ int HandleGetCurrentBundleStats(sptr<IStorageManager> proxy, int argc, char**)
     return CmdGetCurrentBundleStats(proxy);
 }
 
-
-
 void PrintUsage()
 {
     std::cerr << "Usage: ohos-storage-manager <command> [options]" << std::endl;
