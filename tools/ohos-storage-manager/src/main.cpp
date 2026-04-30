@@ -32,16 +32,16 @@
 namespace OHOS {
 namespace StorageManager {
 
-const int32_t& ARGC_COUNT_TWO = 2;
-const int32_t& ARGC_COUNT_THREE = 3;
-const int32_t& ARGC_COUNT_FOUR = 4;
-const int32_t& ARGC_COUNT_FIVE = 5;
+constexpr int32_t ARGC_COUNT_TWO = 2;
+constexpr int32_t ARGC_COUNT_THREE = 3;
+constexpr int32_t ARGC_COUNT_FOUR = 4;
+constexpr int32_t ARGC_COUNT_FIVE = 5;
 
 
 std::string FormatBytes(int64_t bytes)
 {
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-    int i = 0;
+    int32_t i = 0;
     double size = static_cast<double>(bytes);
     while (size >= 1024 && i < 4) {
         size /= 1024;
@@ -67,7 +67,7 @@ void PrintSuccess(const std::string& data)
     std::cout << "{\"success\":true,\"data\":" << data << "}" << std::endl;
 }
 
-void PrintError(int code, const std::string& message)
+void PrintError(int32_t code, const std::string& message)
 {
     std::cout << "{\"success\":false,\"error\":{\"code\":" << code
               << ",\"message\":\"" << message << "\"}}" << std::endl;
@@ -83,7 +83,7 @@ sptr<IStorageManager> GetStorageManagerProxy()
     return obj ? iface_cast<IStorageManager>(obj) : nullptr;
 }
 
-int CmdGetTotalSize(sptr<IStorageManager> proxy)
+int32_t CmdGetTotalSize(sptr<IStorageManager> proxy)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -101,7 +101,7 @@ int CmdGetTotalSize(sptr<IStorageManager> proxy)
     return 0;
 }
 
-int CmdGetFreeSize(sptr<IStorageManager> proxy)
+int32_t CmdGetFreeSize(sptr<IStorageManager> proxy)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -119,7 +119,7 @@ int CmdGetFreeSize(sptr<IStorageManager> proxy)
     return 0;
 }
 
-int CmdGetSystemSize(sptr<IStorageManager> proxy)
+int32_t CmdGetSystemSize(sptr<IStorageManager> proxy)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -137,7 +137,7 @@ int CmdGetSystemSize(sptr<IStorageManager> proxy)
     return 0;
 }
 
-int CmdGetUserStorageStats(sptr<IStorageManager> proxy, int32_t userId)
+int32_t CmdGetUserStorageStats(sptr<IStorageManager> proxy, int32_t userId)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -161,7 +161,7 @@ int CmdGetUserStorageStats(sptr<IStorageManager> proxy, int32_t userId)
     return 0;
 }
 
-int CmdGetBundleStats(sptr<IStorageManager> proxy, const std::string& packageName, int32_t appIndex)
+int32_t CmdGetBundleStats(sptr<IStorageManager> proxy, const std::string& packageName, int32_t appIndex)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -186,7 +186,7 @@ int CmdGetBundleStats(sptr<IStorageManager> proxy, const std::string& packageNam
     return 0;
 }
 
-int CmdGetCurrentBundleStats(sptr<IStorageManager> proxy)
+int32_t CmdGetCurrentBundleStats(sptr<IStorageManager> proxy)
 {
     if (!proxy) {
         PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
@@ -211,27 +211,27 @@ int CmdGetCurrentBundleStats(sptr<IStorageManager> proxy)
 
 using CommandHandler = int(*)(sptr<IStorageManager>, int, char**);
 
-int HandleGetTotalSize(sptr<IStorageManager> proxy, int argc, char**)
+int32_t HandleGetTotalSize(sptr<IStorageManager> proxy, int32_t argc, char**)
 {
     return CmdGetTotalSize(proxy);
 }
 
-int HandleGetFreeSize(sptr<IStorageManager> proxy, int argc, char**)
+int32_t HandleGetFreeSize(sptr<IStorageManager> proxy, int32_t argc, char**)
 {
     return CmdGetFreeSize(proxy);
 }
 
-int HandleGetSystemSize(sptr<IStorageManager> proxy, int argc, char**)
+int32_t HandleGetSystemSize(sptr<IStorageManager> proxy, int32_t argc, char**)
 {
     return CmdGetSystemSize(proxy);
 }
 
-int HandleGetUserStorageStats(sptr<IStorageManager> proxy, int argc, char** argv)
+int32_t HandleGetUserStorageStats(sptr<IStorageManager> proxy, int32_t argc, char** argv)
 {
     int32_t userId = -1;
     if (argc > ARGC_COUNT_THREE) {
         std::vector<std::string> args;
-        for (int i = 2; i < argc; i++) {
+        for (int32_t i = 2; i < argc; i++) {
             args.push_back(argv[i]);
         }
         userId = atoi(GetOption(args, "--userId").c_str());
@@ -239,14 +239,14 @@ int HandleGetUserStorageStats(sptr<IStorageManager> proxy, int argc, char** argv
     return CmdGetUserStorageStats(proxy, userId);
 }
 
-int HandleGetBundleStats(sptr<IStorageManager> proxy, int argc, char** argv)
+int32_t HandleGetBundleStats(sptr<IStorageManager> proxy, int32_t argc, char** argv)
 {
     if (argc < ARGC_COUNT_FIVE) {
         PrintError(E_PARAMS_INVALID, "missing packageName argument");
         return 1;
     }
     std::vector<std::string> args;
-    for (int i = 2; i < argc; i++) {
+    for (int32_t i = 2; i < argc; i++) {
         args.push_back(argv[i]);
     }
     std::string packageName = GetOption(args, "--packageName");
@@ -258,7 +258,7 @@ int HandleGetBundleStats(sptr<IStorageManager> proxy, int argc, char** argv)
     return CmdGetBundleStats(proxy, packageName, appIndex);
 }
 
-int HandleGetCurrentBundleStats(sptr<IStorageManager> proxy, int argc, char**)
+int32_t HandleGetCurrentBundleStats(sptr<IStorageManager> proxy, int32_t argc, char**)
 {
     return CmdGetCurrentBundleStats(proxy);
 }
@@ -282,7 +282,7 @@ void PrintUsage()
 } // namespace StorageManager
 } // namespace OHOS
 
-int main(int argc, char** argv)
+int32_t main(int32_t argc, char** argv)
 {
     using namespace OHOS::StorageManager;
 

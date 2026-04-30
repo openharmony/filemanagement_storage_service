@@ -1,8 +1,8 @@
 {
-  "name": "ohos-storagManager",
+  "name": "ohos-storageManager",
   "version": "1.0.0",
   "description": "Storage manager CLI tool for querying storage statistics. Used for retrieving disk space information and application storage usage. Does not support real-time storage monitoring or modification.",
-  "executablePath": "/system/bin/cli_tool/executable/ohos-storagManager",
+  "executablePath": "/system/bin/cli_tool/executable/ohos-storageManager",
   "requirePermissions": [
     "ohos.permission.STORAGE_MANAGER"
   ],
