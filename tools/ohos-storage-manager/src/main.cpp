@@ -32,6 +32,12 @@
 namespace OHOS {
 namespace StorageManager {
 
+const int32_t& ARGC_COUNT_TWO = 2;
+const int32_t& ARGC_COUNT_THREE = 3;
+const int32_t& ARGC_COUNT_FOUR = 4;
+const int32_t& ARGC_COUNT_FIVE = 5;
+
+
 std::string FormatBytes(int64_t bytes)
 {
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
@@ -223,7 +229,7 @@ int HandleGetSystemSize(sptr<IStorageManager> proxy, int argc, char**)
 int HandleGetUserStorageStats(sptr<IStorageManager> proxy, int argc, char** argv)
 {
     int32_t userId = -1;
-    if (argc > 3) {
+    if (argc > ARGC_COUNT_THREE) {
         std::vector<std::string> args;
         for (int i = 2; i < argc; i++) {
             args.push_back(argv[i]);
@@ -235,7 +241,7 @@ int HandleGetUserStorageStats(sptr<IStorageManager> proxy, int argc, char** argv
 
 int HandleGetBundleStats(sptr<IStorageManager> proxy, int argc, char** argv)
 {
-    if (argc < 5) {
+    if (argc < ARGC_COUNT_FIVE) {
         PrintError(E_PARAMS_INVALID, "missing packageName argument");
         return 1;
     }
@@ -248,7 +254,7 @@ int HandleGetBundleStats(sptr<IStorageManager> proxy, int argc, char** argv)
         PrintError(E_PARAMS_INVALID, "missing packageName argument");
         return 1;
     }
-    int32_t appIndex = (argc > 5) ? atoi(GetOption(args, "--appIndex").c_str()) : 0;
+    int32_t appIndex = (argc > ARGC_COUNT_FIVE) ? atoi(GetOption(args, "--appIndex").c_str()) : 0;
     return CmdGetBundleStats(proxy, packageName, appIndex);
 }
 
@@ -259,7 +265,7 @@ int HandleGetCurrentBundleStats(sptr<IStorageManager> proxy, int argc, char**)
 
 void PrintUsage()
 {
-    std::cerr << "Usage: ohos-storage-manager <command> [options]" << std::endl;
+    std::cerr << "Usage: ohos-storageManager <command> [options]" << std::endl;
     std::cerr << std::endl;
     std::cerr << "Commands:" << std::endl;
     std::cerr << "  get-total-size                    Get total storage size" << std::endl;
@@ -280,7 +286,7 @@ int main(int argc, char** argv)
 {
     using namespace OHOS::StorageManager;
 
-    if (argc < 2) {
+    if (argc < ARGC_COUNT_TWO) {
         PrintUsage();
         return 1;
     }

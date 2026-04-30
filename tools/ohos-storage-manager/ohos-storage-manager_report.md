@@ -78,7 +78,7 @@ CLI Handler -> GetStorageManagerProxy() -> iface_cast<IStorageManager>() -> prox
 
 ### 命名与调用风格
 
-- [x] 使用统一前缀 `ohos-storage-manager`
+- [x] 使用统一前缀 `ohos-storageManager`
 - [x] 子命令使用动词-名词结构
 - [x] 参数只提供长选项（如 `--volume-id`、`--user-id`）
 - [x] 禁止短选项
@@ -115,7 +115,7 @@ CLI Handler -> GetStorageManagerProxy() -> iface_cast<IStorageManager>() -> prox
 ### 查询存储总空间
 
 ```bash
-ohos-storage-manager get-total-size
+ohos-storageManager get-total-size
 ```
 
 输出：
@@ -126,7 +126,7 @@ ohos-storage-manager get-total-size
 ### 查询剩余空间
 
 ```bash
-ohos-storage-manager get-free-size
+ohos-storageManager get-free-size
 ```
 
 输出：
@@ -137,7 +137,7 @@ ohos-storage-manager get-free-size
 ### 查询系统分区大小
 
 ```bash
-ohos-storage-manager get-system-size
+ohos-storageManager get-system-size
 ```
 
 输出：
@@ -148,7 +148,7 @@ ohos-storage-manager get-system-size
 ### 查询用户存储统计
 
 ```bash
-ohos-storage-manager get-user-storage-stats 100
+ohos-storageManager get-user-storage-stats 100
 ```
 
 输出：
@@ -159,7 +159,7 @@ ohos-storage-manager get-user-storage-stats 100
 ### 查询指定应用存储统计
 
 ```bash
-ohos-storage-manager get-bundle-stats com.example.myapp 0
+ohos-storageManager get-bundle-stats com.example.myapp 0
 ```
 
 输出：
@@ -170,7 +170,7 @@ ohos-storage-manager get-bundle-stats com.example.myapp 0
 ### 查询当前应用存储统计
 
 ```bash
-ohos-storage-manager get-current-bundle-stats
+ohos-storageManager get-current-bundle-stats
 ```
 
 输出：
@@ -181,7 +181,7 @@ ohos-storage-manager get-current-bundle-stats
 ### 错误响应示例
 
 ```bash
-ohos-storage-manager unknown-cmd
+ohos-storageManager unknown-cmd
 ```
 
 输出：

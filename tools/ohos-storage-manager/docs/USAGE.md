@@ -1,13 +1,13 @@
-# ohos-storage-manager Usage Guide
+# ohos-storageManager Usage Guide
 
 ## Overview
 
-`ohos-storage-manager` is a command-line tool for querying storage information on HarmonyOS devices. It provides access to storage statistics through the StorageManager System Ability.
+`ohos-storageManager` is a command-line tool for querying storage information. It provides access to storage statistics through the StorageManager System Ability.
 
 ## Syntax
 
 ```
-ohos-storage-manager <command> [options]
+ohos-storageManager <command> [options]
 ```
 
 ## Commands
@@ -17,7 +17,7 @@ ohos-storage-manager <command> [options]
 Get the total storage capacity of the device.
 
 ```
-ohos-storage-manager get-total-size
+ohos-storageManager get-total-size
 ```
 
 **Output:**
@@ -30,7 +30,7 @@ ohos-storage-manager get-total-size
 Get the available free storage space.
 
 ```
-ohos-storage-manager get-free-size
+ohos-storageManager get-free-size
 ```
 
 **Output:**
@@ -43,7 +43,7 @@ ohos-storage-manager get-free-size
 Get the size of the system partition.
 
 ```
-ohos-storage-manager get-system-size
+ohos-storageManager get-system-size
 ```
 
 **Output:**
@@ -56,7 +56,7 @@ ohos-storage-manager get-system-size
 Get storage statistics for user data.
 
 ```
-ohos-storage-manager get-user-storage-stats [userId]
+ohos-storageManager get-user-storage-stats [userId]
 ```
 
 **Parameters:**
@@ -72,7 +72,7 @@ ohos-storage-manager get-user-storage-stats [userId]
 Get storage statistics for a specific application bundle.
 
 ```
-ohos-storage-manager get-bundle-stats <packageName> [appIndex]
+ohos-storageManager get-bundle-stats <packageName> [appIndex]
 ```
 
 **Parameters:**
@@ -89,7 +89,7 @@ ohos-storage-manager get-bundle-stats <packageName> [appIndex]
 Get storage statistics for the current running application.
 
 ```
-ohos-storage-manager get-current-bundle-stats
+ohos-storageManager get-current-bundle-stats
 ```
 
 **Output:**
@@ -117,19 +117,19 @@ All commands return JSON with error information on failure:
 ## Help
 
 ```
-ohos-storage-manager --help
+ohos-storageManager --help
 ```
 
 or
 
 ```
-ohos-storage-manager -h
+ohos-storageManager -h
 ```
 
 or
 
 ```
-ohos-storage-manager help
+ohos-storageManager help
 ```
 
 ## Requirements
