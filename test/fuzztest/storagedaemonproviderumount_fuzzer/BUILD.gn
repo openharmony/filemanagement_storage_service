@@ -84,6 +84,7 @@ ohos_static_library("storagedaemonprovider_umount_fuzztest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",

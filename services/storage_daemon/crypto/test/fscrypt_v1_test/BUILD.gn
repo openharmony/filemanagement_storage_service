@@ -81,6 +81,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "samgr:samgr_proxy",

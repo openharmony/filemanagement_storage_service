@@ -58,6 +58,7 @@ ohos_unittest("KeyCryptUtilsTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]

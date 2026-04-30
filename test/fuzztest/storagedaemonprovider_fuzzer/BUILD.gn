@@ -102,6 +102,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
     "openssl:libcrypto_shared",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
