@@ -46,7 +46,7 @@ struct BlockInfo {
 
 class ScanDevice {
 public:
-    explicit ScanDevice(const std::string &sysBlockPath = "/sys/block", const std::string &devBlockPath = "/dev");
+    explicit ScanDevice(const std::string &sysBlockPath = "/sys/block", const std::string &devBlockPath = "/dev/block");
     ~ScanDevice() = default;
 
     /**
