@@ -1450,7 +1450,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00004, testing::ext::T
 /**
  * @tc.number: STORAGE_ConvertBytesToMB_00005
  * @tc.name: STORAGE_ConvertBytesToMB_00005
- * @tc.desc: Test function of ConvertBytesToMB with decimal places.
+ * @tc.desc: Test function of ConvertBytesToMB with floats.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
