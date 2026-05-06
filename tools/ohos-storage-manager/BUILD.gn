@@ -70,10 +70,3 @@ ohos_cli_executable("ohos-storageManager") {
     "samgr:samgr_proxy",
   ]
 }
-
-ohos_prebuilt_etc("ohos_storageManager_config") {
-  source = "ohos-storageManager.json"
-  relative_install_dir = "../bin/cli_tool/configs"
-  part_name = "storage_service"
-  subsystem_name = "filemanagement"
-}
