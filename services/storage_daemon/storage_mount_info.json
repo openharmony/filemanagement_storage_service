@@ -272,7 +272,7 @@
             "dest-path": "/mnt/hmdfs/<userId>/account",
             "file-system-type": "hmdfs",
             "mount-flags": ["nodev"],
-            "data": "local_dst=/mnt/hmdfs/<userId>/account,user_id=<userId>,ra_pages=512,cache_dir=/data/service/el2/<userId>/hmdfs/cache/account_cache/,cloud_dir=/mnt/data/<userId>/cloud,merge",
+            "data": "local_dst=/mnt/hmdfs/<userId>/account,user_id=<userId>,ra_pages=512,cache_dir=/data/service/el2/<userId>/hmdfs/cache/account_cache/,cloud_dir=/mnt/data/<userId>/cloud,merge,no_delete_name=.remote_share",
             "options": "check_mounted"
         },
         {
