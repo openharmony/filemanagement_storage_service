@@ -56,12 +56,14 @@ public:
     void SetFsUuid(const std::string &fsUuid);
     void SetPath(const std::string &path);
     void SetDescription(const std::string &description);
+    void SetFreeSize(int64_t freeSize);
     int32_t GetFlags() const;
     int32_t GetFsType() const;
     std::string GetFsTypeString() const;
     std::string GetUuid() const;
     std::string GetPath() const;
     std::string GetDescription() const;
+    int64_t GetFreeSize() const;
     int32_t GetFsTypeByStr(const std::string &fsTypeStr) const;
     void Reset();
 
@@ -73,6 +75,7 @@ private:
     std::string fsUuid_;
     std::string path_;
     std::string description_;
+    int64_t freeSize_ { 0 };
 };
 } // namespace StorageManager
 } // namespace OHOS

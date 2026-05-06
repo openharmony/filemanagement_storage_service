@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -47,6 +47,11 @@ void VolumeExternal::SetDescription(const std::string &description)
     description_ = description;
 }
 
+void VolumeExternal::SetFreeSize(int64_t freeSize)
+{
+    freeSize_ = freeSize;
+}
+
 int32_t VolumeExternal::GetFlags() const
 {
     return flags_;
@@ -79,6 +84,11 @@ std::string VolumeExternal::GetPath() const
 std::string VolumeExternal::GetDescription() const
 {
     return description_;
+}
+
+int64_t VolumeExternal::GetFreeSize() const
+{
+    return freeSize_;
 }
 
 int32_t VolumeExternal::GetFsTypeByStr(const std::string &fsTypeStr) const

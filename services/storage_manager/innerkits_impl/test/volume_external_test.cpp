@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,6 +53,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     volumeexternal.SetPath(path);
     volumeexternal.SetDescription(description);
     volumeexternal.SetFlags(flags);
+    volumeexternal.SetFreeSize(1024 * 1024 * 100);  // 100MB
     auto result1 = volumeexternal.GetFsType();
     EXPECT_EQ(result1, fsType);
     auto result2 = volumeexternal.GetUuid();
@@ -64,6 +65,9 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
 
     auto result5 = volumeexternal.GetFsTypeString();
     EXPECT_EQ(result5, FS_TYPE_MAP[fsType]);
+
+    auto result8 = volumeexternal.GetFreeSize();
+    EXPECT_EQ(result8, 1024 * 1024 * 100);
 
     volumeexternal.SetFsType(FsType::UNDEFINED);
     auto result6 = volumeexternal.GetFsTypeString();

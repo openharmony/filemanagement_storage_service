@@ -44,7 +44,10 @@ ohos_unittest("notification_test") {
     "private = public",
   ]
 
-  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
+  deps = [
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "${storage_manager_path}:storage_manager",
+  ]
 
   external_deps = [
     "ability_base:base",
@@ -108,6 +111,7 @@ ohos_unittest("volume_manager_service_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_manager_path}:storage_manager",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -178,6 +182,7 @@ ohos_unittest("volume_manager_service_ext_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_manager_path}:storage_manager",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 

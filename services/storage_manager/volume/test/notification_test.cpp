@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -198,5 +198,184 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0006, testing::ext::T
         notification.NotifyVolumeChange(VolumeState::FUSE_REMOVED, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0006";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0007
+ * @tc.name: Notification_NotifyVolumeChange_0007
+ * @tc.desc: Test function of NotifyVolumeChange with DAMAGED state.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0007, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0007";
+    std::string volumeId = "vol-damaged-1";
+    int32_t fsType = FsType::NTFS;
+    std::string diskId = "disk-damaged-1";
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+    auto &notification = Notification::GetInstance();
+    notification.NotifyVolumeChange(VolumeState::DAMAGED, volume);
+    EXPECT_EQ(volume->GetId(), volumeId);
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0007";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0008
+ * @tc.name: Notification_NotifyVolumeChange_0008
+ * @tc.desc: Test function of NotifyVolumeChange with DAMAGED_MOUNTED state.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0008, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0008";
+    std::string volumeId = "vol-damaged-2";
+    int32_t fsType = FsType::EXFAT;
+    std::string diskId = "disk-damaged-2";
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+    auto &notification = Notification::GetInstance();
+    notification.NotifyVolumeChange(VolumeState::DAMAGED_MOUNTED, volume);
+    EXPECT_EQ(volume->GetDiskId(), diskId);
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0008";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0009
+ * @tc.name: Notification_NotifyVolumeChange_0009
+ * @tc.desc: Test MOUNTED event notification with empty UUID.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0009, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0009";
+    std::string volumeId = "vol-empty-uuid-1";
+    int32_t fsType = FsType::NTFS;
+    std::string diskId = "disk-empty-uuid-1";
+    std::string fsUuid = "";
+    std::string path = "/mnt/data/external/empty-uuid-1";
+
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+    volume->SetFsUuid(fsUuid);
+    volume->SetPath(path);
+
+    auto &notification = Notification::GetInstance();
+    notification.NotifyVolumeChange(VolumeState::MOUNTED, volume);
+
+    EXPECT_EQ(volume->GetUuid(), "");
+    EXPECT_EQ(volume->GetPath(), path);
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0009";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0010
+ * @tc.name: Notification_NotifyVolumeChange_0010
+ * @tc.desc: Test MOUNTED event notification with empty path.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0010, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0010";
+    std::string volumeId = "vol-empty-path-1";
+    int32_t fsType = FsType::EXFAT;
+    std::string diskId = "disk-empty-path-1";
+    std::string fsUuid = "uuid-empty-path-1";
+    std::string path = "";
+
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+    volume->SetFsUuid(fsUuid);
+    volume->SetPath(path);
+
+    auto &notification = Notification::GetInstance();
+    notification.NotifyVolumeChange(VolumeState::MOUNTED, volume);
+
+    EXPECT_EQ(volume->GetPath(), "");
+    EXPECT_EQ(volume->GetUuid(), fsUuid);
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0010";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_VolumeExternal_FreeSize_0001
+ * @tc.name: Notification_VolumeExternal_FreeSize_0001
+ * @tc.desc: Test VolumeExternal SetFreeSize and GetFreeSize methods.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_VolumeExternal_FreeSize_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_VolumeExternal_FreeSize_0001";
+    std::string volumeId = "vol-fs-1";
+    int32_t fsType = FsType::NTFS;
+    std::string diskId = "disk-fs-1";
+
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+
+    // Test default freesize is 0
+    EXPECT_EQ(volume->GetFreeSize(), 0);
+
+    // Test SetFreeSize and GetFreeSize
+    int64_t testFreeSize = 1024 * 1024 * 100;  // 100MB
+    volume->SetFreeSize(testFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), testFreeSize);
+
+    // Test updating freesize
+    int64_t newFreeSize = 1024 * 1024 * 200;  // 200MB
+    volume->SetFreeSize(newFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), newFreeSize);
+
+    // Test setting to zero
+    volume->SetFreeSize(0);
+    EXPECT_EQ(volume->GetFreeSize(), 0);
+
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_VolumeExternal_FreeSize_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_VolumeExternal_FreeSize_Max_0001
+ * @tc.name: Notification_VolumeExternal_FreeSize_Max_0001
+ * @tc.desc: Test VolumeExternal FreeSize with maximum values.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(NotificationTest, Notification_VolumeExternal_FreeSize_Max_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_VolumeExternal_FreeSize_Max_0001";
+    std::string volumeId = "vol-fs-max-1";
+    int32_t fsType = FsType::EXFAT;
+    std::string diskId = "disk-fs-max-1";
+
+    VolumeCore vc(volumeId, fsType, diskId);
+    std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+
+    // Test with large freesize value (1TB)
+    int64_t largeFreeSize = 1024LL * 1024 * 1024 * 1024;
+    volume->SetFreeSize(largeFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), largeFreeSize);
+
+    // Test with negative value (error scenario)
+    int64_t negativeFreeSize = -1;
+    volume->SetFreeSize(negativeFreeSize);
+    EXPECT_EQ(volume->GetFreeSize(), negativeFreeSize);
+
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_VolumeExternal_FreeSize_Max_0001";
 }
 }

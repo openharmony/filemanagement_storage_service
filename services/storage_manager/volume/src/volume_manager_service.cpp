@@ -31,6 +31,7 @@
 #include "utils/disk_utils.h"
 #include "utils/string_utils.h"
 #include "volume/notification.h"
+#include "storage/volume_storage_status_service.h"
 
 using namespace std;
 using namespace OHOS::StorageService;
@@ -76,20 +77,26 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
         }
         return;
     }
-    std::lock_guard<std::mutex> lock(volumeMapMutex_);
-    if (volumeMap_.find(volumeId) == volumeMap_.end()) {
-        LOGE("VolumeManagerService::OnVolumeStateChanged volumeId %{public}s not exists", volumeId.c_str());
-        return;
+    std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        if (volumeMap_.find(volumeId) == volumeMap_.end()) {
+            LOGE("VolumeManagerService::OnVolumeStateChanged volumeId %{public}s not exists", volumeId.c_str());
+            return;
+        }
+        volumePtr = volumeMap_[volumeId];
     }
-    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_[volumeId];
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
         return;
     }
     volumePtr->SetState(state);
     VolumeStateNotify(state, volumePtr);
-    if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
-        volumeMap_.erase(volumeId);
+    {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
+            volumeMap_.erase(volumeId);
+        }
     }
 }
 
@@ -336,6 +343,9 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         return E_PARAMS_NULLPTR_ERR;
     }
     volumePtr->SetState(VolumeState::EJECTING);
+
+    SaveVolumeFreeSize(volumePtr);
+
     int32_t result = sdCommunication->Unmount(volumeId);
     if (result == E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -344,6 +354,30 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         volumePtr->SetState(VolumeState::MOUNTED);
     }
     return result;
+}
+
+void VolumeManagerService::SaveVolumeFreeSize(std::shared_ptr<VolumeExternal> volume)
+{
+    if (volume == nullptr) {
+        LOGE("SaveVolumeFreeSize volume is nullptr");
+        return;
+    }
+    int64_t freeSize = 0;
+    auto &statusService = VolumeStorageStatusService::GetInstance();
+    int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
+    if (ret == E_OK) {
+        if (freeSize < 0) {
+            LOGW("Unmount: invalid freeSize=%{public}lld for volumeId=%{public}s, skip saving",
+                (long long)freeSize, volume->GetId().c_str());
+        } else {
+            volume->SetFreeSize(freeSize);
+            LOGI("Unmount: saving freeSize=%{public}lld for volumeId=%{public}s",
+                (long long)freeSize, volume->GetId().c_str());
+        }
+    } else {
+        LOGW("Unmount: failed to get freeSize for volumeId=%{public}s, ret=%{public}d",
+            volume->GetId().c_str(), ret);
+    }
 }
 
 int32_t VolumeManagerService::TryToFix(std::string volumeId)
@@ -591,12 +625,15 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
 void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const bool isBadRemove)
 {
     LOGI("VolumeManagerService NotifyMtpUnmounted");
-    std::lock_guard<std::mutex> lock(volumeMapMutex_);
-    if (volumeMap_.find(id) == volumeMap_.end()) {
-        LOGE("VolumeManagerService::Unmount id %{public}s not exists", id.c_str());
-        return;
+    std::shared_ptr<VolumeExternal> volumePtr = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        if (volumeMap_.find(id) == volumeMap_.end()) {
+            LOGE("VolumeManagerService::Unmount id %{public}s not exists", id.c_str());
+            return;
+        }
+        volumePtr = volumeMap_[id];
     }
-    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_[id];
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for id");
         return;
@@ -606,7 +643,10 @@ void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const bool 
     } else {
         VolumeStateNotify(VolumeState::BAD_REMOVAL, volumePtr);
     }
-    volumeMap_.erase(id);
+    {
+        std::lock_guard<std::mutex> lock(volumeMapMutex_);
+        volumeMap_.erase(id);
+    }
 }
 
 int32_t VolumeManagerService::Eject(const std::string &volumeId)

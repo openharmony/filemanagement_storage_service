@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,10 +15,14 @@
 
 #include "volume/notification.h"
 
+#include "storage_service_errno.h"
+#include "storage/volume_storage_status_service.h"
+
 #include "common_event_data.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "int_wrapper.h"
+#include "long_wrapper.h"
 #include "storage_service_log.h"
 #include "string_wrapper.h"
 #include "volume_core.h"
@@ -29,6 +33,64 @@ namespace OHOS {
 namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
+
+namespace {
+void SetMountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+{
+    if (volume == nullptr) {
+        LOGE("SetMountedEventParams: volume is nullptr");
+        return;
+    }
+    wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
+    wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
+
+    if (volume->GetFsType() == FsType::MTP || volume->GetFsType() == FsType::PTP) {
+        LOGI("Volume mounted: id=%{public}s, fsType=%{public}d (MTP/PTP device, freeSize not set)",
+            volume->GetId().c_str(), volume->GetFsType());
+    } else {
+        int64_t freeSize = 0;
+        auto &statusService = VolumeStorageStatusService::GetInstance();
+        int32_t ret = statusService.GetFreeSizeOfVolume(volume->GetUuid(), freeSize);
+        if (ret == E_OK) {
+            if (freeSize < 0) {
+                LOGW("Volume mounted: id=%{public}s, invalid freeSize=%{public}lld, skip setting",
+                    volume->GetId().c_str(), (long long)freeSize);
+            } else {
+                wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
+                LOGI("Volume mounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",
+                    volume->GetId().c_str(), volume->GetFsType(), (long long)freeSize);
+            }
+        } else {
+            LOGW("Volume mounted: id=%{public}s, failed to get freeSize, ret=%{public}d",
+                volume->GetId().c_str(), ret);
+        }
+    }
+}
+
+void SetUnmountedEventParams(AAFwk::WantParams &wantParams, std::shared_ptr<VolumeExternal> volume)
+{
+    if (volume == nullptr) {
+        LOGE("SetUnmountedEventParams: volume is nullptr");
+        return;
+    }
+    wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
+
+    // MTP/PTP devices do not support statvfs, so freeSize is not applicable
+    if (volume->GetFsType() == FsType::MTP || volume->GetFsType() == FsType::PTP) {
+        LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d (MTP/PTP device, freeSize not set)",
+            volume->GetId().c_str(), volume->GetFsType());
+    } else {
+        int64_t freeSize = volume->GetFreeSize();
+        if (freeSize < 0) {
+            LOGW("Volume unmounted: id=%{public}s, invalid freeSize=%{public}lld, skip setting",
+                volume->GetId().c_str(), (long long)freeSize);
+        } else {
+            wantParams.SetParam("freeSize", AAFwk::Long::Box(freeSize));
+            LOGI("Volume unmounted: id=%{public}s, fsType=%{public}d, freeSize=%{public}lld",
+                volume->GetId().c_str(), volume->GetFsType(), (long long)freeSize);
+        }
+    }
+}
 
 struct VolumeStateInfo {
     VolumeState state;
@@ -51,15 +113,18 @@ const VolumeStateInfo STATE_INFOS[] = {
         EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL},
     {VolumeState::DECRYPTING, "DeskDecrypting", EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL}
 };
+} // anonymous namespace
+
 
 void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume)
 {
-    AAFwk::Want want;
-    AAFwk::WantParams wantParams;
     if (volume == nullptr) {
         LOGE("Notification::NotifyVolumeChange volume is nullptr");
         return;
     }
+
+    AAFwk::Want want;
+    AAFwk::WantParams wantParams;
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
@@ -75,13 +140,16 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     }
 
     if (notifyCode == VolumeState::MOUNTED) {
-        wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
-        wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
+        SetMountedEventParams(wantParams, volume);
+    }
+
+    if (notifyCode == VolumeState::UNMOUNTED) {
+        SetUnmountedEventParams(wantParams, volume);
     }
 
     want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);
 }
-}
+} // namespace StorageManager
 } // namespace OHOS
