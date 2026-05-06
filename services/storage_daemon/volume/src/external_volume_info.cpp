@@ -343,7 +343,8 @@ int32_t ExternalVolumeInfo::DoMount4Udf(uint32_t mountFlags)
 {
     LOGI("[L3:ExternalVolumeInfo] DoMount4Udf: >>> ENTER <<<");
 
-    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s", UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
+    auto mountData = StringPrintf("ro,uid=%d,gid=%d,%s,mode=0770,dmode=0751",
+        UID_FILE_MANAGER, UID_FILE_MANAGER, MNT_EXTERNAL_FILE_CONTEXT);
     std::vector<std::string> cmd = {
         "mount",
         "-t",
