@@ -1450,7 +1450,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00004, testing::ext::T
 /**
  * @tc.number: STORAGE_ConvertBytesToMB_00005
  * @tc.name: STORAGE_ConvertBytesToMB_00005
- * @tc.desc: Test function of ConvertBytesToMB with different decimal places.
+ * @tc.desc: Test function of ConvertBytesToMB with decimal places.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -1460,9 +1460,9 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00005, testing::ext::T
 {
     GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00005 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
-    int64_t bytes = 1024 * 1024 + 512 * 1024; // 1.5 MB
+    int64_t bytes = 1024 * 1024 + 512 * 1024;
     int32_t decimalPlaces = 0;
     double result = storageManagerScan.ConvertBytesToMB(bytes, decimalPlaces);
-    EXPECT_NEAR(result, 2.0, 0.1); // Should round to 2MB with 0 decimal places
+    EXPECT_NEAR(result, 2.0, 0.1);
     GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00005 end";
 }
