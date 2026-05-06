@@ -124,7 +124,8 @@ public:
     virtual int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize) override;
     virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum) override;
     virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+        std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
 
     //disk crypt api

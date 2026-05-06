@@ -50,6 +50,7 @@ const int32_t CLEAN_RICH_TIME = 7 * 24 * 60 * 60;
 const int32_t ROOT_UID = 0;
 const int32_t SYSTEM_UID = 1000;
 const int32_t MEMMGR_UID = 1111;
+const int32_t FONDATION_UID = 5523;
 } // namespace StorageService
 
 namespace StorageDaemon {

@@ -353,7 +353,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00001, testing::ext::TestSi
     GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00001 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     // Mock GetDirListSpaceByPaths to return error to make ScanDirectories fail
-    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _)).WillRepeatedly(Return(E_ERR));
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _)).WillRepeatedly(Return(E_ERR));
     int32_t ret = storageManagerScan.ExecuteScan();
     EXPECT_EQ(ret, E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00001 end";
@@ -437,16 +437,16 @@ HWTEST_F(StorageManagerScanTest, STORAGE_CalculateFinalSizes_00001, testing::ext
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     int64_t startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
-    int64_t dirScanRootSize = 1024 * 1024 * 500; // 500MB
-    int64_t hyperholdRootSize = 1024 * 1024 * 100; // 100MB
-    int64_t rgmManagerRootSize = 1024 * 1024 * 50; // 50MB
-    int64_t dirScanSystemSize = 1024 * 1024 * 200; // 200MB
+    ScanResult scanResult;
+    scanResult.rootSize = 1024 * 1024 * 500; // 500MB
+    scanResult.hyperholdRootSize = 1024 * 1024 * 100; // 100MB
+    scanResult.rgmManagerRootSize = 1024 * 1024 * 50; // 50MB
+    scanResult.systemSize = 1024 * 1024 * 200; // 200MB
     storageManagerScan.memmgrSize_ = 1024 * 1024 * 30; // 30MB initial
-    storageManagerScan.CalculateFinalSizes(startTimeMs, dirScanRootSize, hyperholdRootSize,
-        rgmManagerRootSize, dirScanSystemSize);
+    storageManagerScan.CalculateFinalSizes(startTimeMs, scanResult);
     // Verify calculations: rootSize = dirScanRootSize - hyperholdRootSize - rgmManagerRootSize
     EXPECT_EQ(storageManagerScan.rootSize_, 1024 * 1024 * (500 - 100 - 50));
-    EXPECT_EQ(storageManagerScan.systemSize_, dirScanSystemSize);
+    EXPECT_EQ(storageManagerScan.systemSize_, scanResult.systemSize);
     // memmgrSize = initial + hyperholdRootSize
     EXPECT_EQ(storageManagerScan.memmgrSize_, 1024 * 1024 * (30 + 100));
     EXPECT_EQ(storageManagerScan.scanDurationMs_, 0);
@@ -468,10 +468,9 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00001, testing::ext::Te
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     std::vector<std::string> whiteList = {"/etc"};
     std::vector<int32_t> uids = {0, 1000};
-    int64_t rootSize = 0;
-    int64_t systemSize = 0;
+    ScanResult scanResult;
     storageManagerScan.stopScanFlag_ = true;
-    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, rootSize, systemSize);
+    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
     EXPECT_EQ(ret, E_ERR);
     storageManagerScan.stopScanFlag_ = false;
     GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00001 end";
@@ -492,15 +491,15 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00002, testing::ext::Te
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     std::vector<std::string> whiteList = {"/etc"};
     std::vector<int32_t> uids = {0, 1000};
-    int64_t rootSize = 0;
-    int64_t systemSize = 0;
+    ScanResult scanResult;
     // Mock GetDirListSpaceByPaths to return success
     std::vector<DirSpaceInfo> resultDirs = {{"/etc", 0, 1024}, {"/etc", 1000, 2048}};
-    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _)).WillOnce(DoAll(SetArgReferee<2>(resultDirs), Return(E_OK)));
-    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, rootSize, systemSize);
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _)).WillOnce(
+        DoAll(SetArgReferee<2>(resultDirs), Return(E_OK)));
+    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rootSize, 1024); // Only UID 0 contributes to rootSize
-    EXPECT_EQ(systemSize, 2048); // Only UID 1000 contributes to systemSize
+    EXPECT_EQ(scanResult.rootSize, 1024); // Only UID 0 contributes to rootSize
+    EXPECT_EQ(scanResult.systemSize, 2048); // Only UID 1000 contributes to systemSize
     GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00002 end";
 }
 
@@ -919,7 +918,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00003, testing::ext::TestSi
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     // Mock ScanDirectories to succeed
     std::vector<DirSpaceInfo> scanResultDirs = {{"/data/service/el0", 0, 1024}, {"/data/service/el0", 1000, 2048}};
-    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _))
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(scanResultDirs), Return(E_OK)));
     // Mock hyperhold ScanSinglePath to fail (GetDirListSpace returns error)
     EXPECT_CALL(*sdc, GetDirListSpace(_, _)).WillRepeatedly(Return(E_ERR));
@@ -951,4 +950,519 @@ HWTEST_F(StorageManagerScanTest, STORAGE_Init_DefaultSize_00001, testing::ext::T
     // Should succeed with default values, or fail if SaveScanResultToFile fails
     EXPECT_TRUE(ret == E_OK || ret == E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_Init_DefaultSize_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_InitEventHandler_00002
+ * @tc.name: STORAGE_InitEventHandler_00002
+ * @tc.desc: Test function of InitEventHandler when already initialized.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_InitEventHandler_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_InitEventHandler_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // First initialization
+    storageManagerScan.InitEventHandler();
+    // Second initialization should return early
+    storageManagerScan.InitEventHandler();
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "STORAGE_InitEventHandler_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_StartScan_00002
+ * @tc.name: STORAGE_StartScan_00002
+ * @tc.desc: Test function of StartScan when scan is already running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_StartScan_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_StartScan_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.isScanRunning_ = true;
+    storageManagerScan.StartScan();
+    // Should return early since scan is already running
+    EXPECT_TRUE(storageManagerScan.isScanRunning_.load());
+    storageManagerScan.isScanRunning_ = false;
+    GTEST_LOG_(INFO) << "STORAGE_StartScan_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_StartScan_00003
+ * @tc.name: STORAGE_StartScan_00003
+ * @tc.desc: Test function of StartScan when preconditions are not met.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_StartScan_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_StartScan_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Set as not first scan and recent scan time
+    storageManagerScan.isFirstScan_ = false;
+    storageManagerScan.lastScanTime_ = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    storageManagerScan.StartScan();
+    // Should not start scan since preconditions not met
+    EXPECT_FALSE(storageManagerScan.isScanRunning_.load());
+    storageManagerScan.isFirstScan_ = true;
+    GTEST_LOG_(INFO) << "STORAGE_StartScan_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_StopScan_00003
+ * @tc.name: STORAGE_StopScan_00003
+ * @tc.desc: Test function of StopScan when scan is not running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_StopScan_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_StopScan_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.isScanRunning_ = false;
+    storageManagerScan.StopScan();
+    // Should return early when scan is not running
+    EXPECT_FALSE(storageManagerScan.stopScanFlag_.load());
+    GTEST_LOG_(INFO) << "STORAGE_StopScan_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_LaunchScanWorker_00002
+ * @tc.name: STORAGE_LaunchScanWorker_00002
+ * @tc.desc: Test function of LaunchScanWorker when scan is already running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LaunchScanWorker_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LaunchScanWorker_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.isScanRunning_ = true;
+    storageManagerScan.LaunchScanWorker();
+    // Should return early since scan is already running
+    EXPECT_TRUE(storageManagerScan.isScanRunning_.load());
+    storageManagerScan.isScanRunning_ = false;
+    GTEST_LOG_(INFO) << "STORAGE_LaunchScanWorker_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_ExecuteScan_00004
+ * @tc.name: STORAGE_ExecuteScan_00004
+ * @tc.desc: Test function of ExecuteScan with rgm_manager scan failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00004 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Mock ScanDirectories to succeed
+    std::vector<DirSpaceInfo> scanResultDirs = {{"/data/service/el0", 0, 1024}};
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(scanResultDirs), Return(E_OK)));
+    // Mock hyperhold ScanSinglePath to succeed
+    std::vector<DirSpaceInfo> hyperholdResult = {{"/data/service/el1/0/hyperhold", 0, 2048}};
+    EXPECT_CALL(*sdc, GetDirListSpace(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(hyperholdResult), Return(E_OK)))
+        .WillOnce(Return(E_ERR)); // rgm_manager fails
+    int32_t ret = storageManagerScan.ExecuteScan();
+    // rgm_manager failure should cause early return
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00004 end";
+}
+
+/**
+ * @tc.number: STORAGE_ExecuteScan_00005
+ * @tc.name: STORAGE_ExecuteScan_00005
+ * @tc.desc: Test function of ExecuteScan with GetQuotaSizeByUid failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ExecuteScan_00005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00005 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Mock ScanDirectories to succeed
+    std::vector<DirSpaceInfo> scanResultDirs = {{"/data/service/el0", 0, 1024}};
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(scanResultDirs), Return(E_OK)));
+    // Mock hyperhold and rgm_manager to succeed
+    std::vector<DirSpaceInfo> resultDirs = {{"/data", 0, 2048}};
+    EXPECT_CALL(*sdc, GetDirListSpace(_, _))
+        .WillRepeatedly(DoAll(SetArgReferee<1>(resultDirs), Return(E_OK)));
+    // Mock GetQuotaSizeByUid to fail
+    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(Return(E_ERR));
+    int32_t ret = storageManagerScan.ExecuteScan();
+    // GetQuotaSizeByUid failure should cause error return
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_ExecuteScan_00005 end";
+}
+
+/**
+ * @tc.number: STORAGE_CalculateFinalSizes_00002
+ * @tc.name: STORAGE_CalculateFinalSizes_00002
+ * @tc.desc: Test function of CalculateFinalSizes with large size change triggering report.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_CalculateFinalSizes_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_CalculateFinalSizes_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    int64_t startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    ScanResult scanResult;
+    // Set initial sizes
+    storageManagerScan.rootSize_ = 1024 * 1024 * 100; // 100MB
+    storageManagerScan.systemSize_ = 1024 * 1024 * 200; // 200MB
+    storageManagerScan.fondationSize_ = 1024 * 1024 * 300; // 300MB
+    storageManagerScan.memmgrSize_ = 1024 * 1024 * 50; // 50MB
+    // Set scan results with large change (> 1GB threshold)
+    scanResult.rootSize = 1024 * 1024 * 1200; // 1200MB
+    scanResult.hyperholdRootSize = 1024 * 1024 * 100;
+    scanResult.rgmManagerRootSize = 1024 * 1024 * 50;
+    scanResult.systemSize = 1024 * 1024 * 200;
+    scanResult.fondationSize = 1024 * 1024 * 300;
+    // Add large files and dirs
+    scanResult.largeFiles.push_back(LargeFileInfo("/data/large_file.dat", 1024 * 1024 * 10));
+    scanResult.largeDirs.push_back(LargeDirInfo("/data/large_dir", 1024 * 1024 * 20));
+    storageManagerScan.CalculateFinalSizes(startTimeMs, scanResult);
+    // Verify calculations
+    int64_t expectedRootSize = scanResult.rootSize - scanResult.hyperholdRootSize - scanResult.rgmManagerRootSize;
+    EXPECT_EQ(storageManagerScan.rootSize_, expectedRootSize);
+    EXPECT_EQ(storageManagerScan.systemSize_, scanResult.systemSize);
+    GTEST_LOG_(INFO) << "STORAGE_CalculateFinalSizes_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_ReportLargeFilesAndDirs_00001
+ * @tc.name: STORAGE_ReportLargeFilesAndDirs_00001
+ * @tc.desc: Test function of ReportLargeFilesAndDirs with empty lists.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ReportLargeFilesAndDirs_00001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ReportLargeFilesAndDirs_00001 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.rootSize_ = 1024 * 1024 * 100;
+    storageManagerScan.systemSize_ = 1024 * 1024 * 200;
+    storageManagerScan.memmgrSize_ = 1024 * 1024 * 50;
+    storageManagerScan.scanDurationMs_ = 5000;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    storageManagerScan.ReportLargeFilesAndDirs(largeFiles, largeDirs);
+    // Should return early when both lists are empty
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "STORAGE_ReportLargeFilesAndDirs_00001 end";
+}
+
+/**
+ * @tc.number: STORAGE_ReportLargeFilesAndDirs_00002
+ * @tc.name: STORAGE_ReportLargeFilesAndDirs_00002
+ * @tc.desc: Test function of ReportLargeFilesAndDirs with data.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ReportLargeFilesAndDirs_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ReportLargeFilesAndDirs_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.rootSize_ = 1024 * 1024 * 100;
+    storageManagerScan.systemSize_ = 1024 * 1024 * 200;
+    storageManagerScan.memmgrSize_ = 1024 * 1024 * 50;
+    storageManagerScan.scanDurationMs_ = 5000;
+    std::vector<LargeFileInfo> largeFiles;
+    largeFiles.push_back(LargeFileInfo("/data/file1.dat", 1024 * 1024 * 5));
+    largeFiles.push_back(LargeFileInfo("/data/file2.dat", 1024 * 1024 * 10));
+    std::vector<LargeDirInfo> largeDirs;
+    largeDirs.push_back(LargeDirInfo("/data/dir1", 1024 * 1024 * 15));
+    largeDirs.push_back(LargeDirInfo("/data/dir2", 1024 * 1024 * 20));
+    storageManagerScan.ReportLargeFilesAndDirs(largeFiles, largeDirs);
+    // Should process and report without crash
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "STORAGE_ReportLargeFilesAndDirs_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetQuotaSizeByUid_00002
+ * @tc.name: STORAGE_GetQuotaSizeByUid_00002
+ * @tc.desc: Test function of GetQuotaSizeByUid with empty dqBlks.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_GetQuotaSizeByUid_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetQuotaSizeByUid_00002 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::vector<int32_t> uids;
+    std::map<int32_t, int64_t> uidSizeMap;
+    std::vector<NextDqBlk> dqBlks; // Empty
+    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(DoAll(SetArgReferee<1>(dqBlks), Return(E_OK)));
+    int32_t ret = storageManagerScan.GetQuotaSizeByUid(uids, uidSizeMap);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(uidSizeMap.empty());
+    GTEST_LOG_(INFO) << "STORAGE_GetQuotaSizeByUid_00002 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanDirectories_00003
+ * @tc.name: STORAGE_ScanDirectories_00003
+ * @tc.desc: Test function of ScanDirectories with GetDirListSpaceByPaths failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::vector<std::string> whiteList = {"/etc"};
+    std::vector<int32_t> uids = {0, 1000};
+    ScanResult scanResult;
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _)).WillOnce(Return(E_PARAMS_INVALID));
+    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanDirectories_00004
+ * @tc.name: STORAGE_ScanDirectories_00004
+ * @tc.desc: Test function of ScanDirectories with empty resultDirs.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00004 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::vector<std::string> whiteList = {"/etc"};
+    std::vector<int32_t> uids = {0, 1000};
+    ScanResult scanResult;
+    std::vector<DirSpaceInfo> resultDirs; // Empty
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(resultDirs), Return(E_OK)));
+    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(scanResult.rootSize, 0);
+    EXPECT_EQ(scanResult.systemSize, 0);
+    EXPECT_EQ(scanResult.fondationSize, 0);
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00004 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanDirectories_00005
+ * @tc.name: STORAGE_ScanDirectories_00005
+ * @tc.desc: Test function of ScanDirectories with FONDATION_UID.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00005 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::vector<std::string> whiteList = {"/etc"};
+    std::vector<int32_t> uids = {0, 1000, 5523}; // 5523 is FONDATION_UID
+    ScanResult scanResult;
+    std::vector<DirSpaceInfo> resultDirs = {{"/etc", 5523, 3072}};
+    EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(resultDirs), Return(E_OK)));
+    int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(scanResult.fondationSize, 3072);
+    GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00005 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanSinglePath_00003
+ * @tc.name: STORAGE_ScanSinglePath_00003
+ * @tc.desc: Test function of ScanSinglePath with GetDirListSpace failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanSinglePath_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanSinglePath_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::string path = "/data/vendor/hyperhold";
+    int32_t uid = 0;
+    int64_t size = 0;
+    EXPECT_CALL(*sdc, GetDirListSpace(_, _)).WillOnce(Return(E_ERR));
+    int32_t ret = storageManagerScan.ScanSinglePath(path, uid, size);
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(size, 0);
+    GTEST_LOG_(INFO) << "STORAGE_ScanSinglePath_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_ScanSinglePath_00004
+ * @tc.name: STORAGE_ScanSinglePath_00004
+ * @tc.desc: Test function of ScanSinglePath with empty resultDirs.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ScanSinglePath_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ScanSinglePath_00004 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::string path = "/data/vendor/hyperhold";
+    int32_t uid = 0;
+    int64_t size = 100; // Initial value
+    std::vector<DirSpaceInfo> resultDirs; // Empty
+    EXPECT_CALL(*sdc, GetDirListSpace(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(resultDirs), Return(E_OK)));
+    int32_t ret = storageManagerScan.ScanSinglePath(path, uid, size);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(size, 0); // Should remain 0 when resultDirs is empty
+    GTEST_LOG_(INFO) << "STORAGE_ScanSinglePath_00004 end";
+}
+
+/**
+ * @tc.number: STORAGE_LoadScanResultFromFile_00006
+ * @tc.name: STORAGE_LoadScanResultFromFile_00006
+ * @tc.desc: Test function of LoadScanResultFromFile with invalid data types.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00006 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    system(("mkdir -p " + testDir).c_str());
+    // Write JSON with string values instead of numbers
+    std::ofstream outFile(testFile);
+    outFile << R"({"rootSize":"invalid","systemSize":"invalid","memmgrSize":"invalid"})";
+    outFile.close();
+    int32_t ret = storageManagerScan.LoadScanResultFromFile();
+    EXPECT_EQ(ret, E_ERR);
+    std::remove(testFile.c_str());
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00006 end";
+}
+
+/**
+ * @tc.number: STORAGE_LoadScanResultFromFile_00007
+ * @tc.name: STORAGE_LoadScanResultFromFile_00007
+ * @tc.desc: Test function of LoadScanResultFromFile with file open failure.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00007, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00007 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    // Ensure file doesn't exist
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    std::string testFile = testDir + "/scan_result.json";
+    std::remove(testFile.c_str());
+    int32_t ret = storageManagerScan.LoadScanResultFromFile();
+    // Should fail when file doesn't exist
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_LoadScanResultFromFile_00007 end";
+}
+
+/**
+ * @tc.number: STORAGE_SaveScanResultToFile_00003
+ * @tc.name: STORAGE_SaveScanResultToFile_00003
+ * @tc.desc: Test function of SaveScanResultToFile when directory doesn't exist.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_SaveScanResultToFile_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_SaveScanResultToFile_00003 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    storageManagerScan.rootSize_ = 100;
+    storageManagerScan.systemSize_ = 200;
+    storageManagerScan.memmgrSize_ = 50;
+    // Remove directory to force CheckScanResultDirExists to fail
+    std::string testDir = "/data/service/el1/public/storage_manager/database";
+    system(("rm -rf " + testDir).c_str());
+    int32_t ret = storageManagerScan.SaveScanResultToFile();
+    // Should fail when directory doesn't exist
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_SaveScanResultToFile_00003 end";
+}
+
+/**
+ * @tc.number: STORAGE_ConvertBytesToMB_00004
+ * @tc.name: STORAGE_ConvertBytesToMB_00004
+ * @tc.desc: Test function of ConvertBytesToMB with zero bytes.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00004 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    int64_t bytes = 0;
+    int32_t decimalPlaces = 2;
+    double result = storageManagerScan.ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_EQ(result, 0.0);
+    GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00004 end";
+}
+
+/**
+ * @tc.number: STORAGE_ConvertBytesToMB_00005
+ * @tc.name: STORAGE_ConvertBytesToMB_00005
+ * @tc.desc: Test function of ConvertBytesToMB with different decimal places.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerScanTest, STORAGE_ConvertBytesToMB_00005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00005 start";
+    auto &storageManagerScan = StorageManagerScan::GetInstance();
+    int64_t bytes = 1024 * 1024 + 512 * 1024; // 1.5 MB
+    int32_t decimalPlaces = 0;
+    double result = storageManagerScan.ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_NEAR(result, 2.0, 0.1); // Should round to 2MB with 0 decimal places
+    GTEST_LOG_(INFO) << "STORAGE_ConvertBytesToMB_00005 end";
 }

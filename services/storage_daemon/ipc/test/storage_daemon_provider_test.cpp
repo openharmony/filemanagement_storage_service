@@ -2075,7 +2075,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDirListSpaceByP
     std::vector<std::string> paths = {"/path1", "/path2"};
     std::vector<int32_t> uids = {1000, 1001};
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t ret = storageDaemonProviderTest_->GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t ret = storageDaemonProviderTest_->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_:GetDirListSpaceByPaths_001 end";
 }

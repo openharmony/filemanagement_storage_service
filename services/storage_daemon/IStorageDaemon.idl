@@ -19,6 +19,8 @@ sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
 sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
 sequenceable StatisticInfo..OHOS.StorageManager.UidSaInfo;
 sequenceable StatisticInfo..OHOS.StorageManager.AllAppVec;
+sequenceable StatisticInfo..OHOS.StorageManager.LargeFileInfo;
+sequenceable StatisticInfo..OHOS.StorageManager.LargeDirInfo;
 
 interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 1] void Shutdown();
@@ -104,7 +106,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 69] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
      [ipccode 70] void GetSystemDataSize([out] long otherUidSizeSum);
      [ipccode 71] void GetDirListSpaceByPaths([in] String[] paths, [in] int[] uids,
-                                             [out] DirSpaceInfo[] resultDirs);
+                                             [out] DirSpaceInfo[] resultDirs, [out] LargeFileInfo[] largeFiles,
+                                             [out] LargeDirInfo[] largeDirs);
      
      //disk crypt api
      [ipccode 72] void  Encrypt([in] String volumeId, [in] String pazzword);

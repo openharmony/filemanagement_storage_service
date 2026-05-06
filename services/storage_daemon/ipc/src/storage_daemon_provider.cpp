@@ -1565,9 +1565,10 @@ int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &
 }
 
 int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+    std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs)
 {
-    return QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    return QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
 }
 
 int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)

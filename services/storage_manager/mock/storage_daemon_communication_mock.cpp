@@ -74,9 +74,11 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
 }
 
 int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+    std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs)
 {
-    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs);
+    return StorageDaemonCommunicationMock::storageDaemonCommunication->GetDirListSpaceByPaths(paths, uids,
+        resultDirs, largeFiles, largeDirs);
 }
 }
 }

@@ -135,7 +135,8 @@ public:
     virtual int32_t GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
         std::vector<DirSpaceInfo> &outDirs) override;
     virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs) override;
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+        std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs) override;
     virtual int32_t SetStopScanFlag(bool stop = false) override;
     virtual int32_t GetAncoSizeData(std::string &outExtraData) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -111,6 +111,34 @@ public:
     std::vector<UidSaInfo> sysAppVec;
     std::vector<UidSaInfo> userAppVec;
     std::vector<UidSaInfo> otherAppVec;
+};
+
+class LargeFileInfo : public Parcelable {
+public:
+    LargeFileInfo() = default;
+
+    LargeFileInfo(const std::string &p, int64_t s)
+        : path(p), size(s) {}
+
+    std::string path = "";
+    int64_t size = 0;
+
+    bool Marshalling(Parcel &parcel) const override;
+    static LargeFileInfo *Unmarshalling(Parcel &parcel);
+};
+
+class LargeDirInfo : public Parcelable {
+public:
+    LargeDirInfo() = default;
+
+    LargeDirInfo(const std::string &p, int64_t s)
+        : path(p), totalSize(s) {}
+
+    std::string path = "";
+    int64_t totalSize = 0;
+
+    bool Marshalling(Parcel &parcel) const override;
+    static LargeDirInfo *Unmarshalling(Parcel &parcel);
 };
 } // namespace StorageManager
 } // namespace OHOS

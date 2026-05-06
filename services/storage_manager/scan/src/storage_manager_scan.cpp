@@ -53,6 +53,8 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
 constexpr int64_t DEFAULT_ROOT_SIZE = 4000000000;     // fallback root partition size
 constexpr int64_t DEFAULT_SYSTEM_SIZE = 100000000;     // fallback system size
 constexpr int64_t DEFAULT_MEMMGR_SIZE = 900000000;     // fallback memory manager size
+constexpr int64_t SCAN_SIZE_CHANGE_THRESHOLD = 1024 * 1024 * 1024;     // fallback memory manager size
+constexpr int32_t TOP_LARGE_COUNT = 15;
 
 void StorageManagerScan::InitEventHandler()
 {
@@ -272,31 +274,27 @@ int32_t StorageManagerScan::ExecuteScan()
     auto startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         scanStartTime_.time_since_epoch()).count();
 
-    std::vector<int32_t> scanUids = {ROOT_UID, SYSTEM_UID};
+    std::vector<int32_t> scanUids = {ROOT_UID, SYSTEM_UID, FONDATION_UID};
     std::vector<std::string> whiteList = GetDirWhiteList();
-    int64_t dirScanRootSize = 0;
-    int64_t dirScanSystemSize = 0;
-    int32_t ret = ScanDirectories(whiteList, scanUids, dirScanRootSize, dirScanSystemSize);
+    ScanResult scanResult;
+    int32_t ret = ScanDirectories(whiteList, scanUids, scanResult);
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanDirectories failed, ret=%{public}d", ret);
         return ret;
     }
 
-    int64_t hyperholdRootSize = 0;
-    ret = ScanSinglePath(HYPERHOLD_PATH, ROOT_UID, hyperholdRootSize);
+    ret = ScanSinglePath(HYPERHOLD_PATH, ROOT_UID, scanResult.hyperholdRootSize);
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanSinglePath hyperhold failed, ret=%{public}d", ret);
-        hyperholdRootSize = 0;
         return ret;
     }
 
-    int64_t rgmManagerRootSize = 0;
-    ret = ScanSinglePath(RGM_MANAGER_PATH, ROOT_UID, rgmManagerRootSize);
+    ret = ScanSinglePath(RGM_MANAGER_PATH, ROOT_UID, scanResult.rgmManagerRootSize);
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanSinglePath rgm_manager failed, ret=%{public}d", ret);
-        rgmManagerRootSize = 0;
         return ret;
     }
+
     std::map<int32_t, int64_t> uidSizeMap;
     ret = GetQuotaSizeByUid({MEMMGR_UID}, uidSizeMap);
     if (ret != E_OK) {
@@ -307,16 +305,21 @@ int32_t StorageManagerScan::ExecuteScan()
         std::lock_guard<std::mutex> lock(calSizeMutex_);
         memmgrSize_ = uidSizeMap[MEMMGR_UID];
     }
-    CalculateFinalSizes(startTimeMs, dirScanRootSize, hyperholdRootSize, rgmManagerRootSize, dirScanSystemSize);
-    ret = SaveScanResultToFile();
-    if (ret != E_OK) {
-        LOGE("ExecuteScan SaveScanResultToFile failed, ret=%{public}d", ret);
-    }
-    ReportScanResult();
+    CalculateFinalSizes(startTimeMs, scanResult);
+    SaveAndReportScanResults(scanResult);
     LOGI("ExecuteScan success, duration=%{public}lldms, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
         static_cast<long long>(scanDurationMs_), static_cast<long long>(rootSize_),
         static_cast<long long>(systemSize_), static_cast<long long>(memmgrSize_));
     return E_OK;
+}
+
+void StorageManagerScan::SaveAndReportScanResults(const ScanResult &scanResult)
+{
+    int32_t ret = SaveScanResultToFile();
+    if (ret != E_OK) {
+        LOGE("SaveScanResultToFile failed, ret=%{public}d", ret);
+    }
+    ReportScanResult();
 }
 
 void StorageManagerScan::ScanTimeoutHandler()
@@ -344,8 +347,51 @@ void StorageManagerScan::ReportScanResult()
     LOGI("ReportScanResult end");
 }
 
-void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, int64_t dirScanRootSize, int64_t hyperholdRootSize,
-    int64_t rgmManagerRootSize, int64_t dirScanSystemSize)
+void StorageManagerScan::ReportLargeFilesAndDirs(const std::vector<LargeFileInfo> &largeFiles,
+    const std::vector<LargeDirInfo> &largeDirs)
+{
+    LOGI("ReportLargeFilesAndDirs start, largeFiles=%{public}zu, largeDirs=%{public}zu",
+        largeFiles.size(), largeDirs.size());
+
+    if (largeFiles.empty() && largeDirs.empty()) {
+        LOGI("ReportLargeFilesAndDirs: no large files or dirs to report");
+        return;
+    }
+
+    std::ostringstream extraData;
+    GetCurrentTime(extraData);
+    extraData << "{scanDurationMs:" << scanDurationMs_ << "}" << std::endl;
+    extraData << "{rootSize:" << ConvertBytesToMB(rootSize_, ACCURACY_NUM) << "MB}" << std::endl;
+    extraData << "{systemSize:" << ConvertBytesToMB(systemSize_, ACCURACY_NUM) << "MB}" << std::endl;
+    extraData << "{memmgrSize:" << ConvertBytesToMB(memmgrSize_, ACCURACY_NUM) << "MB}" << std::endl;
+
+    // Report large files (top 15 files > 1MB)
+    if (!largeFiles.empty()) {
+        extraData << "{largeFilesCount:" << largeFiles.size() << "}" << std::endl;
+        for (size_t i = 0; i < largeFiles.size() && i < TOP_LARGE_COUNT; ++i) {
+            extraData << "{largeFile[" << i << "]:"
+                      << "path=" << largeFiles[i].path
+                      << ",size=" << ConvertBytesToMB(largeFiles[i].size, ACCURACY_NUM) << "MB}"
+                      << std::endl;
+        }
+    }
+
+    // Report large directories (top 15 dirs with cumulative size > 5MB)
+    if (!largeDirs.empty()) {
+        extraData << "{largeDirsCount:" << largeDirs.size() << "}" << std::endl;
+        for (size_t i = 0; i < largeDirs.size() && i < TOP_LARGE_COUNT; ++i) {
+            extraData << "{largeDir[" << i << "]:"
+                      << "path=" << largeDirs[i].path
+                      << ",totalSize=" << ConvertBytesToMB(largeDirs[i].totalSize, ACCURACY_NUM) << "MB}"
+                      << std::endl;
+        }
+    }
+
+    StorageService::StorageRadar::ReportSpaceRadar("LargeFilesAndDirs", E_SCAN_RESULT, extraData.str());
+    LOGI("ReportLargeFilesAndDirs end");
+}
+
+void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, const ScanResult &scanResult)
 {
     std::lock_guard<std::mutex> lock(calSizeMutex_);
     scanEndTime_ = std::chrono::system_clock::now();
@@ -356,10 +402,17 @@ void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, int64_t dirSca
         std::lock_guard<std::mutex> lock(lastScanTimeMutex_);
         lastScanTime_ = endTimeMs;
     }
-
-    rootSize_ = dirScanRootSize - hyperholdRootSize - rgmManagerRootSize;
-    systemSize_ = dirScanSystemSize;
-    memmgrSize_ = memmgrSize_ + hyperholdRootSize;
+    int64_t rootSize = scanResult.rootSize - scanResult.hyperholdRootSize - scanResult.rgmManagerRootSize;
+    int64_t systemSize = scanResult.systemSize;
+    int64_t fondationSize = scanResult.fondationSize;
+    if (std::abs(rootSize + systemSize + fondationSize - rootSize_ - systemSize_ - fondationSize_) >
+        SCAN_SIZE_CHANGE_THRESHOLD) {
+        ReportLargeFilesAndDirs(scanResult.largeFiles, scanResult.largeDirs);
+    }
+    rootSize_ = rootSize;
+    systemSize_ = systemSize;
+    memmgrSize_ = memmgrSize_ + scanResult.hyperholdRootSize;
+    fondationSize_ = fondationSize;
 }
 
 int32_t StorageManagerScan::GetQuotaSizeByUid(const std::vector<int32_t>& uids, std::map<int32_t, int64_t>& uidSizeMap)
@@ -390,7 +443,7 @@ int32_t StorageManagerScan::GetQuotaSizeByUid(const std::vector<int32_t>& uids, 
 }
 
 int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirWhiteList,
-    const std::vector<int32_t>& uids, int64_t& rootSize, int64_t& systemSize)
+    const std::vector<int32_t>& uids, ScanResult &result)
 {
     if (stopScanFlag_.load()) {
         LOGI("StorageManagerScan::ScanDirectories ExecuteScan stop");
@@ -406,7 +459,8 @@ int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirW
     }
 
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t ret = sdCommunication->GetDirListSpaceByPaths(dirWhiteList, uids, resultDirs);
+    int32_t ret = sdCommunication->GetDirListSpaceByPaths(dirWhiteList, uids, resultDirs,
+        result.largeFiles, result.largeDirs);
     if (ret != E_OK) {
         LOGE("ScanDirectories GetDirListSpaceByPaths failed, ret=%{public}d", ret);
         return ret;
@@ -414,13 +468,16 @@ int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirW
 
     for (const auto& dirInfo : resultDirs) {
         if (dirInfo.uid == static_cast<uint32_t>(ROOT_UID)) {
-            rootSize += dirInfo.size;
+            result.rootSize += dirInfo.size;
         } else if (dirInfo.uid == static_cast<uint32_t>(SYSTEM_UID)) {
-            systemSize += dirInfo.size;
+            result.systemSize += dirInfo.size;
+        } else if (dirInfo.uid == static_cast<uint32_t>(FONDATION_UID)) {
+            result.fondationSize += dirInfo.size;
         }
     }
-    LOGI("ScanDirectories end, rootSize=%{public}lld, systemSize=%{public}lld",
-         static_cast<long long>(rootSize), static_cast<long long>(systemSize));
+    LOGI("ScanDirectories end, rootSize=%{public}lld, systemSize=%{public}lld, fondationSize=%{public}lld",
+        static_cast<long long>(result.rootSize), static_cast<long long>(result.systemSize),
+        static_cast<long long>(result.fondationSize));
     return E_OK;
 }
 
