@@ -124,17 +124,17 @@ void VolumeManagerService::OnVolumeMounted(const VolumeInfoStr &volumeInfoStr)
     auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
-            if (disk->GetFlag() == SD_FLAG) {
+            if (disk->GetDiskType() == SD_FLAG) {
                 des = "MySDCard";
-            } else if (disk->GetFlag() == USB_FLAG) {
+            } else if (disk->GetDiskType() == USB_FLAG) {
                 des = "MyUSB";
-            } else if (disk->GetFlag() == CD_FLAG) {
+            } else if (disk->GetDiskType() == CD_FLAG) {
                 des = "MyDVD";
             } else {
                 des = "Default";
             }
         }
-        volumePtr->SetFlags(disk->GetFlag());
+        volumePtr->SetFlags(disk->GetDiskType());
     }
     volumePtr->SetDescription(des);
     volumePtr->SetState(volumeInfoStr.isDamaged == true ? VolumeState::DAMAGED_MOUNTED : VolumeState::MOUNTED);
@@ -167,17 +167,17 @@ void VolumeManagerService::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &
     auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
-            if (disk->GetFlag() == SD_FLAG) {
+            if (disk->GetDiskType() == SD_FLAG) {
                 des = "MySDCard";
-            } else if (disk->GetFlag() == USB_FLAG) {
+            } else if (disk->GetDiskType() == USB_FLAG) {
                 des = "MyUSB";
-            } else if (disk->GetFlag() == CD_FLAG) {
+            } else if (disk->GetDiskType() == CD_FLAG) {
                 des = "MyDVD";
             } else {
                 des = "Default";
             }
         }
-        volumePtr->SetFlags(disk->GetFlag());
+        volumePtr->SetFlags(disk->GetDiskType());
     }
     des = des + "(" + g_usbDes + ")";
     g_usbDes++;
@@ -213,15 +213,15 @@ void VolumeManagerService::OnVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
     auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
-            if (disk->GetFlag() == SD_FLAG) {
+            if (disk->GetDiskType() == SD_FLAG) {
                 des = "MySDCard";
-            } else if (disk->GetFlag() == USB_FLAG) {
+            } else if (disk->GetDiskType() == USB_FLAG) {
                 des = "MyUSB";
             } else {
                 des = "Default";
             }
         }
-        volumePtr->SetFlags(disk->GetFlag());
+        volumePtr->SetFlags(disk->GetDiskType());
     }
     volumePtr->SetDescription(des);
     volumePtr->SetState(VolumeState::DAMAGED);
@@ -454,7 +454,7 @@ vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
 
     vector<Disk> disks = DiskManagerService::GetInstance().GetAllDisks();
     for (auto &disk : disks) {
-        if (disk.GetFlag() != CD_FLAG) {
+        if (disk.GetDiskType() != CD_FLAG) {
             continue;
         }
         auto it = std::find(dvdDiskIds.begin(), dvdDiskIds.end(), disk.GetDiskId());

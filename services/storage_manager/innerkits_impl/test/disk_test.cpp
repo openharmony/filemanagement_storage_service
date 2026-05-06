@@ -56,9 +56,9 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(result3, sysPath);
     auto result4 = disk.GetVendor();
     EXPECT_EQ(result4, vendor);
-    auto result5 = disk.GetFlag();
+    auto result5 = disk.GetDiskType();
     EXPECT_EQ(result5, flag);
-    disk.SetFlag(flag);
+    disk.SetDiskType(flag);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Get_0000";
 }
 

@@ -58,6 +58,8 @@ public:
     int32_t NotifyDiskCreated(const Disk& disk) override;
     int32_t NotifyDiskDestroyed(const std::string& diskId) override;
     int32_t Partition(const std::string& diskId, int32_t type) override;
+    int32_t CreatePartition(const std::string& diskId, const PartitionOptions &partitionOptions) override;
+    int32_t GetPartitionTable(const std::string& diskId, PartitionTableInfo &partitionTableInfo) override;
     int32_t GetAllDisks(std::vector<Disk> &vecOfDisk) override;
     int32_t GetVolumeByUuid(const std::string& fsUuid, VolumeExternal &vc) override;
     int32_t GetVolumeById(const std::string& volumeId, VolumeExternal &vc) override;
@@ -163,6 +165,8 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress) override;
     int32_t Erase(const std::string &volumeId) override;
     int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath) override;
+    // disk partition api
+    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

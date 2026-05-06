@@ -14,6 +14,9 @@
  */
 rawdata OHOS.StorageManager.StorageFileRawData;
 sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
+sequenceable PartitionOptions..OHOS.StorageManager.PartitionOptions;
+sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
+sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
 import ../storage_manager/IUeceActivationCallback;
 sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
 sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
@@ -127,4 +130,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 83] void  GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
  	[ipccode 84] void Erase([in] String volId);
  	[ipccode 85] void CreateIsoImage([in] String volId, [in] String filePath);
+     [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
 }

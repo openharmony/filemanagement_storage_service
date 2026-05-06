@@ -66,7 +66,8 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyDiskCreated_00
     std::string devPath = "test";
     dev_t device = 1;
     int flag = 1;
-    DiskInfo diskInfo(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    DiskInfo diskInfo(diskName, sysPath, devPath, device, flag);
     auto ret = storageManagerClient_->NotifyDiskCreated(diskInfo);
     EXPECT_TRUE(ret == E_OK);
 

@@ -68,19 +68,18 @@ int32_t StorageManagerClient::GetClient()
 int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 {
     LOGI("[L1:StorageManagerClient] NotifyDiskCreated: >>> ENTER <<< diskId=%{public}s",
-         diskInfo.GetId().c_str());
+         diskInfo.GetDiskId().c_str());
     if (GetClient() != E_OK) {
         LOGE("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT FAILED <<< GetClient failed");
         return E_SERVICE_IS_NULLPTR;
     }
 
-    StorageManager::Disk disk(diskInfo.GetId(), diskInfo.GetDevDSize(),
-                              diskInfo.GetSysPath(), diskInfo.GetDevVendor(),
-                              diskInfo.GetDevFlag());
+    StorageManager::Disk disk(diskInfo.GetDiskId(), diskInfo.GetTotalSize(), diskInfo.GetSysPath(),
+                              diskInfo.GetDevVendor(), diskInfo.GetDiskType());
     storageManager_->NotifyDiskCreated(disk);
 
     LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s",
-         diskInfo.GetId().c_str());
+         diskInfo.GetDiskId().c_str());
     return E_OK;
 }
 

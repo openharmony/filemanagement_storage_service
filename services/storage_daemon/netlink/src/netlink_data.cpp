@@ -20,6 +20,7 @@ namespace StorageDaemon {
 constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
+constexpr int DEVNAME_PRE_LEN = 7;
 constexpr int DISK_EJECT_REQUEST_LEN = 19;
 constexpr int NL_PARAMS_MAX = 128;
 constexpr const char *EMPTY_STRING = "";
@@ -44,6 +45,9 @@ void NetlinkData::Decode(const char *msg)
         } else if (!strncmp(msg, "SUBSYSTEM=", SUBSYSTEM_PRE_LEN)) {
             msg += SUBSYSTEM_PRE_LEN;
             subSystem_ = std::string(msg);
+        } else if (!strncmp(msg, "DEVNAME=", DEVNAME_PRE_LEN)) {
+            msg += DEVNAME_PRE_LEN;
+            diskName_ = std::string(msg);
         } else if (!strncmp(msg, "DISK_EJECT_REQUEST=", DISK_EJECT_REQUEST_LEN)) {
             msg += DISK_EJECT_REQUEST_LEN;
             ejectRequest_ = std::string(msg);
@@ -82,6 +86,11 @@ NetlinkData::Actions NetlinkData::GetAction()
 std::string NetlinkData::GetEjectRequest()
 {
     return ejectRequest_;
+}
+
+std::string NetlinkData::GetDiskName()
+{
+    return diskName_;
 }
 
 const std::string NetlinkData::GetParam(const std::string paramName)

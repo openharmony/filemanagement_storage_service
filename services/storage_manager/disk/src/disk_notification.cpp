@@ -41,7 +41,7 @@ void DiskNotification::NotifyDiskChange(StorageDaemon::DiskInfo::DiskState notif
     wantParams.SetParam("sizeBytes", AAFwk::Integer::Box(disk->GetSizeBytes()));
     wantParams.SetParam("sysPath", AAFwk::String::Box(disk->GetSysPath()));
     wantParams.SetParam("vendor", AAFwk::String::Box(disk->GetVendor()));
-    wantParams.SetParam("flag", AAFwk::Integer::Box(disk->GetFlag()));
+    wantParams.SetParam("flag", AAFwk::Integer::Box(disk->GetDiskType()));
     switch (notifyCode) {
         case StorageDaemon::DiskInfo::DiskState::REMOVED:
             LOGI("notifycode: REMOVED");

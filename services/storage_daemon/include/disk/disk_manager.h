@@ -22,6 +22,7 @@
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "netlink/netlink_data.h"
+#include "partition_table_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -37,6 +38,8 @@ public:
     void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
     void ReplayUevent();
     std::shared_ptr<DiskInfo> MatchConfig(NetlinkData *data);
+    int32_t HandleGetPartitionTable(const std::string &diskId,
+        OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
 
 private:
     DiskManager() = default;

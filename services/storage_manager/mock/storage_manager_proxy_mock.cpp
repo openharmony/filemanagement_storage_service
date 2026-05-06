@@ -540,5 +540,10 @@ int32_t StorageManagerProxy::CreateIsoImage(const std::string &volumeId, const s
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

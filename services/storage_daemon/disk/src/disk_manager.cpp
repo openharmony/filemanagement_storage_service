@@ -103,13 +103,14 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
         if ((config != nullptr) && config->IsMatch(devPath)) {
             uint32_t flag = static_cast<uint32_t>(config->GetFlag());
             if (major == DISK_MMC_MAJOR) {
-                flag |= DiskInfo::DeviceFlag::SD_FLAG;
+                flag |= DiskInfo::DiskType::SD_CARD;
             } else if (major == DISK_CD_MAJOR) {
-                flag |= DiskInfo::DeviceFlag::CD_FLAG;
+                flag |= DiskInfo::DiskType::CD_DVD_BD;
             } else {
-                flag |= DiskInfo::DeviceFlag::USB_FLAG;
+                flag |= DiskInfo::DiskType::USB_FLASH;
             }
-            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
+            std::string diskName = data->GetDiskName();
+            auto diskInfo =  std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, static_cast<int>(flag));
             LOGI("[L2:DiskManager] MatchConfig: <<< EXIT SUCCESS <<< devPath=%{public}s, matched", devPath.c_str());
             return diskInfo;
         }
@@ -175,7 +176,7 @@ void DiskManager::DestroyDisk(dev_t device)
             }
 
             StorageManagerClient client;
-            ret = client.NotifyDiskDestroyed((*i)->GetId());
+            ret = client.NotifyDiskDestroyed((*i)->GetDiskId());
             if (ret != E_OK) {
                 LOGI("[L2:DiskManager] DestroyDisk: Notify Disk Destroyed failed, err=%{public}d", ret);
             }
@@ -214,7 +215,7 @@ int32_t DiskManager::HandlePartition(const std::string &diskId)
             continue;
         }
 
-        if ((*i)->GetId() == diskId) {
+        if ((*i)->GetDiskId() == diskId) {
             ret = (*i)->Partition();
             break;
         }
@@ -224,6 +225,31 @@ int32_t DiskManager::HandlePartition(const std::string &diskId)
         LOGI("[L2:DiskManager] HandlePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
     } else {
         LOGE("[L2:DiskManager] HandlePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
+    return ret;
+}
+
+int32_t DiskManager::HandleGetPartitionTable(const std::string &diskId,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    LOGI("[L2:DiskManager] HandleGetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+    int32_t ret = E_NON_EXIST;
+    std::lock_guard<std::mutex> lock(lock_);
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+        if ((*i)->GetDiskId() == diskId) {
+            ret = (*i)->GetPartitionTable(partitionTableInfo);
+            break;
+        }
+    }
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandleGetPartitionTable: <<< EXIT SUCCESS <<< diskId=%{public}s, "
+             "partitionCount=%{public}u", diskId.c_str(), partitionTableInfo.GetPartitionCount());
+    } else {
+        LOGE("[L2:DiskManager] HandleGetPartitionTable: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
              diskId.c_str(), ret);
     }
     return ret;

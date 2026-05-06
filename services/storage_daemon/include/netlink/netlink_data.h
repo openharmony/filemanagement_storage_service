@@ -48,6 +48,7 @@ public:
     std::string GetSyspath();
     std::string GetDevpath();
     std::string GetSubsystem();
+    std::string GetDiskName();
     std::string GetEjectRequest();
     Actions GetAction();
     const std::string GetParam(const std::string paramName);
@@ -58,6 +59,7 @@ private:
     std::string subSystem_;
     std::string devPath_;
     std::string ejectRequest_;
+    std::string diskName_;
     std::vector<std::string> params_;
     Actions action_ = Actions::UNKNOWN;
 };

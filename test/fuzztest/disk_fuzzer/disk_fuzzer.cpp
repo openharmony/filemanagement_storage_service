@@ -30,8 +30,8 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     disk.GetSizeBytes();
     disk.GetSysPath();
     disk.GetVendor();
-    disk.GetFlag();
-    disk.SetFlag(flag);
+    disk.GetDiskType();
+    disk.SetDiskType(flag);
     disk.Marshalling(parcel);
     auto unmarshallingDisk = std::unique_ptr<OHOS::StorageManager::Disk>(disk.Unmarshalling(parcel));
     return true;
