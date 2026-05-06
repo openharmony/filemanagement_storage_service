@@ -43,6 +43,7 @@ constexpr const char *UFS_STRING = "ufs";
 constexpr const char *NVME_STRING = "nvme";
 constexpr const char *NVME0_STRING = "nvme0";
 constexpr const char *SIZE_NODE = "/size";
+constexpr const char *DEV_PATH = "/dev/block";
 constexpr const char *DEV_NODE = "/dev";
 constexpr const char *ROTATIONAL_NODE = "/queue/rotational";
 constexpr const char *STATE_NODE = "/device/state";
@@ -66,7 +67,7 @@ constexpr uint32_t NVME_SERIAL_NUMBER_LENGTH = 20;
 constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
-    : sysBlockPath(sysBlockPath), devBlockPath(DEV_NODE)
+    : sysBlockPath(sysBlockPath), devBlockPath(DEV_PATH)
 {
 }
 
