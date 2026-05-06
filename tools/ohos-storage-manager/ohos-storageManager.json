@@ -1,0 +1,329 @@
+{
+  "name": "ohos-storageManager",
+  "version": "1.0.0",
+  "description": "Storage manager CLI tool for querying storage statistics. Used for retrieving disk space information and application storage usage. Does not support real-time storage monitoring or modification.",
+  "executablePath": "/system/bin/cli_tool/executable/ohos-storageManager",
+  "requirePermissions": [
+    "ohos.permission.STORAGE_MANAGER"
+  ],
+  "inputSchema": {
+    "type": "object",
+    "properties": {}
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {}
+  },
+  "hasSubCommand": true,
+  "subcommands": {
+    "get-total-size": {
+      "description": "Get total storage size. Used for querying the total capacity of device storage. Does not return information about individual partitions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "totalBytes": {
+                "type": "integer",
+                "description": "Total storage size in bytes"
+              },
+              "totalReadable": {
+                "type": "string",
+                "description": "Human-readable total storage size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": []
+    },
+    "get-free-size": {
+      "description": "Get free storage size. Used for checking available disk space before installing apps or saving files. Does not support per-partition free space query.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "freeBytes": {
+                "type": "integer",
+                "description": "Free storage size in bytes"
+              },
+              "freeReadable": {
+                "type": "string",
+                "description": "Human-readable free storage size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": []
+    },
+    "get-system-size": {
+      "description": "Get system partition size. Used for checking the size of the system partition. Does not support querying other partition types.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "systemBytes": {
+                "type": "integer",
+                "description": "System partition size in bytes"
+              },
+              "systemReadable": {
+                "type": "string",
+                "description": "Human-readable system partition size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": [
+        "ohos.permission.STORAGE_MANAGER"
+      ]
+    },
+    "get-user-storage-stats": {
+      "description": "Get user storage statistics. Used for checking user data storage usage. Does not support historical statistics or trend analysis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "userId": {
+          "type": "integer",
+          "description": "User id",
+          "default": 100
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "Total user storage in bytes"
+              },
+              "audio": {
+                "type": "integer",
+                "description": "Audio storage used in bytes"
+              },
+              "video": {
+                "type": "integer",
+                "description": "Video storage used in bytes"
+              },
+              "image": {
+                "type": "integer",
+                "description": "Image storage used in bytes"
+              },
+              "file": {
+                "type": "integer",
+                "description": "File storage used in bytes"
+              },
+              "app": {
+                "type": "integer",
+                "description": "App storage used in bytes"
+              },
+              "totalReadable": {
+                "type": "string",
+                "description": "Human-readable total storage size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": [
+        "ohos.permission.STORAGE_MANAGER"
+      ]
+    },
+    "get-bundle-stats": {
+      "description": "Get storage statistics for a specific bundle. Used for checking how much storage an application is using. Does not support querying uninstalled applications.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "Bundle name to app"
+          },
+          "appIndex": {
+            "type": "integer",
+            "description": "Application index, default 0",
+            "default": 0
+          }
+        },
+        "required": ["packageName"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "packageName": {
+                "type": "string",
+                "description": "Bundle name"
+              },
+              "appIndex": {
+                "type": "integer",
+                "description": "Application index"
+              },
+              "appSize": {
+                "type": "integer",
+                "description": "App size in bytes"
+              },
+              "cacheSize": {
+                "type": "integer",
+                "description": "Cache size in bytes"
+              },
+              "dataSize": {
+                "type": "integer",
+                "description": "Data size in bytes"
+              },
+              "appSizeReadable": {
+                "type": "string",
+                "description": "Human-readable app size"
+              },
+              "cacheSizeReadable": {
+                "type": "string",
+                "description": "Human-readable cache size"
+              },
+              "dataSizeReadable": {
+                "type": "string",
+                "description": "Human-readable data size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": [
+        "ohos.permission.STORAGE_MANAGER"
+      ]
+    },
+    "get-current-bundle-stats": {
+      "description": "Get storage statistics for the current running application. Used for an app to check its own storage usage. Does not support querying other applications.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["success", "error"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "appSize": {
+                "type": "integer",
+                "description": "App size in bytes"
+              },
+              "cacheSize": {
+                "type": "integer",
+                "description": "Cache size in bytes"
+              },
+              "dataSize": {
+                "type": "integer",
+                "description": "Data size in bytes"
+              },
+              "appSizeReadable": {
+                "type": "string",
+                "description": "Human-readable app size"
+              },
+              "cacheSizeReadable": {
+                "type": "string",
+                "description": "Human-readable cache size"
+              },
+              "dataSizeReadable": {
+                "type": "string",
+                "description": "Human-readable data size"
+              }
+            }
+          },
+          "errCode": {
+            "type": "string"
+          },
+          "errMsg": {
+            "type": "string"
+          }
+        },
+        "required": ["status"]
+      },
+      "requirePermissions": [
+        "ohos.permission.STORAGE_MANAGER"
+      ]
+    }
+  },
+  "eventTypes": [],
+  "eventSchemas": {}
+}
