@@ -14,7 +14,7 @@
     "type": "object",
     "properties": {}
   },
-  "hasSubcommands": true,
+  "hasSubCommand": true,
   "subcommands": {
     "get-total-size": {
       "description": "Get total storage size. Used for querying the total capacity of device storage. Does not return information about individual partitions.",

@@ -113,8 +113,7 @@
           "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
           "//foundation/filemanagement/storage_service/services/storage_daemon/mtpfs:mtpfs",
           "//foundation/filemanagement/storage_service/services/storage_daemon/gphotofs:gphotofs",
-          "//foundation/filemanagement/storage_service/tools/ohos-storage-manager:ohos-storageManager",
-          "//foundation/filemanagement/storage_service/tools/ohos-storage-manager:ohos_storageManager_config"
+          "//foundation/filemanagement/storage_service/tools/ohos-storage-manager:ohos-storageManager"
         ]
       },
       "inner_kits": [
