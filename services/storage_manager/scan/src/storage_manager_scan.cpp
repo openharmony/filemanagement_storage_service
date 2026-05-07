@@ -246,6 +246,7 @@ void StorageManagerScan::LaunchScanWorker()
             LOGE("Scan worker ExecuteScan failed, ret=%{public}d", ret);
         }
         // Remove timeout task before resetting isScanRunning_ to avoid race condition
+        std::lock_guard<std::mutex> lock(eventMutex_);
         if (scanEventHandler_ != nullptr) {
             scanEventHandler_->RemoveTask(SCAN_TIMEOUT_TASK_NAME);
             LOGI("Removed scan timeout task");
@@ -256,6 +257,7 @@ void StorageManagerScan::LaunchScanWorker()
     }).detach();
 
     // Post delayed timeout task using EventHandler instead of detached thread
+    std::lock_guard<std::mutex> lock(eventMutex_);
     if (scanEventHandler_ != nullptr) {
         auto timeoutHandler = [this]() { ScanTimeoutHandler(); };
         scanEventHandler_->PostTask(timeoutHandler, SCAN_TIMEOUT_TASK_NAME, SCAN_TIMEOUT_MS);

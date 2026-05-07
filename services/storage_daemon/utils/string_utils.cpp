@@ -340,5 +340,45 @@ void DecreaseThreadPriority(const std::string &processName)
     LOGI("DecreaseThreadPriority end");
     HiAudit::GetInstance().WriteEnd("DecreaseThreadPriority", 0);
 }
+
+std::string AnonymizePath(const std::string &path)
+{
+    if (path.empty()) {
+        return path;
+    }
+
+    // Find the last path separator (support both Unix '/' and Windows '\')
+    size_t lastSlash = path.find_last_of("/\\");
+    std::string dirPart;
+    std::string fileName;
+
+    if (lastSlash == std::string::npos) {
+        // No directory part, only filename
+        fileName = path;
+    } else {
+        // Split into directory and filename parts
+        dirPart = path.substr(0, lastSlash + 1);
+        fileName = path.substr(lastSlash + 1);
+    }
+
+    // Anonymize the filename
+    if (fileName.length() <= 5) {
+        // For very short filenames (<=5 chars), replace middle characters except first and last
+        if (fileName.length() >= 2) {
+            size_t replaceCount = fileName.length() - 2;
+            fileName = fileName[0] + std::string(replaceCount, '*') + fileName[fileName.length() - 1];
+        } else {
+            // For single character, just return as is
+            // For empty string, return as is
+        }
+    } else {
+        // For longer filenames, replace middle 4 characters
+        // Calculate start position for middle 4 characters
+        size_t startPos = (fileName.length() - 4) / 2;
+        fileName = fileName.substr(0, startPos) + "****" + fileName.substr(startPos + 4);
+    }
+
+    return dirPart + fileName;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

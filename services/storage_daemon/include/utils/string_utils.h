@@ -44,6 +44,7 @@ int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::
 bool ConvertStringToInt32(const std::string &context, int32_t &value);
 void IncreaseThreadPriority(const std::string &processName);
 void DecreaseThreadPriority(const std::string &processName);
+std::string AnonymizePath(const std::string &path);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
