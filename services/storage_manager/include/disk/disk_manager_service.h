@@ -33,7 +33,7 @@ public:
     void OnDiskDestroyed(const std::string &diskId);
     std::vector<Disk> GetAllDisks();
     int32_t GetDiskById(const std::string &diskId, Disk &disk);
-    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
 private:
     DiskManagerService();
     ~DiskManagerService();
