@@ -113,9 +113,10 @@ private:
     bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
     void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
     bool ParsePartitionInfo(const std::string &context, OHOS::StorageManager::PartitionInfo &info);
-    bool SetTotalSector();
-    bool SetSectorSize();
-    bool SetAlignSector()
+    bool SetTotalSector(std::vector<std::string> &content);
+    bool SetSectorSize(std::vector<std::string> &content);
+    bool SetAlignSector(std::vector<std::string> &content);
+    void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
 };
 } // STORAGE_DAEMON
 } // OHOS

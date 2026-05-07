@@ -2413,7 +2413,7 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
     int32_t ret = DiskManagerService::GetInstance().GetPartitionTable(diskId, partitionTableInfo);
     StorageRadar::ReportFucBehavior("GetPartitionTable", DEFAULT_USERID, "GetPartitionTable End", ret);
     LOGI("StorageManagerProvider::GetPartitionTable end, ret=%{public}d", ret);
-    return ret;
+    return ret == E_OK ? E_OK : E_GET_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::GetPartitionTable not support");
     return E_NOT_SUPPORT;

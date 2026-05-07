@@ -20,7 +20,7 @@ namespace StorageDaemon {
 constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
-constexpr int DEVNAME_PRE_LEN = 7;
+constexpr int DEVNAME_PRE_LEN = 8;
 constexpr int DISK_EJECT_REQUEST_LEN = 19;
 constexpr int NL_PARAMS_MAX = 128;
 constexpr const char *EMPTY_STRING = "";

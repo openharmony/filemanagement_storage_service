@@ -513,14 +513,14 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevPath_001, TestSize.Lev
 }
 
 /**
- * @tc.name: Storage_Service_DiskInfoTest_GetDevDSize_001
+ * @tc.name: Storage_Service_DiskInfoTest_GetTotalSize_001
  * @tc.desc: Verify the GetTotalSize function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Level1)
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetTotalSize_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 start";
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetTotalSize_001 start";
 
     char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
@@ -538,7 +538,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Le
     auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     uint64_t mock_size = 1;
-    EXPECT_CALL(*mock, GetDevDSize()).WillOnce(testing::Return(mock_size));
+    EXPECT_CALL(*mock, GetTotalSize()).WillOnce(testing::Return(mock_size));
     uint64_t ret = mock->GetTotalSize();
 
     EXPECT_TRUE(ret == mock_size);

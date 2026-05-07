@@ -14,6 +14,7 @@
  */
 
 #include <dirent.h>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 
@@ -771,11 +772,11 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
     std::vector<std::string> output;
     int32_t res = ForkExec(cmd, &output);
-    if (res != E_OK) {
-        return res;
-    }
     for (auto str : output) {
         LOGI("get partition output: %{public}s", str.c_str());
+    }
+    if (res != E_OK) {
+        return res;
     }
     std::vector<std::string> tempInfo;
     std::string bufToken = "\n";
@@ -783,34 +784,50 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
         auto split = SplitLine(buf, bufToken);
         tempInfo.insert(tempInfo.end(), split.begin(), split.end());
     }
-    auto count = static_cast<int32_t>(tempInfo.size());
+    if (!SetTotalSector(tempInfo)) {
+        return E_SET_TOTAL_SECTOR_ERROR;
+    }
+    if (!SetSectorSize(tempInfo)) {
+        return E_SET_SECTOR_SIZE_ERROR;
+    }
+    if (!SetAlignSector(tempInfo)) {
+        return E_SET_ALIGN_SECTOR_ERROR;
+    }
+    SetPartitions(tempInfo, partitionTableInfo);
+    partitionTableInfo.SetDiskId(diskId_);
+    partitionTableInfo.SetTableType("GPT");
+    partitionTableInfo.SetPartitionCount(static_cast<uint32_t>(partitionTableInfo.GetPartitions().size()));
+    partitionTableInfo.SetTotalSector(totalSector_);
+    partitionTableInfo.SetSectorSize(sectorSize_);
+    partitionTableInfo.SetAlignSector(alignSector_);
+    LOGI("[L3:DiskInfo] GetPartitionTable: >>> EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+void DiskInfo::SetPartitions(std::vector<std::string> &content,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    auto count = static_cast<int32_t>(content.size());
     int32_t partitionIndex = -1;
     for (int32_t i = 0; i < count; i++) {
-        std::string buf = tempInfo[i];
+        std::string buf = content[i];
         if (buf.find("Number") == 0 && buf.find("Start") != std::string::npos) {
             partitionIndex = i + 1;
             break;
         }
     }
+    if (partitionIndex < 0 || partitionIndex >= count) {
+        return;
+    }
     std::vector<OHOS::StorageManager::PartitionInfo> partitions;
-    if (partitionIndex > 0 && partitionIndex < count) {
-        for (int32_t i = partitionIndex; i < count; i++) {
-            std::string buf = tempInfo[i];
-            OHOS::StorageManager::PartitionInfo info;
-            if (ParsePartitionInfo(buf, info)) {
-                partitions.push_back(info);
-            }
+    for (int32_t i = partitionIndex; i < count; i++) {
+        std::string buf = content[i];
+        OHOS::StorageManager::PartitionInfo info;
+        if (ParsePartitionInfo(buf, info)) {
+            partitions.push_back(info);
         }
     }
-    partitionTableInfo.SetDiskId(diskId_);
-    partitionTableInfo.SetTableType("GPT");
-    partitionTableInfo.SetPartitionCount(static_cast<uint32_t>(partitions.size()));
-    partitionTableInfo.SetTotalSector(totalSector_);
-    partitionTableInfo.SetSectorSize(sectorSize_);
-    partitionTableInfo.SetAlignSector(alignSector_);
     partitionTableInfo.SetPartitions(partitions);
-    LOGI("[L3:DiskInfo] GetPartitionTable: >>> EXIT SUCCESS <<<");
-    return E_OK;
 }
 
 bool DiskInfo::ParsePartitionInfo(const std::string &context, OHOS::StorageManager::PartitionInfo &info)
@@ -858,6 +875,106 @@ bool DiskInfo::ParsePartitionInfo(const std::string &context, OHOS::StorageManag
     LOGI("partition info is partitionNum=%{public}d, startSector=%{public}lld, endSector=%{public}lld, "
          "sizeBytes=%{public}lld, fsType=%{public}s", partitionNum, static_cast<long long>(startSector),
          static_cast<long long>(endSector), static_cast<long long>(sizeBytes), fsType.c_str());
+    return true;
+}
+
+bool DiskInfo::SetTotalSector(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Disk " + devPath_;
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< not found total sector");
+        return false;
+    }
+    std::regex pattern(R"((\d+)\s+sectors)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< total sector not match, target=%{public}s", target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int64_t totalSector = 0;
+    if (!ConvertStringToInt(result, totalSector)) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    totalSector_ = static_cast<uint64_t>(totalSector);
+    LOGI("[L3:DiskInfo] SetTotalSector: <<< EXIT SUCCESS <<< totalSector=%{public}llu",
+         static_cast<unsigned long long>(totalSector_));
+    return true;
+}
+
+bool DiskInfo::SetSectorSize(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Sector size (logical/physical)";
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< not found sector size");
+        return false;
+    }
+    std::regex pattern(R"(Sector size \(logical/physical\):\s*(\d+)/\d+)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< sector size not match, target=%{public}s", target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int32_t sectorSize = 0;
+    if (!ConvertStringToInt32(result, sectorSize)) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    sectorSize_ = static_cast<uint32_t>(sectorSize);
+    LOGI("[L3:DiskInfo] SetSectorSize: <<< EXIT SUCCESS <<< totalSector=%{public}d", sectorSize_);
+    return true;
+}
+
+bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Partitions will be aligned on";
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< not found align sector");
+        return false;
+    }
+    std::regex pattern(R"(Partitions will be aligned on (\d+)-sector boundaries)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< align sector not match, target=%{public}s", target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int32_t alignSector = 0;
+    if (!ConvertStringToInt32(result, alignSector)) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    alignSector_ = alignSector = 0 ? DEFAULT_ALIGN_SIZE : static_cast<uint32_t>(alignSector);
+    LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector_);
     return true;
 }
 } // namespace STORAGE_DAEMON
