@@ -71,9 +71,6 @@ DiskInfo::DiskInfo(std::string &diskName, std::string &sysPath, std::string &dev
     status = S_INITAL;
     isUserdata = false;
     sgdiskLines_ = std::vector<std::string>();
-    SetTotalSector();
-    SetSectorSize();
-    SetAlignSector();
 }
 
 dev_t DiskInfo::GetDevice() const
@@ -129,73 +126,6 @@ bool DiskInfo::GetRemovable() const
 std::string DiskInfo::GetExtraInfo() const
 {
     return extraInfo_;
-}
-
-bool DiskInfo::SetTotalSector()
-{
-    std::string filePath = "/sys/block/" + diskName_ + "/size";
-    std::string content;
-    if (!ReadFile(filePath, &content)) {
-        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< cannot read file=%{public}s", filePath.c_str());
-        return false;
-    }
-    if (content.empty()) {
-        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< file content is empty");
-        return false;
-    }
-    int64_t sectorCount = 0;
-    if (!ConvertStringToInt(content, sectorCount)) {
-        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< convert failed, content=%{public}s", content.c_str());
-        return false;
-    }
-    totalSector_ = static_cast<uint64_t>(sectorCount);
-    LOGI("[L3:DiskInfo] SetTotalSector: <<< EXIT SUCCESS <<< totalSector=%{public}llu",
-         static_cast<unsigned long long>(totalSector_));
-    return true;
-}
-
-bool DiskInfo::SetSectorSize()
-{
-    std::string filePath = "/sys/block/" + diskName_ + "/queue/logical_block_size";
-    std::string content;
-    if (!ReadFile(filePath, &content)) {
-        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< cannot read file=%{public}s", filePath.c_str());
-        return false;
-    }
-    if (content.empty()) {
-        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< file content is empty");
-        return false;
-    }
-    int32_t sectorSize = 0;
-    if (!ConvertStringToInt32(content, sectorSize)) {
-        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< convert failed, content=%{public}s", content.c_str());
-        return false;
-    }
-    sectorSize_ = static_cast<uint32_t>(sectorSize);
-    LOGI("[L3:DiskInfo] SetSectorSize: <<< EXIT SUCCESS <<< sectorSize=%{public}d", sectorSize_);
-    return true;
-}
-
-bool DiskInfo::SetAlignSector()
-{
-    std::string filePath = "/sys/block/" + diskName_ + "/queue/optimal_io_size";
-    std::string content;
-    if (!ReadFile(filePath, &content)) {
-        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< cannot read file=%{public}s", filePath.c_str());
-        return false;
-    }
-    if (content.empty()) {
-        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< file content is empty");
-        return false;
-    }
-    int32_t alignSize = 0;
-    if (!ConvertStringToInt32(content, alignSize)) {
-        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< convert failed, content=%{public}s", content.c_str());
-        return false;
-    }
-    alignSector_ = alignSize == 0 ? DEFAULT_ALIGN_SIZE : alignSize;
-    LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSize=%{public}d", sectorSize_);
-    return true;
 }
 
 DiskInfo::~DiskInfo()
