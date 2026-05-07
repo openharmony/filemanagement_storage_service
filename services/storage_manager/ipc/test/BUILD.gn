@@ -165,6 +165,13 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "STORAGE_MANAGER_UNIT_TEST",
   ]
 
+  if (pc_device_enable) {
+    defines += [ "PC_USER_MANAGER" ]
+    sources += [
+      "${storage_manager_path}/disk/src/disk_manager_service.cpp",
+    ]
+  }
+
   deps = [
     "${storage_daemon_path}:storage_daemon_header",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
