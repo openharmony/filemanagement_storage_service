@@ -35,6 +35,7 @@
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/disk_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -1041,6 +1042,8 @@ void QuotaManager::ProcessLargeFiles(std::vector<LargeFileInfo> &allLargeFiles,
         });
     for (size_t i = 0; i < fileCount; ++i) {
         largeFiles.push_back(allLargeFiles[i]);
+        LOGI("ProcessLargeFiles path=%{public}s, size=%{public}lld",
+            GetAnonyString(allLargeFiles[i].path).c_str(), static_cast<long long>(allLargeFiles[i].size));
     }
 }
 
@@ -1062,6 +1065,8 @@ void QuotaManager::ProcessLargeDirs(const std::map<std::string, int64_t> &dirSiz
         });
     for (size_t i = 0; i < dirCount; ++i) {
         largeDirs.push_back(allLargeDirs[i]);
+        LOGI("ProcessLargeDirs path=%{public}s, totalSize=%{public}lld",
+            GetAnonyString(allLargeDirs[i].path).c_str(), static_cast<long long>(allLargeDirs[i].totalSize));
     }
 }
 
