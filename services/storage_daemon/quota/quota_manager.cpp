@@ -1065,7 +1065,7 @@ void QuotaManager::ProcessLargeDirs(const std::map<std::string, int64_t> &dirSiz
     for (size_t i = 0; i < dirCount; ++i) {
         largeDirs.push_back(allLargeDirs[i]);
         LOGI("ProcessLargeDirs path=%{public}s, totalSize=%{public}lld",
-            AnonymizePath(allLargeDirs[i].path).c_str(), static_cast<long long>(allLargeDirs[i].totalSize));
+            allLargeDirs[i].path.c_str(), static_cast<long long>(allLargeDirs[i].totalSize));
     }
 }
 
