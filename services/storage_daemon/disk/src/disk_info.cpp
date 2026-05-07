@@ -906,7 +906,7 @@ bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
         LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
         return false;
     }
-    alignSector_ = alignSector = 0 ? DEFAULT_ALIGN_SIZE : static_cast<uint32_t>(alignSector);
+    alignSector_ = alignSector == 0 ? DEFAULT_ALIGN_SIZE : static_cast<uint32_t>(alignSector);
     LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector_);
     return true;
 }

@@ -17,6 +17,7 @@
 
 namespace OHOS {
 namespace StorageManager {
+constexpr unsigned int MAX_PARTITION_COUNT = 256;
 PartitionTableInfo::PartitionTableInfo() {}
 
 std::string PartitionTableInfo::GetDiskId() const
@@ -139,6 +140,9 @@ PartitionTableInfo *PartitionTableInfo::Unmarshalling(Parcel &parcel)
         }
         obj->partitions_.push_back(*partition);
         delete partition;
+        if (i > MAX_PARTITION_COUNT) {
+            break;
+        }
     }
     return obj;
 }
