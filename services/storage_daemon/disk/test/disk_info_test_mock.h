@@ -34,7 +34,7 @@ public:
     MOCK_METHOD0(GetDevice, dev_t(void));
     MOCK_METHOD0(GetId, std::string(void));
     MOCK_METHOD0(GetDevPath, std::string(void));
-    MOCK_METHOD0(GetDevDSize, uint64_t(void));
+    MOCK_METHOD0(GetTotalSize, uint64_t(void));
     MOCK_METHOD0(GetSysPath, std::string(void));
     MOCK_METHOD0(GetDevVendor, std::string(void));
     MOCK_METHOD0(GetDiskType, int(void));

@@ -195,10 +195,8 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress) override;
     int32_t Erase(const std::string &volumeId) override;
     int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath) override;
-
     // disk partition api
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
-
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
