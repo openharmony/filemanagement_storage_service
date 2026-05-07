@@ -58,8 +58,6 @@ public:
     int32_t NotifyDiskCreated(const Disk& disk) override;
     int32_t NotifyDiskDestroyed(const std::string& diskId) override;
     int32_t Partition(const std::string& diskId, int32_t type) override;
-    int32_t CreatePartition(const std::string& diskId, const PartitionOptions &partitionOptions) override;
-    int32_t GetPartitionTable(const std::string& diskId, PartitionTableInfo &partitionTableInfo) override;
     int32_t GetAllDisks(std::vector<Disk> &vecOfDisk) override;
     int32_t GetVolumeByUuid(const std::string& fsUuid, VolumeExternal &vc) override;
     int32_t GetVolumeById(const std::string& volumeId, VolumeExternal &vc) override;

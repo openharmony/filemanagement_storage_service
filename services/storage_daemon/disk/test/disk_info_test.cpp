@@ -640,8 +640,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevFlag_001, TestSize.Lev
     std::string diskName = data->GetDiskName();
     auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
-    EXPECT_CALL(*mock, GetDevFlag()).WillOnce(testing::Return(flag));
-    int ret = mock->GetDevFlag();
+    EXPECT_CALL(*mock, GetDiskType()).WillOnce(testing::Return(flag));
+    int ret = mock->GetDiskType();
 
     EXPECT_TRUE(ret == flag);
 
@@ -908,7 +908,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_001, TestSize.Level1)
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->ReadMetadata();
-    EXPECT_EQ(diskInfo->GetDevDSize(), -1);
+    EXPECT_EQ(diskInfo->GetTotalSize(), -1);
 
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_001 end";
 }

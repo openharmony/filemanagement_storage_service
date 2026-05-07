@@ -19,8 +19,9 @@
 #include <list>
 #include <map>
 #include <string>
-
 #include <sys/types.h>
+
+#include "partition_table_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {

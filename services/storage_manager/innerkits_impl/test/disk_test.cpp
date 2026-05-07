@@ -120,7 +120,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(result->GetSizeBytes(), sizeBytes);
     EXPECT_EQ(result->GetSysPath(), sysPath);
     EXPECT_EQ(result->GetVendor(), vendor);
-    EXPECT_EQ(result->GetFlag(), flag);
+    EXPECT_EQ(result->GetDiskType(), flag);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0000";
 }
 }

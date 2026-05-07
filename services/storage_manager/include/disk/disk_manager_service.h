@@ -20,6 +20,7 @@
 #include <mutex>
 #include <singleton.h>
 #include "disk.h"
+#include "partition_table_info.h"
 
 namespace OHOS {
 namespace StorageManager {
