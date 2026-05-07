@@ -827,7 +827,8 @@ bool DiskInfo::SetTotalSector(std::vector<std::string> &content)
     std::regex pattern(R"((\d+)\s+sectors)");
     std::smatch match;
     if (!std::regex_search(target, match, pattern)) {
-        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< total sector not match, target=%{public}s", target.c_str());
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< total sector not match, target=%{public}s",
+             target.c_str());
         return false;
     }
     std::string result = match[1].str();
@@ -861,7 +862,8 @@ bool DiskInfo::SetSectorSize(std::vector<std::string> &content)
     std::regex pattern(R"(Sector size \(logical/physical\):\s*(\d+)/\d+)");
     std::smatch match;
     if (!std::regex_search(target, match, pattern)) {
-        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< sector size not match, target=%{public}s", target.c_str());
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< sector size not match, target=%{public}s",
+             target.c_str());
         return false;
     }
     std::string result = match[1].str();
@@ -894,7 +896,8 @@ bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
     std::regex pattern(R"(Partitions will be aligned on (\d+)-sector boundaries)");
     std::smatch match;
     if (!std::regex_search(target, match, pattern)) {
-        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< align sector not match, target=%{public}s", target.c_str());
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< align sector not match, target=%{public}s",
+             target.c_str());
         return false;
     }
     std::string result = match[1].str();
