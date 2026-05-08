@@ -35,11 +35,6 @@ public:
         UNKNOWN_DISK_TYPE = 255,
     };
 
-    enum DeviceFlag {
-        SD_FLAG = 1,
-        USB_FLAG = 2,
-        CD_FLAG = 3,
-    };
     enum class Table {
         UNKNOWN,
         MBR,
@@ -117,6 +112,7 @@ private:
     bool SetSectorSize(std::vector<std::string> &content);
     bool SetAlignSector(std::vector<std::string> &content);
     void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
+    void SetTableType(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
 };
 } // STORAGE_DAEMON
 } // OHOS

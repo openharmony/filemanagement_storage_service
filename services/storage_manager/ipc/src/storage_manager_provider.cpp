@@ -2418,6 +2418,6 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
     LOGI("StorageManagerProvider::GetPartitionTable not support");
     return E_NOT_SUPPORT;
 #endif
-    }
+}
 } // namespace StorageManager
 } // namespace OHOS

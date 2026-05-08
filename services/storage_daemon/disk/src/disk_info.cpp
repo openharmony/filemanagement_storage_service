@@ -724,8 +724,8 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
         return E_SET_ALIGN_SECTOR_ERROR;
     }
     SetPartitions(tempInfo, partitionTableInfo);
+    SetTableType(tempInfo, partitionTableInfo);
     partitionTableInfo.SetDiskId(diskId_);
-    partitionTableInfo.SetTableType("GPT");
     partitionTableInfo.SetPartitionCount(static_cast<uint32_t>(partitionTableInfo.GetPartitions().size()));
     partitionTableInfo.SetTotalSector(totalSector_);
     partitionTableInfo.SetSectorSize(sectorSize_);
@@ -909,6 +909,23 @@ bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
     alignSector_ = alignSector == 0 ? DEFAULT_ALIGN_SIZE : static_cast<uint32_t>(alignSector);
     LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector_);
     return true;
+}
+
+void DiskInfo::SetTableType(std::vector<std::string> &content,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Found invalid GPT and valid MBR";
+    bool isMBR = false;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            LOGI("this disk table type is mbr");
+            isMBR = true;
+            break;
+        }
+    }
+    partitionTableInfo.SetTableType(isMBR ? "MBR" : "GPT");
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
