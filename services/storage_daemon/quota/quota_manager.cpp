@@ -791,6 +791,7 @@ int32_t QuotaManager::GetSystemDataSize(int64_t &otherUidSizeSum)
     if (ret != E_OK) {
         LOGE("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
         systemCacheSize = 0;
+        return E_GET_SYSTEM_DATA_SIZE_ERROR;
     }
     LOGI("[L2:QuotaManager] GetSystemDataSize: system_cache=%{public}lld", static_cast<long long>(systemCacheSize));
     int64_t metaDataSize = 0;

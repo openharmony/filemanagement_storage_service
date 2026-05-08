@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+// LCOV_EXCL_START
 #include <cstring>
 #include <cstdlib>
 #include <iomanip>
@@ -20,6 +21,9 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
+#include <vector>
+
 #include "storage_service_errno.h"
 #include "storage_stats.h"
 #include "bundle_stats.h"
@@ -33,17 +37,43 @@ namespace OHOS {
 namespace StorageManager {
 
 constexpr int32_t ARGC_COUNT_TWO = 2;
-constexpr int32_t ARGC_COUNT_THREE = 3;
-constexpr int32_t ARGC_COUNT_FIVE = 5;
-constexpr int32_t BITS_UNIT = 1024;
+constexpr int32_t BITS_UNIT = 1000;
 constexpr int32_t SIGNIFICAND = 2;
 constexpr int32_t UNITS_SIZE = 5;
 
 
+static const char* TOOL_NAME = "ohos-storage-manager";
+static const char* TOOL_DESC = "Storage management CLI tool for querying storage space and bundle statistics";
+
+int OutputSuccess(const nlohmann::json& data)
+{
+    nlohmann::json root;
+    root["type"] = "result";
+    root["status"] = "success";
+    root["data"] = data;
+
+    std::cout << root.dump() << std::endl;
+    return 0;
+}
+
+int OutputError(const std::string& code, const std::string& message, const std::string& suggestion = "")
+{
+    nlohmann::json root;
+    root["type"] = "result";
+    root["status"] = "failed";
+    root["data"] = "";
+    root["errCode"] = code;
+    root["errMsg"] = message;
+    root["suggestion"] = suggestion;
+
+    std::cout << root.dump() << std::endl;
+    return 1;
+}
+
 std::string FormatBytes(int64_t bytes)
 {
     const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-    int32_t i = 1;
+    int32_t i = 0;
     double size = static_cast<double>(bytes);
     while (size >= BITS_UNIT && i < UNITS_SIZE) {
         size /= BITS_UNIT;
@@ -52,27 +82,6 @@ std::string FormatBytes(int64_t bytes)
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(SIGNIFICAND) << size << units[i];
     return ss.str();
-}
-
-std::string GetOption(const std::vector<std::string>& args, const std::string& option)
-{
-    for (size_t i = 0; i < args.size(); i++) {
-        if (args[i] == option && i + 1 < args.size()) {
-            return args[i + 1];
-        }
-    }
-    return "";
-}
-
-void PrintSuccess(const std::string& data)
-{
-    std::cout << "{\"success\":true,\"data\":" << data << "}" << std::endl;
-}
-
-void PrintError(int32_t code, const std::string& message)
-{
-    std::cout << "{\"success\":false,\"error\":{\"code\":" << code
-              << ",\"message\":\"" << message << "\"}}" << std::endl;
 }
 
 sptr<IStorageManager> GetStorageManagerProxy()
@@ -85,236 +94,281 @@ sptr<IStorageManager> GetStorageManagerProxy()
     return obj ? iface_cast<IStorageManager>(obj) : nullptr;
 }
 
-int32_t CmdGetTotalSize(sptr<IStorageManager> proxy)
+// JSON Output Helper Function
+void PrintHelp(const std::string& subcommand = "")
 {
-    if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+    if (subcommand.empty()) {
+        std::cout << TOOL_DESC << std::endl;
+        std::cout << "Usage: " << TOOL_NAME << " <command> [options]" << std::endl;
+        std::cout << "       " << TOOL_NAME << " <command> --help  Show help for a specific command" << std::endl;
+        std::cout << std::endl;
+        std::cout << "SubCommands:" << std::endl;
+        std::cout << "  get-total-size                 Get total storage size" << std::endl;
+        std::cout << "  get-free-size                  Get free storage size" << std::endl;
+        std::cout << "  get-system-size                Get system partition size" << std::endl;
+        std::cout << "  get-user-storage-stats         Get user storage statistics" << std::endl;
+        std::cout << "  get-bundle-stats               Get bundle storage statistics" << std::endl;
+        std::cout << "  get-current-bundle-stats       Get current bundle storage statistics" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Options:" << std::endl;
+        std::cout << "  --help, -h                   Show this help message" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Examples:" << std::endl;
+        std::cout << "  # Get total storage size" << std::endl;
+        std::cout << "  ohos-storage-manager get-total-size" << std::endl;
+        std::cout << std::endl;
+        std::cout << "  # Get free storage size" << std::endl;
+        std::cout << "  ohos-storage-manager get-free-size" << std::endl;
+        std::cout << std::endl;
+        std::cout << "  # Get user storage statistics" << std::endl;
+        std::cout << "  ohos-storage-manager get-user-storage-stats --userId 100" << std::endl;
+        std::cout << std::endl;
+        std::cout << "  # Get bundle storage statistics" << std::endl;
+        std::cout << "  ohos-storage-manager get-user-storage-stats --packageName com.example.demo --appIndex 0"
+            << std::endl;
+    } else {
+        std::cout << "SubCommands: " << subcommand << std::endl;
+        std::cout << "Usage: " << TOOL_NAME << " " << subcommand << " [options]" << std::endl;
+        std::cout << std::endl;
+        if (subcommand == "get-user-storage-stats") {
+            std::cout << "Options:" << std::endl;
+            std::cout << "  --userId     Optional integer. User ID to query. Default: current user." << std::endl;
+        } else if (subcommand == "get-bundle-stats") {
+            std::cout << "Options:" << std::endl;
+            std::cout << "  --packageName    Required string. Package name of the application." << std::endl;
+            std::cout << "  --appIndex       Optional integer. App index. Default: 0." << std::endl;
+        } else if (subcommand == "get-total-size" || subcommand == "get-free-size" || subcommand == "get-system-size"
+            || subcommand == "get-current-bundle-stats") {
+            std::cout << "This subcommand has no options." << std::endl;
+        } else {
+            std::cout << "This subcommand is not supported. Please enter another one." << std::endl;
+        }
     }
+}
+
+// Parsing parameters
+std::string GetOption(const std::vector<std::string>& args, const std::string& option)
+{
+    for (size_t i = 0; i < args.size(); i++) {
+        if (args[i] == option && i + 1 < args.size()) {
+            return args[i + 1];
+        }
+    }
+    return "";
+}
+
+bool HasOption(const std::vector<std::string>& args, const std::string& option)
+{
+    for (const auto& arg : args) {
+        if (arg == option) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int CommandGetTotalSize(const std::vector<std::string>& args)
+{
+    auto proxy = GetStorageManagerProxy();
+    if (!proxy) {
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
+    }
+
     int64_t size = 0;
     int32_t ret = proxy->GetTotalSize(size);
     if (ret != E_OK) {
-        PrintError(ret, "GetTotalSize failed");
-        return 1;
+        return OutputError("ERR_GET_TOTAL_SIZE", "GetTotalSize failed with error code: " + std::to_string(ret),
+            "Please check system storage status and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"totalBytes\":" << size << ",\"totalReadable\":\"" << FormatBytes(size) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["totalBytes"] = size;
+    data["totalReadable"] = FormatBytes(size);
+    return OutputSuccess(data);
 }
 
-int32_t CmdGetFreeSize(sptr<IStorageManager> proxy)
+int CommandGetFreeSize(const std::vector<std::string>& args)
 {
+    auto proxy = GetStorageManagerProxy();
     if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
     }
+
     int64_t size = 0;
     int32_t ret = proxy->GetFreeSize(size);
     if (ret != E_OK) {
-        PrintError(ret, "GetFreeSize failed");
-        return 1;
+        return OutputError("ERR_GET_FREE_SIZE", "GetFreeSize failed with error code: " + std::to_string(ret),
+            "Please check system storage status and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"freeBytes\":" << size << ",\"freeReadable\":\"" << FormatBytes(size) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["freeBytes"] = size;
+    data["freeReadable"] = FormatBytes(size);
+    return OutputSuccess(data);
 }
 
-int32_t CmdGetSystemSize(sptr<IStorageManager> proxy)
+int CommandGetSystemSize(const std::vector<std::string>& args)
 {
+    auto proxy = GetStorageManagerProxy();
     if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
     }
+
     int64_t size = 0;
     int32_t ret = proxy->GetSystemSize(size);
     if (ret != E_OK) {
-        PrintError(ret, "GetSystemSize failed");
-        return 1;
+        return OutputError("ERR_GET_SYSTEM_SIZE", "GetSystemSize failed with error code: " + std::to_string(ret),
+            "Please check system storage status and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"systemBytes\":" << size << ",\"systemReadable\":\"" << FormatBytes(size) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["systemBytes"] = size;
+    data["systemReadable"] = FormatBytes(size);
+    return OutputSuccess(data);
 }
 
-int32_t CmdGetUserStorageStats(sptr<IStorageManager> proxy, int32_t userId)
+int CommandGetUserStorageStats(const std::vector<std::string>& args)
 {
+    auto proxy = GetStorageManagerProxy();
     if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
     }
+
+    std::string userIdStr = GetOption(args, "--userId");
+    int32_t userId = -1;
+    if (!userIdStr.empty()) {
+        userId = std::atoi(userIdStr.c_str());
+    }
+
     StorageStats stats;
     int32_t ret = (userId >= 0) ? proxy->GetUserStorageStats(userId, stats) : proxy->GetUserStorageStats(stats);
     if (ret != E_OK) {
-        PrintError(ret, "GetUserStorageStats failed");
-        return 1;
+        return OutputError("ERR_GET_USER_STATS", "GetUserStorageStats failed with error code: " + std::to_string(ret),
+            "Please check user storage statistics and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"total\":" << stats.total_
-       << ",\"audio\":" << stats.audio_
-       << ",\"video\":" << stats.video_
-       << ",\"image\":" << stats.image_
-       << ",\"file\":" << stats.file_
-       << ",\"app\":" << stats.app_
-       << ",\"totalReadable\":\"" << FormatBytes(stats.total_) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["total"] = stats.total_;
+    data["audio"] = stats.audio_;
+    data["video"] = stats.video_;
+    data["image"] = stats.image_;
+    data["file"] = stats.file_;
+    data["app"] = stats.app_;
+    data["totalReadable"] = FormatBytes(stats.total_);
+    return OutputSuccess(data);
 }
 
-int32_t CmdGetBundleStats(sptr<IStorageManager> proxy, const std::string& packageName, int32_t appIndex)
+int CommandGetBundleStats(const std::vector<std::string>& args)
 {
+    auto proxy = GetStorageManagerProxy();
     if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
     }
+
+    std::string packageName = GetOption(args, "--packageName");
+    if (packageName.empty()) {
+        return OutputError("E_PARAMS_INVALID", "Missing required parameter: --packageName",
+            "Please provide package name. Example: --packageName com.example.app");
+    }
+
+    std::string appIndexStr = GetOption(args, "--appIndex");
+    int32_t appIndex = appIndexStr.empty() ? 0 : std::atoi(appIndexStr.c_str());
+
     BundleStats stats;
     int32_t ret = proxy->GetBundleStats(packageName, stats, appIndex, 0);
     if (ret != E_OK) {
-        PrintError(ret, "GetBundleStats failed");
-        return 1;
+        return OutputError("ERR_GET_BUNDLE_STATS", "GetBundleStats failed with error code: " + std::to_string(ret),
+            "Please check bundle name and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"packageName\":\"" << packageName << "\","
-       << "\"appIndex\":" << appIndex << ","
-       << "\"appSize\":" << stats.appSize_
-       << ",\"cacheSize\":" << stats.cacheSize_
-       << ",\"dataSize\":" << stats.dataSize_
-       << ",\"appSizeReadable\":\"" << FormatBytes(stats.appSize_) << "\","
-       << "\"cacheSizeReadable\":\"" << FormatBytes(stats.cacheSize_) << "\","
-       << "\"dataSizeReadable\":\"" << FormatBytes(stats.dataSize_) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["packageName"] = packageName;
+    data["appIndex"] = appIndex;
+    data["appSize"] = stats.appSize_;
+    data["cacheSize"] = stats.cacheSize_;
+    data["dataSize"] = stats.dataSize_;
+    data["appSizeReadable"] = FormatBytes(stats.appSize_);
+    data["cacheSizeReadable"] = FormatBytes(stats.cacheSize_);
+    data["dataSizeReadable"] = FormatBytes(stats.dataSize_);
+    return OutputSuccess(data);
 }
 
-int32_t CmdGetCurrentBundleStats(sptr<IStorageManager> proxy)
+int CommandGetCurrentBundleStats(const std::vector<std::string>& args)
 {
+    auto proxy = GetStorageManagerProxy();
     if (!proxy) {
-        PrintError(E_SA_IS_NULLPTR, "no storage manager proxy");
-        return 1;
+        return OutputError("E_SERVICE_IS_NULLPTR", "Failed to get StorageManager proxy",
+            "Please check if the storage manager service is running");
     }
+
     BundleStats stats;
     int32_t ret = proxy->GetCurrentBundleStats(stats, 0);
     if (ret != E_OK) {
-        PrintError(ret, "GetCurrentBundleStats failed");
-        return 1;
+        return OutputError("ERR_GET_CURR_BUNDLE_STATS", "GetCurrentBundleStats failed with error code: " +
+            std::to_string(ret), "Please check current bundle storage statistics and try again");
     }
-    std::ostringstream ss;
-    ss << "{\"appSize\":" << stats.appSize_
-       << ",\"cacheSize\":" << stats.cacheSize_
-       << ",\"dataSize\":" << stats.dataSize_
-       << ",\"appSizeReadable\":\"" << FormatBytes(stats.appSize_) << "\","
-       << "\"cacheSizeReadable\":\"" << FormatBytes(stats.cacheSize_) << "\","
-       << "\"dataSizeReadable\":\"" << FormatBytes(stats.dataSize_) << "\"}";
-    PrintSuccess(ss.str());
-    return 0;
+
+    nlohmann::json data;
+    data["appSize"] = stats.appSize_;
+    data["cacheSize"] = stats.cacheSize_;
+    data["dataSize"] = stats.dataSize_;
+    data["appSizeReadable"] = FormatBytes(stats.appSize_);
+    data["cacheSizeReadable"] = FormatBytes(stats.cacheSize_);
+    data["dataSizeReadable"] = FormatBytes(stats.dataSize_);
+    return OutputSuccess(data);
 }
 
-using CommandHandler = int(*)(sptr<IStorageManager>, int, char**);
+typedef int (*CommandHandler)(const std::vector<std::string>&);
 
-int32_t HandleGetTotalSize(sptr<IStorageManager> proxy, int32_t argc, char**)
-{
-    return CmdGetTotalSize(proxy);
-}
-
-int32_t HandleGetFreeSize(sptr<IStorageManager> proxy, int32_t argc, char**)
-{
-    return CmdGetFreeSize(proxy);
-}
-
-int32_t HandleGetSystemSize(sptr<IStorageManager> proxy, int32_t argc, char**)
-{
-    return CmdGetSystemSize(proxy);
-}
-
-int32_t HandleGetUserStorageStats(sptr<IStorageManager> proxy, int32_t argc, char** argv)
-{
-    int32_t userId = -1;
-    if (argc > ARGC_COUNT_THREE) {
-        std::vector<std::string> args;
-        for (int32_t i = 2; i < argc; i++) {
-            args.push_back(argv[i]);
-        }
-        userId = atoi(GetOption(args, "--userId").c_str());
-    }
-    return CmdGetUserStorageStats(proxy, userId);
-}
-
-int32_t HandleGetBundleStats(sptr<IStorageManager> proxy, int32_t argc, char** argv)
-{
-    if (argc < ARGC_COUNT_FIVE) {
-        PrintError(E_PARAMS_INVALID, "missing packageName argument");
-        return 1;
-    }
-    std::vector<std::string> args;
-    for (int32_t i = 2; i < argc; i++) {
-        args.push_back(argv[i]);
-    }
-    std::string packageName = GetOption(args, "--packageName");
-    if (packageName.empty()) {
-        PrintError(E_PARAMS_INVALID, "missing packageName argument");
-        return 1;
-    }
-    int32_t appIndex = (argc > ARGC_COUNT_FIVE) ? atoi(GetOption(args, "--appIndex").c_str()) : 0;
-    return CmdGetBundleStats(proxy, packageName, appIndex);
-}
-
-int32_t HandleGetCurrentBundleStats(sptr<IStorageManager> proxy, int32_t argc, char**)
-{
-    return CmdGetCurrentBundleStats(proxy);
-}
-
-void PrintUsage()
-{
-    std::cerr << "Usage: ohos-storageManager <command> [options]" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Commands:" << std::endl;
-    std::cerr << "  get-total-size                    Get total storage size" << std::endl;
-    std::cerr << "  get-free-size                     Get free storage size" << std::endl;
-    std::cerr << "  get-system-size                   Get system partition size" << std::endl;
-    std::cerr << "  get-user-storage-stats [userId]   Get user storage statistics" << std::endl;
-    std::cerr << "  get-bundle-stats <pkg> [index]    Get bundle storage statistics" << std::endl;
-    std::cerr << "  get-current-bundle-stats          Get current bundle storage statistics" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Options:" << std::endl;
-    std::cerr << "  -h, --help                        Show this help message" << std::endl;
-}
+std::unordered_map<std::string, CommandHandler> subCommands_ = {
+    {"get-total-size", CommandGetTotalSize},
+    {"get-free-size", CommandGetFreeSize},
+    {"get-system-size", CommandGetSystemSize},
+    {"get-user-storage-stats", CommandGetUserStorageStats},
+    {"get-bundle-stats", CommandGetBundleStats},
+    {"get-current-bundle-stats", CommandGetCurrentBundleStats},
+};
 
 } // namespace StorageManager
 } // namespace OHOS
 
-int32_t main(int32_t argc, char** argv)
+int32_t main(int32_t argc, char* argv[])
 {
     using namespace OHOS::StorageManager;
 
     if (argc < ARGC_COUNT_TWO) {
-        PrintUsage();
+        PrintHelp();
         return 1;
     }
 
-    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "help") == 0) {
-        PrintUsage();
+    std::vector<std::string> args;
+    for (int32_t i = ARGC_COUNT_TWO; i < argc; i++) {
+        args.push_back(argv[i]);
+    }
+
+    std::string command = argv[1];
+
+    if (command == "--help" || command == "-h") {
+        PrintHelp();
         return 0;
     }
 
-    static const std::unordered_map<std::string, CommandHandler> commandMap = {
-        {"get-total-size", HandleGetTotalSize},
-        {"get-free-size", HandleGetFreeSize},
-        {"get-system-size", HandleGetSystemSize},
-        {"get-user-storage-stats", HandleGetUserStorageStats},
-        {"get-bundle-stats", HandleGetBundleStats},
-        {"get-current-bundle-stats", HandleGetCurrentBundleStats},
-    };
-
-    auto proxy = GetStorageManagerProxy();
-    const char* cmd = argv[1];
-
-    auto it = commandMap.find(cmd);
-    if (it == commandMap.end()) {
-        PrintError(OHOS::E_PARAMS_INVALID, std::string("unknown command: ") + cmd);
-        return 1;
+    if (HasOption(args, "--help") || HasOption(args, "-h")) {
+        PrintHelp(command);
+        return 0;
     }
 
-    return it->second(proxy, argc, argv);
+    auto it = subCommands_.find(command);
+    if (it == subCommands_.end()) {
+        return OutputError("ERR_UNKNOWN_COMMAND", "Unknown command: " + command,
+            "Run 'ohos-storage-manager --help' for usage information");
+    }
+
+    return it->second(args);
 }
+// LCOV_EXCL_STOP
