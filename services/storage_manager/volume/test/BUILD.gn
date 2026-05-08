@@ -25,7 +25,10 @@ ohos_unittest("notification_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_manager_path}/mock/mock_parameters.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "notification_test.cpp",
   ]
 
@@ -46,7 +49,7 @@ ohos_unittest("notification_test") {
 
   deps = [
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "${storage_manager_path}:storage_manager",
+    "${storage_daemon_path}:storage_daemon_header",
   ]
 
   external_deps = [
@@ -60,6 +63,7 @@ ohos_unittest("notification_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "init:libbegetutil",
   ]
 }
 
@@ -86,6 +90,7 @@ ohos_unittest("volume_manager_service_test") {
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "volume_manager_service_test.cpp",
     "encrypted_volume_manager_service_test.cpp",
   ]
