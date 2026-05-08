@@ -56,7 +56,7 @@ public:
     std::vector<BlockInfo> GetDataDisks();
 
     /**
-     * 获取外盘设备
+     * 获取外盘设备空实现
      * @return 外盘信息列表
      */
     std::vector<BlockInfo> GetExternalDisks();

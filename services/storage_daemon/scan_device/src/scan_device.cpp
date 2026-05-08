@@ -27,6 +27,8 @@
 #include <linux/nvme_ioctl.h>
 #include <regex>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -203,37 +205,6 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
 std::vector<BlockInfo> ScanDevice::GetExternalDisks()
 {
     std::vector<BlockInfo> externalDisks;
-    DIR *dir = opendir(sysBlockPath.c_str());
-    if (!dir) {
-        LOGE("%{public}s open failed", sysBlockPath.c_str());
-        return externalDisks;
-    }
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        std::string deviceName = entry->d_name;
-        if (deviceName == "." || deviceName == "..") {
-            LOGI("Ignore %{public}s", deviceName.c_str());
-            continue;
-        }
-        // 判断是否为 s* 节点
-        bool isSDevice = (deviceName.length() > 0 && deviceName[0] == 's');
-        if (!isSDevice) {
-            LOGI("Ignore non-s* node: %{public}s", deviceName.c_str());
-            continue;
-        }
-        bool isRemovable = false;
-        // 如果removable标签被设置，且值为1，则是外盘
-        if (!ReadRemovableNode(deviceName, isRemovable) || !isRemovable) {
-            continue;
-        }
-        // 获取设备信息
-        BlockInfo blockInfo;
-        blockInfo.removable = isRemovable;
-        if (GetBlockInfo(deviceName, false, blockInfo) == 0) {
-            externalDisks.push_back(blockInfo);
-        }
-    }
-    closedir(dir);
     return externalDisks;
 }
 
@@ -253,8 +224,22 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
     blockInfo.availableBytes = GetAvailableBytes(deviceName);
     blockInfo.devicePath = GetDevicePath(deviceName);
     blockInfo.port = GetPort(blockInfo.pciePath, isNvmeDevice);
-
     return 0;
+}
+
+// 去除字符串头部和尾部的空格
+std::string TrimSpaces(const std::string &str)
+{
+    auto first = std::find_if(str.begin(), str.end(), [](unsigned char c) {
+        return !std::isspace(c);
+    });
+    auto last = std::find_if(str.rbegin(), str.rend(), [](unsigned char c) {
+        return !std::isspace(c);
+    });
+    if (first == str.end()) {
+        return "";
+    }
+    return std::string(first, last.base());
 }
 
 bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
@@ -264,9 +249,18 @@ bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
         LOGE("Open %{public}s failed", path.c_str());
         return false;
     }
-    std::getline(file, content);
-    file.close();
-    return true;
+    std::string rawContent;
+    if (std::getline(file, rawContent)) {
+        // 去除前后空格
+        content = TrimSpaces(rawContent);
+        file.close();
+        return true;
+    } else {
+        // 如果读取失败（例如文件为空），content 设为空
+        content = "";
+        file.close();
+        return false;
+    }
 }
 
 bool ScanDevice::ParseStringToUlongLong(const std::string &str, unsigned long long &result)
@@ -322,8 +316,11 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         LOGE("GetDiskSize: used bytes overflow detected for %{public}s", deviceName.c_str());
         return 0;
     }
+    uint64_t sectorSize = static_cast<uint64_t>(sectors) * SECTOR_SIZE;
+    LOGI("GetDiskSize success: size: %{public}llu, SECTOR_SIZE: %{public}lu, %{public}s", sectors, SECTOR_SIZE,
+         std::to_string(sectorSize).c_str());
     // LCOV_EXCL_STOP
-    return static_cast<uint64_t>(sectors) * SECTOR_SIZE;
+    return sectorSize;
 }
 
 std::string ScanDevice::GetVendor(const std::string &deviceName)
@@ -355,7 +352,6 @@ std::string ScanDevice::GetInterfaceType(const std::string &deviceName)
     if (deviceName.find(NVME_STRING) == 0) {
         return "NVMe";
     } else if (deviceName[0] == 's') {
-        // 可能是SATA或SAS
         return "SATA";
     }
     LOGE("Get interface type failed");
@@ -417,16 +413,6 @@ MediaType ScanDevice::GetMediaType(const std::string &deviceName, const bool isN
     return MediaType::UNKNOWN;
 }
 
-// 去除字符串尾部空格
-std::string TrimTrailingSpaces(const std::string &str)
-{
-    size_t len = str.length();
-    while (len > 0 && str[len - 1] == ' ') {
-        len--;
-    }
-    return str.substr(0, len);
-}
-
 // 获取 Sd* 设备序列号
 std::string ScanDevice::GetSataSerialNumber(int fd)
 {
@@ -438,7 +424,7 @@ std::string ScanDevice::GetSataSerialNumber(int fd)
     }
     size_t len = sizeof(hdId.serial_no);
     std::string serial(reinterpret_cast<const char *>(hdId.serial_no), len);
-    return TrimTrailingSpaces(serial);
+    return TrimSpaces(serial);
     // LCOV_EXCL_STOP
 }
 
@@ -462,7 +448,7 @@ std::string ScanDevice::GetNvmeSerialNumber(int fd)
     // 序列号位于偏移 0x40 (64) 处，长度为 20 字节
     const char *serialPtr = reinterpret_cast<const char *>(identifyData) + NVME_SERIAL_NUMBER_OFFSET;
     std::string serial(serialPtr, NVME_SERIAL_NUMBER_LENGTH);
-    return TrimTrailingSpaces(serial);
+    return TrimSpaces(serial);
     // LCOV_EXCL_STOP
 }
 
@@ -568,13 +554,13 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
         }
         // LCOV_EXCL_START
         if (sectors > MAX_SAFE_SECTORS_PER_PARTITION) {
-            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}llu sectors, skipping.",
-                 name.c_str(), sectors);
+            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}s sectors, skipping.",
+                 name.c_str(), std::to_string(sectors).c_str());
             continue;
         }
         if (totalSectors > UINT64_MAX - sectors) {
-            LOGE("GetUsedBytes: total sectors %{public}llu overflow detected for %{public}s", totalSectors,
-                 deviceName.c_str());
+            LOGE("GetUsedBytes: total sectors %{public}s overflow detected for %{public}s",
+                 std::to_string(totalSectors).c_str(), deviceName.c_str());
             closedir(dir);
             return 0;
         }
@@ -583,7 +569,7 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
     }
     closedir(dir);
     uint64_t usedBytes = totalSectors * SECTOR_SIZE;
-    LOGI("GetUsedBytes success: %{public}llu", usedBytes);
+    LOGI("GetUsedBytes success: %{public}s", std::to_string(usedBytes).c_str());
     return usedBytes;
 }
 
@@ -596,7 +582,7 @@ uint64_t ScanDevice::GetAvailableBytes(const std::string &deviceName)
         return 0;
     }
     uint64_t availableBytes = sizeBytes - usedBytes;
-    LOGI("GetAvailableBytes success: %{public}llu", availableBytes);
+    LOGI("GetAvailableBytes success: %{public}s", std::to_string(availableBytes).c_str());
     return availableBytes;
 }
 
