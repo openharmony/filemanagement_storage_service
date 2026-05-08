@@ -317,7 +317,7 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         return 0;
     }
     uint64_t sectorSize = static_cast<uint64_t>(sectors) * SECTOR_SIZE;
-    LOGI("GetDiskSize success: size: %{public}llu, SECTOR_SIZE: %{public}lu, %{public}s", sectors, SECTOR_SIZE,
+    LOGI("GetDiskSize success: sectors is %{public}s, size is %{public}s", std::to_string(sectors).c_str(),
          std::to_string(sectorSize).c_str());
     // LCOV_EXCL_STOP
     return sectorSize;
