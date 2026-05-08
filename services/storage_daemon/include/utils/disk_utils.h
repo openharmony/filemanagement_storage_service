@@ -30,6 +30,7 @@ constexpr uint8_t DISC_STATUS_MASK = 0x03;
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
+bool IsAcceptableUuid(const std::string &uuid);
 int GetDevSize(const std::string &path, uint64_t *size);
 int GetMaxVolume(dev_t device);
 int32_t ReadMetadata(const std::string &path, std::string &uuid, std::string &type, std::string &label);

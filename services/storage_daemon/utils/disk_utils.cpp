@@ -154,7 +154,7 @@ int GetMaxVolume(dev_t device)
     }
 }
 
-static bool IsAcceptableUuid(const std::string &uuid)
+bool IsAcceptableUuid(const std::string &uuid)
 {
     if (uuid.empty()) {
         return false;
