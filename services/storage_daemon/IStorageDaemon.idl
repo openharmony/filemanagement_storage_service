@@ -131,4 +131,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
  	[ipccode 84] void Erase([in] String volId);
  	[ipccode 85] void CreateIsoImage([in] String volId, [in] String filePath);
      [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
+     [ipccode 87] void  CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
+     [ipccode 88] void  DeletePartition([in] String diskId, [in] unsigned int partitionNum);
 }

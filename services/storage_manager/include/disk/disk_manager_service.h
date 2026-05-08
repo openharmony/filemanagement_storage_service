@@ -20,6 +20,7 @@
 #include <mutex>
 #include <singleton.h>
 #include "disk.h"
+#include "partition_options.h"
 #include "partition_table_info.h"
 
 namespace OHOS {
@@ -34,6 +35,8 @@ public:
     std::vector<Disk> GetAllDisks();
     int32_t GetDiskById(const std::string &diskId, Disk &disk);
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
+    int32_t CreatePartition(const std::string &diskId, PartitionOptions &partitionOption);
+    int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
 private:
     DiskManagerService();
     ~DiskManagerService();

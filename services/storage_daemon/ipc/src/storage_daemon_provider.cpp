@@ -1871,5 +1871,44 @@ int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
+    OHOS::StorageManager::PartitionOptions &partitionOption)
+{
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}d",
+         diskId.c_str(), partitionOption.GetPartitionNum());
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManager::Instance().HandleCreatePartition(diskId, partitionOption);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, "
+             "partitionNum=%{public}d", diskId.c_str(), partitionOption.GetPartitionNum());
+    } else {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::DeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    LOGI("[L1:StorageDaemonProvider] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId.c_str(), partitionNum);
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManager::Instance().HandleDeletePartition(diskId, partitionNum);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
+             diskId.c_str(), partitionNum);
+    } else {
+        LOGE("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

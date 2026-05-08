@@ -150,4 +150,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 105] void Erase([in] String volId);
     [ipccode 106] void CreateIsoImage([in] String volId, [in] String filePath);
     [ipccode 107] void GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
+    [ipccode 108] void CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
+    [ipccode 109] void DeletePartition([in] String diskId, [in] unsigned int partitionNum);
 }

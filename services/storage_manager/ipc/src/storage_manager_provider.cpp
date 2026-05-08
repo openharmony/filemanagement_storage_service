@@ -2419,5 +2419,59 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+{
+    StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition Begin", E_OK);
+    LOGI("StorageManagerProvider::CreatePartition start, diskId=%{public}s, partitionNum=%{public}d",
+         diskId.c_str(), partitionOption.GetPartitionNum());
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (diskId.empty()) {
+        LOGE("diskId is empty");
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManagerService::GetInstance().CreatePartition(diskId, partitionOption);
+    StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition End", ret);
+    LOGI("StorageManagerProvider::CreatePartition end, ret=%{public}d", ret);
+    return ret == E_OK ? E_OK : E_CREATE_PARTITION_ERROR;
+#else
+    LOGI("StorageManagerProvider::CreatePartition not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    StorageRadar::ReportFucBehavior("DeletePartition", DEFAULT_USERID, "DeletePartition Begin", E_OK);
+    LOGI("StorageManagerProvider::DeletePartition start, diskId=%{public}s, partitionNum=%{public}u",
+         diskId.c_str(), partitionNum);
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (diskId.empty()) {
+        LOGE("diskId is empty");
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManagerService::GetInstance().DeletePartition(diskId, partitionNum);
+    StorageRadar::ReportFucBehavior("DeletePartition", DEFAULT_USERID, "DeletePartition End", ret);
+    LOGI("StorageManagerProvider::DeletePartition end, ret=%{public}d", ret);
+    return ret == E_OK ? E_OK : E_DELETE_PARTITION_ERROR;
+#else
+    LOGI("StorageManagerProvider::DeletePartition not support");
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -149,6 +149,8 @@ public:
     virtual int32_t CreateIsoImage(const std::string &volId, const std::string &filePath) override;
     // disk partition api
     virtual int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
+    virtual int32_t CreatePartition(const std::string &diskId, PartitionOptions &partitionOption) override;
+    virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

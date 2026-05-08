@@ -119,6 +119,8 @@ public:
 
     // disk partition api
     MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
+    MOCK_METHOD2(CreatePartition, int32_t(const std::string &, PartitionOptions &));
+    MOCK_METHOD2(DeletePartition, int32_t(const std::string &, uint32_t));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS

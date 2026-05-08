@@ -107,6 +107,9 @@ bool PartitionTableInfo::Marshalling(Parcel &parcel) const
     if (!parcel.WriteUint32(sectorSize_)) {
         return false;
     }
+    if (!parcel.WriteUint32(alignSector_)) {
+        return false;
+    }
     if (!parcel.WriteUint32(static_cast<uint32_t>(partitions_.size()))) {
         return false;
     }
@@ -140,7 +143,7 @@ PartitionTableInfo *PartitionTableInfo::Unmarshalling(Parcel &parcel)
         }
         obj->partitions_.push_back(*partition);
         delete partition;
-        if (i > MAX_PARTITION_COUNT) {
+        if (i >= MAX_PARTITION_COUNT) {
             break;
         }
     }

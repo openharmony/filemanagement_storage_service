@@ -1308,5 +1308,35 @@ int32_t StorageDaemonCommunication::GetPartitionTable(const std::string &diskId,
     }
     return storageDaemon_->GetPartitionTable(diskId, partitionTableInfo);
 }
+
+int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+{
+    LOGI("StorageDaemonCommunication::CreatePartition start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::CreatePartition connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::CreatePartition service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->CreatePartition(diskId, partitionOption);
+}
+
+int32_t StorageDaemonCommunication::DeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    LOGI("StorageDaemonCommunication::DeletePartition start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::DeletePartition connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::DeletePartition service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->DeletePartition(diskId, partitionNum);
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -254,5 +254,54 @@ int32_t DiskManager::HandleGetPartitionTable(const std::string &diskId,
     }
     return ret;
 }
+
+int32_t DiskManager::HandleCreatePartition(const std::string &diskId,
+    OHOS::StorageManager::PartitionOptions &partitionOption)
+{
+    LOGI("[L2:DiskManager] HandleCreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+    int32_t ret = E_NON_EXIST;
+    std::lock_guard<std::mutex> lock(lock_);
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+        if ((*i)->GetDiskId() == diskId) {
+            ret = (*i)->CreatePartition(partitionOption);
+            break;
+        }
+    }
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandleCreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
+    } else {
+        LOGE("[L2:DiskManager] HandleCreatePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
+    return ret;
+}
+
+int32_t DiskManager::HandleDeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    LOGI("[L2:DiskManager] HandleDeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId.c_str(), partitionNum);
+    int32_t ret = E_NON_EXIST;
+    std::lock_guard<std::mutex> lock(lock_);
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+        if ((*i)->GetDiskId() == diskId) {
+            ret = (*i)->DeletePartition(partitionNum);
+            break;
+        }
+    }
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandleDeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
+             diskId.c_str(), partitionNum);
+    } else {
+        LOGE("[L2:DiskManager] HandleDeletePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
+    return ret;
+}
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

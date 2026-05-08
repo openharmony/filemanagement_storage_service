@@ -59,6 +59,17 @@ std::map<uint32_t, std::string> vendorMap_ = {
     {0x000074, "Transcend"}
 };
 
+std::map<std::string, std::string> typeCodeMap_ = {
+    {"vfat", "0x0700"},
+    {"exfat", "0x0700"},
+    {"ntfs", "0x0700"},
+    {"ext2", "0x8300"},
+    {"ext3", "0x8300"},
+    {"ext4", "0x8300"},
+    {"f2fs", "0x8300"},
+    {"hmfs", "0x8300"},
+};
+
 DiskInfo::DiskInfo(std::string &diskName, std::string &sysPath, std::string &devPath, dev_t device, int diskType)
 {
     diskId_ = StringPrintf("disk-%d-%d", major(device), minor(device));
@@ -734,6 +745,69 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     return E_OK;
 }
 
+int32_t DiskInfo::CreatePartition(OHOS::StorageManager::PartitionOptions &partitionOption)
+{
+    LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
+    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< this disk not support partition");
+        return E_CREATE_PARTITION_NOT_SUPPORT;
+    }
+    auto type = typeCodeMap_.find(partitionOption.GetTypeCode());
+    if (type == typeCodeMap_.end()) {
+        return E_CREATE_PARTITION_NOT_SUPPORT;
+    }
+    std::string params = "-n 0:" + std::to_string(partitionOption.GetStartSector()) + ":" +
+        std::to_string(partitionOption.GetEndSector()) + " -t 0:" + type->second;
+    std::vector<std::string> cmd = {SGDISK_PATH, params, devPath_};
+    std::vector<std::string> output;
+    int32_t res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("create partition output: %{public}s", str.c_str());
+    }
+    if (res != E_OK) {
+        return res;
+    }
+    LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
+{
+    LOGI("[L3:DiskInfo] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId_.c_str(), partitionNum);
+    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< this disk not support partition");
+        return E_DELETE_PARTITION_NOT_SUPPORT;
+    }
+    if (!IsPartitionNumExists(partitionNum)) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
+        return E_NON_EXIST;
+    }
+    std::vector<std::string> cmd = {SGDISK_PATH, "-d", std::to_string(partitionNum), devPath_};
+    std::vector<std::string> output;
+    int32_t res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("delete partition output: %{public}s", str.c_str());
+    }
+    if (res != E_OK) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< delete partition failed, err=%{public}d", res);
+        return res;
+    }
+    LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+bool DiskInfo::IsPartitionNumExists(uint32_t partitionNum)
+{
+    std::string partitionPath = std::string(BLOCK_PATH) + "/" + diskName_ + std::to_string(partitionNum);
+    struct stat statBuf{};
+    if (lstat(partitionPath.c_str(), &statBuf) == 0) {
+        return true;
+    }
+    LOGI("[L3:DiskInfo] IsPartitionNumExists: partition %{public}u not exists", partitionNum);
+    return false;
+}
+
 void DiskInfo::SetPartitions(std::vector<std::string> &content,
     OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
 {
@@ -873,7 +947,7 @@ bool DiskInfo::SetSectorSize(std::vector<std::string> &content)
         return false;
     }
     sectorSize_ = static_cast<uint32_t>(sectorSize);
-    LOGI("[L3:DiskInfo] SetSectorSize: <<< EXIT SUCCESS <<< totalSector=%{public}d", sectorSize_);
+    LOGI("[L3:DiskInfo] SetSectorSize: <<< EXIT SUCCESS <<< sectorSize=%{public}d", sectorSize);
     return true;
 }
 
