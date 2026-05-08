@@ -38,9 +38,9 @@ static constexpr int32_t BUFF_SIZE = 1024;
 static constexpr int32_t THREAD_QOS_HIGH_LEVEL = 7; // 设置 qos 7 优先级41
 static constexpr int32_t THREAD_QOS_LOW_LEVEL = -1; // 取消 qos 7
 static constexpr const char *APP_EL1_PATH = "/data/app/el1";
-static constexpr int32_t TWO_CHARACRER = 2;
-static constexpr int32_t FOUR_CHARACRER = 4;
-static constexpr int32_t FIVE_CHARACRER = 4;
+static constexpr int32_t TWO_CHARACTER = 2;
+static constexpr int32_t FOUR_CHARACTER = 4;
+static constexpr int32_t FIVE_CHARACTER = 5;
 std::string StringPrintf(const char *format, ...)
 {
     va_list ap;
@@ -365,10 +365,10 @@ std::string AnonymizePath(const std::string &path)
     }
 
     // Anonymize the filename
-    if (fileName.length() <= FIVE_CHARACRER) {
+    if (fileName.length() <= FIVE_CHARACTER) {
         // For very short filenames (<=5 chars), replace middle characters except first and last
-        if (fileName.length() >= TWO_CHARACRER) {
-            size_t replaceCount = fileName.length() - TWO_CHARACRER;
+        if (fileName.length() >= TWO_CHARACTER) {
+            size_t replaceCount = fileName.length() - TWO_CHARACTER;
             fileName = fileName[0] + std::string(replaceCount, '*') + fileName[fileName.length() - 1];
         } else {
             // For single character, just return as is
@@ -377,8 +377,8 @@ std::string AnonymizePath(const std::string &path)
     } else {
         // For longer filenames, replace middle 4 characters
         // Calculate start position for middle 4 characters
-        size_t startPos = (fileName.length() - FOUR_CHARACRER) / 2;
-        fileName = fileName.substr(0, startPos) + "****" + fileName.substr(startPos + FOUR_CHARACRER);
+        size_t startPos = (fileName.length() - FOUR_CHARACTER) / 2;
+        fileName = fileName.substr(0, startPos) + "****" + fileName.substr(startPos + FOUR_CHARACTER);
     }
 
     return dirPart + fileName;
