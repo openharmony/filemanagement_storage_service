@@ -34,6 +34,9 @@
 #include "disk/disk_manager.h"
 #include "volume/volume_manager.h"
 #endif
+#ifdef PC_USER_MANAGER
+#include "disk/disk_manager.h"
+#endif
 #include "file_ex.h"
 #include "file_sharing/file_sharing.h"
 #include "hi_audit.h"
@@ -1846,6 +1849,25 @@ int32_t StorageDaemonProvider::CreateIsoImage(const std::string &volId, const st
     }
     return ret;
 #else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManager::Instance().HandleGetPartitionTable(diskId, partitionTableInfo);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT SUCCESS <<< diskId=%{public}s, "
+             "partitionCount=%{public}d", diskId.c_str(), partitionTableInfo.GetPartitionCount());
+    } else {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }

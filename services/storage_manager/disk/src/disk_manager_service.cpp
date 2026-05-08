@@ -118,5 +118,19 @@ int32_t DiskManagerService::GetDiskById(const std::string &diskId, Disk &disk)
     LOGE("DiskManagerService::GetDiskById the disk %{public}s doesn't exist", diskId.c_str());
     return E_NON_EXIST;
 }
+
+int32_t DiskManagerService::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    {
+        std::lock_guard<std::mutex> lock(diskMapMutex_);
+        if (diskMap_.find(diskId) == diskMap_.end()) {
+            LOGE("the disk %{public}s not exist", diskId.c_str());
+            return E_NON_EXIST;
+        }
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
+}
 }
 }

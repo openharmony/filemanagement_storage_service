@@ -20,6 +20,9 @@ sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
 sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
 sequenceable VolumeCore..OHOS.StorageManager.VolumeInfoStr;
 sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
+sequenceable PartitionOptions..OHOS.StorageManager.PartitionOptions;
+sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
+sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
 rawdata OHOS.StorageManager.StorageFileRawData;
 import IUeceActivationCallback;
 interface OHOS.StorageManager.IStorageManager {
@@ -146,4 +149,5 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 104] void GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
     [ipccode 105] void Erase([in] String volId);
     [ipccode 106] void CreateIsoImage([in] String volId, [in] String filePath);
+    [ipccode 107] void GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
 }

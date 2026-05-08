@@ -23,8 +23,8 @@ namespace OHOS {
 namespace StorageDaemon {
 class DiskInfoTestMock : public DiskInfo {
 public:
-    DiskInfoTestMock(std::string &sysPath, std::string &devPath, dev_t device, int flags)
-        :DiskInfo(sysPath, devPath, device, flags) {};
+    DiskInfoTestMock(std::string &diskName, std::string &sysPath, std::string &devPath, dev_t device, int flags)
+        :DiskInfo(diskName, sysPath, devPath, device, flags) {};
     ~DiskInfoTestMock() {};
     MOCK_METHOD0(Create, int(void));
     MOCK_METHOD0(Destroy, int(void));
@@ -32,12 +32,12 @@ public:
     MOCK_METHOD1(CreateVolume, int(dev_t));
     MOCK_METHOD0(Partition, int(void));
     MOCK_METHOD0(GetDevice, dev_t(void));
-    MOCK_METHOD0(GetId, std::string(void));
+    MOCK_METHOD0(GetDiskId, std::string(void));
     MOCK_METHOD0(GetDevPath, std::string(void));
-    MOCK_METHOD0(GetDevDSize, uint64_t(void));
+    MOCK_METHOD0(GetTotalSize, uint64_t(void));
     MOCK_METHOD0(GetSysPath, std::string(void));
     MOCK_METHOD0(GetDevVendor, std::string(void));
-    MOCK_METHOD0(GetDevFlag, int(void));
+    MOCK_METHOD0(GetDiskType, int(void));
 };
 }
 }

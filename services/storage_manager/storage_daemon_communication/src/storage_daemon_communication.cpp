@@ -1293,5 +1293,20 @@ int32_t StorageDaemonCommunication::CreateIsoImage(const std::string &volumeId, 
     }
     return storageDaemon_->CreateIsoImage(volumeId, filePath);
 }
+
+int32_t StorageDaemonCommunication::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    LOGI("StorageDaemonCommunication::GetPartitionTable start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::GetPartitionTable connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->GetPartitionTable(diskId, partitionTableInfo);
+}
 } // namespace StorageManager
 } // namespace OHOS

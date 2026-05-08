@@ -133,6 +133,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",

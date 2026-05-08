@@ -19,13 +19,18 @@ namespace OHOS {
 namespace StorageManager {
 Disk::Disk() {}
 
-Disk::Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath,
-           const std::string &vendor, int32_t flag)
-    : diskId_(diskId), sizeBytes_(sizeBytes), sysPath_(sysPath), vendor_(vendor), flag_(flag) {}
+Disk::Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath, const std::string &vendor,
+           int32_t diskType)
+    : diskId_(diskId), sizeBytes_(sizeBytes), sysPath_(sysPath), vendor_(vendor), diskType_(diskType) {}
 
 std::string Disk::GetDiskId() const
 {
     return diskId_;
+}
+
+std::string Disk::GetDiskName() const
+{
+    return diskName_;
 }
 
 int64_t Disk::GetSizeBytes() const
@@ -43,14 +48,29 @@ std::string Disk::GetVendor() const
     return vendor_;
 }
 
-int32_t Disk::GetFlag() const
+int32_t Disk::GetDiskType() const
 {
-    return flag_;
+    return diskType_;
 }
 
-void Disk::SetFlag(int32_t flag)
+int32_t Disk::GetMediaType() const
 {
-    flag_ = flag;
+    return mediaType_;
+}
+
+int32_t Disk::GetRemovable() const
+{
+    return removable_;
+}
+
+std::string Disk::GetExtraInfo() const
+{
+    return extraInfo_;
+}
+
+void Disk::SetDiskType(int32_t diskType)
+{
+    diskType_ = diskType;
 }
 
 bool Disk::Marshalling(Parcel &parcel) const
@@ -71,10 +91,9 @@ bool Disk::Marshalling(Parcel &parcel) const
         return false;
     }
 
-    if (!parcel.WriteInt32(flag_)) {
+    if (!parcel.WriteInt32(diskType_)) {
         return false;
     }
-
     return true;
 }
 
@@ -88,7 +107,7 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
     obj->sizeBytes_ = parcel.ReadInt32();
     obj->sysPath_ = parcel.ReadString();
     obj->vendor_ = parcel.ReadString();
-    obj->flag_ = parcel.ReadInt32();
+    obj->diskType_ = parcel.ReadInt32();
     return obj;
 }
 }

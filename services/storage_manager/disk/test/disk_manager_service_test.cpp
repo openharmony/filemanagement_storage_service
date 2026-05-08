@@ -365,7 +365,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
         GTEST_LOG_(INFO) << result[0].GetDiskId();
         GTEST_LOG_(INFO) << result[0].GetSysPath();
         GTEST_LOG_(INFO) << result[0].GetVendor();
-        GTEST_LOG_(INFO) << result[0].GetFlag();
+        GTEST_LOG_(INFO) << result[0].GetDiskType();
     }
     EXPECT_GE(result.size(), 0);
     dmService.OnDiskDestroyed(diskId);

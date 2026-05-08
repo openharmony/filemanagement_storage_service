@@ -14,6 +14,7 @@
  */
 
 #include <dirent.h>
+#include <regex>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 
@@ -36,6 +37,7 @@ constexpr int32_t MAX_INTERVAL_PARTITION = 15;
 constexpr int32_t PREFIX_LENGTH = 2;
 constexpr int32_t HEX_SHIFT_BITS = 4;
 constexpr int32_t HEX_LETTER_OFFSET = 10;
+constexpr int32_t DEFAULT_ALIGN_SIZE = 2048;
 constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
 constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
@@ -57,14 +59,15 @@ std::map<uint32_t, std::string> vendorMap_ = {
     {0x000074, "Transcend"}
 };
 
-DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
+DiskInfo::DiskInfo(std::string &diskName, std::string &sysPath, std::string &devPath, dev_t device, int diskType)
 {
-    id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
+    diskId_ = StringPrintf("disk-%d-%d", major(device), minor(device));
+    diskName_ = diskName;
     sysPath_ = sysPath;
     eventPath_ = devPath;
-    devPath_ = StringPrintf("/dev/block/%s", id_.c_str());
+    devPath_ = StringPrintf("/dev/block/%s", diskId_.c_str());
     device_ = device;
-    flags_ = static_cast<unsigned int>(flag);
+    diskType_ = static_cast<DiskType>(diskType);
     status = S_INITAL;
     isUserdata = false;
     sgdiskLines_ = std::vector<std::string>();
@@ -75,9 +78,9 @@ dev_t DiskInfo::GetDevice() const
     return device_;
 }
 
-std::string DiskInfo::GetId() const
+std::string DiskInfo::GetDiskId() const
 {
-    return id_;
+    return diskId_;
 }
 
 std::string DiskInfo::GetDevPath() const
@@ -85,9 +88,9 @@ std::string DiskInfo::GetDevPath() const
     return devPath_;
 }
 
-uint64_t DiskInfo::GetDevDSize() const
+uint64_t DiskInfo::GetTotalSize() const
 {
-    return size_;
+    return totalSize_;
 }
 
 std::string DiskInfo::GetSysPath() const
@@ -100,9 +103,29 @@ std::string DiskInfo::GetDevVendor() const
     return vendor_;
 }
 
-int DiskInfo::GetDevFlag() const
+int32_t DiskInfo::GetDiskType() const
 {
-    return flags_;
+    return diskType_;
+}
+
+int32_t DiskInfo::GetMediaType() const
+{
+    return mediaType_;
+}
+
+std::string DiskInfo::GetDiskName() const
+{
+    return diskName_;
+}
+
+bool DiskInfo::GetRemovable() const
+{
+    return removable_;
+}
+
+std::string DiskInfo::GetExtraInfo() const
+{
+    return extraInfo_;
 }
 
 DiskInfo::~DiskInfo()
@@ -112,7 +135,7 @@ DiskInfo::~DiskInfo()
 
 int DiskInfo::Create()
 {
-    LOGI("[L3:DiskInfo] Create: >>> ENTER <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] Create: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     int ret;
 
     CreateDiskNode(devPath_, device_);
@@ -132,13 +155,13 @@ int DiskInfo::Create()
         return ret;
     }
 
-    LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     return E_OK;
 }
 
 int DiskInfo::Destroy()
 {
-    LOGI("[L3:DiskInfo] Destroy: >>> ENTER <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] Destroy: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     auto &volume = VolumeManager::Instance();
 
     for (const auto& volumeId : volumeId_) {
@@ -151,17 +174,17 @@ int DiskInfo::Destroy()
     }
     status = S_DESTROY;
     volumeId_.clear();
-    LOGI("[L3:DiskInfo] Destroy: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] Destroy: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     return E_OK;
 }
 
 void DiskInfo::ReadMetadata()
 {
     LOGI("[L3:DiskInfo] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath_.c_str());
-    size_ = -1;
+    totalSize_ = -1;
     vendor_.clear();
-    if (GetDevSize(devPath_, &size_) != E_OK) {
-        size_ = -1;
+    if (GetDevSize(devPath_, &totalSize_) != E_OK) {
+        totalSize_ = -1;
     }
 
     unsigned int majorId = major(device_);
@@ -232,8 +255,8 @@ bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
 
 int DiskInfo::ReadPartition(const std::string &ejectStatus)
 {
-    LOGI("[L3:DiskInfo] ReadPartition: >>> ENTER <<< id=%{public}s, ejectStatus=%{public}s",
-         id_.c_str(), ejectStatus.c_str());
+    LOGI("[L3:DiskInfo] ReadPartition: >>> ENTER <<< diskId=%{public}s, ejectStatus=%{public}s",
+         diskId_.c_str(), ejectStatus.c_str());
     int ret = 0;
     if (major(device_) == DISK_CD_MAJOR) {
         ret = ReadPartitionCD(ejectStatus);
@@ -241,18 +264,18 @@ int DiskInfo::ReadPartition(const std::string &ejectStatus)
         ret = ReadPartitionUSB();
     }
     if (ret == E_OK) {
-        LOGI("[L3:DiskInfo] ReadPartition: <<< EXIT SUCCESS <<< id=%{public}s", id_.c_str());
+        LOGI("[L3:DiskInfo] ReadPartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     } else {
-        LOGE("[L3:DiskInfo] ReadPartition: <<< EXIT FAILED <<< id=%{public}s, err=%{public}d",
-             id_.c_str(), ret);
+        LOGE("[L3:DiskInfo] ReadPartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId_.c_str(), ret);
     }
     return ret;
 }
 
 int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 {
-    LOGI("[L3:DiskInfo] ReadPartitionCD: >>> ENTER <<< id=%{public}s, ejectStatus=%{public}s",
-         id_.c_str(), ejectStatus.c_str());
+    LOGI("[L3:DiskInfo] ReadPartitionCD: >>> ENTER <<< diskId=%{public}s, ejectStatus=%{public}s",
+         diskId_.c_str(), ejectStatus.c_str());
     if (ejectStatus == "1") {
         if (Destroy() != E_OK) {
             LOGE("[L3:DiskInfo] ReadPartitionCD: <<< EXIT FAILED <<< Destroy failed");
@@ -295,7 +318,7 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
 
 int DiskInfo::ReadPartitionUSB()
 {
-    LOGI("[L3:DiskInfo] ReadPartitionUSB: >>> ENTER <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] ReadPartitionUSB: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     int maxVolumes = GetMaxVolume(device_);
     if (maxVolumes < 0) {
         LOGE("[L3:DiskInfo] ReadPartitionUSB: <<< EXIT FAILED <<< Invalid maxVolumes=%{public}d", maxVolumes);
@@ -455,7 +478,7 @@ bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
 
 int32_t DiskInfo::CreateUnknownTabVol()
 {
-    LOGI("[L3:DiskInfo] CreateUnknownTabVol: >>> ENTER <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] CreateUnknownTabVol: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     std::string fsType;
     std::string uuid;
     std::string label;
@@ -615,7 +638,7 @@ int DiskInfo::CreateVolume(dev_t dev)
     LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
 
-    std::string volumeId = volume.CreateVolume(GetId(), dev, isUserdata);
+    std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata);
     if (volumeId.empty()) {
         LOGE("[L3:DiskInfo] CreateVolume: <<< EXIT FAILED <<< Create volume failed");
         return E_ERR;
@@ -628,7 +651,7 @@ int DiskInfo::CreateVolume(dev_t dev)
 
 int DiskInfo::Partition()
 {
-    LOGI("[L3:DiskInfo] Partition: >>> ENTER <<< id=%{public}s", id_.c_str());
+    LOGI("[L3:DiskInfo] Partition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     if (major(device_) == DISK_CD_MAJOR) {
         LOGE("[L3:DiskInfo] Partition: <<< EXIT FAILED <<< CD/DVD not support partition");
         return E_NOT_SUPPORT;
@@ -671,6 +694,238 @@ int DiskInfo::Partition()
 
     LOGI("[L3:DiskInfo] Partition: <<< EXIT SUCCESS <<<");
     return E_OK;
+}
+
+int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    LOGI("[L3:DiskInfo] GetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
+    std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
+    std::vector<std::string> output;
+    int32_t res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("get partition output: %{public}s", str.c_str());
+    }
+    if (res != E_OK) {
+        return res;
+    }
+    std::vector<std::string> tempInfo;
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+        tempInfo.insert(tempInfo.end(), split.begin(), split.end());
+    }
+    if (!SetTotalSector(tempInfo)) {
+        return E_SET_TOTAL_SECTOR_ERROR;
+    }
+    if (!SetSectorSize(tempInfo)) {
+        return E_SET_SECTOR_SIZE_ERROR;
+    }
+    if (!SetAlignSector(tempInfo)) {
+        return E_SET_ALIGN_SECTOR_ERROR;
+    }
+    SetPartitions(tempInfo, partitionTableInfo);
+    SetTableType(tempInfo, partitionTableInfo);
+    partitionTableInfo.SetDiskId(diskId_);
+    partitionTableInfo.SetPartitionCount(static_cast<uint32_t>(partitionTableInfo.GetPartitions().size()));
+    partitionTableInfo.SetTotalSector(totalSector_);
+    partitionTableInfo.SetSectorSize(sectorSize_);
+    partitionTableInfo.SetAlignSector(alignSector_);
+    LOGI("[L3:DiskInfo] GetPartitionTable: >>> EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+void DiskInfo::SetPartitions(std::vector<std::string> &content,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    auto count = static_cast<int32_t>(content.size());
+    int32_t partitionIndex = -1;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find("Number") == 0 && buf.find("Start") != std::string::npos) {
+            partitionIndex = i + 1;
+            break;
+        }
+    }
+    if (partitionIndex < 0 || partitionIndex >= count) {
+        return;
+    }
+    std::vector<OHOS::StorageManager::PartitionInfo> partitions;
+    for (int32_t i = partitionIndex; i < count; i++) {
+        std::string buf = content[i];
+        OHOS::StorageManager::PartitionInfo info;
+        if (ParsePartitionInfo(buf, info)) {
+            partitions.push_back(info);
+        }
+    }
+    partitionTableInfo.SetPartitions(partitions);
+}
+
+bool DiskInfo::ParsePartitionInfo(const std::string &context, OHOS::StorageManager::PartitionInfo &info)
+{
+    if (context.empty()) {
+        return false;
+    }
+    std::stringstream ss(context);
+    std::string item;
+    ss >> item;
+    if (item.empty()) {
+        return false;
+    }
+    int32_t partitionNum;
+    if (!ConvertStringToInt32(item, partitionNum)) {
+        LOGE("convert partition num failed, %{public}s", item.c_str());
+        return false;
+    }
+    info.SetPartitionNum(static_cast<uint32_t>(partitionNum));
+    ss >> item;
+    if (item.empty()) {
+        return false;
+    }
+    int64_t startSector;
+    if (!ConvertStringToInt(item, startSector)) {
+        LOGE("convert start sector failed, %{public}s", item.c_str());
+        return false;
+    }
+    info.SetStartSector(static_cast<uint64_t>(startSector));
+    ss >> item;
+    if (item.empty()) {
+        return false;
+    }
+    int64_t endSector;
+    if (!ConvertStringToInt(item, endSector)) {
+        LOGE("convert end sector failed, %{public}s", item.c_str());
+        return false;
+    }
+    info.SetEndSector(static_cast<uint64_t>(endSector));
+    uint64_t sizeBytes = (endSector - startSector + 1) * static_cast<uint64_t>(sectorSize_);
+    info.SetSizeBytes(sizeBytes);
+    std::string path = "/dev/block/" + diskName_ + std::to_string(partitionNum);
+    std::string fsType = GetBlkidData(path, "TYPE");
+    info.SetFsType(fsType);
+    LOGI("partition info is partitionNum=%{public}d, startSector=%{public}lld, endSector=%{public}lld, "
+         "sizeBytes=%{public}lld, fsType=%{public}s", partitionNum, static_cast<long long>(startSector),
+         static_cast<long long>(endSector), static_cast<long long>(sizeBytes), fsType.c_str());
+    return true;
+}
+
+bool DiskInfo::SetTotalSector(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Disk " + devPath_;
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< not found total sector");
+        return false;
+    }
+    std::regex pattern(R"((\d+)\s+sectors)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< total sector not match, target=%{public}s",
+             target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int64_t totalSector = 0;
+    if (!ConvertStringToInt(result, totalSector)) {
+        LOGE("[L3:DiskInfo] SetTotalSector: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    totalSector_ = static_cast<uint64_t>(totalSector);
+    LOGI("[L3:DiskInfo] SetTotalSector: <<< EXIT SUCCESS <<< totalSector=%{public}llu",
+         static_cast<unsigned long long>(totalSector_));
+    return true;
+}
+
+bool DiskInfo::SetSectorSize(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Sector size (logical/physical)";
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< not found sector size");
+        return false;
+    }
+    std::regex pattern(R"(Sector size \(logical/physical\):\s*(\d+)/\d+)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< sector size not match, target=%{public}s",
+             target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int32_t sectorSize = 0;
+    if (!ConvertStringToInt32(result, sectorSize)) {
+        LOGE("[L3:DiskInfo] SetSectorSize: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    sectorSize_ = static_cast<uint32_t>(sectorSize);
+    LOGI("[L3:DiskInfo] SetSectorSize: <<< EXIT SUCCESS <<< totalSector=%{public}d", sectorSize_);
+    return true;
+}
+
+bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Partitions will be aligned on";
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< not found align sector");
+        return false;
+    }
+    std::regex pattern(R"(Partitions will be aligned on (\d+)-sector boundaries)");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< align sector not match, target=%{public}s",
+             target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int32_t alignSector = 0;
+    if (!ConvertStringToInt32(result, alignSector)) {
+        LOGE("[L3:DiskInfo] SetAlignSector: <<< EXIT FAILED <<< convert failed, result=%{public}s", result.c_str());
+        return false;
+    }
+    alignSector_ = alignSector == 0 ? DEFAULT_ALIGN_SIZE : static_cast<uint32_t>(alignSector);
+    LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector_);
+    return true;
+}
+
+void DiskInfo::SetTableType(std::vector<std::string> &content,
+    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "Found invalid GPT and valid MBR";
+    bool isMBR = false;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            LOGI("this disk table type is mbr");
+            isMBR = true;
+            break;
+        }
+    }
+    partitionTableInfo.SetTableType(isMBR ? "MBR" : "GPT");
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

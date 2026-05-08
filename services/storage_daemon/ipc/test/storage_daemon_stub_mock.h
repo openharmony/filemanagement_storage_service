@@ -116,6 +116,9 @@ public:
     MOCK_METHOD2(GetOpticalDriveOpsProgress, int32_t(const std::string &, uint32_t &));
     MOCK_METHOD1(Erase, int32_t(const std::string &));
     MOCK_METHOD2(CreateIsoImage, int32_t(const std::string &, const std::string &));
+
+    // disk partition api
+    MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS

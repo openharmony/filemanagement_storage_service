@@ -48,7 +48,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateMBRVolume_001, T
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateMBRVolume_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -60,8 +60,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateMBRVolume_001, T
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     int32_t type = 0;
     auto ret = diskInfo->CreateMBRVolume(type, device);
     EXPECT_FALSE(ret);
@@ -88,7 +88,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_001, Tes
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=179\0MINOR=34\0"};
@@ -100,8 +100,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_001, Tes
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     std::vector<std::string> lines = {
         "",
         "DISK test",
@@ -128,7 +128,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_002, Tes
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -140,7 +140,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_002, Tes
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     std::vector<std::string> lines = {
         "DISK gpt",
         "PART 4",
@@ -169,7 +170,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001,
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -183,7 +184,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001,
     int flag = 0;
     DiskInfo::Table table = DiskInfo::Table::MBR;
     bool foundPart = false;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     std::vector<std::string> testData = {"123", "80000000"};
     std::vector<std::string>::iterator it = testData.begin();
     const std::vector<std::string>::iterator end = testData.end();

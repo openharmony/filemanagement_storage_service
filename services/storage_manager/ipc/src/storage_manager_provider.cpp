@@ -37,6 +37,9 @@
 #include "volume/volume_manager_service.h"
 #include "volume/encrypted_volume_manager_service.h"
 #endif
+#ifdef PC_USER_MANAGER
+#include "disk/disk_manager_service.h"
+#endif
 #include "scan/storage_manager_scan.h"
 #include "ipc/storage_manager_provider.h"
 #include "os_account_manager.h"
@@ -2387,6 +2390,32 @@ int32_t StorageManagerProvider::CreateIsoImage(const std::string &volumeId, cons
     }
     return err;
 #else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    StorageRadar::ReportFucBehavior("GetPartitionTable", DEFAULT_USERID, "GetPartitionTable Begin", E_OK);
+    LOGI("StorageManagerProvider::GetPartitionTable start, diskId=%{public}s", diskId.c_str());
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (diskId.empty()) {
+        LOGE("diskId is empty");
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef PC_USER_MANAGER
+    int32_t ret = DiskManagerService::GetInstance().GetPartitionTable(diskId, partitionTableInfo);
+    StorageRadar::ReportFucBehavior("GetPartitionTable", DEFAULT_USERID, "GetPartitionTable End", ret);
+    LOGI("StorageManagerProvider::GetPartitionTable end, ret=%{public}d", ret);
+    return ret == E_OK ? E_OK : E_GET_PARTITION_ERROR;
+#else
+    LOGI("StorageManagerProvider::GetPartitionTable not support");
     return E_NOT_SUPPORT;
 #endif
 }

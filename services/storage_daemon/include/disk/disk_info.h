@@ -19,18 +19,22 @@
 #include <list>
 #include <map>
 #include <string>
-
 #include <sys/types.h>
+
+#include "partition_table_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 class DiskInfo {
 public:
-    enum DeviceFlag {
-        SD_FLAG = 1,
-        USB_FLAG = 2,
-        CD_FLAG = 3,
+    enum DiskType {
+        SD_CARD = 1,
+        USB_FLASH = 2,
+        CD_DVD_BD = 3,
+        MTP_PTP = 4,
+        UNKNOWN_DISK_TYPE = 255,
     };
+
     enum class Table {
         UNKNOWN,
         MBR,
@@ -41,7 +45,13 @@ public:
         REMOVED,
     };
 
-    DiskInfo(std::string &sysPath_, std::string &devPath_, dev_t device, int flag);
+    enum MediaType {
+        SSD = 0,
+        HDD = 1,
+        UNKNOWN_MEDIA_TYPE = 2,
+    };
+
+    DiskInfo(std::string &diskName, std::string &sysPath_, std::string &devPath_, dev_t device, int diskType);
     virtual ~DiskInfo();
     int Create();
     int Destroy();
@@ -51,17 +61,23 @@ public:
     int ReadPartitionUSB();
     int CreateVolume(dev_t dev);
     int Partition();
+    int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     dev_t GetDevice() const;
-    std::string GetId() const;
+    std::string GetDiskId() const;
     std::string GetDevPath() const;
-    uint64_t GetDevDSize() const;
+    uint64_t GetTotalSize() const;
     std::string GetSysPath() const;
     std::string GetDevVendor() const;
-    int GetDevFlag() const;
+    int32_t GetDiskType() const;
+    int32_t GetMediaType() const;
+    std::string GetDiskName() const;
+    bool GetRemovable() const;
+    std::string GetExtraInfo() const;
 
 private:
-    std::string id_;
-    uint64_t size_ {};
+    std::string diskId_;
+    std::string diskName_;
+    uint64_t totalSize_ {};
     /* device vendor infomation */
     std::string vendor_;
     std::string sysPath_;
@@ -70,10 +86,16 @@ private:
     std::string eventPath_;
     std::string devPath_;
     dev_t device_ {};
-    unsigned int flags_ {};
     std::list<std::string> volumeId_;
     std::vector<std::string> sgdiskLines_;
     std::map<uint32_t, std::string> vendorMap_;
+    MediaType mediaType_ = MediaType::UNKNOWN_MEDIA_TYPE;
+    DiskType diskType_;
+    uint64_t totalSector_;
+    uint32_t sectorSize_;
+    uint32_t alignSector_;
+    bool removable_ = true;
+    std::string extraInfo_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
@@ -85,6 +107,12 @@ private:
     void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
     bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
     void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
+    bool ParsePartitionInfo(const std::string &context, OHOS::StorageManager::PartitionInfo &info);
+    bool SetTotalSector(std::vector<std::string> &content);
+    bool SetSectorSize(std::vector<std::string> &content);
+    bool SetAlignSector(std::vector<std::string> &content);
+    void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
+    void SetTableType(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
 };
 } // STORAGE_DAEMON
 } // OHOS

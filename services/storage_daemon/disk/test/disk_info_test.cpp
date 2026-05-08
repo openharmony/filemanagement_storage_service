@@ -92,7 +92,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -104,8 +104,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_001, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Create()).WillOnce(testing::Return(E_OK));
     int ret = mock->Create();
@@ -125,7 +125,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -137,8 +137,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_002, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Create()).WillOnce(testing::Return(E_ERR));
     int ret = mock->Create();
@@ -158,7 +158,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_001, TestSize.Level1
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Destroy_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -170,8 +170,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_001, TestSize.Level1
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Destroy()).WillOnce(testing::Return(E_OK));
     int ret = mock->Destroy();
@@ -191,7 +191,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_002, TestSize.Level1
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Destroy_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -203,8 +203,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_002, TestSize.Level1
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Destroy()).WillOnce(testing::Return(E_ERR));
     int ret = mock->Destroy();
@@ -224,7 +224,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_001, TestSize.
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -236,8 +236,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_001, TestSize.
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, ReadPartition()).WillOnce(testing::Return(E_OK));
     int ret = mock->ReadPartition();
@@ -257,7 +257,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_002, TestSize.
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -269,8 +269,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_002, TestSize.
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, ReadPartition()).WillOnce(testing::Return(E_ERR));
     int ret = mock->ReadPartition();
@@ -290,7 +290,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_001, TestSize.L
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -302,8 +302,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_001, TestSize.L
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_OK));
     int ret = mock->CreateVolume(device);
@@ -323,7 +323,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_002, TestSize.L
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -335,8 +335,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_002, TestSize.L
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = mock->CreateVolume(device);
@@ -356,7 +356,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_001, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -368,8 +368,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_001, TestSize.Leve
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Partition()).WillOnce(testing::Return(E_OK));
     int ret = mock->Partition();
@@ -389,7 +389,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_002, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -401,8 +401,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_002, TestSize.Leve
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, Partition()).WillOnce(testing::Return(E_ERR));
     int ret = mock->Partition();
@@ -422,7 +422,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevice_001, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevice_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -434,8 +434,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevice_001, TestSize.Leve
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, GetDevice()).WillOnce(testing::Return(device));
     dev_t ret = mock->GetDevice();
@@ -447,7 +447,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevice_001, TestSize.Leve
 
 /**
  * @tc.name: Storage_Service_DiskInfoTest_GetId_001
- * @tc.desc: Verify the GetId function.
+ * @tc.desc: Verify the GetDiskId function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
@@ -455,7 +455,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetId_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetId_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -467,12 +467,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetId_001, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
+    std::string diskName = data->GetDiskName();
     std::string id = StringPrintf("disk-%d-%d", major(device), minor(device));
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
-    EXPECT_CALL(*mock, GetId()).WillOnce(testing::Return(id));
-    std::string ret = mock->GetId();
+    EXPECT_CALL(*mock, GetDiskId()).WillOnce(testing::Return(id));
+    std::string ret = mock->GetDiskId();
 
     EXPECT_TRUE(ret == id);
 
@@ -489,7 +489,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevPath_001, TestSize.Lev
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -501,8 +501,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevPath_001, TestSize.Lev
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, GetDevPath()).WillOnce(testing::Return(devPath));
     std::string ret = mock->GetDevPath();
@@ -513,16 +513,16 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevPath_001, TestSize.Lev
 }
 
 /**
- * @tc.name: Storage_Service_DiskInfoTest_GetDevDSize_001
- * @tc.desc: Verify the GetDevDSize function.
+ * @tc.name: Storage_Service_DiskInfoTest_GetTotalSize_001
+ * @tc.desc: Verify the GetTotalSize function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Level1)
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetTotalSize_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 start";
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetTotalSize_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -534,12 +534,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Le
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     uint64_t mock_size = 1;
-    EXPECT_CALL(*mock, GetDevDSize()).WillOnce(testing::Return(mock_size));
-    uint64_t ret = mock->GetDevDSize();
+    EXPECT_CALL(*mock, GetTotalSize()).WillOnce(testing::Return(mock_size));
+    uint64_t ret = mock->GetTotalSize();
 
     EXPECT_TRUE(ret == mock_size);
 
@@ -556,7 +556,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetSysPath_001, TestSize.Lev
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -568,8 +568,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetSysPath_001, TestSize.Lev
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, GetSysPath()).WillOnce(testing::Return(sysPath));
     std::string ret = mock->GetSysPath();
@@ -589,7 +589,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevVendor_001, TestSize.L
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevVendor_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -601,10 +601,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevVendor_001, TestSize.L
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
+    std::string diskName = data->GetDiskName();
     std::string path(sysPath + "/device/manfid");
     std::string str;
     ReadFile(path, &str);
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*mock, GetDevVendor()).WillOnce(testing::Return(str));
     std::string ret = mock->GetDevVendor();
@@ -624,7 +625,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevFlag_001, TestSize.Lev
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevFlag_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -636,11 +637,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevFlag_001, TestSize.Lev
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
-
-    EXPECT_CALL(*mock, GetDevFlag()).WillOnce(testing::Return(flag));
-    int ret = mock->GetDevFlag();
+    EXPECT_CALL(*mock, GetDiskType()).WillOnce(testing::Return(flag));
+    int ret = mock->GetDiskType();
 
     EXPECT_TRUE(ret == flag);
 
@@ -657,7 +658,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevInfo_001, TestSize.Lev
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevInfo_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -669,8 +670,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevInfo_001, TestSize.Lev
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->GetDevice();
@@ -689,7 +690,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_003 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -701,8 +702,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -723,7 +724,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_003, TestSize.Level1
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Destroy_003 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -735,8 +736,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_003, TestSize.Level1
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
     int ret = diskInfo->Destroy();
@@ -755,7 +756,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_003 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -767,8 +768,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
     EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = mock->CreateVolume(device);
 
@@ -786,7 +787,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_004 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -798,8 +799,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -826,8 +827,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ParseAndValidateManfid_001, TestSize.Leve
     unsigned int minor = 0;
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
     uint32_t manfid;
@@ -866,8 +867,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ParseAndValidateManfid_002, TestSize.Leve
     unsigned int minor = 0;
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
     uint32_t manfid;
@@ -890,7 +891,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_001 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -902,12 +903,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_001, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->ReadMetadata();
-    EXPECT_EQ(diskInfo->GetDevDSize(), -1);
+    EXPECT_EQ(diskInfo->GetTotalSize(), -1);
 
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_001 end";
 }
@@ -922,7 +923,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_002 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -934,8 +935,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_002, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(false));
@@ -955,7 +956,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_003 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
@@ -967,8 +968,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_003, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
@@ -988,7 +989,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_004, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_004 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=179\0MINOR=34\0"};
@@ -1000,8 +1001,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_004, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(false));
@@ -1021,7 +1022,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_005, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_005 start";
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
                     \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                     \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                     \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=179\0MINOR=34\0"};
@@ -1033,8 +1034,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_005, TestSize.Level1)
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
-
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
@@ -1059,7 +1060,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.
     unsigned int minor = 14;
     dev_t device = makedev(major, minor);
     int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
@@ -1087,7 +1089,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_001, TestSiz
     std::string diskId = "disk-11-0";
     dev_t device = makedev(11, 0);
     int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     diskInfo->volumeId_.push_back(volId);
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(testing::_, testing::_)).WillRepeatedly(testing::Return(""));
@@ -1130,7 +1133,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSiz
     std::string diskId = "disk-11-0";
     dev_t device = makedev(11, 0);
     int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     EXPECT_CALL(*diskUtilMoc_, IsExistCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isExistCD) {
         isExistCD = false;
@@ -1197,7 +1201,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FilterOutput_001, TestSize.L
     unsigned int minor = 14;
     dev_t device = makedev(major, minor);
     int flag = 0;
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
     std::vector<std::string> lines;
     std::vector<std::string> output = {"test1", "test2"};
@@ -1241,7 +1246,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_005, TestSize.Leve
     unsigned int major = std::stoi(data->GetParam("MAJOR"));
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    std::string diskName = data->GetDiskName();
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
     ASSERT_TRUE(diskInfo != nullptr);
 
     int ret = diskInfo->Partition();
@@ -1265,7 +1271,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_001,
     std::string sysPath = "/devices/platform/test";
     std::string devPath = "/dev/block/test";
     dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07"};
@@ -1295,7 +1302,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_002,
     std::string sysPath = "/devices/platform/test";
     std::string devPath = "/dev/block/test";
     dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->sgdiskLines_ = {"DISK mbr", "PART 1 0x07", "PART 2 0x07"};
@@ -1325,7 +1333,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_003,
     std::string sysPath = "/devices/platform/test";
     std::string devPath = "/dev/block/test";
     dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2", "PART 3"};
@@ -1355,7 +1364,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_004,
     std::string sysPath = "/devices/platform/test";
     std::string devPath = "/dev/block/test";
     dev_t device = makedev(major, minor);
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, 0);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
     ASSERT_TRUE(diskInfo != nullptr);
 
     diskInfo->sgdiskLines_ = {"DISK gpt", "PART 1", "PART 2"};

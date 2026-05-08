@@ -167,6 +167,8 @@ public:
     virtual int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
     virtual int32_t Erase(const std::string &volId) override;
     virtual int32_t CreateIsoImage(const std::string &volId, const std::string &filePath) override;
+    virtual int32_t GetPartitionTable(const std::string &diskId,
+        OHOS::StorageManager::PartitionTableInfo &partitionTableInfo) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

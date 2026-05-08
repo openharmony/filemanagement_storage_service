@@ -1301,7 +1301,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
-    diskPtr->flag_ = SD_FLAG;
+    diskPtr->diskType_ = SD_FLAG;
     volumePtr->diskId_ = diskId;
     DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
@@ -1321,7 +1321,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
-    diskPtr->flag_ = USB_FLAG;
+    diskPtr->diskType_ = USB_FLAG;
     volumePtr->diskId_ = diskId;
     DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
@@ -1341,7 +1341,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
-    diskPtr->flag_ = CD_FLAG;
+    diskPtr->diskType_ = CD_FLAG;
     volumePtr->diskId_ = diskId;
     DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);
@@ -1361,7 +1361,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_NotifyEncryptVolumeSta
     vmService.volumeMap_.insert(make_pair(volumeInfoStr.volumeId, volumePtr));
     std::string diskId = "disk-1-6";
     auto diskPtr = std::make_shared<Disk>();
-    diskPtr->flag_ = 4;
+    diskPtr->diskType_ = 4;
     volumePtr->diskId_ = diskId;
     DiskManagerService::GetInstance().diskMap_.insert(make_pair(diskId, diskPtr));
     vmService.NotifyEncryptVolumeStateChanged(volumeInfoStr);

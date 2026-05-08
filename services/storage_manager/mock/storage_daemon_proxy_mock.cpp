@@ -449,5 +449,10 @@ int32_t StorageDaemonProxy::CreateIsoImage(const std::string &volumeId, const st
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS
