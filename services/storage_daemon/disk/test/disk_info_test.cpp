@@ -471,7 +471,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetId_001, TestSize.Level1)
     std::string id = StringPrintf("disk-%d-%d", major(device), minor(device));
     auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
 
-    EXPECT_CALL(*mock, GetId()).WillOnce(testing::Return(id));
+    EXPECT_CALL(*mock, GetDiskId()).WillOnce(testing::Return(id));
     std::string ret = mock->GetDiskId();
 
     EXPECT_TRUE(ret == id);

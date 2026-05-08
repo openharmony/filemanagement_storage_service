@@ -32,7 +32,7 @@ public:
     MOCK_METHOD1(CreateVolume, int(dev_t));
     MOCK_METHOD0(Partition, int(void));
     MOCK_METHOD0(GetDevice, dev_t(void));
-    MOCK_METHOD0(GetId, std::string(void));
+    MOCK_METHOD0(GetDiskId, std::string(void));
     MOCK_METHOD0(GetDevPath, std::string(void));
     MOCK_METHOD0(GetTotalSize, uint64_t(void));
     MOCK_METHOD0(GetSysPath, std::string(void));
