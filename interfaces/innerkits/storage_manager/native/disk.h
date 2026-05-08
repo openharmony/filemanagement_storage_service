@@ -52,7 +52,7 @@ private:
     std::string vendor_;
     int32_t diskType_ {};
     int32_t mediaType_ {};
-    int32_t removable_;
+    int32_t removable_ = 1;
     std::string extraInfo_;
 };
 } // namespace StorageManager
