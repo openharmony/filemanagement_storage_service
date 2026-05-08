@@ -299,13 +299,6 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         LOGE("GetDiskSize: empty content");
         return 0;
     }
-    if (content.back() == '\n') {
-        content.pop_back();
-    }
-    if (content.empty()) {
-        LOGE("GetDiskSize: empty content");
-        return 0;
-    }
     unsigned long long sectors = 0;
     if (!ParseStringToUlongLong(content, sectors)) {
         LOGE("GetDiskSize: failed to parse size value from %{public}s", content.c_str());
