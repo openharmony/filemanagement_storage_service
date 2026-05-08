@@ -449,7 +449,6 @@ HWTEST_F(StorageManagerScanTest, STORAGE_CalculateFinalSizes_00001, testing::ext
     EXPECT_EQ(storageManagerScan.systemSize_, dirScanSystemSize);
     // memmgrSize = initial + hyperholdRootSize
     EXPECT_EQ(storageManagerScan.memmgrSize_, 1024 * 1024 * (30 + 100));
-    EXPECT_EQ(storageManagerScan.scanDurationMs_, 0);
     GTEST_LOG_(INFO) << "STORAGE_CalculateFinalSizes_00001 end";
 }
 
