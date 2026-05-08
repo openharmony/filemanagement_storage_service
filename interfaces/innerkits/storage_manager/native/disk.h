@@ -39,7 +39,7 @@ public:
     void SetDiskType(int32_t diskType);
     int32_t GetDiskType() const;
     int32_t GetMediaType() const;
-    bool GetRemovable() const;
+    int32_t GetRemovable() const;
     std::string GetExtraInfo() const;
 
     bool Marshalling(Parcel &parcel) const override;
@@ -52,7 +52,7 @@ private:
     std::string vendor_;
     int32_t diskType_ {};
     int32_t mediaType_ {};
-    bool removable_;
+    int32_t removable_;
     std::string extraInfo_;
 };
 } // namespace StorageManager

@@ -58,7 +58,7 @@ int32_t Disk::GetMediaType() const
     return mediaType_;
 }
 
-bool Disk::GetRemovable() const
+int32_t Disk::GetRemovable() const
 {
     return removable_;
 }
