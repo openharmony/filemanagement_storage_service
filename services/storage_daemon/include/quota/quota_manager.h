@@ -35,6 +35,8 @@ using NextDqBlk = OHOS::StorageManager::NextDqBlk;
 using DirSpaceInfo = OHOS::StorageManager::DirSpaceInfo;
 using UidSaInfo = OHOS::StorageManager::UidSaInfo;
 using AllAppVec = OHOS::StorageManager::AllAppVec;
+using LargeFileInfo = OHOS::StorageManager::LargeFileInfo;
+using LargeDirInfo = OHOS::StorageManager::LargeDirInfo;
 
 struct KernelNextDqBlk {
     uint64_t dqbHardLimit = 0;
@@ -64,7 +66,8 @@ public:
     int32_t GetDqBlkSpacesByUids(const std::vector<int32_t> &uids, std::vector<NextDqBlk> &dqBlks);
     int32_t GetDirListSpace(std::vector<DirSpaceInfo> &dirs);
     int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs);
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+        std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs);
     int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
     void SetStopScanFlag(bool stop);
     void GetAncoSizeData(std::string &extraData);
@@ -95,10 +98,26 @@ private:
     void ProcessSingleDir(const DirSpaceInfo &dirInfo, std::vector<DirSpaceInfo> &resultDirs);
     void ProcessDirWithUserId(const DirSpaceInfo &dirInfo, const std::vector<int32_t> &userIds,
         std::vector<DirSpaceInfo> &resultDirs);
+    void ProcessLargeFiles(std::vector<LargeFileInfo> &allLargeFiles,
+        std::vector<LargeFileInfo> &largeFiles);
+    void ProcessLargeDirs(const std::map<std::string, int64_t> &dirSizeMap,
+        std::vector<LargeDirInfo> &largeDirs);
+    int32_t ScanSinglePath(const std::string &path, const std::vector<int32_t> &uids,
+        std::vector<DirSpaceInfo> &resultDirs, std::vector<LargeFileInfo> &largeFiles,
+        std::map<std::string, int64_t> &dirSizeMap);
+    void CollectLargeFile(const std::string &path, uint64_t fileSize,
+        std::vector<LargeFileInfo> &largeFiles);
+    void UpdateParentDirSizes(const std::string &path, int64_t fileSize,
+        std::map<std::string, int64_t> &dirSizeMap);
+    int32_t ScanDirectoryEntries(const std::string &path, std::vector<int64_t> &blks,
+        const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+        std::map<std::string, int64_t> &dirSizeMap);
     int32_t AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
-        const std::vector<int32_t> &uids);
+        const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+        std::map<std::string, int64_t> &dirSizeMap);
     int32_t AddBlksMultiUids(const std::string &path, std::vector<int64_t> &blks,
-        const std::vector<int32_t> &uids);
+        const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+        std::map<std::string, int64_t> &dirSizeMap);
     OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
         std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
     std::atomic<bool> stopScanFlag_{false};

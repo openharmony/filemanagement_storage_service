@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -64,6 +64,9 @@ constexpr int32_t LINE_MAX_LEN = 32;
 constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
 constexpr int32_t MAX_WHITE_UID_COUNT = 3;
 constexpr int32_t FOUR_K = 4096;
+constexpr int32_t TOP_LARGE_COUNT = 15;
+constexpr uint64_t LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024;
+constexpr uint64_t LARGE_DIR_SIZE_THRESHOLD = 5 * 1024 * 1024;
 constexpr double SA_SIZE_THRESHOLD_MB = 100.0;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
@@ -922,19 +925,10 @@ int32_t QuotaManager::GetMetaDataSize(int64_t &metaDataSize)
     return E_OK;
 }
 
-int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
-    const std::vector<int32_t> &uids)
+int32_t QuotaManager::ScanDirectoryEntries(const std::string &path, std::vector<int64_t> &blks,
+    const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+    std::map<std::string, int64_t> &dirSizeMap)
 {
-    if (stopScanFlag_.load(std::memory_order_relaxed)) {
-        std::string extraData = "path=" + path;
-        StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
-        LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag, current path=%{public}s", path.c_str());
-        return E_ERR;
-    }
-    AddBlksMultiUids(path, blks, uids);
-    if (!IsDir(path)) {
-        return E_OK;
-    }
     DIR *dir = opendir(path.c_str());
     if (!dir) {
         LOGE("open dir %{public}s failed, errno %{public}d", path.c_str(), errno);
@@ -945,9 +939,8 @@ int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vect
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
             std::string extraData = "path=" + path;
-            StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
-            LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag in loop, "
-                 "current dir=%{public}s, next entry=%{public}s", path.c_str(), ent->d_name);
+            StorageService::StorageRadar::ReportSpaceRadar("ScanDirectoryEntries", E_ERR, extraData);
+            LOGE("ScanDirectoryEntries stopped by stopScanFlag");
             closedir(dir);
             return E_ERR;
         }
@@ -955,13 +948,12 @@ int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vect
             continue;
         }
         std::string subPath = path + "/" + ent->d_name;
-
         if (subPath == SCAN_EXCLUDE_PATH) {
-            LOGI("AddBlksRecurseMultiUids skip excluded path: %{public}s", subPath.c_str());
+            LOGI("ScanDirectoryEntries skip excluded path: %{public}s", subPath.c_str());
             continue;
         }
 
-        int32_t retTmp = AddBlksRecurseMultiUids(subPath, blks, uids);
+        int32_t retTmp = AddBlksRecurseMultiUids(subPath, blks, uids, largeFiles, dirSizeMap);
         if (retTmp != E_OK) {
             ret = retTmp;
         }
@@ -970,8 +962,50 @@ int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vect
     return ret;
 }
 
+int32_t QuotaManager::AddBlksRecurseMultiUids(const std::string &path, std::vector<int64_t> &blks,
+    const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+    std::map<std::string, int64_t> &dirSizeMap)
+{
+    if (stopScanFlag_.load(std::memory_order_relaxed)) {
+        std::string extraData = "path=" + path;
+        StorageService::StorageRadar::ReportSpaceRadar("AddBlksRecurseMultiUids", E_ERR, extraData);
+        LOGE("AddBlksRecurseMultiUids stopped by stopScanFlag, path=%{public}s", path.c_str());
+        return E_ERR;
+    }
+
+    int32_t ret = AddBlksMultiUids(path, blks, uids, largeFiles, dirSizeMap);
+    if (ret != E_OK || !IsDir(path)) {
+        return ret;
+    }
+
+    return ScanDirectoryEntries(path, blks, uids, largeFiles, dirSizeMap);
+}
+
+void QuotaManager::CollectLargeFile(const std::string &path, uint64_t fileSize,
+    std::vector<LargeFileInfo> &largeFiles)
+{
+    if (fileSize > LARGE_FILE_SIZE_THRESHOLD) {
+        largeFiles.push_back({path, fileSize});
+    }
+}
+
+void QuotaManager::UpdateParentDirSizes(const std::string &path, int64_t fileSize,
+    std::map<std::string, int64_t> &dirSizeMap)
+{
+    std::string currentPath = path;
+    while (currentPath.length() > 1) {
+        size_t lastSlash = currentPath.find_last_of('/');
+        if (lastSlash == std::string::npos || lastSlash == 0) {
+            break;
+        }
+        currentPath = currentPath.substr(0, lastSlash);
+        dirSizeMap[currentPath] += fileSize;
+    }
+}
+
 int32_t QuotaManager::AddBlksMultiUids(const std::string &path, std::vector<int64_t> &blks,
-    const std::vector<int32_t> &uids)
+    const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
+    std::map<std::string, int64_t> &dirSizeMap)
 {
     struct stat st;
     if (lstat(path.c_str(), &st) != 0) {
@@ -980,6 +1014,13 @@ int32_t QuotaManager::AddBlksMultiUids(const std::string &path, std::vector<int6
         StorageService::StorageRadar::ReportSpaceRadar("AddBlksMultiUids", E_STATISTIC_STAT_FAILED, extraData);
         LOGE("lstat failed, path is %{public}s, errno is %{public}d", path.c_str(), errno);
         return E_STATISTIC_STAT_FAILED;
+    }
+
+    uint64_t fileSize = static_cast<uint64_t>(st.st_blocks) * BLOCK_BYTE;
+
+    if (!S_ISDIR(st.st_mode)) {
+        CollectLargeFile(path, fileSize, largeFiles);
+        UpdateParentDirSizes(path, fileSize, dirSizeMap);
     }
     for (size_t i = 0; i < uids.size(); ++i) {
         if (static_cast<uid_t>(uids[i]) == st.st_uid) {
@@ -990,62 +1031,108 @@ int32_t QuotaManager::AddBlksMultiUids(const std::string &path, std::vector<int6
     return E_OK;
 }
 
+void QuotaManager::ProcessLargeFiles(std::vector<LargeFileInfo> &allLargeFiles,
+    std::vector<LargeFileInfo> &largeFiles)
+{
+    LOGI("ProcessLargeFiles start, allLargeFiles size=%{public}zu", allLargeFiles.size());
+    size_t fileCount = std::min(static_cast<size_t>(TOP_LARGE_COUNT), allLargeFiles.size());
+    std::partial_sort(allLargeFiles.begin(), allLargeFiles.begin() + fileCount, allLargeFiles.end(),
+        [](const LargeFileInfo &a, const LargeFileInfo &b) {
+            return a.size > b.size;
+        });
+    for (size_t i = 0; i < fileCount; ++i) {
+        largeFiles.push_back(allLargeFiles[i]);
+        LOGI("ProcessLargeFiles path=%{public}s, size=%{public}lld",
+            AnonymizePath(allLargeFiles[i].path).c_str(), static_cast<long long>(allLargeFiles[i].size));
+    }
+}
+
+void QuotaManager::ProcessLargeDirs(const std::map<std::string, int64_t> &dirSizeMap,
+    std::vector<LargeDirInfo> &largeDirs)
+{
+    LOGI("ProcessLargeDirs start, dirSizeMap size=%{public}zu", dirSizeMap.size());
+    std::vector<LargeDirInfo> allLargeDirs;
+    for (const auto &entry : dirSizeMap) {
+        if (entry.second > LARGE_DIR_SIZE_THRESHOLD) {
+            allLargeDirs.push_back({entry.first, entry.second});
+        }
+    }
+
+    size_t dirCount = std::min(static_cast<size_t>(TOP_LARGE_COUNT), allLargeDirs.size());
+    std::partial_sort(allLargeDirs.begin(), allLargeDirs.begin() + dirCount, allLargeDirs.end(),
+        [](const LargeDirInfo &a, const LargeDirInfo &b) {
+            return a.totalSize > b.totalSize;
+        });
+    for (size_t i = 0; i < dirCount; ++i) {
+        largeDirs.push_back(allLargeDirs[i]);
+        LOGI("ProcessLargeDirs path=%{public}s, totalSize=%{public}lld",
+            allLargeDirs[i].path.c_str(), static_cast<long long>(allLargeDirs[i].totalSize));
+    }
+}
+
+int32_t QuotaManager::ScanSinglePath(const std::string &path, const std::vector<int32_t> &uids,
+    std::vector<DirSpaceInfo> &resultDirs, std::vector<LargeFileInfo> &largeFiles,
+    std::map<std::string, int64_t> &dirSizeMap)
+{
+    std::vector<int64_t> blks(uids.size(), 0);
+    int32_t ret = AddBlksRecurseMultiUids(path, blks, uids, largeFiles, dirSizeMap);
+    if (ret != E_OK) {
+        LOGW("ScanSinglePath failed for %{public}s, ret=%{public}d", path.c_str(), ret);
+        return ret;
+    }
+
+    for (size_t uidIdx = 0; uidIdx < uids.size(); ++uidIdx) {
+        int64_t dirSize = blks[uidIdx] * BLOCK_BYTE;
+        resultDirs.push_back({path, static_cast<uint32_t>(uids[uidIdx]), dirSize});
+        LOGD("ScanSinglePath path=%{public}s, uid=%{public}d, size=%{public}lld",
+             path.c_str(), uids[uidIdx], static_cast<long long>(dirSize));
+    }
+    return E_OK;
+}
+
 int32_t QuotaManager::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+    std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs)
 {
     LOGI("GetDirListSpaceByPaths start, paths size=%{public}zu", paths.size());
     if (paths.empty() || uids.empty() || paths.size() > MAX_WHITE_PATH_COUNT || uids.size() > MAX_WHITE_UID_COUNT) {
-        LOGE("GetDirListSpaceByPaths params is invalid, paths size %{public}zu, uids size %{public}zu",
+        LOGE("GetDirListSpaceByPaths params invalid, paths=%{public}zu, uids=%{public}zu",
              paths.size(), uids.size());
         return E_PARAMS_INVALID;
     }
-
     resultDirs.clear();
+    largeFiles.clear();
+    largeDirs.clear();
 
+    std::vector<LargeFileInfo> allLargeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    auto pathStartTime = std::chrono::steady_clock::now();
     for (size_t pathIdx = 0; pathIdx < paths.size(); ++pathIdx) {
         if (stopScanFlag_.load(std::memory_order_relaxed)) {
-            std::string extraData = "path=" + paths[pathIdx];
-            StorageService::StorageRadar::ReportSpaceRadar("GetDirListSpaceByPaths", E_ERR, extraData);
+            StorageService::StorageRadar::ReportSpaceRadar("GetDirListSpaceByPaths", E_ERR, paths[pathIdx]);
             LOGE("GetDirListSpaceByPaths stopped by stopScanFlag");
             std::vector<DirSpaceInfo>().swap(resultDirs);
+            std::vector<LargeFileInfo>().swap(largeFiles);
+            std::vector<LargeDirInfo>().swap(largeDirs);
             return E_ERR;
         }
-
-        const std::string &path = paths[pathIdx];
-        auto pathStartTime = std::chrono::steady_clock::now();
-
-        std::vector<int64_t> blks(uids.size(), 0);
-        int32_t ret = AddBlksRecurseMultiUids(path, blks, uids);
-        auto pathEndTime = std::chrono::steady_clock::now();
-        auto pathDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            pathEndTime - pathStartTime).count();
-        LOGE("GetDirListSpaceByPaths scan path[%{public}zu/%{public}zu] '%{public}s' "
-             "completed in %{public}lldms, ret=%{public}d",
-             pathIdx + 1, paths.size(), path.c_str(),
-             static_cast<long long>(pathDurationMs), ret);
-
-        if (ret != E_OK) {
-            LOGW("GetDirListSpaceByPaths AddBlksRecurseMultiUids failed for %{public}s, ret=%{public}d",
-                 path.c_str(), ret);
-            // Continue with other paths even if this one failed
-            continue;
-        }
-
-        // Convert blocks to bytes and create DirSpaceInfo for each UID
-        for (size_t uidIdx = 0; uidIdx < uids.size(); ++uidIdx) {
-            int64_t dirSize = blks[uidIdx] * BLOCK_BYTE;
-            resultDirs.push_back({path, static_cast<uint32_t>(uids[uidIdx]), dirSize});
-            LOGD("GetDirListSpaceByIds path=%{public}s, uid=%{public}d, size=%{public}lld",
-                 path.c_str(), uids[uidIdx], static_cast<long long>(dirSize));
-        }
+        ScanSinglePath(paths[pathIdx], uids, resultDirs, allLargeFiles, dirSizeMap);
     }
+    auto pathEndTime = std::chrono::steady_clock::now();
+    auto pathDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+        pathEndTime - pathStartTime).count();
+    LOGE("Scan all path completed in %{public}lldms", static_cast<long long>(pathDurationMs));
+    ProcessLargeFiles(allLargeFiles, largeFiles);
+    ProcessLargeDirs(dirSizeMap, largeDirs);
     if (stopScanFlag_.load(std::memory_order_relaxed)) {
         LOGE("GetDirListSpaceByPaths stopped by stopScanFlag after loop");
         std::vector<DirSpaceInfo>().swap(resultDirs);
+        std::vector<LargeFileInfo>().swap(largeFiles);
+        std::vector<LargeDirInfo>().swap(largeDirs);
         return E_ERR;
     }
-
-    LOGI("GetDirListSpaceByPaths end, result dirs size=%{public}zu", resultDirs.size());
+    LOGI("GetDirListSpaceByPaths end, dirs=%{public}zu, files=%{public}zu, largeDirs=%{public}zu",
+        resultDirs.size(), largeFiles.size(), largeDirs.size());
     return E_OK;
 }
 

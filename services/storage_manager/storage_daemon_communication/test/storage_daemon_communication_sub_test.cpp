@@ -1581,15 +1581,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDirListSpaceByP
     std::vector<std::string> paths = {"/path1", "/path2"};
     std::vector<int32_t> uids = {1000, 1001};
     std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
     MockConnectFail();
-    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_SA_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs), E_SA_IS_NULLPTR);
 
     MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs),
+        E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, GetDirListSpaceByPaths(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs), E_OK);
+    EXPECT_CALL(*sd, GetDirListSpaceByPaths(_, _, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDirListSpaceByPaths_001";
 }
 

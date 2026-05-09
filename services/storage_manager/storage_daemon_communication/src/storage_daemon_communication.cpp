@@ -981,7 +981,8 @@ int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceIn
 }
 
 int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs)
+    const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+    std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -992,7 +993,7 @@ int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetDirListSpaceByPaths(paths, uids, resultDirs);
+    return storageDaemon_->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
 }
 
 int32_t StorageDaemonCommunication::SetStopScanFlag(bool stop)

@@ -38,7 +38,8 @@ public:
     virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName);
     virtual int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
     virtual int32_t GetDirListSpaceByPaths(const std::vector<std::string> &paths,
-        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs);
+        const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
+        std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs);
     static inline std::shared_ptr<IStorageDaemonCommunicationMock> storageDaemonCommunication = nullptr;
 };
 class StorageDaemonCommunicationMock : public IStorageDaemonCommunicationMock {
@@ -54,7 +55,8 @@ public:
     MOCK_METHOD(int32_t, GetAncoSizeData, (std::string &));
     MOCK_METHOD(int32_t, GetSystemDataSize, (int64_t &));
     MOCK_METHOD(int32_t, GetDirListSpaceByPaths, (const std::vector<std::string> &,
-        const std::vector<int32_t> &, std::vector<DirSpaceInfo> &));
+        const std::vector<int32_t> &, std::vector<DirSpaceInfo> &,
+        std::vector<LargeFileInfo> &, std::vector<LargeDirInfo> &));
     MOCK_METHOD(int32_t, ClearSecondMountPoint, (uint32_t, const std::string &));
 };
 } // StorageManager

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -132,6 +132,58 @@ UidSaInfo *UidSaInfo::Unmarshalling(Parcel &parcel)
     info->saName = parcel.ReadString();
     info->size = parcel.ReadInt64();
     info->iNodes = parcel.ReadUint64();
+    return info;
+}
+} // StorageManager
+} // OHOS
+
+namespace OHOS {
+namespace StorageManager {
+bool LargeFileInfo::Marshalling(Parcel &parcel) const
+{
+    if (!parcel.WriteString(path)) {
+        return false;
+    }
+    if (!parcel.WriteInt64(size)) {
+        return false;
+    }
+    return true;
+}
+
+LargeFileInfo *LargeFileInfo::Unmarshalling(Parcel &parcel)
+{
+    LargeFileInfo *info = new (std::nothrow) LargeFileInfo();
+    if (info == nullptr) {
+        return nullptr;
+    }
+    info->path = parcel.ReadString();
+    info->size = parcel.ReadInt64();
+    return info;
+}
+} // StorageManager
+} // OHOS
+
+namespace OHOS {
+namespace StorageManager {
+bool LargeDirInfo::Marshalling(Parcel &parcel) const
+{
+    if (!parcel.WriteString(path)) {
+        return false;
+    }
+    if (!parcel.WriteInt64(totalSize)) {
+        return false;
+    }
+    return true;
+}
+
+LargeDirInfo *LargeDirInfo::Unmarshalling(Parcel &parcel)
+{
+    LargeDirInfo *info = new (std::nothrow) LargeDirInfo();
+    if (info == nullptr) {
+        return nullptr;
+    }
+    info->path = parcel.ReadString();
+    info->totalSize = parcel.ReadInt64();
     return info;
 }
 } // StorageManager

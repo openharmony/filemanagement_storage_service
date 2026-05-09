@@ -33,6 +33,16 @@
 namespace OHOS {
 namespace StorageManager {
 
+struct ScanResult {
+    int64_t rootSize = 0;
+    int64_t systemSize = 0;
+    int64_t fondationSize = 0;
+    int64_t hyperholdRootSize = 0;
+    int64_t rgmManagerRootSize = 0;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+};
+
 class StorageManagerScan {
 public:
     static StorageManagerScan& GetInstance()
@@ -60,11 +70,13 @@ private:
     int32_t ExecuteScan();
     void ScanTimeoutHandler();
     void ReportScanResult();
-    void CalculateFinalSizes(int64_t startTimeMs, int64_t dirScanRootSize, int64_t hyperholdRootSize,
-    int64_t rgmManagerRootSize, int64_t dirScanSystemSize);
+    void SaveAndReportScanResults(const ScanResult &scanResult);
+    void ReportLargeFilesAndDirs(const std::vector<LargeFileInfo> &largeFiles,
+        const std::vector<LargeDirInfo> &largeDirs);
+    void CalculateFinalSizes(int64_t startTimeMs, const ScanResult &scanResult);
     int32_t GetQuotaSizeByUid(const std::vector<int32_t>& uids, std::map<int32_t, int64_t>& uidSizeMap);
     int32_t ScanDirectories(const std::vector<std::string>& dirWhiteList, const std::vector<int32_t>& uids,
-        int64_t& rootSize, int64_t& systemSize);
+        ScanResult &result);
     int32_t ScanSinglePath(const std::string& path, int32_t uid, int64_t& size);
     void GetCurrentTime(std::ostringstream& extraData);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
@@ -91,6 +103,7 @@ private:
     int64_t rootSize_ = 0;           // Space occupied by the root user (byte)
     int64_t systemSize_ = 0;         // Space occupied by the system user (byte)
     int64_t memmgrSize_ = 0;         // Size of the space occupied by the memmgr user (byte)
+    int64_t fondationSize_ = 0;         // Size of the space occupied by the fondation user (byte)
     int64_t scanDurationMs_ = 0;     // Scanning duration (ms)
     int64_t lastScanTime_ = 0;       // Last scan timestamp (ms)
 };

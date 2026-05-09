@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,6 +44,7 @@ int32_t ReplaceAndCount(std::string &str, const std::string &target, const std::
 bool ConvertStringToInt32(const std::string &context, int32_t &value);
 void IncreaseThreadPriority(const std::string &processName);
 void DecreaseThreadPriority(const std::string &processName);
+std::string AnonymizePath(const std::string &path);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H

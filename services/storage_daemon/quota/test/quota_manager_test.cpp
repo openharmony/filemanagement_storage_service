@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1281,7 +1281,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksRecurseMultiUids_001, TestSiz
     std::string path = "/data";
     std::vector<int64_t> blks = {0, 0, 0};
     std::vector<int32_t> uids = {0, 1000, 2000};
-    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids);
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     // Result depends on whether directory exists and is accessible
     EXPECT_TRUE(result == E_OK || result == E_STATISTIC_OPEN_DIR_FAILED || result == E_ERR);
     GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksRecurseMultiUids_001 end";
@@ -1299,7 +1301,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksRecurseMultiUids_002, TestSiz
     std::string path = "/nonexistent/path/that/does/not/exist";
     std::vector<int64_t> blks = {0, 0};
     std::vector<int32_t> uids = {0, 1000};
-    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids);
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     // Should fail since path doesn't exist
     EXPECT_TRUE(result == E_OK || result == E_STATISTIC_OPEN_DIR_FAILED ||
         result == E_STATISTIC_STAT_FAILED || result == E_ERR);
@@ -1316,10 +1320,12 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksMultiUids_001, TestSize.Level
 {
     GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksMultiUids_001 start";
     // Use an existing file that should be present on most systems
-    std::string testFile = "/etc/passwd";
+    std::string path = "/etc/passwd";
     std::vector<int64_t> blks = {0, 0}; // Output parameter, initialized to 0
     std::vector<int32_t> uids = {0, 1000}; // Root and system UIDs
-    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(testFile, blks, uids);
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     // /etc/passwd is usually owned by root
     EXPECT_TRUE(result == E_OK || result == E_STATISTIC_STAT_FAILED);
     if (result == E_OK) {
@@ -1348,7 +1354,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksMultiUids_002, TestSize.Level
     std::string path = "/nonexistent/file/path.txt";
     std::vector<int64_t> blks = {0, 0};
     std::vector<int32_t> uids = {0, 1000};
-    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(path, blks, uids);
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     // Should fail with stat error
     EXPECT_EQ(result, E_STATISTIC_STAT_FAILED);
     GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksMultiUids_002 end";
@@ -1367,7 +1375,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksMultiUids_003, TestSize.Level
     std::string path = "/etc/passwd";
     std::vector<int64_t> blks = {0, 0}; // Output parameter, initialized to 0
     std::vector<int32_t> uids = {0, 1000}; // Root and system UIDs
-    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(path, blks, uids);
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().AddBlksMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     EXPECT_TRUE(result == E_OK || result == E_STATISTIC_STAT_FAILED);
     if (result == E_OK) {
         // /etc/passwd is usually owned by root, so blks[0] should be > 0
@@ -1389,7 +1399,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_001, TestSize
     std::vector<std::string> paths = {"/etc"};
     std::vector<int32_t> uids = {0};
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should succeed with valid inputs
     EXPECT_TRUE(result == E_OK || result == E_ERR || result == E_STATISTIC_OPEN_DIR_FAILED);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_001 end";
@@ -1407,7 +1419,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_002, TestSize
     std::vector<std::string> paths;
     std::vector<int32_t> uids = {0, 1000};
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should fail with empty paths
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_002 end";
@@ -1425,7 +1439,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_003, TestSize
     std::vector<std::string> paths = {"/etc", "/data"};
     std::vector<int32_t> uids;
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should fail with empty UIDs
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_003 end";
@@ -1447,7 +1463,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_004, TestSize
     }
     std::vector<int32_t> uids = {0};
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should fail when paths count exceeds MAX_WHITE_PATH_COUNT
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_004 end";
@@ -1469,7 +1487,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_005, TestSize
         uids.push_back(1000 + i);
     }
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should fail when UIDs count exceeds MAX_WHITE_UID_COUNT
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_005 end";
@@ -1487,9 +1507,11 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_006, TestSize
     std::vector<std::string> paths = {"/etc", "/data"};
     std::vector<int32_t> uids = {0, 1000};
     std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
     // Set stop flag to true
     QuotaManager::GetInstance().SetStopScanFlag(true);
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should return E_ERR when stop flag is set
     EXPECT_EQ(result, E_ERR);
     EXPECT_TRUE(resultDirs.empty());
@@ -1510,7 +1532,9 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_007, TestSize
     std::vector<std::string> paths = {"/etc"};
     std::vector<int32_t> uids = {0, 1000};
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // Should process each path for each UID
     EXPECT_TRUE(result == E_OK || result == E_ERR || result == E_STATISTIC_OPEN_DIR_FAILED);
     if (result == E_OK) {
@@ -1532,13 +1556,15 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001
     std::string path = "/data";
     std::vector<int64_t> blks = {0, 0};
     std::vector<int32_t> uids = {0, 1000};
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
     // Set stopScanFlag to true, should return E_ERR immediately
     QuotaManager::GetInstance().SetStopScanFlag(true);
-    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids);
+    int32_t result = QuotaManager::GetInstance().AddBlksRecurseMultiUids(path, blks, uids, largeFiles, dirSizeMap);
     EXPECT_EQ(result, E_ERR);
     // Reset flag
     QuotaManager::GetInstance().SetStopScanFlag(false);
-    GTEST_LOG_(INFO) << "QuotaManagerTest_AddBlksRecurseMultiUids_StopFlag_001 end";
+    GTEST_LOG_(INFO) << "QuotaManagerTest_ltiUids_StopFlag_001 end";
 }
 
 /**
@@ -1553,12 +1579,127 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop
     std::vector<std::string> paths = {"/etc"};
     std::vector<int32_t> uids = {0};
     std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
     // Process normally first, then set stop flag to verify post-loop check
     QuotaManager::GetInstance().SetStopScanFlag(false);
-    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs);
+    int32_t result = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     // After loop, should succeed or fail depending on path existence
     EXPECT_TRUE(result == E_OK || result == E_ERR || result == E_STATISTIC_OPEN_DIR_FAILED);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetDirListSpaceByPaths_StopAfterLoop_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_SetQuotaPrjId_001
+ * @tc.desc: Test SetQuotaPrjId.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_SetQuotaPrjId_001, TestSize.Level1)
+{
+    std::string path = "/nonexistent/path";
+    int32_t prjId = 100;
+    bool inherit = false;
+    int32_t result = QuotaManager::GetInstance().SetQuotaPrjId(path, prjId, inherit);
+    EXPECT_TRUE(result == E_PARAMS_NULLPTR_ERR || result == E_SYS_KERNEL_ERR);
+}
+
+/**
+ * @tc.name: QuotaManagerTest_UpdateParentDirSizes_001
+ * @tc.desc: Test UpdateParentDirSizes.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_UpdateParentDirSizes_001, TestSize.Level1)
+{
+    std::map<std::string, int64_t> dirSizeMap;
+    std::string path = "/data/service/el1/public/test.txt";
+    int64_t fileSize = 1024 * 1024;
+    QuotaManager::GetInstance().UpdateParentDirSizes(path, fileSize, dirSizeMap);
+    EXPECT_FALSE(dirSizeMap.empty());
+}
+
+/**
+ * @tc.name: QuotaManagerTest_CollectLargeFile_001
+ * @tc.desc: Test CollectLargeFile.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_CollectLargeFile_001, TestSize.Level1)
+{
+    std::vector<LargeFileInfo> largeFiles;
+    std::string path = "/data/large_file.dat";
+    uint64_t fileSize = 2 * 1024 * 1024;
+    QuotaManager::GetInstance().CollectLargeFile(path, fileSize, largeFiles);
+    EXPECT_EQ(largeFiles.size(), 1);
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ProcessLargeFiles_001
+ * @tc.desc: Test ProcessLargeFiles.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessLargeFiles_001, TestSize.Level1)
+{
+    std::vector<LargeFileInfo> allLargeFiles;
+    std::vector<LargeFileInfo> largeFiles;
+    for (int i = 0; i < 20; i++) {
+        allLargeFiles.push_back({"/data/file" + std::to_string(i) + ".dat", (i + 1) * 1024 * 1024});
+    }
+    QuotaManager::GetInstance().ProcessLargeFiles(allLargeFiles, largeFiles);
+    EXPECT_EQ(largeFiles.size(), 15);
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ProcessLargeDirs_001
+ * @tc.desc: Test ProcessLargeDirs.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessLargeDirs_001, TestSize.Level1)
+{
+    std::map<std::string, int64_t> dirSizeMap;
+    std::vector<LargeDirInfo> largeDirs;
+    for (int i = 0; i < 20; i++) {
+        dirSizeMap["/data/dir" + std::to_string(i)] = (i + 1) * 6 * 1024 * 1024;
+    }
+    QuotaManager::GetInstance().ProcessLargeDirs(dirSizeMap, largeDirs);
+    EXPECT_EQ(largeDirs.size(), 15);
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ScanSinglePath_001
+ * @tc.desc: Test ScanSinglePath.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ScanSinglePath_001, TestSize.Level1)
+{
+    std::string path = "/etc";
+    std::vector<int32_t> uids = {0};
+    std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().ScanSinglePath(path, uids, resultDirs, largeFiles, dirSizeMap);
+    EXPECT_TRUE(result == E_OK || result == E_STATISTIC_OPEN_DIR_FAILED);
+}
+
+/**
+ * @tc.name: QuotaManagerTest_ScanDirectoryEntries_001
+ * @tc.desc: Test ScanDirectoryEntries.
+ * @tc.type: FUNC
+ * @tc.require: AR20260304664295
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_ScanDirectoryEntries_001, TestSize.Level1)
+{
+    std::string path = "/etc";
+    std::vector<int64_t> blks = {0, 0};
+    std::vector<int32_t> uids = {0, 1000};
+    std::vector<LargeFileInfo> largeFiles;
+    std::map<std::string, int64_t> dirSizeMap;
+    int32_t result = QuotaManager::GetInstance().ScanDirectoryEntries(path, blks, uids, largeFiles, dirSizeMap);
+    EXPECT_TRUE(result == E_OK || result == E_STATISTIC_OPEN_DIR_FAILED);
 }
 } // STORAGE_DAEMON
 } // OHOS
