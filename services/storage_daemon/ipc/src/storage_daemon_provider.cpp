@@ -1856,8 +1856,14 @@ int32_t StorageDaemonProvider::CreateIsoImage(const std::string &volId, const st
 int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
     OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
 {
-    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT FAILED <<< diskId empty");
+        StorageService::StorageRadar::ReportCommonResult("GetPartitionTable", E_PARAMS_INVALID,
+            DEFAULT_USERID, "diskId empty");
+        return E_PARAMS_INVALID;
+    }
 #ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = DiskManager::Instance().HandleGetPartitionTable(diskId, partitionTableInfo);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT SUCCESS <<< diskId=%{public}s, "
@@ -1875,13 +1881,17 @@ int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
 int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
     const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
-    LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}d",
-         diskId.c_str(), partitionOption.GetPartitionNum());
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< diskId empty");
+        StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,
+            DEFAULT_USERID, "diskId empty");
+        return E_PARAMS_INVALID;
+    }
 #ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = DiskManager::Instance().HandleCreatePartition(diskId, partitionOption);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, "
-             "partitionNum=%{public}d", diskId.c_str(), partitionOption.GetPartitionNum());
+        LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
     } else {
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
@@ -1894,9 +1904,15 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
 
 int32_t StorageDaemonProvider::DeletePartition(const std::string &diskId, uint32_t partitionNum)
 {
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT FAILED <<< diskId empty");
+        StorageService::StorageRadar::ReportCommonResult("DeletePartition", E_PARAMS_INVALID,
+            DEFAULT_USERID, "diskId empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
     LOGI("[L1:StorageDaemonProvider] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId.c_str(), partitionNum);
-#ifdef PC_USER_MANAGER
     int32_t ret = DiskManager::Instance().HandleDeletePartition(diskId, partitionNum);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, parNum=%{public}u",
