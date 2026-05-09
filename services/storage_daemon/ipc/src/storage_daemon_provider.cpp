@@ -1887,6 +1887,12 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
             DEFAULT_USERID, "diskId empty");
         return E_PARAMS_INVALID;
     }
+    if (partitionOption.GetStartSector() >= partitionOption.GetEndSector()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
+        StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,
+            DEFAULT_USERID, "params invalid");
+        return E_PARAMS_INVALID;
+    }
 #ifdef PC_USER_MANAGER
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = DiskManager::Instance().HandleCreatePartition(diskId, partitionOption);

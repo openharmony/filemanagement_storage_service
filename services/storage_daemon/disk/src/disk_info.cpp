@@ -38,7 +38,6 @@ constexpr int32_t MAX_INTERVAL_PARTITION = 15;
 constexpr int32_t PREFIX_LENGTH = 2;
 constexpr int32_t HEX_SHIFT_BITS = 4;
 constexpr int32_t HEX_LETTER_OFFSET = 10;
-constexpr int32_t DEFAULT_ALIGN_SIZE = 2048;
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 5;
 constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
 constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
@@ -733,7 +732,7 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     partitionThread.join();
     if (ret != E_OK) {
         LOGE("[L3:DiskInfo] GetPartitionTable: <<< EXIT FAILED <<< get partition failed, err=%{public}d", ret);
-        return E_CREATE_PARTITION_ERROR;
+        return E_GET_PARTITION_ERROR;
     }
     std::vector<std::string> tempInfo;
     std::string bufToken = "\n";
