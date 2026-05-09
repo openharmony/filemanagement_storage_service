@@ -95,6 +95,9 @@ private:
     MediaType mediaType_ = MediaType::UNKNOWN_MEDIA_TYPE;
     DiskType diskType_;
     uint64_t totalSector_;
+    uint64_t firstUsableSector_;
+    uint64_t lastUsableSector_;
+    uint64_t totalSector_;
     uint32_t sectorSize_;
     uint32_t alignSector_;
     bool removable_ = true;
@@ -117,6 +120,9 @@ private:
     void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     void SetTableType(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     bool IsPartitionNumExists(uint32_t partitionNum);
+    int32_t ExecAsyncGetPartitionTable(std::vector<std::string> &output);
+    bool SetUsableSector(std::vector<std::string> &content);
+    bool IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption);
 };
 } // STORAGE_DAEMON
 } // OHOS

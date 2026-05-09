@@ -39,6 +39,11 @@ constexpr int32_t PREFIX_LENGTH = 2;
 constexpr int32_t HEX_SHIFT_BITS = 4;
 constexpr int32_t HEX_LETTER_OFFSET = 10;
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 5;
+constexpr uint64_t VFAT_TYPECODE_MIN_SIZE = 16 * 1024 * 1024;
+constexpr uint64_t EXFAT_TYPECODE_MIN_SIZE = 32 * 1024 * 1024;
+constexpr uint64_t NTFS_TYPECODE_MIN_SIZE = 4 * 1024 * 1024;
+constexpr uint64_t EXT4_TYPECODE_MIN_SIZE = 16 * 1024 * 1024;
+constexpr uint64_t F2FS_TYPECODE_MIN_SIZE = 16 * 1024 * 1024;
 constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
 constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
@@ -64,8 +69,6 @@ std::map<std::string, std::string> typeCodeMap_ = {
     {"vfat", "0x0700"},
     {"exfat", "0x0700"},
     {"ntfs", "0x0700"},
-    {"ext2", "0x8300"},
-    {"ext3", "0x8300"},
     {"ext4", "0x8300"},
     {"f2fs", "0x8300"},
     {"hmfs", "0x8300"},
@@ -711,28 +714,10 @@ int DiskInfo::Partition()
 int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
 {
     LOGI("[L3:DiskInfo] GetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
-    std::promise<int32_t> promise;
-    std::future<int32_t> future = promise.get_future();
     std::vector<std::string> output;
-    std::thread partitionThread([this, &output, p = std::move(promise)]() mutable {
-        LOGI("[L3:DiskInfo] exec get partition");
-        std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
-        int32_t res = ForkExec(cmd, &output);
-        for (auto str : output) {
-            LOGI("get partition output: %{public}s", str.c_str());
-        }
-        p.set_value(res);
-    });
-    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
-        LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< timed out");
-        partitionThread.detach();
-        return E_GET_PARTITION_TIMEOUT;
-    }
-    int32_t ret = future.get();
-    partitionThread.join();
+    int32_t ret = ExecAsyncGetPartitionTable(output);
     if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] GetPartitionTable: <<< EXIT FAILED <<< get partition failed, err=%{public}d", ret);
-        return E_GET_PARTITION_ERROR;
+        return ret;
     }
     std::vector<std::string> tempInfo;
     std::string bufToken = "\n";
@@ -749,6 +734,9 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     if (!SetAlignSector(tempInfo)) {
         return E_SET_ALIGN_SECTOR_ERROR;
     }
+    if (!SetUsableSector(tempInfo)) {
+        return E_SET_USABLE_SECTOR_ERROR;
+    }
     SetPartitions(tempInfo, partitionTableInfo);
     SetTableType(tempInfo, partitionTableInfo);
     partitionTableInfo.SetDiskId(diskId_);
@@ -760,24 +748,86 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     return E_OK;
 }
 
+bool DiskInfo::SetUsableSector(std::vector<std::string> &content)
+{
+    auto count = static_cast<int32_t>(content.size());
+    std::string prefix = "First usable sector is";
+    std::string target;
+    for (int32_t i = 0; i < count; i++) {
+        std::string buf = content[i];
+        if (buf.find(prefix) == 0) {
+            target = buf;
+            break;
+        }
+    }
+    if (target.empty()) {
+        LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< not found usable sector");
+        return false;
+    }
+    std::regex pattern(R"(First usable sector is (\d+), last usable sector is (\d+))");
+    std::smatch match;
+    if (!std::regex_search(target, match, pattern)) {
+        LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< usable sector not match, target=%{public}s",
+             target.c_str());
+        return false;
+    }
+    std::string result = match[1].str();
+    int64_t firstUsableSector = 0;
+    if (!ConvertStringToInt(result, firstUsableSector)) {
+        LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< convert first usable sector failed, result=%{public}s",
+             result.c_str());
+        return false;
+    }
+    firstUsableSector_ = static_cast<uint64_t>(firstUsableSector);
+    result = match[2].str();
+    int64_t lastUsableSector = 0;
+    if (!ConvertStringToInt(result, lastUsableSector)) {
+        LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< convert last usable sector failed, result=%{public}s",
+             result.c_str());
+        return false;
+    }
+    lastUsableSector_ = static_cast<uint64_t>(lastUsableSector);
+    LOGI("[L3:DiskInfo] SetUsableSector: <<< EXIT SUCCESS <<< firstUsableSector=%{public}lld,"
+         "lastUsableSector=%{public}lld", static_cast<long long>(firstUsableSector),
+         static_cast<long long>(lastUsableSector));
+    return true;
+}
+
+int32_t DiskInfo::ExecAsyncGetPartitionTable(std::vector<std::string> &output)
+{
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread partitionThread([this, output, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskInfo] exec get partition");
+        std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
+        int32_t res = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("get partition output: %{public}s", str.c_str());
+        }
+        p.set_value(res);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
+        partitionThread.detach();
+        return E_GET_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    partitionThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] GetPartitionTable: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
+        return E_GET_PARTITION_ERROR;
+    }
+    return E_OK;
+}
+
 int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
     LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< this disk not support create partition");
+        LOGE("this disk not support create partition");
         return E_CREATE_PARTITION_NOT_SUPPORT;
     }
-    auto type = typeCodeMap_.find(partitionOption.GetTypeCode());
-    if (type == typeCodeMap_.end()) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< type code not support");
-        return E_CREATE_PARTITION_NOT_SUPPORT;
-    }
-    if (partitionOption.GetStartSector() >= totalSector_ || partitionOption.GetStartSector() < alignSector_) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< start sector out range");
-        return E_PARAMS_INVALID;
-    }
-    if (partitionOption.GetEndSector() >= totalSector_ || partitionOption.GetEndSector() < alignSector_) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< end sector out range");
+    if (!IsOptionsValid(partitionOption)) {
         return E_PARAMS_INVALID;
     }
     std::promise<int32_t> promise;
@@ -808,6 +858,48 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &
     }
     LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
     return E_OK;
+}
+
+bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption)
+{
+    std::string typeCode = partitionOption.GetTypeCode();
+    auto type = typeCodeMap_.find(typeCode);
+    if (type == typeCodeMap_.end()) {
+        LOGE("type code not support create partition");
+        return false;
+    }
+    uint64_t startSector = partitionOption.GetStartSector();
+    if (startSector > lastUsableSector_ || startSector < alignSector_) {
+        LOGE("start sector out range");
+        return false;
+    }
+    uint64_t endSector = partitionOption.GetEndSector();
+    if (endSector > lastUsableSector_ || endSector < alignSector_) {
+        LOGE("end sector out range");
+        return false;
+    }
+    uint64_t sectorInterval = (endSector - startSector + 1) * sectorSize_;
+    if (typeCode == "vfat" && sectorInterval < VFAT_TYPECODE_MIN_SIZE) {
+        LOGE("vfat sector interval invalid");
+        return false;
+    }
+    if (typeCode == "exfat" && sectorInterval < EXFAT_TYPECODE_MIN_SIZE) {
+        LOGE("exfat sector interval invalid");
+        return false;
+    }
+    if (typeCode == "ntfs" && sectorInterval < NTFS_TYPECODE_MIN_SIZE) {
+        LOGE("ntfs sector interval invalid");
+        return false;
+    }
+    if (typeCode == "ext4" && sectorInterval < EXT4_TYPECODE_MIN_SIZE) {
+        LOGE("ext4 sector interval invalid");
+        return false;
+    }
+    if ((typeCode == "f2fs" || typeCode == "hmfs") && sectorInterval < F2FS_TYPECODE_MIN_SIZE) {
+        LOGE("f2fs or hmfs sector interval invalid");
+        return false;
+    }
+    return true;
 }
 
 int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
@@ -964,8 +1056,8 @@ bool DiskInfo::SetTotalSector(std::vector<std::string> &content)
         return false;
     }
     totalSector_ = static_cast<uint64_t>(totalSector);
-    LOGI("[L3:DiskInfo] SetTotalSector: <<< EXIT SUCCESS <<< totalSector=%{public}llu",
-         static_cast<unsigned long long>(totalSector_));
+    LOGI("[L3:DiskInfo] SetTotalSector: <<< EXIT SUCCESS <<< totalSector=%{public}lld",
+         static_cast<long long>(totalSector));
     return true;
 }
 
