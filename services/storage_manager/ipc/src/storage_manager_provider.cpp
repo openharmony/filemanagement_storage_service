@@ -70,7 +70,6 @@ constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
-constexpr bool DECRYPTED = false;
 constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
@@ -1053,15 +1052,6 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->ActiveUserKey(userId, token, secret);
     StorageRadar::ReportFucBehavior("ActiveUserKey", userId, "ActiveUserKey End", err);
-    if (err == E_OK) {
-        int32_t ret = -1;
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            ret = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
-        }
-        LOGI("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, ret);
-        StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, ret, "EL2-EL5");
-    }
     StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::ACTIVE_USER_KEY_DELAY_SECOND);
     StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
@@ -1088,13 +1078,8 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->InactiveUserKey(userId);
     StorageRadar::ReportFucBehavior("InactiveUserKey", userId, "InactiveUserKey End", err);
-    int32_t ret = -1;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        ret = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
-    }
-    LOGE("send encrypted status: userId: %{public}d, err is %{public}d", userId, ret);
-    StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:ENCRYPT", userId, ret, "EL2-EL5");
+    int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId, ENCRYPTED);
+    LOGI("Send encrypted status: userId: %{public}d, ret is %{public}d", userId, ret);
     return err;
 #else
     return E_OK;
@@ -1937,6 +1922,12 @@ int32_t StorageManagerProvider::NotifyUserChangedEvent(uint32_t userId, uint32_t
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("NotifyUserChangedEvent UserId: %{public}u, type: %{public}d", userId, enumType);
+    int err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("NotifyUserChangedEvent::CheckUserIdRange userId %{public}d out of range", userId);
+        StorageDaemon::DecreaseThreadPriority("storage_manager");
+        return err;
+    }
     AccountSubscriber::GetInstance().NotifyUserChangedEvent(userId, enumType);
     StorageRadar::ReportFucBehavior("NotifyUserChangedEvent", userId, "NotifyUserChangedEvent End", E_OK);
 #endif
@@ -2073,27 +2064,6 @@ int32_t StorageManagerProvider::IsOsAccountExists(unsigned int userId, bool &isO
         return E_PERMISSION_DENIED;
     }
     return AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
-}
-
-int32_t StorageManagerProvider::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint Begin", E_OK);
-    LOGI("clear second mount point start, userId is %{public}d, bundle is %{public}s.", userId, bundleName.c_str());
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || uid != FOUNDATION_UID) {
-        LOGE("ClearSecondMountPoint permission denied, uid: %{public}d", uid);
-        return E_PERMISSION_DENIED;
-    }
-    if (userId > TOP_USER_ID || bundleName.empty()) {
-        LOGE("invalid params, userId: %{public}d.", userId);
-        return E_PARAMS_INVALID;
-    }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->ClearSecondMountPoint(userId, bundleName);
-    LOGI("clear second mount point end, ret is %{public}d.", err);
-    StorageRadar::ReportFucBehavior("ClearSecondMountPoint", userId, "ClearSecondMountPoint End", err);
-    return err;
 }
 
 bool StorageManagerProvider::IsCalledByFileMgr()

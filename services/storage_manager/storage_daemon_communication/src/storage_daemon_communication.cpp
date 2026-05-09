@@ -601,23 +601,6 @@ int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id,
     return storageDaemon_->GetOccupiedSpace(idType, id, size);
 }
 
-int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
-{
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        StorageRadar::ReportUserManager("StorageDaemonCommunication::MountCryptoPathAgain::Connect", userId, err, "");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        StorageRadar::ReportUserManager("StorageDaemonCommunication::MountCryptoPathAgain",
-            userId, E_SERVICE_IS_NULLPTR, "");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->MountCryptoPathAgain(userId);
-}
-
 int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     int32_t err = Connect();
@@ -1050,20 +1033,6 @@ int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmNam
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
-}
-
-int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::ClearSecondMountPoint service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->ClearSecondMountPoint(userId, bundleName);
 }
 
 int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)

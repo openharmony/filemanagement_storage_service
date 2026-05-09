@@ -63,11 +63,6 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::vector<UidSaInf
         bundleNameAndUid, type);
 }
 
-int32_t StorageDaemonCommunication::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    return StorageDaemonCommunicationMock::storageDaemonCommunication->ClearSecondMountPoint(userId, bundleName);
-}
-
 int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
 {
     return StorageDaemonCommunicationMock::storageDaemonCommunication->GetSystemDataSize(otherUidSizeSum);

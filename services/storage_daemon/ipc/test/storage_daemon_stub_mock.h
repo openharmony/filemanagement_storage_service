@@ -52,8 +52,6 @@ public:
     MOCK_METHOD1(InactiveUserKey, int32_t (uint32_t));
     MOCK_METHOD1(UpdateUserPublicDirPolicy, int32_t (uint32_t));
     MOCK_METHOD2(UpdateKeyContext, int32_t (uint32_t, bool));
-    MOCK_METHOD1(MountCryptoPathAgain, int32_t (uint32_t));
-    MOCK_METHOD2(ClearSecondMountPoint, int32_t (uint32_t, const std::string &));
     MOCK_METHOD4(CreateShareFile,
                  int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));

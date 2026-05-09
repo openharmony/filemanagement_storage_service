@@ -696,33 +696,6 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
     return ret;
 }
 
-int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
-{
-    LOGI("begin to MountCryptoPathAgain");
-    HiAudit::GetInstance().WriteStart("MountCryptoPathAgain", "userId: " + std::to_string(userId));
-    StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain Begin", E_OK);
-#ifdef USER_CRYPTO_MANAGER
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] MountCryptoPathAgain: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
-            userId, ret);
-        StorageService::StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain",
-                                                        userId, ret, "");
-    }
-    auto delay = StorageService::StorageRadar::ReportDuration("MountCryptoPathAgain",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("[L1:StorageDaemonProvider] MountCryptoPathAgain: <<< EXIT SUCCESS <<< userId=%{public}u, delay=%{public}s",
-        userId, delay.c_str());
-    HiAudit::GetInstance().WriteEnd("MountCryptoPathAgain", ret);
-    StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain End", ret);
-    return ret;
-#else
-    LOGI("[L1:StorageDaemonProvider] MountCryptoPathAgain: <<< EXIT SUCCESS <<< not supported");
-    return E_OK;
-#endif
-}
-
 int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
     HiAudit::GetInstance().WriteStart("LockUserScreen", "userId: " + std::to_string(userId));
@@ -1605,13 +1578,6 @@ int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, ui
 {
     LOGI("[L1:StorageDaemonProvider] GetRmgResourceSize: >>> ENTER <<< rgmName=%{public}s", rgmName.c_str());
     return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
-}
-
-int32_t StorageDaemonProvider::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    LOGI("[L1:StorageDaemonProvider] ClearSecondMountPoint: >>> ENTER <<< userId=%{public}u, bundleName=%{public}s",
-        userId, bundleName.c_str());
-    return MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
 }
 
 int32_t StorageDaemonProvider::Encrypt(const std::string &volumeId, const std::string &pazzword)

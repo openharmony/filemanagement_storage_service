@@ -922,30 +922,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_0
 }
 
 /**
-* @tc.number: SUB_STORAGE_Daemon_communication_MountCryptoPathAgain_0000
-* @tc.name: Daemon_communication_MountCryptoPathAgain_0000
-* @tc.desc: Test function of MountCryptoPathAgain interface for SUCCESS.
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAgain_0000, TestSize.Level1)
-{
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    MockConnectFail();
-    EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_SA_IS_NULLPTR);
-
-    MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_SERVICE_IS_NULLPTR);
-
-    MockAllSuccess();
-    EXPECT_CALL(*sd, MountCryptoPathAgain(_)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->MountCryptoPathAgain(0), E_OK);
-}
-
-/**
 * @tc.number: SUB_STORAGE_Daemon_communication_GenerateAppkey_0000
 * @tc.name: Daemon_communication_GenerateAppkey_0000
 * @tc.desc: Test function of GenerateAppkey interface for SUCCESS.
@@ -1536,33 +1512,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize
     EXPECT_EQ(sdCommunication->GetRmgResourceSize("", totalSize), E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetRmgResourceSize_001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_ClearSecondMountPoint_001
- * @tc.name: Daemon_communication_ClearSecondMountPoint_001
- * @tc.desc: Test function of ClearSecondMountPoint interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ClearSecondMountPoint_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ClearSecondMountPoint_001";
-    ASSERT_TRUE(sdCommunication != nullptr);
-    uint32_t userId = 100;
-    std::string bundleName = "test";
-    MockConnectFail();
-    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_SA_IS_NULLPTR);
-
-    MockStorageDaemonNullptr();
-    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_SERVICE_IS_NULLPTR);
-
-    MockAllSuccess();
-    EXPECT_CALL(*sd, ClearSecondMountPoint(_, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(sdCommunication->ClearSecondMountPoint(userId, bundleName), E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ClearSecondMountPoint_001";
 }
 
 /**

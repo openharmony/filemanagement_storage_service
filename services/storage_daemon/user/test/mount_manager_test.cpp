@@ -877,29 +877,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FilterNotMountedPa
 }
 
 /**
- * @tc.name: Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001
- * @tc.desc: Verify the MountCryptoPathAgain function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001 start";
-    uint32_t userId = 101;
-    auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(ret, -ENOENT);
-
-    userId = 100;
-    std::string path = "/data/virt_service/rgm_hmos/anco_hmos_data/media/0";
-    ForceCreateDirectory(path);
-    ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
-    ForceRemoveDirectory(path);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountCryptoPathAgain_001 end";
-}
-
-/**
  * @tc.name: Storage_Daemon_MountManagerExtTest_MountPointToList_001
  * @tc.desc: Verify the MountPointToList function.
  * @tc.type: FUNC
@@ -1079,50 +1056,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_RemoveDisSharePath
     EXPECT_TRUE(ret);
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_RemoveDisSharePath_001 end";
-}
-
-/**
- * @tc.name: MountManagerTest_ClearSecondMountPoint_001
- * @tc.desc: Verify the ClearSecondMountPoint function when bundle is not in the list.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountPoint_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountPoint_001 start";
-    uint32_t userId = 99999;
-    std::string bundleName = "test.bundle";
-    int32_t ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
-
-    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
-    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_OK);
-
-    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
-    errno = 2;
-    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
-
-    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
-    errno = 22;
-    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
-
-    MountManager::GetInstance().secondMountBundleNameMap_[userId] = { "test.bundle" };
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(1));
-    errno = 5;
-    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_UMOUNT_SANDBOX);
-
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillRepeatedly(Return(0));
-    ret = MountManager::GetInstance().ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, E_OK);
-
-    MountManager::GetInstance().secondMountBundleNameMap_.erase(userId);
-    GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountPoint_001 end";
 }
 
 /**

@@ -197,16 +197,6 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmp
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::CreateShareFile(const StorageFileRawData &rawData,
                                             uint32_t tokenId,
                                             uint32_t flag,

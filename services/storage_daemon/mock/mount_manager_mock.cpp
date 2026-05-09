@@ -57,14 +57,6 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
     return IMountManagerMoc::mountManagerMoc->MountDisShareFile(userId, shareFiles);
 }
 
-int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
-{
-    if (IMountManagerMoc::mountManagerMoc == nullptr) {
-        return -1;
-    }
-    return IMountManagerMoc::mountManagerMoc->MountCryptoPathAgain(userId);
-}
-
 int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
@@ -124,12 +116,4 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
         return -1;
     }
     return IMountManagerMoc::mountManagerMoc->IsFileOccupied(path, inputList, outputList, isOccupy);
-}
-
-int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    if (IMountManagerMoc::mountManagerMoc == nullptr) {
-        return -1;
-    }
-    return IMountManagerMoc::mountManagerMoc->ClearSecondMountPoint(userId, bundleName);
 }

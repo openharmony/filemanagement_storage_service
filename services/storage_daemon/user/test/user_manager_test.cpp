@@ -388,24 +388,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_GetProcessInfo_002, T
 }
 
 /**
- * @tc.name: Storage_Manager_MountManagerTest_MountCryptoPathAgain_001
- * @tc.desc: Verify the MountManager function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountCryptoPathAgain_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCryptoPathAgain_001 start";
-
-    uint32_t userId = 100;
-
-    int32_t ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCryptoPathAgain_001 end";
-}
-
-/**
  * @tc.name: Storage_Manager_MountManagerTest_MountCloudForUsers_001
  * @tc.desc: Verify the MountManager function.
  * @tc.type: FUNC

@@ -33,7 +33,6 @@ public:
     static MountManager &GetInstance();
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
-    int32_t MountCryptoPathAgain(uint32_t userId);
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -69,7 +68,6 @@ public:
         std::vector<std::string> &outputList, bool &isOccupy);
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
-    int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName);
 
 private:
     MountManager() = default;

@@ -31,7 +31,6 @@ public:
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) = 0;
     virtual int32_t MountDisShareFile(int32_t userId,
         const std::map<std::string, std::string> &shareFiles) = 0;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) = 0;
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -42,7 +41,6 @@ public:
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) = 0;
     virtual int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy) = 0;
-    virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) = 0;
 public:
     static inline std::shared_ptr<IMountManagerMoc> mountManagerMoc = nullptr;
 };
@@ -53,7 +51,6 @@ public:
     MOCK_METHOD(int32_t, PrepareAppdataDir, (int32_t));
     MOCK_METHOD(int32_t, UMountDisShareFile, (int32_t, const std::string &));
     MOCK_METHOD(int32_t, MountDisShareFile, (int32_t, (const std::map<std::string, std::string>&)));
-    MOCK_METHOD(int32_t, MountCryptoPathAgain, (uint32_t));
     MOCK_METHOD(int32_t, MountDfsDocs, (int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD(int32_t, UMountDfsDocs, (int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD(int32_t, MountMediaFuse, (int32_t, int32_t &));
@@ -62,7 +59,6 @@ public:
     MOCK_METHOD(int32_t, UMountFileMgrFuse, (int32_t, const std::string &));
     MOCK_METHOD(int32_t, IsFileOccupied, (const std::string &, const std::vector<std::string> &,
         std::vector<std::string> &, bool &));
-    MOCK_METHOD(int32_t, ClearSecondMountPoint, (uint32_t, const std::string &));
 };
 }
 }

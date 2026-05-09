@@ -92,6 +92,7 @@ ohos_unittest("storage_daemon_test") {
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
+    "init:libbeget_proxy",
     "ipc:ipc_single",
     "ipc:libdbinder",
     "json:nlohmann_json_static",

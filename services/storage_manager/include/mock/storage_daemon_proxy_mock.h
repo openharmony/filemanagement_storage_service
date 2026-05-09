@@ -61,8 +61,6 @@ public:
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateUserPublicDirPolicy(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
-    virtual int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     virtual int32_t LockUserScreen(uint32_t userId) override;
     virtual int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
