@@ -873,6 +873,10 @@ bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &part
         LOGE("start sector out range");
         return false;
     }
+    if (((startSector * sectorSize_) % alignSector_) != 0) {
+        LOGE("start sector not align");
+        return false;
+    }
     uint64_t endSector = partitionOption.GetEndSector();
     if (endSector > lastUsableSector_ || endSector < alignSector_) {
         LOGE("end sector out range");

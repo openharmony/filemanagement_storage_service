@@ -97,7 +97,6 @@ private:
     uint64_t totalSector_;
     uint64_t firstUsableSector_;
     uint64_t lastUsableSector_;
-    uint64_t totalSector_;
     uint32_t sectorSize_;
     uint32_t alignSector_;
     bool removable_ = true;
