@@ -715,7 +715,7 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::vector<std::string> output;
-    std::thread partitionThread([this, partitionTableInfo, output, p = std::move(promise)]() mutable {
+    std::thread partitionThread([this, &output, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec get partition");
         std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
         int32_t res = ForkExec(cmd, &output);

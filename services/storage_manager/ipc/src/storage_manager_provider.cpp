@@ -2449,7 +2449,6 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
 int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint32_t partitionNum)
 {
     StorageRadar::ReportFucBehavior("DeletePartition", DEFAULT_USERID, "DeletePartition Begin", E_OK);
-         diskId.c_str(), partitionNum);
     if (!IsSystemApp()) {
         LOGE("the caller is not sysapp");
         return E_SYS_APP_PERMISSION_DENIED;
@@ -2463,6 +2462,7 @@ int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint3
     }
 #ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::DeletePartition start, diskId=%{public}s, partitionNum=%{public}u",
+        diskId.c_str(), partitionNum);
     int32_t ret = DiskManagerService::GetInstance().DeletePartition(diskId, partitionNum);
     StorageRadar::ReportFucBehavior("DeletePartition", DEFAULT_USERID, "DeletePartition End", ret);
     LOGI("StorageManagerProvider::DeletePartition end, ret=%{public}d", ret);
