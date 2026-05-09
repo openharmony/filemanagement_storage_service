@@ -1309,7 +1309,7 @@ int32_t StorageDaemonCommunication::GetPartitionTable(const std::string &diskId,
     return storageDaemon_->GetPartitionTable(diskId, partitionTableInfo);
 }
 
-int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
 {
     LOGI("StorageDaemonCommunication::CreatePartition start");
     int32_t err = Connect();

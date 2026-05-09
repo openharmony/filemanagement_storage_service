@@ -2420,7 +2420,7 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
 #endif
 }
 
-int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
 {
     StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition Begin", E_OK);
     LOGI("StorageManagerProvider::CreatePartition start, diskId=%{public}s, partitionNum=%{public}d",

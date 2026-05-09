@@ -1873,7 +1873,7 @@ int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
 }
 
 int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
-    OHOS::StorageManager::PartitionOptions &partitionOption)
+    const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}d",
          diskId.c_str(), partitionOption.GetPartitionNum());
@@ -1899,7 +1899,7 @@ int32_t StorageDaemonProvider::DeletePartition(const std::string &diskId, uint32
 #ifdef PC_USER_MANAGER
     int32_t ret = DiskManager::Instance().HandleDeletePartition(diskId, partitionNum);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
+        LOGI("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, parNum=%{public}u",
              diskId.c_str(), partitionNum);
     } else {
         LOGE("[L1:StorageDaemonProvider] DeletePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);

@@ -63,7 +63,7 @@ public:
     int CreateVolume(dev_t dev);
     int Partition();
     int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    int32_t CreatePartition(OHOS::StorageManager::PartitionOptions &partitionOption);
+    int32_t CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption);
     int32_t DeletePartition(uint32_t partitionNum);
     dev_t GetDevice() const;
     std::string GetDiskId() const;

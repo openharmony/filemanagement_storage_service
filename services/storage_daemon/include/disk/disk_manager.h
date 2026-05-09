@@ -42,7 +42,7 @@ public:
     int32_t HandleGetPartitionTable(const std::string &diskId,
         OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     int32_t HandleCreatePartition(const std::string &diskId,
-        OHOS::StorageManager::PartitionOptions &partitionOption);
+        const OHOS::StorageManager::PartitionOptions &partitionOption);
     int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
 
 private:

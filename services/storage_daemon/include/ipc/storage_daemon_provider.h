@@ -170,7 +170,7 @@ public:
     virtual int32_t GetPartitionTable(const std::string &diskId,
         OHOS::StorageManager::PartitionTableInfo &partitionTableInfo) override;
     virtual int32_t CreatePartition(const std::string &diskId,
-        OHOS::StorageManager::PartitionOptions &partitionOption) override;
+        const OHOS::StorageManager::PartitionOptions &partitionOption) override;
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {

@@ -745,7 +745,7 @@ int32_t DiskInfo::GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &pa
     return E_OK;
 }
 
-int32_t DiskInfo::CreatePartition(OHOS::StorageManager::PartitionOptions &partitionOption)
+int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
     LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
     if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {

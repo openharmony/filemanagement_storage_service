@@ -546,7 +546,7 @@ int32_t StorageManagerProxy::GetPartitionTable(const std::string &diskId, Partit
     return E_OK;
 }
 
-int32_t StorageManagerProxy::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+int32_t StorageManagerProxy::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
 {
     return E_OK;
 }

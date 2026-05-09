@@ -256,7 +256,7 @@ int32_t DiskManager::HandleGetPartitionTable(const std::string &diskId,
 }
 
 int32_t DiskManager::HandleCreatePartition(const std::string &diskId,
-    OHOS::StorageManager::PartitionOptions &partitionOption)
+    const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
     LOGI("[L2:DiskManager] HandleCreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = E_NON_EXIST;

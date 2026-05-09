@@ -133,7 +133,7 @@ int32_t DiskManagerService::GetPartitionTable(const std::string &diskId, Partiti
     return sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
 }
 
-int32_t DiskManagerService::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+int32_t DiskManagerService::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
 {
     {
         std::lock_guard<std::mutex> lock(diskMapMutex_);

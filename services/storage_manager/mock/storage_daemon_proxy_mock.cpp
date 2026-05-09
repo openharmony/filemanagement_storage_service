@@ -455,7 +455,7 @@ int32_t StorageDaemonProxy::GetPartitionTable(const std::string &diskId, Partiti
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::CreatePartition(const std::string &diskId, PartitionOptions &partitionOption)
+int32_t StorageDaemonProxy::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
 {
     return E_OK;
 }
