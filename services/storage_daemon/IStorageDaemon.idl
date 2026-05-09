@@ -50,7 +50,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                      [in] unsigned char[] secret);
      [ipccode 21] void InactiveUserKey([in] unsigned int userId);
      [ipccode 22] void UpdateKeyContext([in] unsigned int userId , [in] boolean needRemoveTmpKey);
-     [ipccode 23] void MountCryptoPathAgain([in] unsigned int userId);
      [ipccode 26] void LockUserScreen([in] unsigned int userId);
      [ipccode 27] void UnlockUserScreen([in] unsigned int user, [in] unsigned char[] token,
                                         [in] unsigned char[] secret);
@@ -106,7 +105,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 66] void GetDataSizeByPath([in] String path, [out] long size);
      [ipccode 67] void GetRmgResourceSize([in] String rgmName, [out] unsigned long totalSize);
      [ipccode 68] void ListUserdataDirInfo([out] List<UserdataDirInfo> dirs);
-     [ipccode 69] void ClearSecondMountPoint([in] unsigned int userId, [in] String bundleName);
      [ipccode 70] void GetSystemDataSize([out] long otherUidSizeSum);
      [ipccode 71] void GetDirListSpaceByPaths([in] String[] paths, [in] int[] uids,
                                              [out] DirSpaceInfo[] resultDirs, [out] LargeFileInfo[] largeFiles,

@@ -230,49 +230,6 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
     return true;
 }
 
-int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
-{
-    LOGI("[L2:MountManager] MountCryptoPathAgain: >>> ENTER <<< userId=%{public}u", userId);
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
-    std::error_code errCode;
-    if (!exists(rootDir, errCode)) {
-        LOGE("[L2:MountManager] MountCryptoPathAgain: <<< EXIT FAILED <<< root path not exists, rootDir=%{public}s",
-            SANDBOX_ROOT_PATH);
-        StorageRadar::ReportUserManager("MountCryptoPathAgain", userId, -ENOENT, "root path not exists");
-        return -ENOENT;
-    }
-
-    InfoList<MountNodeInfo> sandboxMountNodeList;
-    auto ret = UserPathResolver::GetSandboxMountNodeList(static_cast<int32_t>(userId), sandboxMountNodeList.data);
-    if (ret != E_OK) {
-        StorageRadar::ReportUserManager("MountCryptoPathAgain", userId, ret, "GetSandboxMountNodeList failed");
-        LOGE("[L2:MountManager] MountCryptoPathAgain: <<< EXIT FAILED <<< GetSandboxMountNodeList failed,"
-            "ret=%{public}d", ret);
-        return ret;
-    }
-
-    filesystem::directory_iterator bundleNameList(rootDir);
-    for (const auto &bundleName : bundleNameList) {
-        const auto& filename = bundleName.path().filename();
-        if (SANDBOX_EXCLUDE_PATH.find(filename) != SANDBOX_EXCLUDE_PATH.end()) {
-            continue;
-        }
-        std::string bundleNameStr = filename.generic_string();
-        std::string::size_type point = bundleNameStr.find(MOUNT_SUFFIX);
-        if (point == string::npos) {
-            continue;
-        }
-        bundleNameStr = bundleNameStr.substr(0, point);
-        if (!CheckPathValid(bundleNameStr, userId)) {
-            continue;
-        }
-        MountSandboxPath(userId, sandboxMountNodeList.data, bundleNameStr);
-    }
-    ClearSecondMountMap(userId);
-    LOGI("[L2:MountManager] MountCryptoPathAgain: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
-    return ret;
-}
-
 void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNodeInfo> &sandboxMountNodeInfo,
     const std::string &bundleName)
 {
@@ -1411,51 +1368,6 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
         }
         CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
     }
-}
-
-int32_t MountManager::ClearSecondMountPoint(uint32_t userId, const std::string &bundleName)
-{
-    LOGI("[L2:MountManager] ClearSecondMountPoint: >>> ENTER <<< userId=%{public}u, bundle=%{public}s",
-        userId, bundleName.c_str());
-    int32_t ret = IsBundleNeedClear(userId, bundleName);
-    if (ret != E_OK) {
-        LOGE("[L2:MountManager] ClearSecondMountPoint: <<< EXIT FAILED <<< IsBundleNeedClear failed, ret=%{public}d",
-            ret);
-        return ret;
-    }
-    InfoList<MountNodeInfo> sandboxMountNodeList;
-    ret = UserPathResolver::GetSandboxMountNodeList(static_cast<int32_t>(userId), sandboxMountNodeList.data);
-    if (ret != E_OK) {
-        LOGE("[L2:MountManager] ClearSecondMountPoint: <<< EXIT FAILED <<< GetSandboxMountNodeList failed,"
-            "ret=%{public}d", ret);
-        return ret;
-    }
-    std::vector<MountNodeInfo> mountNodeInfos = sandboxMountNodeList.data;
-    std::string sandboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    for (const auto &mountNodeInfo : mountNodeInfos) {
-        std::string path = sandboxRootPath + mountNodeInfo.dstPath;
-        if (path.back() == '/') {
-            path.pop_back();
-        }
-        auto startUmountTime = StorageService::StorageRadar::RecordCurrentTime();
-        int32_t res = UMount(path);
-        int32_t tmpErrno = errno;
-        if (res != E_OK && tmpErrno != ENOENT && tmpErrno != EINVAL) {
-            std::string extraData = "path=" + path + ",kernelCode=" + to_string(tmpErrno);
-            StorageRadar::ReportUserManager("ClearSecondMountPoint", userId, E_UMOUNT_SANDBOX, extraData);
-            LOGE("failed to unmount path is %{public}s, errno is %{public}d, res is %{public}d.", path.c_str(),
-                tmpErrno, res);
-            return E_UMOUNT_SANDBOX;
-        }
-        StorageService::StorageRadar::ReportDuration("umount-" + path, startUmountTime, userId);
-    }
-    RemoveBundleNameFromMap(userId, bundleName);
-    auto delay = StorageService::StorageRadar::ReportDuration("ClearSecondMountPoint", startTime, userId);
-    LOGI("SD_DURATION: clear second mount point success, delayTime is %{public}s.", delay.c_str());
-    LOGI("[L2:MountManager] ClearSecondMountPoint: <<< EXIT SUCCESS <<< userId=%{public}u, bundle=%{public}s",
-        userId, bundleName.c_str());
-    return E_OK;
 }
 
 int32_t MountManager::InitSecondMountBundleName(uint32_t userId)

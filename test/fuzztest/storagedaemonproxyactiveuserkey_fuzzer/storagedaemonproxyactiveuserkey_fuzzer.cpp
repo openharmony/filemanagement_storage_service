@@ -78,7 +78,6 @@ bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uin
     }
     proxy->ActiveUserKey(userId, token, secret);
     proxy->InactiveUserKey(userId);
-    proxy->MountCryptoPathAgain(userId);
     proxy->LockUserScreen(userId);
     return true;
 }

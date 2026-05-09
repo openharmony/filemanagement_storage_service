@@ -718,25 +718,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateKeyContext_0
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_MountCryptoPathAgain_001
- * @tc.desc: Verify the MountCryptoPathAgain function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCryptoPathAgain_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCryptoPathAgain_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    uint32_t userId = 123;
-    int32_t result = storageDaemonProviderTest_->MountCryptoPathAgain(userId);
-    EXPECT_EQ(result, 0);
-    EXPECT_CALL(*mountManagerMoc_, MountCryptoPathAgain(_)).WillOnce(Return(-1));
-    result = storageDaemonProviderTest_->MountCryptoPathAgain(userId);
-    EXPECT_EQ(result, -1);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCryptoPathAgain_001 end";
-}
-
-/**
  * @tc.name: StorageDaemonProviderTest_LockUserScreen_001
  * @tc.desc: Verify the LockUserScreen function.
  * @tc.type: FUNC
@@ -2037,28 +2018,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ListUserdataDirInf
         storageDaemonProviderTest_->ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ListUserdataDirInfo_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_ClearSecondMountPoint_001
- * @tc.desc: Verify the ClearSecondMountPoint function.
- * @tc.type: FUNC
- * @tc.require: AR20251022750568
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ClearSecondMountPoint_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-
-    uint32_t userId = 99999;
-    std::string bundleName;
-    int32_t ret = storageDaemonProviderTest_->ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, 0);
-
-    EXPECT_CALL(*mountManagerMoc_, ClearSecondMountPoint(_, _)).WillOnce(Return(-1));
-    ret = storageDaemonProviderTest_->ClearSecondMountPoint(userId, bundleName);
-    EXPECT_EQ(ret, -1);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ClearSecondMountPoint_001 end";
 }
 
 /**

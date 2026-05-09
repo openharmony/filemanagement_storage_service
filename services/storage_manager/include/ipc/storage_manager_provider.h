@@ -170,7 +170,6 @@ public:
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx) override;
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override;
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
-    int32_t ClearSecondMountPoint(uint32_t userId, const std::string &bundleName) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
     //disk crypt api
@@ -204,7 +203,6 @@ private:
     bool IsCalledByFileMgr();
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;
-    std::mutex mutex_;
 };
 } // namespace StorageManager
 } // namespace OHOS

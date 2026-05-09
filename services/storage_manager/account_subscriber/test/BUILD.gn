@@ -62,6 +62,7 @@ ohos_unittest("account_subscriber_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "init:libbeget_proxy",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",

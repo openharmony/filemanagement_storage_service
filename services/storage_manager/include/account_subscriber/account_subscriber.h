@@ -20,6 +20,7 @@
 #include "datashare_helper.h"
 #include "storage_service_constant.h"
 #include "storage_service_constants.h"
+#include <condition_variable>
 
 namespace OHOS {
 namespace StorageManager {
@@ -27,21 +28,39 @@ enum {
     USER_UNLOCK_BIT,
     USER_SWITCH_BIT
 };
+enum PARAM_STATUS {
+    PARAM_UNKNOWN,
+    PARAM_SUCCESS,
+    PARAM_FAIL
+};
 
 class AccountSubscriber {
 public:
     static AccountSubscriber &GetInstance();
     void ResetUserEventRecord(int32_t userId);
     void NotifyUserChangedEvent(uint32_t userId, StorageService::UserChangedEventType eventType);
+    int32_t SendUserLockStatusToAppSpawn(int32_t userId, bool lockStatus);
+    void SetParam(int32_t userId, PARAM_STATUS paramChangedStatus);
+    void RmParam(int32_t userId);
+    bool IsParamExist(int32_t userId);
+    void NotifyAll();
 private:
     AccountSubscriber() = default;
     ~AccountSubscriber() = default;
     AccountSubscriber(const AccountSubscriber &) = delete;
     AccountSubscriber &operator=(const AccountSubscriber &) = delete;
 
+    void MountCryptoPathAgain(int32_t userId);
+    void SendSecondMountedEvent(int32_t userId);
+    static void OnUnlockParamChanged(const char *key, const char *value, [[maybe_unused]]void *context);
+
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;
     std::map<int32_t, std::shared_ptr<DataShare::DataShareHelper>> mediaShareMap_;
+    std::mutex appSpawnMutex_;
+    std::mutex waitMutex_;
+    std::condition_variable waitCv_;
+    std::map<int32_t, PARAM_STATUS> paramChangedMap_;
     uint32_t GetUserStatus(int32_t userId);
     uint32_t HandleUserUnlockEvent(uint32_t userStatus);
     uint32_t HandleUserSwitchedEvent(uint32_t userStatus);

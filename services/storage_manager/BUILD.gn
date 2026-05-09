@@ -131,6 +131,7 @@ ohos_shared_library("storage_manager") {
       "data_share:datashare_consumer",
       "eventhandler:libeventhandler",
       "init:libbegetutil",
+      "init:libbeget_proxy",
     ]
     deps += [ ":storage_manager_monitor_config" ]
 
