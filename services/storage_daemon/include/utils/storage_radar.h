@@ -24,6 +24,8 @@ constexpr const char *DEFAULT_ORGPKGNAME = "storageService";
 constexpr int32_t DEFAULT_USERID = 100;
 constexpr int64_t DEFAULT_DELAY_TIME_THRESH = 20; //ms. LOW THRESH
 constexpr int64_t DELAY_TIME_THRESH_HIGH = 50; //ms
+constexpr const char *FILE_STORAGE_MANAGER_FAULT = "FILE_STORAGE_MANAGER_FAULT";
+constexpr const char *FILE_STORAGE_FAULT = "FILE_STORAGE_FAULT";
 
 enum class BizScene : int32_t {
     STORAGE_START = 0,
@@ -119,7 +121,8 @@ public:
     }
 
 public:
-    bool RecordFuctionResult(const RadarParameter &parameterRes);
+    bool RecordFunctionResult(const RadarParameter &parameterRes,
+                             const std::string &eventName = FILE_STORAGE_MANAGER_FAULT);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
 	                                const std::string &keyElxLevel);
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,

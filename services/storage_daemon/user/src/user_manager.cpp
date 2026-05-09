@@ -321,7 +321,7 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
     StorageManagerClient client;
     auto ret = client.NotifyCreateBundleDataDirWithEl(userId, elx);
     if (ret != E_OK) {
-        StorageRadar::ReportBundleMgrResult("CreateElxBundleDataDir", ret, userId, std::to_string(elx));
+        StorageRadar::ReportUserManager("CreateElxBundleDataDir", ret, userId, std::to_string(elx));
     }
     LOGI("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT SUCCESS <<< userId=%{public}u, elx=%{public}d",
         userId, elx);

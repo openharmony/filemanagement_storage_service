@@ -1097,7 +1097,7 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     }
     if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
-        StorageService::StorageRadar::ReportBundleMgrResult(
+        StorageService::StorageRadar::ReportUserManager(
             "StorageManagerStub::HandleLockUserScreen", E_BUNDLEMGR_ERROR, userId, "pkgName=" + SCENEBOARD_BUNDLE_NAME);
         return E_BUNDLEMGR_ERROR;
     }
