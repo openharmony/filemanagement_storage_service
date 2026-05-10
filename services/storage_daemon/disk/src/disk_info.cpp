@@ -1122,7 +1122,7 @@ bool DiskInfo::SetAlignSector(std::vector<std::string> &content)
         return false;
     }
     alignSector_ = static_cast<uint32_t>(alignSector);
-    LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector_);
+    LOGI("[L3:DiskInfo] SetAlignSector: <<< EXIT SUCCESS <<< alignSector=%{public}d", alignSector);
     return true;
 }
 
