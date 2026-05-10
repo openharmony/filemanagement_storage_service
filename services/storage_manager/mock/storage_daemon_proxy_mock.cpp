@@ -445,5 +445,15 @@ int32_t StorageDaemonProxy::GetPartitionTable(const std::string &diskId, Partiti
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::DeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    return E_OK;
+}
 } // StorageDaemon
-} // OHOS
+} // namespace OHOS

@@ -21,6 +21,7 @@
 #include <string>
 #include <sys/types.h>
 
+#include "partition_options.h"
 #include "partition_table_info.h"
 
 namespace OHOS {
@@ -62,6 +63,8 @@ public:
     int CreateVolume(dev_t dev);
     int Partition();
     int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
+    int32_t CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption);
+    int32_t DeletePartition(uint32_t partitionNum);
     dev_t GetDevice() const;
     std::string GetDiskId() const;
     std::string GetDevPath() const;
@@ -92,6 +95,7 @@ private:
     MediaType mediaType_ = MediaType::UNKNOWN_MEDIA_TYPE;
     DiskType diskType_;
     uint64_t totalSector_;
+    uint64_t lastUsableSector_;
     uint32_t sectorSize_;
     uint32_t alignSector_;
     bool removable_ = true;
@@ -113,6 +117,10 @@ private:
     bool SetAlignSector(std::vector<std::string> &content);
     void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     void SetTableType(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
+    bool IsPartitionNumExists(uint32_t partitionNum);
+    int32_t ExecAsyncGetPartitionTable(std::vector<std::string> &output);
+    bool SetUsableSector(std::vector<std::string> &content);
+    bool IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption);
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -19,10 +19,6 @@ namespace OHOS {
 namespace StorageManager {
 PartitionOptions::PartitionOptions() {}
 
-PartitionOptions::PartitionOptions(int32_t partitionNum, uint64_t startSector, uint64_t endSector, bool alignToCylinder)
-    : partitionNum_(partitionNum), startSector_(startSector), endSector_(endSector),
-    alignToCylinder_(alignToCylinder) {}
-
 int32_t PartitionOptions::GetPartitionNum() const
 {
     return partitionNum_;
@@ -38,9 +34,9 @@ uint64_t PartitionOptions::GetEndSector() const
     return endSector_;
 }
 
-bool PartitionOptions::GetAlignToCylinder() const
+std::string PartitionOptions::GetTypeCode() const
 {
-    return alignToCylinder_;
+    return typeCode_;
 }
 
 void PartitionOptions::SetPartitionNum(int32_t partitionNum)
@@ -58,9 +54,9 @@ void PartitionOptions::SetEndSector(uint64_t endSector)
     endSector_ = endSector;
 }
 
-void PartitionOptions::SetAlignToCylinder(bool alignToCylinder)
+void PartitionOptions::SetTypeCode(std::string typeCode)
 {
-    alignToCylinder_ = alignToCylinder;
+    typeCode_ = typeCode;
 }
 
 bool PartitionOptions::Marshalling(Parcel &parcel) const
@@ -74,7 +70,7 @@ bool PartitionOptions::Marshalling(Parcel &parcel) const
     if (!parcel.WriteUint64(endSector_)) {
         return false;
     }
-    if (!parcel.WriteBool(alignToCylinder_)) {
+    if (!parcel.WriteString(typeCode_)) {
         return false;
     }
     return true;
@@ -89,7 +85,7 @@ PartitionOptions *PartitionOptions::Unmarshalling(Parcel &parcel)
     obj->partitionNum_ = parcel.ReadInt32();
     obj->startSector_ = parcel.ReadUint64();
     obj->endSector_ = parcel.ReadUint64();
-    obj->alignToCylinder_ = parcel.ReadBool();
+    obj->typeCode_ = parcel.ReadString();
     return obj;
 }
 }

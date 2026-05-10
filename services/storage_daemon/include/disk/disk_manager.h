@@ -22,6 +22,7 @@
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "netlink/netlink_data.h"
+#include "partition_options.h"
 #include "partition_table_info.h"
 
 namespace OHOS {
@@ -40,6 +41,9 @@ public:
     std::shared_ptr<DiskInfo> MatchConfig(NetlinkData *data);
     int32_t HandleGetPartitionTable(const std::string &diskId,
         OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
+    int32_t HandleCreatePartition(const std::string &diskId,
+        const OHOS::StorageManager::PartitionOptions &partitionOption);
+    int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
 
 private:
     DiskManager() = default;

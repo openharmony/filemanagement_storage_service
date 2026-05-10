@@ -23,17 +23,16 @@ namespace StorageManager {
 class PartitionOptions : public Parcelable {
 public:
     PartitionOptions();
-    PartitionOptions(int32_t partitionNum, uint64_t startSector, uint64_t endSector, bool alignToCylinder);
 
     int32_t GetPartitionNum() const;
     uint64_t GetStartSector() const;
     uint64_t GetEndSector() const;
-    bool GetAlignToCylinder() const;
+    std::string GetTypeCode() const;
 
     void SetPartitionNum(int32_t partitionNum);
     void SetStartSector(uint64_t startSector);
     void SetEndSector(uint64_t endSector);
-    void SetAlignToCylinder(bool alignToCylinder);
+    void SetTypeCode(std::string typeCode);
 
     bool Marshalling(Parcel &parcel) const override;
     static PartitionOptions *Unmarshalling(Parcel &parcel);
@@ -42,7 +41,7 @@ private:
     int32_t partitionNum_ {};
     uint64_t startSector_ {};
     uint64_t endSector_ {};
-    bool alignToCylinder_ {false};
+    std::string typeCode_;
 };
 } // namespace StorageManager
 } // namespace OHOS
