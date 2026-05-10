@@ -764,7 +764,7 @@ bool DiskInfo::SetUsableSector(std::vector<std::string> &content)
         LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< not found usable sector");
         return false;
     }
-    std::regex pattern(R"(First usable sector is (\d+), last usable sector is (\d+))");
+    std::regex pattern(R"(last usable sector is (\d+))");
     std::smatch match;
     if (!std::regex_search(target, match, pattern)) {
         LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< usable sector not match, target=%{public}s",
@@ -772,14 +772,6 @@ bool DiskInfo::SetUsableSector(std::vector<std::string> &content)
         return false;
     }
     std::string result = match[1].str();
-    int64_t firstUsableSector = 0;
-    if (!ConvertStringToInt(result, firstUsableSector)) {
-        LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< convert first usable sector failed, result=%{public}s",
-             result.c_str());
-        return false;
-    }
-    firstUsableSector_ = static_cast<uint64_t>(firstUsableSector);
-    result = match[2].str();
     int64_t lastUsableSector = 0;
     if (!ConvertStringToInt(result, lastUsableSector)) {
         LOGE("[L3:DiskInfo] SetUsableSector: <<< EXIT FAILED <<< convert last usable sector failed, result=%{public}s",
@@ -787,8 +779,7 @@ bool DiskInfo::SetUsableSector(std::vector<std::string> &content)
         return false;
     }
     lastUsableSector_ = static_cast<uint64_t>(lastUsableSector);
-    LOGI("[L3:DiskInfo] SetUsableSector: <<< EXIT SUCCESS <<< firstUsableSector=%{public}lld,"
-         "lastUsableSector=%{public}lld", static_cast<long long>(firstUsableSector),
+    LOGI("[L3:DiskInfo] SetUsableSector: <<< EXIT SUCCESS <<< lastUsableSector=%{public}lld",
          static_cast<long long>(lastUsableSector));
     return true;
 }
@@ -797,11 +788,12 @@ int32_t DiskInfo::ExecAsyncGetPartitionTable(std::vector<std::string> &output)
 {
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread partitionThread([this, output, p = std::move(promise)]() mutable {
+    std::vector<std::string> temp;
+    std::thread partitionThread([this, &temp, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec get partition");
         std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
-        int32_t res = ForkExec(cmd, &output);
-        for (auto str : output) {
+        int32_t res = ForkExec(cmd, &temp);
+        for (auto str : temp) {
             LOGI("get partition output: %{public}s", str.c_str());
         }
         p.set_value(res);
@@ -817,6 +809,7 @@ int32_t DiskInfo::ExecAsyncGetPartitionTable(std::vector<std::string> &output)
         LOGE("[L3:DiskInfo] GetPartitionTable: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
         return E_GET_PARTITION_ERROR;
     }
+    output = temp;
     return E_OK;
 }
 

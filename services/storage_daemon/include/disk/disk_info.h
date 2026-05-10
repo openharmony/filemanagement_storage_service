@@ -95,7 +95,6 @@ private:
     MediaType mediaType_ = MediaType::UNKNOWN_MEDIA_TYPE;
     DiskType diskType_;
     uint64_t totalSector_;
-    uint64_t firstUsableSector_;
     uint64_t lastUsableSector_;
     uint32_t sectorSize_;
     uint32_t alignSector_;
