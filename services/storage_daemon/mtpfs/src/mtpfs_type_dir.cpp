@@ -38,7 +38,8 @@ MtpFsTypeDir::MtpFsTypeDir(const MtpFsTypeDir &copy)
       dirList_(copy.dirList_),
       fileList_(copy.fileList_),
       fetched_(copy.fetched_),
-      modifyDate_(copy.modifyDate_)
+      modifyDate_(copy.modifyDate_),
+      objHandles(nullptr)
 {}
 
 LIBMTP_folder_t *MtpFsTypeDir::ToLIBMTPFolder() const
@@ -115,10 +116,14 @@ bool MtpFsTypeDir::ReplaceFile(const MtpFsTypeFile &oldFile, const MtpFsTypeFile
 
 MtpFsTypeDir &MtpFsTypeDir::operator = (const MtpFsTypeDir &rhs)
 {
+    if (this == &rhs) {
+        return *this;
+    }
     MtpFsTypeBasic::operator = (rhs);
     dirList_ = rhs.dirList_;
     fileList_ = rhs.fileList_;
     fetched_ = rhs.fetched_;
+    modifyDate_ = rhs.modifyDate_;
     return *this;
 }
 

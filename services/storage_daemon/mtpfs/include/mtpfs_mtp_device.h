@@ -103,6 +103,7 @@ public:
     Capabilities GetCapabilities() const;
     char *GetDeviceFriendlyName();
     void FreeObjectHandles(MtpFsTypeDir *dir);
+    void FreeAllObjectHandles();
     int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
     void HandleRemoveEvent(uint32_t handleId);
     static int AddRemovingFile(const std::string &path);
@@ -128,6 +129,7 @@ private:
     int PerformUpload(const std::string &src, const std::string &dst, const MtpFsTypeDir *dirParent,
                       const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName);
     void SetFetched(MtpFsTypeDir *dir);
+    void FreeAllObjectHandlesRecursive(MtpFsTypeDir *dir);
     void DumpLibMtpErrorStack();
     int GetMainMtpErrorCode();
     static void SetTransferValue(bool value);

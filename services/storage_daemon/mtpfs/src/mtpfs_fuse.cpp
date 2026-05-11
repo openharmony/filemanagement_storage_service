@@ -601,13 +601,8 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
 
 MtpFileSystem::~MtpFileSystem()
 {
-    for (auto iter : dirMap_) {
-        MtpFsTypeDir *dir = const_cast<MtpFsTypeDir *>(iter.second);
-        if (dir != nullptr) {
-            LOGI("MtpFileSystem FreeObjectHandles");
-            device_.FreeObjectHandles(dir);
-        }
-    }
+    LOGI("MtpFileSystem FreeAllObjectHandles");
+    device_.FreeAllObjectHandles();
     fuse_opt_free_args(&args_);
 }
 
@@ -1251,7 +1246,6 @@ int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
             E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -ENOENT;
     }
-    dirMap_[std::string(path)] = content;
     return 0;
 }
 
