@@ -23,6 +23,7 @@ ohos_unittest("ext_disk_utils_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
@@ -68,6 +69,7 @@ ohos_unittest("ext_volume_utils_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
@@ -86,6 +88,12 @@ ohos_unittest("ext_volume_utils_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/disk_manager/src/disk/disk_utils.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/exfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ntfs_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/vfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/volume_operator_factory.cpp",
     "$ROOT_DIR/disk_manager/src/volume/volume_utils.cpp",
     "$ROOT_DIR/disk_manager/test/volume_utils_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
@@ -113,6 +121,7 @@ ohos_unittest("ext_ivolume_operator_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
@@ -152,11 +161,113 @@ ohos_unittest("ext_ivolume_operator_test") {
   ]
 }
 
+ohos_unittest("ext_volume_operator_factory_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk_manager/src/volume/volume_operator_factory.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/vfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ntfs_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/exfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
+    "$ROOT_DIR/disk_manager/test/volume_operator_factory_test.cpp",
+    "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
+  ]
+
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+}
+
+ohos_unittest("ext_volume_operators_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/exfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ntfs_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/vfat_operator.cpp",
+    "$ROOT_DIR/disk_manager/test/volume_operators_test.cpp",
+    "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/library_func_mock.cpp",
+  ]
+
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+}
+
 group("storage_daemon_ext_storage_test") {
   testonly = true
   deps = [
     ":ext_disk_utils_test",
     ":ext_volume_utils_test",
+    ":ext_volume_operator_factory_test",
     ":ext_ivolume_operator_test",
+    ":ext_volume_operators_test",
   ]
 }

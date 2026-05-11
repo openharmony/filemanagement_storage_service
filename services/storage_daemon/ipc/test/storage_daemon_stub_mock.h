@@ -32,6 +32,18 @@ public:
     MOCK_METHOD2(Format, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));
     MOCK_METHOD2(SetVolumeDescription, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD4(CreateBlockDeviceNode, int32_t(const std::string &, uint32_t, int32_t, int32_t));
+    MOCK_METHOD1(DestroyBlockDeviceNode, int32_t(const std::string &));
+    MOCK_METHOD3(ReadPartitionTable, int32_t(const std::string &, std::string &, int32_t &));
+    MOCK_METHOD4(Mount, int32_t(const std::string &, const std::string &, const std::string &, uint64_t));
+    MOCK_METHOD3(Unmount, int32_t(const std::string &, const std::string &, bool));
+    MOCK_METHOD2(FormatVolume, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD3(Check, int32_t(const std::string &, const std::string &, bool));
+    MOCK_METHOD2(Repair, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD3(SetLabel, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD4(ReadMetadata, int32_t(const std::string &, std::string &, std::string &, std::string &));
+    MOCK_METHOD2(MountFuseDevice, int32_t(const std::string &, int &));
+    MOCK_METHOD2(Partition, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(QueryUsbIsInUse, int32_t(const std::string &, bool &));
     MOCK_METHOD3(GetOddCapacity, int32_t(const std::string &, int64_t &, int64_t &));
 

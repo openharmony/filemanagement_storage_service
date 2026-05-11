@@ -41,8 +41,7 @@ public:
                                       std::string& output,
                                       int32_t& maxVolume);
     static int32_t Partition(const std::string& diskPath,
-                             int32_t partitionType,
-                             uint32_t partitionFlags);
+                             const std::string& partitionType);
 };
 
 } // namespace StorageDaemon

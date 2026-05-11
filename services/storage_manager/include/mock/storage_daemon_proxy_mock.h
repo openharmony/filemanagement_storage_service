@@ -126,6 +126,25 @@ public:
         std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs) override;
     virtual int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override;
 
+    virtual int32_t CreateBlockDeviceNode(const std::string &devPath, uint32_t mode,
+                                          int32_t major, int32_t minor) override;
+    virtual int32_t DestroyBlockDeviceNode(const std::string &devPath) override;
+    virtual int32_t ReadPartitionTable(const std::string &devPath,
+                                       std::string &output, int32_t &maxVolume) override;
+    virtual int32_t Mount(const std::string &devPath, const std::string &mountPath,
+                          const std::string &fsType, uint64_t mountFlags) override;
+    virtual int32_t Unmount(const std::string &mountPath,
+                            const std::string &fsType, bool force) override;
+    virtual int32_t FormatVolume(const std::string &devPath, const std::string &fsType) override;
+    virtual int32_t Check(const std::string &devPath, const std::string &fsType, bool autoFix) override;
+    virtual int32_t Repair(const std::string &devPath, const std::string &fsType) override;
+    virtual int32_t SetLabel(const std::string &devPath, const std::string &fsType,
+                             const std::string &label) override;
+    virtual int32_t ReadMetadata(const std::string &devPath, std::string &uuid,
+                                 std::string &type, std::string &label) override;
+    virtual int32_t MountFuseDevice(const std::string &mountPath, int &fuseFd) override;
+    virtual int32_t Partition(const std::string &diskPath, const std::string &partitionType) override;
+
     //disk crypt api
     virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;

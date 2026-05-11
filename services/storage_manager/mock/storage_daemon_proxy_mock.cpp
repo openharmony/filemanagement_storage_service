@@ -369,6 +369,72 @@ int32_t StorageDaemonProxy::ListUserdataDirInfo(std::vector<UserdataDirInfo> &sc
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::CreateBlockDeviceNode(const std::string &devPath, uint32_t mode,
+                                                  int32_t major, int32_t minor)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::DestroyBlockDeviceNode(const std::string &devPath)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::ReadPartitionTable(const std::string &devPath,
+                                               std::string &output, int32_t &maxVolume)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Mount(const std::string &devPath, const std::string &mountPath,
+                                  const std::string &fsType, uint64_t mountFlags)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Unmount(const std::string &mountPath,
+                                    const std::string &fsType, bool force)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::FormatVolume(const std::string &devPath, const std::string &fsType)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Check(const std::string &devPath, const std::string &fsType, bool autoFix)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Repair(const std::string &devPath, const std::string &fsType)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::SetLabel(const std::string &devPath, const std::string &fsType,
+                                     const std::string &label)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::ReadMetadata(const std::string &devPath, std::string &uuid,
+                                         std::string &type, std::string &label)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::MountFuseDevice(const std::string &mountPath, int &fuseFd)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Partition(const std::string &diskPath, const std::string &partitionType)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
 {
     return E_OK;

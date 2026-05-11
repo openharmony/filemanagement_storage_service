@@ -134,4 +134,37 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
      [ipccode 87] void  CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
      [ipccode 88] void  DeletePartition([in] String diskId, [in] unsigned int partitionNum);
+     [ipccode 201] void CreateBlockDeviceNode([in] String devPath,
+                                              [in] unsigned int mode,
+                                              [in] int major,
+                                              [in] int minor);
+     [ipccode 202] void DestroyBlockDeviceNode([in] String devPath);
+     [ipccode 203] void ReadPartitionTable([in] String devPath,
+                                           [out] String output,
+                                           [out] int maxVolume);
+     [ipccode 204] void Mount([in] String devPath,
+                              [in] String mountPath,
+                              [in] String fsType,
+                              [in] unsigned long mountFlags);
+     [ipccode 205] void Unmount([in] String mountPath,
+                                [in] String fsType,
+                                [in] boolean force);
+     [ipccode 206] void FormatVolume([in] String devPath,
+                                     [in] String fsType);
+     [ipccode 207] void Check([in] String devPath,
+                              [in] String fsType,
+                              [in] boolean autoFix);
+     [ipccode 208] void Repair([in] String devPath,
+                              [in] String fsType);
+     [ipccode 209] void SetLabel([in] String devPath,
+                                 [in] String fsType,
+                                 [in] String label);
+     [ipccode 210] void ReadMetadata([in] String devPath,
+                                     [out] String uuid,
+                                     [out] String type,
+                                     [out] String label);
+     [ipccode 211] void MountFuseDevice([in] String mountPath,
+                                        [out] FileDescriptor fuseFd);
+     [ipccode 212] void Partition([in] String diskPath,
+                                  [in] String partitionType);
 }

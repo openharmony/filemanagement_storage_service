@@ -168,13 +168,13 @@ HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_ForkExecFailed, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, Partition_EmptyPath, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::Partition("", 0, 0);
+    int32_t ret = DiskUtils::Partition("", "");
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, Partition_PathTraversal, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::Partition("/dev/block/../sda", 0, 0);
+    int32_t ret = DiskUtils::Partition("/dev/block/../sda", "");
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
@@ -182,7 +182,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_ZapFailed, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_ERR));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", 0, 0);
+    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
     EXPECT_EQ(ret, E_ERR);
 }
 
@@ -191,7 +191,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_PartFailed, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_OK))
         .WillOnce(Return(E_ERR));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", 0, 0);
+    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
     EXPECT_EQ(ret, E_ERR);
 }
 
@@ -200,7 +200,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_Success, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .Times(2)
         .WillRepeatedly(Return(E_OK));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", 0, 0);
+    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
     EXPECT_EQ(ret, E_OK);
 }
 
@@ -231,7 +231,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_SuccessWithOutput, TestSize.Level1)
             output->push_back("part line 1");
             return E_OK;
         }));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", 0, 0);
+    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
     EXPECT_EQ(ret, E_OK);
 }
 

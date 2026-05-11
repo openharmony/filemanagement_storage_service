@@ -29,11 +29,12 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "disk_manager/volume/volume_operator_factory.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 
-constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/external/";
+constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
 
 static bool IsValidMountPath(const std::string& mountPath)
 {
@@ -50,7 +51,7 @@ static bool IsValidMountPath(const std::string& mountPath)
             return false;
         }
         std::string resolvedParent(realPath);
-        if (resolvedParent != "/mnt/data/external" && resolvedParent.find(MOUNT_PATH_PREFIX) != 0) {
+        if (resolvedParent != "/mnt/data" && resolvedParent.find(MOUNT_PATH_PREFIX) != 0) {
             LOGE("IsValidMountPath invalid parent path prefix");
             return false;
         }
@@ -61,48 +62,6 @@ static bool IsValidMountPath(const std::string& mountPath)
         }
     }
     return true;
-}
-
-static std::string ExtractLabelFromLine(const std::string& line, const std::string& prefix)
-{
-    size_t pos = line.find(prefix);
-    if (pos == std::string::npos) {
-        return "";
-    }
-    size_t colonPos = line.find(':', pos + prefix.length());
-    if (colonPos == std::string::npos) {
-        return "";
-    }
-    std::string label = line.substr(colonPos + 1);
-    size_t start = label.find_first_not_of(" \t");
-    size_t end = label.find_last_not_of(" \t\r\n");
-    if (start != std::string::npos && end != std::string::npos) {
-        label = label.substr(start, end - start + 1);
-    }
-    return label;
-}
-
-static std::string GetNtfsLabelFallback(const std::string& devPath)
-{
-    LOGI("VolumeUtils::GetNtfsLabelFallback devPath=%{public}s", devPath.c_str());
-    std::vector<std::string> cmd = {"ntfslabel", "-v", devPath};
-    std::vector<std::string> output;
-    int32_t ret = ForkExec(cmd, &output);
-    if (ret != E_OK) {
-        LOGW("VolumeUtils::GetNtfsLabelFallback ForkExec failed, ret=%{public}d", ret);
-        return "";
-    }
-
-    const std::string prefix = "Volume label";
-    for (const auto& line : output) {
-        std::string label = ExtractLabelFromLine(line, prefix);
-        if (!label.empty()) {
-            LOGI("VolumeUtils::GetNtfsLabelFallback label=%{public}s", label.c_str());
-            return label;
-        }
-    }
-    LOGW("VolumeUtils::GetNtfsLabelFallback no label found in output");
-    return "";
 }
 
 int32_t VolumeUtils::ReadMetadata(const std::string& devPath,
@@ -125,20 +84,23 @@ int32_t VolumeUtils::ReadMetadata(const std::string& devPath,
         LOGE("VolumeUtils::ReadMetadata invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
-    uuid = GetBlkidData(realPath, "UUID");
+
     type = GetBlkidData(realPath, "TYPE");
     if (type.empty()) {
         LOGE("VolumeUtils::ReadMetadata failed to get type");
         return E_READMETADATA;
     }
-    label = GetBlkidData(realPath, "LABEL");
-    if (type == "ntfs" && (label.find('?') != std::string::npos || label.empty())) {
-        LOGI("VolumeUtils::ReadMetadata using ntfslabel fallback for NTFS");
-        label = GetNtfsLabelFallback(realPath);
+
+    auto op = VolumeOperatorFactory::CreateOperator(type);
+    if (op == nullptr) {
+        LOGE("VolumeUtils::ReadMetadata no operator for type=%{public}s", type.c_str());
+        return E_NOT_SUPPORT;
     }
-    if (!IsAcceptableUuid(uuid)) {
-        LOGE("VolumeUtils::ReadMetadata invalid UUID");
-        return E_READMETADATA;
+
+    int32_t ret = op->ReadMetadata(devPath, uuid, type, label);
+    if (ret != E_OK) {
+        LOGE("VolumeUtils::ReadMetadata operator failed, ret=%{public}d", ret);
+        return ret;
     }
 
     LOGI("VolumeUtils::ReadMetadata success - uuid=%{public}s, type=%{public}s, label=%{public}s",
