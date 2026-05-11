@@ -1920,8 +1920,8 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32
          diskId.c_str(), partitionNum);
     int32_t ret = DiskManager::Instance().HandleFormatPartition(diskId, partitionNum, options);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
-             diskId.c_str(), partitionNum);
+        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s,"
+             "partitionNum=%{public}u", diskId.c_str(), partitionNum);
     } else {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
