@@ -139,6 +139,11 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "storage_manager_provider_permission_test.cpp",
+    "${storage_manager_path}/disk/src/disk_notification.cpp",
+    "${storage_manager_path}/volume/src/notification.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
   ]
 
   include_dirs = [
@@ -154,7 +159,6 @@ ohos_unittest("storage_manager_provider_permission_test") {
   if (storage_service_storage_statistics_manager) {
     sources += [
       "${storage_manager_path}/storage/src/storage_status_manager.cpp",
-      "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
       "${storage_manager_path}/utils/src/file_cache_adapter.cpp",

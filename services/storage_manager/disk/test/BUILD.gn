@@ -37,6 +37,7 @@ ohos_unittest("disk_manager_service_test") {
     "${storage_daemon_path}/mock/storage_manager_client_mock.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
     "${storage_manager_path}/volume/src/notification.cpp", 
   ]
@@ -104,6 +105,7 @@ ohos_unittest("disk_notification_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "disk_notification_test.cpp",
