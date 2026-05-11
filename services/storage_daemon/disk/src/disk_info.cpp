@@ -316,7 +316,7 @@ int DiskInfo::ReadPartitionCD(const std::string &ejectStatus)
     } else {
         LOGI("[L3:DiskInfo] ReadPartitionCD: ejectStatus=%{public}s, CD exists", ejectStatus.c_str());
         dev_t partitionDev = makedev(major(device_), minor(device_));
-        auto res = CreateVolume(partitionDev);
+        auto res = CreateVolume(partitionDev, 1);
         if (res != E_OK) {
             LOGE("[L3:DiskInfo] ReadPartitionCD: <<< EXIT FAILED <<< CreateVolume failed, err=%{public}d", res);
             return res;
@@ -493,7 +493,7 @@ int32_t DiskInfo::CreateUnknownTabVol()
     std::string label;
     auto ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label);
     if (ret == E_OK) {
-        CreateVolume(device_);
+        CreateVolume(device_, 0);
     } else {
         StorageService::StorageRadar::ReportUserManager("DiskInfo::CreateUnknownTabVol::ReadMetadata", 0,
                                                         ret, "devPath_=" + devPath_);
