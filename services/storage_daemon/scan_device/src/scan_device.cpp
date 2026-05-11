@@ -376,7 +376,7 @@ uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvme
         return 0;
     }
     close(fd);
-	if (sizeof(hdId) < HD_DRIVEID_SIZE) {
+    if (sizeof(hdId) < HD_DRIVEID_SIZE) {
         LOGE("GetDiskRpm: hd_driveid structure size is smaller");
         return 0;
     }
