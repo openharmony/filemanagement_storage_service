@@ -49,6 +49,11 @@ void VolumeCore::SetState(int32_t state)
     state_ = state;
 }
 
+void VolumeCore::SetFsType(std::string fsType)
+{
+    fsType_ = fsType;
+}
+
 std::string VolumeCore::GetId() const
 {
     return id_;
