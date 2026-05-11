@@ -15,6 +15,7 @@
 
 #include "volume/volume_manager.h"
 
+#include <algorithm>
 #include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/sysmacros.h>
@@ -56,7 +57,7 @@ std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string &volId)
     return volumes_[volId];
 }
 
-std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata)
+std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata, uint32_t partitionNum)
 {
     LOGI("[L2:VolumeManager] CreateVolume: >>> ENTER <<< diskId=%{public}s, device=%u:%u, isUserdata=%{public}d",
         diskId.c_str(), major(device), minor(device), isUserdata);
@@ -71,7 +72,7 @@ std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device,
     }
 
     auto info = std::make_shared<ExternalVolumeInfo>();
-    int32_t ret = info->Create(volId, diskId, device, isUserdata);
+    int32_t ret = info->Create(volId, diskId, device, isUserdata, partitionNum);
     if (ret) {
         LOGE("[L2:VolumeManager] CreateVolume: <<< EXIT FAILED <<< Create failed, ret=%{public}d", ret);
         return "";
@@ -688,6 +689,30 @@ int32_t VolumeManager::CreateIsoImage(const std::string &volId, const std::strin
         LOGI("[L2:VolumeManager] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     }
     return E_OK;
+}
+
+bool VolumeManager::IsVolumeMounted(const std::vector<std::string> &volumeIds, uint32_t partitionNum)
+{
+    std::lock_guard<std::mutex> lock(volumesMutex_);
+    for (auto i = volumes_.begin(); i != volumes_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+        std::string volId = (*i)->GetVolumeId();
+        if (volId.empty()) {
+            continue;
+        }
+        if (std::find(volumeIds.begin(), volumeIds.end(), volId) == volumeIds.end()) {
+            continue;
+        }
+        if ((*i)->GetVolumeId() != partitionNum) {
+            return false;
+        }
+        if ((*i)->GetState() == VolumeState::MOUNTED) {
+            return false;
+        }
+    }
+    return true;
 }
 } // StorageDaemon
 } // OHOS

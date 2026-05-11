@@ -34,7 +34,8 @@ constexpr int32_t RD_ENABLE_LENGTH = 255;
 constexpr const char *PERSIST_FILEMANAGEMENT_USB_READONLY = "persist.filemanagement.usb.readonly";
 const std::string UNDEFINED_FS_TYPE = "undefined";
 
-int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata)
+int32_t VolumeInfo::Create(const std::string &volId, const std::string &diskId, dev_t device, bool isUserdata,
+                           uint32_t partitionNum)
 {
     LOGI("[L3:VolumeInfo] Create: >>> ENTER <<< volId=%{public}s, diskId=%{public}s, isUserdata=%{public}d",
         volId.c_str(), diskId.c_str(), isUserdata);
@@ -47,6 +48,7 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     userIdOwner_ = 0;
     isUserdata_ = isUserdata;
     isDamaged_ = false;
+    partitionNum_ = partitionNum;
 
     int32_t err = DoCreate(device);
     fsTypeBase_ = GetFsTypeByDev(device);
@@ -557,6 +559,11 @@ int32_t VolumeInfo::CreateIsoImage(const std::string &volId, const std::string &
         LOGI("[L3:VolumeInfo] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     }
     return err;
+}
+
+uint32_t VolumeInfo::GetPartitionNum()
+{
+    return partitionNum_;
 }
 } // StorageDaemon
 } // OHOS

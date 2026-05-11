@@ -32,7 +32,7 @@ public:
     void SetPartitionNum(int32_t partitionNum);
     void SetStartSector(uint64_t startSector);
     void SetEndSector(uint64_t endSector);
-    void SetTypeCode(std::string typeCode);
+    void SetTypeCode(std::string &typeCode);
 
     bool Marshalling(Parcel &parcel) const override;
     static PartitionOptions *Unmarshalling(Parcel &parcel);

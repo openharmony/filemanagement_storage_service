@@ -58,20 +58,26 @@ enum DiskStatus:int {
     S_DESTROY = 4,
 };
 
-std::map<uint32_t, std::string> vendorMap_ = {
+const std::map<uint32_t, std::string> vendorMap_ = {
     {0x000003, "SanDisk"},
     {0x00001b, "SamSung"},
     {0x000028, "Lexar"},
     {0x000074, "Transcend"}
 };
 
-std::map<std::string, std::string> typeCodeMap_ = {
+const std::map<std::string, std::string> typeCodeMap_ = {
     {"vfat", "0x0700"},
     {"exfat", "0x0700"},
     {"ntfs", "0x0700"},
     {"ext4", "0x8300"},
     {"f2fs", "0x8300"},
     {"hmfs", "0x8300"},
+};
+
+const std::map<std::string, std::string> formatTypeMap_ = {
+    {"exfat", "mkfs.exfat"},
+    {"vfat", "newfs_msdos"},
+    {"ext4", "mke2fs"},
 };
 
 DiskInfo::DiskInfo(std::string &diskName, std::string &sysPath, std::string &devPath, dev_t device, int diskType)
@@ -151,25 +157,14 @@ DiskInfo::~DiskInfo()
 int DiskInfo::Create()
 {
     LOGI("[L3:DiskInfo] Create: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
-    int ret;
-
     CreateDiskNode(devPath_, device_);
     status = S_CREATE;
     ReadMetadata();
-
-    StorageManagerClient client;
-    ret = client.NotifyDiskCreated(*this);
-    if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created failed, err=%{public}d", ret);
-        return ret;
-    }
-
-    ret = ReadPartition();
+    int ret = ReadPartition();
     if (ret != E_OK) {
         LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Create disk failed, err=%{public}d", ret);
         return ret;
     }
-
     LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     return E_OK;
 }
@@ -339,7 +334,6 @@ int DiskInfo::ReadPartitionUSB()
         LOGE("[L3:DiskInfo] ReadPartitionUSB: <<< EXIT FAILED <<< Invalid maxVolumes=%{public}d", maxVolumes);
         return E_ERR;
     }
-
     std::vector<std::string> output;
     std::vector<std::string> lines;
     std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
@@ -477,12 +471,12 @@ void DiskInfo::UmountLines(std::vector<std::string> lines, int32_t maxVols, bool
     LOGI("[L3:DiskInfo] UmountLines: <<< EXIT SUCCESS <<<");
 }
 
-bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
+bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev, uint32_t partitionNum)
 {
     LOGD("[L3:DiskInfo] CreateMBRVolume: >>> ENTER <<< type=0x%{public}x", type);
     // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EFI FAT32 || EXT 2/3/4
     if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x1b || type == 0x83) {
-        if (CreateVolume(dev) == E_OK) {
+        if (CreateVolume(dev, partitionNum) == E_OK) {
             LOGD("[L3:DiskInfo] CreateMBRVolume: <<< EXIT SUCCESS <<<");
             return true;
         }
@@ -522,7 +516,6 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
         if (it == split.end()) {
             continue;
         }
-
         if (*it == "DISK") {
             if (++it == split.end()) {
                 continue;
@@ -546,12 +539,14 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
             CreateTableVolume(it, split.end(), table, foundPart, partitionDev);
         }
     }
-
+    if (lines.size() == 1 && table != Table::UNKNOWN) {
+        LOGI("[L3:DiskInfo] ReadDiskLines: <<< EXIT SUCCESS <<<");
+        return E_OK;
+    }
     if (table == Table::UNKNOWN || !foundPart) {
         LOGI("[L3:DiskInfo] ReadDiskLines: trying unknown table");
         return CreateUnknownTabVol();
     }
-
     LOGI("[L3:DiskInfo] ReadDiskLines: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -621,6 +616,10 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
     Table table, bool &foundPart, dev_t partitionDev)
 {
     LOGD("[L3:DiskInfo] CreateTableVolume: >>> ENTER <<<");
+    int32_t partitionNum;
+    if (!ConvertStringToInt32((*it), partitionNum)) {
+        return;
+    }
     if (table == Table::MBR) {
         if (++it == end) {
             return;
@@ -632,14 +631,14 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
             return;
         }
         int32_t type = static_cast<int32_t>(val);
-        if (CreateMBRVolume(type, partitionDev)) {
+        if (CreateMBRVolume(type, partitionDev, static_cast<uint32_t>(partitionNum))) {
             foundPart = true;
             LOGD("[L3:DiskInfo] CreateTableVolume: <<< EXIT SUCCESS <<< MBR volume created");
         } else {
             LOGE("[L3:DiskInfo] CreateTableVolume: Create MBR Volume failed, type=0x%{public}x", type);
         }
     } else if (table == Table::GPT) {
-        if (CreateVolume(partitionDev) == E_OK) {
+        if (CreateVolume(partitionDev, static_cast<uint32_t>(partitionNum)) == E_OK) {
             foundPart = true;
             LOGD("[L3:DiskInfo] CreateTableVolume: <<< EXIT SUCCESS <<< GPT volume created");
         } else {
@@ -648,12 +647,12 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
     }
 }
 
-int DiskInfo::CreateVolume(dev_t dev)
+int DiskInfo::CreateVolume(dev_t dev, uint32_t partitionNum)
 {
     LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
 
-    std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata);
+    std::string volumeId = volume.CreateVolume(diskId_, dev, isUserdata, partitionNum);
     if (volumeId.empty()) {
         LOGE("[L3:DiskInfo] CreateVolume: <<< EXIT FAILED <<< Create volume failed");
         return E_ERR;
@@ -786,30 +785,31 @@ bool DiskInfo::SetUsableSector(std::vector<std::string> &content)
 
 int32_t DiskInfo::ExecAsyncGetPartitionTable(std::vector<std::string> &output)
 {
-    std::promise<int32_t> promise;
-    std::future<int32_t> future = promise.get_future();
-    std::vector<std::string> temp;
-    std::thread partitionThread([this, &temp, p = std::move(promise)]() mutable {
+    std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
+    std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
+    std::thread partitionThread([this, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec get partition");
+        std::vector<std::string> temp;
         std::vector<std::string> cmd = {"sgdisk", "-p", devPath_};
         int32_t res = ForkExec(cmd, &temp);
         for (auto str : temp) {
             LOGI("get partition output: %{public}s", str.c_str());
         }
-        p.set_value(res);
+        p.set_value({res, std::move(temp)});
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
         partitionThread.detach();
         return E_GET_PARTITION_TIMEOUT;
     }
-    int32_t ret = future.get();
+    auto result = future.get();
     partitionThread.join();
+    int32_t ret = result.first;
     if (ret != E_OK) {
         LOGE("[L3:DiskInfo] GetPartitionTable: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
         return E_GET_PARTITION_ERROR;
     }
-    output = temp;
+    output = std::move(result.second);
     return E_OK;
 }
 
@@ -827,10 +827,10 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionOption, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec create partition");
-        std::string params = "-n 0:" + std::to_string(partitionOption.GetStartSector()) + ":" +
-            std::to_string(partitionOption.GetEndSector()) + " -t 0:" +
-            typeCodeMap_.find(partitionOption.GetTypeCode())->second;
-        std::vector<std::string> cmd = {SGDISK_PATH, params, devPath_};
+        std::string sector = "0:" + std::to_string(partitionOption.GetStartSector()) + ":" +
+            std::to_string(partitionOption.GetEndSector());
+        std::string code = "0:" + typeCodeMap_.find(partitionOption.GetTypeCode())->second;
+        std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, devPath_};
         std::vector<std::string> output;
         int32_t ret = ForkExec(cmd, &output);
         for (auto str : output) {
@@ -935,6 +935,86 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
         return ret;
     }
     LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options)
+{
+    LOGI("[L3:DiskInfo] FormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId_.c_str(), partitionNum);
+    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< this disk not support format partition");
+        return E_FORMAT_PARTITION_NOT_SUPPORT;
+    }
+    std::string fsType = options.GetFsType();
+    auto iter = formatTypeMap_.find(fsType);
+    if (iter == formatTypeMap_.end()) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< fsType %{public}s not supported", fsType.c_str());
+        return E_FORMAT_PARTITION_NOT_SUPPORT;
+    }
+    if (!IsPartitionNumExists(partitionNum)) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
+        return E_NON_EXIST;
+    }
+    if (VolumeManager::Instance().IsVolumeMounted(volumeId_, partitionNum)) {
+        return E_VOL_STATE;
+    }
+    if (ExecAsyncFormatPartition(partitionNum, options) != E_OK) {
+        return E_FORMAT_PARTITION_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options)
+{
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread formatThread([this, partitionNum, options, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskInfo] exec format partition");
+        std::string devPath = std::string(BLOCK_PATH) + "/" + diskName_ + std::to_string(partitionNum);
+        std::string fsType = options.GetFsType();
+        std::string volName = options.GetVolumeName();
+        std::vector<std::string> cmd;
+        if (fsType == "vfat") {
+            if (volName.empty()) {
+                cmd = {formatTypeMap_.find(fsType)->second, "-A", devPath};
+            } else {
+                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-A", devPath};
+            }
+        } else if (fsType == "ext4") {
+            if (volName.empty()) {
+                cmd = {formatTypeMap_.find(fsType)->second, "-t", "ext4", devPath};
+            } else {
+                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-t", "ext4", devPath};
+            }
+        } else if (fsType == "exfat") {
+            if (volName.empty()) {
+                cmd = {formatTypeMap_.find(fsType)->second, devPath};
+            } else {
+                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, devPath};
+            }
+        }
+        if (!cmd.empty()) {
+            std::vector<std::string> output;
+            int32_t ret = ForkExec(cmd, &output);
+            for (auto str : output) {
+                LOGI("format partition output: %{public}s", str.c_str());
+            }
+            p.set_value(ret);
+        }
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskInfo] exec format partition: <<< EXIT FAILED <<< timed out");
+        formatThread.detach();
+        return E_FORMAT_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    formatThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< format partition failed, err=%{public}d", ret);
+        return E_FORMAT_PARTITION_ERROR;
+    }
+    LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

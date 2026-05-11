@@ -54,7 +54,7 @@ void PartitionOptions::SetEndSector(uint64_t endSector)
     endSector_ = endSector;
 }
 
-void PartitionOptions::SetTypeCode(std::string typeCode)
+void PartitionOptions::SetTypeCode(std::string &typeCode)
 {
     typeCode_ = typeCode;
 }

@@ -29,7 +29,7 @@ public:
     virtual ~VolumeManager() = default;
     static VolumeManager &Instance();
 
-    std::string CreateVolume(const std::string &diskId, dev_t device, bool isUserdata);
+    std::string CreateVolume(const std::string &diskId, dev_t device, bool isUserdata, uint32_t partitionNum);
     int32_t DestroyVolume(const std::string &volId);
 
     int32_t Check(const std::string &volId);
@@ -63,6 +63,7 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
     int32_t Erase(const std::string &volId);
     int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
+    bool IsVolumeMounted(const std::vector<std::string> &volumeIds, uint32_t partitionNum);
 
 private:
     VolumeManager() = default;

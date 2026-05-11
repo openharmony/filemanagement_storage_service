@@ -17,6 +17,7 @@ sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
 sequenceable PartitionOptions..OHOS.StorageManager.PartitionOptions;
 sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
 sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
+sequenceable FormatOptions..OHOS.StorageManager.FormatOptions;
 import ../storage_manager/IUeceActivationCallback;
 sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
 sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
@@ -134,4 +135,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
      [ipccode 87] void  CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
      [ipccode 88] void  DeletePartition([in] String diskId, [in] unsigned int partitionNum);
+     [ipccode 89] void  FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatOptions options);
 }

@@ -22,6 +22,7 @@
 #include "disk.h"
 #include "partition_options.h"
 #include "partition_table_info.h"
+#include "format_options.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -37,6 +38,7 @@ public:
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
     int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption);
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
+    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatOptions &options);
 private:
     DiskManagerService();
     ~DiskManagerService();
