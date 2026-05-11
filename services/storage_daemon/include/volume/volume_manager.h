@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 #define OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 
+#include <list>
 #include <map>
 #include <mutex>
 #include <nocopyable.h>
@@ -63,7 +64,7 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
     int32_t Erase(const std::string &volId);
     int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
-    bool IsVolumeMounted(const std::vector<std::string> &volumeIds, uint32_t partitionNum);
+    bool IsVolumeMounted(std::list<std::string> &volumeIds, uint32_t partitionNum);
 
 private:
     VolumeManager() = default;

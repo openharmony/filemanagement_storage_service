@@ -135,7 +135,7 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
         return;
     }
     StorageManagerClient client;
-    ret = client.NotifyDiskCreated(*this);
+    ret = client.NotifyDiskCreated(diskInfo);
     if (ret != E_OK) {
         LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created failed, err=%{public}d", ret);
         return ret;

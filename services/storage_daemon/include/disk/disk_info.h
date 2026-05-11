@@ -124,6 +124,8 @@ private:
     bool SetUsableSector(std::vector<std::string> &content);
     bool IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption);
     int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options);
+    std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
+                                          const std::string &volName);
 };
 } // STORAGE_DAEMON
 } // OHOS

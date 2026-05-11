@@ -691,24 +691,25 @@ int32_t VolumeManager::CreateIsoImage(const std::string &volId, const std::strin
     return E_OK;
 }
 
-bool VolumeManager::IsVolumeMounted(const std::vector<std::string> &volumeIds, uint32_t partitionNum)
+bool VolumeManager::IsVolumeMounted(std::list<std::string> &volumeIds, uint32_t partitionNum)
 {
     std::lock_guard<std::mutex> lock(volumesMutex_);
-    for (auto i = volumes_.begin(); i != volumes_.end(); i++) {
-        if (*i == nullptr) {
+    for (const auto &item : volumes_) {
+        auto &info = item.second;
+        if (info == nullptr) {
             continue;
         }
-        std::string volId = (*i)->GetVolumeId();
+        std::string volId = info->GetVolumeId();
         if (volId.empty()) {
             continue;
         }
         if (std::find(volumeIds.begin(), volumeIds.end(), volId) == volumeIds.end()) {
             continue;
         }
-        if ((*i)->GetVolumeId() != partitionNum) {
+        if (info->GetPartitionNum() != partitionNum) {
             return false;
         }
-        if ((*i)->GetState() == VolumeState::MOUNTED) {
+        if (info->GetState() == VolumeState::MOUNTED) {
             return false;
         }
     }

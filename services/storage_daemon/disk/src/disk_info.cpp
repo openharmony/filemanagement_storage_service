@@ -974,26 +974,7 @@ int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::St
         std::string devPath = std::string(BLOCK_PATH) + "/" + diskName_ + std::to_string(partitionNum);
         std::string fsType = options.GetFsType();
         std::string volName = options.GetVolumeName();
-        std::vector<std::string> cmd;
-        if (fsType == "vfat") {
-            if (volName.empty()) {
-                cmd = {formatTypeMap_.find(fsType)->second, "-A", devPath};
-            } else {
-                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-A", devPath};
-            }
-        } else if (fsType == "ext4") {
-            if (volName.empty()) {
-                cmd = {formatTypeMap_.find(fsType)->second, "-t", "ext4", devPath};
-            } else {
-                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-t", "ext4", devPath};
-            }
-        } else if (fsType == "exfat") {
-            if (volName.empty()) {
-                cmd = {formatTypeMap_.find(fsType)->second, devPath};
-            } else {
-                cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, devPath};
-            }
-        }
+        std::vector<std::string> cmd = GetFormatCMD(fsType, devPath, volName);
         if (!cmd.empty()) {
             std::vector<std::string> output;
             int32_t ret = ForkExec(cmd, &output);
@@ -1016,6 +997,32 @@ int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::St
     }
     LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT SUCCESS <<<");
     return E_OK;
+}
+
+std::vector<std::string> DiskInfo::GetFormatCMD(const std::string &fsType, const std::string &devPath,
+    const std::string &volName)
+{
+    std::vector<std::string> cmd;
+    if (fsType == "vfat") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, "-A", devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-A", devPath};
+        }
+    } else if (fsType == "ext4") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, "-t", "ext4", devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-t", "ext4", devPath};
+        }
+    } else if (fsType == "exfat") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, devPath};
+        }
+    }
+    return cmd;
 }
 
 bool DiskInfo::IsPartitionNumExists(uint32_t partitionNum)
