@@ -166,6 +166,8 @@ public:
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
     int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption) override;
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
+    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
+        const OHOS::StorageManager::FormatOptions &options)
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
