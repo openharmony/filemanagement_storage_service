@@ -119,7 +119,7 @@ public:
     MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
     MOCK_METHOD2(CreatePartition, int32_t(const std::string &, const PartitionOptions &));
     MOCK_METHOD2(DeletePartition, int32_t(const std::string &, uint32_t));
-    MOCK_METHOD2(FormatPartition, int32_t(const std::string &, uint32_t, const FormatOptions &));
+    MOCK_METHOD3(FormatPartition, int32_t(const std::string &, uint32_t, const FormatOptions &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS
