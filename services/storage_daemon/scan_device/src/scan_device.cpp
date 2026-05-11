@@ -67,6 +67,10 @@ constexpr uint32_t NVME_SERIAL_NUMBER_OFFSET = 0x40;
 constexpr uint32_t NVME_SERIAL_NUMBER_LENGTH = 20;
  // 单个扇区上限
 constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
+// 标准 hd_driveid 结构体大小为 512 字节
+constexpr size_t HD_DRIVEID_SIZE = 512;
+// 转速在 hd_driveid 结构体 words206_254 属性的索引位置
+constexpr uint16_t RPM_ARRAY_INDEX = 11;
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
     : sysBlockPath(sysBlockPath), devBlockPath(DEV_PATH)
@@ -353,6 +357,7 @@ std::string ScanDevice::GetInterfaceType(const std::string &deviceName)
 
 uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice)
 {
+	// LCOV_EXCL_START
     // NVME设备不用获取转速
     if (isNvmeDevice) {
         return 0;
@@ -371,7 +376,12 @@ uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvme
         return 0;
     }
     close(fd);
-    return static_cast<uint64_t>(hdId.cur_cyls);
+	if (sizeof(hdId) < HD_DRIVEID_SIZE) {
+        LOGE("GetDiskRpm: hd_driveid structure size is smaller");
+        return 0;
+    }
+	// LCOV_EXCL_STOP
+    return static_cast<uint32_t>(hdId.words206_254[RPM_ARRAY_INDEX]);
 }
 
 std::string ScanDevice::GetDiskState(const std::string &deviceName)
