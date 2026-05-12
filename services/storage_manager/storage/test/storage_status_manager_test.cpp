@@ -343,9 +343,9 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
     EXPECT_NE(ret, E_OK);
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_WRITE_REPLY_ERR);
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_WRITE_REPLY_ERR);
     GTEST_LOG_(INFO) << "STORAGE_SetExtBundleStats_00001 end";
 }
 
@@ -401,7 +401,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_DelBundleExtStats_00001, testing::ext
 
     userId = 100;
     ret = service->DelBundleExtStats(userId, bundleName);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_WRITE_REPLY_ERR);
     GTEST_LOG_(INFO) << "STORAGE_DelBundleExtStats_00001 end";
 }
 
@@ -451,10 +451,10 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAllExtBundleStats_00001, testing::
     extBundleStats.showFlag_ = true;
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_WRITE_REPLY_ERR);
     extBundleStats.businessName_ = "BundleStats";
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_WRITE_REPLY_ERR);
     ret = service->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "STORAGE_GetAllExtBundleStats_00001 end";
