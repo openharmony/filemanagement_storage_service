@@ -64,7 +64,8 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
     int32_t Erase(const std::string &volId);
     int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
-    bool IsVolumeMounted(std::list<std::string> &volumeIds, uint32_t partitionNum);
+    bool IsVolumeMounted(std::string &diskId, uint32_t partitionNum);
+    std::string GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint32_t partitionNum);
 
 private:
     VolumeManager() = default;

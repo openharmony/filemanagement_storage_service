@@ -691,7 +691,7 @@ int32_t VolumeManager::CreateIsoImage(const std::string &volId, const std::strin
     return E_OK;
 }
 
-bool VolumeManager::IsVolumeMounted(std::list<std::string> &volumeIds, uint32_t partitionNum)
+bool VolumeManager::IsVolumeMounted(std::string &diskId, uint32_t partitionNum)
 {
     std::lock_guard<std::mutex> lock(volumesMutex_);
     for (const auto &item : volumes_) {
@@ -699,21 +699,38 @@ bool VolumeManager::IsVolumeMounted(std::list<std::string> &volumeIds, uint32_t 
         if (info == nullptr) {
             continue;
         }
-        std::string volId = info->GetVolumeId();
-        if (volId.empty()) {
-            continue;
-        }
-        if (std::find(volumeIds.begin(), volumeIds.end(), volId) == volumeIds.end()) {
+        std::string id = info->GetDiskId();
+        if (id.empty() || id != diskId) {
             continue;
         }
         if (info->GetPartitionNum() != partitionNum) {
-            return false;
+            continue;
         }
         if (info->GetState() == VolumeState::MOUNTED) {
             return false;
         }
     }
     return true;
+}
+
+std::string VolumeManager::GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint32_t partitionNum)
+{
+    std::lock_guard<std::mutex> lock(volumesMutex_);
+    for (const auto &item : volumes_) {
+        auto &info = item.second;
+        if (info == nullptr) {
+            continue;
+        }
+        std::string id = info->GetDiskId();
+        if (id.empty() || id != diskId) {
+            continue;
+        }
+        if (info->GetPartitionNum() != partitionNum) {
+            continue;
+        }
+        return info->GetFsTypeBase();
+    }
+    return "";
 }
 } // StorageDaemon
 } // OHOS

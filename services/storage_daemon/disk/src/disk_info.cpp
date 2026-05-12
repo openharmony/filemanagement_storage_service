@@ -38,7 +38,7 @@ constexpr int32_t MAX_INTERVAL_PARTITION = 15;
 constexpr int32_t PREFIX_LENGTH = 2;
 constexpr int32_t HEX_SHIFT_BITS = 4;
 constexpr int32_t HEX_LETTER_OFFSET = 10;
-constexpr int32_t WAIT_THREAD_TIMEOUT_S = 5;
+constexpr int32_t WAIT_THREAD_TIMEOUT_S = 60;
 constexpr uint64_t VFAT_TYPECODE_MIN_SIZE = 16 * 1024 * 1024;
 constexpr uint64_t EXFAT_TYPECODE_MIN_SIZE = 32 * 1024 * 1024;
 constexpr uint64_t NTFS_TYPECODE_MIN_SIZE = 4 * 1024 * 1024;
@@ -823,6 +823,11 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &
     if (!IsOptionsValid(partitionOption)) {
         return E_PARAMS_INVALID;
     }
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< destroy volume failed");
+        return E_CREATE_PARTITION_ERROR;
+    }
+    sgdiskLines_.clear();
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionOption, p = std::move(promise)]() mutable {
@@ -849,6 +854,8 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &
         LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< create partition failed, err=%{public}d", ret);
         return E_CREATE_PARTITION_ERROR;
     }
+    std::thread thread([this]() { ReadPartitionUSB(); });
+    thread.detach();
     LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -911,6 +918,11 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< destroy volume failed");
+        return E_DELETE_PARTITION_ERROR;
+    }
+    sgdiskLines_.clear();
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionNum, p = std::move(promise)]() mutable {
@@ -932,8 +944,10 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
     partitionThread.join();
     if (ret != E_OK) {
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< delete partition failed, err=%{public}d", ret);
-        return ret;
+        return E_DELETE_PARTITION_ERROR;
     }
+    std::thread thread([this]() { ReadPartitionUSB(); });
+    thread.detach();
     LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -956,12 +970,19 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
-    if (VolumeManager::Instance().IsVolumeMounted(volumeId_, partitionNum)) {
+    if (VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
         return E_VOL_STATE;
     }
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< destroy volume failed");
+        return E_FORMAT_PARTITION_ERROR;
+    }
+    sgdiskLines_.clear();
     if (ExecAsyncFormatPartition(partitionNum, options) != E_OK) {
         return E_FORMAT_PARTITION_ERROR;
     }
+    std::thread thread([this]() { ReadPartitionUSB(); });
+    thread.detach();
     return E_OK;
 }
 
@@ -1101,12 +1122,10 @@ bool DiskInfo::ParsePartitionInfo(const std::string &context, OHOS::StorageManag
     info.SetEndSector(static_cast<uint64_t>(endSector));
     uint64_t sizeBytes = (endSector - startSector + 1) * static_cast<uint64_t>(sectorSize_);
     info.SetSizeBytes(sizeBytes);
-    std::string path = "/dev/block/" + diskName_ + std::to_string(partitionNum);
-    std::string fsType = GetBlkidData(path, "TYPE");
-    info.SetFsType(fsType);
+    info.SetFsType(VolumeManager::Instance().GetFsTypeByDiskIdAndPartNum(diskId_, partitionNum));
     LOGI("partition info is partitionNum=%{public}d, startSector=%{public}lld, endSector=%{public}lld, "
          "sizeBytes=%{public}lld, fsType=%{public}s", partitionNum, static_cast<long long>(startSector),
-         static_cast<long long>(endSector), static_cast<long long>(sizeBytes), fsType.c_str());
+         static_cast<long long>(endSector), static_cast<long long>(sizeBytes), info.GetFsType().c_str());
     return true;
 }
 
