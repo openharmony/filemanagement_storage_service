@@ -918,6 +918,10 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
+    if (VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    }
     if (Destroy() != E_OK) {
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< destroy volume failed");
         return E_DELETE_PARTITION_ERROR;
@@ -971,6 +975,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         return E_NON_EXIST;
     }
     if (VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
         return E_VOL_STATE;
     }
     if (Destroy() != E_OK) {
