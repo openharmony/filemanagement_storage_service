@@ -19,6 +19,8 @@
 #include "disk/disk_manager_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "partition_info.h"
+#include "partition_table_info.h"
 #include "mock/file_utils_mock.h"
 #include "mock/mock_parameters.h"
 
@@ -458,5 +460,23 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0005, testing:
     EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetDiskById_0005";
+}
+
+/**
+ * @tc.name: Disk_manager_service_GetPartitionTable_0001
+ * @tc.desc: Test GetPartitionTable with non-existent diskId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetPartitionTable_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetPartitionTable_0001";
+    DiskManagerService &dmService = DiskManagerService::GetInstance();
+    std::string nonExistentDiskId = "non-existent-disk-id-3";
+    PartitionTableInfo partitionTableInfo;
+    int32_t result = dmService.GetPartitionTable(nonExistentDiskId, partitionTableInfo);
+
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetPartitionTable_0001";
 }
 } // namespace
