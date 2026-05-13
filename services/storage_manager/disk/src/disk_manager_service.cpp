@@ -160,5 +160,20 @@ int32_t DiskManagerService::DeletePartition(const std::string &diskId, uint32_t 
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->DeletePartition(diskId, partitionNum);
 }
+
+int32_t DiskManagerService::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const FormatOptions &options)
+{
+    {
+        std::lock_guard<std::mutex> lock(diskMapMutex_);
+        if (diskMap_.find(diskId) == diskMap_.end()) {
+            LOGE("the disk %{public}s not exist", diskId.c_str());
+            return E_NON_EXIST;
+        }
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->FormatPartition(diskId, partitionNum, options);
+}
 }
 }

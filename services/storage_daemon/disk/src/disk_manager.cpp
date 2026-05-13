@@ -134,6 +134,12 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
         LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< Create DiskInfo failed, err=%{public}d", ret);
         return;
     }
+    StorageManagerClient client;
+    ret = client.NotifyDiskCreated(*diskInfo);
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created failed, err=%{public}d", ret);
+        return;
+    }
     disk_.push_back(diskInfo);
     LOGI("[L2:DiskManager] CreateDisk: <<< EXIT SUCCESS <<<");
 }
@@ -299,6 +305,32 @@ int32_t DiskManager::HandleDeletePartition(const std::string &diskId, uint32_t p
              diskId.c_str(), partitionNum);
     } else {
         LOGE("[L2:DiskManager] HandleDeletePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
+    return ret;
+}
+
+int32_t DiskManager::HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const OHOS::StorageManager::FormatOptions &options)
+{
+    LOGI("[L2:DiskManager] HandleFormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId.c_str(), partitionNum);
+    int32_t ret = E_NON_EXIST;
+    std::lock_guard<std::mutex> lock(lock_);
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+        if ((*i)->GetDiskId() == diskId) {
+            ret = (*i)->FormatPartition(partitionNum, options);
+            break;
+        }
+    }
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandleFormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
+             diskId.c_str(), partitionNum);
+    } else {
+        LOGE("[L2:DiskManager] HandleFormatPartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
              diskId.c_str(), ret);
     }
     return ret;

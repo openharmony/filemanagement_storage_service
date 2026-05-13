@@ -171,6 +171,8 @@ public:
     virtual int32_t CreatePartition(const std::string &diskId,
         const OHOS::StorageManager::PartitionOptions &partitionOption) override;
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
+    virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
+        const OHOS::StorageManager::FormatOptions &options) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

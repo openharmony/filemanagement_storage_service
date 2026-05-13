@@ -101,6 +101,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "${storage_manager_path}/innerkits_impl/src/partition_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/partition_options.cpp",
     "${storage_manager_path}/innerkits_impl/src/partition_table_info.cpp",
+    "${storage_manager_path}/innerkits_impl/src/format_options.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 

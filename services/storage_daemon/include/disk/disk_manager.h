@@ -24,6 +24,7 @@
 #include "netlink/netlink_data.h"
 #include "partition_options.h"
 #include "partition_table_info.h"
+#include "format_options.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -44,6 +45,8 @@ public:
     int32_t HandleCreatePartition(const std::string &diskId,
         const OHOS::StorageManager::PartitionOptions &partitionOption);
     int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
+    int32_t HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
+        const OHOS::StorageManager::FormatOptions &options);
 
 private:
     DiskManager() = default;

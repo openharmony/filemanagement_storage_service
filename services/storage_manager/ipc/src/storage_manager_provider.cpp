@@ -2405,7 +2405,7 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
         return E_PARAMS_INVALID;
     }
     if (partitionOption.GetStartSector() >= partitionOption.GetEndSector()) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
+        LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
         StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,
             DEFAULT_USERID, "params invalid");
         return E_PARAMS_INVALID;
@@ -2445,6 +2445,38 @@ int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint3
     return ret == E_OK ? E_OK : E_DELETE_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::DeletePartition not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const FormatOptions &options)
+{
+    StorageRadar::ReportFucBehavior("FormatPartition", DEFAULT_USERID, "FormatPartition Begin", E_OK);
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    if (diskId.empty()) {
+        LOGE("diskId is empty");
+        return E_PARAMS_INVALID;
+    }
+    if (options.GetFsType().empty()) {
+        LOGE("fsType is empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("StorageManagerProvider::FormatPartition start, diskId=%{public}s, partitionNum=%{public}u",
+        diskId.c_str(), partitionNum);
+    int32_t ret = DiskManagerService::GetInstance().FormatPartition(diskId, partitionNum, options);
+    StorageRadar::ReportFucBehavior("FormatPartition", DEFAULT_USERID, "FormatPartition End", ret);
+    LOGI("StorageManagerProvider::FormatPartition end, ret=%{public}d", ret);
+    return ret == E_OK ? E_OK : E_FORMAT_PARTITION_ERROR;
+#else
+    LOGI("StorageManagerProvider::FormatPartition not support");
     return E_NOT_SUPPORT;
 #endif
 }

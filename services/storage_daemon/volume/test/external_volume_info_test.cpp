@@ -111,7 +111,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
     std::string diskId = "disk-156-300";
     std::string volId = "vol-156-301";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillOnce(Return(E_OK));
     ret = vol.Destroy();
 
@@ -1101,7 +1101,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToF
     std::string diskId = "disk-156-600";
     std::string volId = "vol-156-601";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
     ret = vol.Check();
     EXPECT_EQ(ret, E_CHECK);
@@ -1149,7 +1149,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
     std::string diskId = "disk-156-600";
     std::string volId = "vol-156-601";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
     ret = vol.Check();
     EXPECT_EQ(ret, E_CHECK);
@@ -1173,7 +1173,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
     std::string diskId = "disk-11-600";
     std::string volId = "vol-11-601";
     bool isUserdata = false;
-    vol.Create(volId, diskId, 2816, isUserdata);
+    vol.Create(volId, diskId, 2816, isUserdata, 1);
     EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(-1));
     EXPECT_CALL(*diskUtilMoc_, IsBlankCD(_, _)).WillRepeatedly([&](const std::string &diskPath, bool &isBlankCD) {
         isBlankCD = false;
@@ -1211,7 +1211,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     std::string diskId = "disk-156-700";
     std::string volId = "vol-156-701";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     std::string flag = "exfat";
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -1238,7 +1238,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     std::string diskId = "disk-156-701";
     std::string volId = "vol-156-702";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     std::string flag = "vfat";
     EXPECT_CALL(*fileUtilMoc_,
         ForkExec(_, _, _)).Times(1).WillOnce(testing::Return(E_WEXITSTATUS));
@@ -1265,7 +1265,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     std::string diskId = "disk-156-702";
     std::string volId = "vol-156-703";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     std::string flag = "ntfs";
     ret = vol.Format(flag);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
@@ -1428,7 +1428,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
     std::string diskId = "disk-156-800";
     std::string volId = "vol-156-801";
     bool isUserdata = false;
-    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata, 1);
     std::string des = "label1";
     ret = vol.SetVolumeDescription(des);
     EXPECT_EQ(ret, E_NOT_SUPPORT);

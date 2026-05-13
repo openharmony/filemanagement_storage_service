@@ -1899,5 +1899,37 @@ int32_t StorageDaemonProvider::DeletePartition(const std::string &diskId, uint32
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const OHOS::StorageManager::FormatOptions &options)
+{
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< diskId empty");
+        StorageService::StorageRadar::ReportCommonResult("FormatPartition", E_PARAMS_INVALID,
+            DEFAULT_USERID, "diskId empty");
+        return E_PARAMS_INVALID;
+    }
+    if (options.GetFsType().empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
+        StorageService::StorageRadar::ReportCommonResult("FormatPartition", E_PARAMS_INVALID,
+            DEFAULT_USERID, "fsType empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId.c_str(), partitionNum);
+    int32_t ret = DiskManager::Instance().HandleFormatPartition(diskId, partitionNum, options);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s,"
+             "partitionNum=%{public}u", diskId.c_str(), partitionNum);
+    } else {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS
