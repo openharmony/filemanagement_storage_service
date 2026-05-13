@@ -1377,5 +1377,159 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ProcessPartitionChanges_004,
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ProcessPartitionChanges_004 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetPartitionTable_001
+ * @tc.desc: Verify the GetPartitionTable function with valid partition table.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetPartitionTable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_001 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+
+    std::vector<std::string> mockOutput = {
+        "Disk /dev/block/disk-8-0: 1234567 sectors, 596 MB",
+        "Sector size (logical/physical): 512/512",
+        "Disk identifier (GUID): 01234567-89AB-CDEF-0123-456789ABCDEF",
+        "Partition table holds up to 128 entries",
+        "Partitions will be aligned on 2048-sector boundaries",
+        "First usable sector is 2048, last usable sector is 1234566",
+        "Number  Start (sector)  End (sector)  Size       Code  Name",
+        "   1            2048       102400   49.0 MB    0700  data",
+        "   2          102400       512000   200 MB     8300  system"
+    };
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(mockOutput), Return(E_OK)));
+
+    int32_t ret = diskInfo->GetPartitionTable(partitionTableInfo);
+
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(partitionTableInfo.GetDiskId(), "disk-8-0");
+    EXPECT_GT(partitionTableInfo.GetPartitionCount(), 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetPartitionTable_002
+ * @tc.desc: Verify the GetPartitionTable function with empty output.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetPartitionTable_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+
+    std::vector<std::string> mockOutput = {};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(mockOutput), Return(E_OK)));
+
+    int32_t ret = diskInfo->GetPartitionTable(partitionTableInfo);
+
+    EXPECT_NE(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetPartitionTable_003
+ * @tc.desc: Verify the GetPartitionTable function with command execution failure.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetPartitionTable_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+
+    std::vector<std::string> mockOutput = {};
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(mockOutput), Return(E_GET_PARTITION_ERROR)));
+
+    int32_t ret = diskInfo->GetPartitionTable(partitionTableInfo);
+
+    EXPECT_EQ(ret, E_GET_PARTITION_ERROR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetPartitionTable_004
+ * @tc.desc: Verify the GetPartitionTable function with GPT table type.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetPartitionTable_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_004 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+
+    std::vector<std::string> mockOutput = {
+        "Disk /dev/block/disk-8-0: 1234567 sectors",
+        "Sector size (logical/physical): 512/512",
+        "Partition table holds up to 128 entries",
+        "Disk identifier (GUID): test-guid",
+        "Partitions will be aligned on 2048-sector boundaries",
+        "First usable sector is 2048, last usable sector is 1234566",
+        "Number  Start (sector)  End (sector)  Size       Code  Name",
+        "   1            2048       102400   49.0 MB    8300  system"
+    };
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(mockOutput), Return(E_OK)));
+
+    int32_t ret = diskInfo->GetPartitionTable(partitionTableInfo);
+
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(partitionTableInfo.GetTableType(), "GPT");
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_004 end";
+}
 }
 }

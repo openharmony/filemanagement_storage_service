@@ -99,6 +99,7 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidererasealluserencryptedkeys_fuzzer:fuzztest",
     "storagedaemonprovidergetancosizedata_fuzzer:fuzztest",
     "storagedaemonprovidergetdirlistspace_fuzzer:fuzztest",
+    "storagedaemonprovidergetpartitiontable_fuzzer:fuzztest",
     "storagedaemonprovidersetstopscanflag_fuzzer:fuzztest",
     "storagedaemonprovidergetdirlistspacebypaths_fuzzer:fuzztest",
     "storagedaemonprovidergetsystemdatasize_fuzzer:fuzztest",

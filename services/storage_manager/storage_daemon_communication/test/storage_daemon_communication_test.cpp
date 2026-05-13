@@ -19,6 +19,8 @@
 #include "parameters.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
+#include "partition_info.h"
+#include "partition_table_info.h"
 
 namespace {
 using namespace std;
@@ -1389,5 +1391,51 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_000
     int32_t result = sdCommunication->CreateIsoImage(volumeId, filePath);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateIsoImage_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetPartitionTable_0000
+ * @tc.name: Daemon_communication_GetPartitionTable_0000
+ * @tc.desc: Test function of GetPartitionTable interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetPartitionTable_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "disk-8-0";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    int32_t ret = sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetPartitionTable_0001
+ * @tc.name: Daemon_communication_GetPartitionTable_0001
+ * @tc.desc: Test function of GetPartitionTable interface with empty diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetPartitionTable_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    int32_t ret = sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0001";
 }
 } // namespace
