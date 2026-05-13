@@ -103,7 +103,7 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
                                unsigned long mountFlags)
 {
     LOGI("IVolumeOperator::Mount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     if (devPath.empty() || devPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Mount invalid devPath");
@@ -146,7 +146,7 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
 int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string& fsType, bool force)
 {
     LOGI("IVolumeOperator::Unmount mountPath=%{public}s, fsType=%{public}s, force=%{public}d",
-         mountPath.c_str(), fsType.c_str(), force);
+         GetAnonyString(mountPath).c_str(), fsType.c_str(), force);
 
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Unmount invalid path, len=%{public}zu", mountPath.length());

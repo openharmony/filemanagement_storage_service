@@ -17,6 +17,7 @@
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
+#include "utils/disk_utils.h"
 
 #include <cerrno>
 #include <sys/mount.h>
@@ -32,7 +33,7 @@ int32_t VfatOperator::DoMount(const std::string& devPath,
                               unsigned long mountFlags)
 {
     LOGI("VfatOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     unsigned long flags = mountFlags | MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", FILE_MANAGER_UID, FILE_MANAGER_GID);

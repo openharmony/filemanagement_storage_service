@@ -576,6 +576,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     if (IsUsbFuseByType(volumePtr->VolumeCore::GetFsType())) {
         result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseUmount(volumeId);
     }
+    volumePtr->VolumeCore::SetFsType(fsType);
     return result;
 }
 

@@ -99,7 +99,7 @@ int32_t NtfsOperator::DoMount(const std::string& devPath,
                               unsigned long mountFlags)
 {
     LOGI("NtfsOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     std::string options;
     if (mountFlags & MS_RDONLY) {

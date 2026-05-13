@@ -17,6 +17,7 @@
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
+#include "utils/disk_utils.h"
 
 #include <cerrno>
 #include <sys/mount.h>
@@ -32,7 +33,7 @@ int32_t ExfatOperator::DoMount(const std::string& devPath,
                                unsigned long mountFlags)
 {
     LOGI("ExfatOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     std::string options;
     if (mountFlags & MS_RDONLY) {

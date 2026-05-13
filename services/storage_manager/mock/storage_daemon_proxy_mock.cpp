@@ -521,5 +521,11 @@ int32_t StorageDaemonProxy::DeletePartition(const std::string &diskId, uint32_t 
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const FormatOptions &options)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS

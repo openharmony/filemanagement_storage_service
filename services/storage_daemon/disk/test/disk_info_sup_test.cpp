@@ -63,14 +63,14 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateMBRVolume_001, T
     std::string diskName = data->GetDiskName();
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     int32_t type = 0;
-    auto ret = diskInfo->CreateMBRVolume(type, device);
+    auto ret = diskInfo->CreateMBRVolume(type, device, 1);
     EXPECT_FALSE(ret);
 
     std::vector<int32_t> typeList{ 0x06, 0x07, 0x0b, 0x0c, 0x0e, 0x1b, 0x83 };
     for (std::size_t i = 0; i < typeList.size(); i++) {
-        ret = diskInfo->CreateMBRVolume(typeList[i], device);
+        ret = diskInfo->CreateMBRVolume(typeList[i], device, 1);
         EXPECT_TRUE(ret);
-        ret = diskInfo->CreateMBRVolume(typeList[i], device);
+        ret = diskInfo->CreateMBRVolume(typeList[i], device, 1);
         EXPECT_FALSE(ret);
         ret = diskInfo->Destroy();
         GTEST_LOG_(INFO) << ret;

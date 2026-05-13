@@ -132,7 +132,7 @@ static int32_t EnsureFuseMountPath(const char* path)
 int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
                                      int& fuseFd)
 {
-    LOGI("VolumeUtils::MountFuseDevice mountPath=%{public}s", mountPath.c_str());
+    LOGI("VolumeUtils::MountFuseDevice mountPath=%{public}s", GetAnonyString(mountPath).c_str());
 
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("VolumeUtils::MountFuseDevice invalid mountPath, len=%{public}zu", mountPath.length());

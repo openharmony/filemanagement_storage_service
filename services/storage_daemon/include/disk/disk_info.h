@@ -23,6 +23,7 @@
 
 #include "partition_options.h"
 #include "partition_table_info.h"
+#include "format_options.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -60,11 +61,12 @@ public:
     int ReadPartition(const std::string &ejectStatus = "");
     int ReadPartitionCD(const std::string &ejectStatus);
     int ReadPartitionUSB();
-    int CreateVolume(dev_t dev);
+    int CreateVolume(dev_t dev, uint32_t partitionNum);
     int Partition();
     int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     int32_t CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption);
     int32_t DeletePartition(uint32_t partitionNum);
+    int32_t FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options);
     dev_t GetDevice() const;
     std::string GetDiskId() const;
     std::string GetDevPath() const;
@@ -101,7 +103,7 @@ private:
     bool removable_ = true;
     std::string extraInfo_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
-    bool CreateMBRVolume(int32_t type, dev_t dev);
+    bool CreateMBRVolume(int32_t type, dev_t dev, uint32_t partitionNum);
     int32_t CreateUnknownTabVol();
     dev_t ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata);
     int32_t GetMaxMinor(int32_t major);
@@ -121,6 +123,9 @@ private:
     int32_t ExecAsyncGetPartitionTable(std::vector<std::string> &output);
     bool SetUsableSector(std::vector<std::string> &content);
     bool IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption);
+    int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options);
+    std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
+                                          const std::string &volName);
 };
 } // STORAGE_DAEMON
 } // OHOS

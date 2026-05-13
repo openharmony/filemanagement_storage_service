@@ -1099,7 +1099,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_001, TestSiz
     auto &volManager = VolumeManager::Instance();
     auto volInfo = std::make_shared<ExternalVolumeInfo>();
     ASSERT_TRUE(volInfo != nullptr);
-    volInfo->Create(volId, diskId, device, false);
+    volInfo->Create(volId, diskId, device, false, 1);
     volManager.volumes_.insert(make_pair(volId, volInfo));
     volInfo->mountState_ = REMOVED;
     EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _)).WillRepeatedly(Return(E_OK));
@@ -1152,7 +1152,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartitionCD_002, TestSiz
     auto &volManager = VolumeManager::Instance();
     auto volInfo = std::make_shared<ExternalVolumeInfo>();
     ASSERT_TRUE(volInfo != nullptr);
-    volInfo->Create(volId, diskId, device, false);
+    volInfo->Create(volId, diskId, device, false, 1);
     volManager.volumes_.insert(make_pair(volId, volInfo));
     diskInfo->volumeId_.push_back(volId);
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(testing::_, testing::_)).WillRepeatedly(testing::Return(""));

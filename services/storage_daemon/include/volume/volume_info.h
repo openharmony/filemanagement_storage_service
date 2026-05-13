@@ -46,7 +46,8 @@ public:
     VolumeInfo() = default;
     virtual ~VolumeInfo() = default;
 
-    int32_t Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata);
+    int32_t Create(const std::string &volId, const std::string &diskId, dev_t device, bool isUserdata,
+                   uint32_t partitionNum);
     int32_t Destroy();
     void DestroyUsbFuse();
     int32_t Mount(uint32_t flags);
@@ -87,6 +88,7 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
     int32_t Erase(const std::string &volId);
     int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
+    uint32_t GetPartitionNum();
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -135,6 +137,7 @@ private:
     int32_t userIdOwner_;
     bool isUserdata_;
     std::string fsTypeBase_;
+    uint32_t partitionNum_;
 protected:
     bool isDamaged_ = false;
 };

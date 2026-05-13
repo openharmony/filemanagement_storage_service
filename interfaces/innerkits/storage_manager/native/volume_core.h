@@ -78,6 +78,7 @@ public:
     int32_t GetState() const;
     std::string GetFsType() const;
     void SetState(int32_t state);
+    void SetFsType(std::string fsType);
 
     bool Marshalling(Parcel &parcel) const override;
     static VolumeCore *Unmarshalling(Parcel &parcel);

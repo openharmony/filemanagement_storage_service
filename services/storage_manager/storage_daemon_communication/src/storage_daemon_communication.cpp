@@ -1308,5 +1308,21 @@ int32_t StorageDaemonCommunication::DeletePartition(const std::string &diskId, u
     }
     return storageDaemon_->DeletePartition(diskId, partitionNum);
 }
+
+int32_t StorageDaemonCommunication::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+    const FormatOptions &options)
+{
+    LOGI("StorageDaemonCommunication::FormatPartition start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::FormatPartition connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::FormatPartition service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->FormatPartition(diskId, partitionNum, options);
+}
 } // namespace StorageManager
 } // namespace OHOS
