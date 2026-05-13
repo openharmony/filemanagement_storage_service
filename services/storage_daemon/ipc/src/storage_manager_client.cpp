@@ -109,11 +109,13 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
         return E_PARAMS_INVALID;
     }
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
-                                  info->GetDiskId(), info->GetState(), info->GetFsTypeBase());
+                                  info->GetDiskId(), info->GetState(), info->GetFsTypeBase(),
+                                  info->GetExtraInfo());
     storageManager_->NotifyVolumeCreated(vc);
 
-    LOGI("[L1:StorageManagerClient] NotifyVolumeCreated: <<< EXIT SUCCESS <<< volumeId=%{public}s",
-         info->GetVolumeId().c_str());
+    LOGI("[L1:StorageManagerClient] NotifyVolumeCreated: <<< EXIT SUCCESS <<< volumeId=%{public}s,"
+         "extraInfo=%{public}s",
+         info->GetVolumeId().c_str(), info->GetExtraInfo().c_str());
     return E_OK;
 }
 

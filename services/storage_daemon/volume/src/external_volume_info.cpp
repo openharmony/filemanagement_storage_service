@@ -1283,34 +1283,6 @@ int32_t ExternalVolumeInfo::DoDecrypt(const std::string &volumeId, const std::st
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::DoEject(const std::string &volId)
-{
-    LOGI("[L3:ExternalVolumeInfo] DoEject:>>> ENTER <<< volId=%{public}s", volId.c_str());
-    int32_t err = 0;
-
-    string nodePath;
-    if (!GetRealPath("/dev/block/" + volId, nodePath)) {
-        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
-        return E_PARAMS_INVALID;
-    }
-    if (IsFilePathInvalid(nodePath)) {
-        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
-        return E_PARAMS_INVALID;
-    }
-    LOGI("[L3:ExternalVolumeInfo] DoEject nodePath = %{public}s", nodePath.c_str());
-
-    std::vector<std::string> output;
-    std::vector<std::string> cmd = {"eject", "-s", nodePath};
-    err = ForkExec(cmd, &output);
-    if (err != E_OK) {
-        LOGE("[L3:ExternalVolumeInfo] DoEject:<<< EXIT FAILED <<< failed for volId: %{public}s", volId.c_str());
-        return err;
-    }
-
-    LOGI("[L3:ExternalVolumeInfo] DoEject:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    return err;
-}
-
 int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint32_t &progress)
 {
     std::ifstream file(filePath);
@@ -1321,7 +1293,7 @@ int32_t ExternalVolumeInfo::GetLatestProgressFromFile(const char* filePath, uint
 
     std::string content;
     std::getline(file, content);
-    if (file.fail()&&!file.eof()) {
+    if (file.fail() && !file.eof()) {
         LOGE("[L3:ExternalVolumeInfo] GetLatestProgressFromFile:<<< EXIT FAILED <<< getline failed");
         file.close();
         return E_NOT_SUPPORT;
@@ -1347,7 +1319,7 @@ int32_t ExternalVolumeInfo::DoGetOpticalDriveOpsProgress(const std::string &volI
     int32_t err = 0;
 
     string filePath;
-    if (!GetRealPath("/data/local/tmp/" + volId, filePath)) {
+    if (!GetRealPath("/data/local/vol_tmp/" + volId, filePath)) {
         LOGE("[L3:ExternalVolumeInfo] DoGetOpticalDriveOpsProgress:<<< EXIT FAILED <<< volId: %{public}s",
             volId.c_str());
         return E_PARAMS_INVALID;
@@ -1373,7 +1345,8 @@ int32_t ExternalVolumeInfo::DoErase(const std::string &volId)
 {
     LOGI("[L3:ExternalVolumeInfo] DoErase:>>> ENTER <<< volId=%{public}s", volId.c_str());
     int32_t err = 0;
-    string nodePath;
+    std::string nodePath;
+
     if (!GetRealPath("/dev/block/" + volId, nodePath)) {
         LOGE("[L3:ExternalVolumeInfo] DoErase:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
         return E_PARAMS_INVALID;
@@ -1387,10 +1360,11 @@ int32_t ExternalVolumeInfo::DoErase(const std::string &volId)
     std::vector<std::string> output;
     std::vector<std::string> cmd = {};
     std::string oddLabel = GetCDType(nodePath);
-    if (oddLabel.find("DVD") != std::string::npos) {
-        cmd = {"dvd+rw-format", "-force", nodePath};
+    if (oddLabel.find("CD") != std::string::npos) {
+        std::string wodimPath = "dev=" + nodePath;
+        cmd = {"wodim", wodimPath, "blank=fast"};
     } else {
-        cmd = {"wodim", "-v", "-eject", nodePath, "blank=fast"};
+        cmd = {"dvd+rw-format", "-blank=all", nodePath};
     }
     err = ForkExec(cmd, &output);
     if (err != E_OK) {
@@ -1406,7 +1380,7 @@ int32_t ExternalVolumeInfo::DoCreateIsoImage(const std::string &volId, const std
 {
     LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage:>>> ENTER <<< volId=%{public}s", volId.c_str());
     int32_t err = 0;
-    string nodePath;
+    std::string nodePath;
     if (!GetRealPath("/dev/block/" + volId, nodePath)) {
         LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<<failed for volId: %{public}s", volId.c_str());
         return E_PARAMS_INVALID;
@@ -1415,16 +1389,34 @@ int32_t ExternalVolumeInfo::DoCreateIsoImage(const std::string &volId, const std
         LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<< nodePath: %{public}s", nodePath.c_str());
         return E_PARAMS_INVALID;
     }
-    LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage nodePath = %{public}s", nodePath.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage nodePath = %{public}s, fsType_ = %{public}s",
+        nodePath.c_str(), fsType_.c_str());
 
     std::vector<std::string> output;
     std::vector<std::string> cmd = {};
     if (fsType_ == "iso9660") {
-        cmd = {"genisoimage", "-J", "-r", "-o", filePath, nodePath};
+        std::string iso9660Type = "";
+        err = GetIso9660Type(nodePath, iso9660Type);
+        if (err != E_OK) {
+            LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<< failed for volId: %{public}s",
+                 volId.c_str());
+            return err;
+        }
+
+        if (iso9660Type == "ISO9660/Joliet") {
+            cmd = {"genisoimage", "-V", "ISOIMAGE", "-J", "-o", filePath, mountPath_};
+        } else if (iso9660Type == "ISO9660/Rock Ridge") {
+            cmd = {"genisoimage", "-V", "ISOIMAGE", "-r", "-o", filePath, mountPath_};
+        } else {
+            cmd = {"genisoimage", "-V", "ISOIMAGE", "-o", filePath, mountPath_};
+        }
     } else {
-        cmd = {"genisoimage", "-udf", "-o", filePath, nodePath};
+        cmd = {"genisoimage", "-V", "ISOIMAGE", "-udf", "-o", filePath, mountPath_};
     }
     err = ForkExec(cmd, &output);
+    for (const auto& s : output) {
+        LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage:s=%{public}s", s.c_str());
+    }
     if (err != E_OK) {
         LOGE("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<< failed for volId: %{public}s",
             volId.c_str());
@@ -1432,6 +1424,252 @@ int32_t ExternalVolumeInfo::DoCreateIsoImage(const std::string &volId, const std
         LOGI("[L3:ExternalVolumeInfo] DoCreateIsoImage:<<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     }
     return err;
+}
+
+int32_t ExternalVolumeInfo::GetIso9660Type(const std::string &volPath, std::string &iso9660Type)
+{
+    LOGI("[L3:ExternalVolumeInfo] GetIso9660Type: >>> ENTER <<< volPath=%{public}s", volPath.c_str());
+    int32_t err = 0;
+    bool hasRockRidge = true;
+    bool hasJoliet = true;
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {};
+    cmd = {"isoinfo", "-d", "-i", volPath};
+
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] GetIso9660Type:<<< EXIT FAILED <<< failed for volPath: %{public}s",
+            volPath.c_str());
+        return err;
+    }
+    for (const auto &line : output) {
+        if (line.find("NO Joliet present") != std::string::npos) {
+            hasJoliet = false;
+        } else if (line.find("NO Rock Ridge present") != std::string::npos) {
+            hasRockRidge = false;
+        }
+    }
+
+    if (hasRockRidge && !hasJoliet) {
+        iso9660Type = "ISO9660/Rock Ridge";
+    } else if (!hasRockRidge && hasJoliet) {
+        iso9660Type = "ISO9660/Joliet";
+    } else if (hasRockRidge && hasJoliet) {
+        iso9660Type = "";
+        err = E_ERR;
+        LOGI("[L3:ExternalVolumeInfo] GetIso9660Type is Rock Ridge + Joliet, err");
+    } else {
+        iso9660Type = "ISO9660";
+    }
+    if (err == E_OK) {
+        LOGI("[L3:ExternalVolumeInfo] GetIso9660Type:<<< EXIT SUCCESS <<< volPath=%{public}s, iso9660Type=%{public}s",
+            volPath.c_str(), iso9660Type.c_str());
+    }
+    return err;
+}
+
+std::string ExternalVolumeInfo::GetLastNumberSimple(const std::vector<std::string>& lines)
+{
+    LOGI("[L3:ExternalVolumeInfo] GetLastNumberSimple: >>> ENTER <<<");
+    std::vector<std::string> allLines;
+    for (const auto& item : lines) {
+        if (item.find('\n') != std::string::npos) {
+            std::istringstream iss(item);
+            std::string line;
+            while (std::getline(iss, line)) {
+                allLines.push_back(line);
+            }
+        } else {
+            allLines.push_back(item);
+        }
+    }
+
+    std::regex pattern(R"(^\s*\d+,\d+\s*$)");
+    for (const auto& line : allLines) {
+        if (std::regex_match(line, pattern)) {
+            auto start = line.find_first_not_of(" \t\r\n");
+            if (start == std::string::npos) return "";
+            auto end = line.find_last_not_of(" \t\r\n");
+            return line.substr(start, end - start + 1);
+        }
+    }
+
+    return "";
+}
+
+int32_t ExternalVolumeInfo::GetIncBurnAddr(const std::string &nodePath, std::string &incBurnAddr)
+{
+    LOGI("[L3:ExternalVolumeInfo] GetIncBurnAddr: >>> ENTER <<< nodePath=%{public}s", nodePath.c_str());
+
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+
+    cmd = {"wodim", nodePath, "-msinfo"};
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] GetIncBurnAddr:<<< EXIT FAILED <<< failed for nodePath: %{public}s",
+            nodePath.c_str());
+        return err;
+    }
+    incBurnAddr = GetLastNumberSimple(output);
+    LOGI("[L3:ExternalVolumeInfo] GetIncBurnAddr:<<< EXIT SUCCESS <<<"
+         "nodePath=%{public}s, incBurnAddr=%{public}s",
+         nodePath.c_str(), incBurnAddr.c_str());
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoCDBurn(const std::string &volumeId, const BurnParams &params, const BurnContext &ctx)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoCDBurn: >>> ENTER <<< volumeId=%{public}s", volumeId.c_str());
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+
+    if (!params.isIsoImage) {
+        std::string midPath = params.burnPath + "/" + volumeId + "midFile.iso";
+        if (params.fsType == "ISO9660") {
+            if (ctx.diskEmpty) {
+                cmd = {"genisoimage", "-V", params.diskName, "-o", midPath, params.burnPath};
+            } else {
+                cmd = {"genisoimage", "-V", params.diskName, "-C", ctx.incBurnAddr, "-M", ctx.filePath, "-o",
+                        midPath, params.burnPath};
+            }
+        } else {
+            if (ctx.diskEmpty) {
+                cmd = {"genisoimage", "-V", params.diskName, ctx.fsParam, "-o", midPath, params.burnPath};
+            } else {
+                cmd = {"genisoimage", "-V", params.diskName, ctx.fsParam, "-C", ctx.incBurnAddr, "-M",
+                        ctx.filePath, "-o", midPath, params.burnPath};
+            }
+        }
+        err = ForkExec(cmd, &output);
+        if (err != E_OK) {
+            LOGE("[L3:ExternalVolumeInfo] DoCDBurn:<<< EXIT FAILED <<< failed for volumeId: %{public}s",
+                volumeId.c_str());
+            return err;
+        }
+
+        if (ctx.diskEmpty) {
+            cmd = {"wodim", "-v", ctx.nodePath, "-multi", "-eject", "-data", midPath};
+        } else {
+            cmd = {"wodim", "-v", ctx.nodePath, "-tao", "-multi", "-eject", "-data", midPath};
+        }
+    } else {
+        cmd = {"wodim", "-v", ctx.nodePath, "-multi", "-eject", "-data", params.burnPath};
+    }
+
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoCDBurn:<<< EXIT FAILED <<< failed for volumeId: %{public}s", volumeId.c_str());
+        return err;
+    }
+
+    cmd = {"rm", "-rf", "/data/local/vol_tmp"};
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoCDBurn:<<< EXIT FAILED <<< failed for volumeId: %{public}s", volumeId.c_str());
+        return err;
+    }
+
+    LOGI("[L3:ExternalVolumeInfo] DoCDBurn:<<< EXIT SUCCESS <<< volumeId=%{public}s", volumeId.c_str());
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoDVDBurn(const std::string &volumeId, const BurnParams &params, const BurnContext &ctx)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoDVDBurn: >>> ENTER <<< volumeId=%{public}s", volumeId.c_str());
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+    if (!params.isIsoImage) {
+        if (params.fsType == "ISO9660") {
+            if (ctx.diskEmpty) {
+                cmd = {"growisofs", "-Z", ctx.filePath, "-V", params.diskName, params.burnPath};
+            } else {
+                cmd = {"growisofs", "-M", ctx.filePath, "-V", params.diskName, params.burnPath};
+            }
+        } else {
+            if (ctx.diskEmpty) {
+                cmd = {"growisofs", "-Z", ctx.filePath, ctx.fsParam, "-V", params.diskName, params.burnPath};
+            } else {
+                cmd = {"growisofs", "-M", ctx.filePath, ctx.fsParam, "-V", params.diskName, params.burnPath};
+            }
+        }
+    } else {
+        std::string isoBurnPath = ctx.filePath + "=" + params.burnPath;
+        cmd = {"growisofs", "-Z", isoBurnPath};
+    }
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoDVDBurn:<<< EXIT FAILED <<< failed for volumeId: %{public}s",
+             volumeId.c_str());
+        return err;
+    }
+
+    LOGI("[L3:ExternalVolumeInfo] DoDVDBurn:<<< EXIT SUCCESS <<< volumeId=%{public}s", volumeId.c_str());
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoBurn(const std::string &volumeId, const BurnParams &params)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoBurn: >>> ENTER <<<"
+         "volumeId=%{public}s, diskName=%{public}s, burnPath=%{public}s, fsType=%{public}s",
+         volumeId.c_str(), params.diskName.c_str(), params.burnPath.c_str(), params.fsType.c_str());
+    std::string filePath;
+    if (!GetRealPath("dev/block/" + volumeId, filePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoBurn:<<< EXIT FAILED <<< volumeId: %{public}s", volumeId.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (IsFilePathInvalid(filePath)) {
+        LOGE("[L3:ExternalVolumeInfo] DoBurn:<<< EXIT FAILED <<<filePath: %{public}s", filePath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L3:ExternalVolumeInfo] DoBurn filePath = %{public}s", filePath.c_str());
+
+    int32_t err = 0;
+    BurnContext ctx = {
+        .filePath = filePath,
+        .nodePath = "dev=" + filePath,
+        .diskEmpty = false,
+        .incBurnAddr = "",
+        .fsParam = (params.fsType == "ISO9660/Joliet") ? "-J" :
+                   (params.fsType == "ISO9660/Rock Ridge") ? "-r" :
+                   (params.fsType == "UDF1_02") ? "-udf" : ""
+    };
+    std::string diskType = GetCDType(filePath);
+
+    bool isBlankCD = false;
+    int blankRet = IsBlankCD(filePath, isBlankCD);
+    if (blankRet == E_OK && isBlankCD) ctx.diskEmpty = true;
+    
+    if (diskType.find("CD") != std::string::npos) {
+        if (!ctx.diskEmpty) {
+            err = GetIncBurnAddr(ctx.nodePath, ctx.incBurnAddr);
+            if (err != E_OK) {
+                LOGE("[L3:ExternalVolumeInfo] DoBurn:<<< EXIT FAILED <<< volumeId=%{public}s", volumeId.c_str());
+                return err;
+            }
+        }
+
+        err = DoCDBurn(volumeId, params, ctx);
+    } else {
+        err = DoDVDBurn(volumeId, params, ctx);
+    }
+    if (err != E_OK) {
+        LOGE("[L3:ExternalVolumeInfo] DoBurn:<<< EXIT FAILED <<< volumeId:=%{public}s", volumeId.c_str());
+        return err;
+    }
+
+    LOGI("[L3:ExternalVolumeInfo] DoBurn:<<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoVerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    LOGI("[L3:ExternalVolumeInfo] DoVerifyBurnData:<<< ENTER <<< volId=%{public}s", volumeId.c_str());
+    LOGI("[L3:ExternalVolumeInfo] DoVerifyBurnData:<<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

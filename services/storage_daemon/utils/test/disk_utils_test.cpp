@@ -917,5 +917,85 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsExistCD_01, TestSize.Level1)
     EXPECT_EQ(isExistCD, true);
     GTEST_LOG_(INFO) << "DiskUtilsTest_IsExistCD_01 end";
 }
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmdByPath_001
+ * @tc.desc: Verify SendScsiCmdByPath with valid path and successful ioctl.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmdByPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmdByPath_001 start";
+    
+    std::string diskPath = "/dev/sr0";
+    uint8_t cdb[10] = {0};
+    uint8_t buf[64] = {0};
+
+    int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, sizeof(buf));
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmdByPath_001 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmdByPath_002
+ * @tc.desc: Verify SendScsiCmdByPath with invalid path (realpath fails).
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmdByPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmdByPath_002 start";
+    
+    std::string diskPath = "/invalid/path";
+    uint8_t cdb[10] = {0};
+    uint8_t buf[64] = {0};
+
+    EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(nullptr));
+
+    int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, sizeof(buf));
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmdByPath_002 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_ReadConfiguration_001
+ * @tc.desc: Verify ReadConfiguration with successful SCSI command.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadConfiguration_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_001 start";
+    
+    std::string diskPath = "/dev/sr0";
+    uint8_t buf[64] = {0};
+
+    int ret = ReadConfiguration(diskPath, buf, sizeof(buf));
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_001 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_002
+ * @tc.desc: Verify GetOpticalDriveMaxWriteSpeed fails when Mode Sense fails.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_001 start";
+    
+    std::string diskPath = "/dev/sr0";
+    int32_t maxWriteSpeed = 0;
+
+    int ret = GetOpticalDriveMaxWriteSpeed(diskPath, maxWriteSpeed);
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

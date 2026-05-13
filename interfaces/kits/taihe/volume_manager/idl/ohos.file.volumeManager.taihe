@@ -28,6 +28,16 @@ struct Volume {
     state: i32;
     path: String;
     fsType: String;
+    extraInfo: String;
+}
+
+struct BurnParams {
+    diskName: String;
+    burnPath: String;
+    burnSpeed: i32;
+    fsType: String;
+    isIsoImage: bool;
+    isIncBurnSupport: bool;
 }
 
 @gen_async("getVolumeByUuid")
@@ -64,16 +74,24 @@ function SetVolumeDescriptionSync(uuid: String, description: String): void;
 
 @gen_async("eject")
 @gen_promise("eject")
-function EjectSync(volumeId: String):void;
+function EjectSync(volumeId: String): void;
 
-@gen_async("getOpticalDriveOpsProgress")
-@gen_promise("getOpticalDriveOpsProgress")
-function GetOpticalDriveOpsProgressSync(volumeId: String):void;
+@gen_async("getOpProcess")
+@gen_promise("getOpProcess")
+function GetOpticalDriveOpsProgressSync(volumeId: String): void;
  	 
 @gen_async("erase")
 @gen_promise("erase")
-function EraseSync(volumeId: String):void;
+function EraseSync(volumeId: String): void;
  	 
 @gen_async("createIsoImage")
 @gen_promise("createIsoImage")
-function CreateIsoImageSync(volumeId: String, filePath: String):void;
+function CreateIsoImageSync(volumeId: String, filePath: String): void;
+
+@gen_async("burn")
+@gen_promise("burn")
+function BurnSync(volumeId: String, params: BurnParams): void;
+ 	 
+@gen_async("verifyBurnData")
+@gen_promise("verifyBurnData")
+function VerifyBurnDataSync(volumeId: String, verType: i32): void;

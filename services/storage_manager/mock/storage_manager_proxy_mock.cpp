@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include "burn_params.h"
 #include "mock/storage_manager_proxy_mock.h"
 #include "storage_service_errno.h"
 
@@ -553,6 +554,16 @@ int32_t StorageManagerProxy::DeletePartition(const std::string &diskId, uint32_t
 
 int32_t StorageManagerProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
     const FormatOptions &options)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::VerifyBurnData(const std::string &volumeId, uint32_t verType)
 {
     return E_OK;
 }

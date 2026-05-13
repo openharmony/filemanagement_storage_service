@@ -22,6 +22,7 @@
 #include "system_ability_status_change_stub.h"
 #include "quota/quota_manager.h"
 #include "utils/storage_statistics_radar.h"
+#include "volume/volume_info.h"
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -173,6 +174,8 @@ public:
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
         const OHOS::StorageManager::FormatOptions &options) override;
+    virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
+    virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

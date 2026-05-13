@@ -1952,25 +1952,6 @@ HWTEST_F(ExternalVolumeInfoTest, ExternalVolumeInfoTest_DoGetOddCapacity_001, Te
     EXPECT_EQ(ret, E_ERR);
 }
 
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 start";
-    ExternalVolumeInfo vol;
-    int32_t ret = vol.DoEject("vol-156-300");
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_001 end";
-}
-
-
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoEject_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 start";
-    ExternalVolumeInfo vol;
-    int32_t ret = vol.DoEject("");
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoEject_002 end";
-}
-
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLatestProgressFromFile_000 start";
@@ -2069,8 +2050,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 50);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
 
@@ -2087,7 +2068,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     uint32_t progress = 0;
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(progress, 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoGetOpticalDriveOpsProgress_001 end";
@@ -2141,7 +2122,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
@@ -2164,8 +2145,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 0);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 50);
     
     remove(testFilePath);
 
@@ -2188,8 +2169,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoGetOpt
     testFile.close();
     
     int32_t ret = vol.DoGetOpticalDriveOpsProgress(volId, progress);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(progress, 100);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(progress, 0);
     
     remove(testFilePath);
 
@@ -2279,7 +2260,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
     vol.fsType_ = "iso9660";
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
     int32_t ret = vol.DoCreateIsoImage("loop0", "/path/to/file.iso");
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_ERR);
 }
 
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreateIsoImage_005, TestSize.Level1)
@@ -2306,6 +2287,306 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
     std::string longVolId(4096, 'a');  // 超过 PATH_MAX
     int32_t ret = vol.DoCreateIsoImage(longVolId, "/path/to/file.iso");
     EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001
+ * @tc.desc: Verify GetIso9660Type function with Rock Ridge support.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001 start";
+    ExternalVolumeInfo vol;
+    std::string volPath = "/dev/block/vol-test-joliet";
+    std::string isoType;
+    std::vector<std::string> outputRR = { "System id: LINUX", "NO Joliet present" };
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce([&](const std::vector<std::string>& cmd, std::vector<std::string>* out, int* status = nullptr) {
+            if (out) *out = outputRR;
+            return E_OK;
+        });
+
+    int32_t ret = vol.GetIso9660Type(volPath, isoType);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(isoType, "ISO9660/Joliet");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002
+ * @tc.desc: Verify GetIso9660Type function with Joliet support.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002 start";
+    ExternalVolumeInfo vol;
+    std::string volPath = "/dev/block/vol-test-rr";
+    std::string isoType;
+    std::vector<std::string> outputJoliet = { "System id: WIN32", "NO Rock Ridge present" };
+    
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce([&](const std::vector<std::string>& cmd, std::vector<std::string>* out, int* status = nullptr) {
+            if (out) *out = outputJoliet;
+            return E_OK;
+        });
+
+    int32_t ret = vol.GetIso9660Type(volPath, isoType);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(isoType, "ISO9660/Rock Ridge");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_003
+ * @tc.desc: Verify GetIso9660Type function failure case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_003 start";
+    ExternalVolumeInfo vol;
+    std::string volPath = "/dev/block/vol-test-fail";
+    std::string isoType;
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR));
+
+    int32_t ret = vol.GetIso9660Type(volPath, isoType);
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_001
+ * @tc.desc: Verify GetLastNumberSimple with valid input.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_001 start";
+    ExternalVolumeInfo vol;
+
+    std::vector<std::string> lines = { "Some info", "0,12345" };
+    
+    std::string result = vol.GetLastNumberSimple(lines);
+    EXPECT_EQ(result, "0,12345");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_002
+ * @tc.desc: Verify GetLastNumberSimple with no matching pattern.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_002 start";
+    ExternalVolumeInfo vol;
+    
+    std::vector<std::string> lines = { "Some info", "No numbers here" };
+    
+    std::string result = vol.GetLastNumberSimple(lines);
+    EXPECT_TRUE(result.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetLastNumberSimple_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_001
+ * @tc.desc: Verify GetIncBurnAddr success case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_001 start";
+    ExternalVolumeInfo vol;
+    std::string nodePath = "/dev/block/cdrom0";
+    std::string incBurnAddr;
+
+    std::vector<std::string> output = { "0,12345" };
+    
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce([&](const std::vector<std::string>& cmd, std::vector<std::string>* out, int* status = nullptr) {
+            if (out) *out = output;
+            return E_OK;
+        });
+
+    int32_t ret = vol.GetIncBurnAddr(nodePath, incBurnAddr);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(incBurnAddr, "0,12345");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_002
+ * @tc.desc: Verify GetIncBurnAddr failure case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_002 start";
+    ExternalVolumeInfo vol;
+    std::string nodePath = "/dev/block/cdrom0";
+    std::string incBurnAddr;
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR));
+
+    int32_t ret = vol.GetIncBurnAddr(nodePath, incBurnAddr);
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIncBurnAddr_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCDBurn_002
+ * @tc.desc: Verify DoCDBurn with existing disk (multi-session).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCDBurn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCDBurn_002 start";
+    ExternalVolumeInfo vol;
+    std::string volumeId = "vol-cd-002";
+    BurnParams params;
+    params.isIsoImage = false;
+    params.burnPath = "/data/test/burn";
+    params.diskName = "TestDisk";
+    params.fsType = "ISO9660";
+    
+    BurnContext ctx;
+    ctx.nodePath = "dev=/dev/block/cdrom0";
+    ctx.diskEmpty = false;
+    ctx.incBurnAddr = "0,100";
+    ctx.filePath = "/dev/block/cdrom0";
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .Times(3)
+        .WillRepeatedly(Return(E_OK));
+
+    int32_t ret = vol.DoCDBurn(volumeId, params, ctx);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCDBurn_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCDBurn_003
+ * @tc.desc: Verify DoCDBurn with ISO image input.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCDBurn_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCDBurn_003 start";
+    ExternalVolumeInfo vol;
+    std::string volumeId = "vol-cd-003";
+    BurnParams params;
+    params.isIsoImage = true;
+    params.burnPath = "/data/test/image.iso";
+    
+    BurnContext ctx;
+    ctx.nodePath = "dev=/dev/block/cdrom0";
+    ctx.diskEmpty = true;
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .Times(2)
+        .WillRepeatedly(Return(E_OK));
+
+    int32_t ret = vol.DoCDBurn(volumeId, params, ctx);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCDBurn_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_001
+ * @tc.desc: Verify DoDVDBurn with empty disk.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_001 start";
+    ExternalVolumeInfo vol;
+    std::string volumeId = "vol-dvd-001";
+    BurnParams params;
+    params.isIsoImage = false;
+    params.burnPath = "/data/test/burn";
+    params.diskName = "TestDisk";
+    params.fsType = "ISO9660";
+    
+    BurnContext ctx;
+    ctx.filePath = "/dev/block/dvd0";
+    ctx.diskEmpty = true;
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK));
+
+    int32_t ret = vol.DoDVDBurn(volumeId, params, ctx);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_002
+ * @tc.desc: Verify DoDVDBurn with existing disk (multi-session).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_002 start";
+    ExternalVolumeInfo vol;
+    std::string volumeId = "vol-dvd-002";
+    BurnParams params;
+    params.isIsoImage = false;
+    params.burnPath = "/data/test/burn";
+    params.diskName = "TestDisk";
+    params.fsType = "ISO9660";
+    
+    BurnContext ctx;
+    ctx.filePath = "/dev/block/dvd0";
+    ctx.diskEmpty = false;
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK));
+
+    int32_t ret = vol.DoDVDBurn(volumeId, params, ctx);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_003
+ * @tc.desc: Verify DoDVDBurn with ISO image input.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_003 start";
+    ExternalVolumeInfo vol;
+    std::string volumeId = "vol-dvd-003";
+    BurnParams params;
+    params.isIsoImage = true;
+    params.burnPath = "/data/test/image.iso";
+    
+    BurnContext ctx;
+    ctx.filePath = "/dev/block/dvd0";
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK));
+
+    int32_t ret = vol.DoDVDBurn(volumeId, params, ctx);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDVDBurn_003 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

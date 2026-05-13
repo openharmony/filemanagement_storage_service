@@ -112,6 +112,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "ability_runtime:app_manager",
     "os_account:os_account_innerkits",
     "resource_schedule_service:ressched_client",
+    "json:nlohmann_json_static",
   ]
 
   if (storage_service_cloud_fuse) {

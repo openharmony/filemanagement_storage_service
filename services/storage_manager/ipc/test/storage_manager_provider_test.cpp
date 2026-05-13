@@ -1906,5 +1906,87 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetPartitionTabl
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetPartitionTable_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_Burn_001
+ * @tc.desc: Verify the Burn function with permission denied.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Burn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Burn_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    
+    std::string volumeId = "vol-test-burn";
+    BurnParams params;
+    
+    // In test environment, CheckClientPermission usually fails, returning E_PERMISSION_DENIED
+    auto ret = storageManagerProviderTest_->Burn(volumeId, params);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Burn_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_Burn_002
+ * @tc.desc: Verify the Burn function with empty volumeId.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Burn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Burn_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    
+    std::string volumeId = "";
+    BurnParams params;
+    
+    auto ret = storageManagerProviderTest_->Burn(volumeId, params);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Burn_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_VerifyBurnData_001
+ * @tc.desc: Verify the VerifyBurnData function with permission denied.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyBurnData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyBurnData_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    
+    std::string volumeId = "vol-test-verify";
+    uint32_t verType = 1;
+    
+    // In test environment, CheckClientPermission usually fails, returning E_PERMISSION_DENIED
+    auto ret = storageManagerProviderTest_->VerifyBurnData(volumeId, verType);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyBurnData_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_VerifyBurnData_002
+ * @tc.desc: Verify the VerifyBurnData function with empty volumeId.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyBurnData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyBurnData_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    
+    std::string volumeId = "";
+    uint32_t verType = 1;
+    
+    auto ret = storageManagerProviderTest_->VerifyBurnData(volumeId, verType);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyBurnData_002 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

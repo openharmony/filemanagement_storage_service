@@ -252,7 +252,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     std::string volId = "vol-1-7";
     std::string diskId = "disk-1-7";
     bool isUserdata = false;
-    dev_t device = MKDEV(1, 7); // 1 is major device number, 7 is minor device number
+    dev_t device = MKDEV(1, 7);
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
@@ -1225,87 +1225,6 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOddCapacity_002, Test
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOddCapacity_002 end";
 }
 
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Eject_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_001 start";
-
-    VolumeInfoMock mock;
-    std::string volId = "";
-
-    auto ret = mock.Eject(volId);
-    EXPECT_TRUE(ret == E_NON_EXIST);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_001 end";
-}
-
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Eject_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_002 start";
-
-    VolumeInfoMock mock;
-    std::string volId = "vol-1-1";
-    std::string diskId = "disk-1-1";
-    bool isUserdata = false;
-    dev_t device = MKDEV(1, 1);
-
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
-    EXPECT_TRUE(ret == E_OK);
-
-    std::string invalidVolId = "vol-1-2";
-    ret = mock.Eject(invalidVolId);
-    EXPECT_TRUE(ret != E_OK);
-
-    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_002 end";
-}
-
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Eject_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_003 start";
-
-    VolumeInfoMock mock;
-    std::string volId = "vol-1-3";
-    std::string diskId = "disk-1-3";
-    bool isUserdata = false;
-    dev_t device = MKDEV(1, 3);
-
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoEject(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-
-    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
-    EXPECT_TRUE(ret == E_OK);
-
-    ret = mock.Eject(volId);
-    EXPECT_TRUE(ret == E_OK);
-
-    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_003 end";
-}
-
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Eject_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_004 start";
-
-    VolumeInfoMock mock;
-    std::string volId = "vol-1-4";
-    std::string diskId = "disk-1-4";
-    bool isUserdata = false;
-    dev_t device = MKDEV(1, 4);
-
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoEject(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
-
-    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
-    EXPECT_TRUE(ret == E_OK);
-
-    ret = mock.Eject(volId);
-    EXPECT_TRUE(ret == E_ERR);
-
-    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Eject_004 end";
-}
-
 HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_GetOpticalDriveOpsProgress_001 start";
@@ -1523,6 +1442,210 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_CreateIsoImage_004, Test
 
     ret = mock.CreateIsoImage(volId, filePath);
     EXPECT_TRUE(ret == E_ERR);
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Burn_001
+ * @tc.desc: Verify the Burn function with empty volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Burn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_001 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "";
+    BurnParams params;
+    
+    auto ret = mock.Burn(volId, params);
+    EXPECT_EQ(ret, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Burn_002
+ * @tc.desc: Verify the Burn function with mismatched volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Burn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_002 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-1";
+    std::string diskId = "disk-1-1";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 1);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string invalidVolId = "vol-1-2";
+    BurnParams params;
+    ret = mock.Burn(invalidVolId, params);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Burn_003
+ * @tc.desc: Verify the Burn function success case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Burn_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_003 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-3";
+    std::string diskId = "disk-1-3";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 3);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    BurnParams params;
+    EXPECT_CALL(mock, DoBurn(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    
+    ret = mock.Burn(volId, params);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_Burn_004
+ * @tc.desc: Verify the Burn function failure case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Burn_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_004 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-4";
+    std::string diskId = "disk-1-4";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 4);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    BurnParams params;
+    EXPECT_CALL(mock, DoBurn(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    
+    ret = mock.Burn(volId, params);
+    EXPECT_TRUE(ret == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Burn_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_VerifyBurnData_001
+ * @tc.desc: Verify the VerifyBurnData function with empty volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyBurnData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_001 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "";
+    uint32_t verType = 0;
+    
+    auto ret = mock.VerifyBurnData(volId, verType);
+    EXPECT_EQ(ret, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_VerifyBurnData_002
+ * @tc.desc: Verify the VerifyBurnData function with mismatched volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyBurnData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_002 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-5";
+    std::string diskId = "disk-1-5";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 5);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string invalidVolId = "vol-1-6";
+    uint32_t verType = 0;
+    ret = mock.VerifyBurnData(invalidVolId, verType);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_VerifyBurnData_003
+ * @tc.desc: Verify the VerifyBurnData function success case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyBurnData_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_003 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-7";
+    std::string diskId = "disk-1-7";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 7);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    uint32_t verType = 0;
+    EXPECT_CALL(mock, DoVerifyBurnData(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    
+    ret = mock.VerifyBurnData(volId, verType);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_VerifyBurnData_004
+ * @tc.desc: Verify the VerifyBurnData function failure case.
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_VerifyBurnData_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_004 start";
+
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-8";
+    std::string diskId = "disk-1-8";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 8);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    auto ret = mock.Create(volId, diskId, device, isUserdata, 1);
+    EXPECT_TRUE(ret == E_OK);
+
+    uint32_t verType = 0;
+    EXPECT_CALL(mock, DoVerifyBurnData(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    
+    ret = mock.VerifyBurnData(volId, verType);
+    EXPECT_TRUE(ret == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_VerifyBurnData_004 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

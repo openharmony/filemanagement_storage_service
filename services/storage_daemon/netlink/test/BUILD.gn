@@ -113,6 +113,7 @@ ohos_unittest("netlink_handler_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -207,6 +208,7 @@ ohos_unittest("netlink_manager_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 

@@ -18,6 +18,7 @@
 
 #include <map>
 #include <mutex>
+#include "burn_params.h"
 #include "volume_external.h"
 
 namespace OHOS {
@@ -54,6 +55,8 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
     int32_t Erase(const std::string &volumeId);
     int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
+    int32_t Burn(const std::string &volumeId, const BurnParams &params);
+    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
 private:
     VolumeManagerService();
     ~VolumeManagerService();

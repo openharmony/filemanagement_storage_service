@@ -96,10 +96,10 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     int32_t state = UNMOUNTED;
     VolumeCore volumecore(id, type, diskId, state);
     VolumeExternal volumeexternal;
-    int32_t flags = 1;
-    int32_t fsType = 1;
-    std::string fsUuid = "200";
-    std::string path = "/";
+    int32_t flags = 0;
+    int32_t fsType = 0;
+    std::string fsUuid = "";
+    std::string path = "";
     std::string description = "";
     Parcel parcel;
     volumeexternal.SetFlags(flags);
@@ -141,6 +141,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     std::string diskId = "300";
     int32_t state = UNMOUNTED;
     std::string fsTypeStr = "f2fs";
+    std::string extraInfo = "{\"USB_BASIC_INFO\":{\"DEVNUM\":\"2\"}}";
     bool errorFlag = false;
     int32_t fsType = 1;
     std::string fsUuid = "300";
@@ -153,6 +154,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     parcel.WriteInt32(state);
     parcel.WriteBool(errorFlag);
     parcel.WriteString(fsTypeStr);
+    parcel.WriteString(extraInfo);
     parcel.WriteInt32(flags);
     parcel.WriteInt32(fsType);
     parcel.WriteString(fsUuid);

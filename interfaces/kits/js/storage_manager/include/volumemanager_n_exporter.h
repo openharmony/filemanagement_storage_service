@@ -30,10 +30,12 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info);
 napi_value SetVolumeDescription(napi_env env, napi_callback_info info);
 napi_value Format(napi_env env, napi_callback_info info);
 napi_value Partition(napi_env env, napi_callback_info info);
-napi_value Eject(napi_env, napi_callback_info info);
+napi_value Eject(napi_env env, napi_callback_info info);
 napi_value GetOpticalDriveOpsProgress(napi_env env, napi_callback_info info);
 napi_value Erase(napi_env env, napi_callback_info info);
 napi_value CreateIsoImage(napi_env env, napi_callback_info info);
+napi_value Burn(napi_env env, napi_callback_info info);
+napi_value VerifyBurnData(napi_env env, napi_callback_info info);
 } // namespace ModuleVolumeManager
 } // namespace StorageManager
 } // namespace OHOS
