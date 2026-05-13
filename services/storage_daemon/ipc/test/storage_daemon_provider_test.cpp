@@ -2560,6 +2560,65 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_002
 #endif
 }
 
+/**
+ * @tc.name: StorageDaemonProviderTest_GetPartitionTable_001
+ * @tc.desc: Verify the GetPartitionTable function with valid diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    auto ret = storageDaemonProviderTest_->GetPartitionTable(diskId, partitionTableInfo);
+#ifdef PC_USER_MANAGER
+    EXPECT_EQ(ret, E_NON_EXIST);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetPartitionTable_002
+ * @tc.desc: Verify the GetPartitionTable function with empty diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTable_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskId = "";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    auto ret = storageDaemonProviderTest_->GetPartitionTable(diskId, partitionTableInfo);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetPartitionTable_003
+ * @tc.desc: Verify the GetPartitionTable function with special characters in diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTable_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0!@#$%";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    auto ret = storageDaemonProviderTest_->GetPartitionTable(diskId, partitionTableInfo);
+#ifdef PC_USER_MANAGER
+    EXPECT_NE(ret, E_OK);
+#else
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_003 end";
+}
+
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateBlockDeviceNode_001, TestSize.Level1)
 {
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
@@ -2722,6 +2781,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFuseDevice_00
     EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_NOT_SUPPORT);
 #endif
 }
+
 
 } // namespace StorageDaemon
 } // namespace OHOS

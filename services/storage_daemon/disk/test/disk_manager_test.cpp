@@ -25,6 +25,8 @@
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
+#include "partition_info.h"
+#include "partition_table_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -507,6 +509,24 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandlePartition_002, T
     diskManager.disk_.clear();
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandlePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleGetPartitionTable_001
+ * @tc.desc: Test HandleGetPartitionTable with non-existent disk.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleGetPartitionTable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleGetPartitionTable_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
+    int ret = diskManager.HandleGetPartitionTable(diskId, partitionTableInfo);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleGetPartitionTable_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

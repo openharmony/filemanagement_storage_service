@@ -21,6 +21,8 @@
 #include "message_parcel.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
+#include "partition_info.h"
+#include "partition_table_info.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
 #include "volume_core.h"
@@ -1887,6 +1889,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateIsoImage_0
     auto ret = storageManagerProviderTest_->CreateIsoImage(volumeId, filePath);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetPartitionTable_001
+ * @tc.desc: Verify the GetPartitionTable function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetPartitionTable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetPartitionTable_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    PartitionTableInfo partitionTableInfo;
+    auto ret = storageManagerProviderTest_->GetPartitionTable(diskId, partitionTableInfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetPartitionTable_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

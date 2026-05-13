@@ -153,5 +153,23 @@ HWTEST_F(NetlinkDataTest, NetlinkDataTest_GetParam_002, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "NetlinkDataTest_GetParam_002 end";
 }
+
+/**
+ * @tc.name: NetlinkDataTest_Decode_DiskName_0000
+ * @tc.desc: Verify the Decode function of Devname and GetDiskName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NetlinkDataTest, NetlinkDataTest_Decode_DiskName_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkDataTest_Decode_DiskName_0000 start";
+
+    const char* kDevnameTest = "DEVNAME=sda\0ACTION=add\0";
+    NetlinkData netlinkData;
+    netlinkData.Decode(kDevnameTest);
+    std::string diskName = netlinkData.GetDiskName();
+    EXPECT_TRUE(diskName.compare("sda") == 0) << "check the DiskName";
+
+    GTEST_LOG_(INFO) << "NetlinkDataTest_Decode_DiskName_0000 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
