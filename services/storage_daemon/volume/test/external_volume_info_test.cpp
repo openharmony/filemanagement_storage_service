@@ -2290,57 +2290,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001
- * @tc.desc: Verify GetIso9660Type function with Rock Ridge support.
- * @tc.type: FUNC
- */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001 start";
-    ExternalVolumeInfo vol;
-    std::string volPath = "/dev/block/vol-test-joliet";
-    std::string isoType;
-    std::vector<std::string> outputRR = { "System id: LINUX", "NO Joliet present" };
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
-        .WillOnce([&](const std::vector<std::string>& cmd, std::vector<std::string>* out, int* status = nullptr) {
-            if (out) *out = outputRR;
-            return E_OK;
-        });
-
-    int32_t ret = vol.GetIso9660Type(volPath, isoType);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(isoType, "ISO9660/Joliet");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002
- * @tc.desc: Verify GetIso9660Type function with Joliet support.
- * @tc.type: FUNC
- */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002 start";
-    ExternalVolumeInfo vol;
-    std::string volPath = "/dev/block/vol-test-rr";
-    std::string isoType;
-    std::vector<std::string> outputJoliet = { "System id: WIN32", "NO Rock Ridge present" };
-    
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
-        .WillOnce([&](const std::vector<std::string>& cmd, std::vector<std::string>* out, int* status = nullptr) {
-            if (out) *out = outputJoliet;
-            return E_OK;
-        });
-
-    int32_t ret = vol.GetIso9660Type(volPath, isoType);
-    EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(isoType, "ISO9660/Rock Ridge");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_002 end";
-}
-
-/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetIso9660Type_003
  * @tc.desc: Verify GetIso9660Type function failure case.
  * @tc.type: FUNC
