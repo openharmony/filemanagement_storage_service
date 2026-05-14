@@ -25,12 +25,5 @@
 namespace ANI::VolumeManager {
 ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid);
 taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync();
-taihe::array<ohos::file::volumeManager::Disk> GetAllDisksSync();
-ohos::file::volumeManager::Disk GetDiskByIdSync(taihe::string_view diskId);
-ohos::file::volumeManager::PartitionTableInfo GetPartitionTableSync(taihe::string_view diskId);
-void CreatePartitionSync(taihe::string_view diskId, ohos::file::volumeManager::PartitionOptions options);
-void DeletePartitionSync(taihe::string_view diskId, uint32_t partitionNum);
-void FormatPartitionSync(taihe::string_view diskId, uint32_t partitionNum,
-                         ohos::file::volumeManager::FormatOptions options);
 } // namespace ANI::VolumeManager
 #endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H
