@@ -183,6 +183,7 @@ ohos_unittest("storage_manager_clt_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -290,6 +291,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
+    "json:nlohmann_json_static",
   ]
 
   if (storage_service_cloud_fuse) {

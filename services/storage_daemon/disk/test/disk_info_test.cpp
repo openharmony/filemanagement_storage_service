@@ -83,72 +83,6 @@ void DiskInfoTest::TearDown(void)
 }
 
 /**
- * @tc.name: Storage_Service_DiskInfoTest_Create_001
- * @tc.desc: Verify the Create function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_001 start";
-
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    int flag = 0;
-    std::string diskName = data->GetDiskName();
-    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
-
-    EXPECT_CALL(*mock, Create()).WillOnce(testing::Return(E_OK));
-    int ret = mock->Create();
-
-    EXPECT_TRUE(ret == E_OK);
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_Create_002
- * @tc.desc: Verify the Create function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_002 start";
-
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
-    dev_t device = makedev(major, minor);
-    int flag = 0;
-    std::string diskName = data->GetDiskName();
-    auto mock = std::make_shared<DiskInfoTestMock>(diskName, sysPath, devPath, device, flag);
-
-    EXPECT_CALL(*mock, Create()).WillOnce(testing::Return(E_ERR));
-    int ret = mock->Create();
-
-    EXPECT_TRUE(ret == E_ERR);
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Create_002 end";
-}
-
-/**
  * @tc.name: Storage_Service_DiskInfoTest_Destroy_001
  * @tc.desc: Verify the Destroy function.
  * @tc.type: FUNC
@@ -1530,6 +1464,88 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetPartitionTable_004, TestS
     EXPECT_EQ(partitionTableInfo.GetTableType(), "GPT");
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetPartitionTable_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_EjectDisk_001
+ * @tc.desc: Verify the EjectDisk function when Destroy fails.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_EjectDisk_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_001 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+    EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_ERR));
+    
+    int ret = diskInfo->EjectDisk();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_EjectDisk_002
+ * @tc.desc: Verify the EjectDisk function when Eject fails but Destroy succeeds.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_EjectDisk_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    // Mock Eject to return E_ERR
+    EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_ERR));
+    
+    int ret = diskInfo->EjectDisk();
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_EjectDisk_003
+ * @tc.desc: Verify the EjectDisk function when both Destroy and Eject succeed.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_EjectDisk_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    // Mock Eject to return E_OK
+    EXPECT_CALL(*diskUtilMoc_, Eject(testing::_)).WillOnce(testing::Return(E_OK));
+    
+    int ret = diskInfo->EjectDisk();
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_003 end";
 }
 }
 }

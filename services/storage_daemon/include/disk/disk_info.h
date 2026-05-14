@@ -78,6 +78,7 @@ public:
     std::string GetDiskName() const;
     bool GetRemovable() const;
     std::string GetExtraInfo() const;
+    int EjectDisk();
 
 private:
     std::string diskId_;

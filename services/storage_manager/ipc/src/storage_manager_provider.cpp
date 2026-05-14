@@ -16,6 +16,7 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 
+#include "burn_params.h"
 #include "utils/storage_radar.h"
 #include <singleton.h>
 #include <regex>
@@ -2477,6 +2478,46 @@ int32_t StorageManagerProvider::FormatPartition(const std::string &diskId, uint3
     return ret == E_OK ? E_OK : E_FORMAT_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::FormatPartition not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    StorageRadar::ReportFucBehavior("Burn", DEFAULT_USERID, "Burn Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        LOGE("Burn permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::Burn start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().Burn(volumeId, params);
+    StorageRadar::ReportFucBehavior("Burn", DEFAULT_USERID, "Burn End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Burn", err);
+    }
+    return err;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageManagerProvider::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    StorageRadar::ReportFucBehavior("VerifyBurnData", DEFAULT_USERID, "VerifyBurnData Begin", E_OK);
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        LOGE("VerifyBurnData permission check failed");
+        return E_PERMISSION_DENIED;
+    }
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManagerProvider::VerifyBurnData start, volumeId: %{public}s", volumeId.c_str());
+    int32_t err = VolumeManagerService::GetInstance().VerifyBurnData(volumeId, verType);
+    StorageRadar::ReportFucBehavior("VerifyBurnData", DEFAULT_USERID, "VerifyBurnData End", err);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::VerifyBurnData", err);
+    }
+    return err;
+#else
     return E_NOT_SUPPORT;
 #endif
 }

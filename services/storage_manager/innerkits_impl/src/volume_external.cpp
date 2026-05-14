@@ -20,7 +20,8 @@ namespace StorageManager {
 VolumeExternal::VolumeExternal() {}
 
 VolumeExternal::VolumeExternal(VolumeCore vc)
-    : VolumeExternal::VolumeCore(vc.GetId(), vc.GetType(), vc.GetDiskId(), vc.GetState(), vc.GetFsType()) {}
+    : VolumeExternal::VolumeCore(vc.GetId(), vc.GetType(), vc.GetDiskId(), vc.GetState(), vc.GetFsType(),
+ 	                             vc.GetExtraInfo()) {}
 
 void VolumeExternal::SetFlags(int32_t flags)
 {

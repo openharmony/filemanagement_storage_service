@@ -16,6 +16,7 @@
 #include "ohos.file.volumeManager.impl.h"
 #include "storageStatistics_taihe_error.h"
 #include "storage_service_log.h"
+#include "burn_params.h"
 
 namespace ANI::VolumeManager {
 
@@ -25,16 +26,17 @@ ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid)
     if (instance == nullptr) {
         LOGE("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { "", "", "", "", true, 0, "", "" };
+        return { "", "", "", "", true, 0, "", "", "" };
     }
     auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
     int32_t errNum = instance->GetVolumeByUuid(uuid.c_str(), *volumeInfo);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
-        return { "", "", "", "", true, 0, "", "" };
+        return { "", "", "", "", true, 0, "", "", "" };
     }
     return { volumeInfo->GetId(), volumeInfo->GetUuid(), volumeInfo->GetDiskId(), volumeInfo->GetDescription(),
-        true, volumeInfo->GetState(), volumeInfo->GetPath(), volumeInfo->GetFsTypeString() };
+        true, volumeInfo->GetState(), volumeInfo->GetPath(), volumeInfo->GetFsTypeString(),
+        volumeInfo->GetExtraInfo() };
 }
 
 taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
@@ -55,7 +57,7 @@ taihe::array<ohos::file::volumeManager::Volume> GetAllVolumesSync()
         make(volumeInfo->size(), ohos::file::volumeManager::Volume{});
     auto volumeTransformer = [](auto &vol) -> ohos::file::volumeManager::Volume {
         return {vol.GetId(), vol.GetUuid(), vol.GetDiskId(), vol.GetDescription(), true, vol.GetState(),
-            vol.GetPath(), vol.GetFsTypeString()};
+            vol.GetPath(), vol.GetFsTypeString(), vol.GetExtraInfo()};
     };
     std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(), volumeTransformer);
     return taihe::array<ohos::file::volumeManager::Volume>(taihe::copy_data_t{}, result.data(), result.size());
@@ -283,6 +285,54 @@ void CreateIsoImageSync(::taihe::string_view volumeId, ::taihe::string_view file
         return;
     }
 }
+
+void BurnSync(::taihe::string_view volumeId, const ohos::file::volumeManager::BurnParams &burnParams)
+{
+    std::string volumeIdStr(volumeId);
+    std::string diskNameStr(burnParams.diskName.data(), burnParams.diskName.size());
+    std::string burnPathStr(burnParams.burnPath.data(), burnParams.burnPath.size());
+    std::string fsTypeStr(burnParams.fsType.data(), burnParams.fsType.size());
+
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
+    }
+    OHOS::StorageManager::BurnParams params;
+    params.diskName = diskNameStr;
+    params.burnPath = burnPathStr;
+    params.fsType = fsTypeStr;
+    params.burnSpeed = burnParams.burnSpeed;
+    params.isIsoImage = burnParams.isIsoImage;
+    params.isIncBurnSupport = burnParams.isIncBurnSupport;
+    int32_t errNum = instance->Burn(volumeIdStr, params);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return;
+    }
+}
+
+void VerifyBurnDataSync(::taihe::string_view volumeId, uint32_t verType)
+{
+    std::string volumeIdStr = std::string(volumeId);
+    if (volumeIdStr.empty()) {
+        LOGE("Invalid parameter, volumeIdStr is empty");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
+        return;
+    }
+    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
+    if (instance == nullptr) {
+        LOGE("Get StorageManagerConnect instance failed");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
+        return;
+    }
+    int32_t errNum = instance->VerifyBurnData(volumeIdStr, verType);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return;
+    }
+}
 } // namespace ANI::VolumeManager
 
 // Since these macros are auto-generate, lint will cause false positive.
@@ -299,4 +349,6 @@ TH_EXPORT_CPP_API_EjectSync(ANI::VolumeManager::EjectSync);
 TH_EXPORT_CPP_API_GetOpticalDriveOpsProgressSync(ANI::VolumeManager::GetOpticalDriveOpsProgressSync);
 TH_EXPORT_CPP_API_EraseSync(ANI::VolumeManager::EraseSync);
 TH_EXPORT_CPP_API_CreateIsoImageSync(ANI::VolumeManager::CreateIsoImageSync);
+TH_EXPORT_CPP_API_BurnSync(ANI::VolumeManager::BurnSync);
+TH_EXPORT_CPP_API_VerifyBurnDataSync(ANI::VolumeManager::VerifyBurnDataSync);
 // NOLINTEND

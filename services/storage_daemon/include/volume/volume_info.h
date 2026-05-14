@@ -19,8 +19,12 @@
 #include <string>
 #include <sys/types.h>
 
+#include "burn_params.h"
+
 namespace OHOS {
 namespace StorageDaemon {
+using BurnParams = OHOS::StorageManager::BurnParams;
+
 enum VolumeState {
     UNMOUNTED,
     CHECKING,
@@ -47,7 +51,7 @@ public:
     virtual ~VolumeInfo() = default;
 
     int32_t Create(const std::string &volId, const std::string &diskId, dev_t device, bool isUserdata,
-                   uint32_t partitionNum);
+                   uint32_t partitionNum, const std::string &extraInfo = "");
     int32_t Destroy();
     void DestroyUsbFuse();
     int32_t Mount(uint32_t flags);
@@ -65,6 +69,7 @@ public:
     void SetState(VolumeState mountState);
     bool GetIsUserdata();
     std::string GetFsTypeBase();
+    std::string GetExtraInfo();
     int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
     //disk crypt api
     int32_t DestroyCrypt(const std::string &volumeId);
@@ -84,11 +89,12 @@ public:
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
-    int32_t Eject(const std::string &volId);
     int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress);
     int32_t Erase(const std::string &volId);
     int32_t CreateIsoImage(const std::string &volId, const std::string &filePath);
     uint32_t GetPartitionNum();
+    int32_t Burn(const std::string &volumeId, const BurnParams &params);
+    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -123,10 +129,12 @@ protected:
     virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) = 0;
     virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) = 0;
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) = 0;
-    virtual int32_t DoEject(const std::string &volId) = 0;
     virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) = 0;
     virtual int32_t DoErase(const std::string &volId) = 0;
     virtual int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) = 0;
+    virtual int32_t DoBurn(const std::string &volumeId, const BurnParams &params) = 0;
+    virtual int32_t DoVerifyBurnData(const std::string &volumeId, uint32_t verType) = 0;
+    virtual int32_t GetIso9660Type(const std::string &volPath, std::string &iso9660Type) = 0;
 
 private:
     std::string id_;
@@ -138,6 +146,7 @@ private:
     bool isUserdata_;
     std::string fsTypeBase_;
     uint32_t partitionNum_;
+    std::string extraInfo_;
 protected:
     bool isDamaged_ = false;
 };

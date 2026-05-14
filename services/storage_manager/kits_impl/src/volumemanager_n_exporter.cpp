@@ -15,6 +15,7 @@
 
 #include "volumemanager_n_exporter.h"
 
+#include "burn_params.h"
 #include "n_async/n_async_work_callback.h"
 #include "n_async/n_async_work_promise.h"
 #include "n_func_arg.h"
@@ -63,9 +64,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
         }
         napi_value volumeInfoArray = nullptr;
         napi_status status = napi_create_array(env, &volumeInfoArray);
-        if (status != napi_ok) {
-            return { env, NError(status).GetNapiErr(env) };
-        }
+        if (status != napi_ok) return { env, NError(status).GetNapiErr(env) };
         for (size_t i = 0; i < (*volumeInfo).size(); i++) {
             NVal volumeInfoObject = NVal::CreateObject(env);
             volumeInfoObject.AddProp("id", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetId()).val_);
@@ -78,6 +77,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             volumeInfoObject.AddProp("path", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetPath()).val_);
             volumeInfoObject.AddProp("fsType", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetFsTypeString()).val_);
             volumeInfoObject.AddProp("diskType", NVal::CreateInt32(env, (*volumeInfo)[i].GetFlags()).val_);
+            volumeInfoObject.AddProp("extraInfo", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetExtraInfo()).val_);
             status = napi_set_element(env, volumeInfoArray, i, volumeInfoObject.val_);
             if (status != napi_ok) {
                 return { env, NError(status).GetNapiErr(env) };
@@ -643,6 +643,200 @@ napi_value CreateIsoImage(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
         return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
             .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+
+bool GetStringFromWantVolume(napi_env env, napi_value param, const std::string &key, std::string &outValue)
+{
+    napi_value parameters = nullptr;
+    napi_value jsKey = nullptr;
+    napi_value jsValue = nullptr;
+    napi_valuetype type = napi_undefined;
+
+    napi_create_string_utf8(env, "parameters", NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, param, jsKey, &parameters);
+    napi_typeof(env, parameters, &type);
+    if (type != napi_object) {
+        return false;
+    }
+
+    napi_create_string_utf8(env, key.c_str(), NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, parameters, jsKey, &jsValue);
+    napi_typeof(env, jsValue, &type);
+
+    if (type == napi_string) {
+        size_t stringSize = 0;
+        napi_get_value_string_utf8(env, jsValue, nullptr, 0, &stringSize);
+        if (stringSize > 0) {
+            auto buf = std::make_unique<char[]>(stringSize + 1);
+            napi_get_value_string_utf8(env, jsValue, buf.get(), stringSize + 1, &stringSize);
+            outValue = std::string(buf.get());
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GetInt32FromWantVolume(napi_env env, napi_value param, const std::string &key, uint32_t &outValue)
+{
+    napi_value parameters = nullptr;
+    napi_value jsKey = nullptr;
+    napi_value jsValue = nullptr;
+    napi_valuetype type = napi_undefined;
+
+    napi_create_string_utf8(env, "parameters", NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, param, jsKey, &parameters);
+    napi_typeof(env, parameters, &type);
+    if (type != napi_object) {
+        return false;
+    }
+
+    napi_create_string_utf8(env, key.c_str(), NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, parameters, jsKey, &jsValue);
+    napi_typeof(env, jsValue, &type);
+
+    if (type == napi_number) {
+        napi_get_value_int32(env, jsValue, reinterpret_cast<int32_t *>(&outValue));
+        return true;
+    }
+    return false;
+}
+
+bool GetBoolFromWantVolume(napi_env env, napi_value param, const std::string &key, bool &outValue)
+{
+    napi_value parameters = nullptr;
+    napi_value jsKey = nullptr;
+    napi_value jsValue = nullptr;
+    napi_valuetype type = napi_undefined;
+
+    napi_create_string_utf8(env, "parameters", NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, param, jsKey, &parameters);
+    napi_typeof(env, parameters, &type);
+    if (type != napi_object) {
+        return false;
+    }
+
+    napi_create_string_utf8(env, key.c_str(), NAPI_AUTO_LENGTH, &jsKey);
+    napi_get_property(env, parameters, jsKey, &jsValue);
+    napi_typeof(env, jsValue, &type);
+
+    if (type == napi_boolean) {
+        napi_get_value_bool(env, jsValue, &outValue);
+        return true;
+    }
+    return false;
+}
+
+napi_value Burn(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> volumeId;
+    tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    std::string volumeIdStr(volumeId.get());
+
+    napi_value wantObject = funcArg[(int)NARG_POS::SECOND];
+    napi_valuetype type;
+    napi_typeof(env, wantObject, &type);
+    if (type != napi_object) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    BurnParams params;
+
+    if (!GetStringFromWantVolume(env, wantObject, "diskName", params.diskName) ||
+        !GetStringFromWantVolume(env, wantObject, "burnPath", params.burnPath) ||
+        !GetStringFromWantVolume(env, wantObject, "fsType", params.fsType) ||
+        !GetInt32FromWantVolume(env, wantObject, "burnSpeed", params.burnSpeed) ||
+        !GetBoolFromWantVolume(env, wantObject, "isIsoImage", params.isIsoImage) ||
+        !GetBoolFromWantVolume(env, wantObject, "isIncBurnSupport", params.isIncBurnSupport)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto cbExec = [volumeIdStr, params]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->Burn(volumeIdStr, params);
+        if (errNum != E_OK) return NError(Convert2JsErrNum(errNum));
+        return NError(ERRNO_NOERR);
+    };
+
+    auto cbComplete = [](napi_env env, NError err) -> NVal {
+        if (err) return {env, err.GetNapiErr(env)};
+        return NVal::CreateUndefined(env);
+    };
+
+    std::string procedureName = "Burn";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+}
+
+napi_value VerifyBurnData(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        LOGI("VerifyBurnData InitArgs err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    bool succ = false;
+
+    std::unique_ptr<char []> uuid;
+    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        LOGE("VerifyBurnData uuid err");
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    uint32_t verType;
+    std::tie(succ, verType) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    std::string uuidString(uuid.get());
+    auto cbExec = [uuidString, verType]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->VerifyBurnData(uuidString,
+                                                                                                verType);
+        LOGI("errNum return %{public}d", errNum);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
+    };
+
+    auto cbComplete = [](napi_env env, NError err)-> NVal {
+        if (err) {
+            return {env, err.GetNapiErr(env)};
+        }
+        return NVal::CreateUndefined(env);
+    };
+
+    std::string procedureName = "VerifyBurnData";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb, FEATURE_STR + __FUNCTION__)
+                .Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
 } // namespace ModuleVolumeManager

@@ -56,6 +56,9 @@ public:
     MOCK_METHOD2(DoGetOpticalDriveOpsProgress, int32_t(const std::string&, uint32_t&));
     MOCK_METHOD1(DoErase, int32_t(const std::string &));
     MOCK_METHOD2(DoCreateIsoImage, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(DoBurn, int32_t(const std::string &, const BurnParams &));
+    MOCK_METHOD2(DoVerifyBurnData, int32_t(const std::string &, uint32_t));
+    MOCK_METHOD2(GetIso9660Type, int32_t(const std::string &, std::string &));
 };
 } // namespace StorageDaemon
 } // namespace OHOS

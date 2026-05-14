@@ -24,6 +24,7 @@ sequenceable PartitionOptions..OHOS.StorageManager.PartitionOptions;
 sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
 sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
 sequenceable FormatOptions..OHOS.StorageManager.FormatOptions;
+sequenceable BurnParams..OHOS.StorageManager.BurnParams;
 rawdata OHOS.StorageManager.StorageFileRawData;
 import IUeceActivationCallback;
 interface OHOS.StorageManager.IStorageManager {
@@ -153,4 +154,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 108] void CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
     [ipccode 109] void DeletePartition([in] String diskId, [in] unsigned int partitionNum);
     [ipccode 110] void FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatOptions options);
+    [ipccode 111] void Burn([in] String volId, [in] BurnParams params);
+    [ipccode 112] void VerifyBurnData([in] String volId, [in] unsigned int verType);
 }

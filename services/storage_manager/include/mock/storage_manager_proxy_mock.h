@@ -18,6 +18,7 @@
 
 #include "iremote_proxy.h"
 #include "istorage_manager.h"
+#include "burn_params.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -167,6 +168,8 @@ public:
     int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption) override;
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatOptions &options) override;
+    int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
+    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

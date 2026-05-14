@@ -1613,7 +1613,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Eject_0002, testing::e
     auto &vmService = VolumeManagerService::GetInstance();
     std::string volumeId = "vol-non-exist";
     int32_t result = vmService.Eject(volumeId);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Eject_0002";
 }
 
@@ -2132,5 +2132,94 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0007, testing:
     // Cleanup
     vmService.volumeMap_.erase(volumeId);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0007";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Burn_0000
+ * @tc.name: Volume_manager_service_Burn_0000
+ * @tc.desc: Test function of Burn interface for FAILED (sdCommunication nullptr).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Burn_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Burn_0000";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-1";
+    BurnParams params;
+
+    int32_t result = vmService.Burn(volumeId, params);
+    EXPECT_NE(result, E_OK);
+    
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Burn_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_Burn_0001
+ * @tc.name: Volume_manager_service_Burn_0001
+ * @tc.desc: Test function of Burn interface with empty volumeId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Burn_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_Burn_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "";
+    BurnParams params;
+    
+    int32_t result = vmService.Burn(volumeId, params);
+    EXPECT_NE(result, E_OK);
+    
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Burn_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_VerifyBurnData_0000
+ * @tc.name: Volume_manager_service_VerifyBurnData_0000
+ * @tc.desc: Test function of VerifyBurnData interface for FAILED (sdCommunication nullptr).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VerifyBurnData_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VerifyBurnData_0000";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "vol-1-1";
+    uint32_t verType = 1;
+    
+    // Similar to Burn, expects failure due to uninitialized communication service in UT
+    int32_t result = vmService.VerifyBurnData(volumeId, verType);
+    EXPECT_NE(result, E_OK);
+    
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VerifyBurnData_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_VerifyBurnData_0001
+ * @tc.name: Volume_manager_service_VerifyBurnData_0001
+ * @tc.desc: Test function of VerifyBurnData interface with empty volumeId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_VerifyBurnData_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_VerifyBurnData_0001";
+    auto &vmService = VolumeManagerService::GetInstance();
+    std::string volumeId = "";
+    uint32_t verType = 1;
+    
+    int32_t result = vmService.VerifyBurnData(volumeId, verType);
+    EXPECT_NE(result, E_OK);
+    
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_VerifyBurnData_0001";
 }
 } // namespace

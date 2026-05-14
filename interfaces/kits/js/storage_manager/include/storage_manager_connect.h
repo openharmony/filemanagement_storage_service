@@ -24,6 +24,7 @@
 #include "bundle_stats.h"
 #include "storage_stats.h"
 #include "volume_external.h"
+#include "burn_params.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -81,6 +82,8 @@ public:
     int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
     int32_t Erase(const std::string &volumeId);
     int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
+    int32_t Burn(const std::string &volumeId, const BurnParams &params);
+    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

@@ -335,5 +335,29 @@ int32_t DiskManager::HandleFormatPartition(const std::string &diskId, uint32_t p
     }
     return ret;
 }
+
+int32_t DiskManager::HandleEject(const std::string &diskId)
+{
+    LOGI("[L2:DiskManager] HandleEject: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+    int32_t ret = E_NON_EXIST;
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+
+        if ((*i)->GetDiskId() == diskId) {
+            ret = (*i)->EjectDisk();
+            break;
+        }
+    }
+
+    if (ret == E_OK) {
+        LOGI("[L2:DiskManager] HandleEject: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
+    } else {
+        LOGE("[L2:DiskManager] HandleEject: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
+             diskId.c_str(), ret);
+    }
+    return ret;
+}
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

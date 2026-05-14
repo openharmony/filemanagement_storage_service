@@ -57,10 +57,12 @@ std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string &volId)
     return volumes_[volId];
 }
 
-std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata, uint32_t partitionNum)
+std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device, bool isUserdata, uint32_t partitionNum,
+                                        const std::string &extraInfo)
 {
-    LOGI("[L2:VolumeManager] CreateVolume: >>> ENTER <<< diskId=%{public}s, device=%u:%u, isUserdata=%{public}d",
-        diskId.c_str(), major(device), minor(device), isUserdata);
+    LOGI("[L2:VolumeManager] CreateVolume: >>> ENTER <<< diskId=%{public}s, device=%u:%u, isUserdata=%{public}d,"
+         "extraInfo=%{public}s",
+         diskId.c_str(), major(device), minor(device), isUserdata, extraInfo.c_str());
     std::string volId = StringPrintf("vol-%u-%u", major(device), minor(device));
 
     LOGI("[L2:VolumeManager] CreateVolume: create volume %{public}s.", volId.c_str());
@@ -72,7 +74,7 @@ std::string VolumeManager::CreateVolume(const std::string &diskId, dev_t device,
     }
 
     auto info = std::make_shared<ExternalVolumeInfo>();
-    int32_t ret = info->Create(volId, diskId, device, isUserdata, partitionNum);
+    int32_t ret = info->Create(volId, diskId, device, isUserdata, partitionNum, extraInfo);
     if (ret) {
         LOGE("[L2:VolumeManager] CreateVolume: <<< EXIT FAILED <<< Create failed, ret=%{public}d", ret);
         return "";
@@ -610,25 +612,6 @@ int32_t VolumeManager::Decrypt(const std::string &volumeId, const std::string &p
     return E_OK;
 }
 
-int32_t VolumeManager::Eject(const std::string &volId)
-{
-    LOGI("[L2:VolumeManager] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] Eject:<<< EXIT FAILED <<< %{public}s does not exist.", volId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->Eject(volId);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] Eject:<<< EXIT FAILED <<< %{public}s failed err: %{public}d", volId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::Eject", err);
-        return err;
-    }
-    LOGI("[L2:VolumeManager] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    return E_OK;
-}
-
 int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
 {
     LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
@@ -731,6 +714,45 @@ std::string VolumeManager::GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint
         return info->GetFsTypeBase();
     }
     return "";
+}
+
+int32_t VolumeManager::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    LOGI("[L2:VolumeManager] Burn: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("[L2:VolumeManager] Burn:<<< EXIT FAILED <<< %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->Burn(volumeId, params);
+    if (err != E_OK) {
+        LOGE("[L2:VolumeManager] Burn:<<< EXIT FAILED <<< %{public}s failed err: %{public}d", volumeId.c_str(), err);
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Burn", err);
+        return err;
+    }
+    LOGI("[L2:VolumeManager] Burn: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return E_OK;
+}
+
+int32_t VolumeManager::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    LOGI("[L2:VolumeManager] VerifyBurnData: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("[L2:VolumeManager] VerifyBurnData:<<< EXIT FAILED <<< %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->VerifyBurnData(volumeId, verType);
+    if (err != E_OK) {
+        LOGE("[L2:VolumeManager] VerifyBurnData:<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
+             volumeId.c_str(), err);
+        StorageRadar::ReportVolumeOperation("VolumeInfo::VerifyBurnData", err);
+        return err;
+    }
+    LOGI("[L2:VolumeManager] VerifyBurnData: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

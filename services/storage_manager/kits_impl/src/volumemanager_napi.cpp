@@ -37,9 +37,11 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("format", Format),
         DECLARE_NAPI_FUNCTION("partition", Partition),
         DECLARE_NAPI_FUNCTION("eject", Eject),
-        DECLARE_NAPI_FUNCTION("getOpticalDriveOpsProgress", GetOpticalDriveOpsProgress),
+        DECLARE_NAPI_FUNCTION("getOpProcess", GetOpticalDriveOpsProgress),
         DECLARE_NAPI_FUNCTION("erase", Erase),
         DECLARE_NAPI_FUNCTION("createIsoImage", CreateIsoImage),
+        DECLARE_NAPI_FUNCTION("burn", Burn),
+        DECLARE_NAPI_FUNCTION("verifyBurnData", VerifyBurnData),
         #ifdef HMDFS_FILE_MANAGER
         DECLARE_NAPI_FUNCTION("isSameAccountDevice", DfsService::IsSameAccountDevice),
         DECLARE_NAPI_FUNCTION("getDfsSwitchStatus", DfsService::GetDfsSwitchStatus),

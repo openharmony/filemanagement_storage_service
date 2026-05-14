@@ -1793,20 +1793,20 @@ int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64
 #endif
 }
 
-int32_t StorageDaemonProvider::Eject(const std::string &volId)
+int32_t StorageDaemonProvider::Eject(const std::string &diskId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    if (volId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  volId is empty");
+    LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  diskId is empty");
         return E_PARAMS_INVALID;
     }
-    int32_t ret = VolumeManager::Instance().Eject(volId);
+    int32_t ret = DiskManager::Instance().HandleEject(diskId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  ret is %{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Eject", ret);
     }
-    LOGI("[L1:StorageDaemonProvider] Eject: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
+    LOGI("[L1:StorageDaemonProvider] Eject: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
     return ret;
 #else
     return E_NOT_SUPPORT;
@@ -1985,6 +1985,46 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32
     return ret;
 #else
     LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::Burn(const std::string &volumeId, const BurnParams &params)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Burn: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
+    if (volumeId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().Burn(volumeId, params);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<<  ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Burn", ret);
+    }
+    LOGI("[L1:StorageDaemonProvider] Burn: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return ret;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
+    if (volumeId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<<  volId is empty");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = VolumeManager::Instance().VerifyBurnData(volumeId, verType);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<< ret is %{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::VerifyBurnData", ret);
+    }
+    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
+    return ret;
+#else
     return E_NOT_SUPPORT;
 #endif
 }

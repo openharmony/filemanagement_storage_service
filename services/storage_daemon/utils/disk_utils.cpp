@@ -55,6 +55,12 @@ constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
 constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
 constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
+constexpr int32_t GET_CONFIG_CDB_LEN = 10;
+constexpr int32_t GET_CONFIG_OPCODE = 0x46;
+constexpr int32_t MODE_SENSE_CDB_LEN = 10;
+constexpr int32_t MODE_SENSE_OPCODE = 0x5A;
+constexpr uint8_t CAPABILITIES_PAGE_CODE = 0x2A;
+constexpr uint32_t CD_SPEED_KBPS = 176;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
 constexpr size_t INT32_SHORT_ID_LENGTH = 20;
 constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
@@ -337,7 +343,11 @@ int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
         return E_ERR;
     }
     if ((ioHdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-        LOGE("[L8:DiskUtils] SendScsiCmd: <<< EXIT FAILED <<< SG_INFO not OK");
+        std::string senseStr;
+        for (int i = 0; i < ioHdr.mx_sb_len && i < SENSE_BUFF_LEN; i++) {
+            senseStr += (i > 0 ? "," : "") + std::to_string(sense[i]);
+        }
+        LOGE("[L8:DiskUtils] SendScsiCmd: <<< EXIT FAILED <<< SG_INFO not OK, sense=[%{public}s]", senseStr.c_str());
         return E_ERR;
     }
     LOGD("[L8:DiskUtils] SendScsiCmd: <<< EXIT SUCCESS <<<");
@@ -384,38 +394,69 @@ int GetCDStatus(const char *device, int &status)
     return E_OK;
 }
 
-int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
+int SendScsiCmdByPath(const std::string &diskPath, uint8_t *cdb, int cdbLen, uint8_t *buf, int len)
 {
-    LOGD("[L8:DiskUtils] ReadDiscInfo: >>> ENTER <<< diskPath=%{public}s, len=%{public}d", diskPath.c_str(), len);
+    LOGI("[L8:DiskUtils] SendScsiCmdByPath: >>> ENTER <<< diskPath=%{public}s, cdbLen=%{public}d, len=%{public}d",
+        diskPath.c_str(), cdbLen, len);
+    std::string cdbStr;
+    for (int i = 0; i < cdbLen; i++) {
+        cdbStr += (i > 0 ? "," : "") + std::to_string(cdb[i]);
+    }
+    LOGI("[L8:DiskUtils] SendScsiCmdByPath: cdb=%{public}s", cdbStr.c_str());
+
     char realPath[PATH_MAX] = { 0 };
     if (realpath(diskPath.c_str(), realPath) == nullptr) {
-        LOGE("[L8:DiskUtils] ReadDiscInfo: <<< EXIT FAILED <<< realpath failed");
+        LOGE("[L8:DiskUtils] SendScsiCmdByPath: <<< EXIT FAILED <<< realpath failed");
         return E_ERR;
     }
     FILE* file = fopen(realPath, "rb");
     if (file == nullptr) {
-        LOGE("[L8:DiskUtils] ReadDiscInfo: <<< EXIT FAILED <<< fopen failed, errno=%{public}d", errno);
         return E_ERR;
     }
     int fd = fileno(file);
     if (fd < 0) {
-        LOGE("[L8:DiskUtils] ReadDiscInfo: <<< EXIT FAILED <<< fileno error=%{public}d", errno);
         (void)fclose(file);
         return E_ERR;
     }
-    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = { cmdIndex };
+
+    int ret = SendScsiCmd(fd, cdb, cdbLen, buf, len);
+    (void)fclose(file);
+    LOGI("[L8:DiskUtils] SendScsiCmdByPath: <<< EXIT SUCCESS <<< ret=%{public}d", ret);
+    return ret;
+}
+
+int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
+{
+    LOGD("[L8:DiskUtils] ReadDiscInfo: >>> ENTER <<< diskPath=%{public}s, len=%{public}d", diskPath.c_str(), len);
+    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = { static_cast<uint8_t>(cmdIndex) };
     cdb[CDB_ALLOCATION_LENGTH_HIGH] = static_cast<uint8_t>(static_cast<uint32_t>(len) >> CDB_ALLOCATION_LENGTH_LOW);
     cdb[CDB_ALLOCATION_LENGTH_LOW] = static_cast<uint8_t>(static_cast<uint32_t>(len) & MAX_ALLOC_LEN);
 
-    int ret = SendScsiCmd(fd, cdb, sizeof(cdb), buf, len);
+    int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, len);
     if (ret != 0) {
-        LOGE("[L8:DiskUtils] ReadDiscInfo: <<< EXIT FAILED <<< SendScsiCmd failed, err=%{public}d", ret);
-        (void)fclose(file);
+        LOGE("[L8:DiskUtils] ReadDiscInfo: <<< EXIT FAILED <<< SendScsiCmdByPath failed, err=%{public}d", ret);
         return ret;
     }
-    (void)fclose(file);
     LOGD("[L8:DiskUtils] ReadDiscInfo: <<< EXIT SUCCESS <<<");
     return E_OK;
+}
+
+int ReadConfiguration(const std::string &diskPath, uint8_t *buf, int len)
+{
+    LOGI("[L8:DiskUtils] ReadConfiguration: >>> ENTER <<< diskPath=%{public}s, len=%{public}d", diskPath.c_str(), len);
+    uint8_t cdb[GET_CONFIG_CDB_LEN] = { GET_CONFIG_OPCODE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        static_cast<uint8_t>((len >> 8) & 0xFF), static_cast<uint8_t>(len & 0xFF) };
+
+    int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, len);
+    if (ret == 0) {
+        std::string respStr;
+        for (int i = 0; i < std::min(len, SENSE_BUFF_LEN); i++) {
+            respStr += (i > 0 ? "," : "") + std::to_string(buf[i]);
+        }
+        LOGI("[L8:DiskUtils] ReadConfiguration: RESP(first 64 bytes)=[%{public}s]", respStr.c_str());
+    }
+    LOGI("[L8:DiskUtils] ReadConfiguration: <<< EXIT SUCCESS <<< ret=%{public}d", ret);
+    return ret;
 }
 
 int IsExistCD(const std::string &diskPath, bool &isExistCD)
@@ -482,6 +523,12 @@ std::string DiskType2Str(uint8_t diskType)
             return "DVD+R";
         case 0x1D: // DVD+RW dual layer
             return "DVD+RW";
+        case 0x40:
+            return "BD-ROM";
+        case 0x41:
+            return "BD-R";
+        case 0x42:
+            return "BD-RE";
         default:
             LOGW("[L8:DiskUtils] DiskType2Str: unknown diskType=0x%{public}x", diskType);
             return "";
@@ -500,6 +547,113 @@ std::string GetCDType(const std::string &diskPath)
     return "";
 }
 
+std::string GetOpticalDriveType(const std::string &diskPath)
+{
+    LOGI("[L8:DiskUtils] GetOpticalDriveType: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    uint8_t buf[MAX_BUF];
+    const size_t FEATURE_START = 8;
+    const size_t LOW_BYTE_OFFSET = 1;
+    const size_t ADDITIONAL_LEN = 3;
+    const int FEATURE_CODE_LENGTH = 4;
+    if (ReadConfiguration(diskPath, buf, sizeof(buf)) != E_OK) {
+        LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< GetConfiguration not supported");
+        return "";
+    }
+
+    uint32_t dataLen = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    if (dataLen < FEATURE_CODE_LENGTH || dataLen > MAX_BUF - FEATURE_CODE_LENGTH) {
+        LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< Invalid data length=%{public}d",
+             dataLen);
+        return "";
+    }
+
+    uint16_t currentProfile = (buf[6] << 8) | buf[7];
+    LOGI("[L8:DiskUtils] GetOpticalDriveType: currentProfile=0x%{public}x", currentProfile);
+
+    bool hasDvdRw = false;
+    bool hasDvdR = false;
+    bool hasBdRe = false;
+    bool hasBdR = false;
+    bool hasBdRom = false;
+
+    for (size_t i = FEATURE_START;
+         i + ADDITIONAL_LEN < std::min(static_cast<size_t>(dataLen + FEATURE_CODE_LENGTH), sizeof(buf));) {
+        uint16_t feature = (buf[i] << FEATURE_START) | buf[i + LOW_BYTE_OFFSET];
+        uint8_t additionalLen = buf[i + ADDITIONAL_LEN];
+        if (feature == 0x002D) {
+            hasDvdRw = true;
+        } else if (feature == 0x002E) {
+            hasDvdR = true;
+        } else if (feature == 0x0042) {
+            hasBdRe = true;
+        } else if (feature == 0x0041) {
+            hasBdR = true;
+        } else if (feature == 0x0040) {
+            hasBdRom = true;
+        }
+        i += FEATURE_CODE_LENGTH + additionalLen;
+    }
+
+    if (hasBdRe || hasBdR || hasBdRom) {return "BD RE";}
+    if (hasDvdRw || hasDvdR) {return "DVD RW";}
+    if (currentProfile != 0) {
+        return DiskType2Str(static_cast<uint8_t>(currentProfile & 0xFF));
+    }
+
+    LOGW("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT NO MATCH <<< No matching profile found");
+    return "";
+}
+
+int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteSpeed)
+{
+    LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    uint8_t cdb[MODE_SENSE_CDB_LEN] = { MODE_SENSE_OPCODE,
+        0x00, CAPABILITIES_PAGE_CODE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00 };
+    
+    std::string cdbStr;
+    for (size_t i = 0; i < sizeof(cdb); i++) {
+        cdbStr += (i > 0 ? "," : "") + std::to_string(cdb[i]);
+    }
+    LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: cdb=%{public}s", cdbStr.c_str());
+
+    uint8_t buf[128] = {0};
+    int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, sizeof(buf));
+    if (ret != E_OK) {
+        LOGE("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: <<< EXIT FAILED <<< ModeSense failed, ret=%{public}d", ret);
+        return ret;
+    }
+
+    std::string respStr;
+    for (int i = 0; i < SENSE_BUFF_LEN; i++) {
+        respStr += (i > 0 ? "," : "") + std::to_string(buf[i]);
+    }
+    LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: ModeSense response=%{public}s",
+         respStr.c_str());
+
+    uint16_t maxWriteSpeedKBps = (buf[26] << 8) | buf[27];
+    LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: MaxWriteSpeedKBps=%{public}u",
+        maxWriteSpeedKBps);
+    if (maxWriteSpeedKBps > 0) {
+        std::string driveType = GetOpticalDriveType(diskPath);
+        LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: driveType=%{public}s",
+             driveType.c_str());
+        constexpr uint32_t DVD_SPEED_KBPS = 1385;
+        constexpr uint32_t BD_SPEED_KBPS = 4500;
+        uint32_t speedBase = CD_SPEED_KBPS;
+        if (driveType.find("BD") != std::string::npos || driveType.find("bd") != std::string::npos) {
+            speedBase = BD_SPEED_KBPS;
+        } else if (driveType.find("DVD") != std::string::npos || driveType.find("dvd") != std::string::npos) {
+            speedBase = DVD_SPEED_KBPS;
+        }
+        maxWriteSpeed = maxWriteSpeedKBps / speedBase;
+        LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: <<< EXIT SUCCESS <<< maxWriteSpeed=%{public}d",
+             maxWriteSpeed);
+        return E_OK;
+    }
+
+    LOGE("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: <<< EXIT NO MATCH <<< No speed data found");
+    return E_ERR;
+}
 int Eject(const std::string &devPath)
 {
     LOGI("[L8:DiskUtils] Eject: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
@@ -722,6 +876,11 @@ int GetDvdConfiguration(int fd, int &dvdMedia)
     cmd_buf[1] = 1;
     cmd_buf[7] = (data_len >> 8) & 0xff;
     cmd_buf[8] = data_len & 0xff;
+    std::string cdbStr;
+    for (int i = 0; i < cmd_len; i++) {
+        cdbStr += (i > 0 ? "," : "") + std::to_string(cmd_buf[i]);
+    }
+    LOGI("[L8:DiskUtils] GetDvdConfiguration: cdb=[%{public}s]", cdbStr.c_str());
     ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
     if (ret != 0) {
         LOGE("get atip data len failed, ret val is %{public}d", ret);
