@@ -51,7 +51,11 @@ const std::map<int, StorageTaiheErrorInfo> STORAGE_TAIHE_ERR_MAP {
     { E_JS_RETRY_ERROR, { 13600014, "retry failed" } },
     { E_JS_GET_INODE_ERROR, { 13600016, "Fail to query the inode information of the data partition" } },
     { E_JS_GET_BUNDLE_INODES_ERROR, { 13600017, "Fail to query the inode information of the application" } },
-    { E_JS_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } }
+    { E_JS_GET_SYSTEM_DATA_SIZE_ERROR, { 13600018, "Failed to query the system data size" } },
+    { E_JS_GET_PARTITION_ERROR, { 13600021, "Failed to get partition table info" } },
+    { E_JS_CREATE_PARTITION_ERROR, { 13600022, "Failed to create partition" } },
+    { E_JS_DELETE_PARTITION_ERROR, { 13600023, "Failed to delete partition" } },
+    { E_JS_FORMAT_PARTITION_ERROR, { 13600025, "Failed to format partition" } }
 };
 
 class StorageTaiheError {

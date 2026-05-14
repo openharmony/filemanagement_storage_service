@@ -431,6 +431,12 @@ int32_t Convert2JsErrNum(int32_t errNum)
         { E_GET_SYSTEM_DATA_SIZE_ERROR, E_JS_GET_SYSTEM_DATA_SIZE_ERROR},
         { E_GET_INODE_ERROR, E_JS_GET_INODE_ERROR },
         { E_GET_BUNDLE_INODES_ERROR, E_JS_GET_BUNDLE_INODES_ERROR },
+        { E_GET_PARTITION_ERROR, E_JS_GET_PARTITION_ERROR },
+        { E_CREATE_PARTITION_ERROR, E_JS_CREATE_PARTITION_ERROR },
+        { E_DELETE_PARTITION_ERROR, E_JS_DELETE_PARTITION_ERROR },
+        { E_FORMAT_PARTITION_ERROR, E_JS_FORMAT_PARTITION_ERROR },
+        { E_FORMAT_PARTITION_NOT_SUPPORT, E_SUPPORTEDFS },
+        { E_CREATE_PARTITION_NOT_SUPPORT, E_SUPPORTEDFS },
     };
 
     if (errCodeTable.find(errNum) != errCodeTable.end()) {
@@ -725,6 +731,91 @@ int32_t StorageManagerConnect::VerifyBurnData(const std::string &volumeId, uint3
         return E_SERVICE_IS_NULLPTR;
     }
     return storageManager_->VerifyBurnData(volumeId, verType);
+}
+
+int32_t StorageManagerConnect::GetAllDisks(std::vector<Disk> &disks)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetAllDisks:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetAllDisks service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetAllDisks(disks);
+}
+
+int32_t StorageManagerConnect::GetDiskById(const std::string &diskId, Disk &disk)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetDiskById:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetDiskById service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetDiskById(diskId, disk);
+}
+
+int32_t StorageManagerConnect::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::GetPartitionTable:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::GetPartitionTable service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->GetPartitionTable(diskId, partitionTableInfo);
+}
+
+int32_t StorageManagerConnect::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::CreatePartition:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::CreatePartition service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->CreatePartition(diskId, partitionOption);
+}
+
+int32_t StorageManagerConnect::DeletePartition(const std::string &diskId, uint32_t partitionNum)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::DeletePartition:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::DeletePartition service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->DeletePartition(diskId, partitionNum);
+}
+
+int32_t StorageManagerConnect::FormatPartition(const std::string &diskId, uint32_t partitionNum,
+                                               const FormatOptions &options)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::FormatPartition:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::FormatPartition service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->FormatPartition(diskId, partitionNum, options);
 }
 } // StorageManager
 } // OHOS

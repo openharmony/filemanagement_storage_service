@@ -674,7 +674,7 @@ int32_t VolumeManager::CreateIsoImage(const std::string &volId, const std::strin
     return E_OK;
 }
 
-bool VolumeManager::IsVolumeMounted(std::string &diskId, uint32_t partitionNum)
+bool VolumeManager::IsVolumeMounted(std::string &diskId)
 {
     std::lock_guard<std::mutex> lock(volumesMutex_);
     for (const auto &item : volumes_) {
@@ -684,9 +684,6 @@ bool VolumeManager::IsVolumeMounted(std::string &diskId, uint32_t partitionNum)
         }
         std::string id = info->GetDiskId();
         if (id.empty() || id != diskId) {
-            continue;
-        }
-        if (info->GetPartitionNum() != partitionNum) {
             continue;
         }
         if (info->GetState() == VolumeState::MOUNTED) {
