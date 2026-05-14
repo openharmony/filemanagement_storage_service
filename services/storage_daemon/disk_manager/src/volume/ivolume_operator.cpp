@@ -22,28 +22,27 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "utils/disk_utils.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 
-constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/external/";
-constexpr const char *MOUNT_FUSE_PATH_PREFIX = "/mnt/data/external_fuse/";
+constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
 
 int32_t IVolumeOperator::EnsureMountPath(const std::string& mountPath)
 {
     struct stat statbuf;
     if (lstat(mountPath.c_str(), &statbuf) == 0) {
-        if (!S_ISDIR(statbuf.st_mode)) {
-            if (remove(mountPath.c_str()) != 0) {
-                LOGE("IVolumeOperator::EnsureMountPath remove failed, errno=%{public}d", errno);
-                return E_SYS_KERNEL_ERR;
-            }
+        LOGI("IVolumeOperator::EnsureMountPath path exists, removing");
+        if (remove(mountPath.c_str()) != 0) {
+            LOGE("IVolumeOperator::EnsureMountPath remove failed, errno=%{public}d", errno);
+            return E_SYS_KERNEL_ERR;
         }
     }
     mode_t originalUmask = umask(0);
     int err = mkdir(mountPath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     umask(originalUmask);
-    if (err != 0 && errno != EEXIST) {
+    if (err != 0) {
         LOGE("IVolumeOperator::EnsureMountPath mkdir failed, errno=%{public}d", errno);
         return E_MKDIR_MOUNT;
     }
@@ -104,32 +103,39 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
                                unsigned long mountFlags)
 {
     LOGI("IVolumeOperator::Mount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
+
+    if (devPath.empty() || devPath.length() >= PATH_MAX) {
+        LOGE("IVolumeOperator::Mount invalid devPath");
+        return E_PARAMS_INVALID;
+    }
+    if (devPath.find("/dev/block/") != 0) {
+        LOGE("IVolumeOperator::Mount invalid devPath prefix");
+        return E_PARAMS_INVALID;
+    }
 
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Mount invalid mountPath, len=%{public}zu", mountPath.length());
         return E_PARAMS_INVALID;
     }
-    char realPath[PATH_MAX] = {0};
-    if (realpath(mountPath.c_str(), realPath) == nullptr) {
-        LOGE("IVolumeOperator::Mount realpath failed, errno=%{public}d", errno);
+    if (IsFilePathInvalid(mountPath)) {
+        LOGE("IVolumeOperator::Mount mountPath contains invalid path segments");
         return E_PARAMS_INVALID;
     }
-    std::string resolvedPath(realPath);
-    if (resolvedPath.find(MOUNT_PATH_PREFIX) != 0 && resolvedPath.find(MOUNT_FUSE_PATH_PREFIX) != 0) {
+    if (mountPath.find(MOUNT_PATH_PREFIX) != 0) {
         LOGE("IVolumeOperator::Mount invalid mountPath prefix");
         return E_PARAMS_INVALID;
     }
 
-    int32_t ret = EnsureMountPath(realPath);
+    int32_t ret = EnsureMountPath(mountPath);
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount EnsureMountPath failed, ret=%{public}d", ret);
         return ret;
     }
-    ret = DoMount(devPath, realPath, mountFlags);
+    ret = DoMount(devPath, mountPath, mountFlags);
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount DoMount failed, ret=%{public}d", ret);
-        RemoveMountPath(realPath);
+        RemoveMountPath(mountPath);
         return ret;
     }
 
@@ -140,7 +146,7 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
 int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string& fsType, bool force)
 {
     LOGI("IVolumeOperator::Unmount mountPath=%{public}s, fsType=%{public}s, force=%{public}d",
-         mountPath.c_str(), fsType.c_str(), force);
+         GetAnonyString(mountPath).c_str(), fsType.c_str(), force);
 
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Unmount invalid path, len=%{public}zu", mountPath.length());
@@ -152,7 +158,7 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         return E_PARAMS_INVALID;
     }
     std::string resolvedPath(realPath);
-    if (resolvedPath.find(MOUNT_PATH_PREFIX) != 0 && resolvedPath.find(MOUNT_FUSE_PATH_PREFIX) != 0) {
+    if (resolvedPath.find(MOUNT_PATH_PREFIX) != 0) {
         LOGE("IVolumeOperator::Unmount invalid mountPath prefix");
         return E_PARAMS_INVALID;
     }

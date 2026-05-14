@@ -97,7 +97,6 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_TypeEmpty, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
-        .WillOnce(Return("test-uuid"))
         .WillOnce(Return(""));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
@@ -107,6 +106,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_InvalidUuid, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
         .WillOnce(Return(""))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
@@ -118,6 +118,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsLabelWithQuestionMark, TestSize.Le
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));
@@ -130,6 +131,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsLabelEmpty, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return(""));
@@ -142,6 +144,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsLabelNormal, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("MyNTFSVolume"));
@@ -198,6 +201,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_ForkExecFailed, TestSize.
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));
@@ -212,6 +216,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_LabelFound, TestSize.Leve
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));
@@ -230,6 +235,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_LabelNotFound, TestSize.L
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return(""));
@@ -248,6 +254,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidContainsSlash, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
         .WillOnce(Return("abc/def"))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
@@ -260,6 +267,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidTooLong, TestSize.Level1)
     std::string uuid, type, label;
     std::string longUuid(41, 'a');
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
         .WillOnce(Return(longUuid))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
@@ -271,6 +279,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidIsDot, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
         .WillOnce(Return("."))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
@@ -282,6 +291,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidIsDotDot, TestSize.Level1)
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
         .WillOnce(Return(".."))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
@@ -293,6 +303,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_NoColonInOutput, TestSize
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));
@@ -310,6 +321,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_WhitespaceOnlyLabel, Test
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));
@@ -327,6 +339,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize
 {
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs"))
         .WillOnce(Return("ntfs-uuid-1234"))
         .WillOnce(Return("ntfs"))
         .WillOnce(Return("?????"));

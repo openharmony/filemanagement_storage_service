@@ -97,6 +97,8 @@ void StorageDaemonProviderTest::SetUp(void)
     KeyManagerExtMock::iKeyManagerExtMock_ = keyManagerExtMock_;
     mountManagerMoc_ = std::make_shared<MountManagerMoc>();
     MountManagerMoc::mountManagerMoc = mountManagerMoc_;
+    system("mkdir -p /dev/block /mnt/data 2>/dev/null");
+    system("touch /dev/block/ut_test_dev /mnt/data/ut_test_mnt 2>/dev/null");
 }
 
 void StorageDaemonProviderTest::TearDown(void)
@@ -2691,6 +2693,169 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_VerifyBurnData_002
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyBurnData_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateBlockDeviceNode_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("", 0600, 1, 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("/dev/block/../sda", 0600, 1, 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("/dev/invalid/sda1", 0600, 1, 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode(
+        "/dev/block/nonexist_dev", 0600, -1, 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode(
+        "/dev/block/nonexist_dev", 0600, 4096, 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode(
+        "/dev/block/nonexist_dev", 0600, 1, -1), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode(
+        "/dev/block/nonexist_dev", 0600, 1, 1048576), E_PARAMS_INVALID);
+    auto ret = storageDaemonProviderTest_->CreateBlockDeviceNode(
+        "/dev/block/nonexist_dev", 0600, 1, 0);
+    EXPECT_TRUE(ret == E_OK || ret == E_ERR);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("", 0600, 1, 0), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyBlockDeviceNode_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode(""), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode("/dev/block/../sda"), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode("/tmp/fake_block_dev"), E_PARAMS_INVALID);
+    auto destroyRet = storageDaemonProviderTest_->DestroyBlockDeviceNode(
+        "/dev/block/nonexist_dev");
+    EXPECT_TRUE(destroyRet == E_OK || destroyRet == E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode(""), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ReadPartitionTable_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string output;
+    int32_t maxVolume = 0;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->ReadPartitionTable("", output, maxVolume), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->ReadPartitionTable("/dev/block/../sda", output, maxVolume), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->ReadPartitionTable(
+        "/invalid/path/sda1", output, maxVolume), E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->ReadPartitionTable("", output, maxVolume), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountExt_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("/dev/block/ut_test_dev", "", "ext4", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount(
+        "/dev/block/ut_test_dev", "/mnt/data/../secret", "ext4", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount(
+        "/dev/block/ut_test_dev", "/tmp/mnt_point", "ext4", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount(
+        "/dev/block/ut_test_dev", "/mnt/data/test", "", 0), E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Unmount_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->Unmount("", "ext4", false), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Unmount(
+        "/mnt/data/../secret", "ext4", false), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Unmount("/tmp/fake", "ext4", false), E_PARAMS_INVALID);
+    storageDaemonProviderTest_->Unmount("/mnt/data/ut_test_mnt", "vfat", false);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->Unmount("", "ext4", false), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatVolume_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4"), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", ""), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "ext4"), E_OK);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "unknown"), E_OK);
+    storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat");
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4"), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Check_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->Check("", "ext4", false), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "", false), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "ext4", false), E_OK);
+    storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "vfat", false);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->Check("", "ext4", false), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Repair_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->Repair("", "ext4"), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Repair("/dev/block/ut_test_dev", ""), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->Repair("/dev/block/ut_test_dev", "ext4"), E_OK);
+    storageDaemonProviderTest_->Repair("/dev/block/ut_test_dev", "vfat");
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->Repair("", "ext4"), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetLabel_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->SetLabel("", "ext4", "label"), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->SetLabel("/dev/block/ut_test_dev", "", "label"), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->SetLabel("/dev/block/ut_test_dev", "ext4", "label"), E_OK);
+    storageDaemonProviderTest_->SetLabel("/dev/block/ut_test_dev", "ntfs", "label");
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->SetLabel("", "ext4", "label"), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ReadMetadata_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string uuid, type, label;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->ReadMetadata("", uuid, type, label), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->ReadMetadata(
+        "/dev/block/ut_test_dev", uuid, type, label), E_OK);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->ReadMetadata("", uuid, type, label), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFuseDevice_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int fuseFd = 0;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("/tmp/fake", fuseFd), E_PARAMS_INVALID);
+    storageDaemonProviderTest_->MountFuseDevice("/mnt/data/ut_test_mnt", fuseFd);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_NOT_SUPPORT);
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS

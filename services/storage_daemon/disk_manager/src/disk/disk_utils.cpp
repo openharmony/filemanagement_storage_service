@@ -160,8 +160,7 @@ int32_t DiskUtils::ReadPartitionTable(const std::string& devPath,
 }
 
 int32_t DiskUtils::Partition(const std::string& diskPath,
-                             int32_t partitionType,
-                             uint32_t partitionFlags)
+                             const std::string& partitionType)
 {
     if (!IsValidBlockDevicePath(diskPath)) {
         LOGE("DiskUtils::Partition invalid diskPath");

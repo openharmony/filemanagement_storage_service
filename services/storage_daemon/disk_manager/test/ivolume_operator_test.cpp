@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include "disk_manager/volume/ivolume_operator.h"
+#include "mock/file_utils_mock.h"
 #include "storage_service_errno.h"
 
 namespace OHOS {
@@ -44,6 +45,7 @@ public:
     void TearDown();
     static inline std::string testDir_;
     std::shared_ptr<TestOperator> op_;
+    std::shared_ptr<FileUtilMoc> fileUtilMoc_;
 };
 
 void ExtIVolumeOperatorTest::SetUpTestCase(void)
@@ -60,11 +62,16 @@ void ExtIVolumeOperatorTest::TearDownTestCase(void)
 void ExtIVolumeOperatorTest::SetUp(void)
 {
     op_ = std::make_shared<TestOperator>();
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    IFileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    ON_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillByDefault(Return(false));
 }
 
 void ExtIVolumeOperatorTest::TearDown(void)
 {
     op_ = nullptr;
+    fileUtilMoc_ = nullptr;
+    IFileUtilMoc::fileUtilMoc = nullptr;
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_Success, TestSize.Level1)
@@ -115,11 +122,13 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_InvalidPrefix, TestSize.Level1)
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
-HWTEST_F(ExtIVolumeOperatorTest, Mount_RealpathFailed, TestSize.Level1)
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountPathNotExist_DoMountFail, TestSize.Level1)
 {
     std::string path = testDir_ + "/nonexistent_mount_path";
+    EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = op_->Mount("/dev/block/sda1", path, 0);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_ERR);
+    rmdir(path.c_str());
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, Mount_DoMountFailed_CleanupMountPath, TestSize.Level1)

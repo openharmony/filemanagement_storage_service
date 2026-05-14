@@ -63,6 +63,13 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
+    "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/exfat_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/ivolume_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/ntfs_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/vfat_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/volume_operator_factory.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
   ]
 

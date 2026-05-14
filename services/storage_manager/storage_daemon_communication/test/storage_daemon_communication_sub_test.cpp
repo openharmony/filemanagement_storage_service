@@ -446,7 +446,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, Te
     EXPECT_EQ(sdCommunication->Partition("", 0), E_SERVICE_IS_NULLPTR);
 
     MockAllSuccess();
-    EXPECT_CALL(*sd, Partition(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*sd, Partition(_, An<int32_t>())).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->Partition("", 0), E_OK);
 }
 

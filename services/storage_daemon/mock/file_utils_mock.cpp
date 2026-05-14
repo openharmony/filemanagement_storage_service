@@ -148,5 +148,10 @@ bool IsFilePathInvalid(const std::string &filePath)
 {
     return IFileUtilMoc::fileUtilMoc->IsFilePathInvalid(filePath);
 }
+
+int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
+{
+    return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, nullptr, exitStatus);
+}
 } // namespace StorageDaemon
 } // namespace OHOS
