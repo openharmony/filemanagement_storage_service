@@ -15,6 +15,7 @@
 
 #include <dirent.h>
 #include <future>
+#include <nlohmann/json.hpp>
 #include <regex>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
@@ -652,7 +653,21 @@ int DiskInfo::CreateVolume(dev_t dev, uint32_t partitionNum)
     LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
 
-    std::string volumeId = volume.CreateVolume(diskId_, dev, isUserdata, partitionNum);
+    nlohmann::json extraInfoJson;
+
+    if (major(device_) == DISK_CD_MAJOR) {
+        std::string driveType = GetOpticalDriveType(devPath_);
+        std::string discType = GetCDType(devPath_);
+        int32_t maxWriteSpeed = 0;
+        GetOpticalDriveMaxWriteSpeed(devPath_, maxWriteSpeed);
+        extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
+        extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
+        extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
+    }
+
+    std::string extraInfo = extraInfoJson.dump();
+
+    std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata, partitionNum, extraInfo);
     if (volumeId.empty()) {
         LOGE("[L3:DiskInfo] CreateVolume: <<< EXIT FAILED <<< Create volume failed");
         return E_ERR;
@@ -1252,6 +1267,22 @@ void DiskInfo::SetTableType(std::vector<std::string> &content,
         }
     }
     partitionTableInfo.SetTableType(isMBR ? "MBR" : "GPT");
+}
+
+int DiskInfo::EjectDisk()
+{
+    LOGI("[L3:DiskInfo] EjectDisk: >>> ENTER <<< devPath_=%{public}s", devPath_.c_str());
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] EjectDisk: <<< EXIT FAILED <<< Destroy failed");
+        return E_ERR;
+    }
+    auto res = Eject(devPath_);
+    if (res != E_OK) {
+        LOGE("[L3:DiskInfo] EjectDisk: <<< EXIT FAILED <<< Eject failed, err=%{public}d", res);
+        return res;
+    }
+    LOGI("[L3:DiskInfo] EjectDisk: <<< EXIT SUCCESS <<<");
+    return E_OK;
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

@@ -70,6 +70,7 @@ ohos_unittest("external_volume_info_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 
   if (pc_ext4_enable) {
@@ -120,6 +121,7 @@ ohos_unittest("process_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -170,6 +172,7 @@ ohos_unittest("volume_info_test") {
     "cJSON:cjson",
     "hicollie:libhicollie",
     "hisysevent:libhisysevent",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -228,6 +231,7 @@ ohos_unittest("volume_manager_test") {
     "cJSON:cjson",
     "hicollie:libhicollie",
     "hisysevent:libhisysevent",
+    "json:nlohmann_json_static",
   ]
 }
 

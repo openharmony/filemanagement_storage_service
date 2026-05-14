@@ -1204,7 +1204,7 @@ int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const s
     return storageDaemon_->Decrypt(volumeId, pazzword);
 }
 
-int32_t StorageDaemonCommunication::Eject(const std::string &volumeId)
+int32_t StorageDaemonCommunication::Eject(const std::string &diskId)
 {
     LOGI("StorageDaemonCommunication::Eject start");
     int32_t err = Connect();
@@ -1216,7 +1216,7 @@ int32_t StorageDaemonCommunication::Eject(const std::string &volumeId)
         LOGE("StorageDaemonCommunication::Eject service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->Eject(volumeId);
+    return storageDaemon_->Eject(diskId);
 }
 
 int32_t StorageDaemonCommunication::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
@@ -1323,6 +1323,36 @@ int32_t StorageDaemonCommunication::FormatPartition(const std::string &diskId, u
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->FormatPartition(diskId, partitionNum, options);
+}
+
+int32_t StorageDaemonCommunication::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    LOGI("StorageDaemonCommunication::Burn start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::Burn connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Burn service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->Burn(volumeId, params);
+}
+
+int32_t StorageDaemonCommunication::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    LOGI("StorageDaemonCommunication::VerifyBurnData start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::VerifyBurnData connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::VerifyBurnData service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->VerifyBurnData(volumeId, verType);
 }
 } // namespace StorageManager
 } // namespace OHOS

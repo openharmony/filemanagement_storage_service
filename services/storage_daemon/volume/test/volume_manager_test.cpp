@@ -104,11 +104,13 @@ protected:
     int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override { return E_OK; };
     int32_t DoDestroyCrypt(const std::string &volumeId) override { return E_OK; };
-    int32_t DoEject(const std::string &volId) override { return E_OK; };
     int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override { return E_OK; };
 
     int32_t DoErase(const std::string &volId) override { return E_OK; };
     int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) override { return E_OK; };
+    int32_t DoBurn(const std::string &volumeId, const BurnParams &params) override { return E_OK; };
+    int32_t DoVerifyBurnData(const std::string &volumeId, uint32_t verType) override { return E_OK; };
+    int32_t GetIso9660Type(const std::string &volPath, std::string &iso9660Type) override {return E_OK; };
 };
 }
 
@@ -1366,49 +1368,6 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOddCapacity_003
     VolumeManager::Instance().volumes_.erase(volumeId);
 }
 
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_001 start";
-
-    std::string volId = "vol-non-exist-eject";
-    int32_t result = VolumeManager::Instance().Eject(volId);
-    EXPECT_EQ(result, E_NON_EXIST);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_001 end";
-}
-
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_002 start";
-
-    std::string diskId = "diskId-eject-001";
-    bool isUserdata = false;
-    dev_t device = MKDEV(8, 1);
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeCreated(_)).WillOnce(Return(E_OK));
-    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata, 1);
-    ASSERT_FALSE(volId.empty());
-
-    EXPECT_CALL(*storageManagerClientMock_, NotifyVolumeStateChanged(_, _))
-        .WillRepeatedly(Return(E_OK));
-    int32_t result = VolumeManager::Instance().Eject(volId);
-    EXPECT_EQ(result, E_OK);
-
-    VolumeManager::Instance().DestroyVolume(volId);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_002 end";
-}
-
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Eject_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_003 start";
-
-    std::string volId = "";
-    int32_t result = VolumeManager::Instance().Eject(volId);
-    EXPECT_EQ(result, E_NON_EXIST);
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Eject_003 end";
-}
-
 HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetOpticalDriveOpsProgress_001 start";
@@ -1500,6 +1459,94 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateIsoImage_003
     EXPECT_EQ(result, E_OK);
     
     VolumeManager::Instance().volumes_.erase(volId);
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_Burn_001
+ * @tc.desc: Verify the Burn function with non-existing volume.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Burn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Burn_001 start";
+
+    std::string volId = "vol-non-exist-burn";
+    BurnParams params;
+    
+    int32_t result = VolumeManager::Instance().Burn(volId, params);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Burn_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_Burn_002
+ * @tc.desc: Verify the Burn function with successful execution.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Burn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Burn_002 start";
+
+    std::string diskId = "diskId-burn-001";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 20);
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata, 1);
+    ASSERT_FALSE(volId.empty());
+
+    BurnParams params;
+    int32_t result = VolumeManager::Instance().Burn(volId, params);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    
+    VolumeManager::Instance().DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Burn_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_VerifyBurnData_001
+ * @tc.desc: Verify the VerifyBurnData function with non-existing volume.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyBurnData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyBurnData_001 start";
+
+    std::string volId = "vol-non-exist-verify";
+    uint32_t verType = 1;
+    
+    int32_t result = VolumeManager::Instance().VerifyBurnData(volId, verType);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyBurnData_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_VerifyBurnData_002
+ * @tc.desc: Verify the VerifyBurnData function with successful execution.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_VerifyBurnData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyBurnData_002 start";
+
+    std::string diskId = "diskId-verify-001";
+    bool isUserdata = false;
+    dev_t device = MKDEV(1, 21);
+    std::string volId = VolumeManager::Instance().CreateVolume(diskId, device, isUserdata, 1);
+    ASSERT_FALSE(volId.empty());
+
+    uint32_t verType = 1;
+    int32_t result = VolumeManager::Instance().VerifyBurnData(volId, verType);
+    EXPECT_EQ(result, E_OK);
+    
+    VolumeManager::Instance().DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_VerifyBurnData_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

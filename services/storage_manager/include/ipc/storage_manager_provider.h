@@ -20,6 +20,7 @@
 #include "storage_manager_stub.h"
 #include "system_ability.h"
 #include "storage_file_raw_data.h"
+#include "burn_params.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -199,6 +200,8 @@ public:
     int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption) override;
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatOptions &options) override;
+    int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
+    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

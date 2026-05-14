@@ -658,8 +658,16 @@ int32_t VolumeManagerService::Eject(const std::string &volumeId)
         LOGE("Eject sdCommunication is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    int32_t result = sdCommunication->Eject(volumeId);
-    return result;
+
+    std::string diskId;
+    for (auto it = volumeMap_.begin(); it != volumeMap_.end(); ++it) {
+        VolumeExternal vc = *(it->second);
+        if (vc.GetId() == volumeId) {
+            diskId = vc.GetDiskId();
+            break;
+        }
+    }
+    return sdCommunication->Eject(diskId);
 }
 
 int32_t VolumeManagerService::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
@@ -682,7 +690,13 @@ int32_t VolumeManagerService::Erase(const std::string &volumeId)
         LOGE("Erase sdCommunication is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    return sdCommunication->Erase(volumeId);
+    int32_t err = sdCommunication->Erase(volumeId);
+    if (err != E_OK) {
+        LOGE("Erase sdCommunication->Erase error");
+        return err;
+    }
+
+    return Eject(volumeId);
 }
 
 int32_t VolumeManagerService::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
@@ -694,6 +708,28 @@ int32_t VolumeManagerService::CreateIsoImage(const std::string &volumeId, const 
         return E_PARAMS_NULLPTR_ERR;
     }
     return sdCommunication->CreateIsoImage(volumeId, filePath);
+}
+
+int32_t VolumeManagerService::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("Burn sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    return sdCommunication->Burn(volumeId, params);
+}
+
+int32_t VolumeManagerService::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("VerifyBurnData sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    return sdCommunication->VerifyBurnData(volumeId, verType);
 }
 } // StorageManager
 } // OHOS

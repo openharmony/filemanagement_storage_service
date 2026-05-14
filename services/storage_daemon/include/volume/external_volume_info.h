@@ -21,6 +21,15 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+
+struct BurnContext {
+    std::string filePath;
+    std::string nodePath;
+    std::string incBurnAddr;
+    std::string fsParam;
+    bool diskEmpty;
+};
+
 class ExternalVolumeInfo : public VolumeInfo {
 public:
     ExternalVolumeInfo() = default;
@@ -35,6 +44,10 @@ public:
     std::string GetMountPath();
     int32_t IsUsbInUse(int fd);
     int32_t GetLatestProgressFromFile(const char* filePath, uint32_t &progress);
+    std::string GetLastNumberSimple(const std::vector<std::string>& lines);
+    int32_t GetIncBurnAddr(const std::string &nodePath, std::string &incBurnAddr);
+    int32_t DoCDBurn(const std::string &volumeId, const BurnParams &params, const BurnContext &ctx);
+    int32_t DoDVDBurn(const std::string &volumeId, const BurnParams &params, const BurnContext &ctx);
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
     virtual int32_t DoDestroy() override;
@@ -64,10 +77,12 @@ protected:
     virtual int32_t DoUnlock(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t DoDecrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t DoDestroyCrypt(const std::string &volumeId) override;
-    virtual int32_t DoEject(const std::string &volId) override;
     virtual int32_t DoGetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
     virtual int32_t DoErase(const std::string &volId) override;
     virtual int32_t DoCreateIsoImage(const std::string &volId, const std::string &filePath) override;
+    virtual int32_t DoBurn(const std::string &volumeId, const BurnParams &params) override;
+    virtual int32_t DoVerifyBurnData(const std::string &volumeId, uint32_t verType) override;
+    virtual int32_t GetIso9660Type(const std::string &volPath, std::string &iso9660Type) override;
 private:
     std::string devPath_;
     std::string devBackupPath_;

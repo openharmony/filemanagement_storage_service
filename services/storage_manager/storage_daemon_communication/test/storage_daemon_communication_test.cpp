@@ -1438,4 +1438,101 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_Burn_0000
+ * @tc.name: Daemon_communication_Burn_0000
+ * @tc.desc: Test function of Burn interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Burn_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Burn_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string volumeId = "vol-1-1";
+    BurnParams params;
+    // Initialize params with dummy data if necessary, or use default constructor
+    int32_t result = sdCommunication->Burn(volumeId, params);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Burn_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_Burn_0001
+ * @tc.name: Daemon_communication_Burn_0001
+ * @tc.desc: Test function of Burn interface with empty volumeId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Burn_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Burn_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string volumeId = "";
+    BurnParams params;
+    int32_t result = sdCommunication->Burn(volumeId, params);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Burn_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_VerifyBurnData_0000
+ * @tc.name: Daemon_communication_VerifyBurnData_0000
+ * @tc.desc: Test function of VerifyBurnData interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyBurnData_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_VerifyBurnData_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string volumeId = "vol-1-1";
+    uint32_t verType = 1;
+    int32_t result = sdCommunication->VerifyBurnData(volumeId, verType);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyBurnData_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_VerifyBurnData_0001
+ * @tc.name: Daemon_communication_VerifyBurnData_0001
+ * @tc.desc: Test function of VerifyBurnData interface with empty volumeId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyBurnData_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_VerifyBurnData_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string volumeId = "";
+    uint32_t verType = 1;
+    int32_t result = sdCommunication->VerifyBurnData(volumeId, verType);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyBurnData_0001";
+}
 } // namespace

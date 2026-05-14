@@ -47,6 +47,7 @@ public:
     int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
     int32_t HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
         const OHOS::StorageManager::FormatOptions &options);
+    int32_t HandleEject(const std::string &diskId);
 
 private:
     DiskManager() = default;

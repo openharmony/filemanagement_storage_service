@@ -70,6 +70,7 @@ ohos_unittest("disk_manager_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -130,6 +131,7 @@ ohos_unittest("disk_info_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 
@@ -186,6 +188,7 @@ ohos_unittest("disk_info_sup_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 }
 

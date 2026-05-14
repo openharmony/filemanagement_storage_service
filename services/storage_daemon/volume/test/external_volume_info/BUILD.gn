@@ -63,6 +63,7 @@ ohos_unittest("external_volume_info_other1_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 
   deps = [
@@ -107,6 +108,7 @@ ohos_unittest("external_volume_info_other2_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 
   deps = [
@@ -164,6 +166,7 @@ ohos_unittest("external_volume_info_other3_test") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "json:nlohmann_json_static",
   ]
 
   deps = [

@@ -2616,5 +2616,81 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTable_
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTable_003 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_Burn_001
+ * @tc.desc: Verify the Burn function with valid parameters.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Burn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    
+    std::string volumeId = "vol-8-1";
+    BurnParams params;
+    
+    auto ret = storageDaemonProviderTest_->Burn(volumeId, params);
+    EXPECT_NE(ret, E_OK);
+    
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_Burn_002
+ * @tc.desc: Verify the Burn function with empty volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Burn_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    
+    std::string volumeId = "";
+    BurnParams params;
+    
+    auto ret = storageDaemonProviderTest_->Burn(volumeId, params);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_VerifyBurnData_001
+ * @tc.desc: Verify the VerifyBurnData function with valid parameters.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_VerifyBurnData_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyBurnData_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    
+    std::string volumeId = "vol-8-1";
+    uint32_t verType = 1;
+    
+    auto ret = storageDaemonProviderTest_->VerifyBurnData(volumeId, verType);
+    EXPECT_NE(ret, E_OK);
+    
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyBurnData_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_VerifyBurnData_002
+ * @tc.desc: Verify the VerifyBurnData function with empty volumeId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_VerifyBurnData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyBurnData_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    
+    std::string volumeId = "";
+    uint32_t verType = 1;
+    
+    auto ret = storageDaemonProviderTest_->VerifyBurnData(volumeId, verType);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_VerifyBurnData_002 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

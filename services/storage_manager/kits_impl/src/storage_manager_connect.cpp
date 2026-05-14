@@ -698,5 +698,33 @@ int32_t StorageManagerConnect::CreateIsoImage(const std::string &volumeId, const
     }
     return storageManager_->CreateIsoImage(volumeId, filePath);
 }
+
+int32_t StorageManagerConnect::Burn(const std::string &volumeId, const BurnParams &params)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::Burn:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::Burn service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->Burn(volumeId, params);
+}
+
+int32_t StorageManagerConnect::VerifyBurnData(const std::string &volumeId, uint32_t verType)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::VerifyBurnData:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::VerifyBurnData service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->VerifyBurnData(volumeId, verType);
+}
 } // StorageManager
 } // OHOS
