@@ -828,21 +828,8 @@ int32_t DiskInfo::ExecAsyncGetPartitionTable(std::vector<std::string> &output)
     return E_OK;
 }
 
-int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption)
+int32_t DiskInfo::ExecAsyncCreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
-    LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
-        LOGE("this disk not support create partition");
-        return E_CREATE_PARTITION_NOT_SUPPORT;
-    }
-    if (!IsOptionsValid(partitionOption)) {
-        return E_PARAMS_INVALID;
-    }
-    if (Destroy() != E_OK) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< destroy volume failed");
-        return E_CREATE_PARTITION_ERROR;
-    }
-    sgdiskLines_.clear();
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionOption, p = std::move(promise)]() mutable {
@@ -866,23 +853,51 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &
     int32_t ret = future.get();
     partitionThread.join();
     if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< create partition failed, err=%{public}d", ret);
+        LOGE("[L3:DiskInfo] ExecAsyncCreatePartition: <<< EXIT FAILED <<< create partition failed,err=%{public}d", ret);
         return E_CREATE_PARTITION_ERROR;
     }
-    std::thread thread([this]() { ReadPartitionUSB(); });
-    thread.detach();
-    LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
+    LOGI("[L3:DiskInfo] ExecAsyncCreatePartition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
-bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption)
+int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption)
 {
+    LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
+    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+        LOGE("this disk not support create partition");
+        return E_CREATE_PARTITION_NOT_SUPPORT;
+    }
     std::string typeCode = partitionOption.GetTypeCode();
     auto type = typeCodeMap_.find(typeCode);
     if (type == typeCodeMap_.end()) {
         LOGE("type code not support create partition");
-        return false;
+        return E_CREATE_PARTITION_NOT_SUPPORT;
     }
+    if (!IsOptionsValid(partitionOption)) {
+        return E_PARAMS_INVALID;
+    }
+    if (VolumeManager::Instance().IsVolumeMounted(diskId_)) {
+        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    }
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<< destroy volume failed");
+        return E_CREATE_PARTITION_ERROR;
+    }
+    sgdiskLines_.clear();
+    int32_t ret = ExecAsyncCreatePartition(partitionOption);
+    std::thread thread([this]() { ReadPartitionUSB(); });
+    thread.detach();
+    if (ret != E_OK) {
+        LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<<");
+    } else {
+        LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
+    }
+    return ret;
+}
+
+bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption)
+{
     uint64_t startSector = partitionOption.GetStartSector();
     if (startSector > lastUsableSector_ || startSector < alignSector_) {
         LOGE("start sector out range");
@@ -897,6 +912,7 @@ bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &part
         LOGE("end sector out range");
         return false;
     }
+    std::string typeCode = partitionOption.GetTypeCode();
     uint64_t sectorInterval = (endSector - startSector + 1) * sectorSize_;
     if (typeCode == "vfat" && sectorInterval < VFAT_TYPECODE_MIN_SIZE) {
         LOGE("vfat sector interval invalid");
@@ -921,27 +937,8 @@ bool DiskInfo::IsOptionsValid(const OHOS::StorageManager::PartitionOptions &part
     return true;
 }
 
-int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
+int32_t DiskInfo::ExecAsyncDeletePartition(uint32_t partitionNum)
 {
-    LOGI("[L3:DiskInfo] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
-         diskId_.c_str(), partitionNum);
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
-        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< this disk not support delete partition");
-        return E_DELETE_PARTITION_NOT_SUPPORT;
-    }
-    if (!IsPartitionNumExists(partitionNum)) {
-        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
-        return E_NON_EXIST;
-    }
-    if (VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
-        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
-        return E_VOL_STATE;
-    }
-    if (Destroy() != E_OK) {
-        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< destroy volume failed");
-        return E_DELETE_PARTITION_ERROR;
-    }
-    sgdiskLines_.clear();
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionNum, p = std::move(promise)]() mutable {
@@ -962,13 +959,43 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
     int32_t ret = future.get();
     partitionThread.join();
     if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< delete partition failed, err=%{public}d", ret);
+        LOGE("[L3:DiskInfo] ExecAsyncDeletePartition: <<< EXIT FAILED <<< delete partition failed,err=%{public}d", ret);
         return E_DELETE_PARTITION_ERROR;
     }
+    LOGI("[L3:DiskInfo] ExecAsyncDeletePartition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
+{
+    LOGI("[L3:DiskInfo] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
+         diskId_.c_str(), partitionNum);
+    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< this disk not support delete partition");
+        return E_DELETE_PARTITION_NOT_SUPPORT;
+    }
+    if (!IsPartitionNumExists(partitionNum)) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
+        return E_NON_EXIST;
+    }
+    if (VolumeManager::Instance().IsVolumeMounted(diskId_)) {
+        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    }
+    if (Destroy() != E_OK) {
+        LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< destroy volume failed");
+        return E_DELETE_PARTITION_ERROR;
+    }
+    sgdiskLines_.clear();
+    int32_t ret = ExecAsyncDeletePartition(partitionNum);
     std::thread thread([this]() { ReadPartitionUSB(); });
     thread.detach();
-    LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    if (ret != E_OK) {
+        LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<<");
+    } else {
+        LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
+    }
+    return ret;
 }
 
 int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options)
@@ -989,7 +1016,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
-    if (VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
+    if (VolumeManager::Instance().IsVolumeMounted(diskId_)) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
         return E_VOL_STATE;
     }
@@ -998,11 +1025,14 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         return E_FORMAT_PARTITION_ERROR;
     }
     sgdiskLines_.clear();
-    if (ExecAsyncFormatPartition(partitionNum, options) != E_OK) {
-        return E_FORMAT_PARTITION_ERROR;
-    }
+    int32_t ret = ExecAsyncFormatPartition(partitionNum, options);
     std::thread thread([this]() { ReadPartitionUSB(); });
     thread.detach();
+    if (ret != E_OK) {
+        LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<<");
+    } else {
+        LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT SUCCESS <<<");
+    }
     return E_OK;
 }
 

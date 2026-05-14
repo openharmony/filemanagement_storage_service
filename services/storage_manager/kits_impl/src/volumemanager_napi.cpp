@@ -42,6 +42,12 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("createIsoImage", CreateIsoImage),
         DECLARE_NAPI_FUNCTION("burn", Burn),
         DECLARE_NAPI_FUNCTION("verifyBurnData", VerifyBurnData),
+        DECLARE_NAPI_FUNCTION("getAllDisks", GetAllDisks),
+        DECLARE_NAPI_FUNCTION("getDiskById", GetDiskById),
+        DECLARE_NAPI_FUNCTION("getPartitionTable", GetPartitionTable),
+        DECLARE_NAPI_FUNCTION("createPartition", CreatePartition),
+        DECLARE_NAPI_FUNCTION("deletePartition", DeletePartition),
+        DECLARE_NAPI_FUNCTION("formatPartition", FormatPartition),
         #ifdef HMDFS_FILE_MANAGER
         DECLARE_NAPI_FUNCTION("isSameAccountDevice", DfsService::IsSameAccountDevice),
         DECLARE_NAPI_FUNCTION("getDfsSwitchStatus", DfsService::GetDfsSwitchStatus),

@@ -40,6 +40,50 @@ struct BurnParams {
     isIncBurnSupport: bool;
 }
 
+struct Disk {
+    diskId: String;
+    diskName: String;
+    sizeBytes: i64;
+    sysPath: String;
+    vendor: String;
+    diskType: i32;
+    mediaType: i32;
+    removable: i32;
+    extraInfo: String;
+}
+
+struct PartitionInfo {
+    partitionNum: u32;
+    diskId: String;
+    startSector: u64;
+    endSector: u64;
+    sizeBytes: u64;
+    fsType: String;
+}
+
+struct PartitionTableInfo {
+    diskId: String;
+    tableType: String;
+    partitionCount: u32;
+    totalSector: u64;
+    sectorSize: u32;
+    alignSector: u32;
+    partitions: Array<PartitionInfo>;
+}
+
+struct PartitionOptions {
+    partitionNum: i32;
+    startSector: u64;
+    endSector: u64;
+    typeCode: String;
+}
+
+struct FormatOptions {
+    fsType: String;
+    quickFormat: bool;
+    volumeName: String;
+}
+
 @gen_async("getVolumeByUuid")
 @gen_promise("getVolumeByUuid")
 function GetVolumeByUuidSync(uuid: String): Volume;
@@ -95,3 +139,27 @@ function BurnSync(volumeId: String, params: BurnParams): void;
 @gen_async("verifyBurnData")
 @gen_promise("verifyBurnData")
 function VerifyBurnDataSync(volumeId: String, verType: i32): void;
+
+@gen_async("getAllDisks")
+@gen_promise("getAllDisks")
+function GetAllDisksSync(): Array<Disk>;
+
+@gen_async("getDiskById")
+@gen_promise("getDiskById")
+function GetDiskByIdSync(diskId: String): Disk;
+
+@gen_async("getPartitionTable")
+@gen_promise("getPartitionTable")
+function GetPartitionTableSync(diskId: String): PartitionTableInfo;
+
+@gen_async("createPartition")
+@gen_promise("createPartition")
+function CreatePartitionSync(diskId: String, options: PartitionOptions): void;
+
+@gen_async("deletePartition")
+@gen_promise("deletePartition")
+function DeletePartitionSync(diskId: String, partitionNum: u32): void;
+
+@gen_async("formatPartition")
+@gen_promise("formatPartition")
+function FormatPartitionSync(diskId: String, partitionNum: u32, options: FormatOptions): void;

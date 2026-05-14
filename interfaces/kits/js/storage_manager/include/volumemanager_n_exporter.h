@@ -36,6 +36,12 @@ napi_value Erase(napi_env env, napi_callback_info info);
 napi_value CreateIsoImage(napi_env env, napi_callback_info info);
 napi_value Burn(napi_env env, napi_callback_info info);
 napi_value VerifyBurnData(napi_env env, napi_callback_info info);
+napi_value GetAllDisks(napi_env env, napi_callback_info info);
+napi_value GetDiskById(napi_env env, napi_callback_info info);
+napi_value GetPartitionTable(napi_env env, napi_callback_info info);
+napi_value CreatePartition(napi_env env, napi_callback_info info);
+napi_value DeletePartition(napi_env env, napi_callback_info info);
+napi_value FormatPartition(napi_env env, napi_callback_info info);
 } // namespace ModuleVolumeManager
 } // namespace StorageManager
 } // namespace OHOS

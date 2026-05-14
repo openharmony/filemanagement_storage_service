@@ -84,6 +84,12 @@ public:
     int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
     int32_t Burn(const std::string &volumeId, const BurnParams &params);
     int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
+    int32_t GetAllDisks(std::vector<Disk> &disks);
+    int32_t GetDiskById(const std::string &diskId, Disk &disk);
+    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
+    int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption);
+    int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
+    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatOptions &options);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

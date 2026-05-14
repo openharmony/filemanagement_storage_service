@@ -821,13 +821,18 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
 
 int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::GetAllDisks start");
     vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
 #endif
+    LOGI("StorageManagerProvider::GetAllDisks not support");
     return E_OK;
 }
 
@@ -908,10 +913,18 @@ int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::s
 
 int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &disk)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!IsSystemApp()) {
+        LOGE("the caller is not sysapp");
+        return E_SYS_APP_PERMISSION_DENIED;
+    }
+    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
+    if (diskId.empty()) {
+        LOGE("diskId is empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::GetDiskById start, diskId: %{public}s", diskId.c_str());
     int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
     if (err != E_OK) {
@@ -919,6 +932,7 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     }
     return err;
 #else
+    LOGI("StorageManagerProvider::GetDiskById not support");
     return E_OK;
 #endif
 }
@@ -2384,6 +2398,10 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
     int32_t ret = DiskManagerService::GetInstance().GetPartitionTable(diskId, partitionTableInfo);
     StorageRadar::ReportFucBehavior("GetPartitionTable", DEFAULT_USERID, "GetPartitionTable End", ret);
     LOGI("StorageManagerProvider::GetPartitionTable end, ret=%{public}d", ret);
+    if (ret == E_NON_EXIST) {
+        LOGE("[L1:StorageManagerProvider] GetPartitionTable: <<< EXIT FAILED <<< no such object");
+        return E_NON_EXIST;
+    }
     return ret == E_OK ? E_OK : E_GET_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::GetPartitionTable not support");
@@ -2416,6 +2434,19 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
     int32_t ret = DiskManagerService::GetInstance().CreatePartition(diskId, partitionOption);
     StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition End", ret);
     LOGI("StorageManagerProvider::CreatePartition end, ret=%{public}d", ret);
+    if (ret == E_NON_EXIST) {
+        LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< no such object");
+        return E_NON_EXIST;
+    } else if (ret == E_PARAMS_INVALID) {
+        LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
+        return E_PARAMS_INVALID;
+    } else if (ret == E_VOL_STATE) {
+        LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    } else if (ret == E_CREATE_PARTITION_NOT_SUPPORT) {
+        LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< file system not support");
+        return E_CREATE_PARTITION_NOT_SUPPORT;
+    }
     return ret == E_OK ? E_OK : E_CREATE_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::CreatePartition not support");
@@ -2443,6 +2474,13 @@ int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint3
     int32_t ret = DiskManagerService::GetInstance().DeletePartition(diskId, partitionNum);
     StorageRadar::ReportFucBehavior("DeletePartition", DEFAULT_USERID, "DeletePartition End", ret);
     LOGI("StorageManagerProvider::DeletePartition end, ret=%{public}d", ret);
+    if (ret == E_NON_EXIST) {
+        LOGE("[L1:StorageManagerProvider] DeletePartition: <<< EXIT FAILED <<< no such object");
+        return E_NON_EXIST;
+    } else if (ret == E_VOL_STATE) {
+        LOGE("[L1:StorageManagerProvider] DeletePartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    }
     return ret == E_OK ? E_OK : E_DELETE_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::DeletePartition not support");
@@ -2475,6 +2513,16 @@ int32_t StorageManagerProvider::FormatPartition(const std::string &diskId, uint3
     int32_t ret = DiskManagerService::GetInstance().FormatPartition(diskId, partitionNum, options);
     StorageRadar::ReportFucBehavior("FormatPartition", DEFAULT_USERID, "FormatPartition End", ret);
     LOGI("StorageManagerProvider::FormatPartition end, ret=%{public}d", ret);
+    if (ret == E_NON_EXIST) {
+        LOGE("[L1:StorageManagerProvider] FormatPartition: <<< EXIT FAILED <<< no such object");
+        return E_NON_EXIST;
+    } else if (ret == E_VOL_STATE) {
+        LOGE("[L1:StorageManagerProvider] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
+        return E_VOL_STATE;
+    } else if (ret == E_FORMAT_PARTITION_NOT_SUPPORT) {
+        LOGE("[L1:StorageManagerProvider] FormatPartition: <<< EXIT FAILED <<< file system not support");
+        return E_FORMAT_PARTITION_NOT_SUPPORT;
+    }
     return ret == E_OK ? E_OK : E_FORMAT_PARTITION_ERROR;
 #else
     LOGI("StorageManagerProvider::FormatPartition not support");
