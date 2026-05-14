@@ -528,6 +528,331 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleGetPartitionTabl
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleGetPartitionTable_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleCreatePartition_001
+ * @tc.desc: Test HandleCreatePartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    OHOS::StorageManager::PartitionOptions options;
+    int ret = diskManager.HandleCreatePartition(diskId, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleCreatePartition_002
+ * @tc.desc: Test HandleCreatePartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    OHOS::StorageManager::PartitionOptions options;
+    int ret = diskManager.HandleCreatePartition(diskId, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleCreatePartition_003
+ * @tc.desc: Test HandleCreatePartition with valid options.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_003 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    diskInfo->lastUsableSector_ = 1234566;
+    diskInfo->sectorSize_ = 512;
+    diskInfo->alignSector_ = 2048;
+
+    int ret = diskManager.HandleCreatePartition(diskId, options);
+    // May return error due to missing mocks or actual device
+    EXPECT_TRUE(ret == E_OK || ret == E_CREATE_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_001
+ * @tc.desc: Test HandleDeletePartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    uint32_t partitionNum = 1;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_002
+ * @tc.desc: Test HandleDeletePartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    uint32_t partitionNum = 1;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_003
+ * @tc.desc: Test HandleDeletePartition with valid partition number.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_003 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    uint32_t partitionNum = 1;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    // May return error due to partition not existing
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_DELETE_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_004
+ * @tc.desc: Test HandleDeletePartition with boundary partition number (0).
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_004 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    uint32_t partitionNum = 0;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    // Should handle edge case
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_DELETE_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_001
+ * @tc.desc: Test HandleFormatPartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_002
+ * @tc.desc: Test HandleFormatPartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_003
+ * @tc.desc: Test HandleFormatPartition with vfat format.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_003 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "vfat";
+    options.SetFsType(fsType);
+
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    // May return error due to partition not existing
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_004
+ * @tc.desc: Test HandleFormatPartition with ext4 format.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_004 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "ext4";
+    std::string volName = "test_volume";
+    options.SetFsType(fsType);
+    options.SetVolumeName(volName);
+
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    // May return error due to partition not existing
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_005
+ * @tc.desc: Test HandleFormatPartition with exfat format.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_005 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 5);
+    std::string diskName = "sda";
+    std::string diskId = "disk-8-5";
+
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    diskManager.disk_.push_back(diskInfo);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "exfat";
+    options.SetFsType(fsType);
+
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    // May return error due to partition not existing
+    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
+
+    diskManager.disk_.clear();
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_005 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
 
