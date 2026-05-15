@@ -112,14 +112,14 @@ bool FormatPartitionFuzzTestFSTypes(const uint8_t *data, size_t size)
 
     // Test with various file system types
     const char* fsTypes[] = {"vfat", "ext4", "exfat", "ntfs", "invalid", "", "\0\0\0", nullptr};
-    constexpr size_t VALID_FS_TYPE_COUNT = 6; // Number of valid fs types to test (excluding "" and "\0\0\0")
+    constexpr size_t validFsTypeCount = 6; // Number of valid fs types to test (excluding "" and "\0\0\0")
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_FORMAT_PARTITION);
 
     uint8_t minor = data[0];
     std::string diskId = std::string(DISK_ID_PREFIX) + std::to_string(minor);
     uint32_t partitionNum = DEFAULT_PARTITION_NUM;
 
-    for (size_t i = 0; i < VALID_FS_TYPE_COUNT; i++) {
+    for (size_t i = 0; i < validFsTypeCount; i++) {
         FormatOptions options;
         if (fsTypes[i] != nullptr && strlen(fsTypes[i]) > 0) {
             options.SetFsType(std::string(fsTypes[i]));
