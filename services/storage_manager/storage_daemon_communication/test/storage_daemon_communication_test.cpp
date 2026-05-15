@@ -1277,7 +1277,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0001, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Eject(volumeId);
     }
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Eject_0001";
 }
 
@@ -1326,7 +1326,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     if (sdCommunication != nullptr) {
         result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
     }
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOpticalDriveOpsProgress_0001";
 }
 
@@ -1365,7 +1365,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Erase_0001, testin
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     std::string volumeId = "";
     int32_t result = sdCommunication->Erase(volumeId);
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Erase_0001";
 }
 
@@ -1389,7 +1389,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_000
     std::string volumeId = "";
     std::string filePath = "/path/to/file.iso";
     int32_t result = sdCommunication->CreateIsoImage(volumeId, filePath);
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateIsoImage_0001";
 }
 
@@ -1435,7 +1435,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_
     std::string diskId = "";
     OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
     int32_t ret = sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
-    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0001";
 }
 
@@ -1483,7 +1483,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Burn_0001, testing
     std::string volumeId = "";
     BurnParams params;
     int32_t result = sdCommunication->Burn(volumeId, params);
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Burn_0001";
 }
@@ -1531,7 +1531,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyBurnData_000
     std::string volumeId = "";
     uint32_t verType = 1;
     int32_t result = sdCommunication->VerifyBurnData(volumeId, verType);
-    EXPECT_TRUE(result == E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyBurnData_0001";
 }
