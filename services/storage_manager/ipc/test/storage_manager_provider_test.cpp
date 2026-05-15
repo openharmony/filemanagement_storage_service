@@ -1988,5 +1988,256 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyBurnData_0
     
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_VerifyBurnData_002 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreatePartition_001
+ * @tc.desc: Verify the CreatePartition function with valid options.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreatePartition_002
+ * @tc.desc: Verify the CreatePartition function with empty diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "";
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreatePartition_003
+ * @tc.desc: Verify the CreatePartition function with vfat type.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-1";
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "vfat";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_CreatePartition_004
+ * @tc.desc: Verify the CreatePartition function with invalid sector range (start >= end).
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-2";
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(102400);
+    options.SetEndSector(102400);
+
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeletePartition_001
+ * @tc.desc: Verify the DeletePartition function with valid parameters.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeletePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    uint32_t partitionNum = 1;
+
+    auto ret = storageManagerProviderTest_->DeletePartition(diskId, partitionNum);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeletePartition_002
+ * @tc.desc: Verify the DeletePartition function with empty diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeletePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "";
+    uint32_t partitionNum = 1;
+
+    auto ret = storageManagerProviderTest_->DeletePartition(diskId, partitionNum);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_DeletePartition_003
+ * @tc.desc: Verify the DeletePartition function with different partition numbers.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeletePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-1";
+    std::vector<uint32_t> partitionNums = {0, 1, 2, 15};
+
+    for (uint32_t partitionNum : partitionNums) {
+        auto ret = storageManagerProviderTest_->DeletePartition(diskId, partitionNum);
+        EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    }
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeletePartition_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_FormatPartition_001
+ * @tc.desc: Verify the FormatPartition function with vfat.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "vfat";
+    options.SetFsType(fsType);
+
+    auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_FormatPartition_002
+ * @tc.desc: Verify the FormatPartition function with empty diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "vfat";
+    options.SetFsType(fsType);
+
+    auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_FormatPartition_003
+ * @tc.desc: Verify the FormatPartition function with empty fsType.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-0";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "";
+    options.SetFsType(fsType);
+
+    auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_FormatPartition_004
+ * @tc.desc: Verify the FormatPartition function with ext4 and volume name.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-1";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "ext4";
+    std::string volName = "test_volume";
+    options.SetFsType(fsType);
+    options.SetVolumeName(volName);
+
+    auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_FormatPartition_005
+ * @tc.desc: Verify the FormatPartition function with exfat.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string diskId = "disk-8-2";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "exfat";
+    options.SetFsType(fsType);
+
+    auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_005 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

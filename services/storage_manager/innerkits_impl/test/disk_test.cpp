@@ -123,4 +123,109 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(result->GetDiskType(), flag);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_GetMediaType_0000
+ * @tc.name: Disk_GetMediaType_0000
+ * @tc.desc: Test function of GetMediaType interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskTest, Disk_GetMediaType_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_GetMediaType_0000";
+    std::string diskId = "disk-8-0";
+    int64_t sizeBytes = 1000;
+    std::string sysPath = "/sys/block/sda";
+    std::string vendor = "TestVendor";
+    int32_t diskType = USB_FLAG;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, diskType);
+
+    // GetMediaType returns default value (0 = SSD)
+    auto mediaType = disk.GetMediaType();
+    EXPECT_EQ(mediaType, 0);
+
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_GetMediaType_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_GetRemovable_0000
+ * @tc.name: Disk_GetRemovable_0000
+ * @tc.desc: Test function of GetRemovable interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskTest, Disk_GetRemovable_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_GetRemovable_0000";
+    std::string diskId = "disk-8-0";
+    int64_t sizeBytes = 1000;
+    std::string sysPath = "/sys/block/sda";
+    std::string vendor = "TestVendor";
+    int32_t diskType = USB_FLAG;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, diskType);
+
+    // GetRemovable returns default value (1)
+    auto removable = disk.GetRemovable();
+    EXPECT_EQ(removable, 1);
+
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_GetRemovable_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_GetExtraInfo_0000
+ * @tc.name: Disk_GetExtraInfo_0000
+ * @tc.desc: Test function of GetExtraInfo interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskTest, Disk_GetExtraInfo_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_GetExtraInfo_0000";
+    std::string diskId = "disk-8-0";
+    int64_t sizeBytes = 1000;
+    std::string sysPath = "/sys/block/sda";
+    std::string vendor = "TestVendor";
+    int32_t diskType = USB_FLAG;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, diskType);
+
+    // GetExtraInfo returns default value (empty string)
+    auto extraInfo = disk.GetExtraInfo();
+    EXPECT_EQ(extraInfo, "");
+
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_GetExtraInfo_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_DefaultConstructor_0000
+ * @tc.name: Disk_DefaultConstructor_0000
+ * @tc.desc: Test function of default constructor for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskTest, Disk_DefaultConstructor_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_DefaultConstructor_0000";
+    Disk disk;
+
+    // Test default values
+    EXPECT_EQ(disk.GetDiskId(), "");
+    EXPECT_EQ(disk.GetSizeBytes(), 0);
+    EXPECT_EQ(disk.GetSysPath(), "");
+    EXPECT_EQ(disk.GetVendor(), "");
+    EXPECT_EQ(disk.GetDiskType(), 0);
+    EXPECT_EQ(disk.GetMediaType(), 0);
+    EXPECT_EQ(disk.GetRemovable(), 1);
+    EXPECT_EQ(disk.GetExtraInfo(), "");
+
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_DefaultConstructor_0000";
+}
 }
