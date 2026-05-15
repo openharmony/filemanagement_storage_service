@@ -1277,7 +1277,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Eject_0001, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Eject(volumeId);
     }
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Eject_0001";
 }
 
@@ -1326,7 +1326,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOpticalDriveOps
     if (sdCommunication != nullptr) {
         result = sdCommunication->GetOpticalDriveOpsProgress(volumeId, progress);
     }
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOpticalDriveOpsProgress_0001";
 }
 
@@ -1365,7 +1365,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Erase_0001, testin
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     std::string volumeId = "";
     int32_t result = sdCommunication->Erase(volumeId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Erase_0001";
 }
 
@@ -1389,7 +1389,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateIsoImage_000
     std::string volumeId = "";
     std::string filePath = "/path/to/file.iso";
     int32_t result = sdCommunication->CreateIsoImage(volumeId, filePath);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateIsoImage_0001";
 }
 
@@ -1435,7 +1435,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_
     std::string diskId = "";
     OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
     int32_t ret = sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0001";
 }
 
@@ -1483,7 +1483,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Burn_0001, testing
     std::string volumeId = "";
     BurnParams params;
     int32_t result = sdCommunication->Burn(volumeId, params);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Burn_0001";
 }
@@ -1531,8 +1531,114 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyBurnData_000
     std::string volumeId = "";
     uint32_t verType = 1;
     int32_t result = sdCommunication->VerifyBurnData(volumeId, verType);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(result == E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyBurnData_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CreatePartition_0000
+ * @tc.name: Daemon_communication_CreatePartition_0000
+ * @tc.desc: Test function of CreatePartition interface with empty diskId for parameter validation.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreatePartition_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreatePartition_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "";
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    int32_t ret = sdCommunication->CreatePartition(diskId, options);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreatePartition_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_DeletePartition_0000
+ * @tc.name: Daemon_communication_DeletePartition_0000
+ * @tc.desc: Test function of DeletePartition interface with empty diskId for parameter validation.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeletePartition_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeletePartition_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "";
+    uint32_t partitionNum = 1;
+
+    int32_t ret = sdCommunication->DeletePartition(diskId, partitionNum);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeletePartition_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_FormatPartition_0000
+ * @tc.name: Daemon_communication_FormatPartition_0000
+ * @tc.desc: Test function of FormatPartition interface with empty diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_FormatPartition_0000";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "vfat";
+    options.SetFsType(fsType);
+
+    int32_t ret = sdCommunication->FormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_FormatPartition_0001
+ * @tc.name: Daemon_communication_FormatPartition_0001
+ * @tc.desc: Test function of FormatPartition interface with empty fsType.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_FormatPartition_0001";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string diskId = "disk-8-0";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "";
+    options.SetFsType(fsType);
+
+    int32_t ret = sdCommunication->FormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0001";
 }
 } // namespace
