@@ -1560,7 +1560,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreatePartition_00
     options.SetEndSector(102400);
 
     int32_t ret = sdCommunication->CreatePartition(diskId, options);
-    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreatePartition_0000";
 }
 
@@ -1584,7 +1584,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeletePartition_00
     uint32_t partitionNum = 1;
 
     int32_t ret = sdCommunication->DeletePartition(diskId, partitionNum);
-    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeletePartition_0000";
 }
 
@@ -1611,7 +1611,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_00
     options.SetFsType(fsType);
 
     int32_t ret = sdCommunication->FormatPartition(diskId, partitionNum, options);
-    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0000";
 }
 
@@ -1638,7 +1638,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_00
     options.SetFsType(fsType);
 
     int32_t ret = sdCommunication->FormatPartition(diskId, partitionNum, options);
-    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0001";
 }
 } // namespace
