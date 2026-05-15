@@ -479,4 +479,72 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetPartitionTable_0001, te
 
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_GetPartitionTable_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_CreatePartition_0001
+ * @tc.name: Disk_manager_service_CreatePartition_0001
+ * @tc.desc: Test CreatePartition with non-existent diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_CreatePartition_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_CreatePartition_0001";
+    DiskManagerService &dmService = DiskManagerService::GetInstance();
+    std::string nonExistentDiskId = "non-existent-disk-id-4";
+    PartitionOptions options;
+    int32_t result = dmService.CreatePartition(nonExistentDiskId, options);
+
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_CreatePartition_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_DeletePartition_0001
+ * @tc.name: Disk_manager_service_DeletePartition_0001
+ * @tc.desc: Test DeletePartition with non-existent diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_DeletePartition_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_DeletePartition_0001";
+    DiskManagerService &dmService = DiskManagerService::GetInstance();
+    std::string nonExistentDiskId = "non-existent-disk-id-5";
+    uint32_t partitionNum = 1;
+    int32_t result = dmService.DeletePartition(nonExistentDiskId, partitionNum);
+
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_DeletePartition_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_FormatPartition_0001
+ * @tc.name: Disk_manager_service_FormatPartition_0001
+ * @tc.desc: Test FormatPartition with non-existent diskId.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_FormatPartition_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_FormatPartition_0001";
+    DiskManagerService &dmService = DiskManagerService::GetInstance();
+    std::string nonExistentDiskId = "non-existent-disk-id-6";
+    uint32_t partitionNum = 1;
+    FormatOptions options;
+    int32_t result = dmService.FormatPartition(nonExistentDiskId, partitionNum, options);
+
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_FormatPartition_0001";
+}
+
 } // namespace

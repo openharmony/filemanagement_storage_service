@@ -528,6 +528,134 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleGetPartitionTabl
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleGetPartitionTable_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleCreatePartition_001
+ * @tc.desc: Test HandleCreatePartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    OHOS::StorageManager::PartitionOptions options;
+    int ret = diskManager.HandleCreatePartition(diskId, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleCreatePartition_002
+ * @tc.desc: Test HandleCreatePartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    OHOS::StorageManager::PartitionOptions options;
+    int ret = diskManager.HandleCreatePartition(diskId, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_001
+ * @tc.desc: Test HandleDeletePartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    uint32_t partitionNum = 1;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleDeletePartition_002
+ * @tc.desc: Test HandleDeletePartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDeletePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    uint32_t partitionNum = 1;
+    int ret = diskManager.HandleDeletePartition(diskId, partitionNum);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDeletePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_001
+ * @tc.desc: Test HandleFormatPartition with non-existent disk.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_001 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-99";
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskManagerTest_HandleFormatPartition_002
+ * @tc.desc: Test HandleFormatPartition with null disk in list.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_002 start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+    std::string diskId = "disk-8-5";
+    std::shared_ptr<DiskInfo> disk = nullptr;
+    diskManager.disk_.push_back(disk);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    diskManager.disk_.clear();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_002 end";
+}
+
 } // STORAGE_DAEMON
 } // OHOS
-

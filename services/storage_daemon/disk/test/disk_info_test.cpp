@@ -1547,5 +1547,238 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_EjectDisk_003, TestSize.Leve
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_EjectDisk_003 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_CreatePartition_002
+ * @tc.desc: Verify the CreatePartition function with invalid type code.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->lastUsableSector_ = 1234566;
+    diskInfo->sectorSize_ = 512;
+    diskInfo->alignSector_ = 2048;
+
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "invalid_type";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    int32_t ret = diskInfo->CreatePartition(options);
+
+    EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_CreatePartition_003
+ * @tc.desc: Verify the CreatePartition function with sector out of range.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->lastUsableSector_ = 1234566;
+    diskInfo->sectorSize_ = 512;
+    diskInfo->alignSector_ = 2048;
+
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(9999999);
+    options.SetEndSector(102400);
+
+    int32_t ret = diskInfo->CreatePartition(options);
+
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_CreatePartition_004
+ * @tc.desc: Verify the CreatePartition function with CD/DVD disk type.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_004 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sr0";
+    int flag = static_cast<int>(DiskInfo::DiskType::CD_DVD_BD);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "ext4";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(102400);
+
+    int32_t ret = diskInfo->CreatePartition(options);
+
+    EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_CreatePartition_005
+ * @tc.desc: Verify the CreatePartition function with minimum size validation for vfat.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_005 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->lastUsableSector_ = 1234566;
+    diskInfo->sectorSize_ = 512;
+    diskInfo->alignSector_ = 2048;
+
+    OHOS::StorageManager::PartitionOptions options;
+    std::string typeCode = "vfat";
+    options.SetTypeCode(typeCode);
+    options.SetStartSector(2048);
+    options.SetEndSector(2048 + 100);
+
+    int32_t ret = diskInfo->CreatePartition(options);
+
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreatePartition_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_DeletePartition_002
+ * @tc.desc: Verify the DeletePartition function with CD/DVD disk type.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_DeletePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_DeletePartition_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sr0";
+    int flag = static_cast<int>(DiskInfo::DiskType::CD_DVD_BD);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    uint32_t partitionNum = 1;
+
+    int32_t ret = diskInfo->DeletePartition(partitionNum);
+
+    EXPECT_EQ(ret, E_DELETE_PARTITION_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_DeletePartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_FormatPartition_002
+ * @tc.desc: Verify the FormatPartition function with invalid fs type.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_002 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "invalid_fs";
+    options.SetFsType(fsType);
+
+    int32_t ret = diskInfo->FormatPartition(partitionNum, options);
+
+    EXPECT_EQ(ret, E_FORMAT_PARTITION_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_FormatPartition_003
+ * @tc.desc: Verify the FormatPartition function with CD/DVD disk type.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sr0";
+    int flag = static_cast<int>(DiskInfo::DiskType::CD_DVD_BD);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    uint32_t partitionNum = 1;
+    OHOS::StorageManager::FormatOptions options;
+    std::string fsType = "vfat";
+    options.SetFsType(fsType);
+
+    int32_t ret = diskInfo->FormatPartition(partitionNum, options);
+
+    EXPECT_EQ(ret, E_FORMAT_PARTITION_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_003 end";
+}
 }
 }
