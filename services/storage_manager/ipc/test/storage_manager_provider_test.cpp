@@ -2192,7 +2192,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_
     options.SetFsType(fsType);
 
     auto ret = storageManagerProviderTest_->FormatPartition(diskId, partitionNum, options);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_003 end";
 }
 
