@@ -53,11 +53,11 @@ bool CreatePartitionFuzzTest(const uint8_t *data, size_t size)
 bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
 {
     // Minimum required size: partitionNum(4) + startSector(8) + endSector(8) + at least 1 char for typeCode
-    constexpr size_t MIN_TYPE_CODE_CHARS = 1;
-    constexpr size_t MIN_DATA_SIZE = sizeof(int32_t) + sizeof(uint64_t) * 2 + MIN_TYPE_CODE_CHARS;
+    constexpr size_t minTypeCodeChars = 1;
+    constexpr size_t minDataSize = sizeof(int32_t) + sizeof(uint64_t) * 2 + minTypeCodeChars;
     // Maximum length for partition type code string
-    constexpr size_t MAX_TYPE_CODE_LENGTH = 32;
-    if ((data == nullptr) || (size < MIN_DATA_SIZE)) {
+    constexpr size_t maxTypeCodeLength = 32;
+    if ((data == nullptr) || (size < minDataSize)) {
         return false;
     }
 
@@ -86,9 +86,9 @@ bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
         offset += sizeof(uint64_t);
     }
 
-    // Extract type code (max MAX_TYPE_CODE_LENGTH chars)
+    // Extract type code (max maxTypeCodeLength chars)
     if (offset < size) {
-        size_t typeCodeLen = std::min(size - offset, MAX_TYPE_CODE_LENGTH);
+        size_t typeCodeLen = std::min(size - offset, maxTypeCodeLength);
         std::string typeCode(reinterpret_cast<const char*>(data + offset), typeCodeLen);
         options.SetTypeCode(typeCode);
     }

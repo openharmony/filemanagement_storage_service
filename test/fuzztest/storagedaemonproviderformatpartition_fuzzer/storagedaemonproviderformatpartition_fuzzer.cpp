@@ -56,8 +56,8 @@ bool FormatPartitionFuzzTest(const uint8_t *data, size_t size)
 bool FormatPartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
 {
     // Minimum size: uint8_t(minor) + uint32_t(partitionNum) + extra data for fsType
-    constexpr size_t MIN_EXTRA_DATA_SIZE = 4;
-    if ((data == nullptr) || (size < sizeof(uint32_t) + sizeof(uint8_t) + MIN_EXTRA_DATA_SIZE)) {
+    constexpr size_t minExtraDataSize = 4;
+    if ((data == nullptr) || (size < sizeof(uint32_t) + sizeof(uint8_t) + minExtraDataSize)) {
         return false;
     }
 
