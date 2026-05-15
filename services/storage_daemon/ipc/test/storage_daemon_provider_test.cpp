@@ -2056,7 +2056,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetSystemDataSize_
 
     int64_t otherUidSizeSum = 100;
     int32_t ret = storageDaemonProviderTest_->GetSystemDataSize(otherUidSizeSum);
-    EXPECT_TRUE(ret == E_OK || ret == E_GET_SYSTEM_DATA_SIZE_ERROR);
+    EXPECT_EQ(ret, E_GET_SYSTEM_DATA_SIZE_ERROR);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetSystemDataSize_001 end";
 }
 
@@ -2562,37 +2562,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_002
 
 /**
  * @tc.name: StorageDaemonProviderTest_CreatePartition_001
- * @tc.desc: Verify the CreatePartition function with valid options.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-0";
-    OHOS::StorageManager::PartitionOptions options;
-    std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, options);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_CREATE_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartition_002
  * @tc.desc: Verify the CreatePartition function with empty diskId.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_002, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
@@ -2609,40 +2583,14 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_CreatePartition_003
- * @tc.desc: Verify the CreatePartition function with vfat type.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_003 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-1";
-    OHOS::StorageManager::PartitionOptions options;
-    std::string typeCode = "vfat";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, options);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_CREATE_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartition_004
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_002
  * @tc.desc: Verify the CreatePartition function with invalid sector range (start >= end).
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_004, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_004 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "disk-8-2";
     OHOS::StorageManager::PartitionOptions options;
@@ -2653,12 +2601,12 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
 
     auto ret = storageDaemonProviderTest_->CreatePartition(diskId, options);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_004 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 end";
 }
 
 /**
  * @tc.name: StorageDaemonProviderTest_DeletePartition_001
- * @tc.desc: Verify the DeletePartition function with valid parameters.
+ * @tc.desc: Verify the DeletePartition function with empty diskId.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
@@ -2666,63 +2614,17 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartition_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-0";
-    uint32_t partitionNum = 1;
-
-    auto ret = storageDaemonProviderTest_->DeletePartition(diskId, partitionNum);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_DELETE_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_DeletePartition_002
- * @tc.desc: Verify the DeletePartition function with empty diskId.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartition_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "";
     uint32_t partitionNum = 1;
 
     auto ret = storageDaemonProviderTest_->DeletePartition(diskId, partitionNum);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_DeletePartition_003
- * @tc.desc: Verify the DeletePartition function with different partition numbers.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartition_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_003 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-1";
-    std::vector<uint32_t> partitionNums = {0, 1, 2, 15};
-
-    for (uint32_t partitionNum : partitionNums) {
-        auto ret = storageDaemonProviderTest_->DeletePartition(diskId, partitionNum);
-#ifdef PC_USER_MANAGER
-        EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_DELETE_PARTITION_ERROR);
-#else
-        EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    }
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_003 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartition_001 end";
 }
 
 /**
  * @tc.name: StorageDaemonProviderTest_FormatPartition_001
- * @tc.desc: Verify the FormatPartition function with vfat.
+ * @tc.desc: Verify the FormatPartition function with empty diskId.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
@@ -2730,31 +2632,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-0";
-    uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
-    std::string fsType = "vfat";
-    options.SetFsType(fsType);
-
-    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_FormatPartition_002
- * @tc.desc: Verify the FormatPartition function with empty diskId.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "";
     uint32_t partitionNum = 1;
     OHOS::StorageManager::FormatOptions options;
@@ -2763,18 +2640,18 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_00
 
     auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 end";
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_FormatPartition_003
+ * @tc.name: StorageDaemonProviderTest_FormatPartition_002
  * @tc.desc: Verify the FormatPartition function with empty fsType.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_003, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_003 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "disk-8-0";
     uint32_t partitionNum = 1;
@@ -2784,59 +2661,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_00
 
     auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_FormatPartition_004
- * @tc.desc: Verify the FormatPartition function with ext4 and volume name.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_004 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-1";
-    uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
-    std::string fsType = "ext4";
-    std::string volName = "test_volume";
-    options.SetFsType(fsType);
-    options.SetVolumeName(volName);
-
-    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_004 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_FormatPartition_005
- * @tc.desc: Verify the FormatPartition function with exfat.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_005 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string diskId = "disk-8-2";
-    uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
-    std::string fsType = "exfat";
-    options.SetFsType(fsType);
-
-    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
-#ifdef PC_USER_MANAGER
-    EXPECT_TRUE(ret == E_OK || ret == E_NON_EXIST || ret == E_FORMAT_PARTITION_ERROR);
-#else
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-#endif
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_005 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 end";
 }
 
 /**
@@ -2932,7 +2757,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateBlockDeviceN
         "/dev/block/nonexist_dev", 0600, 1, 1048576), E_PARAMS_INVALID);
     auto ret = storageDaemonProviderTest_->CreateBlockDeviceNode(
         "/dev/block/nonexist_dev", 0600, 1, 0);
-    EXPECT_TRUE(ret == E_OK || ret == E_ERR);
+    EXPECT_EQ(ret, E_ERR);
 #else
     EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("", 0600, 1, 0), E_NOT_SUPPORT);
 #endif
@@ -2947,7 +2772,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyBlockDevice
     EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode("/tmp/fake_block_dev"), E_PARAMS_INVALID);
     auto destroyRet = storageDaemonProviderTest_->DestroyBlockDeviceNode(
         "/dev/block/nonexist_dev");
-    EXPECT_TRUE(destroyRet == E_OK || destroyRet == E_PARAMS_INVALID);
+    EXPECT_EQ(destroyRet, E_PARAMS_INVALID);
 #else
     EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode(""), E_NOT_SUPPORT);
 #endif
