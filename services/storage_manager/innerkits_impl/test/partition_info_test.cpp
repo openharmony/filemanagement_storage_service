@@ -313,4 +313,88 @@ HWTEST_F(PartitionTableInfoTest, PartitionTableInfo_Unmarshalling_0000, testing:
     delete result;
     GTEST_LOG_(INFO) << "PartitionTableInfoTest-end PartitionTableInfo_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_PartitionInfo_SetGetFsType_0000
+ * @tc.name: PartitionInfo_SetGetFsType_0000
+ * @tc.desc: Test function of SetFsType and GetFsType interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(PartitionInfoTest, PartitionInfo_SetGetFsType_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "PartitionInfoTest-begin PartitionInfo_SetGetFsType_0000";
+    PartitionInfo info;
+
+    // Test SetFsType and GetFsType with ext4
+    std::string fsTypeExt4 = "ext4";
+    info.SetFsType(fsTypeExt4);
+    EXPECT_EQ(info.GetFsType(), fsTypeExt4);
+
+    // Test SetFsType and GetFsType with vfat
+    std::string fsTypeVfat = "vfat";
+    info.SetFsType(fsTypeVfat);
+    EXPECT_EQ(info.GetFsType(), fsTypeVfat);
+
+    // Test SetFsType and GetFsType with exfat
+    std::string fsTypeExfat = "exfat";
+    info.SetFsType(fsTypeExfat);
+    EXPECT_EQ(info.GetFsType(), fsTypeExfat);
+
+    // Test SetFsType and GetFsType with ntfs
+    std::string fsTypeNtfs = "ntfs";
+    info.SetFsType(fsTypeNtfs);
+    EXPECT_EQ(info.GetFsType(), fsTypeNtfs);
+
+    // Test SetFsType and GetFsType with f2fs
+    std::string fsTypeF2fs = "f2fs";
+    info.SetFsType(fsTypeF2fs);
+    EXPECT_EQ(info.GetFsType(), fsTypeF2fs);
+
+    // Test SetFsType and GetFsType with empty string
+    std::string fsTypeEmpty = "";
+    info.SetFsType(fsTypeEmpty);
+    EXPECT_EQ(info.GetFsType(), fsTypeEmpty);
+
+    GTEST_LOG_(INFO) << "PartitionInfoTest-end PartitionInfo_SetGetFsType_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_PartitionInfo_FsTypeMarshalling_0000
+ * @tc.name: PartitionInfo_FsTypeMarshalling_0000
+ * @tc.desc: Test Marshalling and Unmarshalling with FsType for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(PartitionInfoTest, PartitionInfo_FsTypeMarshalling_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "PartitionInfoTest-begin PartitionInfo_FsTypeMarshalling_0000";
+    PartitionInfo original;
+    original.SetPartitionNum(1);
+    original.SetDiskId("disk-8-0");
+    original.SetStartSector(2048);
+    original.SetEndSector(4096);
+    original.SetSizeBytes(1024);
+    original.SetFsType("ext4");
+
+    Parcel parcel;
+    ASSERT_TRUE(original.Marshalling(parcel));
+
+    PartitionInfo* restored = PartitionInfo::Unmarshalling(parcel);
+    ASSERT_TRUE(restored != nullptr);
+
+    EXPECT_EQ(restored->GetPartitionNum(), original.GetPartitionNum());
+    EXPECT_EQ(restored->GetDiskId(), original.GetDiskId());
+    EXPECT_EQ(restored->GetStartSector(), original.GetStartSector());
+    EXPECT_EQ(restored->GetEndSector(), original.GetEndSector());
+    EXPECT_EQ(restored->GetSizeBytes(), original.GetSizeBytes());
+    EXPECT_EQ(restored->GetFsType(), original.GetFsType());
+    delete restored;
+
+    GTEST_LOG_(INFO) << "PartitionInfoTest-end PartitionInfo_FsTypeMarshalling_0000";
+}
 }

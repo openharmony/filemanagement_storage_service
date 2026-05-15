@@ -1780,5 +1780,80 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_003, TestSiz
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_003 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetMediaType_001
+ * @tc.desc: Verify the GetMediaType function returns default value.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetMediaType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetMediaType_001 start";
+
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    int flag = 0;
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    // GetMediaType returns default value (UNKNOWN_MEDIA_TYPE)
+    int32_t mediaType = diskInfo->GetMediaType();
+    EXPECT_EQ(mediaType, DiskInfo::MediaType::UNKNOWN_MEDIA_TYPE);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetMediaType_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetRemovable_001
+ * @tc.desc: Verify the GetRemovable function returns default value.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetRemovable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetRemovable_001 start";
+
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    int flag = 0;
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    // GetRemovable returns default value (true)
+    bool removable = diskInfo->GetRemovable();
+    EXPECT_TRUE(removable);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetRemovable_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetExtraInfo_001
+ * @tc.desc: Verify the GetExtraInfo function returns default value.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetExtraInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetExtraInfo_001 start";
+
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    int flag = 0;
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    // GetExtraInfo returns default value (empty string)
+    std::string extraInfo = diskInfo->GetExtraInfo();
+    EXPECT_EQ(extraInfo, "");
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetExtraInfo_001 end";
+}
 }
 }
