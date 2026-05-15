@@ -103,6 +103,9 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidersetstopscanflag_fuzzer:fuzztest",
     "storagedaemonprovidergetdirlistspacebypaths_fuzzer:fuzztest",
     "storagedaemonprovidergetsystemdatasize_fuzzer:fuzztest",
+    "storagedaemonprovidercreatepartition_fuzzer:fuzztest",
+    "storagedaemonproviderdeletepartition_fuzzer:fuzztest",
+    "storagedaemonproviderformatpartition_fuzzer:fuzztest",
   ]
 }
 
