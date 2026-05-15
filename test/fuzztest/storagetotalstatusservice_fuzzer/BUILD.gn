@@ -40,9 +40,11 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
 
   external_deps = [
     "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "security_guard:libsg_collect_sdk",
   ]
 }
 

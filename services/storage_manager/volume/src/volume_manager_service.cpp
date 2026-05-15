@@ -16,8 +16,14 @@
 #include "volume/volume_manager_service.h"
 #include "volume/volume_manager_service_ext.h"
 
+#include <chrono>
+#include <cJSON.h>
+#include "accesstoken_kit.h"
 #include "disk.h"
 #include "disk/disk_manager_service.h"
+#include "event_info.h"
+#include "ipc_skeleton.h"
+#include "sg_collect_client.h"
 #include "parameters.h"
 #include "safe_map.h"
 #include "securec.h"
@@ -39,6 +45,8 @@ const int32_t MTP_DEVICE_NAME_LEN = 512;
 namespace OHOS {
 namespace StorageManager {
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
+constexpr int64_t REPORT_EVENT_ID = 0x30000101;
+constexpr const char* REPORT_VERSION = "1.0";
 
 char g_usbDes = 'A';
 
@@ -710,6 +718,57 @@ int32_t VolumeManagerService::CreateIsoImage(const std::string &volumeId, const 
     return sdCommunication->CreateIsoImage(volumeId, filePath);
 }
 
+static int32_t ReportSecurityInfo(int32_t userId, const std::string &appId, const std::string &fsType)
+{
+    LOGI("StorageUtils ReportSecurityInfo start");
+    auto now = std::chrono::system_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    int64_t happenTime = ms.count();
+
+    cJSON *contentJson = cJSON_CreateObject();
+    if (contentJson == nullptr) {
+        LOGE("Failed to create cJSON object");
+        return -1;
+    }
+    cJSON_AddNumberToObject(contentJson, "userId", userId);
+    cJSON_AddStringToObject(contentJson, "appId", appId.c_str());
+    cJSON_AddStringToObject(contentJson, "burningType", fsType.c_str());
+    cJSON_AddNumberToObject(contentJson, "happenTime", static_cast<double>(happenTime));
+
+    char *contentStr = cJSON_PrintUnformatted(contentJson);
+    std::string content = (contentStr != nullptr) ? contentStr : "";
+    cJSON_Delete(contentJson);
+    if (contentStr != nullptr) {
+        cJSON_free(contentStr);
+    }
+
+    OHOS::Security::SecurityGuard::EventInfo eventInfo(REPORT_EVENT_ID, REPORT_VERSION, content);
+    LOGI("eventInfo created: eventId=%{public}lld, version=%{public}s, content=%{public}s",
+         static_cast<long long>(REPORT_EVENT_ID), REPORT_VERSION, content.c_str());
+    auto wrappedInfo = std::make_shared<OHOS::Security::SecurityGuard::EventInfo>(eventInfo);
+    OHOS::Security::SecurityGuard::NativeDataCollectKit nativeDataCollectKit;
+    int32_t reportResult = nativeDataCollectKit.ReportSecurityInfo(wrappedInfo);
+    LOGI("ReportSecurityInfo result: reportResult=%{public}d", reportResult);
+    return reportResult;
+}
+
+void VolumeManagerService::ReportMountSuccessInfo(const std::string &volumeId, const BurnParams &params)
+{
+    LOGI("ReportMountSuccessInfo start");
+    uint32_t callerTokenId = OHOS::IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::HapTokenInfo hapTokenInfo;
+    int32_t tokenRet = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(callerTokenId, hapTokenInfo);
+
+    std::string appId = (tokenRet == E_OK) ? hapTokenInfo.bundleName : "";
+    int32_t userId = (tokenRet == E_OK) ? hapTokenInfo.userID : -1;
+    int32_t reportRet = ReportSecurityInfo(userId, appId, params.fsType);
+    LOGI("ReportSecurityInfo result: reportRet=%{public}d", reportRet);
+    if (reportRet != E_OK) {
+        LOGE("VolumeManagerService::ReportMountSuccessInfo failed, ret: %{public}d", reportRet);
+    }
+    LOGI("ReportMountSuccessInfo end");
+}
+
 int32_t VolumeManagerService::Burn(const std::string &volumeId, const BurnParams &params)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -718,7 +777,9 @@ int32_t VolumeManagerService::Burn(const std::string &volumeId, const BurnParams
         LOGE("Burn sdCommunication is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    return sdCommunication->Burn(volumeId, params);
+    int32_t result = sdCommunication->Burn(volumeId, params);
+    ReportMountSuccessInfo(volumeId, params);
+    return result;
 }
 
 int32_t VolumeManagerService::VerifyBurnData(const std::string &volumeId, uint32_t verType)
