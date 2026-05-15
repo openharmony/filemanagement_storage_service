@@ -17,6 +17,8 @@
 #include "disk_manager/volume/vfat_operator.h"
 #include "disk_manager/volume/ntfs_operator.h"
 #include "disk_manager/volume/exfat_operator.h"
+#include "disk_manager/volume/hmfs_operator.h"
+#include "disk_manager/volume/ext4_operator.h"
 #include "storage_service_log.h"
 
 #include <mutex>
@@ -35,6 +37,9 @@ void VolumeOperatorFactory::RegisterOperators(
     operators["vfat"] = std::make_shared<VfatOperator>();
     operators["ntfs"] = std::make_shared<NtfsOperator>();
     operators["exfat"] = std::make_shared<ExfatOperator>();
+    operators["f2fs"] = std::make_shared<HmfsOperator>();
+    operators["hmfs"] = std::make_shared<HmfsOperator>();
+    operators["ext4"] = std::make_shared<Ext4Operator>();
 
     LOGI("VolumeOperatorFactory::RegisterOperators registered %{public}zu operators",
          operators.size());

@@ -136,6 +136,7 @@ public:
 
     MOCK_METHOD2(Burn, int32_t(const std::string&, const BurnParams&));
     MOCK_METHOD2(VerifyBurnData, int32_t(const std::string&, uint32_t));
+    MOCK_METHOD2(GetBlockInfoByType, int32_t(const std::string &, std::string &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS

@@ -220,6 +220,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/src",
     "${storage_daemon_path}/ipc/test",
     "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/scan_device/src",
   ]
 
   sources = [
@@ -229,6 +230,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/scan_device/src/scan_device.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/ipc/test/hi_audit_test.cpp",
     "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
@@ -245,6 +247,8 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/exfat_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/hmfs_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/ext4_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/ivolume_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/ntfs_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/vfat_operator.cpp",

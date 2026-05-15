@@ -32,6 +32,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+using json = nlohmann::json;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -51,10 +52,8 @@ constexpr const char *ROTATIONAL_NODE = "/queue/rotational";
 constexpr const char *STATE_NODE = "/device/state";
 constexpr const char *MODEL_NODE = "/device/model";
 constexpr const char *VENDOR_NODE = "/device/vendor";
-// 磁盘 ID 格式前缀
 constexpr const char *DISK_ID_PREFIX = "disk-";
 constexpr const char *DISK_ID_CONTACT = "-";
-// 用于匹配 SATA 端口标识符的正则表达式，例如 "ata1", "ata2"
 constexpr const char *ATA_PORT_PATTERN = "ata([0-9]+)";
 
 constexpr int NVME_IDENTIFY_DATA_SIZE = 4096;
@@ -65,16 +64,109 @@ const size_t NVME_BASE_LEN = 4;
 const char NVME_LINK = 'n';
 constexpr uint32_t NVME_SERIAL_NUMBER_OFFSET = 0x40;
 constexpr uint32_t NVME_SERIAL_NUMBER_LENGTH = 20;
- // 单个扇区上限
 constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
-// 标准 hd_driveid 结构体大小为 512 字节
 constexpr size_t HD_DRIVEID_SIZE = 512;
-// 转速在 hd_driveid 结构体 words206_254 属性的索引位置
 constexpr uint16_t RPM_ARRAY_INDEX = 11;
+constexpr size_t NVME_MIN_NAME_LEN = 7;
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
     : sysBlockPath(sysBlockPath), devBlockPath(DEV_PATH)
 {
+}
+
+static std::string MediaTypeToString(MediaType type)
+{
+    switch (type) {
+        case MediaType::SSD: return "SSD";
+        case MediaType::HDD: return "HDD";
+        default: return "UNKNOWN";
+    }
+}
+
+static MediaType StringToMediaType(const std::string& str)
+{
+    std::string upper = str;
+    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    if (upper == "SSD") {
+        return MediaType::SSD;
+    }
+    if (upper == "HDD") {
+        return MediaType::HDD;
+    }
+    return MediaType::UNKNOWN;
+}
+
+json BlockInfo::ToJson() const
+{
+    return json{
+        {"sizeBytes", sizeBytes},
+        {"vendor", vendor},
+        {"model", model},
+        {"interfaceType", interfaceType},
+        {"rpm", rpm},
+        {"state", state},
+        {"mediaType", MediaTypeToString(mediaType)},
+        {"removable", removable},
+        {"serialNumber", serialNumber},
+        {"pciePath", pciePath},
+        {"location", location},
+        {"diskId", diskId},
+        {"usedBytes", usedBytes},
+        {"availableBytes", availableBytes},
+        {"devicePath", devicePath},
+        {"port", port}
+    };
+}
+
+BlockInfo BlockInfo::FromJson(const json& j)
+{
+    BlockInfo info;
+    info.sizeBytes = j.value("sizeBytes", 0ULL);
+    info.vendor = j.value("vendor", "");
+    info.model = j.value("model", "");
+    info.interfaceType = j.value("interfaceType", "");
+    info.rpm = j.value("rpm", 0U);
+    info.state = j.value("state", "");
+    info.mediaType = StringToMediaType(j.value("mediaType", "UNKNOWN"));
+    info.removable = j.value("removable", false);
+    info.serialNumber = j.value("serialNumber", "");
+    info.pciePath = j.value("pciePath", "");
+    info.location = j.value("location", "");
+    info.diskId = j.value("diskId", "");
+    info.usedBytes = j.value("usedBytes", 0ULL);
+    info.availableBytes = j.value("availableBytes", 0ULL);
+    info.devicePath = j.value("devicePath", "");
+    info.port = j.value("port", "");
+    return info;
+}
+
+std::string BlockInfo::SerializeVector(const std::vector<BlockInfo>& infos)
+{
+    json j = json::array();
+    for (const auto& info : infos) {
+        j.push_back(info.ToJson());
+    }
+    return j.dump();
+}
+
+std::vector<BlockInfo> BlockInfo::DeserializeVector(const std::string &jsonStr)
+{
+    std::vector<BlockInfo> infos;
+    if (jsonStr.empty()) {
+        return infos;
+    }
+
+    json j = json::parse(jsonStr, nullptr, false);
+    if (j.is_discarded() || !j.is_array()) {
+        return infos;
+    }
+
+    infos.reserve(j.size());
+    for (const auto &item : j) {
+        infos.push_back(FromJson(item));
+    }
+
+    return infos;
 }
 
 bool ScanDevice::ReadRemovableNode(const std::string &deviceName, bool &isRemovable)
@@ -98,11 +190,9 @@ bool ScanDevice::ReadRemovableNode(const std::string &deviceName, bool &isRemova
 
 bool ScanDevice::IsDataDisk(const std::string &deviceName, const bool isNeedCheckUfs, const bool isRemovable)
 {
-    // removable标签被设置, 值为0，且是sd*，则是数据盘
     if (!isNeedCheckUfs) {
         return !isRemovable && (deviceName.find(SD_STRING) == 0);
     }
-    // 如果无removable标签，使用readlink函数读取实际device节点
     std::string devicePath = sysBlockPath + SPLIT_STRING + deviceName;
     char linkTarget[PATH_MAX];
     ssize_t len = readlink(devicePath.c_str(), linkTarget, sizeof(linkTarget) - 1);
@@ -110,7 +200,6 @@ bool ScanDevice::IsDataDisk(const std::string &deviceName, const bool isNeedChec
     if (len != -1) {
         linkTarget[len] = '\0';
         std::string targetPath(linkTarget);
-        // 检查是否为ufs设备，非ufs设备则为数据盘
         if (targetPath.find(UFS_STRING) == std::string::npos) {
             LOGI("%{public}s isn't ufs: %{public}s", devicePath.c_str(), targetPath.c_str());
             return true;
@@ -126,19 +215,15 @@ bool ScanDevice::IsDataDisk(const std::string &deviceName, const bool isNeedChec
 
 bool ScanDevice::IsValidNvmeDevice(const std::string &deviceName)
 {
-    // 排除 nvme0* 开头的设备（通常视为系统盘）
     if (deviceName.find(NVME0_STRING) == 0) {
         LOGI("Ignore nvme0* node: %{public}s", deviceName.c_str());
         return false;
     }
-    // 基础长度检查：nvmeXnY 至少需要 7 个字符 (nvme0n1)
-    if (deviceName.size() < 7) {
+    if (deviceName.size() < NVME_MIN_NAME_LEN) {
         LOGI("Ignore nvme name too short: %{public}s", deviceName.c_str());
         return false;
     }
-    // 验证格式为 nvme[数字]n[分区]
     size_t pos = NVME_BASE_LEN;
-    // 验证并跳过控制器编号 (至少1位数字)
     if (!std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         LOGI("Ignore invalid nvme format: missing controller ID in %{public}s", deviceName.c_str());
         return false;
@@ -146,13 +231,11 @@ bool ScanDevice::IsValidNvmeDevice(const std::string &deviceName)
     while (pos < deviceName.size() && std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         ++pos;
     }
-    // 验证 'n' 字符存在
     if (pos >= deviceName.size() || deviceName[pos] != NVME_LINK) {
         LOGI("Ignore invalid nvme format: missing 'n' in %{public}s", deviceName.c_str());
         return false;
     }
-    ++pos; // 跳过 'n'
-    // 验证分区编号 (至少1位数字)
+    ++pos;
     if (pos >= deviceName.size() || !std::isdigit(static_cast<unsigned char>(deviceName[pos]))) {
         LOGI("Ignore invalid nvme format: missing partition ID in %{public}s", deviceName.c_str());
         return false;
@@ -175,7 +258,6 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-        // 判断是否为 s* 节点或 nvme* 节点
         bool isSDevice = (deviceName.length() > 0 && deviceName[0] == 's');
         bool isNvmeDevice = (deviceName.find(NVME_STRING) == 0);
         if (!isSDevice && !isNvmeDevice) {
@@ -195,7 +277,6 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
         if (isSDevice && !IsDataDisk(deviceName, isNeedCheckUfs, isRemovable)) {
             continue;
         }
-        // 获取设备信息
         BlockInfo blockInfo;
         blockInfo.removable = isRemovable;
         if (GetBlockInfo(deviceName, isNvmeDevice, blockInfo) == 0) {
@@ -231,7 +312,6 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
     return 0;
 }
 
-// 去除字符串头部和尾部的空格
 std::string TrimSpaces(const std::string &str)
 {
     auto first = std::find_if(str.begin(), str.end(), [](unsigned char c) {
@@ -255,12 +335,10 @@ bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
     }
     std::string rawContent;
     if (std::getline(file, rawContent)) {
-        // 去除前后空格
         content = TrimSpaces(rawContent);
         file.close();
         return true;
     } else {
-        // 如果读取失败（例如文件为空），content 设为空
         content = "";
         file.close();
         return false;
@@ -279,7 +357,6 @@ bool ScanDevice::ParseStringToUlongLong(const std::string &str, unsigned long lo
     if (res.ec != std::errc{} || res.ptr == begin) {
         return false;
     }
-    // 先跳过尾部空白字符
     const char *ptr = res.ptr;
     while (ptr < end && std::isspace(static_cast<unsigned char>(*ptr))) {
         ++ptr;
@@ -358,11 +435,9 @@ std::string ScanDevice::GetInterfaceType(const std::string &deviceName)
 uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice)
 {
 	// LCOV_EXCL_START
-    // NVME设备不用获取转速
     if (isNvmeDevice) {
         return 0;
     }
-    // 机械硬盘转速根据ioctl获取IDENTIFY DEVICE信息获取
     std::string devicePath = devBlockPath + SPLIT_STRING + deviceName;
     int fd = open(devicePath.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
@@ -398,7 +473,6 @@ std::string ScanDevice::GetDiskState(const std::string &deviceName)
 
 MediaType ScanDevice::GetMediaType(const std::string &deviceName, const bool isNvmeDevice)
 {
-    // Nvme结点暂定是SSD
     if (isNvmeDevice) {
         return MediaType::SSD;
     }
@@ -416,7 +490,6 @@ MediaType ScanDevice::GetMediaType(const std::string &deviceName, const bool isN
     return MediaType::UNKNOWN;
 }
 
-// 获取 Sd* 设备序列号
 std::string ScanDevice::GetSataSerialNumber(int fd)
 {
     // LCOV_EXCL_START
@@ -442,13 +515,11 @@ std::string ScanDevice::GetNvmeSerialNumber(int fd)
     cmd.data_len = NVME_IDENTIFY_DATA_SIZE;
     cmd.cdw10 = 1;
     cmd.cdw11 = 0;
-    // cdw10 = 1 表示获取 Page 0 (Namespace Identifier)，序列号在偏移 0x40 处
     int ret = ioctl(fd, NVME_IOCTL_ADMIN_CMD, cmd);
     if (ret < 0) {
         LOGE("GetNvmeSerialNumber: NvmeIdentifyCmd failed, ret=%d", ret);
         return "Unknown";
     }
-    // 序列号位于偏移 0x40 (64) 处，长度为 20 字节
     const char *serialPtr = reinterpret_cast<const char *>(identifyData) + NVME_SERIAL_NUMBER_OFFSET;
     std::string serial(serialPtr, NVME_SERIAL_NUMBER_LENGTH);
     return TrimSpaces(serial);
@@ -457,7 +528,6 @@ std::string ScanDevice::GetNvmeSerialNumber(int fd)
 
 std::string ScanDevice::GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice)
 {
-    // 序列号根据用户态程序获取（发ioctl）获取
     // LCOV_EXCL_START
     std::string devicePath = devBlockPath + SPLIT_STRING + deviceName;
     int fd = open(devicePath.c_str(), O_RDONLY | O_NONBLOCK);
@@ -483,7 +553,6 @@ std::string ScanDevice::GetSerialNumber(const std::string &deviceName, const boo
 
 std::string ScanDevice::GetPciePath(const std::string &deviceName)
 {
-    // PCIe路径根据/sys/block/sda软链接指向的路径
     std::string devicePath = sysBlockPath + SPLIT_STRING + deviceName;
     char linkTarget[PATH_MAX];
     ssize_t len = readlink(devicePath.c_str(), linkTarget, sizeof(linkTarget) - 1);
@@ -504,7 +573,6 @@ std::string ScanDevice::GetDiskId(const std::string &deviceName)
         LOGE("GetDiskId failed: read dev node failed");
         return "";
     }
-    // 内容格式为 "主设备号:次设备号"
     size_t colonPos = content.find(DEVICE_NUMBER_SPLIT);
     if (colonPos == std::string::npos) {
         LOGE("GetDiskId failed: invalid dev node format");
@@ -512,7 +580,6 @@ std::string ScanDevice::GetDiskId(const std::string &deviceName)
     }
     std::string major = content.substr(0, colonPos);
     std::string minor = content.substr(colonPos + 1);
-    // 去除可能的换行符
     if (!minor.empty() && minor.back() == '\n') {
         minor.pop_back();
     }
@@ -536,7 +603,6 @@ uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
         if (name == "." || name == "..") {
             continue;
         }
-        // 查找 deviceName* 开头的目录
         if (name.find(deviceName) != 0 || name.length() <= deviceName.length() || !std::isdigit(name.back())) {
             continue;
         }
@@ -598,7 +664,6 @@ std::string ScanDevice::GetDevicePath(const std::string &deviceName)
 
 std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDevice)
 {
-    // 如果是 nvme 设备，暂时返回空字符串
     if (isNvmeDevice) {
         LOGI("GetPort: nvme device, return empty");
         return "";
@@ -607,7 +672,6 @@ std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDe
         LOGE("GetPort failed: pciePath is empty");
         return "";
     }
-    // 查找 ata[数字] 模式
     std::regex ataPattern(ATA_PORT_PATTERN);
     std::smatch match;
     if (std::regex_search(pciePath, match, ataPattern)) {

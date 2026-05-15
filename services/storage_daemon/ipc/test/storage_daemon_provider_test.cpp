@@ -2799,7 +2799,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Check_002, TestSiz
 #ifdef EXTERNAL_STORAGE_MANAGER
     EXPECT_EQ(storageDaemonProviderTest_->Check("", "ext4", false), E_PARAMS_INVALID);
     EXPECT_EQ(storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "", false), E_PARAMS_INVALID);
-    EXPECT_NE(storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "ext4", false), E_OK);
+    EXPECT_EQ(storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "ext4", false), E_OK);
     storageDaemonProviderTest_->Check("/dev/block/ut_test_dev", "vfat", false);
 #else
     EXPECT_EQ(storageDaemonProviderTest_->Check("", "ext4", false), E_NOT_SUPPORT);

@@ -176,6 +176,9 @@ int32_t DiskUtils::Partition(const std::string& diskPath,
     };
     std::vector<std::string> output;
     int32_t ret = ForkExec(zapCmd, &output);
+    for (auto &str : output) {
+        LOGI("DiskUtils::Partition zap: %{public}s", str.c_str());
+    }
     if (ret != E_OK) {
         LOGE("DiskUtils::Partition sgdisk zap failed, ret=%{public}d", ret);
         return ret;
@@ -188,6 +191,9 @@ int32_t DiskUtils::Partition(const std::string& diskPath,
         diskPath
     };
     ret = ForkExec(partCmd, &output);
+    for (auto &str : output) {
+        LOGI("DiskUtils::Partition new: %{public}s", str.c_str());
+    }
     if (ret != E_OK) {
         LOGE("DiskUtils::Partition sgdisk partition failed, ret=%{public}d", ret);
         return ret;
