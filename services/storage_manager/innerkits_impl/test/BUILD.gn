@@ -372,6 +372,7 @@ group("storage_manager_innerkits_test") {
   deps = [
     ":disk_test",
     ":partition_info_test",
+    ":format_options_test",
     ":partition_options_test",
     ":partition_table_info_test",
     ":storage_stats_test",
