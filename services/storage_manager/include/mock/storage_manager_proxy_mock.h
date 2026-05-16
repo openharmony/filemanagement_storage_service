@@ -167,7 +167,8 @@ public:
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
     int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams) override;
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
-    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams) override;
+    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
+                            const FormatParams &formatParams) override;
     int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 private:

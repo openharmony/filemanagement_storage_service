@@ -1040,7 +1040,8 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
     return E_OK;
 }
 
-int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams)
+int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum,
+    const OHOS::StorageManager::FormatParams &formatParams)
 {
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
