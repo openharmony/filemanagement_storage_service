@@ -548,13 +548,9 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
             CreateTableVolume(it, split.end(), table, foundPart, partitionDev);
         }
     }
-    if (lines.size() == 1 && table != Table::UNKNOWN) {
-        LOGI("[L3:DiskInfo] ReadDiskLines: <<< EXIT SUCCESS <<<");
-        return E_OK;
-    }
     if (table == Table::UNKNOWN || !foundPart) {
-        LOGI("[L3:DiskInfo] ReadDiskLines: trying unknown table");
-        return CreateUnknownTabVol();
+        LOGI("[L3:DiskInfo] ReadDiskLines: exception disk, table=%{public}d, part=%{public}d", table, foundPart);
+        CreateUnknownTabVol();
     }
     LOGI("[L3:DiskInfo] ReadDiskLines: <<< EXIT SUCCESS <<<");
     return E_OK;
