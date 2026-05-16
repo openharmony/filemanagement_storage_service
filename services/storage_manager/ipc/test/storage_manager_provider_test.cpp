@@ -1991,7 +1991,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_VerifyBurnData_0
 
 /**
  * @tc.name: StorageManagerProviderTest_CreatePartition_001
- * @tc.desc: Verify the CreatePartition function with valid options.
+ * @tc.desc: Verify the CreatePartition function with valid params.
  * @tc.type: FUNC
  * @tc.require: AR20250418146433
  */
@@ -2002,11 +2002,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_
     std::string diskId = "disk-8-0";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_001 end";
 }
@@ -2024,11 +2024,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_
     std::string diskId = "";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_002 end";
 }
@@ -2046,11 +2046,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_
     std::string diskId = "disk-8-1";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "vfat";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_003 end";
 }
@@ -2068,11 +2068,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreatePartition_
     std::string diskId = "disk-8-2";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(102400);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(102400);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageManagerProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageManagerProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreatePartition_004 end";
 }

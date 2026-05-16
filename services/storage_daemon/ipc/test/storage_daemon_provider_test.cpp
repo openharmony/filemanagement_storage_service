@@ -2573,11 +2573,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
     std::string diskId = "";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 end";
 }
@@ -2595,11 +2595,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
     std::string diskId = "disk-8-2";
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(102400);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(102400);
+    partitionParams.SetEndSector(102400);
 
-    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, options);
+    auto ret = storageDaemonProviderTest_->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 end";
 }

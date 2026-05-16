@@ -1634,12 +1634,12 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreatePartition_00
 
     std::string diskId = "disk-8-0";
     OHOS::StorageManager::PartitionParams partitionParams;
-    options.SetPartitionNum(1);
-    options.SetStartSector(2048);
-    options.SetEndSector(4096);
-    options.SetTypeCode("0x07");
+    partitionParams.SetPartitionNum(1);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(4096);
+    partitionParams.SetTypeCode("0x07");
 
-    int32_t result = sdCommunication->CreatePartition(diskId, options);
+    int32_t result = sdCommunication->CreatePartition(diskId, partitionParams);
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreatePartition_0000";

@@ -495,7 +495,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_CreatePartition_0001, test
     DiskManagerService &dmService = DiskManagerService::GetInstance();
     std::string nonExistentDiskId = "non-existent-disk-id-4";
     PartitionParams partitionParams;
-    int32_t result = dmService.CreatePartition(nonExistentDiskId, options);
+    int32_t result = dmService.CreatePartition(nonExistentDiskId, partitionParams);
 
     EXPECT_EQ(result, E_NON_EXIST);
 

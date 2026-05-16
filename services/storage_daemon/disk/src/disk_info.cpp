@@ -1014,7 +1014,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< this disk not support format partition");
         return E_FORMAT_PARTITION_NOT_SUPPORT;
     }
-    std::string fsType = options.GetFsType();
+    std::string fsType = formatParams.GetFsType();
     auto iter = formatTypeMap_.find(fsType);
     if (iter == formatTypeMap_.end()) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< fsType %{public}s not supported", fsType.c_str());

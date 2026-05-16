@@ -1573,11 +1573,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_002, TestSiz
 
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "invalid_type";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
 
@@ -1609,11 +1609,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_003, TestSiz
 
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(9999999);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(9999999);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
@@ -1642,11 +1642,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_004, TestSiz
 
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
 
@@ -1678,11 +1678,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_005, TestSiz
 
     OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "vfat";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(2048 + 100);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(2048 + 100);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 

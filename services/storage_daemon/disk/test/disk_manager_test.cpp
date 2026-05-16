@@ -542,7 +542,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_
     DiskManager &diskManager = DiskManager::Instance();
     std::string diskId = "disk-8-99";
     OHOS::StorageManager::PartitionParams partitionParams;
-    int ret = diskManager.HandleCreatePartition(diskId, options);
+    int ret = diskManager.HandleCreatePartition(diskId, partitionParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 end";
@@ -564,7 +564,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_
     diskManager.disk_.push_back(disk);
 
     OHOS::StorageManager::PartitionParams partitionParams;
-    int ret = diskManager.HandleCreatePartition(diskId, options);
+    int ret = diskManager.HandleCreatePartition(diskId, partitionParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
     diskManager.disk_.clear();
 
