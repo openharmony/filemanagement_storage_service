@@ -141,6 +141,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "security_guard:libsg_collect_sdk",
     "cJSON:cjson",
     "hicollie:libhicollie",
     "hisysevent:libhisysevent",

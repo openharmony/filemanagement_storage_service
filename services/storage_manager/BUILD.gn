@@ -107,6 +107,7 @@ ohos_shared_library("storage_manager") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "security_guard:libsg_collect_sdk",
   ]
 
   if (storage_service_storage_statistics_manager) {

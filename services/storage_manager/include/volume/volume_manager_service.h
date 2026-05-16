@@ -69,6 +69,7 @@ private:
     void VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);
     void SaveVolumeFreeSize(std::shared_ptr<VolumeExternal> volume);
+    void ReportMountSuccessInfo(const std::string &volumeId, const BurnParams &params);
 };
 } // StorageManager
 } // OHOS
