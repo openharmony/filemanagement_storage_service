@@ -895,6 +895,8 @@ int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionParams &p
     sgdiskLines_.clear();
     int32_t ret = ExecAsyncCreatePartition(partitionParams);
     if (ret != E_OK) {
+        std::thread thread([this]() { ReadPartitionUSB(); });
+        thread.detach();
         LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT FAILED <<<");
     } else {
         LOGI("[L3:DiskInfo] CreatePartition: <<< EXIT SUCCESS <<<");
@@ -995,6 +997,8 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
     sgdiskLines_.clear();
     int32_t ret = ExecAsyncDeletePartition(partitionNum);
     if (ret != E_OK) {
+        std::thread thread([this]() { ReadPartitionUSB(); });
+        thread.detach();
         LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<<");
     } else {
         LOGI("[L3:DiskInfo] DeletePartition: <<< EXIT SUCCESS <<<");
