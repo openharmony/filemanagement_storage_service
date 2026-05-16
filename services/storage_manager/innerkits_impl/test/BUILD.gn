@@ -60,7 +60,7 @@ ohos_unittest("partition_info_test") {
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/partition_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_options.cpp",
+    "${storage_manager_path}/innerkits_impl/src/partition_params.cpp",
     "${storage_manager_path}/innerkits_impl/src/partition_table_info.cpp",
     "partition_info_test.cpp",
   ]
@@ -84,7 +84,7 @@ ohos_unittest("partition_info_test") {
   ]
 }
 
-ohos_unittest("format_options_test") {
+ohos_unittest("format_params_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -95,8 +95,8 @@ ohos_unittest("format_options_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "${storage_manager_path}/innerkits_impl/src/format_options.cpp",
-    "format_options_test.cpp",
+    "${storage_manager_path}/innerkits_impl/src/format_params.cpp",
+    "format_params_test.cpp",
   ]
 
   include_dirs = [
@@ -298,7 +298,7 @@ ohos_unittest("statistic_info_test") {
   ]
 }
 
-ohos_unittest("partition_options_test") {
+ohos_unittest("partition_params_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -309,8 +309,8 @@ ohos_unittest("partition_options_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "${storage_manager_path}/innerkits_impl/src/partition_options.cpp",
-    "partition_options_test.cpp",
+    "${storage_manager_path}/innerkits_impl/src/partition_params.cpp",
+    "partition_params_test.cpp",
   ]
 
   include_dirs = [
@@ -372,8 +372,8 @@ group("storage_manager_innerkits_test") {
   deps = [
     ":disk_test",
     ":partition_info_test",
-    ":format_options_test",
-    ":partition_options_test",
+    ":format_params_test",
+    ":partition_params_test",
     ":partition_table_info_test",
     ":storage_stats_test",
     ":volume_core_test",

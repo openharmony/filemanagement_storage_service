@@ -422,7 +422,7 @@ ohos::file::volumeManager::PartitionTableInfo GetPartitionTableSync(taihe::strin
         partitionsArray };
 }
 
-void CreatePartitionSync(taihe::string_view diskId, ohos::file::volumeManager::PartitionOptions options)
+void CreatePartitionSync(taihe::string_view diskId, ohos::file::volumeManager::PartitionParams partitionParams)
 {
     std::string diskIdString = std::string(diskId);
     if (diskIdString.empty()) {
@@ -436,13 +436,13 @@ void CreatePartitionSync(taihe::string_view diskId, ohos::file::volumeManager::P
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-    OHOS::StorageManager::PartitionOptions partitionOptions;
-    partitionOptions.SetPartitionNum(options.partitionNum);
-    partitionOptions.SetStartSector(options.startSector);
-    partitionOptions.SetEndSector(options.endSector);
-    std::string typeCodeStr(options.typeCode);
-    partitionOptions.SetTypeCode(typeCodeStr);
-    int32_t errNum = instance->CreatePartition(diskIdString, partitionOptions);
+    OHOS::StorageManager::PartitionParams partitionParamsNative;
+    partitionParamsNative.SetPartitionNum(partitionParams.partitionNum);
+    partitionParamsNative.SetStartSector(partitionParams.startSector);
+    partitionParamsNative.SetEndSector(partitionParams.endSector);
+    std::string typeCodeStr(partitionParams.typeCode);
+    partitionParamsNative.SetTypeCode(typeCodeStr);
+    int32_t errNum = instance->CreatePartition(diskIdString, partitionParamsNative);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
@@ -471,7 +471,7 @@ void DeletePartitionSync(taihe::string_view diskId, uint32_t partitionNum)
 }
 
 void FormatPartitionSync(taihe::string_view diskId, uint32_t partitionNum,
-                         ohos::file::volumeManager::FormatOptions options)
+                         ohos::file::volumeManager::FormatParams formatParams)
 {
     std::string diskIdString = std::string(diskId);
     if (diskIdString.empty()) {
@@ -485,13 +485,13 @@ void FormatPartitionSync(taihe::string_view diskId, uint32_t partitionNum,
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
         return;
     }
-    OHOS::StorageManager::FormatOptions formatOptions;
-    std::string fsTypeStr(options.fsType);
-    formatOptions.SetFsType(fsTypeStr);
-    formatOptions.SetQuickFormat(options.quickFormat);
-    std::string volumeNameStr(options.volumeName);
-    formatOptions.SetVolumeName(volumeNameStr);
-    int32_t errNum = instance->FormatPartition(diskIdString, partitionNum, formatOptions);
+    OHOS::StorageManager::FormatParams formatParamsNative;
+    std::string fsTypeStr(formatParams.fsType);
+    formatParamsNative.SetFsType(fsTypeStr);
+    formatParamsNative.SetQuickFormat(formatParams.quickFormat);
+    std::string volumeNameStr(formatParams.volumeName);
+    formatParamsNative.SetVolumeName(volumeNameStr);
+    int32_t errNum = instance->FormatPartition(diskIdString, partitionNum, formatParamsNative);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;

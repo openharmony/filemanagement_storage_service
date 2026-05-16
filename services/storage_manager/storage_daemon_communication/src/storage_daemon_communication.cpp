@@ -1279,7 +1279,7 @@ int32_t StorageDaemonCommunication::GetPartitionTable(const std::string &diskId,
     return storageDaemon_->GetPartitionTable(diskId, partitionTableInfo);
 }
 
-int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
 {
     LOGI("StorageDaemonCommunication::CreatePartition start");
     int32_t err = Connect();
@@ -1291,7 +1291,7 @@ int32_t StorageDaemonCommunication::CreatePartition(const std::string &diskId, c
         LOGE("StorageDaemonCommunication::CreatePartition service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->CreatePartition(diskId, partitionOption);
+    return storageDaemon_->CreatePartition(diskId, partitionParams);
 }
 
 int32_t StorageDaemonCommunication::DeletePartition(const std::string &diskId, uint32_t partitionNum)
@@ -1310,7 +1310,7 @@ int32_t StorageDaemonCommunication::DeletePartition(const std::string &diskId, u
 }
 
 int32_t StorageDaemonCommunication::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatOptions &options)
+    const FormatParams &formatParams)
 {
     LOGI("StorageDaemonCommunication::FormatPartition start");
     int32_t err = Connect();
@@ -1322,7 +1322,7 @@ int32_t StorageDaemonCommunication::FormatPartition(const std::string &diskId, u
         LOGE("StorageDaemonCommunication::FormatPartition service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->FormatPartition(diskId, partitionNum, options);
+    return storageDaemon_->FormatPartition(diskId, partitionNum, formatParams);
 }
 
 int32_t StorageDaemonCommunication::Burn(const std::string &volumeId, const BurnParams &params)

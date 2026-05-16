@@ -130,9 +130,9 @@ public:
 
     // disk partition api
     MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
-    MOCK_METHOD2(CreatePartition, int32_t(const std::string &, const PartitionOptions &));
+    MOCK_METHOD2(CreatePartition, int32_t(const std::string &, const PartitionParams &));
     MOCK_METHOD2(DeletePartition, int32_t(const std::string &, uint32_t));
-    MOCK_METHOD3(FormatPartition, int32_t(const std::string &, uint32_t, const FormatOptions &));
+    MOCK_METHOD3(FormatPartition, int32_t(const std::string &, uint32_t, const FormatParams &));
 
     MOCK_METHOD2(Burn, int32_t(const std::string&, const BurnParams&));
     MOCK_METHOD2(VerifyBurnData, int32_t(const std::string&, uint32_t));

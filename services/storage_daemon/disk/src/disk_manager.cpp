@@ -134,12 +134,6 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
         LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< Create DiskInfo failed, err=%{public}d", ret);
         return;
     }
-    StorageManagerClient client;
-    ret = client.NotifyDiskCreated(*diskInfo);
-    if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created failed, err=%{public}d", ret);
-        return;
-    }
     disk_.push_back(diskInfo);
     LOGI("[L2:DiskManager] CreateDisk: <<< EXIT SUCCESS <<<");
 }
@@ -262,7 +256,7 @@ int32_t DiskManager::HandleGetPartitionTable(const std::string &diskId,
 }
 
 int32_t DiskManager::HandleCreatePartition(const std::string &diskId,
-    const OHOS::StorageManager::PartitionOptions &partitionOption)
+    const OHOS::StorageManager::PartitionParams &partitionParams)
 {
     LOGI("[L2:DiskManager] HandleCreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
     int32_t ret = E_NON_EXIST;
@@ -272,7 +266,7 @@ int32_t DiskManager::HandleCreatePartition(const std::string &diskId,
             continue;
         }
         if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->CreatePartition(partitionOption);
+            ret = (*i)->CreatePartition(partitionParams);
             break;
         }
     }
@@ -311,7 +305,7 @@ int32_t DiskManager::HandleDeletePartition(const std::string &diskId, uint32_t p
 }
 
 int32_t DiskManager::HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const OHOS::StorageManager::FormatOptions &options)
+    const OHOS::StorageManager::FormatParams &formatParams)
 {
     LOGI("[L2:DiskManager] HandleFormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId.c_str(), partitionNum);
@@ -322,7 +316,7 @@ int32_t DiskManager::HandleFormatPartition(const std::string &diskId, uint32_t p
             continue;
         }
         if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->FormatPartition(partitionNum, options);
+            ret = (*i)->FormatPartition(partitionNum, formatParams);
             break;
         }
     }

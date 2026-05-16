@@ -2571,7 +2571,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "";
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
     options.SetTypeCode(typeCode);
     options.SetStartSector(2048);
@@ -2593,7 +2593,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_00
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "disk-8-2";
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
     options.SetTypeCode(typeCode);
     options.SetStartSector(102400);
@@ -2634,11 +2634,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "";
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "vfat";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
+    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, formatParams);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 end";
 }
@@ -2655,11 +2655,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskId = "disk-8-0";
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, options);
+    auto ret = storageDaemonProviderTest_->FormatPartition(diskId, partitionNum, formatParams);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 end";
 }

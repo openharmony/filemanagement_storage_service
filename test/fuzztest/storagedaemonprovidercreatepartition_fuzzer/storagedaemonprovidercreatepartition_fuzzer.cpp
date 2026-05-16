@@ -61,28 +61,28 @@ bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
         return false;
     }
 
-    // Parse fuzzed data to create PartitionOptions
-    PartitionOptions options;
+    // Parse fuzzed data to create PartitionParams
+    PartitionParams partitionParams;
     size_t offset = 0;
 
     // Extract partition num
     if (offset + sizeof(int32_t) <= size) {
         int32_t partitionNum = *reinterpret_cast<const int32_t*>(data + offset);
-        options.SetPartitionNum(partitionNum);
+        partitionParams.SetPartitionNum(partitionNum);
         offset += sizeof(int32_t);
     }
 
     // Extract start sector
     if (offset + sizeof(uint64_t) <= size) {
         uint64_t startSector = *reinterpret_cast<const uint64_t*>(data + offset);
-        options.SetStartSector(startSector);
+        partitionParams.SetStartSector(startSector);
         offset += sizeof(uint64_t);
     }
 
     // Extract end sector
     if (offset + sizeof(uint64_t) <= size) {
         uint64_t endSector = *reinterpret_cast<const uint64_t*>(data + offset);
-        options.SetEndSector(endSector);
+        partitionParams.SetEndSector(endSector);
         offset += sizeof(uint64_t);
     }
 
@@ -90,7 +90,7 @@ bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
     if (offset < size) {
         size_t typeCodeLen = std::min(size - offset, maxTypeCodeLength);
         std::string typeCode(reinterpret_cast<const char*>(data + offset), typeCodeLen);
-        options.SetTypeCode(typeCode);
+        partitionParams.SetTypeCode(typeCode);
     }
 
     // Create diskId from fuzzed data
@@ -104,7 +104,7 @@ bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteString(diskId);
-    options.Marshalling(datas);
+    partitionParams.Marshalling(datas);
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;

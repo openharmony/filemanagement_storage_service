@@ -20,10 +20,10 @@ sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
 sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
 sequenceable VolumeCore..OHOS.StorageManager.VolumeInfoStr;
 sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
-sequenceable PartitionOptions..OHOS.StorageManager.PartitionOptions;
+sequenceable PartitionParams..OHOS.StorageManager.PartitionParams;
 sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
 sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
-sequenceable FormatOptions..OHOS.StorageManager.FormatOptions;
+sequenceable FormatParams..OHOS.StorageManager.FormatParams;
 sequenceable BurnParams..OHOS.StorageManager.BurnParams;
 rawdata OHOS.StorageManager.StorageFileRawData;
 import IUeceActivationCallback;
@@ -151,9 +151,9 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 105] void Erase([in] String volId);
     [ipccode 106] void CreateIsoImage([in] String volId, [in] String filePath);
     [ipccode 107] void GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
-    [ipccode 108] void CreatePartition([in] String diskId, [in] PartitionOptions partitionOption);
+    [ipccode 108] void CreatePartition([in] String diskId, [in] PartitionParams partitionParams);
     [ipccode 109] void DeletePartition([in] String diskId, [in] unsigned int partitionNum);
-    [ipccode 110] void FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatOptions options);
+    [ipccode 110] void FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatParams formatParams);
     [ipccode 111] void Burn([in] String volId, [in] BurnParams params);
     [ipccode 112] void VerifyBurnData([in] String volId, [in] unsigned int verType);
 }

@@ -825,12 +825,14 @@ int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
         LOGE("the caller is not sysapp");
         return E_SYS_APP_PERMISSION_DENIED;
     }
-    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
 #ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::GetAllDisks start");
     vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
+    LOGI("StorageManagerProvider::GetAllDisks success");
+    return E_OK;
 #endif
     LOGI("StorageManagerProvider::GetAllDisks not support");
     return E_OK;
@@ -917,7 +919,7 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
         LOGE("the caller is not sysapp");
         return E_SYS_APP_PERMISSION_DENIED;
     }
-    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
     if (diskId.empty()) {
@@ -930,6 +932,7 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
     }
+    LOGI("StorageManagerProvider::GetDiskById success");
     return err;
 #else
     LOGI("StorageManagerProvider::GetDiskById not support");
@@ -2409,7 +2412,7 @@ int32_t StorageManagerProvider::GetPartitionTable(const std::string &diskId, Par
 #endif
 }
 
-int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
 {
     StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition Begin", E_OK);
     if (!IsSystemApp()) {
@@ -2423,7 +2426,7 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
         LOGE("diskId is empty");
         return E_PARAMS_INVALID;
     }
-    if (partitionOption.GetStartSector() >= partitionOption.GetEndSector()) {
+    if (partitionParams.GetStartSector() >= partitionParams.GetEndSector()) {
         LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
         StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,
             DEFAULT_USERID, "params invalid");
@@ -2431,7 +2434,7 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
     }
 #ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::CreatePartition start, diskId=%{public}s", diskId.c_str());
-    int32_t ret = DiskManagerService::GetInstance().CreatePartition(diskId, partitionOption);
+    int32_t ret = DiskManagerService::GetInstance().CreatePartition(diskId, partitionParams);
     StorageRadar::ReportFucBehavior("CreatePartition", DEFAULT_USERID, "CreatePartition End", ret);
     LOGI("StorageManagerProvider::CreatePartition end, ret=%{public}d", ret);
     if (ret == E_NON_EXIST) {
@@ -2489,7 +2492,7 @@ int32_t StorageManagerProvider::DeletePartition(const std::string &diskId, uint3
 }
 
 int32_t StorageManagerProvider::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatOptions &options)
+    const FormatParams &formatParams)
 {
     StorageRadar::ReportFucBehavior("FormatPartition", DEFAULT_USERID, "FormatPartition Begin", E_OK);
     if (!IsSystemApp()) {
@@ -2503,14 +2506,14 @@ int32_t StorageManagerProvider::FormatPartition(const std::string &diskId, uint3
         LOGE("diskId is empty");
         return E_PARAMS_INVALID;
     }
-    if (options.GetFsType().empty()) {
+    if (formatParams.GetFsType().empty()) {
         LOGE("fsType is empty");
         return E_PARAMS_INVALID;
     }
 #ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::FormatPartition start, diskId=%{public}s, partitionNum=%{public}u",
         diskId.c_str(), partitionNum);
-    int32_t ret = DiskManagerService::GetInstance().FormatPartition(diskId, partitionNum, options);
+    int32_t ret = DiskManagerService::GetInstance().FormatPartition(diskId, partitionNum, formatParams);
     StorageRadar::ReportFucBehavior("FormatPartition", DEFAULT_USERID, "FormatPartition End", ret);
     LOGI("StorageManagerProvider::FormatPartition end, ret=%{public}d", ret);
     if (ret == E_NON_EXIST) {

@@ -203,10 +203,10 @@ public:
     virtual int32_t GetPartitionTable(const std::string &diskId,
         OHOS::StorageManager::PartitionTableInfo &partitionTableInfo) override;
     virtual int32_t CreatePartition(const std::string &diskId,
-        const OHOS::StorageManager::PartitionOptions &partitionOption) override;
+        const OHOS::StorageManager::PartitionParams &partitionParams) override;
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
-        const OHOS::StorageManager::FormatOptions &options) override;
+        const OHOS::StorageManager::FormatParams &formatParams) override;
     virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 

@@ -13,53 +13,53 @@
  * limitations under the License.
  */
 
-#include "partition_options.h"
+#include "partition_params.h"
 
 namespace OHOS {
 namespace StorageManager {
-PartitionOptions::PartitionOptions() {}
+PartitionParams::PartitionParams() {}
 
-int32_t PartitionOptions::GetPartitionNum() const
+int32_t PartitionParams::GetPartitionNum() const
 {
     return partitionNum_;
 }
 
-uint64_t PartitionOptions::GetStartSector() const
+uint64_t PartitionParams::GetStartSector() const
 {
     return startSector_;
 }
 
-uint64_t PartitionOptions::GetEndSector() const
+uint64_t PartitionParams::GetEndSector() const
 {
     return endSector_;
 }
 
-std::string PartitionOptions::GetTypeCode() const
+std::string PartitionParams::GetTypeCode() const
 {
     return typeCode_;
 }
 
-void PartitionOptions::SetPartitionNum(int32_t partitionNum)
+void PartitionParams::SetPartitionNum(int32_t partitionNum)
 {
     partitionNum_ = partitionNum;
 }
 
-void PartitionOptions::SetStartSector(uint64_t startSector)
+void PartitionParams::SetStartSector(uint64_t startSector)
 {
     startSector_ = startSector;
 }
 
-void PartitionOptions::SetEndSector(uint64_t endSector)
+void PartitionParams::SetEndSector(uint64_t endSector)
 {
     endSector_ = endSector;
 }
 
-void PartitionOptions::SetTypeCode(const std::string &typeCode)
+void PartitionParams::SetTypeCode(const std::string &typeCode)
 {
     typeCode_ = typeCode;
 }
 
-bool PartitionOptions::Marshalling(Parcel &parcel) const
+bool PartitionParams::Marshalling(Parcel &parcel) const
 {
     if (!parcel.WriteInt32(partitionNum_)) {
         return false;
@@ -76,9 +76,9 @@ bool PartitionOptions::Marshalling(Parcel &parcel) const
     return true;
 }
 
-PartitionOptions *PartitionOptions::Unmarshalling(Parcel &parcel)
+PartitionParams *PartitionParams::Unmarshalling(Parcel &parcel)
 {
-    PartitionOptions* obj = new (std::nothrow) PartitionOptions();
+    PartitionParams* obj = new (std::nothrow) PartitionParams();
     if (!obj) {
         return nullptr;
     }

@@ -71,14 +71,14 @@ struct PartitionTableInfo {
     partitions: Array<PartitionInfo>;
 }
 
-struct PartitionOptions {
+struct PartitionParams {
     partitionNum: i32;
     startSector: u64;
     endSector: u64;
     typeCode: String;
 }
 
-struct FormatOptions {
+struct FormatParams {
     fsType: String;
     quickFormat: bool;
     volumeName: String;
@@ -154,7 +154,7 @@ function GetPartitionTableSync(diskId: String): PartitionTableInfo;
 
 @gen_async("createPartition")
 @gen_promise("createPartition")
-function CreatePartitionSync(diskId: String, options: PartitionOptions): void;
+function CreatePartitionSync(diskId: String, partitionParams: PartitionParams): void;
 
 @gen_async("deletePartition")
 @gen_promise("deletePartition")
@@ -162,4 +162,4 @@ function DeletePartitionSync(diskId: String, partitionNum: u32): void;
 
 @gen_async("formatPartition")
 @gen_promise("formatPartition")
-function FormatPartitionSync(diskId: String, partitionNum: u32, options: FormatOptions): void;
+function FormatPartitionSync(diskId: String, partitionNum: u32, formatParams: FormatParams): void;

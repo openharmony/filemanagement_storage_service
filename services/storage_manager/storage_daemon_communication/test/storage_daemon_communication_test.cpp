@@ -1554,11 +1554,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_00
 
     std::string diskId = "disk-8-0";
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    int32_t result = sdCommunication->FormatPartition(diskId, partitionNum, options);
+    int32_t result = sdCommunication->FormatPartition(diskId, partitionNum, formatParams);
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0001";
@@ -1582,11 +1582,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_00
 
     std::string diskId = "disk-8-0";
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "hmfs";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    int32_t result = sdCommunication->FormatPartition(diskId, partitionNum, options);
+    int32_t result = sdCommunication->FormatPartition(diskId, partitionNum, formatParams);
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0000";
@@ -1633,7 +1633,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreatePartition_00
     ASSERT_TRUE(sdCommunication != nullptr);
 
     std::string diskId = "disk-8-0";
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     options.SetPartitionNum(1);
     options.SetStartSector(2048);
     options.SetEndSector(4096);

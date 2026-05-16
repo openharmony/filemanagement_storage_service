@@ -73,9 +73,9 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
         LOGE("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT FAILED <<< GetClient failed");
         return E_SERVICE_IS_NULLPTR;
     }
-
-    StorageManager::Disk disk(diskInfo.GetDiskId(), diskInfo.GetTotalSize(), diskInfo.GetSysPath(),
-                              diskInfo.GetDevVendor(), diskInfo.GetDiskType());
+    int64_t sizeBytes = static_cast<int64_t>(diskInfo.GetTotalSize());
+    StorageManager::Disk disk(diskInfo.GetDiskId(), sizeBytes, diskInfo.GetSysPath(), diskInfo.GetDevVendor(),
+                              diskInfo.GetDiskType());
     storageManager_->NotifyDiskCreated(disk);
 
     LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s",
