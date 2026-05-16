@@ -13,43 +13,43 @@
  * limitations under the License.
  */
 
-#include "format_options.h"
+#include "format_params.h"
 
 namespace OHOS {
 namespace StorageManager {
-FormatOptions::FormatOptions() {}
+FormatParams::FormatParams() {}
 
-std::string FormatOptions::GetFsType() const
+std::string FormatParams::GetFsType() const
 {
     return fsType_;
 }
 
-bool FormatOptions::GetQuickFormat() const
+bool FormatParams::GetQuickFormat() const
 {
     return quickFormat_;
 }
 
-std::string FormatOptions::GetVolumeName() const
+std::string FormatParams::GetVolumeName() const
 {
     return volumeName_;
 }
 
-void FormatOptions::SetFsType(const std::string &fsType)
+void FormatParams::SetFsType(const std::string &fsType)
 {
     fsType_ = fsType;
 }
 
-void FormatOptions::SetQuickFormat(bool quickFormat)
+void FormatParams::SetQuickFormat(bool quickFormat)
 {
     quickFormat_ = quickFormat;
 }
 
-void FormatOptions::SetVolumeName(const std::string &volumeName)
+void FormatParams::SetVolumeName(const std::string &volumeName)
 {
     volumeName_ = volumeName;
 }
 
-bool FormatOptions::Marshalling(Parcel &parcel) const
+bool FormatParams::Marshalling(Parcel &parcel) const
 {
     if (!parcel.WriteString(fsType_)) {
         return false;
@@ -63,9 +63,9 @@ bool FormatOptions::Marshalling(Parcel &parcel) const
     return true;
 }
 
-FormatOptions *FormatOptions::Unmarshalling(Parcel &parcel)
+FormatParams *FormatParams::Unmarshalling(Parcel &parcel)
 {
-    FormatOptions* obj = new (std::nothrow) FormatOptions();
+    FormatParams* obj = new (std::nothrow) FormatParams();
     if (!obj) {
         return nullptr;
     }

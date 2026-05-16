@@ -79,7 +79,7 @@ bool Disk::Marshalling(Parcel &parcel) const
         return false;
     }
 
-    if (!parcel.WriteInt32(sizeBytes_)) {
+    if (!parcel.WriteInt64(sizeBytes_)) {
         return false;
     }
 
@@ -104,7 +104,7 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
         return nullptr;
     }
     obj->diskId_ = parcel.ReadString();
-    obj->sizeBytes_ = parcel.ReadInt32();
+    obj->sizeBytes_ = parcel.ReadInt64();
     obj->sysPath_ = parcel.ReadString();
     obj->vendor_ = parcel.ReadString();
     obj->diskType_ = parcel.ReadInt32();

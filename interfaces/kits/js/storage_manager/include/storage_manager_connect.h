@@ -87,9 +87,9 @@ public:
     int32_t GetAllDisks(std::vector<Disk> &disks);
     int32_t GetDiskById(const std::string &diskId, Disk &disk);
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
-    int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption);
+    int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams);
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
-    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatOptions &options);
+    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

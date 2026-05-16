@@ -775,7 +775,7 @@ int32_t StorageManagerConnect::GetPartitionTable(const std::string &diskId, Part
     return storageManager_->GetPartitionTable(diskId, partitionTableInfo);
 }
 
-int32_t StorageManagerConnect::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+int32_t StorageManagerConnect::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -786,7 +786,7 @@ int32_t StorageManagerConnect::CreatePartition(const std::string &diskId, const 
         LOGE("StorageManagerConnect::CreatePartition service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->CreatePartition(diskId, partitionOption);
+    return storageManager_->CreatePartition(diskId, partitionParams);
 }
 
 int32_t StorageManagerConnect::DeletePartition(const std::string &diskId, uint32_t partitionNum)
@@ -804,7 +804,7 @@ int32_t StorageManagerConnect::DeletePartition(const std::string &diskId, uint32
 }
 
 int32_t StorageManagerConnect::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-                                               const FormatOptions &options)
+                                               const FormatParams &formatParams)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -815,7 +815,7 @@ int32_t StorageManagerConnect::FormatPartition(const std::string &diskId, uint32
         LOGE("StorageManagerConnect::FormatPartition service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->FormatPartition(diskId, partitionNum, options);
+    return storageManager_->FormatPartition(diskId, partitionNum, formatParams);
 }
 } // StorageManager
 } // OHOS

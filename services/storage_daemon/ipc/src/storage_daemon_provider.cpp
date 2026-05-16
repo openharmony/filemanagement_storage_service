@@ -1903,7 +1903,7 @@ int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
 }
 
 int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
-    const OHOS::StorageManager::PartitionOptions &partitionOption)
+    const OHOS::StorageManager::PartitionParams &partitionParams)
 {
     if (diskId.empty()) {
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< diskId empty");
@@ -1911,7 +1911,7 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
             DEFAULT_USERID, "diskId empty");
         return E_PARAMS_INVALID;
     }
-    if (partitionOption.GetStartSector() >= partitionOption.GetEndSector()) {
+    if (partitionParams.GetStartSector() >= partitionParams.GetEndSector()) {
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
         StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,
             DEFAULT_USERID, "params invalid");
@@ -1919,7 +1919,7 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &diskId,
     }
 #ifdef PC_USER_MANAGER
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    int32_t ret = DiskManager::Instance().HandleCreatePartition(diskId, partitionOption);
+    int32_t ret = DiskManager::Instance().HandleCreatePartition(diskId, partitionParams);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
     } else {
@@ -1958,7 +1958,7 @@ int32_t StorageDaemonProvider::DeletePartition(const std::string &diskId, uint32
 }
 
 int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const OHOS::StorageManager::FormatOptions &options)
+    const OHOS::StorageManager::FormatParams &formatParams)
 {
     if (diskId.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< diskId empty");
@@ -1966,7 +1966,7 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32
             DEFAULT_USERID, "diskId empty");
         return E_PARAMS_INVALID;
     }
-    if (options.GetFsType().empty()) {
+    if (formatParams.GetFsType().empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
         StorageService::StorageRadar::ReportCommonResult("FormatPartition", E_PARAMS_INVALID,
             DEFAULT_USERID, "fsType empty");
@@ -1975,7 +1975,7 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32
 #ifdef PC_USER_MANAGER
     LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId.c_str(), partitionNum);
-    int32_t ret = DiskManager::Instance().HandleFormatPartition(diskId, partitionNum, options);
+    int32_t ret = DiskManager::Instance().HandleFormatPartition(diskId, partitionNum, formatParams);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s,"
              "partitionNum=%{public}u", diskId.c_str(), partitionNum);

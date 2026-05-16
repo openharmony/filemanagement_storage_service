@@ -542,7 +542,7 @@ int32_t StorageManagerProxy::GetPartitionTable(const std::string &diskId, Partit
     return E_OK;
 }
 
-int32_t StorageManagerProxy::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+int32_t StorageManagerProxy::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
 {
     return E_OK;
 }
@@ -553,7 +553,7 @@ int32_t StorageManagerProxy::DeletePartition(const std::string &diskId, uint32_t
 }
 
 int32_t StorageManagerProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatOptions &options)
+    const FormatParams &formatParams)
 {
     return E_OK;
 }

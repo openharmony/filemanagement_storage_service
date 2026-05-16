@@ -494,8 +494,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_CreatePartition_0001, test
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_CreatePartition_0001";
     DiskManagerService &dmService = DiskManagerService::GetInstance();
     std::string nonExistentDiskId = "non-existent-disk-id-4";
-    PartitionOptions options;
-    int32_t result = dmService.CreatePartition(nonExistentDiskId, options);
+    PartitionParams partitionParams;
+    int32_t result = dmService.CreatePartition(nonExistentDiskId, partitionParams);
 
     EXPECT_EQ(result, E_NON_EXIST);
 
@@ -539,8 +539,8 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_FormatPartition_0001, test
     DiskManagerService &dmService = DiskManagerService::GetInstance();
     std::string nonExistentDiskId = "non-existent-disk-id-6";
     uint32_t partitionNum = 1;
-    FormatOptions options;
-    int32_t result = dmService.FormatPartition(nonExistentDiskId, partitionNum, options);
+    FormatParams formatParams;
+    int32_t result = dmService.FormatPartition(nonExistentDiskId, partitionNum, formatParams);
 
     EXPECT_EQ(result, E_NON_EXIST);
 

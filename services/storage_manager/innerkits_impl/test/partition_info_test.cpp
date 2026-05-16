@@ -15,7 +15,7 @@
 
 #include <gtest/gtest.h>
 #include "partition_info.h"
-#include "partition_options.h"
+#include "partition_params.h"
 #include "partition_table_info.h"
 
 namespace {
@@ -115,7 +115,7 @@ HWTEST_F(PartitionInfoTest, PartitionInfo_Unmarshalling_0000, testing::ext::Test
     GTEST_LOG_(INFO) << "PartitionInfoTest-end PartitionInfo_Unmarshalling_0000";
 }
 
-class PartitionOptionsTest : public testing::Test {
+class PartitionParamsTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase() {};
@@ -124,80 +124,80 @@ public:
 };
 
 /**
- * @tc.number: SUB_STORAGE_PartitionOptions_Get_0000
- * @tc.name: PartitionOptions_Get_0000
+ * @tc.number: SUB_STORAGE_PartitionParams_Get_0000
+ * @tc.name: PartitionParams_Get_0000
  * @tc.desc: Test function of Get/Set interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(PartitionOptionsTest, PartitionOptions_Get_0000, testing::ext::TestSize.Level1)
+HWTEST_F(PartitionParamsTest, PartitionParams_Get_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-begin PartitionOptions_Get_0000";
-    PartitionOptions options;
-    options.SetPartitionNum(1);
-    options.SetStartSector(2048);
-    options.SetEndSector(4096);
+    GTEST_LOG_(INFO) << "PartitionParamsTest-begin PartitionParams_Get_0000";
+    PartitionParams partitionParams;
+    partitionParams.SetPartitionNum(1);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(4096);
     std::string typeCode = "0x8300";
-    options.SetTypeCode(typeCode);
-    EXPECT_EQ(options.GetPartitionNum(), 1);
-    EXPECT_EQ(options.GetStartSector(), 2048);
-    EXPECT_EQ(options.GetEndSector(), 4096);
-    EXPECT_EQ(options.GetTypeCode(), "0x8300");
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-end PartitionOptions_Get_0000";
+    partitionParams.SetTypeCode(typeCode);
+    EXPECT_EQ(partitionParams.GetPartitionNum(), 1);
+    EXPECT_EQ(partitionParams.GetStartSector(), 2048);
+    EXPECT_EQ(partitionParams.GetEndSector(), 4096);
+    EXPECT_EQ(partitionParams.GetTypeCode(), "0x8300");
+    GTEST_LOG_(INFO) << "PartitionParamsTest-end PartitionParams_Get_0000";
 }
 
 /**
- * @tc.number: SUB_STORAGE_PartitionOptions_Marshalling_0000
- * @tc.name: PartitionOptions_Marshalling_0000
+ * @tc.number: SUB_STORAGE_PartitionParams_Marshalling_0000
+ * @tc.name: PartitionParams_Marshalling_0000
  * @tc.desc: Test function of Marshalling interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(PartitionOptionsTest, PartitionOptions_Marshalling_0000, testing::ext::TestSize.Level1)
+HWTEST_F(PartitionParamsTest, PartitionParams_Marshalling_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-begin PartitionOptions_Marshalling_0000";
-    PartitionOptions options;
-    options.SetPartitionNum(1);
-    options.SetStartSector(2048);
-    options.SetEndSector(4096);
+    GTEST_LOG_(INFO) << "PartitionParamsTest-begin PartitionParams_Marshalling_0000";
+    PartitionParams partitionParams;
+    partitionParams.SetPartitionNum(1);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(4096);
     std::string typeCode = "0x8300";
-    options.SetTypeCode(typeCode);
+    partitionParams.SetTypeCode(typeCode);
     Parcel parcel;
-    bool ret = options.Marshalling(parcel);
+    bool ret = partitionParams.Marshalling(parcel);
     EXPECT_TRUE(ret);
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-end PartitionOptions_Marshalling_0000";
+    GTEST_LOG_(INFO) << "PartitionParamsTest-end PartitionParams_Marshalling_0000";
 }
 
 /**
- * @tc.number: SUB_STORAGE_PartitionOptions_Unmarshalling_0000
- * @tc.name: PartitionOptions_Unmarshalling_0000
+ * @tc.number: SUB_STORAGE_PartitionParams_Unmarshalling_0000
+ * @tc.name: PartitionParams_Unmarshalling_0000
  * @tc.desc: Test function of Unmarshalling interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(PartitionOptionsTest, PartitionOptions_Unmarshalling_0000, testing::ext::TestSize.Level1)
+HWTEST_F(PartitionParamsTest, PartitionParams_Unmarshalling_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-begin PartitionOptions_Unmarshalling_0000";
+    GTEST_LOG_(INFO) << "PartitionParamsTest-begin PartitionParams_Unmarshalling_0000";
     Parcel parcel;
     parcel.WriteUint32(1);
     parcel.WriteUint64(2048);
     parcel.WriteUint64(4096);
     parcel.WriteString("0x8300");
     parcel.RewindRead(0);
-    PartitionOptions* result = PartitionOptions::Unmarshalling(parcel);
+    PartitionParams* result = PartitionParams::Unmarshalling(parcel);
     ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(result->GetPartitionNum(), 1);
     EXPECT_EQ(result->GetStartSector(), 2048);
     EXPECT_EQ(result->GetEndSector(), 4096);
     EXPECT_EQ(result->GetTypeCode(), "0x8300");
     delete result;
-    GTEST_LOG_(INFO) << "PartitionOptionsTest-end PartitionOptions_Unmarshalling_0000";
+    GTEST_LOG_(INFO) << "PartitionParamsTest-end PartitionParams_Unmarshalling_0000";
 }
 
 class PartitionTableInfoTest : public testing::Test {

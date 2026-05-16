@@ -13,34 +13,37 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_MANAGER_FORMAT_OPTIONS_H
-#define OHOS_STORAGE_MANAGER_FORMAT_OPTIONS_H
+#ifndef OHOS_STORAGE_MANAGER_PARTITION_PARAMS_H
+#define OHOS_STORAGE_MANAGER_PARTITION_PARAMS_H
 
 #include "parcel.h"
 
 namespace OHOS {
 namespace StorageManager {
-class FormatOptions : public Parcelable {
+class PartitionParams : public Parcelable {
 public:
-    FormatOptions();
+    PartitionParams();
 
-    std::string GetFsType() const;
-    bool GetQuickFormat() const;
-    std::string GetVolumeName() const;
+    int32_t GetPartitionNum() const;
+    uint64_t GetStartSector() const;
+    uint64_t GetEndSector() const;
+    std::string GetTypeCode() const;
 
-    void SetFsType(const std::string &fsType);
-    void SetQuickFormat(bool quickFormat);
-    void SetVolumeName(const std::string &volumeName);
+    void SetPartitionNum(int32_t partitionNum);
+    void SetStartSector(uint64_t startSector);
+    void SetEndSector(uint64_t endSector);
+    void SetTypeCode(const std::string &typeCode);
 
     bool Marshalling(Parcel &parcel) const override;
-    static FormatOptions *Unmarshalling(Parcel &parcel);
+    static PartitionParams *Unmarshalling(Parcel &parcel);
 
 private:
-    std::string fsType_ {"hmfs"};
-    bool quickFormat_ {true};
-    std::string volumeName_;
+    int32_t partitionNum_ {};
+    uint64_t startSector_ {};
+    uint64_t endSector_ {};
+    std::string typeCode_;
 };
 } // namespace StorageManager
 } // namespace OHOS
 
-#endif // OHOS_STORAGE_MANAGER_FORMAT_OPTIONS_H
+#endif // OHOS_STORAGE_MANAGER_PARTITION_PARAMS_H

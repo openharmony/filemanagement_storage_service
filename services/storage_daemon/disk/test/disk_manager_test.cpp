@@ -541,8 +541,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_
 
     DiskManager &diskManager = DiskManager::Instance();
     std::string diskId = "disk-8-99";
-    OHOS::StorageManager::PartitionOptions options;
-    int ret = diskManager.HandleCreatePartition(diskId, options);
+    OHOS::StorageManager::PartitionParams partitionParams;
+    int ret = diskManager.HandleCreatePartition(diskId, partitionParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleCreatePartition_001 end";
@@ -563,8 +563,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleCreatePartition_
     std::shared_ptr<DiskInfo> disk = nullptr;
     diskManager.disk_.push_back(disk);
 
-    OHOS::StorageManager::PartitionOptions options;
-    int ret = diskManager.HandleCreatePartition(diskId, options);
+    OHOS::StorageManager::PartitionParams partitionParams;
+    int ret = diskManager.HandleCreatePartition(diskId, partitionParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
     diskManager.disk_.clear();
 
@@ -626,8 +626,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_
     DiskManager &diskManager = DiskManager::Instance();
     std::string diskId = "disk-8-99";
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
-    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    OHOS::StorageManager::FormatParams formatParams;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, formatParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleFormatPartition_001 end";
@@ -649,8 +649,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleFormatPartition_
     diskManager.disk_.push_back(disk);
 
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
-    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, options);
+    OHOS::StorageManager::FormatParams formatParams;
+    int ret = diskManager.HandleFormatPartition(diskId, partitionNum, formatParams);
     EXPECT_TRUE(ret == E_NON_EXIST);
     diskManager.disk_.clear();
 

@@ -21,9 +21,9 @@
 #include <string>
 #include <sys/types.h>
 
-#include "partition_options.h"
+#include "partition_params.h"
 #include "partition_table_info.h"
-#include "format_options.h"
+#include "format_params.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -64,9 +64,9 @@ public:
     int CreateVolume(dev_t dev, uint32_t partitionNum);
     int Partition();
     int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    int32_t CreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption);
+    int32_t CreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams);
     int32_t DeletePartition(uint32_t partitionNum);
-    int32_t FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options);
+    int32_t FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams);
     dev_t GetDevice() const;
     std::string GetDiskId() const;
     std::string GetDevPath() const;
@@ -123,10 +123,10 @@ private:
     bool IsPartitionNumExists(uint32_t partitionNum);
     int32_t ExecAsyncGetPartitionTable(std::vector<std::string> &output);
     bool SetUsableSector(std::vector<std::string> &content);
-    bool IsOptionsValid(const OHOS::StorageManager::PartitionOptions &partitionOption);
-    int32_t ExecAsyncCreatePartition(const OHOS::StorageManager::PartitionOptions &partitionOption);
+    bool IsOptionsValid(const OHOS::StorageManager::PartitionParams &partitionParams);
+    int32_t ExecAsyncCreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams);
     int32_t ExecAsyncDeletePartition(uint32_t partitionNum);
-    int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatOptions &options);
+    int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams);
     std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
                                           const std::string &volName);
 };

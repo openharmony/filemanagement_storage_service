@@ -972,7 +972,8 @@ napi_value GetPartitionTable(napi_env env, napi_callback_info info)
         resultObject.AddProp("diskId", NVal::CreateUTF8String(env, partitionTableInfo->GetDiskId()).val_);
         resultObject.AddProp("tableType", NVal::CreateUTF8String(env, partitionTableInfo->GetTableType()).val_);
         resultObject.AddProp("partitionCount", NVal::CreateUint32(env, partitionTableInfo->GetPartitionCount()).val_);
-        resultObject.AddProp("totalSector", NVal::CreateBigIntUint64(env, partitionTableInfo->GetTotalSector()).val_);
+        int64_t totalSector = static_cast<int64_t>(partitionTableInfo->GetTotalSector());
+        resultObject.AddProp("totalSector", NVal::CreateInt64(env, totalSector).val_);
         resultObject.AddProp("sectorSize", NVal::CreateUint32(env, partitionTableInfo->GetSectorSize()).val_);
         resultObject.AddProp("alignSector", NVal::CreateUint32(env, partitionTableInfo->GetAlignSector()).val_);
         napi_value partitionsArray = nullptr;
@@ -985,9 +986,12 @@ napi_value GetPartitionTable(napi_env env, napi_callback_info info)
             NVal partitionObject = NVal::CreateObject(env);
             partitionObject.AddProp("partitionNum", NVal::CreateUint32(env, partitions[i].GetPartitionNum()).val_);
             partitionObject.AddProp("diskId", NVal::CreateUTF8String(env, partitions[i].GetDiskId()).val_);
-            partitionObject.AddProp("startSector", NVal::CreateBigIntUint64(env, partitions[i].GetStartSector()).val_);
-            partitionObject.AddProp("endSector", NVal::CreateBigIntUint64(env, partitions[i].GetEndSector()).val_);
-            partitionObject.AddProp("sizeBytes", NVal::CreateBigIntUint64(env, partitions[i].GetSizeBytes()).val_);
+            int64_t startSector = static_cast<int64_t>(partitions[i].GetStartSector());
+            partitionObject.AddProp("startSector", NVal::CreateInt64(env, startSector).val_);
+            int64_t endSector = static_cast<int64_t>(partitions[i].GetEndSector());
+            partitionObject.AddProp("endSector", NVal::CreateInt64(env, endSector).val_);
+            int64_t sizeBytes = static_cast<int64_t>(partitions[i].GetSizeBytes());
+            partitionObject.AddProp("sizeBytes", NVal::CreateInt64(env, sizeBytes).val_);
             partitionObject.AddProp("fsType", NVal::CreateUTF8String(env, partitions[i].GetFsType()).val_);
             status = napi_set_element(env, partitionsArray, i, partitionObject.val_);
             if (status != napi_ok) {
@@ -1026,46 +1030,46 @@ napi_value CreatePartition(napi_env env, napi_callback_info info)
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-    napi_value partitionOptionsObj = funcArg[(int)NARG_POS::SECOND];
-    NVal optionsNVal(env, partitionOptionsObj);
-    PartitionOptions partitionOptions;
-    NVal partitionNumVal = optionsNVal.GetProp("partitionNum");
+    napi_value partitionParamsObj = funcArg[(int)NARG_POS::SECOND];
+    NVal paramsNVal(env, partitionParamsObj);
+    PartitionParams partitionParams;
+    NVal partitionNumVal = paramsNVal.GetProp("partitionNum");
     if (partitionNumVal.val_ != nullptr) {
         int32_t partitionNum;
         std::tie(succ, partitionNum) = partitionNumVal.ToInt32();
         if (succ) {
-            partitionOptions.SetPartitionNum(partitionNum);
+            partitionParams.SetPartitionNum(partitionNum);
         }
     }
-    NVal startSectorVal = optionsNVal.GetProp("startSector");
+    NVal startSectorVal = paramsNVal.GetProp("startSector");
     if (startSectorVal.val_ != nullptr) {
-        uint64_t startSector;
-        std::tie(succ, startSector, std::ignore) = startSectorVal.ToUint64();
+        int64_t startSector;
+        std::tie(succ, startSector) = startSectorVal.ToInt64();
         if (succ) {
-            partitionOptions.SetStartSector(startSector);
+            partitionParams.SetStartSector(static_cast<uint64_t>(startSector));
         }
     }
-    NVal endSectorVal = optionsNVal.GetProp("endSector");
+    NVal endSectorVal = paramsNVal.GetProp("endSector");
     if (endSectorVal.val_ != nullptr) {
-        uint64_t endSector;
-        std::tie(succ, endSector, std::ignore) = endSectorVal.ToUint64();
+        int64_t endSector;
+        std::tie(succ, endSector) = endSectorVal.ToInt64();
         if (succ) {
-            partitionOptions.SetEndSector(endSector);
+            partitionParams.SetEndSector(static_cast<uint64_t>(endSector));
         }
     }
-    NVal typeCodeVal = optionsNVal.GetProp("typeCode");
+    NVal typeCodeVal = paramsNVal.GetProp("typeCode");
     if (typeCodeVal.val_ != nullptr) {
         std::unique_ptr<char []> typeCode;
         tie(succ, typeCode, std::ignore) = typeCodeVal.ToUTF8String();
         if (succ) {
             std::string typeCodeStr(typeCode.get());
-            partitionOptions.SetTypeCode(typeCodeStr);
+            partitionParams.SetTypeCode(typeCodeStr);
         }
     }
     std::string diskIdString(diskId.get());
-    auto cbExec = [diskIdString, partitionOptions]() -> NError {
+    auto cbExec = [diskIdString, partitionParams]() -> NError {
         int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->CreatePartition(diskIdString,
-            partitionOptions);
+            partitionParams);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -1162,38 +1166,38 @@ napi_value FormatPartition(napi_env env, napi_callback_info info)
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-    napi_value formatOptionsObj = funcArg[(int)NARG_POS::THIRD];
-    NVal optionsNVal(env, formatOptionsObj);
+    napi_value formatParamsObj = funcArg[(int)NARG_POS::THIRD];
+    NVal paramsNVal(env, formatParamsObj);
 
-    FormatOptions formatOptions;
-    NVal fsTypeVal = optionsNVal.GetProp("fsType");
+    FormatParams formatParams;
+    NVal fsTypeVal = paramsNVal.GetProp("fsType");
     if (fsTypeVal.val_ != nullptr) {
         std::unique_ptr<char []> fsType;
         tie(succ, fsType, std::ignore) = fsTypeVal.ToUTF8String();
         if (succ) {
-            formatOptions.SetFsType(std::string(fsType.get()));
+            formatParams.SetFsType(std::string(fsType.get()));
         }
     }
-    NVal quickFormatVal = optionsNVal.GetProp("quickFormat");
+    NVal quickFormatVal = paramsNVal.GetProp("quickFormat");
     if (quickFormatVal.val_ != nullptr) {
         bool quickFormat;
         std::tie(succ, quickFormat) = quickFormatVal.ToBool();
         if (succ) {
-            formatOptions.SetQuickFormat(quickFormat);
+            formatParams.SetQuickFormat(quickFormat);
         }
     }
-    NVal volumeNameVal = optionsNVal.GetProp("volumeName");
+    NVal volumeNameVal = paramsNVal.GetProp("volumeName");
     if (volumeNameVal.val_ != nullptr) {
         std::unique_ptr<char []> volumeName;
         tie(succ, volumeName, std::ignore) = volumeNameVal.ToUTF8String();
         if (succ) {
-            formatOptions.SetVolumeName(std::string(volumeName.get()));
+            formatParams.SetVolumeName(std::string(volumeName.get()));
         }
     }
     std::string diskIdString(diskId.get());
-    auto cbExec = [diskIdString, partitionNum, formatOptions]() -> NError {
+    auto cbExec = [diskIdString, partitionNum, formatParams]() -> NError {
         int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->FormatPartition(diskIdString,
-            partitionNum, formatOptions);
+            partitionNum, formatParams);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }

@@ -74,19 +74,19 @@ bool FormatPartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
         offset += sizeof(uint32_t);
     }
 
-    // Create FormatOptions with fuzzed fs type
-    FormatOptions options;
+    // Create FormatParams with fuzzed fs type
+    FormatParams formatParams;
     if (offset < size) {
         size_t fsTypeLen = std::min(size - offset, MAX_FS_TYPE_LENGTH);
         std::string fsType(reinterpret_cast<const char*>(data + offset), fsTypeLen);
-        options.SetFsType(fsType);
+        formatParams.SetFsType(fsType);
         offset += fsTypeLen;
 
         // Try to extract volume name if available
         if (offset < size) {
             size_t volNameLen = std::min(size - offset, MAX_VOLUME_NAME_LENGTH);
             std::string volName(reinterpret_cast<const char*>(data + offset), volNameLen);
-            options.SetVolumeName(volName);
+            formatParams.SetVolumeName(volName);
         }
     }
 
@@ -95,7 +95,7 @@ bool FormatPartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteString(diskId);
     datas.WriteUint32(partitionNum);
-    options.Marshalling(datas);
+    formatParams.Marshalling(datas);
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
@@ -119,17 +119,17 @@ bool FormatPartitionFuzzTestFSTypes(const uint8_t *data, size_t size)
     std::string diskId = std::string(DISK_ID_PREFIX) + std::to_string(minor);
     uint32_t partitionNum = DEFAULT_PARTITION_NUM;
 
-    for (size_t i = 0; i < validFsTypeCount; i++) {
-        FormatOptions options;
+for (size_t i = 0; i < validFsTypeCount; i++) {
+        FormatParams formatParams;
         if (fsTypes[i] != nullptr && strlen(fsTypes[i]) > 0) {
-            options.SetFsType(std::string(fsTypes[i]));
+            formatParams.SetFsType(std::string(fsTypes[i]));
         }
 
         MessageParcel datas;
         datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
         datas.WriteString(diskId);
         datas.WriteUint32(partitionNum);
-        options.Marshalling(datas);
+        formatParams.Marshalling(datas);
         datas.RewindRead(0);
         MessageParcel reply;
         MessageOption option;

@@ -22,9 +22,9 @@
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "netlink/netlink_data.h"
-#include "partition_options.h"
+#include "partition_params.h"
 #include "partition_table_info.h"
-#include "format_options.h"
+#include "format_params.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -43,10 +43,10 @@ public:
     int32_t HandleGetPartitionTable(const std::string &diskId,
         OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
     int32_t HandleCreatePartition(const std::string &diskId,
-        const OHOS::StorageManager::PartitionOptions &partitionOption);
+        const OHOS::StorageManager::PartitionParams &partitionParams);
     int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
     int32_t HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
-        const OHOS::StorageManager::FormatOptions &options);
+        const OHOS::StorageManager::FormatParams &formatParams);
     int32_t HandleEject(const std::string &diskId);
 
 private:

@@ -63,9 +63,9 @@ ohos_unittest("storage_daemon_test") {
     "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/partition_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_options.cpp",
+    "${storage_manager_path}/innerkits_impl/src/partition_params.cpp",
     "${storage_manager_path}/innerkits_impl/src/partition_table_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/format_options.cpp",
+    "${storage_manager_path}/innerkits_impl/src/format_params.cpp",
   ]
 
   deps = [

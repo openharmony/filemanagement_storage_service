@@ -1571,13 +1571,13 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_002, TestSiz
     diskInfo->sectorSize_ = 512;
     diskInfo->alignSector_ = 2048;
 
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "invalid_type";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
 
@@ -1607,13 +1607,13 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_003, TestSiz
     diskInfo->sectorSize_ = 512;
     diskInfo->alignSector_ = 2048;
 
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(9999999);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(9999999);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
@@ -1640,13 +1640,13 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_004, TestSiz
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
 
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "ext4";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(102400);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(102400);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_CREATE_PARTITION_NOT_SUPPORT);
 
@@ -1676,13 +1676,13 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreatePartition_005, TestSiz
     diskInfo->sectorSize_ = 512;
     diskInfo->alignSector_ = 2048;
 
-    OHOS::StorageManager::PartitionOptions options;
+    OHOS::StorageManager::PartitionParams partitionParams;
     std::string typeCode = "vfat";
-    options.SetTypeCode(typeCode);
-    options.SetStartSector(2048);
-    options.SetEndSector(2048 + 100);
+    partitionParams.SetTypeCode(typeCode);
+    partitionParams.SetStartSector(2048);
+    partitionParams.SetEndSector(2048 + 100);
 
-    int32_t ret = diskInfo->CreatePartition(options);
+    int32_t ret = diskInfo->CreatePartition(partitionParams);
 
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
@@ -1738,11 +1738,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_002, TestSiz
     ASSERT_TRUE(diskInfo != nullptr);
 
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "invalid_fs";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    int32_t ret = diskInfo->FormatPartition(partitionNum, options);
+    int32_t ret = diskInfo->FormatPartition(partitionNum, formatParams);
 
     EXPECT_EQ(ret, E_FORMAT_PARTITION_NOT_SUPPORT);
 
@@ -1770,11 +1770,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_003, TestSiz
     ASSERT_TRUE(diskInfo != nullptr);
 
     uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatOptions options;
+    OHOS::StorageManager::FormatParams formatParams;
     std::string fsType = "vfat";
-    options.SetFsType(fsType);
+    formatParams.SetFsType(fsType);
 
-    int32_t ret = diskInfo->FormatPartition(partitionNum, options);
+    int32_t ret = diskInfo->FormatPartition(partitionNum, formatParams);
 
     EXPECT_EQ(ret, E_FORMAT_PARTITION_NOT_SUPPORT);
 

@@ -168,10 +168,10 @@ public:
     virtual int32_t CreateIsoImage(const std::string &volId, const std::string &filePath) override;
     // disk partition api
     virtual int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
-    virtual int32_t CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption) override;
+    virtual int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams) override;
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
-                                    const FormatOptions &options) override;
+                                    const FormatParams &formatParams) override;
     virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
 private:

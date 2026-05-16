@@ -133,7 +133,7 @@ int32_t DiskManagerService::GetPartitionTable(const std::string &diskId, Partiti
     return sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
 }
 
-int32_t DiskManagerService::CreatePartition(const std::string &diskId, const PartitionOptions &partitionOption)
+int32_t DiskManagerService::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
 {
     {
         std::lock_guard<std::mutex> lock(diskMapMutex_);
@@ -144,7 +144,7 @@ int32_t DiskManagerService::CreatePartition(const std::string &diskId, const Par
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->CreatePartition(diskId, partitionOption);
+    return sdCommunication->CreatePartition(diskId, partitionParams);
 }
 
 int32_t DiskManagerService::DeletePartition(const std::string &diskId, uint32_t partitionNum)
@@ -162,7 +162,7 @@ int32_t DiskManagerService::DeletePartition(const std::string &diskId, uint32_t 
 }
 
 int32_t DiskManagerService::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatOptions &options)
+    const FormatParams &formatParams)
 {
     {
         std::lock_guard<std::mutex> lock(diskMapMutex_);
@@ -173,7 +173,7 @@ int32_t DiskManagerService::FormatPartition(const std::string &diskId, uint32_t 
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->FormatPartition(diskId, partitionNum, options);
+    return sdCommunication->FormatPartition(diskId, partitionNum, formatParams);
 }
 }
 }
