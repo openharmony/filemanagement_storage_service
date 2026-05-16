@@ -634,7 +634,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_002,
     std::string diskId = "testDiskId";
     Disk disk;
     auto ret = storageManagerProviderTest_->GetDiskById(diskId, disk);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetDiskById_002 end";
 }
 

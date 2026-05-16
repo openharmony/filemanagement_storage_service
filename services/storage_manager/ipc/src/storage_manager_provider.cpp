@@ -931,9 +931,11 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
+        LOGI("StorageManagerProvider::GetDiskById failed");
+        return err;
     }
     LOGI("StorageManagerProvider::GetDiskById success");
-    return err;
+    return E_OK;
 #else
     LOGI("StorageManagerProvider::GetDiskById not support");
     return E_OK;
