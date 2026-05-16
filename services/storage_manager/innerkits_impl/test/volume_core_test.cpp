@@ -56,6 +56,8 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     auto result4 = volumecore.GetState();
     EXPECT_EQ(result4, state);
     volumecore.SetState(state);
+    std::string fsType = "exfat";
+    volumecore.SetFsType(fsType);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Get_0000";
 }
 
