@@ -248,12 +248,21 @@ void UserManager::CheckDirsFromVec(int32_t userId)
         if (options.find("check_dir") == options.end()) {
             continue;
         }
+        if (IsFileExist(dirInfo.path)) {
+            LOGE("[L2:UserManager] CheckDirsFromVec: File Exist, path=%{public}s", dirInfo.path.c_str());
+            continue;
+        }
         ret = dirInfo.MakeDir();
         if (ret != E_OK) {
             LOGE("[L2:UserManager] CheckDirsFromVec: makeDir failed, path=%{public}s, ret=%{public}d",
                 dirInfo.path.c_str(), ret);
             std::string extraData = "path=" + dirInfo.path;
             StorageRadar::ReportUserManager("CheckDirsFromVec", userId, ret, extraData);
+            continue;
+        }
+        if (SetElDirFscryptPolicy(userId, dirInfo.path) != E_OK) {
+            LOGE("[L2:UserManager] CheckDirsFromVec: SetElDirFscryptPolicy %{public}s failed",
+                dirInfo.path.c_str());
         }
     }
     LOGI("[L2:UserManager] CheckDirsFromVec: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
