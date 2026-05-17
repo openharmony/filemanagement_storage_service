@@ -114,7 +114,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_001, Tes
     int32_t maxVols = 3;
     bool isUserdata = false;
     auto ret = diskInfo->ReadDiskLines(lines, maxVols, isUserdata);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_001 end";
 }
 

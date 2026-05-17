@@ -1037,7 +1037,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
     } else {
         LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT SUCCESS <<<");
     }
-    return E_OK;
+    return ret;
 }
 
 int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum,
