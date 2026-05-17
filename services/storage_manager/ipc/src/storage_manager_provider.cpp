@@ -2428,6 +2428,10 @@ int32_t StorageManagerProvider::CreatePartition(const std::string &diskId, const
         LOGE("diskId is empty");
         return E_PARAMS_INVALID;
     }
+    if (partitionParams.GetTypeCode().empty()) {
+        LOGE("type code is empty");
+        return E_PARAMS_INVALID;
+    }
     if (partitionParams.GetStartSector() >= partitionParams.GetEndSector()) {
         LOGE("[L1:StorageManagerProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
         StorageService::StorageRadar::ReportCommonResult("CreatePartition", E_PARAMS_INVALID,

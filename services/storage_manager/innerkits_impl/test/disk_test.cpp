@@ -83,7 +83,7 @@ HWTEST_F(DiskTest, Disk_Marshalling_0000, testing::ext::TestSize.Level1)
     Parcel parcel;
     disk.Marshalling(parcel);
     EXPECT_EQ(parcel.ReadString(), diskId);
-    EXPECT_EQ(parcel.ReadInt32(), sizeBytes);
+    EXPECT_EQ(parcel.ReadInt64(), sizeBytes);
     EXPECT_EQ(parcel.ReadString(), sysPath);
     EXPECT_EQ(parcel.ReadString(), vendor);
     EXPECT_EQ(parcel.ReadInt32(), flag);
@@ -109,7 +109,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     int32_t flag = USB_FLAG;
     Parcel parcel;
     parcel.WriteString(diskId);
-    parcel.WriteInt32(sizeBytes);
+    parcel.WriteInt64(sizeBytes);
     parcel.WriteString(sysPath);
     parcel.WriteString(vendor);
     parcel.WriteInt32(flag);
