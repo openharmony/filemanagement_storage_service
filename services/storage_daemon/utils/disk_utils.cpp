@@ -528,6 +528,7 @@ std::string DiskType2Str(uint8_t diskType)
         case 0x41:
             return "BD-R";
         case 0x42:
+        case 0x43:
             return "BD-RE";
         default:
             LOGW("[L8:DiskUtils] DiskType2Str: unknown diskType=0x%{public}x", diskType);
