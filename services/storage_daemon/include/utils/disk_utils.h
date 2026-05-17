@@ -56,6 +56,7 @@ int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity);
 int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity);
 int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapacity);
 int GetDvdConfiguration(int fd, int &dvdMedia);
+int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

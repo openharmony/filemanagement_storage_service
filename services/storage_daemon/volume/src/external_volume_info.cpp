@@ -168,6 +168,12 @@ int32_t ExternalVolumeInfo::DoGetOddCapacity(const std::string& volumeId, int64_
     } else if (oddLabel == "CD-RW" || oddLabel == "CD-R") {
         err1 = GetCdTotalCapacity(cmdFd, totalSize);
         err2 = GetCdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "BD-R" || oddLabel == "BD-RE") {
+        err1 = GetBdTotalCapacity(cmdFd, totalSize);
+        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "BD-ROM") {
+        err1 = GetBdTotalCapacity(cmdFd, totalSize);
+        usedSize = totalSize;
     } else {
         totalSize = 0;
         usedSize = 0;

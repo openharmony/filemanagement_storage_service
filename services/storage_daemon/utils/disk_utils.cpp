@@ -51,6 +51,18 @@ constexpr int32_t READ_DISC_INFO_SECTOR = 0x46;
 constexpr uint8_t DISC_TYPE_OFFSET_HIGH = 6;
 constexpr uint8_t DISC_TYPE_OFFSET_LOW = 7;
 constexpr uint8_t DISC_TYPE_OFFSET = 8;
+constexpr uint8_t BYTE_SHIFT_24 = 24;
+constexpr uint8_t BYTE_SHIFT_16 = 16;
+constexpr uint8_t BYTE_SHIFT_8 = 8;
+constexpr uint8_t BYTE_MASK = 0xff;
+constexpr uint8_t LAST_LBA_BYTE_0 = 0;
+constexpr uint8_t LAST_LBA_BYTE_1 = 1;
+constexpr uint8_t LAST_LBA_BYTE_2 = 2;
+constexpr uint8_t LAST_LBA_BYTE_3 = 3;
+constexpr uint8_t BLOCK_SIZE_BYTE_0 = 4;
+constexpr uint8_t BLOCK_SIZE_BYTE_1 = 5;
+constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
+constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
 constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
@@ -890,6 +902,47 @@ int GetDvdConfiguration(int fd, int &dvdMedia)
     dvdMedia = static_cast<int>((unsigned int)data_buf[DISC_TYPE_OFFSET_HIGH] << DISC_TYPE_OFFSET) |
         data_buf[DISC_TYPE_OFFSET_LOW];
     LOGI("dvd_media: %{public}#x", dvdMedia);
+    return E_OK;
+}
+
+int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity)
+{
+    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
+    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    unsigned int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    int ret = 0;
+    unsigned int blk_cnt = 0;
+    unsigned int blk_size = 0;
+    /*
+    * 使用 SCSI READ CAPACITY 指令 (0x25) 获取蓝光光盘容量信息。
+    * 字段详解:
+    * cmd_buf[0]: 操作码 0x25 (GPCMD_READ_CDVD_CAPACITY)。
+    * cmd_buf[7-8]: 分配长度 (Allocation Length)。
+    * 返回数据:
+    * data_buf[0-3]: 最后逻辑块地址 (Last LBA)。
+    * data_buf[4-7]: 块大小 (Block Length)。
+    */
+    cmd_buf[0] = GPCMD_READ_CDVD_CAPACITY;
+    cmd_buf[CDB_ALLOCATION_LENGTH_HIGH] = (data_len >> BYTE_SHIFT_8) & BYTE_MASK;
+    cmd_buf[CDB_ALLOCATION_LENGTH_LOW] = data_len & BYTE_MASK;
+    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    if (ret != 0) {
+        LOGE("get bd total capacity failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+
+    blk_cnt = ((unsigned int)data_buf[LAST_LBA_BYTE_0] << BYTE_SHIFT_24) |
+            ((unsigned int)data_buf[LAST_LBA_BYTE_1] << BYTE_SHIFT_16) |
+            ((unsigned int)data_buf[LAST_LBA_BYTE_2] << BYTE_SHIFT_8) |
+            data_buf[LAST_LBA_BYTE_3];
+    blk_size = ((unsigned int)data_buf[BLOCK_SIZE_BYTE_0] << BYTE_SHIFT_24) |
+            ((unsigned int)data_buf[BLOCK_SIZE_BYTE_1] << BYTE_SHIFT_16) |
+            ((unsigned int)data_buf[BLOCK_SIZE_BYTE_2] << BYTE_SHIFT_8) |
+            data_buf[BLOCK_SIZE_BYTE_3];
+    bdTotalCapacity = static_cast<int64_t>(blk_cnt + 1) * blk_size;
+    LOGI("bd total_capacity: %{public}u * %{public}u = %{public}" PRId64 " bytes",
+        blk_cnt + 1, blk_size, bdTotalCapacity);
     return E_OK;
 }
 } // namespace STORAGE_DAEMON
