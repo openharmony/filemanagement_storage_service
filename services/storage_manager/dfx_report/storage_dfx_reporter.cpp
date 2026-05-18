@@ -40,6 +40,7 @@ constexpr double BASE_NUMBER = 10.0;
 constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t TOP_COUNT = 20; // Top N directories to report
 constexpr int64_t TIME_INTERVAL_HOURS = 24;
+constexpr int32_t EVENT_REPORT_TIMES_MAX = 2;
 
 // HMFS metadata constants
 constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
@@ -79,6 +80,23 @@ void StorageDfxReporter::CheckAndTriggerHapAndSaStatistics()
         return;
     }
     StartReportHapAndSaStorageStatus();
+}
+
+void StorageDfxReporter::CloneEventReportTimesZeroisation()
+{
+    eventReportTimes_.store(0);
+}
+
+void StorageDfxReporter::CloneEventReportStorageStatus()
+{
+    std::lock_guard<std::mutex> lock(cloneEventMutex_);
+    LOGI("CloneEventReportStorageStatus start.");
+    if (eventReportTimes_.load() >= EVENT_REPORT_TIMES_MAX) {
+        LOGI("CloneEventReportStorageStatus eventReport exceeds the frequency limit.");
+        return;
+    }
+    eventReportTimes_.fetch_add(1);
+    CheckAndTriggerHapAndSaStatistics();
 }
 
 void StorageDfxReporter::GetCurrentTime(std::ostringstream &extraData)

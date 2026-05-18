@@ -30,7 +30,10 @@ namespace StorageManager {
 using namespace OHOS::StorageService;
 static constexpr int32_t WANT_DEFAULT_VALUE = -1;
 constexpr int32_t BATTERY_LEVEL_TEN = 10;
+constexpr int32_t CLONE_STATE_START = 1;
+constexpr int32_t CLONE_STATE_END = 0;
 constexpr const char* BATTERY_SOC_KEY = "soc";
+constexpr const char* CLONE_EVENT_NAME = "usual.event.clone.CommonEventCloneState";
 StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info) {}
 
@@ -46,6 +49,7 @@ void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
+        matchingSkills.AddEvent(CLONE_EVENT_NAME);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
@@ -86,6 +90,12 @@ void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventDat
         int32_t initRet = StorageManagerScan::GetInstance().Init();
         if (initRet != E_OK) {
             LOGE("Init StorageManagerScan failed, ret=%{public}d", initRet);
+        }
+    } else if (action == CLONE_EVENT_NAME) {
+        int32_t state = want.GetIntParam(CLONE_STATE, WANT_DEFAULT_VALUE);
+        if (state == CLONE_STATE_START || state == CLONE_STATE_END) {
+            LOGI("clone state: %{public}d", state);
+            StorageDfxReporter::GetInstance().CloneEventReportStorageStatus();
         }
     }
 }

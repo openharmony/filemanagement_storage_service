@@ -291,5 +291,74 @@ HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_tes
 
     GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0005 end";
 }
+
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0006 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction("usual.event.clone.CommonEventCloneState");
+    want.SetParam("cloneState", 1);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0006 end";
+}
+
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0007 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction("usual.event.clone.CommonEventCloneState");
+    want.SetParam("cloneState", 0);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0007 end";
+}
+
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0008 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction("usual.event.clone.CommonEventCloneState");
+    want.SetParam("cloneState", -1);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0008 end";
+}
+
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0009 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction("usual.event.clone.CommonEventCloneState");
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0009 end";
+}
+
+HWTEST_F(StorageCommonEventSubscriberTest, Storage_subscriber_OnReceiveEvent_test_0010, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0010 begin";
+    ASSERT_TRUE(subscriberPtr_ != nullptr);
+    EventFwk::CommonEventData testData;
+    AAFwk::Want want;
+    want.SetAction("usual.event.clone.CommonEventCloneState");
+    want.SetParam("cloneState", 2);
+    testData.SetWant(want);
+    subscriberPtr_->OnReceiveEvent(testData);
+    ASSERT_TRUE(true);
+    GTEST_LOG_(INFO) << "Storage_subscriber_OnReceiveEvent_test_0010 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

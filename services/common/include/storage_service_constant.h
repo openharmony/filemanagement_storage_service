@@ -45,6 +45,7 @@ extern const char *CLEAN_LEVEL_LOW;
 extern const char *CLEAN_LEVEL_MEDIUM;
 extern const char *CLEAN_LEVEL_HIGH;
 extern const char *CLEAN_LEVEL_RICH;
+extern const char *CLONE_STATE;
 extern const int32_t CLEAN_LOW_TIME; // min
 extern const int32_t CLEAN_MEDIUM_TIME; // day
 extern const int32_t CLEAN_HIGH_TIME; // week
