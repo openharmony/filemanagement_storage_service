@@ -30,7 +30,8 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/include/anco",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_manager_path}/include",
-    "${target_gen_dir}"
+    "${target_gen_dir}",
+    "${storage_daemon_path}/scan_device/src",
   ]
   cflags = [
     "-g",
@@ -46,6 +47,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/scan_device/src/scan_device.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/netlink/src/netlink_data.cpp",
     "${storage_daemon_path}/netlink/src/netlink_handler.cpp",
@@ -65,6 +67,8 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
     "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/exfat_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/hmfs_operator.cpp",
+    "${storage_daemon_path}/disk_manager/src/volume/ext4_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/ivolume_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/ntfs_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/vfat_operator.cpp",

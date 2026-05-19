@@ -30,6 +30,8 @@ namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
 
+constexpr mode_t DIR_CREATE_MODE = 0755;
+
 class ExtVolumeUtilsTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -44,6 +46,7 @@ public:
 void ExtVolumeUtilsTest::SetUpTestCase(void)
 {
     testDevPath_ = "/dev/block/vol_utils_test_" + std::to_string(getpid());
+    mkdir("/dev/block", DIR_CREATE_MODE);
     int fd = creat(testDevPath_.c_str(), 0600);
     if (fd >= 0) {
         close(fd);
@@ -53,6 +56,7 @@ void ExtVolumeUtilsTest::SetUpTestCase(void)
 void ExtVolumeUtilsTest::TearDownTestCase(void)
 {
     unlink(testDevPath_.c_str());
+    rmdir("/dev/block");
 }
 
 void ExtVolumeUtilsTest::SetUp(void)

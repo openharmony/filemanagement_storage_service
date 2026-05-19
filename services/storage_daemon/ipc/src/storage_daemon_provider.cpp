@@ -57,6 +57,10 @@
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
 #include "disk_manager/volume/volume_operator_factory.h"
+#ifdef EXTERNAL_STORAGE_MANAGER
+#include "scan_device.h"
+#endif
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
@@ -72,6 +76,7 @@ constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 
 #ifdef EXTERNAL_STORAGE_MANAGER
+constexpr size_t MAX_TYPE_LEN = 64;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
 #endif
@@ -2420,6 +2425,37 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskPath,
     }
 
     LOGI("[L1:StorageDaemonProvider] Partition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
+    std::string &blockInfos)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< type=%{public}s", type.c_str());
+
+    if (type.empty() || type.size() > MAX_TYPE_LEN) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
+        return E_PARAMS_INVALID;
+    }
+
+    ScanDevice scanDevice;
+    std::vector<BlockInfo> disks;
+
+    if (type == "data") {
+        disks = scanDevice.GetDataDisks();
+    } else if (type == "external") {
+        disks = scanDevice.GetExternalDisks();
+    } else {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: unsupported type=%{public}s", type.c_str());
+        return E_PARAMS_INVALID;
+    }
+
+    blockInfos = BlockInfo::SerializeVector(disks);
+    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT SUCCESS <<< count=%{public}zu", disks.size());
     return E_OK;
 #else
     return E_NOT_SUPPORT;

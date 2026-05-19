@@ -55,6 +55,32 @@ HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_Exfat, TestSize.Level1)
     EXPECT_NE(op, nullptr);
 }
 
+HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_Hmfs, TestSize.Level1)
+{
+    auto op = VolumeOperatorFactory::CreateOperator("hmfs");
+    EXPECT_NE(op, nullptr);
+}
+
+HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_F2fs, TestSize.Level1)
+{
+    auto op = VolumeOperatorFactory::CreateOperator("f2fs");
+    EXPECT_NE(op, nullptr);
+}
+
+HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_F2fsAndHmfsBothValid, TestSize.Level1)
+{
+    auto f2fsOp = VolumeOperatorFactory::CreateOperator("f2fs");
+    auto hmfsOp = VolumeOperatorFactory::CreateOperator("hmfs");
+    ASSERT_NE(f2fsOp, nullptr);
+    ASSERT_NE(hmfsOp, nullptr);
+}
+
+HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_Ext4, TestSize.Level1)
+{
+    auto op = VolumeOperatorFactory::CreateOperator("ext4");
+    EXPECT_NE(op, nullptr);
+}
+
 HWTEST_F(ExtVolumeOperatorFactoryTest, CreateOperator_UnknownType, TestSize.Level1)
 {
     auto op = VolumeOperatorFactory::CreateOperator("unknown_fs");

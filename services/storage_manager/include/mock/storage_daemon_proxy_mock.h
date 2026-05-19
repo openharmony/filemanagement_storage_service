@@ -146,6 +146,9 @@ public:
     virtual int32_t MountFuseDevice(const std::string &mountPath, int &fuseFd) override;
     virtual int32_t Partition(const std::string &diskPath, const std::string &partitionType) override;
 
+    virtual int32_t GetBlockInfoByType(const std::string &type,
+                                       std::string &blockInfos) override;
+
     //disk crypt api
     virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;

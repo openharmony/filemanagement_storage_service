@@ -74,6 +74,30 @@ void ExtIVolumeOperatorTest::TearDown(void)
     IFileUtilMoc::fileUtilMoc = nullptr;
 }
 
+HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_EmptyPath, TestSize.Level1)
+{
+    std::string empty;
+    TestOperator dummy;
+    int32_t ret = dummy.EnsureMountPath(empty);
+    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_PathTooLong, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string longPath(PATH_MAX, 'a');
+    int32_t ret = dummy.EnsureMountPath(longPath);
+    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_PathTraversal, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string path = testDir_ + "/nonexistent_parent/child";
+    int32_t ret = dummy.EnsureMountPath(path);
+    EXPECT_EQ(ret, E_MKDIR_MOUNT);
+}
+
 HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_Success, TestSize.Level1)
 {
     TestOperator dummy;
@@ -84,6 +108,33 @@ HWTEST_F(ExtIVolumeOperatorTest, EnsureMountPath_Success, TestSize.Level1)
     EXPECT_EQ(stat(path.c_str(), &st), 0);
     EXPECT_TRUE(S_ISDIR(st.st_mode));
     rmdir(path.c_str());
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_EmptyPath, TestSize.Level1)
+{
+    TestOperator dummy;
+    int32_t ret = dummy.RemoveMountPath("");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_PathTooLong, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string longPath(PATH_MAX, 'a');
+    int32_t ret = dummy.RemoveMountPath(longPath);
+    EXPECT_EQ(ret, E_ERR);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_PathTraversal, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string path = testDir_ + "/traversal_file";
+    int fd = open(path.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    ASSERT_GE(fd, 0);
+    close(fd);
+    int32_t ret = dummy.RemoveMountPath(path);
+    EXPECT_EQ(ret, E_ERR);
+    remove(path.c_str());
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_Success, TestSize.Level1)
@@ -106,19 +157,19 @@ HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_NotExist, TestSize.Level1)
 
 HWTEST_F(ExtIVolumeOperatorTest, Mount_EmptyMountPath, TestSize.Level1)
 {
-    int32_t ret = op_->Mount("/dev/block/sda1", "", 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", "", 0);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, Mount_MountPathTraversal, TestSize.Level1)
 {
-    int32_t ret = op_->Mount("/dev/block/sda1", "/data/../etc/passwd", 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", "/data/../etc/passwd", 0);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, Mount_InvalidPrefix, TestSize.Level1)
 {
-    int32_t ret = op_->Mount("/dev/block/sda1", "/data/local/tmp/fake_mnt", 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", "/data/local/tmp/fake_mnt", 0);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
@@ -126,7 +177,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_MountPathNotExist_DoMountFail, TestSize.L
 {
     std::string path = testDir_ + "/nonexistent_mount_path";
     EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_ERR));
-    int32_t ret = op_->Mount("/dev/block/sda1", path, 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_ERR);
     rmdir(path.c_str());
 }
@@ -136,7 +187,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_DoMountFailed_CleanupMountPath, TestSize.
     std::string path = testDir_ + "/mount_fail_test";
     mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_ERR));
-    int32_t ret = op_->Mount("/dev/block/sda1", path, 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_ERR);
     EXPECT_NE(access(path.c_str(), F_OK), 0);
 }
@@ -146,7 +197,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_Success, TestSize.Level1)
     std::string path = testDir_ + "/mount_ok_test";
     mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_OK));
-    int32_t ret = op_->Mount("/dev/block/sda1", path, 0);
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_OK);
     struct stat st;
     EXPECT_EQ(stat(path.c_str(), &st), 0);
