@@ -286,6 +286,11 @@ int32_t StorageDaemonProxy::UMountDisShareFile(int32_t userId, const std::string
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::InactiveUserPublicDirKey(uint32_t userId)
 {
     return E_OK;

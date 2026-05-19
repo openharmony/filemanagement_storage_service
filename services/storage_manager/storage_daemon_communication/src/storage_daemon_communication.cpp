@@ -818,6 +818,20 @@ int32_t StorageDaemonCommunication::UMountDisShareFile(int32_t userId, const std
     return storageDaemon_->UMountDisShareFile(userId, networkId);
 }
 
+int32_t StorageDaemonCommunication::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountDisShareFile(distributeDirs);
+}
+
 int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
 {
     int32_t err = Connect();

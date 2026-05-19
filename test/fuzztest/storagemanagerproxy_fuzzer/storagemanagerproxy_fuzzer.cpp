@@ -70,6 +70,9 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData, metadata6);
     proxy->MountDisShareFile(metaData2, metaData5);
     proxy->UMountDisShareFile(metaData2, metaData);
+    std::vector<std::string> distributeDirsVec;
+    distributeDirsVec.push_back(metaData);
+    proxy->UMountDisShareFile(distributeDirsVec);
     return true;
 }
 

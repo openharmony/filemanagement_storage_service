@@ -1004,6 +1004,27 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDisShareFile_0001
+ * @tc.name: Daemon_communication_UMountDisShareFile_0001
+ * @tc.desc: Test function of UMountDisShareFile interface with vector parameter for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDisShareFile_0001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    int32_t result = sdCommunication->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDisShareFile_0001 SUCCESS";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Daemon_communication_MountUsbFuse_0000
  * @tc.name: Daemon_communication_MountUsbFuse_0000
  * @tc.desc: Test function of MountUsbFuse interface for SUCCESS.

@@ -121,6 +121,7 @@ public:
     // cross device
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
+    virtual int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) override;
     virtual int32_t RegisterUeceActivationCallback(
         const sptr<StorageManager::IUeceActivationCallback> &ueceCallback) override;
     virtual int32_t UnregisterUeceActivationCallback() override;

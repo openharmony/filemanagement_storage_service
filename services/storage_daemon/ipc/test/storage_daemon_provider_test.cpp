@@ -1562,6 +1562,31 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_002
+ * @tc.desc: Verify the UMountDisShareFile function with vector parameter.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data+");
+    ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    distributeDirs.clear();
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret != E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_002 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_OnAddSystemAbility_001
  * @tc.desc: Verify the OnAddSystemAbility function.
  * @tc.type: FUNC

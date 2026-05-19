@@ -106,6 +106,7 @@ public:
         std::vector<std::string> &outputList, bool &isOccupy) override;
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
+    virtual int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
         const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type) override;

@@ -173,4 +173,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 212] void Partition([in] String diskPath,
                                   [in] String partitionType);
      [ipccode 213] void GetBlockInfoByType([in] String type, [out] String blockInfos);
+     [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
 }

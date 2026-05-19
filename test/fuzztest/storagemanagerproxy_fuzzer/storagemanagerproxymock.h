@@ -354,6 +354,11 @@ public:
     {
         return E_OK;
     }
+
+    int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS
