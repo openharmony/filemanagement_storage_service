@@ -62,6 +62,10 @@ const std::vector<uint8_t> DEFAULT_KEY = { 'D', 'o', 'c', 's' };
 #define F2FS_IOC_SET_PIN_FILE _IOW(F2FS_IOCTL_MAGIC, 13, set)
 #define F2FS_IOC_GET_PIN_FILE _IOR(F2FS_IOCTL_MAGIC, 14, set)
 #endif
+
+#ifndef HKS_TAG_USER_AUTH_TYPE_ALT
+#define HKS_TAG_USER_AUTH_TYPE_ALT (HKS_TAG_TYPE_UINT | 306)
+#endif
 }
 
 namespace OHOS {
@@ -1062,6 +1066,38 @@ void BaseKey::SyncKeyDir() const
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
     LOGW("[L4:BaseKey] SyncKeyDir: fsync end. SD_DURATION: FSYNC: delay time = %{public}s", delay.c_str());
     (void)closedir(dir);
+}
+
+bool BaseKey::NeedUpgradeAuthType()
+{
+    LOGI("[L4:BaseKey] NeedUpgradeAuthType: >>> ENTER <<<");
+    if (keyContext_.shield.IsEmpty()) {
+        LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield is empty, need upgrade");
+        return true;
+    }
+
+    HksParamSet *keyBlobParamSet = nullptr;
+    int ret = HksGetParamSet(
+        reinterpret_cast<HksParamSet *>(keyContext_.shield.data.get()),
+        keyContext_.shield.size,
+        &keyBlobParamSet);
+
+    if (ret != HKS_SUCCESS) {
+        LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d", ret);
+        return true;
+    }
+
+    struct HksParam *authTypeAlt = nullptr;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_USER_AUTH_TYPE_ALT, &authTypeAlt);
+
+    HksFreeParamSet(&keyBlobParamSet);
+
+    bool needUpgrade = (ret != HKS_SUCCESS);
+
+    LOGI("[L4:BaseKey] NeedUpgradeAuthType: hasAuthTypeAlt=%{public}d, needUpgrade=%{public}d",
+         (ret == HKS_SUCCESS), needUpgrade);
+
+    return needUpgrade;
 }
 
 bool BaseKey::UpgradeKeys()

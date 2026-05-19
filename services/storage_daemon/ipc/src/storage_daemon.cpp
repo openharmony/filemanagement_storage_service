@@ -31,6 +31,7 @@
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
+#include "crypto/huks_master.h"
 #include "crypto/key_crypto_utils.h"
 #include "crypto/key_manager.h"
 #include "crypto/key_manager_ext.h"
@@ -1096,6 +1097,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGW("[L1:StorageDaemon] Active user key for single secen for userId=%{public}d success, "
         "unlockAppKeyDelay=%{public}s", userId, delay.c_str());
+    CheckAndUpgradeUserAuthType(userId, token, secret);
 #endif
     if (ret == E_OK || ret == E_ACTIVE_REPEATED) {
         LOGI("[L1:StorageDaemon] ActiveUserKey4Single: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
@@ -1902,6 +1904,67 @@ int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
     }
 #endif
     return E_OK;
+}
+
+void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId,
+    const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGI("[L1:StorageDaemon] CheckAndUpgradeUserAuthType: >>> ENTER <<< userId=%{public}u", userId);
+#ifdef USER_CRYPTO_MANAGER
+    if (!HuksMaster::GetInstance().IsSupportNewAuthType()) {
+        LOGI("[L1:StorageDaemon] HUKS version not support ALT auth type, skip upgrade");
+        return;
+    }
+
+    KeyType types[] = {EL2_KEY, EL3_KEY, EL4_KEY};
+    for (auto type : types) {
+        auto elKey = KeyManager::GetInstance().GetUserElKey(userId, type, false);
+        if (elKey == nullptr || !elKey->NeedUpgradeAuthType()) {
+            LOGI("[L1:StorageDaemon] EL%{public}u key not need upgrade", type);
+            continue;
+        }
+
+        int ret = DoStoreAndUpdate(userId, token, secret, type);
+        if (ret != E_OK) {
+            LOGE("[L1:StorageDaemon] Upgrade EL%{public}u failed: %{public}d", type, ret);
+            StorageRadar::ReportUserKeyResult("CheckAndUpgradeUserAuthType", userId, ret,
+                "EL" + std::to_string(type), "Auth type upgrade failed");
+        } else {
+            LOGI("[L1:StorageDaemon] Upgrade EL%{public}u success", type);
+        }
+    }
+
+    auto el5Key = KeyManager::GetInstance().GetUserElKey(userId, EL5_KEY, false);
+    if (el5Key != nullptr && el5Key->NeedUpgradeAuthType()) {
+        uint64_t secureUid = 0;
+        KeyManager::GetInstance().GetSecureUid(userId, secureUid);
+
+        UserTokenSecret userTokenSecretDelete = {token, {}, {}, secureUid};
+        int ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretDelete, EL5_KEY);
+        if (ret != E_OK) {
+            LOGE("[L1:StorageDaemon] Delete EL5 failed: %{public}d", ret);
+            StorageRadar::ReportUserKeyResult("CheckAndUpgradeUserAuthType", userId, ret,
+                "EL5", "Delete old key failed");
+            return;
+        }
+
+        UserTokenSecret userTokenSecretCreate = {token, secret, secret, secureUid};
+        ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretCreate, EL5_KEY);
+        if (ret != E_OK) {
+            LOGE("[L1:StorageDaemon] Create EL5 failed: %{public}d", ret);
+            StorageRadar::ReportUserKeyResult("CheckAndUpgradeUserAuthType", userId, ret,
+                "EL5", "Create new key failed");
+            return;
+        }
+
+        ret = KeyManager::GetInstance().UpdateKeyContextByKeyType(userId, EL5_KEY);
+        if (ret == E_OK) {
+            LOGI("[L1:StorageDaemon] Upgrade EL5 success");
+        }
+    }
+#endif
+    LOGI("[L1:StorageDaemon] CheckAndUpgradeUserAuthType: <<< EXIT <<<");
 }
 } // namespace StorageDaemon
 } // namespace OHOS

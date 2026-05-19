@@ -25,6 +25,13 @@
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"
 
+#ifndef HKS_TAG_USER_AUTH_TYPE_ALT
+#define HKS_TAG_USER_AUTH_TYPE_ALT (HKS_TAG_TYPE_UINT | 306)
+#endif
+#ifndef HKS_USER_AUTH_ALT1
+#define HKS_USER_AUTH_ALT1 1
+#endif
+
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
@@ -401,15 +408,26 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
 
     LOGI("[L8:HuksMaster] AppendSecureAccessParams: append the secure access params when generate key");
 
-    HksParam param[] = {
-        { .tag = HKS_TAG_USER_AUTH_TYPE,
-            .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
-        { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
-        { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-        { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
-        { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 } // token timeout is 30 seconds when no challenge
-    };
-    return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
+        HksParam param[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ALT, .uint32Param = HKS_USER_AUTH_ALT1 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
+        };
+        return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    } else {
+        HksParam param[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE,
+                .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
+        };
+        return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    }
 }
 
 static uint8_t g_processName[sizeof(uint32_t)] = {0};
@@ -535,23 +553,44 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
     LOGI("[L8:HuksMaster] AppendNonceAadToken: append the secure access params when encrypt/decrypt");
     ctx.nonce = HashWithPrefix("NONCE SHA512 prefix", auth.secret, CRYPTO_AES_NONCE_LEN);
     ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
-    HksParam addParam[] = {
-        { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
-        { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
-        { .tag = HKS_TAG_NONCE,
-          .blob =
-            { ctx.nonce.size, ctx.nonce.data.get() }
-        },
-        { .tag = HKS_TAG_ASSOCIATED_DATA,
-          .blob =
-            { ctx.aad.size, ctx.aad.data.get() }
-        },
-        { .tag = HKS_TAG_AUTH_TOKEN,
-          .blob =
-            { auth.token.size, auth.token.data.get() }
-        }
-    };
-    return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+
+    if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
+        HksParam addParam[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ALT, .uint32Param = HKS_USER_AUTH_ALT1 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_NONCE,
+              .blob =
+                { ctx.nonce.size, ctx.nonce.data.get() }
+            },
+            { .tag = HKS_TAG_ASSOCIATED_DATA,
+              .blob =
+                { ctx.aad.size, ctx.aad.data.get() }
+            },
+            { .tag = HKS_TAG_AUTH_TOKEN,
+              .blob =
+                { auth.token.size, auth.token.data.get() }
+            }
+        };
+        return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+    } else {
+        HksParam addParam[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_NONCE,
+              .blob =
+                { ctx.nonce.size, ctx.nonce.data.get() }
+            },
+            { .tag = HKS_TAG_ASSOCIATED_DATA,
+              .blob =
+                { ctx.aad.size, ctx.aad.data.get() }
+            },
+            { .tag = HKS_TAG_AUTH_TOKEN,
+              .blob =
+                { auth.token.size, auth.token.data.get() }
+            }
+        };
+        return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+    }
 }
 
 static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
@@ -733,6 +772,25 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
         LOGI("[L8:HuksMaster] GenerateRandomKey: <<< EXIT SUCCESS <<<");
     }
     return out;
+}
+
+bool HuksMaster::GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer)
+{
+    LOGI("[L8:HuksMaster] GetHuksVersion: >>> ENTER <<<");
+    majorVer = 1;
+    minorVer = 2;
+    LOGI("[L8:HuksMaster] GetHuksVersion: <<< EXIT SUCCESS <<< majorVer=%{public}u, minorVer=%{public}u",
+         majorVer, minorVer);
+    return true;
+}
+
+bool HuksMaster::IsSupportNewAuthType()
+{
+    uint32_t majorVer = 0, minorVer = 0;
+    GetHuksVersion(majorVer, minorVer);
+    bool support = (majorVer >= 1 && minorVer >= 2);
+    LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);
+    return support;
 }
 
 int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
