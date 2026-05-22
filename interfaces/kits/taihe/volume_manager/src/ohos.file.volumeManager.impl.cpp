@@ -351,8 +351,14 @@ taihe::array<ohos::file::volumeManager::Disk> GetAllDisksSync()
     auto result = taihe::array<ohos::file::volumeManager::Disk>::make(diskInfo->size(),
         ohos::file::volumeManager::Disk{});
     auto diskTransformer = [](auto &disk) -> ohos::file::volumeManager::Disk {
-        return {disk.GetDiskId(), disk.GetDiskName(), disk.GetSizeBytes(), disk.GetSysPath(), disk.GetVendor(),
-            disk.GetDiskType(), disk.GetMediaType(), disk.GetRemovable(), disk.GetExtraInfo()};
+        auto volumeIds = disk.GetVolumeIds();
+        auto volumeIdsArray = taihe::array<taihe::string>::make(volumeIds.size(), taihe::string{});
+        for (size_t i = 0; i < volumeIds.size(); i++) {
+            volumeIdsArray[i] = taihe::string(volumeIds[i]);
+        }
+        return {disk.GetDiskId(), disk.GetSizeBytes(), disk.GetDiskType(), disk.GetRemovable(),
+            taihe::array<taihe::string>(taihe::copy_data_t{}, volumeIdsArray.data(), volumeIdsArray.size()),
+            disk.GetExtraInfo()};
     };
     std::transform(diskInfo->begin(), diskInfo->end(), result.begin(), diskTransformer);
     return taihe::array<ohos::file::volumeManager::Disk>(taihe::copy_data_t{}, result.data(), result.size());
@@ -364,22 +370,27 @@ ohos::file::volumeManager::Disk GetDiskByIdSync(taihe::string_view diskId)
     if (diskIdString.empty()) {
         LOGE("Invalid parameter, diskId is empty");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
-        return { "", "", 0, "", "", 0, 0, 0, "" };
+        return { "", 0, 0, false, taihe::array<taihe::string>::make(0, taihe::string{}), "" };
     }
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
         LOGE("Get StorageManagerConnect instance failed");
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { "", "", 0, "", "", 0, 0, 0, "" };
+        return { "", 0, 0, false, taihe::array<taihe::string>::make(0, taihe::string{}), "" };
     }
     auto diskInfo = std::make_shared<OHOS::StorageManager::Disk>();
     int32_t errNum = instance->GetDiskById(diskIdString, *diskInfo);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
-        return { "", "", 0, "", "", 0, 0, 0, "" };
+        return { "", 0, 0, false, taihe::array<taihe::string>::make(0, taihe::string{}), "" };
     }
-    return { diskInfo->GetDiskId(), diskInfo->GetDiskName(), diskInfo->GetSizeBytes(), diskInfo->GetSysPath(),
-        diskInfo->GetVendor(), diskInfo->GetDiskType(), diskInfo->GetMediaType(), diskInfo->GetRemovable(),
+    auto volumeIds = diskInfo->GetVolumeIds();
+    auto volumeIdsArray = taihe::array<taihe::string>::make(volumeIds.size(), taihe::string{});
+    for (size_t i = 0; i < volumeIds.size(); i++) {
+        volumeIdsArray[i] = taihe::string(volumeIds[i]);
+    }
+    return { diskInfo->GetDiskId(), diskInfo->GetSizeBytes(), diskInfo->GetDiskType(), diskInfo->GetRemovable(),
+        taihe::array<taihe::string>(taihe::copy_data_t{}, volumeIdsArray.data(), volumeIdsArray.size()),
         diskInfo->GetExtraInfo() };
 }
 

@@ -33,7 +33,8 @@ public:
         SD_CARD = 1,
         USB_FLASH = 2,
         CD_DVD_BD = 3,
-        MTP_PTP = 4,
+        DATA_DISK_SSD = 4,
+        DATA_DISK_HDD = 5,
         UNKNOWN_DISK_TYPE = 255,
     };
 
@@ -45,12 +46,6 @@ public:
     enum DiskState {
         MOUNTED,
         REMOVED,
-    };
-
-    enum MediaType {
-        SSD = 0,
-        HDD = 1,
-        UNKNOWN_MEDIA_TYPE = 2,
     };
 
     DiskInfo(std::string &diskName, std::string &sysPath_, std::string &devPath_, dev_t device, int diskType);
@@ -73,12 +68,13 @@ public:
     uint64_t GetTotalSize() const;
     std::string GetSysPath() const;
     std::string GetDevVendor() const;
+    std::string GetProduct() const;
     int32_t GetDiskType() const;
-    int32_t GetMediaType() const;
     std::string GetDiskName() const;
     bool GetRemovable() const;
     std::string GetExtraInfo() const;
     int EjectDisk();
+    std::list<std::string> GetVolumeIds() const;
 
 private:
     std::string diskId_;
@@ -86,6 +82,7 @@ private:
     uint64_t totalSize_ {};
     /* device vendor infomation */
     std::string vendor_;
+    std::string product_;
     std::string sysPath_;
     int status;
     bool isUserdata;
@@ -95,7 +92,6 @@ private:
     std::list<std::string> volumeId_;
     std::vector<std::string> sgdiskLines_;
     std::map<uint32_t, std::string> vendorMap_;
-    MediaType mediaType_ = MediaType::UNKNOWN_MEDIA_TYPE;
     DiskType diskType_;
     uint64_t totalSector_;
     uint64_t lastUsableSector_;
@@ -129,6 +125,7 @@ private:
     int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams);
     std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
                                           const std::string &volName);
+    void SetExtraInfo();
 };
 } // STORAGE_DAEMON
 } // OHOS

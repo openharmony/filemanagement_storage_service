@@ -866,13 +866,18 @@ napi_value GetAllDisks(napi_env env, napi_callback_info info)
         for (size_t i = 0; i < (*diskInfo).size(); i++) {
             NVal diskInfoObject = NVal::CreateObject(env);
             diskInfoObject.AddProp("diskId", NVal::CreateUTF8String(env, (*diskInfo)[i].GetDiskId()).val_);
-            diskInfoObject.AddProp("diskName", NVal::CreateUTF8String(env, (*diskInfo)[i].GetDiskName()).val_);
             diskInfoObject.AddProp("sizeBytes", NVal::CreateInt64(env, (*diskInfo)[i].GetSizeBytes()).val_);
-            diskInfoObject.AddProp("sysPath", NVal::CreateUTF8String(env, (*diskInfo)[i].GetSysPath()).val_);
-            diskInfoObject.AddProp("vendor", NVal::CreateUTF8String(env, (*diskInfo)[i].GetVendor()).val_);
             diskInfoObject.AddProp("diskType", NVal::CreateInt32(env, (*diskInfo)[i].GetDiskType()).val_);
-            diskInfoObject.AddProp("mediaType", NVal::CreateInt32(env, (*diskInfo)[i].GetMediaType()).val_);
-            diskInfoObject.AddProp("removable", NVal::CreateInt32(env, (*diskInfo)[i].GetRemovable()).val_);
+            diskInfoObject.AddProp("removable", NVal::CreateBool(env, (*diskInfo)[i].GetRemovable()).val_);
+            std::vector<std::string> volumeIds = (*diskInfo)[i].GetVolumeIds();
+            napi_value volumeIdsArray = nullptr;
+            napi_status createStatus = napi_create_array(env, &volumeIdsArray);
+            if (createStatus == napi_ok) {
+                for (size_t j = 0; j < volumeIds.size(); j++) {
+                    napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, volumeIds[j]).val_);
+                }
+            }
+            diskInfoObject.AddProp("volumeIds", volumeIdsArray);
             diskInfoObject.AddProp("extraInfo", NVal::CreateUTF8String(env, (*diskInfo)[i].GetExtraInfo()).val_);
             status = napi_set_element(env, diskInfoArray, i, diskInfoObject.val_);
             if (status != napi_ok) {
@@ -919,13 +924,18 @@ napi_value GetDiskById(napi_env env, napi_callback_info info)
         }
         NVal diskObject = NVal::CreateObject(env);
         diskObject.AddProp("diskId", NVal::CreateUTF8String(env, diskInfo->GetDiskId()).val_);
-        diskObject.AddProp("diskName", NVal::CreateUTF8String(env, diskInfo->GetDiskName()).val_);
         diskObject.AddProp("sizeBytes", NVal::CreateInt64(env, diskInfo->GetSizeBytes()).val_);
-        diskObject.AddProp("sysPath", NVal::CreateUTF8String(env, diskInfo->GetSysPath()).val_);
-        diskObject.AddProp("vendor", NVal::CreateUTF8String(env, diskInfo->GetVendor()).val_);
         diskObject.AddProp("diskType", NVal::CreateInt32(env, diskInfo->GetDiskType()).val_);
-        diskObject.AddProp("mediaType", NVal::CreateInt32(env, diskInfo->GetMediaType()).val_);
-        diskObject.AddProp("removable", NVal::CreateInt32(env, diskInfo->GetRemovable()).val_);
+        diskObject.AddProp("removable", NVal::CreateBool(env, diskInfo->GetRemovable()).val_);
+        std::vector<std::string> volumeIds = diskInfo->GetVolumeIds();
+        napi_value volumeIdsArray = nullptr;
+        napi_status createStatus = napi_create_array(env, &volumeIdsArray);
+        if (createStatus == napi_ok) {
+            for (size_t j = 0; j < volumeIds.size(); j++) {
+                napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, volumeIds[j]).val_);
+            }
+        }
+        diskObject.AddProp("volumeIds", volumeIdsArray);
         diskObject.AddProp("extraInfo", NVal::CreateUTF8String(env, diskInfo->GetExtraInfo()).val_);
         return diskObject;
     };

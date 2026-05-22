@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 
+#include "cJSON.h"
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -130,11 +131,6 @@ int32_t DiskInfo::GetDiskType() const
     return diskType_;
 }
 
-int32_t DiskInfo::GetMediaType() const
-{
-    return mediaType_;
-}
-
 std::string DiskInfo::GetDiskName() const
 {
     return diskName_;
@@ -150,6 +146,16 @@ std::string DiskInfo::GetExtraInfo() const
     return extraInfo_;
 }
 
+std::string DiskInfo::GetProduct() const
+{
+    return product_;
+}
+
+std::list<std::string> DiskInfo::GetVolumeIds() const
+{
+    return volumeId_;
+}
+
 DiskInfo::~DiskInfo()
 {
     DestroyDiskNode(devPath_);
@@ -162,6 +168,7 @@ int DiskInfo::Create()
     CreateDiskNode(devPath_, device_);
     status = S_CREATE;
     ReadMetadata();
+    SetExtraInfo();
     StorageManagerClient client;
     ret = client.NotifyDiskCreated(*this);
     if (ret != E_OK) {
@@ -232,8 +239,33 @@ void DiskInfo::ReadMetadata()
             return;
         }
         vendor_ = str;
-        LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
+        LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< vendor=%{public}s", vendor_.c_str());
     }
+    std::string path(sysPath_ + "/device/model");
+    std::string str;
+    if (!ReadFile(path, &str)) {
+        LOGE("[L3:DiskInfo] ReadMetadata: <<< EXIT FAILED <<< open file=%{public}s failed", path.c_str());
+        return;
+    }
+    product_ = str;
+    LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< product=%{public}s", product_.c_str());
+}
+
+void DiskInfo::SetExtraInfo()
+{
+    cJSON *json = cJSON_CreateObject();
+    if (json == nullptr) {
+        LOGE("[L3:DiskInfo] SetExtraInfo: Failed to create cJSON object");
+        return;
+    }
+    cJSON_AddStringToObject(json, "vendor", vendor_.c_str());
+    cJSON_AddStringToObject(json, "product", product_.c_str());
+    char *jsonStr = cJSON_PrintUnformatted(json);
+    if (jsonStr != nullptr) {
+        extraInfo_ = jsonStr;
+        cJSON_free(jsonStr);
+    }
+    cJSON_Delete(json);
 }
 
 bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)

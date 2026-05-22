@@ -19,18 +19,14 @@ namespace OHOS {
 namespace StorageManager {
 Disk::Disk() {}
 
-Disk::Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath, const std::string &vendor,
-           int32_t diskType)
-    : diskId_(diskId), sizeBytes_(sizeBytes), sysPath_(sysPath), vendor_(vendor), diskType_(diskType) {}
+Disk::Disk(const std::string &diskId, int64_t sizeBytes, int32_t diskType, bool removable_,
+           const std::vector<std::string> &volumeIds, const std::string &extraInfo)
+    : diskId_(diskId), sizeBytes_(sizeBytes), diskType_(diskType), removable_(removable_), volumeIds_(volumeIds),
+    extraInfo_(extraInfo) {}
 
 std::string Disk::GetDiskId() const
 {
     return diskId_;
-}
-
-std::string Disk::GetDiskName() const
-{
-    return diskName_;
 }
 
 int64_t Disk::GetSizeBytes() const
@@ -38,29 +34,19 @@ int64_t Disk::GetSizeBytes() const
     return sizeBytes_;
 }
 
-std::string Disk::GetSysPath() const
-{
-    return sysPath_;
-}
-
-std::string Disk::GetVendor() const
-{
-    return vendor_;
-}
-
 int32_t Disk::GetDiskType() const
 {
     return diskType_;
 }
 
-int32_t Disk::GetMediaType() const
-{
-    return mediaType_;
-}
-
-int32_t Disk::GetRemovable() const
+bool Disk::GetRemovable() const
 {
     return removable_;
+}
+
+std::vector<std::string> Disk::GetVolumeIds() const
+{
+    return volumeIds_;
 }
 
 std::string Disk::GetExtraInfo() const
@@ -78,21 +64,25 @@ bool Disk::Marshalling(Parcel &parcel) const
     if (!parcel.WriteString(diskId_)) {
         return false;
     }
-
     if (!parcel.WriteInt64(sizeBytes_)) {
         return false;
     }
-
-    if (!parcel.WriteString(sysPath_)) {
-        return false;
-    }
-
-    if (!parcel.WriteString(vendor_)) {
-        return false;
-    }
-
     if (!parcel.WriteInt32(diskType_)) {
         return false;
+    }
+    if (!parcel.WriteBool(removable_)) {
+        return false;
+    }
+    if (!parcel.WriteString(extraInfo_)) {
+        return false;
+    }
+    if (!parcel.WriteUint32(static_cast<uint32_t>(volumeIds_.size()))) {
+        return false;
+    }
+    for (const auto &item: volumeIds_) {
+        if (!parcel.WriteString(item)) {
+            return false;
+        }
     }
     return true;
 }
@@ -105,9 +95,14 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
     }
     obj->diskId_ = parcel.ReadString();
     obj->sizeBytes_ = parcel.ReadInt64();
-    obj->sysPath_ = parcel.ReadString();
-    obj->vendor_ = parcel.ReadString();
     obj->diskType_ = parcel.ReadInt32();
+    obj->removable_ = parcel.ReadBool();
+    obj->extraInfo_ = parcel.ReadString();
+    uint32_t volSize = parcel.ReadUint32();
+    for (uint32_t i = 0; i < volSize; i++) {
+        std::string volId = parcel.ReadString();
+        obj->volumeIds_.push_back(volId);
+    }
     return obj;
 }
 }

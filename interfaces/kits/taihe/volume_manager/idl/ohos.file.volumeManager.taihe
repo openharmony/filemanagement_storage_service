@@ -42,13 +42,10 @@ struct BurnParams {
 
 struct Disk {
     diskId: String;
-    diskName: String;
     sizeBytes: i64;
-    sysPath: String;
-    vendor: String;
     diskType: i32;
-    mediaType: i32;
-    removable: i32;
+    removable: bool;
+    volumeIds: Array<String>;
     extraInfo: String;
 }
 
