@@ -906,7 +906,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_003, TestSize.Level1)
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true)
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true))
         .WillOnce(testing::Return(true));
     diskInfo->ReadMetadata();
     EXPECT_EQ(diskInfo->GetDevVendor(), "");
@@ -973,7 +973,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_005, TestSize.Level1)
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true)
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true))
         .WillOnce(testing::Return(true));
     diskInfo->ReadMetadata();
     EXPECT_EQ(diskInfo->GetDevVendor(), "Invalid");
