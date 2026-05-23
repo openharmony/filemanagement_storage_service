@@ -32,6 +32,7 @@ constexpr uint32_t MS_1000 = 1000;
 constexpr int32_t GLOBAL_USER_ID = 0;
 constexpr int32_t PARAMS_LEN = 12;
 constexpr int32_t BEHAVIOR_PARAMS_LEN = 4;
+constexpr int32_t STORAGE_STATUS_STATISTIC_PARAMS_LEN = 4;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
@@ -172,6 +173,36 @@ void StorageRadar::ReportSpaceRadar(const std::string &funcName, int ret, const 
         .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
+}
+
+void StorageRadar::ReportStorageStatusRadar(const std::string &funcName, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = GLOBAL_USER_ID,
+        .funcName = funcName,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordStorageStatusResult(param, FILE_STORAGE_STATUS_STATISTIC);
+}
+
+bool StorageRadar::RecordStorageStatusResult(const RadarParameter &parRes, const std::string &eventName)
+{
+    int32_t res = E_OK;
+    HiSysEventParam params[STORAGE_STATUS_STATISTIC_PARAMS_LEN] = {
+        {.name = "ORG_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.orgPkg.c_str() }, .arraySize = 0, },
+        {.name = "USER_ID", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.userId }, .arraySize = 0, },
+        {.name = "FUNC", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.funcName.c_str() }, .arraySize = 0, },
+        {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
+            .arraySize = 0, },
+    };
+    res = OH_HiSysEvent_Write(STORAGESERVICE_DOMAIN, eventName.c_str(), HISYSEVENT_STATISTIC,
+        params, STORAGE_STATUS_STATISTIC_PARAMS_LEN);
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+        return false;
+    }
+    return true;
 }
 
 void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret,

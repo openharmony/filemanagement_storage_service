@@ -51,7 +51,6 @@ constexpr int32_t STORAGE_FIRST_STATIC_HOUR = 0;
 constexpr int32_t STORAGE_SECOND_STATIC_HOUR = 8;
 constexpr int32_t STORAGE_THIRD_STATIC_HOUR = 16;
 constexpr int32_t STORAGE_FIRST_STATIC_MINUTE = 0;
-constexpr int32_t STORAGE_SECOND_STATIC_MINUTE = 1;
 constexpr const char *STORAGE_ALERT_CLEANUP_PARAMETER = "const.storage_service.storage_alert_policy";
 constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:12%";
 constexpr const char *STORAGE_ALERT_INODE_CLEANUP_PARAMETER = "const.storage_service.inode_alert_policy";
@@ -687,12 +686,14 @@ void StorageMonitorService::HapAndSaStatisticsThd()
         LOGE("cur time parse failed, errno is %{public}d.", errno);
         return;
     }
-    if ((localTime->tm_min != STORAGE_FIRST_STATIC_MINUTE &&
-        localTime->tm_min != STORAGE_SECOND_STATIC_MINUTE) ||
+    if (localTime->tm_min != STORAGE_FIRST_STATIC_MINUTE ||
         (localTime->tm_hour != STORAGE_FIRST_STATIC_HOUR &&
          localTime->tm_hour != STORAGE_SECOND_STATIC_HOUR &&
          localTime->tm_hour != STORAGE_THIRD_STATIC_HOUR)) {
         return;
+    }
+    if (localTime->tm_hour == STORAGE_FIRST_STATIC_HOUR) {
+        StorageDfxReporter::GetInstance().CloneEventReportTimesZeroisation();
     }
     StorageDfxReporter::GetInstance().CheckAndTriggerHapAndSaStatistics();
 }

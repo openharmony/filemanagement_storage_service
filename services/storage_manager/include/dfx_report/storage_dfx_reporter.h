@@ -38,6 +38,8 @@ public:
 
     void StartReportHapAndSaStorageStatus();
     void CheckAndTriggerHapAndSaStatistics();
+    void CloneEventReportTimesZeroisation();
+    void CloneEventReportStorageStatus();
 
     int32_t StartReportDirStatus();
     // Scan control methods
@@ -64,6 +66,7 @@ private:
     void GetAncoDataSize(std::ostringstream &extraData);
 
     std::atomic<bool> isHapAndSaRunning_{false};
+    std::atomic<int32_t> eventReportTimes_ = 0;
 
     int32_t CheckSystemUidSize(const std::vector<NextDqBlk> &dqBlks, int64_t &totalSize,
                                int64_t &rootSize, int64_t &systemSize, int64_t &foundationSize);
@@ -90,6 +93,7 @@ private:
     // Scan control variables
     std::atomic<bool> isScanRunning_{false};
     std::mutex scanMutex_;
+    std::mutex cloneEventMutex_;
 };
 } // namespace StorageManager
 } // namespace OHOS
