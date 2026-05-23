@@ -29,6 +29,7 @@ struct Volume {
     path: String;
     fsType: String;
     extraInfo: String;
+    partitionNum: u32;
 }
 
 struct BurnParams {
@@ -95,7 +96,7 @@ function FormatSync(volumeId: String, fsType: String): void;
 
 @gen_async("getVolumeById")
 @gen_promise("getVolumeById")
-function GetVolumeByIdSync(volumeId: String): void;
+function GetVolumeByIdSync(volumeId: String): Volume;
 
 @gen_async("mount")
 @gen_promise("mount")

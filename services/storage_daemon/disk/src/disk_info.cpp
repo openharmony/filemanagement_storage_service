@@ -899,7 +899,7 @@ int32_t DiskInfo::ExecAsyncCreatePartition(const OHOS::StorageManager::Partition
 int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams)
 {
     LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("this disk not support create partition");
         return E_CREATE_PARTITION_NOT_SUPPORT;
     }
@@ -1006,7 +1006,7 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
 {
     LOGI("[L3:DiskInfo] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId_.c_str(), partitionNum);
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< this disk not support delete partition");
         return E_DELETE_PARTITION_NOT_SUPPORT;
     }
@@ -1038,7 +1038,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
 {
     LOGI("[L3:DiskInfo] FormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId_.c_str(), partitionNum);
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< this disk not support format partition");
         return E_FORMAT_PARTITION_NOT_SUPPORT;
     }
@@ -1052,18 +1052,11 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
-    if (!volumeId_.empty() && VolumeManager::Instance().IsDiskHasMountedVolume(diskId_)) {
+    if (!volumeId_.empty() && VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
         return E_VOL_STATE;
     }
-    if (Destroy() != E_OK) {
-        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< destroy volume failed");
-        return E_FORMAT_PARTITION_ERROR;
-    }
-    sgdiskLines_.clear();
     int32_t ret = ExecAsyncFormatPartition(partitionNum, formatParams);
-    std::thread thread([this]() { ReadPartitionUSB(); });
-    thread.detach();
     if (ret != E_OK) {
         LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<<");
     } else {
@@ -1077,7 +1070,7 @@ int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum,
 {
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-std::thread formatThread([this, partitionNum, formatParams, p = std::move(promise)]() mutable {
+    std::thread formatThread([this, partitionNum, formatParams, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec format partition");
         std::string devPath = std::string(BLOCK_PATH) + "/" + diskName_ + std::to_string(partitionNum);
         std::string fsType = formatParams.GetFsType();

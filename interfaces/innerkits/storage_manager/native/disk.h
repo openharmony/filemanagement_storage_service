@@ -19,6 +19,7 @@
 #include "parcel.h"
 
 #include <cstdint>
+#include <list>
 #include <string>
 #include <vector>
 
@@ -36,15 +37,18 @@ class Disk : public Parcelable {
 public:
     Disk();
     Disk(const std::string &diskId, int64_t sizeBytes, int32_t diskType, bool removable_,
-         const std::vector<std::string> &volumeIds, const std::string &extraInfo);
+         const std::list<std::string> &volumeIds, const std::string &extraInfo, const std::string &vendor,
+         const std::string &sysPath);
 
     std::string GetDiskId() const;
     int64_t GetSizeBytes() const;
     void SetDiskType(int32_t diskType);
     int32_t GetDiskType() const;
     bool GetRemovable() const;
-    std::vector<std::string> GetVolumeIds() const;
+    std::list<std::string> GetVolumeIds() const;
     std::string GetExtraInfo() const;
+    std::string GetVendor() const;
+    std::string GetSysPath() const;
 
     bool Marshalling(Parcel &parcel) const override;
     static Disk *Unmarshalling(Parcel &parcel);
@@ -53,8 +57,10 @@ private:
     int64_t sizeBytes_ {};
     int32_t diskType_ {DISK_TYPE_UNKNOWN};
     bool removable_ {true};
-    std::vector<std::string> volumeIds_;
+    std::list<std::string> volumeIds_;
     std::string extraInfo_;
+    std::string vendor_;
+    std::string sysPath_;
 };
 } // namespace StorageManager
 } // namespace OHOS

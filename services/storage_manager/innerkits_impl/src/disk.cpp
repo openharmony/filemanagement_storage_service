@@ -20,9 +20,10 @@ namespace StorageManager {
 Disk::Disk() {}
 
 Disk::Disk(const std::string &diskId, int64_t sizeBytes, int32_t diskType, bool removable_,
-           const std::vector<std::string> &volumeIds, const std::string &extraInfo)
+            const std::list<std::string> &volumeIds, const std::string &extraInfo, const std::string &vendor,
+            const std::string &sysPath)
     : diskId_(diskId), sizeBytes_(sizeBytes), diskType_(diskType), removable_(removable_), volumeIds_(volumeIds),
-    extraInfo_(extraInfo) {}
+    extraInfo_(extraInfo), vendor_(vendor), sysPath_(sysPath) {}
 
 std::string Disk::GetDiskId() const
 {
@@ -44,7 +45,7 @@ bool Disk::GetRemovable() const
     return removable_;
 }
 
-std::vector<std::string> Disk::GetVolumeIds() const
+std::list<std::string> Disk::GetVolumeIds() const
 {
     return volumeIds_;
 }
@@ -52,6 +53,16 @@ std::vector<std::string> Disk::GetVolumeIds() const
 std::string Disk::GetExtraInfo() const
 {
     return extraInfo_;
+}
+
+std::string Disk::GetVendor() const
+{
+    return vendor_;
+}
+
+std::string Disk::GetSysPath() const
+{
+    return sysPath_;
 }
 
 void Disk::SetDiskType(int32_t diskType)

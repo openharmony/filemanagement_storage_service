@@ -693,6 +693,28 @@ bool VolumeManager::IsDiskHasMountedVolume(std::string &diskId)
     return false;
 }
 
+bool VolumeManager::IsVolumeMounted(const std::string &diskId, uint32_t partitionNum)
+{
+    std::lock_guard<std::mutex> lock(volumesMutex_);
+    for (const auto &item : volumes_) {
+        auto &info = item.second;
+        if (info == nullptr) {
+            continue;
+        }
+        std::string id = info->GetDiskId();
+        if (id.empty() || id != diskId) {
+            continue;
+        }
+        if (info->GetPartitionNum() != partitionNum) {
+            continue;
+        }
+        if (info->GetState() == VolumeState::MOUNTED) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string VolumeManager::GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint32_t partitionNum)
 {
     std::lock_guard<std::mutex> lock(volumesMutex_);

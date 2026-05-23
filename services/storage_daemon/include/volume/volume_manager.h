@@ -68,6 +68,7 @@ public:
     std::string GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint32_t partitionNum);
     int32_t Burn(const std::string &volumeId, const BurnParams &params);
     int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
+    bool IsVolumeMounted(const std::string &diskId, uint32_t partitionNum);
 
 private:
     VolumeManager() = default;

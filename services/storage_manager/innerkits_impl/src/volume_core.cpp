@@ -35,7 +35,7 @@ VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &d
 }
 
 VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state,
-                       const std::string &fsType, const std::string &extraInfo)
+                       const std::string &fsType, const std::string &extraInfo, uint32_t partitionNum)
 {
     id_ = id;
     type_ = type;
@@ -43,6 +43,7 @@ VolumeCore::VolumeCore(const std::string &id, int32_t type, const std::string &d
     state_ = state;
     fsType_ = fsType;
     extraInfo_ = extraInfo;
+    partitionNum_ = partitionNum;
 }
 
 void VolumeCore::SetState(int32_t state)
@@ -85,6 +86,11 @@ std::string VolumeCore::GetExtraInfo() const
     return extraInfo_;
 }
 
+uint32_t VolumeCore::GetPartitionNum() const
+{
+    return partitionNum_;
+}
+
 bool VolumeCore::Marshalling(Parcel &parcel) const
 {
     if (!parcel.WriteString(id_)) {
@@ -111,6 +117,9 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
         return false;
     }
     if (!parcel.WriteString(extraInfo_)) {
+        return false;
+    }
+    if (!parcel.WriteUint32(partitionNum_)) {
         return false;
     }
 
@@ -159,6 +168,7 @@ VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
     obj->errorFlag_ = parcel.ReadBool();
     obj->fsType_ = parcel.ReadString();
     obj->extraInfo_ = parcel.ReadString();
+    obj->partitionNum_ = parcel.ReadUint32();
     return obj;
 }
 

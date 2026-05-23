@@ -78,6 +78,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             volumeInfoObject.AddProp("fsType", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetFsTypeString()).val_);
             volumeInfoObject.AddProp("diskType", NVal::CreateInt32(env, (*volumeInfo)[i].GetFlags()).val_);
             volumeInfoObject.AddProp("extraInfo", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetExtraInfo()).val_);
+            volumeInfoObject.AddProp("partitionNum", NVal::CreateUint32(env, (*volumeInfo)[i].GetPartitionNum()).val_);
             status = napi_set_element(env, volumeInfoArray, i, volumeInfoObject.val_);
             if (status != napi_ok) {
                 return { env, NError(status).GetNapiErr(env) };
@@ -231,6 +232,8 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
         volumeObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
         volumeObject.AddProp("diskType", NVal::CreateInt32(env, volumeInfo->GetFlags()).val_);
+        volumeObject.AddProp("extraInfo", NVal::CreateUTF8String(env, volumeInfo->GetExtraInfo()).val_);
+        volumeObject.AddProp("partitionNum", NVal::CreateUint32(env, volumeInfo->GetPartitionNum()).val_);
         return volumeObject;
     };
 
@@ -286,7 +289,8 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
         volumeObject.AddProp("diskType", NVal::CreateInt32(env, volumeInfo->GetFlags()).val_);
         volumeObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
-        
+        volumeObject.AddProp("extraInfo", NVal::CreateUTF8String(env, volumeInfo->GetExtraInfo()).val_);
+        volumeObject.AddProp("partitionNum", NVal::CreateUint32(env, volumeInfo->GetPartitionNum()).val_);
         return volumeObject;
     };
 
@@ -869,12 +873,14 @@ napi_value GetAllDisks(napi_env env, napi_callback_info info)
             diskInfoObject.AddProp("sizeBytes", NVal::CreateInt64(env, (*diskInfo)[i].GetSizeBytes()).val_);
             diskInfoObject.AddProp("diskType", NVal::CreateInt32(env, (*diskInfo)[i].GetDiskType()).val_);
             diskInfoObject.AddProp("removable", NVal::CreateBool(env, (*diskInfo)[i].GetRemovable()).val_);
-            std::vector<std::string> volumeIds = (*diskInfo)[i].GetVolumeIds();
+            std::list<std::string> volumeIds = (*diskInfo)[i].GetVolumeIds();
             napi_value volumeIdsArray = nullptr;
             napi_status createStatus = napi_create_array(env, &volumeIdsArray);
             if (createStatus == napi_ok) {
-                for (size_t j = 0; j < volumeIds.size(); j++) {
-                    napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, volumeIds[j]).val_);
+                size_t j = 0;
+                for (const auto &id : volumeIds) {
+                    napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, id).val_);
+                    j++;
                 }
             }
             diskInfoObject.AddProp("volumeIds", volumeIdsArray);
@@ -927,12 +933,14 @@ napi_value GetDiskById(napi_env env, napi_callback_info info)
         diskObject.AddProp("sizeBytes", NVal::CreateInt64(env, diskInfo->GetSizeBytes()).val_);
         diskObject.AddProp("diskType", NVal::CreateInt32(env, diskInfo->GetDiskType()).val_);
         diskObject.AddProp("removable", NVal::CreateBool(env, diskInfo->GetRemovable()).val_);
-        std::vector<std::string> volumeIds = diskInfo->GetVolumeIds();
+        std::list<std::string> volumeIds = diskInfo->GetVolumeIds();
         napi_value volumeIdsArray = nullptr;
         napi_status createStatus = napi_create_array(env, &volumeIdsArray);
         if (createStatus == napi_ok) {
-            for (size_t j = 0; j < volumeIds.size(); j++) {
-                napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, volumeIds[j]).val_);
+            size_t j = 0;
+            for (const auto &id : volumeIds) {
+                napi_set_element(env, volumeIdsArray, j, NVal::CreateUTF8String(env, id).val_);
+                j++;
             }
         }
         diskObject.AddProp("volumeIds", volumeIdsArray);

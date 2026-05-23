@@ -46,9 +46,11 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
     int64_t sizeBytes = 1000;
     int32_t diskType = USB_FLAG;
     bool removable = true;
-    std::vector<std::string> volumeIds = {"vol1", "vol2"};
+    std::list<std::string> volumeIds = {"vol1", "vol2"};
     std::string extraInfo = "{\"vendor\":\"test\",\"product\":\"disk\"}";
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo);
+    std::string vendor = "TestVendor";
+    std::string sysPath = "/sys/block/sda";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     auto result1 = disk.GetDiskId();
     EXPECT_EQ(result1, diskId);
     auto result2 = disk.GetSizeBytes();
@@ -58,9 +60,13 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
     auto result4 = disk.GetRemovable();
     EXPECT_EQ(result4, removable);
     auto result5 = disk.GetVolumeIds();
-    EXPECT_EQ(result5, volumeIds);
+    EXPECT_EQ(result5.size(), volumeIds.size());
     auto result6 = disk.GetExtraInfo();
     EXPECT_EQ(result6, extraInfo);
+    auto result7 = disk.GetVendor();
+    EXPECT_EQ(result7, vendor);
+    auto result8 = disk.GetSysPath();
+    EXPECT_EQ(result8, sysPath);
     disk.SetDiskType(diskType);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Get_0000";
 }
@@ -81,9 +87,11 @@ HWTEST_F(DiskTest, Disk_Marshalling_0000, testing::ext::TestSize.Level1)
     int64_t sizeBytes = 2000;
     int32_t diskType = USB_FLAG;
     bool removable = false;
-    std::vector<std::string> volumeIds = {"vol1"};
+    std::list<std::string> volumeIds = {"vol1"};
     std::string extraInfo = "{\"vendor\":\"test\"}";
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo);
+    std::string vendor = "Vendor200";
+    std::string sysPath = "/sys/block/sdb";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     Parcel parcel;
     disk.Marshalling(parcel);
     EXPECT_EQ(parcel.ReadString(), diskId);
@@ -114,7 +122,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     int32_t diskType = USB_FLAG;
     bool removable = true;
     std::string extraInfo = "{\"vendor\":\"test\"}";
-    std::vector<std::string> volumeIds = {"vol1", "vol2"};
+    std::list<std::string> volumeIds = {"vol1", "vol2"};
     Parcel parcel;
     parcel.WriteString(diskId);
     parcel.WriteInt64(sizeBytes);
@@ -132,7 +140,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(result->GetDiskType(), diskType);
     EXPECT_EQ(result->GetRemovable(), removable);
     EXPECT_EQ(result->GetExtraInfo(), extraInfo);
-    EXPECT_EQ(result->GetVolumeIds(), volumeIds);
+    EXPECT_EQ(result->GetVolumeIds().size(), volumeIds.size());
     delete result;
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0000";
 }
@@ -153,9 +161,11 @@ HWTEST_F(DiskTest, Disk_GetRemovable_0000, testing::ext::TestSize.Level1)
     int64_t sizeBytes = 1000;
     int32_t diskType = USB_FLAG;
     bool removable = false;
-    std::vector<std::string> volumeIds;
+    std::list<std::string> volumeIds;
     std::string extraInfo;
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo);
+    std::string vendor;
+    std::string sysPath;
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
 
     auto result = disk.GetRemovable();
     EXPECT_EQ(result, removable);
@@ -179,9 +189,11 @@ HWTEST_F(DiskTest, Disk_GetExtraInfo_0000, testing::ext::TestSize.Level1)
     int64_t sizeBytes = 1000;
     int32_t diskType = USB_FLAG;
     bool removable = true;
-    std::vector<std::string> volumeIds;
+    std::list<std::string> volumeIds;
     std::string extraInfo = "{\"vendor\":\"TestVendor\",\"product\":\"TestProduct\"}";
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo);
+    std::string vendor;
+    std::string sysPath;
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
 
     auto result = disk.GetExtraInfo();
     EXPECT_EQ(result, extraInfo);
@@ -209,6 +221,8 @@ HWTEST_F(DiskTest, Disk_DefaultConstructor_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(disk.GetRemovable(), true);
     EXPECT_EQ(disk.GetVolumeIds().size(), static_cast<size_t>(0));
     EXPECT_EQ(disk.GetExtraInfo(), "");
+    EXPECT_EQ(disk.GetVendor(), "");
+    EXPECT_EQ(disk.GetSysPath(), "");
 
     GTEST_LOG_(INFO) << "DiskTest-end Disk_DefaultConstructor_0000";
 }

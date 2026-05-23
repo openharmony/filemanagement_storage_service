@@ -110,7 +110,7 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
     }
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
                                   info->GetDiskId(), info->GetState(), info->GetFsTypeBase(),
-                                  info->GetExtraInfo());
+                                  info->GetExtraInfo(), info->GetPartitionNum());
     storageManager_->NotifyVolumeCreated(vc);
 
     LOGI("[L1:StorageManagerClient] NotifyVolumeCreated: <<< EXIT SUCCESS <<< volumeId=%{public}s,"

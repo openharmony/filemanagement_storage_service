@@ -21,7 +21,7 @@ VolumeExternal::VolumeExternal() {}
 
 VolumeExternal::VolumeExternal(VolumeCore vc)
     : VolumeExternal::VolumeCore(vc.GetId(), vc.GetType(), vc.GetDiskId(), vc.GetState(), vc.GetFsType(),
- 	                             vc.GetExtraInfo()) {}
+  	                             vc.GetExtraInfo(), vc.GetPartitionNum()) {}
 
 void VolumeExternal::SetFlags(int32_t flags)
 {
