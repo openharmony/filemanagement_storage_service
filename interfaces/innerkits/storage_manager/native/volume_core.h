@@ -70,7 +70,7 @@ public:
     VolumeCore(const std::string &id, int32_t type, const std::string &diskId);
     VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state);
     VolumeCore(const std::string &id, int32_t type, const std::string &diskId, int32_t state,
-               const std::string &fsType, const std::string &extraInfo = "", uint32_t partitionNum);
+               const std::string &fsType, const std::string &extraInfo = "", uint32_t partitionNum = 0);
 
     std::string GetId() const;
     int32_t GetType() const;
@@ -92,7 +92,7 @@ private:
     bool errorFlag_ = false;
     std::string fsType_;
     std::string extraInfo_;
-    uint32_t partitionNum_;
+    uint32_t partitionNum_ = 0;
 };
 } // namespace StorageManager
 } // namespace OHOS

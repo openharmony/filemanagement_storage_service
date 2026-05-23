@@ -75,7 +75,8 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
     }
     int64_t sizeBytes = static_cast<int64_t>(diskInfo.GetTotalSize());
     StorageManager::Disk disk(diskInfo.GetDiskId(), sizeBytes, diskInfo.GetDiskType(), diskInfo.GetRemovable(),
-                              diskInfo.GetVolumeIds(), diskInfo.GetExtraInfo());
+                              diskInfo.GetVolumeIds(), diskInfo.GetExtraInfo(), diskInfo.GetDevVendor(),
+                              diskInfo.GetSysPath());
     storageManager_->NotifyDiskCreated(disk);
 
     LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s",
