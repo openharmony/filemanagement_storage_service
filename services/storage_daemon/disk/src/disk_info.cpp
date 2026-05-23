@@ -181,6 +181,10 @@ int DiskInfo::Create()
         client.NotifyDiskDestroyed(diskId_);
         return ret;
     }
+    ret = client.NotifyDiskCreated(*this);
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created update failed, err=%{public}d", ret);
+    }
     LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     return E_OK;
 }
