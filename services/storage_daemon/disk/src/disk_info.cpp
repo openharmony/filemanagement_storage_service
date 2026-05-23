@@ -870,9 +870,10 @@ int32_t DiskInfo::ExecAsyncCreatePartition(const OHOS::StorageManager::Partition
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionParams, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec create partition");
-        std::string sector = "0:" + std::to_string(partitionParams.GetStartSector()) + ":" +
+        std::string partNum = std::to_string(partitionParams.GetPartitionNum());
+        std::string sector = partNum + ":" + std::to_string(partitionParams.GetStartSector()) + ":" +
             std::to_string(partitionParams.GetEndSector());
-        std::string code = "0:" + typeCodeMap_.find(partitionParams.GetTypeCode())->second;
+        std::string code = partNum + ":" + typeCodeMap_.find(partitionParams.GetTypeCode())->second;
         std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, devPath_};
         std::vector<std::string> output;
         int32_t ret = ForkExec(cmd, &output);
