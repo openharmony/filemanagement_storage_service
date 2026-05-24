@@ -49,6 +49,14 @@ int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &netw
     return IMountManagerMoc::mountManagerMoc->UMountDisShareFile(userId, networkId);
 }
 
+int32_t MountManager::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountDisShareFile(distributeDirs);
+}
+
 int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
     if (IMountManagerMoc::mountManagerMoc == nullptr) {

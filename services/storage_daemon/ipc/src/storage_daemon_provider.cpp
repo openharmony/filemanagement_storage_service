@@ -1481,6 +1481,42 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
     return ret;
 }
 
+int32_t StorageDaemonProvider::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: >>> ENTER <<< distributeDirs size=%{public}zu",
+         distributeDirs.size());
+    std::string message = "distributeDirs size: " + std::to_string(distributeDirs.size());
+    HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
+    if (distributeDirs.empty()) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< distributeDirs empty");
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
+            0, "distributeDirs empty");
+        return E_PARAMS_INVALID;
+    }
+    std::string distributeDirPattern =
+        R"(^/data/service/el2/[0-9]+/hmdfs/account/data/.{1,100}/\.remote_share/[0-9a-zA-Z]{1,65}/.*)";
+    std::regex distributeDirRegex(distributeDirPattern);
+    std::vector<std::string> validDistributeDirs;
+    for (const auto &distributeDir : distributeDirs) {
+        if (std::regex_match(distributeDir, distributeDirRegex)) {
+            validDistributeDirs.push_back(distributeDir);
+        }
+    }
+    if (validDistributeDirs.empty()) {
+        LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: no valid distributeDir");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = MountManager::GetInstance().UMountDisShareFile(validDistributeDirs);
+    HiAudit::GetInstance().WriteEnd("UMountDisShareFile", ret);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", ret, 0, "MountManager failed");
+    }
+    return ret;
+}
+
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
     LOGI("[L1:StorageDaemonProvider] InactiveUserPublicDirKey: >>> ENTER <<< userId=%{public}u", userId);

@@ -150,6 +150,42 @@ int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &netw
     return E_OK;
 }
 
+int32_t MountManager::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    LOGI("[L2:MountManager] UMountDisShareFile: >>> ENTER <<< distributeDirs size=%{public}zu",
+        distributeDirs.size());
+    std::lock_guard<std::mutex> lock(mountDisMutex_);
+    for (const auto &distributeDir : distributeDirs) {
+        if (!MatchesDisSharePath(distributeDir)) {
+            continue;
+        }
+
+        std::string path = distributeDir;
+        if (!IsPathMounted(path)) {
+            LOGI("[L2:MountManager] UMountDisShareFile: distributeDir not mounted");
+            continue;
+        }
+        int32_t ret = UMount2(distributeDir, MNT_DETACH);
+        if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+            LOGE("[L2:MountManager] UMountDisShareFile: umount share file failed, errno is %{public}d.", errno);
+            std::string extraData = "distributeDir=" + distributeDir + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("UMountDisShareFile", 0, E_UMOUNT_SHARE_FILE, extraData);
+            continue;
+        }
+        std::string::size_type pos = distributeDir.find(REMOTE_SHARE_PATH_DIR);
+        if (pos != std::string::npos) {
+            std::string networkIdPart = distributeDir.substr(pos + REMOTE_SHARE_PATH_DIR.length() + 1);
+            std::string::size_type slashPos = networkIdPart.find(FILE_SEPARATOR_CHAR);
+            if (slashPos != std::string::npos) {
+                std::string networkId = networkIdPart.substr(0, slashPos);
+                RemoveDisSharePath(distributeDir, networkId);
+            }
+        }
+    }
+    LOGI("[L2:MountManager] UMountDisShareFile: umount share file end.");
+    return E_OK;
+}
+
 int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::list<std::string> &mounts)
 {
     LOGI("[L2:MountManager] FindMountsByNetworkId: >>> ENTER <<< networkId=%{private}s", networkId.c_str());

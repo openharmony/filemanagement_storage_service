@@ -1801,6 +1801,39 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
     return err;
 }
 
+int32_t StorageManagerProvider::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    std::string message = "UMountDisShareFile Begin, distributeDirs size: " + std::to_string(distributeDirs.size());
+    StorageRadar::ReportFucBehavior("UMountDisShareFile", uid, message, E_OK);
+    if (uid != DFS_UID) {
+        LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    if (distributeDirs.empty()) {
+        LOGE("distributeDirs is empty");
+        return E_PARAMS_INVALID;
+    }
+    std::string distributeDirPattern =
+        R"(^/data/service/el2/[0-9]+/hmdfs/account/data/.{1,100}/\.remote_share/[0-9a-zA-Z]{1,65}/.*)";
+    std::regex distributeDirRegex(distributeDirPattern);
+    std::vector<std::string> validDistributeDirs;
+    for (const auto &distributeDir : distributeDirs) {
+        if (std::regex_match(distributeDir, distributeDirRegex) && !IsFilePathInvalid(distributeDir)) {
+            validDistributeDirs.push_back(distributeDir);
+        }
+    }
+    if (validDistributeDirs.empty()) {
+        LOGI("UMountDisShareFile: no valid distributeDir");
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->UMountDisShareFile(validDistributeDirs);
+    StorageRadar::ReportFucBehavior("UMountDisShareFile", uid, "UMountDisShareFile End", err);
+    return err;
+}
+
 int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
     StorageRadar::ReportFucBehavior("InactiveUserPublicDirKey", userId, "InactiveUserPublicDirKey Begin", E_OK);

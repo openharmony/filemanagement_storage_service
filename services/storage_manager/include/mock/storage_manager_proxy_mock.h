@@ -132,6 +132,7 @@ public:
         std::vector<std::string> &outputList, bool &isOccupy) override;
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
+    int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) override;
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override;
     int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats) override;
