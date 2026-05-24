@@ -554,9 +554,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     std::string diskId = "disk-1-6";
 
     int64_t sizeBytes = 1024;
+    int32_t diskType = 1;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "vendor-6";
-    int32_t flag = 1;
-    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    std::string sysPath = "/";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
@@ -595,9 +599,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     std::string diskId = "disk-1-6";
 
     int64_t sizeBytes = 1024;
+    int32_t diskType = 2;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "vendor-6";
-    int32_t flag = 2;
-    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    std::string sysPath = "/";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
@@ -636,9 +644,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     std::string diskId = "disk-1-6";
 
     int64_t sizeBytes = 1024;
+    int32_t diskType = 3;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "vendor-6";
-    int32_t flag = 3;
-    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    std::string sysPath = "/";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     VolumeCore vc(volumeId, fsType, diskId);
 
     auto diskPtr = std::make_shared<Disk>(disk);
@@ -713,7 +725,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     std::string volumeId = "vol-8-1";
     std::string diskId = "disk-8-1";
     vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId))));
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1))));
+    Disk disk1(diskId, 1, 1, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk1)));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 1);
 
@@ -723,7 +736,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     EXPECT_NE(vc, nullptr);
     vc->SetFsType(UDF);
     vmService.volumeMap_.insert(make_pair(volumeId, vc));
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
+    Disk disk2(diskId, 1, 3, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk2)));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 2);
 
@@ -733,7 +747,8 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     EXPECT_NE(vc1, nullptr);
     vc1->SetFsType(ISO9660);
     vmService.volumeMap_.insert(make_pair(volumeId, vc1));
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
+    Disk disk3(diskId, 1, 3, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk3)));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 3);
     vmService.volumeMap_.clear();
@@ -759,19 +774,22 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0002, tes
     std::string volumeId = "vol-8-1";
     std::string diskId = "disk-8-1";
     vmService.volumeMap_.insert(make_pair(volumeId, make_shared<VolumeExternal>(VolumeCore(volumeId, 1, diskId))));
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 1))));
+    Disk disk1(diskId, 1, 1, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk1)));
     std::vector<VolumeExternal> result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 1);
 
     volumeId = "vol-11-1";
     diskId = "disk-11-1";
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
+    Disk disk2(diskId, 1, 3, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk2)));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 2);
 
     volumeId = "vol-11-2";
     diskId = "disk-11-2";
-    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(Disk(diskId, 1, "/", "test", 3))));
+    Disk disk3(diskId, 1, 3, true, {}, "", "test", "/");
+    dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk3)));
     result = vmService.GetAllVolumes();
     EXPECT_EQ(result.size(), 3);
     vmService.volumeMap_.clear();
@@ -1964,9 +1982,13 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_GetAllVolumes_With_DVD
     // Add a DVD disk without a corresponding volume
     std::string diskId = "disk-dvd-test-1";
     int64_t sizeBytes = 1024 * 1024 * 1024;  // 1GB
+    int32_t diskType = CD_FLAG;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "DVD-Vendor";
-    int32_t flag = CD_FLAG;
-    Disk disk(diskId, sizeBytes, "/dev/sr0", vendor, flag);
+    std::string sysPath = "/dev/sr0";
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     auto diskPtr = std::make_shared<Disk>(disk);
     dmService.diskMap_.insert(make_pair(diskId, diskPtr));
 

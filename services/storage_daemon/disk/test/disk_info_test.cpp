@@ -906,7 +906,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_003, TestSize.Level1)
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true))
+        .WillOnce(testing::Return(true));
     diskInfo->ReadMetadata();
     EXPECT_EQ(diskInfo->GetDevVendor(), "");
 
@@ -972,7 +973,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_005, TestSize.Level1)
     auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
 
     EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true))
+        .WillOnce(testing::Return(true));
     diskInfo->ReadMetadata();
     EXPECT_EQ(diskInfo->GetDevVendor(), "Invalid");
 
@@ -1779,31 +1781,6 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FormatPartition_003, TestSiz
     EXPECT_EQ(ret, E_FORMAT_PARTITION_NOT_SUPPORT);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FormatPartition_003 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskInfoTest_GetMediaType_001
- * @tc.desc: Verify the GetMediaType function returns default value.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetMediaType_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetMediaType_001 start";
-
-    std::string sysPath = "/devices/platform/test";
-    std::string devPath = "/dev/block/test";
-    dev_t device = makedev(8, 0);
-    int flag = 0;
-    std::string diskName = "sda";
-    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, flag);
-    ASSERT_TRUE(diskInfo != nullptr);
-
-    // GetMediaType returns default value (UNKNOWN_MEDIA_TYPE)
-    int32_t mediaType = diskInfo->GetMediaType();
-    EXPECT_EQ(mediaType, DiskInfo::MediaType::UNKNOWN_MEDIA_TYPE);
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetMediaType_001 end";
 }
 
 /**

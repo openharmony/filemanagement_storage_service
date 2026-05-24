@@ -77,6 +77,9 @@ HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Le
     int type = 2;
     std::string diskId = "200";
     int32_t state = UNMOUNTED;
+    std::string fsType = "";
+    std::string extraInfo = "";
+    uint32_t partitionNum = 0;
     VolumeCore volumecore(id, type, diskId, state);
     Parcel parcel;
     volumecore.Marshalling(parcel);
@@ -84,7 +87,10 @@ HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Le
     EXPECT_EQ(parcel.ReadInt32(), type);
     EXPECT_EQ(parcel.ReadString(), diskId);
     EXPECT_EQ(parcel.ReadInt32(), state);
-    EXPECT_EQ(parcel.ReadBool(), 0);
+    EXPECT_EQ(parcel.ReadBool(), false);
+    EXPECT_EQ(parcel.ReadString(), fsType);
+    EXPECT_EQ(parcel.ReadString(), extraInfo);
+    EXPECT_EQ(parcel.ReadUint32(), partitionNum);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Marshalling_0000";
 }
 
@@ -105,6 +111,9 @@ HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0000, testing::ext::TestSize.
     std::string diskId = "300";
     int32_t state = CHECKING;
     bool errorFlag = false;
+    std::string fsType = "exfat";
+    std::string extraInfo = "";
+    uint32_t partitionNum = 1;
     VolumeCore volumecore("400", 1, "400", 0);
     Parcel parcel;
     parcel.WriteString(id);
@@ -112,12 +121,18 @@ HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0000, testing::ext::TestSize.
     parcel.WriteString(diskId);
     parcel.WriteInt32(state);
     parcel.WriteBool(errorFlag);
+    parcel.WriteString(fsType);
+    parcel.WriteString(extraInfo);
+    parcel.WriteUint32(partitionNum);
     auto result = volumecore.Unmarshalling(parcel);
     ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(result->GetId(), id);
     EXPECT_EQ(result->GetType(), type);
     EXPECT_EQ(result->GetDiskId(), diskId);
     EXPECT_EQ(result->GetState(), state);
+    EXPECT_EQ(result->GetFsType(), fsType);
+    EXPECT_EQ(result->GetExtraInfo(), extraInfo);
+    EXPECT_EQ(result->GetPartitionNum(), partitionNum);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Unmarshalling_0000";
 }
 

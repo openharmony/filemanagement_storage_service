@@ -74,8 +74,9 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
         return E_SERVICE_IS_NULLPTR;
     }
     int64_t sizeBytes = static_cast<int64_t>(diskInfo.GetTotalSize());
-    StorageManager::Disk disk(diskInfo.GetDiskId(), sizeBytes, diskInfo.GetSysPath(), diskInfo.GetDevVendor(),
-                              diskInfo.GetDiskType());
+    StorageManager::Disk disk(diskInfo.GetDiskId(), sizeBytes, diskInfo.GetDiskType(), diskInfo.GetRemovable(),
+                              diskInfo.GetVolumeIds(), diskInfo.GetExtraInfo(), diskInfo.GetDevVendor(),
+                              diskInfo.GetSysPath());
     storageManager_->NotifyDiskCreated(disk);
 
     LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s",
@@ -110,7 +111,7 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
     }
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
                                   info->GetDiskId(), info->GetState(), info->GetFsTypeBase(),
-                                  info->GetExtraInfo());
+                                  info->GetExtraInfo(), info->GetPartitionNum());
     storageManager_->NotifyVolumeCreated(vc);
 
     LOGI("[L1:StorageManagerClient] NotifyVolumeCreated: <<< EXIT SUCCESS <<< volumeId=%{public}s,"

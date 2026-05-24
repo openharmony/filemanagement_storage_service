@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 
+#include "cJSON.h"
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -130,11 +131,6 @@ int32_t DiskInfo::GetDiskType() const
     return diskType_;
 }
 
-int32_t DiskInfo::GetMediaType() const
-{
-    return mediaType_;
-}
-
 std::string DiskInfo::GetDiskName() const
 {
     return diskName_;
@@ -150,6 +146,16 @@ std::string DiskInfo::GetExtraInfo() const
     return extraInfo_;
 }
 
+std::string DiskInfo::GetProduct() const
+{
+    return product_;
+}
+
+std::list<std::string> DiskInfo::GetVolumeIds() const
+{
+    return volumeId_;
+}
+
 DiskInfo::~DiskInfo()
 {
     DestroyDiskNode(devPath_);
@@ -162,6 +168,7 @@ int DiskInfo::Create()
     CreateDiskNode(devPath_, device_);
     status = S_CREATE;
     ReadMetadata();
+    SetExtraInfo();
     StorageManagerClient client;
     ret = client.NotifyDiskCreated(*this);
     if (ret != E_OK) {
@@ -173,6 +180,10 @@ int DiskInfo::Create()
         LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Create disk failed, err=%{public}d", ret);
         client.NotifyDiskDestroyed(diskId_);
         return ret;
+    }
+    ret = client.NotifyDiskCreated(*this);
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] Create: <<< EXIT FAILED <<< Notify Disk Created update failed, err=%{public}d", ret);
     }
     LOGI("[L3:DiskInfo] Create: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId_.c_str());
     return E_OK;
@@ -232,8 +243,33 @@ void DiskInfo::ReadMetadata()
             return;
         }
         vendor_ = str;
-        LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
+        LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< vendor=%{public}s", vendor_.c_str());
     }
+    std::string path(sysPath_ + "/device/model");
+    std::string str;
+    if (!ReadFile(path, &str)) {
+        LOGE("[L3:DiskInfo] ReadMetadata: <<< EXIT FAILED <<< open file=%{public}s failed", path.c_str());
+        return;
+    }
+    product_ = str;
+    LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< product=%{public}s", product_.c_str());
+}
+
+void DiskInfo::SetExtraInfo()
+{
+    cJSON *json = cJSON_CreateObject();
+    if (json == nullptr) {
+        LOGE("[L3:DiskInfo] SetExtraInfo: Failed to create cJSON object");
+        return;
+    }
+    cJSON_AddStringToObject(json, "vendor", vendor_.c_str());
+    cJSON_AddStringToObject(json, "product", product_.c_str());
+    char *jsonStr = cJSON_PrintUnformatted(json);
+    if (jsonStr != nullptr) {
+        extraInfo_ = jsonStr;
+        cJSON_free(jsonStr);
+    }
+    cJSON_Delete(json);
 }
 
 bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
@@ -838,9 +874,10 @@ int32_t DiskInfo::ExecAsyncCreatePartition(const OHOS::StorageManager::Partition
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([this, partitionParams, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec create partition");
-        std::string sector = "0:" + std::to_string(partitionParams.GetStartSector()) + ":" +
+        std::string partNum = std::to_string(partitionParams.GetPartitionNum());
+        std::string sector = partNum + ":" + std::to_string(partitionParams.GetStartSector()) + ":" +
             std::to_string(partitionParams.GetEndSector());
-        std::string code = "0:" + typeCodeMap_.find(partitionParams.GetTypeCode())->second;
+        std::string code = partNum + ":" + typeCodeMap_.find(partitionParams.GetTypeCode())->second;
         std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, devPath_};
         std::vector<std::string> output;
         int32_t ret = ForkExec(cmd, &output);
@@ -867,7 +904,7 @@ int32_t DiskInfo::ExecAsyncCreatePartition(const OHOS::StorageManager::Partition
 int32_t DiskInfo::CreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams)
 {
     LOGI("[L3:DiskInfo] CreatePartition: >>> ENTER <<< diskId=%{public}s", diskId_.c_str());
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("this disk not support create partition");
         return E_CREATE_PARTITION_NOT_SUPPORT;
     }
@@ -974,7 +1011,7 @@ int32_t DiskInfo::DeletePartition(uint32_t partitionNum)
 {
     LOGI("[L3:DiskInfo] DeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId_.c_str(), partitionNum);
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("[L3:DiskInfo] DeletePartition: <<< EXIT FAILED <<< this disk not support delete partition");
         return E_DELETE_PARTITION_NOT_SUPPORT;
     }
@@ -1006,7 +1043,7 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
 {
     LOGI("[L3:DiskInfo] FormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
          diskId_.c_str(), partitionNum);
-    if (diskType_ == CD_DVD_BD || diskType_ == MTP_PTP || diskType_ == UNKNOWN_DISK_TYPE) {
+    if (diskType_ == CD_DVD_BD || diskType_ == UNKNOWN_DISK_TYPE) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< this disk not support format partition");
         return E_FORMAT_PARTITION_NOT_SUPPORT;
     }
@@ -1020,18 +1057,11 @@ int32_t DiskInfo::FormatPartition(uint32_t partitionNum, const OHOS::StorageMana
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< partition %{public}u not exists", partitionNum);
         return E_NON_EXIST;
     }
-    if (!volumeId_.empty() && VolumeManager::Instance().IsDiskHasMountedVolume(diskId_)) {
+    if (!volumeId_.empty() && VolumeManager::Instance().IsVolumeMounted(diskId_, partitionNum)) {
         LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< volume status is mounted");
         return E_VOL_STATE;
     }
-    if (Destroy() != E_OK) {
-        LOGE("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<< destroy volume failed");
-        return E_FORMAT_PARTITION_ERROR;
-    }
-    sgdiskLines_.clear();
     int32_t ret = ExecAsyncFormatPartition(partitionNum, formatParams);
-    std::thread thread([this]() { ReadPartitionUSB(); });
-    thread.detach();
     if (ret != E_OK) {
         LOGI("[L3:DiskInfo] FormatPartition: <<< EXIT FAILED <<<");
     } else {
@@ -1045,7 +1075,7 @@ int32_t DiskInfo::ExecAsyncFormatPartition(uint32_t partitionNum,
 {
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-std::thread formatThread([this, partitionNum, formatParams, p = std::move(promise)]() mutable {
+    std::thread formatThread([this, partitionNum, formatParams, p = std::move(promise)]() mutable {
         LOGI("[L3:DiskInfo] exec format partition");
         std::string devPath = std::string(BLOCK_PATH) + "/" + diskName_ + std::to_string(partitionNum);
         std::string fsType = formatParams.GetFsType();
