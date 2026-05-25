@@ -66,6 +66,10 @@ ohos_shared_library("storage_manager") {
     defines += [ "PC_USER_MANAGER" ]
   }
 
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
+  }
+
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [

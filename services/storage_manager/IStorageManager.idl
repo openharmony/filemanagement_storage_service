@@ -156,5 +156,7 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 110] void FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatParams formatParams);
     [ipccode 111] void Burn([in] String volId, [in] BurnParams params);
     [ipccode 112] void VerifyBurnData([in] String volId, [in] unsigned int verType);
-    [ipccode 113] void UMountDisShareFile([in] String[] distributeDirs);
+[ipccode 113] void UMountDisShareFile([in] String[] distributeDirs);
+    [ipccode 114] int MountDlpFuse([in] String dstPath1, [in] String dstPath2, [out] FileDescriptor fd);
+    [ipccode 115] int UMountDlpFuse([in] String dstPath1, [in] String dstPath2);
 }

@@ -106,6 +106,10 @@ ohos_unittest("storage_manager_provider_test") {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
@@ -208,6 +212,10 @@ ohos_unittest("storage_manager_provider_permission_test") {
 
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
   }
 
   if (storage_service_user_crypto_manager) {
@@ -339,6 +347,10 @@ sources = [
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
@@ -441,6 +453,10 @@ ohos_unittest("storage_manager_provider_communication_test") {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
@@ -540,6 +556,10 @@ ohos_unittest("storage_manager_provider_other_test") {
 
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
   }
 
   if (storage_service_user_crypto_manager) {

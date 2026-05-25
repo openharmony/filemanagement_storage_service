@@ -101,6 +101,10 @@ public:
     // file mgr fuse
     virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
+    virtual int32_t MountDlpFuse(const std::string &dstPath1, const std::string &dstPath2,
+        int &fd, int32_t &funcResult) override;
+    virtual int32_t UMountDlpFuse(const std::string &dstPath1, const std::string &dstPath2,
+        int32_t &funcResult) override;
     // file lock
     virtual int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy) override;

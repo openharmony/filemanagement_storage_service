@@ -43,8 +43,8 @@ declare_args() {
                                defined(global_parts_info.open_source_libgphoto2) &&
                                defined(global_parts_info.thirdparty_libusb) &&
                                defined(global_parts_info.thirdparty_libfuse)
-  storage_service_dfs_filemanager = defined(global_parts_info) &&
-                                    defined(global_parts_info.filemanagement_dfs_service)
+storage_service_dfs_filemanager = defined(global_parts_info) &&
+                                      defined(global_parts_info.filemanagement_dfs_service)
   enable_tee_client = !is_emulator
   enable_huks_hdi = !is_emulator
 }
@@ -70,3 +70,5 @@ if ("${target_platform}" == "pc") {
 } else {
   pc_ext4_enable = false
 }
+
+storage_service_dlp_fuse = pc_device_enable

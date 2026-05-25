@@ -1182,5 +1182,77 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Le
 
     GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
+#ifdef DLP_FUSE_SERVICE
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountDlpFuseDevice_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDlpFuseDevice_001 start";
+    static const std::string DLP_PREFIX = "/data/service/el1/public/dlp_credential_service/mounts/";
+    std::string dstPath1 = DLP_PREFIX + "testMountDlp1";
+    std::string dstPath2 = DLP_PREFIX + "testMountDlp2";
+    ForceCreateDirectory(dstPath1);
+    ForceCreateDirectory(dstPath2);
+    int32_t devFd = -1;
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_MOUNT_DLP_FUSE);
+
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_MOUNT_DLP_FUSE);
+
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(dstPath1);
+    ForceRemoveDirectory(dstPath2);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDlpFuseDevice_001 end";
+}
+
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountDlpFuseDevice_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDlpFuseDevice_002 start";
+    static const std::string DLP_PREFIX = "/data/service/el1/public/dlp_credential_service/mounts/";
+    std::string dstPath1 = "/invalid/path1";
+    std::string dstPath2 = DLP_PREFIX + "testDlp2";
+    int32_t devFd = -1;
+    int32_t ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath1 = DLP_PREFIX + "testDlp1";
+    dstPath2 = "/invalid/path2";
+    ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath1 = DLP_PREFIX + "samePath";
+    dstPath2 = DLP_PREFIX + "samePath";
+    ret = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDlpFuseDevice_002 end";
+}
+
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountDlpFuseDevice_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountDlpFuseDevice_001 start";
+    static const std::string DLP_PREFIX = "/data/service/el1/public/dlp_credential_service/mounts/";
+    std::string dstPath1 = DLP_PREFIX + "testUMountDlp1";
+    std::string dstPath2 = DLP_PREFIX + "testUMountDlp2";
+    ForceCreateDirectory(dstPath1);
+    ForceCreateDirectory(dstPath2);
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().UMountDlpFuseDevice(dstPath1, dstPath2);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().UMountDlpFuseDevice(dstPath1, dstPath2);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(dstPath1);
+    ForceRemoveDirectory(dstPath2);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountDlpFuseDevice_001 end";
+}
+#endif
+
 } // STORAGE_DAEMON
 } // OHOS

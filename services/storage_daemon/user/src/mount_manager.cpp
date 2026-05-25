@@ -1187,6 +1187,98 @@ int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
     return E_OK;
 }
 
+#ifdef DLP_FUSE_SERVICE
+int32_t MountManager::MountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2,
+                                            int32_t &devFd)
+{
+    LOGI("[L2:MountManager] MountDlpFuseDevice: >>> ENTER <<< dstPath1=%{public}s, dstPath2=%{public}s",
+        GetAnonyString(dstPath1).c_str(), GetAnonyString(dstPath2).c_str());
+    static const std::string DLP_FUSE_MOUNTS_PREFIX = "/data/service/el1/public/dlp_credential_service/mounts/";
+    if (!IsValidPath(dstPath1) || !IsValidPath(dstPath2)) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: realpath check failed");
+        return E_PARAMS_INVALID;
+    }
+    if (dstPath1.find(DLP_FUSE_MOUNTS_PREFIX) != 0 || dstPath2.find(DLP_FUSE_MOUNTS_PREFIX) != 0) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: prefix check failed");
+        return E_PARAMS_INVALID;
+    }
+    if (dstPath1 == dstPath2) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: dstPath1 and dstPath2 are the same");
+        return E_PARAMS_INVALID;
+    }
+    devFd = open("/dev/fuse", O_RDWR);
+    if (devFd < 0) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: open /dev/fuse failed, errno=%{public}d", errno);
+        return E_OPEN_FUSE;
+    }
+    LOGI("[L2:MountManager] MountDlpFuseDevice: open /dev/fuse success, fd=%{public}d", devFd);
+    string opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:dlp_fuse:s0\","
+        "fscontext=u:object_r:dlp_fuse:s0",
+        devFd);
+    int ret = Mount("/dev/fuse", dstPath1.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: mount to dstPath1 failed, ret=%{public}d, errno=%{public}d",
+            ret, errno);
+        close(devFd);
+        devFd = -1;
+        return E_MOUNT_DLP_FUSE;
+    }
+    LOGI("[L2:MountManager] MountDlpFuseDevice: FUSE main mount to dstPath1 success");
+    ret = Mount(dstPath1.c_str(), dstPath2.c_str(), "", MS_BIND, "");
+    if (ret) {
+        LOGE("[L2:MountManager] MountDlpFuseDevice: bind mount to dstPath2 failed, errno=%{public}d", errno);
+        UMount2(dstPath1.c_str(), MNT_DETACH);
+        close(devFd);
+        devFd = -1;
+        return E_MOUNT_DLP_FUSE;
+    }
+    LOGI("[L2:MountManager] MountDlpFuseDevice: <<< EXIT SUCCESS <<< fd=%{public}d", devFd);
+    return E_OK;
+}
+
+int32_t MountManager::UMountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2)
+{
+    LOGI("[L2:MountManager] UMountDlpFuseDevice: >>> ENTER <<< dstPath1=%{public}s, dstPath2=%{public}s",
+        GetAnonyString(dstPath1).c_str(), GetAnonyString(dstPath2).c_str());
+    int32_t ret = UMount2(dstPath2.c_str(), MNT_DETACH);
+    if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("[L2:MountManager] UMountDlpFuseDevice: umount dstPath2 failed, ret=%{public}d, errno=%{public}d",
+            ret, errno);
+        return E_UMOUNT_DLP_FUSE;
+    }
+    ret = UMount2(dstPath1.c_str(), MNT_DETACH);
+    if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("[L2:MountManager] UMountDlpFuseDevice: umount dstPath1 failed, ret=%{public}d, errno=%{public}d",
+            ret, errno);
+        return E_UMOUNT_DLP_FUSE;
+    }
+    LOGI("[L2:MountManager] UMountDlpFuseDevice: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+#else
+int32_t MountManager::MountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2,
+                                            int32_t &devFd)
+{
+    LOGE("[L2:MountManager] MountDlpFuseDevice: not supported on this platform");
+    return E_MOUNT_DLP_FUSE;
+}
+
+int32_t MountManager::UMountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2)
+{
+    LOGE("[L2:MountManager] UMountDlpFuseDevice: not supported on this platform");
+    return E_UMOUNT_DLP_FUSE;
+}
+#endif
+
 int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

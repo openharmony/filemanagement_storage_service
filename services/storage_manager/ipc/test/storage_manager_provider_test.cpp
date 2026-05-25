@@ -1096,6 +1096,48 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_003 end";
 }
 
+#ifdef DLP_FUSE_SERVICE
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "/data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int fd = -1;
+    int32_t funcResult = 0;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "/mnt/mtp";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int fd = -1;
+    int32_t funcResult = 0;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "/data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int32_t funcResult = 0;
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath1, dstPath2, funcResult);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 end";
+}
+#endif
+
 /**
  * @tc.name: StorageManagerProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.

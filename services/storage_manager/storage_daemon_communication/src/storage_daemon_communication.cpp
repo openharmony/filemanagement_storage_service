@@ -774,6 +774,58 @@ int32_t StorageDaemonCommunication::UMountFileMgrFuse(int32_t userId, const std:
     return storageDaemon_->UMountFileMgrFuse(userId, path);
 }
 
+#ifdef DLP_FUSE_SERVICE
+int32_t StorageDaemonCommunication::MountDlpFuse(const std::string &dstPath1,
+                                                   const std::string &dstPath2,
+                                                   int &fd)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    int32_t funcResult = E_OK;
+    err = storageDaemon_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    return funcResult;
+}
+
+int32_t StorageDaemonCommunication::UMountDlpFuse(const std::string &dstPath1,
+                                                   const std::string &dstPath2)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    int32_t funcResult = E_OK;
+    err = storageDaemon_->UMountDlpFuse(dstPath1, dstPath2, funcResult);
+    return funcResult;
+}
+#else
+int32_t StorageDaemonCommunication::MountDlpFuse(const std::string &dstPath1,
+                                                   const std::string &dstPath2,
+                                                   int &fd)
+{
+    LOGE("MountDlpFuse not supported");
+    return E_MOUNT_DLP_FUSE;
+}
+
+int32_t StorageDaemonCommunication::UMountDlpFuse(const std::string &dstPath1,
+                                                   const std::string &dstPath2)
+{
+    LOGE("UMountDlpFuse not supported");
+    return E_UMOUNT_DLP_FUSE;
+}
+#endif
+
 int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

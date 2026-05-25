@@ -117,6 +117,25 @@ int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
     return IMountManagerMoc::mountManagerMoc->UMountFileMgrFuse(userId, path);
 }
 
+int32_t MountManager::MountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2,
+                                            int32_t &devFd)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+}
+
+int32_t MountManager::UMountDlpFuseDevice(const std::string &dstPath1,
+                                            const std::string &dstPath2)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountDlpFuseDevice(dstPath1, dstPath2);
+}
+
 int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {
