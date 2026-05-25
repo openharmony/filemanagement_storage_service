@@ -2497,5 +2497,115 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, const std::string &execRet)
+{
+    if (devPath.empty() || execRet.empty()) {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<";
+    } else {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32_t partitionNum,
+                                                    int64_t startSector, int64_t endSector,
+                                                    const std::string &typeCode)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (partitionNum <= 0) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< partitionNum invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (startSector <= 0 || endSector <= 0 || startSector >= endSector) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< sector range invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (typeCode.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< typeCode empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
+         devPath.c_str(), partitionNum);
+    int32_t ret = DiskUtils::CreatePartitionInfo(devPath, partitionNum, startSector, endSector, typeCode);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (partitionNum <= 0) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< partitionNum invalid");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
+         devPath.c_str(), partitionNum);
+    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] DeletePartitionAddon: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const std::string &fsType,
+                                               const std::string &volumeName, bool quickFormat)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (fsType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
+         ", volumeName=%{public}s", devPath.c_str(), fsType.c_str(), volumeName.c_str());
+    int32_t ret = DiskUtils::FormatPartition(devPath, fsType, volumeName, quickFormat);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

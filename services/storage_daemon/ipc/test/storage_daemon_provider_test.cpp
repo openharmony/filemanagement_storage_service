@@ -2927,5 +2927,223 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFuseDevice_00
     EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_NOT_SUPPORT);
 #endif
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetPartitionTableInfo_001
+ * @tc.desc: Verify the GetPartitionTableInfo function with empty devPath.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTableInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTableInfo_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    std::string execRet;
+
+    auto ret = storageDaemonProviderTest_->GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTableInfo_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_001
+ * @tc.desc: Verify the CreatePartition function with empty devPath.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    int32_t partitionNum = 1;
+    int64_t startSector = 2048;
+    int64_t endSector = 102400;
+    std::string typeCode = "ext4";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_002
+ * @tc.desc: Verify the CreatePartition function with negative partitionNum.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = -1;
+    int64_t startSector = 2048;
+    int64_t endSector = 102400;
+    std::string typeCode = "ext4";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_003
+ * @tc.desc: Verify the CreatePartition function with invalid sector range (negative startSector).
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = 1;
+    int64_t startSector = -1;
+    int64_t endSector = 102400;
+    std::string typeCode = "ext4";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_004
+ * @tc.desc: Verify the CreatePartition function with invalid sector range (negative endSector).
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = 1;
+    int64_t startSector = 2048;
+    int64_t endSector = -1;
+    std::string typeCode = "ext4";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_005
+ * @tc.desc: Verify the CreatePartition function with invalid sector range (start >= end).
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_005 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = 1;
+    int64_t startSector = 102400;
+    int64_t endSector = 2048;
+    std::string typeCode = "ext4";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_005 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreatePartition_006
+ * @tc.desc: Verify the CreatePartition function with empty typeCode.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartition_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_006 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = 1;
+    int64_t startSector = 2048;
+    int64_t endSector = 102400;
+    std::string typeCode = "";
+
+    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartition_006 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_001
+ * @tc.desc: Verify the DeletePartitionInfo function with empty devPath.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    int32_t partitionNum = 1;
+
+    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, partitionNum);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_002
+ * @tc.desc: Verify the DeletePartitionInfo function with negative partitionNum.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    int32_t partitionNum = -1;
+
+    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, partitionNum);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_FormatPartition_001
+ * @tc.desc: Verify the FormatPartition function with empty devPath.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    std::string fsType = "ext4";
+    std::string volumeName = "test_volume";
+
+    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_FormatPartition_002
+ * @tc.desc: Verify the FormatPartition function with empty fsType.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartition_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    std::string fsType = "";
+    std::string volumeName = "test_volume";
+
+    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartition_002 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
