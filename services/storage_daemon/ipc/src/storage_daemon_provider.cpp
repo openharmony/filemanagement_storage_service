@@ -2500,7 +2500,7 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
 
 int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
 {
-    if (devPath.empty() || execRet.empty()) {
+    if (devPath.empty()) {
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
         return E_PARAMS_INVALID;
     }
