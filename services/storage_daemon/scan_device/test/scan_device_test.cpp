@@ -1107,13 +1107,13 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_003, TestSize.
 }
 
 /**
- * @tc.name: Storage_Service_ScanDeviceTest_GetDiskId_004
+ * @tc.name: Storage_Service_ScanDeviceTest_GetDiskId_NVME
  * @tc.desc: Test GetDiskId with uevent node containing newline
  * @tc.required: A
  */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_004, TestSize.Level1)
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_NVME, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 start";
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME start";
     CreateDeviceDir("nvme1n1");
     std::string diskFile = mockSysPath + "/nvme1n1/uevent";
     FILE *fp = fopen(diskFile.c_str(), "w");
@@ -1128,7 +1128,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_004, TestSize.
     EXPECT_EQ(diskId, "disk-8-32");
  
     DeleteDeviceDir("nvme1n1");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 end";
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME end";
 }
 
 /**
@@ -2088,7 +2088,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_004, TestSize.
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 start";
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("nonexistent");
+    std::string diskId = scanner.GetDiskId("nonexistent", false);
     EXPECT_TRUE(diskId.empty());
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 end";
