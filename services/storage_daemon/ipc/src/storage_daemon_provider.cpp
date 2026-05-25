@@ -2498,7 +2498,7 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
 #endif
 }
 
-int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, const std::string &execRet)
+int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
 {
     if (devPath.empty() || execRet.empty()) {
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
@@ -2508,7 +2508,7 @@ int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath,
     LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<";
+        LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
@@ -2519,38 +2519,37 @@ int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath,
 #endif
 }
 
-int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32_t partitionNum,
-                                                    int64_t startSector, int64_t endSector,
-                                                    const std::string &typeCode)
+int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                               int64_t endSector, const std::string &typeCode)
 {
     if (devPath.empty()) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< devPath empty");
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath empty");
         return E_PARAMS_INVALID;
     }
     if (partitionNum <= 0) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< partitionNum invalid");
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< partitionNum invalid");
         return E_PARAMS_INVALID;
     }
     if (startSector <= 0 || endSector <= 0 || startSector >= endSector) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< sector range invalid");
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< sector range invalid");
         return E_PARAMS_INVALID;
     }
     if (typeCode.empty()) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< typeCode empty");
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< typeCode empty");
         return E_PARAMS_INVALID;
     }
 #ifdef PC_USER_MANAGER
-    LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
          devPath.c_str(), partitionNum);
-    int32_t ret = DiskUtils::CreatePartitionInfo(devPath, partitionNum, startSector, endSector, typeCode);
+    int32_t ret = DiskUtils::CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT SUCCESS <<<");
+        LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<<");
     } else {
-        LOGE("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
     return ret;
 #else
-    LOGI("[L1:StorageDaemonProvider] CreatePartitionAddon: <<< EXIT <<< not support");
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }
