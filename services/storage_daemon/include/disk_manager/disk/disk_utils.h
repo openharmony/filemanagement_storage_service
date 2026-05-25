@@ -49,7 +49,7 @@ public:
     static int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
                                    const std::string &volumeName, bool quickFormat);
     static std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
-                                                 const std::string &volName)
+                                                 const std::string &volName);
 };
 
 } // namespace StorageDaemon
