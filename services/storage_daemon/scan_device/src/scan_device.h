@@ -73,12 +73,14 @@ private:
     std::string GetDiskState(const std::string &deviceName);
     MediaType GetMediaType(const std::string &deviceName, const bool isNvmeDevice);
     std::string GetSataSerialNumber(int fd);
-    std::string GetNvmeSerialNumber(int fd);
+    std::string GetNvmeSerialNumber(const std::string &deviceName);
     std::string GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice);
     std::string GetPciePath(const std::string &deviceName);
-    std::string GetDiskId(const std::string &deviceName);
+    bool ReadSataDeviceNumber(const std::string &deviceName, std::string &major, std::string &minor);
+    bool ReadNvmeDeviceNumber(const std::string &deviceName, std::string &major, std::string &minor);
+    std::string GetDiskId(const std::string &deviceName, const bool isNvmeDevice);
     uint64_t GetUsedBytes(const std::string &deviceName);
-    uint64_t GetAvailableBytes(const std::string &deviceName);
+    uint64_t GetAvailableBytes(const uint64_t totalSize, const std::string &deviceName);
     std::string GetDevicePath(const std::string &deviceName);
     std::string GetPort(const std::string &pciePath, const bool isNvmeDevice);
     bool IsValidNvmeDevice(const std::string &deviceName);
