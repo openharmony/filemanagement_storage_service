@@ -71,6 +71,10 @@ constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
+#ifdef DLP_FUSE_SERVICE
+constexpr pid_t DLP_SERVICE_UID = 3553;
+const std::string DLP_FUSE_MOUNTS_PREFIX = "/data/service/el1/public/dlp_credential_service/mounts/";
+#endif
 constexpr bool ENCRYPTED = true;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
@@ -1695,6 +1699,128 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
+
+#ifdef DLP_FUSE_SERVICE
+int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int &fd,
+                                               int32_t &funcResult)
+{
+    std::string message = "MountDlpFuse Begin, dstPath1:" + GetAnonyString(dstPath1)
+        + ", dstPath2:" + GetAnonyString(dstPath2);
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        LOGE("MountDlpFuse permission denied");
+        funcResult = E_PERMISSION_DENIED;
+        return funcResult;
+    }
+    if (!CheckCallerIsDlpService()) {
+        LOGE("MountDlpFuse caller UID not DLP service");
+        funcResult = E_PERMISSION_DENIED;
+        return funcResult;
+    }
+    if (!ValidateDlpFusePath(dstPath1) || !ValidateDlpFusePath(dstPath2)) {
+        LOGE("MountDlpFuse path invalid");
+        funcResult = E_PARAMS_INVALID;
+        return funcResult;
+    }
+    fd = -1;
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    funcResult = sdCommunication->MountDlpFuse(dstPath1, dstPath2, fd);
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, "MountDlpFuse End", funcResult);
+    return funcResult;
+}
+
+int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int32_t &funcResult)
+{
+    std::string message = "UMountDlpFuse Begin, dstPath1:" + GetAnonyString(dstPath1)
+        + ", dstPath2:" + GetAnonyString(dstPath2);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        LOGE("UMountDlpFuse permission denied");
+        funcResult = E_PERMISSION_DENIED;
+        return funcResult;
+    }
+    if (!CheckCallerIsDlpService()) {
+        LOGE("UMountDlpFuse caller UID not DLP service");
+        funcResult = E_PERMISSION_DENIED;
+        return funcResult;
+    }
+    if (!ValidateDlpFusePath(dstPath1) || !ValidateDlpFusePath(dstPath2)) {
+        LOGE("UMountDlpFuse path invalid");
+        funcResult = E_PARAMS_INVALID;
+        return funcResult;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    funcResult = sdCommunication->UMountDlpFuse(dstPath1, dstPath2);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, "UMountDlpFuse End", funcResult);
+    return funcResult;
+}
+
+bool StorageManagerProvider::CheckCallerIsDlpService()
+{
+    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    if (callingUid != DLP_SERVICE_UID) {
+        LOGE("Caller UID %{public}d is not DLP service UID %{public}d", callingUid, DLP_SERVICE_UID);
+        return false;
+    }
+    return true;
+}
+
+bool StorageManagerProvider::ValidateDlpFusePath(const std::string &path)
+{
+    if (path.empty()) {
+        LOGE("DLP FUSE path is empty");
+        return false;
+    }
+    if (path.size() > PATH_MAX) {
+        LOGE("DLP FUSE path too long, size=%{public}zu", path.size());
+        return false;
+    }
+    if (path.find(DLP_FUSE_MOUNTS_PREFIX) != 0) {
+        LOGE("DLP FUSE path prefix not match: %{public}s", GetAnonyString(path).c_str());
+        return false;
+    }
+    if (path.find("..") != std::string::npos) {
+        LOGE("DLP FUSE path contains path traversal");
+        return false;
+    }
+    return true;
+}
+#else
+int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int &fd,
+                                               int32_t &funcResult)
+{
+    LOGE("MountDlpFuse not supported on this platform");
+    funcResult = E_PERMISSION_DENIED;
+    return funcResult;
+}
+
+int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int32_t &funcResult)
+{
+    LOGE("UMountDlpFuse not supported on this platform");
+    funcResult = E_PERMISSION_DENIED;
+    return funcResult;
+}
+
+bool StorageManagerProvider::CheckCallerIsDlpService()
+{
+    return false;
+}
+
+bool StorageManagerProvider::ValidateDlpFusePath(const std::string &path)
+{
+    return false;
+}
+#endif
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
                                                const std::vector<std::string> &inputList,

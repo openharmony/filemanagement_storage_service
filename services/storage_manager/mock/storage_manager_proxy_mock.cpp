@@ -375,6 +375,18 @@ int32_t StorageManagerProxy::UMountFileMgrFuse(int32_t userId, const std::string
     return E_OK;
 }
 
+int32_t StorageManagerProxy::MountDlpFuse(const std::string &dstPath1, const std::string &dstPath2,
+    int &fd, int32_t &funcResult)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UMountDlpFuse(const std::string &dstPath1, const std::string &dstPath2,
+    int32_t &funcResult)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

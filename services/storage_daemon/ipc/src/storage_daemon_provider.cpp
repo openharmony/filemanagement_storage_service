@@ -1337,6 +1337,67 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
     return err;
 }
 
+#ifdef DLP_FUSE_SERVICE
+int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath1,
+                                             const std::string &dstPath2,
+                                             int &fd,
+                                             int32_t &funcResult)
+{
+    LOGI("[L1:StorageDaemonProvider] MountDlpFuse: >>> ENTER <<< dstPath1=%{public}s, dstPath2=%{public}s",
+        GetAnonyString(dstPath1).c_str(), GetAnonyString(dstPath2).c_str());
+    std::string message = "dstPath1: " + GetAnonyString(dstPath1) + " dstPath2: " + GetAnonyString(dstPath2);
+    HiAudit::GetInstance().WriteStart("MountDlpFuse", message);
+    fd = -1;
+    int32_t devFd = -1;
+    funcResult = MountManager::GetInstance().MountDlpFuseDevice(dstPath1, dstPath2, devFd);
+    fd = devFd;
+    HiAudit::GetInstance().WriteEnd("MountDlpFuse", funcResult);
+    if (funcResult == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT SUCCESS <<< fd=%{public}d", fd);
+    } else {
+        LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< err=%{public}d", funcResult);
+    }
+    return funcResult;
+}
+
+int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int32_t &funcResult)
+{
+    LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: >>> ENTER <<< dstPath1=%{public}s, dstPath2=%{public}s",
+        GetAnonyString(dstPath1).c_str(), GetAnonyString(dstPath2).c_str());
+    std::string message = "dstPath1: " + GetAnonyString(dstPath1) + " dstPath2: " + GetAnonyString(dstPath2);
+    HiAudit::GetInstance().WriteStart("UMountDlpFuse", message);
+    funcResult = MountManager::GetInstance().UMountDlpFuseDevice(dstPath1, dstPath2);
+    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", funcResult);
+    if (funcResult == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< err=%{public}d", funcResult);
+    }
+    return funcResult;
+}
+#else
+int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath1,
+                                             const std::string &dstPath2,
+                                             int &fd,
+                                             int32_t &funcResult)
+{
+    LOGE("[L1:StorageDaemonProvider] MountDlpFuse: not supported on this platform");
+    funcResult = E_MOUNT_DLP_FUSE;
+    return funcResult;
+}
+
+int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath1,
+                                               const std::string &dstPath2,
+                                               int32_t &funcResult)
+{
+    LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: not supported on this platform");
+    funcResult = E_UMOUNT_DLP_FUSE;
+    return funcResult;
+}
+#endif
+
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               const std::vector<std::string> &inputList,
                                               std::vector<std::string> &outputList,

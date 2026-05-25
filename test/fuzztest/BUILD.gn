@@ -68,6 +68,8 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidergettotalinodes_fuzzer:fuzztest",
     "storagemanagerprovidergetfreeinodes_fuzzer:fuzztest",
     "storagemanagerprovidergetcurrentbundleinodes_fuzzer:fuzztest",
+    "storagemanagerprovidermountdlpfuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountdlpfuse_fuzzer:fuzztest",
   ]
 }
 
@@ -106,6 +108,8 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidercreatepartition_fuzzer:fuzztest",
     "storagedaemonproviderdeletepartition_fuzzer:fuzztest",
     "storagedaemonproviderformatpartition_fuzzer:fuzztest",
+    "storagedaemonprovidermountdlpfuse_fuzzer:fuzztest",
+    "storagedaemonproviderumountdlpfuse_fuzzer:fuzztest",
   ]
 }
 

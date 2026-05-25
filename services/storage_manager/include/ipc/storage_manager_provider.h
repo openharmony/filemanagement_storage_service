@@ -149,6 +149,8 @@ public:
     // file mgr fuse
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
+    int32_t MountDlpFuse(const std::string &dstPath1, const std::string &dstPath2, int &fd, int32_t &funcResult) override;
+    int32_t UMountDlpFuse(const std::string &dstPath1, const std::string &dstPath2, int32_t &funcResult) override;
     int32_t IsFileOccupied(const std::string &path,
                            const std::vector<std::string> &inputList,
                            std::vector<std::string> &outputList,
@@ -208,6 +210,8 @@ private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
     bool IsCalledByFileMgr();
+    bool CheckCallerIsDlpService();
+    bool ValidateDlpFusePath(const std::string &path);
     static sptr<StorageManagerProvider> instance_;
     static std::mutex instanceLock_;
 };

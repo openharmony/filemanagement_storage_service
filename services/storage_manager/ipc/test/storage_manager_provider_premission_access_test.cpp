@@ -884,5 +884,79 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateIsoImage_0
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateIsoImage_002 end";
 }
+
+#ifdef DLP_FUSE_SERVICE
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "../data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int fd = -1;
+    int32_t funcResult = 0;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "/data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int fd = -1;
+    int32_t funcResult = 0;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int fd = -1;
+    int32_t funcResult = 0;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath1, dstPath2, fd, funcResult);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_003 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "../data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int32_t funcResult = 0;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath1, dstPath2, funcResult);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 end";
+}
+
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath1 = "/data/service/el1/public/dlp_credential_service/mounts/test1";
+    std::string dstPath2 = "/data/service/el1/public/dlp_credential_service/mounts/test2";
+    int32_t funcResult = 0;
+    g_pStatus = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath1, dstPath2, funcResult);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
+}
+#endif
+
 } // namespace StorageManager
 } // namespace OHOS

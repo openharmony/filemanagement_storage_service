@@ -173,4 +173,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 212] void Partition([in] String diskPath,
                                   [in] String partitionType);
      [ipccode 213] void GetBlockInfoByType([in] String type, [out] String blockInfos);
+     [ipccode 214] int MountDlpFuse([in] String dstPath1, [in] String dstPath2, [out] FileDescriptor fd);
+     [ipccode 215] int UMountDlpFuse([in] String dstPath1, [in] String dstPath2);
 }

@@ -144,6 +144,10 @@ ohos_executable("storage_daemon") {
     defines += [ "PC_USER_MANAGER" ]
   }
 
+  if (storage_service_dlp_fuse) {
+    defines += [ "DLP_FUSE_SERVICE" ]
+  }
+
   if (pc_ext4_enable) {
     defines += [ "PC_EXT4_ENABLE" ]
   }
