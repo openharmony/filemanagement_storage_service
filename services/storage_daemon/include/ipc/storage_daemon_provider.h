@@ -212,7 +212,7 @@ public:
         const OHOS::StorageManager::FormatParams &formatParams) override;
     virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
-    virtual int32_t GetPartitionTableInfo(const std::string &devPath, const std::string &execRet) override;
+    virtual int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet) override;
     virtual int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
                                     int64_t endSector, const std::string &typeCode) override;
     virtual int32_t DeletePartitionInfo(const std::string &devPath, int32_t partitionNum) override;
