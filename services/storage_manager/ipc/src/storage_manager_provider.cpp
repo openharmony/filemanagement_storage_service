@@ -161,10 +161,9 @@ void StorageManagerProvider::OnStart()
     int32_t ret = StorageManagerScan::GetInstance().LoadScanResultFromFile();
     if (ret == E_OK) {
         LOGI("StorageManagerProvider::OnStart LoadScanResultFromFile success, root=%{public}lld,"
-        " system=%{public}lld, memmgr=%{public}lld",
+        " system=%{public}lld",
             static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
-            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
-            static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()));
+            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()));
     }
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
