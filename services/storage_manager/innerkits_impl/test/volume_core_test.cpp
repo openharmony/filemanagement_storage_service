@@ -46,6 +46,40 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     int type = 2;
     std::string diskId = "100";
     int32_t state = UNMOUNTED;
+    uint32_t partitionNum = 0;
+    VolumeCore volumecore(id, type, diskId, state);
+    auto result1 = volumecore.GetId();
+    EXPECT_EQ(result1, id);
+    auto result2 = volumecore.GetType();
+    EXPECT_EQ(result2, type);
+    auto result3 = volumecore.GetDiskId();
+    EXPECT_EQ(result3, diskId);
+    auto result4 = volumecore.GetState();
+    EXPECT_EQ(result4, state);
+    volumecore.SetState(state);
+    std::string fsType = "exfat";
+    volumecore.SetFsType(fsType);
+    uint32_t partNum = volumecore.GetPartitionNum();
+    EXPECT_EQ(result4, partitionNum);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Get_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_core_Get_0000
+ * @tc.name: Volume_core_Get_0000
+ * @tc.desc: Test function of Get interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Get_0000";
+    std::string id = "100";
+    int type = 2;
+    std::string diskId = "100";
+    int32_t state = UNMOUNTED;
     VolumeCore volumecore(id, type, diskId, state);
     auto result1 = volumecore.GetId();
     EXPECT_EQ(result1, id);
