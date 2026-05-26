@@ -224,6 +224,79 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_003
+ * @tc.desc: Verify the UMountDisShareFile function with valid distributeDirs and DFS_UID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_004
+ * @tc.desc: Verify the UMountDisShareFile function with empty distributeDirs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_005
+ * @tc.desc: Verify the UMountDisShareFile function with invalid path characters.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/123456789/../../../etc/passwd");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_006
+ * @tc.desc: Verify the UMountDisShareFile function with multiple valid distributeDirs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_006 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
+        "/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    distributeDirs.push_back("/data/service/el2/200/hmdfs/account/data"
+        "/com.example/.remote_share/xyz123456/Photo");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_006 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_PrepareStartUser_001
  * @tc.desc: Verify the PrepareStartUser function.
  * @tc.type: FUNC
