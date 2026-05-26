@@ -780,7 +780,8 @@ bool HuksMaster::GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer)
 
 bool HuksMaster::IsSupportNewAuthType()
 {
-    uint32_t majorVer = 0, minorVer = 0;
+    uint32_t majorVer = 0;
+    uint32_t minorVer = 0;
     GetHuksVersion(majorVer, minorVer);
     bool support = (majorVer >= 1 && minorVer >= 2);
     LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);

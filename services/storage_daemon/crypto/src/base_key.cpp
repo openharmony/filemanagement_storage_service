@@ -1075,11 +1075,8 @@ bool BaseKey::NeedUpgradeAuthType()
     }
 
     HksParamSet *keyBlobParamSet = nullptr;
-    int ret = HksGetParamSet(
-        reinterpret_cast<HksParamSet *>(keyContext_.shield.data.get()),
-        keyContext_.shield.size,
-        &keyBlobParamSet);
-
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(keyContext_.shield.data.get()),
+        keyContext_.shield.size, &keyBlobParamSet);
     if (ret != HKS_SUCCESS) {
         LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d, no upgrade needed", ret);
         return false;
