@@ -25,13 +25,6 @@
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"
 
-#ifndef HKS_TAG_USER_AUTH_TYPE_ALT
-#define HKS_TAG_USER_AUTH_TYPE_ALT (HKS_TAG_TYPE_UINT | 306)
-#endif
-#ifndef HKS_USER_AUTH_ALT1
-#define HKS_USER_AUTH_ALT1 1
-#endif
-
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
@@ -410,10 +403,10 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
 
     if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
         HksParam param[] = {
-            { .tag = HKS_TAG_USER_AUTH_TYPE_ALT, .uint32Param = HKS_USER_AUTH_ALT1 },
-            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
             { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
             { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
         };
         return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
@@ -556,8 +549,9 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
 
     if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
         HksParam addParam[] = {
-            { .tag = HKS_TAG_USER_AUTH_TYPE_ALT, .uint32Param = HKS_USER_AUTH_ALT1 },
-            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
+            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
             { .tag = HKS_TAG_NONCE,
               .blob =
                 { ctx.nonce.size, ctx.nonce.data.get() }
