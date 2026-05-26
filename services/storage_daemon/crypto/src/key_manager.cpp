@@ -1946,7 +1946,7 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
                 elxKeyDir.c_str());
             return E_PARAMS_NULLPTR_ERR;
         }
-        UserAuth auth = { token, secret, 0, userId };
+        UserAuth auth = { token, secret };
         if (secret.empty() && token.size() == RECOVERY_TOKEN_CHALLENGE_LENG) {
             LOGW("[L3:KeyManager] CreateRecoverKey: secret is empty, using null token");
             auth = { {}, {}};
