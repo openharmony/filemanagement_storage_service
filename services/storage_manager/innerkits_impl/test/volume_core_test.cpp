@@ -60,7 +60,7 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     std::string fsType = "exfat";
     volumecore.SetFsType(fsType);
     uint32_t partNum = volumecore.GetPartitionNum();
-    EXPECT_EQ(result4, partitionNum);
+    EXPECT_EQ(partNum, partitionNum);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Get_0000";
 }
 
