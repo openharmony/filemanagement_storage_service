@@ -134,7 +134,8 @@ public:
     virtual int32_t ReadPartitionTable(const std::string &devPath,
                                        std::string &output, int32_t &maxVolume) override;
     virtual int32_t Mount(const std::string &devPath, const std::string &mountPath,
-                          const std::string &fsType, uint64_t mountFlags) override;
+                          const std::string &fsType, uint64_t mountFlags,
+                          const std::string &mountData) override;
     virtual int32_t Unmount(const std::string &mountPath,
                             const std::string &fsType, bool force) override;
     virtual int32_t FormatVolume(const std::string &devPath, const std::string &fsType) override;

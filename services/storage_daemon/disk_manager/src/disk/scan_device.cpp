@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026-2026 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,26 +13,20 @@
  * limitations under the License.
  */
 
-#include "scan_device.h"
+#include "disk_manager/disk/scan_device.h"
 
 #include "storage_service_log.h"
-#include <cerrno>
 #include <charconv>
-#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
 #include <linux/hdreg.h>
-#include <linux/nvme_ioctl.h>
 #include <regex>
-#include <sstream>
 #include <algorithm>
 #include <cctype>
 #include <sys/ioctl.h>
 #include <unistd.h>
-
-using json = nlohmann::json;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -48,26 +42,23 @@ constexpr const char *NVME0_STRING = "nvme0";
 constexpr const char *SIZE_NODE = "/size";
 constexpr const char *DEV_PATH = "/dev/block";
 constexpr const char *DEV_NODE = "/dev";
-constexpr const char *ROTATIONAL_NODE = "/queue/rotational";
-constexpr const char *STATE_NODE = "/device/state";
 constexpr const char *MODEL_NODE = "/device/model";
 constexpr const char *VENDOR_NODE = "/device/vendor";
 constexpr const char *UEVENT_NODE = "/uevent";
-constexpr const char* MAJOR_KEY = "MAJOR=";
-constexpr const char* MINOR_KEY = "MINOR=";
+constexpr const char *MAJOR_KEY = "MAJOR=";
+constexpr const char *MINOR_KEY = "MINOR=";
 constexpr const char *SERIAL_NODE = "/device/serial";
-// 磁盘 ID 格式前缀
-constexpr const char *DISK_ID_PREFIX = "disk-";
-constexpr const char *DISK_ID_CONTACT = "-";
-constexpr const char *ATA_PORT_PATTERN = "ata([0-9]+)";
 constexpr const char *ATA_PREFIX = "ata";
 constexpr const char *NVME_PORT_PATTERN = "nvme([0-9]+)";
 constexpr const char *NVME_PREFIX = "nvme";
+constexpr const char *DISK_ID_PREFIX = "disk-";
+constexpr const char *DISK_ID_CONTACT = "-";
+constexpr const char *ATA_PORT_PATTERN = "ata([0-9]+)";
+
 const uint64_t SECTOR_SIZE = 512;
 const int NUMBER_BASE = 10;
 const size_t NVME_BASE_LEN = 4;
 const char NVME_LINK = 'n';
-constexpr uint64_t MAX_SAFE_SECTORS_PER_PARTITION = 100000000000000;
 constexpr size_t HD_DRIVEID_SIZE = 512;
 constexpr uint16_t RPM_ARRAY_INDEX = 11;
 constexpr size_t NVME_MIN_NAME_LEN = 7;
@@ -77,27 +68,7 @@ ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBl
 {
 }
 
-static std::string MediaTypeToString(MediaType type)
-{
-    switch (type) {
-        case MediaType::SSD: return "SSD";
-        case MediaType::HDD: return "HDD";
-        default: return "UNKNOWN";
-    }
-}
-
-static MediaType StringToMediaType(const std::string& str)
-{
-    std::string upper = str;
-    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-    if (upper == "SSD") {
-        return MediaType::SSD;
-    }
-    if (upper == "HDD") {
-        return MediaType::HDD;
-    }
-    return MediaType::UNKNOWN;
-}
+using json = nlohmann::json;
 
 json BlockInfo::ToJson() const
 {
@@ -107,40 +78,12 @@ json BlockInfo::ToJson() const
         {"model", model},
         {"interfaceType", interfaceType},
         {"rpm", rpm},
-        {"state", state},
-        {"mediaType", MediaTypeToString(mediaType)},
         {"removable", removable},
         {"serialNumber", serialNumber},
-        {"pciePath", pciePath},
-        {"location", location},
         {"diskId", diskId},
-        {"usedBytes", usedBytes},
-        {"availableBytes", availableBytes},
         {"devicePath", devicePath},
         {"port", port}
     };
-}
-
-BlockInfo BlockInfo::FromJson(const json& j)
-{
-    BlockInfo info;
-    info.sizeBytes = j.value("sizeBytes", 0ULL);
-    info.vendor = j.value("vendor", "");
-    info.model = j.value("model", "");
-    info.interfaceType = j.value("interfaceType", "");
-    info.rpm = j.value("rpm", 0U);
-    info.state = j.value("state", "");
-    info.mediaType = StringToMediaType(j.value("mediaType", "UNKNOWN"));
-    info.removable = j.value("removable", false);
-    info.serialNumber = j.value("serialNumber", "");
-    info.pciePath = j.value("pciePath", "");
-    info.location = j.value("location", "");
-    info.diskId = j.value("diskId", "");
-    info.usedBytes = j.value("usedBytes", 0ULL);
-    info.availableBytes = j.value("availableBytes", 0ULL);
-    info.devicePath = j.value("devicePath", "");
-    info.port = j.value("port", "");
-    return info;
 }
 
 std::string BlockInfo::SerializeVector(const std::vector<BlockInfo>& infos)
@@ -152,25 +95,6 @@ std::string BlockInfo::SerializeVector(const std::vector<BlockInfo>& infos)
     return j.dump();
 }
 
-std::vector<BlockInfo> BlockInfo::DeserializeVector(const std::string &jsonStr)
-{
-    std::vector<BlockInfo> infos;
-    if (jsonStr.empty()) {
-        return infos;
-    }
-
-    json j = json::parse(jsonStr, nullptr, false);
-    if (j.is_discarded() || !j.is_array()) {
-        return infos;
-    }
-
-    infos.reserve(j.size());
-    for (const auto &item : j) {
-        infos.push_back(FromJson(item));
-    }
-
-    return infos;
-}
 
 bool ScanDevice::ReadRemovableNode(const std::string &deviceName, bool &isRemovable)
 {
@@ -199,7 +123,6 @@ bool ScanDevice::IsDataDisk(const std::string &deviceName, const bool isNeedChec
     std::string devicePath = sysBlockPath + SPLIT_STRING + deviceName;
     char linkTarget[PATH_MAX];
     ssize_t len = readlink(devicePath.c_str(), linkTarget, sizeof(linkTarget) - 1);
-    // LCOV_EXCL_START
     if (len != -1) {
         linkTarget[len] = '\0';
         std::string targetPath(linkTarget);
@@ -211,7 +134,6 @@ bool ScanDevice::IsDataDisk(const std::string &deviceName, const bool isNeedChec
             return false;
         }
     }
-    // LCOV_EXCL_STOP
     LOGE("readlink of %{public}s failed", devicePath.c_str());
     return false;
 }
@@ -303,18 +225,15 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
     blockInfo.model = GetModel(deviceName);
     blockInfo.interfaceType = GetInterfaceType(deviceName);
     blockInfo.rpm = GetDiskRpm(deviceName, isNvmeDevice);
-    blockInfo.state = GetDiskState(deviceName);
-    blockInfo.mediaType = GetMediaType(deviceName, isNvmeDevice);
     blockInfo.serialNumber = GetSerialNumber(deviceName, isNvmeDevice);
-    blockInfo.pciePath = GetPciePath(deviceName);
     blockInfo.diskId = GetDiskId(deviceName, isNvmeDevice);
-    blockInfo.usedBytes = GetUsedBytes(deviceName);
-    blockInfo.availableBytes = GetAvailableBytes(blockInfo.sizeBytes, deviceName);
+    std::string pciePath = GetPciePath(deviceName);
     blockInfo.devicePath = GetDevicePath(deviceName);
-    blockInfo.port = GetPort(blockInfo.pciePath, isNvmeDevice);
+    blockInfo.port = GetPort(pciePath, isNvmeDevice);
     return 0;
 }
 
+namespace {
 std::string TrimSpaces(const std::string &str)
 {
     auto first = std::find_if(str.begin(), str.end(), [](unsigned char c) {
@@ -328,6 +247,7 @@ std::string TrimSpaces(const std::string &str)
     }
     return std::string(first, last.base());
 }
+} // namespace
 
 bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
 {
@@ -388,7 +308,6 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
         LOGE("GetDiskSize: failed to parse size value from %{public}s", content.c_str());
         return 0;
     }
-    // LCOV_EXCL_START
     if (sectors > UINT64_MAX / SECTOR_SIZE) {
         LOGE("GetDiskSize: used bytes overflow detected for %{public}s", deviceName.c_str());
         return 0;
@@ -396,7 +315,6 @@ uint64_t ScanDevice::GetDiskSize(const std::string &deviceName)
     uint64_t sectorSize = static_cast<uint64_t>(sectors) * SECTOR_SIZE;
     LOGI("GetDiskSize success: sectors is %{public}s, size is %{public}s", std::to_string(sectors).c_str(),
          std::to_string(sectorSize).c_str());
-    // LCOV_EXCL_STOP
     return sectorSize;
 }
 
@@ -437,7 +355,6 @@ std::string ScanDevice::GetInterfaceType(const std::string &deviceName)
 
 uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice)
 {
-	// LCOV_EXCL_START
     if (isNvmeDevice) {
         return 0;
     }
@@ -458,44 +375,11 @@ uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvme
         LOGE("GetDiskRpm: hd_driveid structure size is smaller");
         return 0;
     }
-	// LCOV_EXCL_STOP
     return static_cast<uint32_t>(hdId.words206_254[RPM_ARRAY_INDEX]);
-}
-
-std::string ScanDevice::GetDiskState(const std::string &deviceName)
-{
-    std::string statePath = sysBlockPath + SPLIT_STRING + deviceName + STATE_NODE;
-    std::string content;
-    if (ReadSysfsNode(statePath, content)) {
-        LOGI("GetDiskState success: %{public}s", content.c_str());
-        return content;
-    }
-    LOGE("GetDiskState failed");
-    return "Unknown";
-}
-
-MediaType ScanDevice::GetMediaType(const std::string &deviceName, const bool isNvmeDevice)
-{
-    if (isNvmeDevice) {
-        return MediaType::SSD;
-    }
-    std::string rotationalPath = sysBlockPath + SPLIT_STRING + deviceName + ROTATIONAL_NODE;
-    std::string content;
-    if (ReadSysfsNode(rotationalPath, content)) {
-        LOGI("GetMediaType success: %{public}s", content.c_str());
-        if (content == "0") {
-            return MediaType::SSD;
-        } else if (content == "1") {
-            return MediaType::HDD;
-        }
-    }
-    LOGE("GetMediaType failed");
-    return MediaType::UNKNOWN;
 }
 
 std::string ScanDevice::GetSataSerialNumber(int fd)
 {
-    // LCOV_EXCL_START
     struct hd_driveid hdId;
     if (ioctl(fd, HDIO_GET_IDENTITY, &hdId) < 0) {
         LOGE("GetSataSsdSerialNumber: execute ioctl failed");
@@ -504,7 +388,6 @@ std::string ScanDevice::GetSataSerialNumber(int fd)
     size_t len = sizeof(hdId.serial_no);
     std::string serial(reinterpret_cast<const char *>(hdId.serial_no), len);
     return TrimSpaces(serial);
-    // LCOV_EXCL_STOP
 }
 
 std::string ScanDevice::GetNvmeSerialNumber(const std::string &deviceName)
@@ -512,14 +395,15 @@ std::string ScanDevice::GetNvmeSerialNumber(const std::string &deviceName)
     std::string serialPath = sysBlockPath + SPLIT_STRING + deviceName + SERIAL_NODE;
     std::string content;
     if (ReadSysfsNode(serialPath, content)) {
-        return TrimSpaces(content);
+        LOGI("GetNvmeSerialNumber success: %{public}s", content.c_str());
+        return content;
     }
+    LOGE("GetNvmeSerialNumber: read serial node failed for %{public}s", deviceName.c_str());
     return "Unknown";
 }
 
 std::string ScanDevice::GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice)
 {
-    // LCOV_EXCL_START
     std::string serial;
     if (isNvmeDevice) {
         serial = GetNvmeSerialNumber(deviceName);
@@ -538,7 +422,6 @@ std::string ScanDevice::GetSerialNumber(const std::string &deviceName, const boo
         return "Unknown";
     }
     LOGI("GetSerialNumber success: %{public}s", serial.c_str());
-    // LCOV_EXCL_STOP
     return serial;
 }
 
@@ -564,35 +447,38 @@ bool ScanDevice::ReadSataDeviceNumber(const std::string &deviceName, std::string
         LOGE("ReadSataDeviceNumber failed: read dev node failed");
         return false;
     }
-    // 内容格式为 "主设备号:次设备号"
     size_t colonPos = content.find(DEVICE_NUMBER_SPLIT);
     if (colonPos == std::string::npos) {
         LOGE("ReadSataDeviceNumber failed: invalid dev node format");
         return false;
     }
-    major = TrimSpaces(content.substr(0, colonPos));
-    minor = TrimSpaces(content.substr(colonPos + 1));
+    major = content.substr(0, colonPos);
+    minor = content.substr(colonPos + 1);
     return true;
 }
 
 bool ScanDevice::ReadNvmeDeviceNumber(const std::string &deviceName, std::string &major, std::string &minor)
 {
-    // 对于 nvme 盘，读取 uevent 节点获取设备号
     std::string ueventPath = sysBlockPath + SPLIT_STRING + deviceName + UEVENT_NODE;
     std::ifstream file(ueventPath);
     if (!file.is_open()) {
-        LOGE("ReadNvmeDeviceNumber failed: open uevent node failed for nvme device");
+        LOGE("ReadNvmeDeviceNumber failed: open %{public}s failed", ueventPath.c_str());
         return false;
     }
     std::string line;
-    const size_t majorKeyLen = std::strlen(MAJOR_KEY);
-    const size_t minorKeyLen = std::strlen(MINOR_KEY);
+    major = "";
+    minor = "";
     while (std::getline(file, line)) {
-        if (line.compare(0, majorKeyLen, MAJOR_KEY) == 0) {
-            major = TrimSpaces(line.substr(majorKeyLen));
-        } else if (line.compare(0, minorKeyLen, MINOR_KEY) == 0) {
-            minor = TrimSpaces(line.substr(minorKeyLen));
+        if (line.find(MAJOR_KEY) == 0) {
+            major = line.substr(strlen(MAJOR_KEY));
+        } else if (line.find(MINOR_KEY) == 0) {
+            minor = line.substr(strlen(MINOR_KEY));
         }
+    }
+    file.close();
+    if (major.empty() || minor.empty()) {
+        LOGE("ReadNvmeDeviceNumber failed: MAJOR or MINOR not found in %{public}s", ueventPath.c_str());
+        return false;
     }
     return true;
 }
@@ -601,82 +487,19 @@ std::string ScanDevice::GetDiskId(const std::string &deviceName, const bool isNv
 {
     std::string major;
     std::string minor;
-    bool res =
-        isNvmeDevice ? ReadNvmeDeviceNumber(deviceName, major, minor) : ReadSataDeviceNumber(deviceName, major, minor);
-    std::string diskId;
-    if (res) {
-        diskId = DISK_ID_PREFIX + major + DISK_ID_CONTACT + minor;
-        LOGI("GetDiskId success: %{public}s", diskId.c_str());
+    bool success = false;
+    if (isNvmeDevice) {
+        success = ReadNvmeDeviceNumber(deviceName, major, minor);
     } else {
-        LOGE("GetDiskId failed");
+        success = ReadSataDeviceNumber(deviceName, major, minor);
     }
+    if (!success) {
+        LOGE("GetDiskId failed: read device number failed for %{public}s", deviceName.c_str());
+        return "";
+    }
+    std::string diskId = DISK_ID_PREFIX + major + DISK_ID_CONTACT + minor;
+    LOGI("GetDiskId success: %{public}s", diskId.c_str());
     return diskId;
-}
-
-uint64_t ScanDevice::GetUsedBytes(const std::string &deviceName)
-{
-    std::string blockPath = sysBlockPath + SPLIT_STRING + deviceName;
-    DIR *dir = opendir(blockPath.c_str());
-    if (!dir) {
-        LOGE("GetUsedBytes failed: open %{public}s failed", blockPath.c_str());
-        return 0;
-    }
-    uint64_t totalSectors = 0;
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        std::string name = entry->d_name;
-        if (name == "." || name == "..") {
-            continue;
-        }
-        if (name.find(deviceName) != 0 || name.length() <= deviceName.length() || !std::isdigit(name.back())) {
-            continue;
-        }
-        std::string sizePath = blockPath + SPLIT_STRING + name + SIZE_NODE;
-        std::string content;
-        if (!ReadSysfsNode(sizePath, content) || content.empty()) {
-            continue;
-        }
-        if (content.back() == '\n') {
-            content.pop_back();
-        }
-        if (content.empty()) {
-            continue;
-        }
-        unsigned long long sectors = 0;
-        if (!ParseStringToUlongLong(content, sectors)) {
-            continue;
-        }
-        // LCOV_EXCL_START
-        if (sectors > MAX_SAFE_SECTORS_PER_PARTITION) {
-            LOGW("GetUsedBytes: partition %{public}s has suspiciously large size: %{public}s sectors, skipping.",
-                 name.c_str(), std::to_string(sectors).c_str());
-            continue;
-        }
-        if (totalSectors > UINT64_MAX - sectors) {
-            LOGE("GetUsedBytes: total sectors %{public}s overflow detected for %{public}s",
-                 std::to_string(totalSectors).c_str(), deviceName.c_str());
-            closedir(dir);
-            return 0;
-        }
-        // LCOV_EXCL_STOP
-        totalSectors += sectors;
-    }
-    closedir(dir);
-    uint64_t usedBytes = totalSectors * SECTOR_SIZE;
-    LOGI("GetUsedBytes success: %{public}s", std::to_string(usedBytes).c_str());
-    return usedBytes;
-}
-
-uint64_t ScanDevice::GetAvailableBytes(const uint64_t totalSize, const std::string &deviceName)
-{
-    uint64_t usedBytes = GetUsedBytes(deviceName);
-    if (totalSize < usedBytes) {
-        LOGE("GetAvailableBytes warning: sizeBytes < usedBytes");
-        return 0;
-    }
-    uint64_t availableBytes = totalSize - usedBytes;
-    LOGI("GetAvailableBytes success: %{public}s", std::to_string(availableBytes).c_str());
-    return availableBytes;
 }
 
 std::string ScanDevice::GetDevicePath(const std::string &deviceName)
@@ -693,14 +516,15 @@ std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDe
         return "";
     }
     std::string pattern = isNvmeDevice ? NVME_PORT_PATTERN : ATA_PORT_PATTERN;
-    std::regex diskPattern(pattern);
+    std::string prefix = isNvmeDevice ? NVME_PREFIX : ATA_PREFIX;
+    std::regex portPattern(pattern);
     std::smatch match;
-    if (std::regex_search(pciePath, match, diskPattern)) {
-        std::string port = (isNvmeDevice ? std::string(NVME_PREFIX) : std::string(ATA_PREFIX)) + std::string(match[1]);
+    if (std::regex_search(pciePath, match, portPattern)) {
+        std::string port = prefix + std::string(match[1]);
         LOGI("GetPort success: %{public}s", port.c_str());
         return port;
     }
-    LOGE("GetPort failed: no valid patterns found in pciePath");
+    LOGE("GetPort failed: no match found in pciePath");
     return "";
 }
 } // namespace StorageDaemon

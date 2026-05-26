@@ -24,32 +24,20 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-using json = nlohmann::json;
-
-enum class MediaType { SSD = 0, HDD = 1, UNKNOWN = 2 };
-
 struct BlockInfo {
     uint64_t sizeBytes;
     std::string vendor;
     std::string model;
     std::string interfaceType;
     uint32_t rpm;
-    std::string state;
-    MediaType mediaType;
     bool removable;
     std::string serialNumber;
-    std::string pciePath;
-    std::string location;
     std::string diskId;
-    uint64_t usedBytes;
-    uint64_t availableBytes;
     std::string devicePath;
     std::string port;
 
-    json ToJson() const;
-    static BlockInfo FromJson(const json& j);
+    nlohmann::json ToJson() const;
     static std::string SerializeVector(const std::vector<BlockInfo>& infos);
-    static std::vector<BlockInfo> DeserializeVector(const std::string& jsonStr);
 };
 
 class ScanDevice {
@@ -70,8 +58,6 @@ private:
     std::string GetModel(const std::string &deviceName);
     std::string GetInterfaceType(const std::string &deviceName);
     uint32_t GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice);
-    std::string GetDiskState(const std::string &deviceName);
-    MediaType GetMediaType(const std::string &deviceName, const bool isNvmeDevice);
     std::string GetSataSerialNumber(int fd);
     std::string GetNvmeSerialNumber(const std::string &deviceName);
     std::string GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice);
@@ -79,8 +65,6 @@ private:
     bool ReadSataDeviceNumber(const std::string &deviceName, std::string &major, std::string &minor);
     bool ReadNvmeDeviceNumber(const std::string &deviceName, std::string &major, std::string &minor);
     std::string GetDiskId(const std::string &deviceName, const bool isNvmeDevice);
-    uint64_t GetUsedBytes(const std::string &deviceName);
-    uint64_t GetAvailableBytes(const uint64_t totalSize, const std::string &deviceName);
     std::string GetDevicePath(const std::string &deviceName);
     std::string GetPort(const std::string &pciePath, const bool isNvmeDevice);
     bool IsValidNvmeDevice(const std::string &deviceName);

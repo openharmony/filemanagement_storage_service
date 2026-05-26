@@ -88,7 +88,7 @@ config("storage_daemon_config") {
   include_dirs = [
     "include",
     "include/utils",
-    "scan_device/src",
+    "include/disk_manager/disk",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
@@ -129,10 +129,7 @@ ohos_executable("storage_daemon") {
     "user/src/system_mount_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
-    "disk_manager/src/disk/disk_utils.cpp",
-    "disk_manager/src/volume/volume_utils.cpp",
     "utils/storage_xcollie.cpp",
-    "scan_device/src/scan_device.cpp",
   ]
 
   defines = [
@@ -162,12 +159,34 @@ ohos_executable("storage_daemon") {
     ]
   }
 
+  if (storage_service_external_storage_manager || enable_disk_manager) {
+    sources += [
+      "volume/src/process.cpp",
+    ]
+  }
+
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [
       "disk/src/disk_config.cpp",
       "disk/src/disk_info.cpp",
       "disk/src/disk_manager.cpp",
+      "netlink/src/netlink_data.cpp",
+      "netlink/src/netlink_handler.cpp",
+      "netlink/src/netlink_listener.cpp",
+      "netlink/src/netlink_manager.cpp",
+      "volume/src/external_volume_info.cpp",
+      "volume/src/volume_info.cpp",
+      "volume/src/volume_manager.cpp",
+    ]
+  }
+
+  if (enable_disk_manager) {
+    defines += [ "DISK_MANAGER" ]
+    sources += [
+      "disk_manager/src/disk/disk_utils.cpp",
+      "disk_manager/src/volume/volume_utils.cpp",
+      "disk_manager/src/disk/scan_device.cpp",
       "disk_manager/src/volume/exfat_operator.cpp",
       "disk_manager/src/volume/ntfs_operator.cpp",
       "disk_manager/src/volume/vfat_operator.cpp",
@@ -175,14 +194,6 @@ ohos_executable("storage_daemon") {
       "disk_manager/src/volume/ext4_operator.cpp",
       "disk_manager/src/volume/volume_operator_factory.cpp",
       "disk_manager/src/volume/ivolume_operator.cpp",
-      "netlink/src/netlink_data.cpp",
-      "netlink/src/netlink_handler.cpp",
-      "netlink/src/netlink_listener.cpp",
-      "netlink/src/netlink_manager.cpp",
-      "volume/src/external_volume_info.cpp",
-      "volume/src/process.cpp",
-      "volume/src/volume_info.cpp",
-      "volume/src/volume_manager.cpp",
     ]
   }
 
@@ -520,7 +531,7 @@ group("storage_daemon_unit_test") {
     "quota/test:storage_daemon_quota_test",
     "user/test:storage_daemon_user_test",
     "utils/test:storage_daemon_utils_test",
-    "scan_device/test:storage_daemon_scan_device_test",
+    "disk_manager/test:scan_device_test",
   ]
 
   if (storage_service_user_crypto_manager) {

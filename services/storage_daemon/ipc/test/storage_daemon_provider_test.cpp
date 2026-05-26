@@ -24,6 +24,7 @@
 #include "mock/mount_manager_mock.h"
 #include "mock/key_manager_ext_mock.h"
 #include "userdata_dir_info.h"
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -2822,16 +2823,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountExt_001, Test
 {
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0), E_PARAMS_INVALID);
-    EXPECT_EQ(storageDaemonProviderTest_->Mount("/dev/block/ut_test_dev", "", "ext4", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0, ""), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("/dev/block/ut_test_dev", "", "ext4", 0, ""), E_PARAMS_INVALID);
     EXPECT_EQ(storageDaemonProviderTest_->Mount(
-        "/dev/block/ut_test_dev", "/mnt/data/../secret", "ext4", 0), E_PARAMS_INVALID);
+        "/dev/block/ut_test_dev", "/mnt/data/../secret", "ext4", 0, ""), E_PARAMS_INVALID);
     EXPECT_EQ(storageDaemonProviderTest_->Mount(
-        "/dev/block/ut_test_dev", "/tmp/mnt_point", "ext4", 0), E_PARAMS_INVALID);
+        "/dev/block/ut_test_dev", "/tmp/mnt_point", "ext4", 0, ""), E_PARAMS_INVALID);
     EXPECT_EQ(storageDaemonProviderTest_->Mount(
-        "/dev/block/ut_test_dev", "/mnt/data/test", "", 0), E_PARAMS_INVALID);
+        "/dev/block/ut_test_dev", "/mnt/data/test", "", 0, ""), E_PARAMS_INVALID);
 #else
-    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("", "/mnt/data/test", "ext4", 0, ""), E_NOT_SUPPORT);
 #endif
 }
 
@@ -2915,16 +2916,38 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ReadMetadata_001, 
 #endif
 }
 
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFuseDevice_001, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateBlockDevicePath_001, TestSize.Level1)
 {
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    int fuseFd = 0;
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_PARAMS_INVALID);
-    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("/tmp/fake", fuseFd), E_PARAMS_INVALID);
-    storageDaemonProviderTest_->MountFuseDevice("/mnt/data/ut_test_mnt", fuseFd);
-#else
-    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("", fuseFd), E_NOT_SUPPORT);
+    std::string verifiedPath;
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath("", verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        std::string(PATH_MAX, 'a'), verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath("/dev/block/../sda", verifiedPath),
+        E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath("/dev/invalid/sda1", verifiedPath),
+        E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath("/dev/block/nonexist_dev", verifiedPath),
+        E_OK);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        "/dev/block/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateMountPath_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    std::string verifiedPath;
+    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("", verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath(
+        std::string(PATH_MAX, 'a'), verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("/mnt/data/../secret", verifiedPath),
+        E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("/tmp/fake", verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath(
+        "/mnt/data/nonexist_subdir/file", verifiedPath), E_PARAMS_INVALID);
 #endif
 }
 } // namespace StorageDaemon

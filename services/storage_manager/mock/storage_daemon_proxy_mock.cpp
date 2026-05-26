@@ -393,7 +393,8 @@ int32_t StorageDaemonProxy::ReadPartitionTable(const std::string &devPath,
 }
 
 int32_t StorageDaemonProxy::Mount(const std::string &devPath, const std::string &mountPath,
-                                  const std::string &fsType, uint64_t mountFlags)
+                                  const std::string &fsType, uint64_t mountFlags,
+                                  const std::string &mountData)
 {
     return E_OK;
 }

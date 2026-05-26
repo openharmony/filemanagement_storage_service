@@ -150,7 +150,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 204] void Mount([in] String devPath,
                               [in] String mountPath,
                               [in] String fsType,
-                              [in] unsigned long mountFlags);
+                              [in] unsigned long mountFlags,
+                              [in] String mountData);
      [ipccode 205] void Unmount([in] String mountPath,
                                 [in] String fsType,
                                 [in] boolean force);

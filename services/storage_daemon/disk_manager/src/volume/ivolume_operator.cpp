@@ -16,6 +16,9 @@
 #include "disk_manager/volume/ivolume_operator.h"
 
 #include <climits>
+#include <csignal>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -23,6 +26,9 @@
 #include "storage_service_errno.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "volume/process.h"
+
+#define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -39,8 +45,12 @@ int32_t IVolumeOperator::EnsureMountPath(const std::string& mountPath)
             return E_SYS_KERNEL_ERR;
         }
     }
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH;
+    if (mountPath == "/mnt/data/voldata" || mountPath.find("/mnt/data/voldata/") == 0) {
+        mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+    }
     mode_t originalUmask = umask(0);
-    int err = mkdir(mountPath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    int err = mkdir(mountPath.c_str(), mode);
     umask(originalUmask);
     if (err != 0) {
         LOGE("IVolumeOperator::EnsureMountPath mkdir failed, errno=%{public}d", errno);
@@ -100,7 +110,8 @@ int32_t IVolumeOperator::ReadMetadata(const std::string& devPath,
 
 int32_t IVolumeOperator::Mount(const std::string& devPath,
                                const std::string& mountPath,
-                               unsigned long mountFlags)
+                               unsigned long mountFlags,
+                               const std::string& mountData)
 {
     LOGI("IVolumeOperator::Mount devPath=%{public}s, mountPath=%{public}s",
          devPath.c_str(), GetAnonyString(mountPath).c_str());
@@ -132,7 +143,7 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         LOGE("IVolumeOperator::Mount EnsureMountPath failed, ret=%{public}d", ret);
         return ret;
     }
-    ret = DoMount(devPath, mountPath, mountFlags);
+    ret = DoMount(devPath, mountPath, mountFlags, mountData);
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount DoMount failed, ret=%{public}d", ret);
         RemoveMountPath(mountPath);
@@ -140,6 +151,20 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
     }
 
     LOGI("IVolumeOperator::Mount success");
+    return E_OK;
+}
+
+static int32_t IsUsbInUse(int fd)
+{
+    int32_t inUse = -1;
+    if (ioctl(fd, STORAGE_MANAGER_IOC_CHK_BUSY, &inUse) < 0) {
+        LOGE("IsUsbInUse: ioctl failed, errno=%{public}d", errno);
+        return E_IOCTL_FAILED;
+    }
+    if (inUse) {
+        LOGI("IsUsbInUse: inUse=%{public}d", inUse);
+        return E_USB_IN_USE;
+    }
     return E_OK;
 }
 
@@ -163,14 +188,35 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         return E_PARAMS_INVALID;
     }
 
-    int flags = force ? MNT_DETACH : 0;
-    int ret = umount2(realPath, flags);
+    if (force) {
+        Process ps(resolvedPath);
+        ps.UpdatePidAndKill(SIGKILL);
+        int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
+        if (ret != 0) {
+            LOGW("IVolumeOperator::Unmount umount2 failed in force mode, errno=%{public}d", errno);
+            RemoveMountPath(resolvedPath);
+            return E_OK;
+        }
+        RemoveMountPath(resolvedPath);
+        LOGI("IVolumeOperator::Unmount force success");
+        return E_OK;
+    }
+
+    int fd = open(resolvedPath.c_str(), O_RDONLY);
+    if (fd >= 0) {
+        IsUsbInUse(fd);
+    }
+    int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
+    if (fd >= 0) {
+        IsUsbInUse(fd);
+        close(fd);
+    }
     if (ret != 0) {
         LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
 
-    RemoveMountPath(realPath);
+    RemoveMountPath(resolvedPath);
     LOGI("IVolumeOperator::Unmount success");
     return E_OK;
 }
