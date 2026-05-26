@@ -1061,7 +1061,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_001, TestSize.
     CreateDeviceDir("sdmock_b");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_b");
+    std::string diskId = scanner.GetDiskId("sdmock_b", false);
     EXPECT_EQ(diskId, "disk-8-16");
 
     DeleteDeviceDir("sdmock_b");
@@ -1080,7 +1080,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_002, TestSize.
     CreateFileWithContent(mockSysPath + "/sdmock_c/dev", "invalid_format\n");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_c");
+    std::string diskId = scanner.GetDiskId("sdmock_c", false);
     EXPECT_TRUE(diskId.empty());
 
     DeleteDeviceDir("sdmock_c");
@@ -1099,11 +1099,36 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_003, TestSize.
     CreateFileWithContent(mockSysPath + "/sdmock_c/dev", "8:32\n");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_c");
+    std::string diskId = scanner.GetDiskId("sdmock_c", false);
     EXPECT_EQ(diskId, "disk-8-32");
 
     DeleteDeviceDir("sdmock_c");
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetDiskId_NVME
+ * @tc.desc: Test GetDiskId with uevent node containing newline
+ * @tc.required: A
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_NVME, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME start";
+    CreateDeviceDir("nvme1n1");
+    std::string diskFile = mockSysPath + "/nvme1n1/uevent";
+    FILE *fp = fopen(diskFile.c_str(), "w");
+    if (fp) {
+        fprintf(fp, "MAJOR=8\n");
+        fprintf(fp, "MINOR=32\n");
+        fclose(fp);
+    }
+ 
+    ScanDevice scanner(mockSysPath);
+    std::string diskId = scanner.GetDiskId("nvme1n1", true);
+    EXPECT_EQ(diskId, "disk-8-32");
+ 
+    DeleteDeviceDir("nvme1n1");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME end";
 }
 
 /**
@@ -1182,7 +1207,8 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_001, T
     CreateFileWithContent(part1Dir + "/size", "1048576\n");
 
     ScanDevice scanner(mockSysPath);
-    uint64_t availableBytes = scanner.GetAvailableBytes("sdmock_b");
+    uint64_t size = scanner.GetDiskSize("sdmock_b");
+    uint64_t availableBytes = scanner.GetAvailableBytes(size, "sdmock_b");
     EXPECT_EQ(availableBytes, 536870912ULL);
 
     DeleteDeviceDir("sdmock_b");
@@ -1204,7 +1230,8 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_002, T
     CreateFileWithContent(part1Dir + "/size", "2000\n");
 
     ScanDevice scanner(mockSysPath);
-    uint64_t availableBytes = scanner.GetAvailableBytes("sdmock_c");
+    uint64_t size = scanner.GetDiskSize("sdmock_c");
+    uint64_t availableBytes = scanner.GetAvailableBytes(size, "sdmock_c");
     EXPECT_EQ(availableBytes, 0);
 
     DeleteDeviceDir("sdmock_c");
@@ -2061,7 +2088,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_004, TestSize.
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 start";
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("nonexistent");
+    std::string diskId = scanner.GetDiskId("nonexistent", false);
     EXPECT_TRUE(diskId.empty());
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 end";
