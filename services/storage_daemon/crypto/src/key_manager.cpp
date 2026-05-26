@@ -1949,7 +1949,7 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
         UserAuth auth = { token, secret, 0, userId };
         if (secret.empty() && token.size() == RECOVERY_TOKEN_CHALLENGE_LENG) {
             LOGW("[L3:KeyManager] CreateRecoverKey: secret is empty, using null token");
-            auth = { {}, {}, 0 };
+            auth = { {}, {}};
         }
         if ((elxKey->RestoreKey(auth, false) != E_OK) && (elxKey->RestoreKey(NULL_KEY_AUTH, false) != E_OK)) {
             LOGE("[L3:KeyManager] CreateRecoverKey: <<< EXIT FAILED <<< [failed to restore el key]");

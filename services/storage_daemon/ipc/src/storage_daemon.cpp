@@ -1937,7 +1937,10 @@ void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId,
 
     auto el5Key = KeyManager::GetInstance().GetUserElKey(userId, EL5_KEY, false);
     if (el5Key != nullptr && el5Key->NeedUpgradeAuthType()) {
-        UserTokenSecret userTokenSecretDelete = {token, {}, {}, 0};
+        uint64_t secureUid = 0;
+        KeyManager::GetInstance().GetSecureUid(userId, secureUid);
+
+        UserTokenSecret userTokenSecretDelete = {token, {}, {}, secureUid};
         int ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretDelete, EL5_KEY);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemon] Delete EL5 failed: %{public}d", ret);
@@ -1946,7 +1949,7 @@ void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId,
             return;
         }
 
-        UserTokenSecret userTokenSecretCreate = {token, secret, secret, 0};
+        UserTokenSecret userTokenSecretCreate = {token, secret, secret, secureUid};
         ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretCreate, EL5_KEY);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemon] Create EL5 failed: %{public}d", ret);

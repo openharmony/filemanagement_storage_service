@@ -62,7 +62,6 @@ const std::vector<uint8_t> DEFAULT_KEY = { 'D', 'o', 'c', 's' };
 #define F2FS_IOC_SET_PIN_FILE _IOW(F2FS_IOCTL_MAGIC, 13, set)
 #define F2FS_IOC_GET_PIN_FILE _IOR(F2FS_IOCTL_MAGIC, 14, set)
 #endif
-
 }
 
 namespace OHOS {
@@ -1070,8 +1069,8 @@ bool BaseKey::NeedUpgradeAuthType()
     LOGI("[L4:BaseKey] NeedUpgradeAuthType: >>> ENTER <<<");
     if (keyContext_.shield.IsEmpty()) {
         if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
-            LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield file not found, need upgrade");
-            return true;
+            LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield file not found, no upgrade needed");
+            return false;
         }
     }
 
@@ -1082,8 +1081,8 @@ bool BaseKey::NeedUpgradeAuthType()
         &keyBlobParamSet);
 
     if (ret != HKS_SUCCESS) {
-        LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d", ret);
-        return true;
+        LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d, no upgrade needed", ret);
+        return false;
     }
 
     struct HksParam *authTypeAtl = nullptr;
@@ -1096,11 +1095,9 @@ bool BaseKey::NeedUpgradeAuthType()
 
     struct HksParam *authType = nullptr;
     ret = HksGetParam(keyBlobParamSet, HKS_TAG_USER_AUTH_TYPE, &authType);
-
     HksFreeParamSet(&keyBlobParamSet);
 
     bool needUpgrade = (ret == HKS_SUCCESS);
-
     LOGI("[L4:BaseKey] NeedUpgradeAuthType: hasAuthType=%{public}d, needUpgrade=%{public}d",
          (ret == HKS_SUCCESS), needUpgrade);
 
