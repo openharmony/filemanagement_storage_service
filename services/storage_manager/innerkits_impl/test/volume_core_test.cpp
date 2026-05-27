@@ -46,6 +46,7 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     int type = 2;
     std::string diskId = "100";
     int32_t state = UNMOUNTED;
+    uint32_t partitionNum = 0;
     VolumeCore volumecore(id, type, diskId, state);
     auto result1 = volumecore.GetId();
     EXPECT_EQ(result1, id);
@@ -58,6 +59,8 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     volumecore.SetState(state);
     std::string fsType = "exfat";
     volumecore.SetFsType(fsType);
+    uint32_t partNum = volumecore.GetPartitionNum();
+    EXPECT_EQ(partNum, partitionNum);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Get_0000";
 }
 
