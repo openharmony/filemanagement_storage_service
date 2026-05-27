@@ -26,7 +26,8 @@ namespace OHOS {
 namespace StorageDaemon {
 int32_t Ext4Operator::DoMount(const std::string& devPath,
                               const std::string& mountPath,
-                              unsigned long mountFlags)
+                              unsigned long mountFlags,
+                              const std::string& mountData)
 {
 #ifdef PC_EXT4_ENABLE
     LOGI("Ext4Operator::Mount devPath=%{public}s, mountPath=%{public}s", devPath.c_str(),
@@ -37,8 +38,8 @@ int32_t Ext4Operator::DoMount(const std::string& devPath,
         return E_PARAMS_INVALID;
     }
 
-    std::string mountData = "context=u:object_r:mnt_external_file:s0";
-    int32_t ret = mount(devPath.c_str(), mountPath.c_str(), "ext4", mountFlags, mountData.c_str());
+    std::string data = mountData.empty() ? "context=u:object_r:mnt_external_file:s0" : mountData;
+    int32_t ret = mount(devPath.c_str(), mountPath.c_str(), "ext4", mountFlags, data.c_str());
     if (ret != E_OK) {
         LOGE("Ext4Operator::Mount failed, errno=%{public}d", errno);
         return E_EXT_MOUNT;

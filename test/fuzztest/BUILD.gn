@@ -105,7 +105,11 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidergetsystemdatasize_fuzzer:fuzztest",
     "storagedaemonprovidercreatepartition_fuzzer:fuzztest",
     "storagedaemonproviderdeletepartition_fuzzer:fuzztest",
-    "storagedaemonproviderformatpartition_fuzzer:fuzztest",
+    "storagedaemonprovidercreateblockdevicenode_fuzzer:fuzztest",
+    "storagedaemonproviderdestroyblockdevicenode_fuzzer:fuzztest",
+    "storagedaemonproviderreadpartitiontable_fuzzer:fuzztest",
+    "storagedaemonprovidermountext_fuzzer:fuzztest",
+    "storagedaemonproviderunmount_fuzzer:fuzztest",
   ]
 }
 

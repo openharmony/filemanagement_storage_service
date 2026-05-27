@@ -45,6 +45,9 @@ declare_args() {
                                defined(global_parts_info.thirdparty_libfuse)
   storage_service_dfs_filemanager = defined(global_parts_info) &&
                                     defined(global_parts_info.filemanagement_dfs_service)
+  enable_disk_manager =
+      defined(global_parts_info) &&
+      defined(global_parts_info.filemanagement_disk_manager)
   enable_tee_client = !is_emulator
   enable_huks_hdi = !is_emulator
 }
