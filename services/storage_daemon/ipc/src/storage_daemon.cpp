@@ -1906,8 +1906,7 @@ int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
     return E_OK;
 }
 
-void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId,
-    const std::vector<uint8_t> &token,
+void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
     LOGI("[L1:StorageDaemon] CheckAndUpgradeUserAuthType: >>> ENTER <<< userId=%{public}u", userId);

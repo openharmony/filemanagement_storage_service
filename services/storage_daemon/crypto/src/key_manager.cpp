@@ -1202,7 +1202,8 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
     LOGI("[L3:KeyManager] UpdateESecret: status=%{public}u", status);
-    UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid, .userId = user };
+    UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid,
+        .userId = user };
     saveESecretStatus[user] = true;
     auto ret = el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status);
     if (static_cast<uint32_t>(ret) == FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG) {
