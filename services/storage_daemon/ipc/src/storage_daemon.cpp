@@ -1916,6 +1916,17 @@ void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId, const std::vect
         return;
     }
 
+    UpgradeEl2ToEl4AuthType(userId, token, secret);
+    UpgradeEl5AuthType(userId, token, secret);
+#endif
+    LOGI("[L1:StorageDaemon] CheckAndUpgradeUserAuthType: <<< EXIT <<<");
+}
+
+void StorageDaemon::UpgradeEl2ToEl4AuthType(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGI("[L1:StorageDaemon] UpgradeEl2ToEl4AuthType: >>> ENTER <<< userId=%{public}u", userId);
+#ifdef USER_CRYPTO_MANAGER
     KeyType types[] = {EL2_KEY, EL3_KEY, EL4_KEY};
     for (auto type : types) {
         auto elKey = KeyManager::GetInstance().GetUserElKey(userId, type, false);
@@ -1933,7 +1944,15 @@ void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId, const std::vect
             LOGI("[L1:StorageDaemon] Upgrade EL%{public}u success", type);
         }
     }
+#endif
+    LOGI("[L1:StorageDaemon] UpgradeEl2ToEl4AuthType: <<< EXIT <<<");
+}
 
+void StorageDaemon::UpgradeEl5AuthType(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGI("[L1:StorageDaemon] UpgradeEl5AuthType: >>> ENTER <<< userId=%{public}u", userId);
+#ifdef USER_CRYPTO_MANAGER
     auto el5Key = KeyManager::GetInstance().GetUserElKey(userId, EL5_KEY, false);
     if (el5Key != nullptr && el5Key->NeedUpgradeAuthType()) {
         uint64_t secureUid = 0;
@@ -1963,7 +1982,7 @@ void StorageDaemon::CheckAndUpgradeUserAuthType(uint32_t userId, const std::vect
         }
     }
 #endif
-    LOGI("[L1:StorageDaemon] CheckAndUpgradeUserAuthType: <<< EXIT <<<");
+    LOGI("[L1:StorageDaemon] UpgradeEl5AuthType: <<< EXIT <<<");
 }
 } // namespace StorageDaemon
 } // namespace OHOS
