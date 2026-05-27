@@ -32,7 +32,8 @@ std::shared_ptr<StorageDaemon::StorageDaemonProvider> storageDaemonProvider =
 
 bool MountExtFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_MOUNT_IN_STRING_IN_STRING_IN_STRING_IN_UNSIGNED_LONG_IN_STRING);
+    uint32_t code = static_cast<uint32_t>(
+        IStorageDaemonIpcCode::COMMAND_MOUNT_IN_STRING_IN_STRING_IN_STRING_IN_UNSIGNED_LONG_IN_STRING);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);

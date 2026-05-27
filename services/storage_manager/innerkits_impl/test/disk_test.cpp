@@ -67,6 +67,12 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
     EXPECT_EQ(result7, vendor);
     auto result8 = disk.GetSysPath();
     EXPECT_EQ(result8, sysPath);
+    auto result9 = disk.GetRemovable();
+    EXPECT_EQ(result9, removable);
+    auto result10 = disk.GetExtraInfo();
+    EXPECT_EQ(result10, extraInfo);
+    auto result11 = disk.GetVolumeIds();
+    EXPECT_EQ(result11, volumeIds);
     disk.SetDiskType(diskType);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Get_0000";
 }
