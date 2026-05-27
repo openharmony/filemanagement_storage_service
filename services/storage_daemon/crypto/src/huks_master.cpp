@@ -771,18 +771,37 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
 bool HuksMaster::GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer)
 {
     LOGI("[L8:HuksMaster] GetHuksVersion: >>> ENTER <<<");
-    majorVer = 1;
-    minorVer = 2;
+#ifdef HUKS_IDL_ENVIRONMENT
+    auto &proxy = GetInstance().hksHdiProxyInstance_;
+    if (proxy == nullptr) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< hksHdiProxyInstance_ is nullptr");
+        return false;
+    }
+    if (proxy->GetVersion == nullptr) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< GetVersion is nullptr");
+        return false;
+    }
+    auto ret = proxy->GetVersion(proxy, &majorVer, &minorVer);
+    if (ret != HKS_SUCCESS) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< GetVersion failed, ret %{public}d", ret);
+        return false;
+    }
     LOGI("[L8:HuksMaster] GetHuksVersion: <<< EXIT SUCCESS <<< majorVer=%{public}u, minorVer=%{public}u",
          majorVer, minorVer);
     return true;
+#endif
+    LOGI("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< HUKS_IDL_ENVIRONMENT not defined");
+    return false;
 }
 
 bool HuksMaster::IsSupportNewAuthType()
 {
     uint32_t majorVer = 0;
     uint32_t minorVer = 0;
-    GetHuksVersion(majorVer, minorVer);
+    if (!GetHuksVersion(majorVer, minorVer)) {
+        LOGI("[L8:HuksMaster] IsSupportNewAuthType: GetHuksVersion failed, support=false");
+        return false;
+    }
     bool support = (majorVer >= 1 && minorVer >= 2);
     LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);
     return support;
