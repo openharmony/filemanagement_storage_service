@@ -285,5 +285,72 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKey_001, TestSize.Level1)
     EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
     GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 end";
 }
+
+HWTEST_F(HuksMasterTest, HuksMaster_GetHuksVersion_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_GetHuksVersion_001 start";
+    uint32_t majorVer = 0;
+    uint32_t minorVer = 0;
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
+    EXPECT_FALSE(HuksMaster::GetHuksVersion(majorVer, minorVer));
+
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->GetVersion = nullptr;
+        EXPECT_FALSE(HuksMaster::GetHuksVersion(majorVer, minorVer));
+    }
+
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_FALSE(HuksMaster::GetHuksVersion(majorVer, minorVer));
+    GTEST_LOG_(INFO) << "HuksMaster_GetHuksVersion_001 end";
+}
+
+HWTEST_F(HuksMasterTest, HuksMaster_GetHuksVersion_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_GetHuksVersion_002 start";
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    uint32_t majorVer = 0;
+    uint32_t minorVer = 0;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        EXPECT_TRUE(HuksMaster::GetHuksVersion(majorVer, minorVer));
+        EXPECT_GE(majorVer, 1u);
+        EXPECT_GE(minorVer, 1u);
+    }
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    GTEST_LOG_(INFO) << "HuksMaster_GetHuksVersion_002 end";
+}
+
+HWTEST_F(HuksMasterTest, HuksMaster_IsSupportNewAuthType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_IsSupportNewAuthType_001 start";
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
+    EXPECT_FALSE(HuksMaster::IsSupportNewAuthType());
+
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->GetVersion = nullptr;
+        EXPECT_FALSE(HuksMaster::IsSupportNewAuthType());
+    }
+
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_FALSE(HuksMaster::IsSupportNewAuthType());
+    GTEST_LOG_(INFO) << "HuksMaster_IsSupportNewAuthType_001 end";
+}
+
+HWTEST_F(HuksMasterTest, HuksMaster_IsSupportNewAuthType_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_IsSupportNewAuthType_002 start";
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        uint32_t majorVer = 0;
+        uint32_t minorVer = 0;
+        HuksMaster::GetHuksVersion(majorVer, minorVer);
+        bool support = HuksMaster::IsSupportNewAuthType();
+        bool expected = (majorVer >= 1 && minorVer >= 2);
+        EXPECT_EQ(support, expected);
+    }
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    GTEST_LOG_(INFO) << "HuksMaster_IsSupportNewAuthType_002 end";
+}
 } // OHOS::StorageDaemon
 #endif
