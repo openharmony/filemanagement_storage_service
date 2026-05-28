@@ -155,6 +155,8 @@ public:
     virtual int32_t ReadPartitionTable(const std::string &devPath,
                                        std::string &output,
                                        int32_t &maxVolume) override;
+    virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
+    virtual int32_t EjectCD(const std::string &devPath) override;
     virtual int32_t Mount(const std::string &devPath,
                           const std::string &mountPath,
                           const std::string &fsType,

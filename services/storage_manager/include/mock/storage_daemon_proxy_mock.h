@@ -185,6 +185,8 @@ public:
     virtual int32_t DeletePartitionInfo(const std::string &devPath, int32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
                                     const std::string &volumeName, bool quickFormat = true) override;
+    virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
+    virtual int32_t EjectCD(const std::string &devPath) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

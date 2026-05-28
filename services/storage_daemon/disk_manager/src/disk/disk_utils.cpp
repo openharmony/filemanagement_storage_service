@@ -23,12 +23,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
+#include <scsi/sg.h>
 #include <unistd.h>
+#include <linux/cdrom.h>
 #include "storage_service_errno.h"
 #include "securec.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -42,6 +45,14 @@ constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MIN = 0;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 60;
+constexpr int32_t DEF_TIMEOUT = 120000;
+constexpr int32_t SENSE_BUFF_LEN = 64;
+constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
+constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
+constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
+constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
+constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
+
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
     {"vfat", "newfs_msdos"},
@@ -108,6 +119,10 @@ int32_t DiskUtils::CreateBlockDeviceNode(const std::string& devPath,
 
     dev_t dev = makedev(static_cast<unsigned int>(major), static_cast<unsigned int>(minor));
     if (mknod(devPath.c_str(), mode | S_IFBLK, dev) < 0) {
+        if (errno == EEXIST) {
+            LOGW("DiskUtils::CreateBlockDeviceNode node already exists, path=%{public}s", devPath.c_str());
+            return E_OK;
+        }
         LOGE("DiskUtils::CreateBlockDeviceNode mknod failed, path=%{public}s, errno=%{public}d",
              devPath.c_str(), errno);
         return E_ERR;
@@ -381,6 +396,190 @@ std::vector<std::string> DiskUtils::GetFormatCMD(const std::string &fsType, cons
         }
     }
     return cmd;
+}
+
+int ExecuteScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
+{
+    LOGD("ExecuteScsiCmd: >>> ENTER <<< fd=%{public}d", fd);
+    sg_io_hdr_t ioHdr;
+    uint8_t sense[SENSE_BUFF_LEN];
+
+    if (memset_s(&ioHdr, sizeof(ioHdr), 0, sizeof(ioHdr)) != 0) {
+        LOGE("ExecuteScsiCmd: <<< EXIT FAILED <<< ioHdr memset_s failed");
+        return E_ERR;
+    }
+    if (memset_s(sense, sizeof(sense), 0, sizeof(sense)) != 0) {
+        LOGE("ExecuteScsiCmd: <<< EXIT FAILED <<< sense memset_s failed");
+        return E_ERR;
+    }
+    ioHdr.interface_id = 'S';
+    ioHdr.dxfer_direction = SG_DXFER_FROM_DEV;
+    ioHdr.cmdp = cdb;
+    ioHdr.cmd_len = cdbLen;
+    ioHdr.dxferp = dxferp;
+    ioHdr.dxfer_len = static_cast<unsigned int>(dxferLen);
+    ioHdr.mx_sb_len = sizeof(sense);
+    ioHdr.sbp = sense;
+    ioHdr.timeout = DEF_TIMEOUT;
+    if (ioctl(fd, SG_IO, &ioHdr) < 0) {
+        LOGE("ExecuteScsiCmd: <<< EXIT FAILED <<< ioctl SG_IO failed");
+        return E_ERR;
+    }
+    if ((ioHdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
+        LOGE("ExecuteScsiCmd: <<< EXIT FAILED <<< SG_INFO not OK");
+        return E_ERR;
+    }
+    LOGD("ExecuteScsiCmd: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int ReadCDDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len)
+{
+    LOGI("ReadCDDiscInfo: >>> ENTER <<< diskPath=%{public}s, len=%{public}d", diskPath.c_str(), len);
+    char realPath[PATH_MAX] = { 0 };
+    if (realpath(diskPath.c_str(), realPath) == nullptr) {
+        LOGE("ReadCDDiscInfo: <<< EXIT FAILED <<< realpath failed");
+        return E_ERR;
+    }
+    FILE* file = fopen(realPath, "rb");
+    if (file == nullptr) {
+        LOGE("ReadCDDiscInfo: <<< EXIT FAILED <<< fopen failed, errno=%{public}d", errno);
+        return E_ERR;
+    }
+    int fd = fileno(file);
+    if (fd < 0) {
+        LOGE("ReadCDDiscInfo: <<< EXIT FAILED <<< fileno error=%{public}d", errno);
+        (void)fclose(file);
+        return E_ERR;
+    }
+
+    uint8_t cdb[READ_DISC_INFO_CDB_LEN] = { cmdIndex };
+    cdb[CDB_ALLOCATION_LENGTH_HIGH] = static_cast<uint8_t>(static_cast<uint32_t>(len) >> CDB_ALLOCATION_LENGTH_LOW);
+    cdb[CDB_ALLOCATION_LENGTH_LOW] = static_cast<uint8_t>(static_cast<uint32_t>(len) & MAX_ALLOC_LEN);
+
+    int ret = ExecuteScsiCmd(fd, cdb, sizeof(cdb), buf, len);
+    if (ret != 0) {
+        LOGE("ReadCDDiscInfo: <<< EXIT FAILED <<< ExecuteScsiCmd failed, err=%{public}d", ret);
+        (void)fclose(file);
+        return ret;
+    }
+    (void)fclose(file);
+    LOGI("ReadCDDiscInfo: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int GetCDDiskStatus(const char *device, int &status)
+{
+    char realPath[PATH_MAX] = { 0 };
+    if (realpath(device, realPath) == nullptr) {
+        LOGE("realpath failed.");
+        return E_FILE_PATH_INVALID;
+    }
+    FILE* file = fopen(realPath, "rb");
+    if (file == nullptr) {
+        LOGE("fopen failed errStr:%{public}s errno:%{public}d", strerror(errno), errno);
+        return E_SYS_KERNEL_ERR;
+    }
+    int fd = fileno(file);
+    if (fd < 0) {
+        LOGE("fileno failed, errStr:%{public}s errno:%{public}d", strerror(errno), errno);
+        (void)fclose(file);
+        return E_SYS_KERNEL_ERR;
+    }
+
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int slot = INT_MAX;
+    status = ioctl(fd, CDROM_DRIVE_STATUS, &slot);
+    if (status < 0) {
+        LOGE("CD status:%{public}d errStr:%{public}s errno:%{public}d", status, strerror(errno), errno);
+        (void)fclose(file);
+        return E_ERR;
+    }
+    (void)fclose(file);
+    auto delay = StorageService::StorageRadar::ReportDuration("GET CD STATUS: CD ROM",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, 0);
+    LOGW("SD_DURATION: GET CD STATUS: device=%{public}s, delay = %{public}s", device, delay.c_str());
+    return E_OK;
+}
+
+int IsCDExist(const std::string &diskPath, bool &isCDExist)
+{
+    LOGI("IsCDExist: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    int status = 0;
+    isCDExist = false;
+    int ret = GetCDDiskStatus(diskPath.c_str(), status);
+    if (ret != E_OK) {
+        LOGE("Unknown cd status !");
+        return E_ERR;
+    }
+    isCDExist = (status == CDS_DRIVE_NOT_READY || status == CDS_DISC_OK);
+    LOGI("IsCDExist:Current CD statue, IsCDExist: %{public}d", isCDExist);
+    return E_OK;
+}
+
+int IsCDBlank(const std::string &diskPath, bool &isCDBlank)
+{
+    isCDBlank = false;
+    uint8_t buf[MAX_BUF];
+    if (ReadCDDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) == E_OK) {
+        uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
+        isCDBlank = (discStatus == 0);
+        LOGI("IsCDBlank: <<< EXIT SUCCESS <<< isBlank=%{public}d", isCDBlank);
+        return E_OK;
+    }
+    LOGE("IsCDBlank:Unable to read disc information.");
+    return E_ERR;
+}
+
+int32_t DiskUtils::QueryCDStatus(const std::string &devPath, int32_t &status)
+{
+    LOGI("QueryCDStatus: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+
+    bool isCDExist = false;
+
+    int existRet = IsCDExist(devPath, isCDExist);
+    if (existRet != E_OK) {
+        LOGE("QueryCDStatus: IsCDExist failed, ret=%{public}d", existRet);
+        return E_ERR;
+    }
+
+    if (!isCDExist) {
+        status = 0;
+        LOGI("QueryCDStatus: No CD found, status = %{public}d", status);
+        return E_OK;
+    }
+
+    bool isCDBlank = false;
+    int blankRet = IsCDBlank(devPath, isCDBlank);
+    if (blankRet != E_OK) {
+        LOGE("QueryCDStatus: IsCDBlank failed, ret=%{public}d", blankRet);
+        return E_ERR;
+    }
+
+    status = (isCDExist ? 1 : 0) | ((isCDBlank ? 1 : 0) << 1);
+    LOGI("QueryCDStatus: <<< EXIT SUCCESS <<< status = %{public}d", status);
+    return E_OK;
+}
+
+int32_t DiskUtils::EjectCD(const std::string &devPath)
+{
+    LOGI("EjectCD: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {
+        "eject",
+        "-s",
+        devPath
+    };
+    int res = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("EjectCD output: %{public}s", str.c_str());
+    }
+    if (res != E_OK) {
+        LOGE("EjectCD: <<< EXIT FAILED <<< ForkExec eject failed, err=%{public}d", res);
+        return res;
+    }
+    LOGI("EjectCD: <<< EXIT SUCCESS <<<");
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

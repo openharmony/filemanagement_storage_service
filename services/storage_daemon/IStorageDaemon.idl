@@ -186,4 +186,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [in] String volumeName,
                                         [in] boolean quickFormat);
      [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
+     [ipccode 252] void EjectCD([in] String devPath);
+     [ipccode 253] void QueryCDStatus([in] String devPath, [out] int status);
 }

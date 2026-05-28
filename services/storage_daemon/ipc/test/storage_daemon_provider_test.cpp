@@ -3168,5 +3168,47 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartitionInf
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_002 end";
 }
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryCDStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryCDStatus_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    int32_t status = 0;
+    auto ret = storageDaemonProviderTest_->QueryCDStatus(devPath, status);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryCDStatus_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryCDStatus_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryCDStatus_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/../sr0";
+    int32_t status = 0;
+    auto ret = storageDaemonProviderTest_->QueryCDStatus(devPath, status);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryCDStatus_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EjectCD_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EjectCD_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "";
+    auto ret = storageDaemonProviderTest_->EjectCD(devPath);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EjectCD_001 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EjectCD_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EjectCD_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/../sr0";
+    auto ret = storageDaemonProviderTest_->EjectCD(devPath);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EjectCD_002 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

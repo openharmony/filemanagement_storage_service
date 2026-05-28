@@ -19,12 +19,46 @@
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
+#include <scsi/sg.h>
 
 #include "disk_manager/disk/disk_utils.h"
 #include "mock/disk_utils_mock.h"
 #include "mock/file_utils_mock.h"
 #include "storage_service_errno.h"
 #include "utils/disk_utils.h"
+
+#include "mock/disk_func_define.h"
+#include "mock/disk_func_undef.h"
+#include "securec.h"
+#include <cstring>
+#include <cstdarg>
+
+int g_memsetRet = 0;
+int g_ioctlRet = 0;
+int g_ioctlInfo = 0;
+
+extern "C" errno_t memset_s(void *dest, size_t destMax, int value, size_t count)
+{
+    if (g_memsetRet != 0) {
+        return g_memsetRet;
+    }
+    (void)memset(dest, value, count);
+    return 0;
+}
+
+extern "C" int ioctl(int fd, int request, ...)
+{
+    (void)fd;
+    va_list args;
+    va_start(args, request);
+    void* arg = va_arg(args, void*);
+    va_end(args);
+    if (arg != nullptr) {
+        sg_io_hdr_t* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+        ioHdr->info = g_ioctlInfo;
+    }
+    return g_ioctlRet;
+}
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -63,6 +97,10 @@ void ExtDiskUtilsTest::SetUp(void)
 
     fileUtilMoc_ = std::make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+
+    g_memsetRet = 0;
+    g_ioctlRet = 0;
+    g_ioctlInfo = 0;
 }
 
 void ExtDiskUtilsTest::TearDown(void)
@@ -625,6 +663,41 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_UnsupportedFsType, TestSize.Level1)
     std::string volName = "test";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_TRUE(cmd.empty());
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_IoHdrMemsetFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_IoHdrMemsetFailed start";
+    g_memsetRet = E_ERR;
+    int fd = 0;
+    uint8_t cdb[10] = {0};
+    uint8_t buf[64] = {0};
+    EXPECT_EQ(ExecuteScsiCmd(fd, cdb, sizeof(cdb), buf, sizeof(buf)), E_ERR);
+    g_memsetRet = 0;
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_IoHdrMemsetFailed end";
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_IoctlFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_IoctlFailed start";
+    g_ioctlRet = -1;
+    int fd = 0;
+    uint8_t cdb[10] = {0};
+    uint8_t buf[64] = {0};
+    EXPECT_EQ(ExecuteScsiCmd(fd, cdb, sizeof(cdb), buf, sizeof(buf)), E_ERR);
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_IoctlFailed end";
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_Success start";
+    g_ioctlRet = 0;
+    g_ioctlInfo = SG_INFO_OK;
+    int fd = 0;
+    uint8_t cdb[10] = {0};
+    uint8_t buf[64] = {0};
+    EXPECT_EQ(ExecuteScsiCmd(fd, cdb, sizeof(cdb), buf, sizeof(buf)), E_OK);
+    GTEST_LOG_(INFO) << "ExecuteScsiCmd_Success end";
 }
 
 } // namespace StorageDaemon
