@@ -336,6 +336,11 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
 
+std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type, bool isSave)
+{
+    return nullptr;
+}
+
 bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
