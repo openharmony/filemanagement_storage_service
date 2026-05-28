@@ -78,13 +78,10 @@ constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
 constexpr size_t MAX_TYPE_LEN = 64;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
-#endif
-
-#ifdef DISK_MANAGER
 constexpr size_t MAX_MOUNT_DATA_LEN = 1024;
 #endif
 
@@ -2550,7 +2547,7 @@ int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
         return E_PARAMS_INVALID;
     }
-#ifdef PC_USER_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     if (ret == E_OK) {
@@ -2584,7 +2581,7 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< typeCode empty");
         return E_PARAMS_INVALID;
     }
-#ifdef PC_USER_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
          devPath.c_str(), partitionNum);
     int32_t ret = DiskUtils::CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
@@ -2610,7 +2607,7 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, i
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< partitionNum invalid");
         return E_PARAMS_INVALID;
     }
-#ifdef PC_USER_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
          devPath.c_str(), partitionNum);
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
@@ -2637,7 +2634,7 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
         return E_PARAMS_INVALID;
     }
-#ifdef PC_USER_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
          ", volumeName=%{public}s", devPath.c_str(), fsType.c_str(), volumeName.c_str());
     int32_t ret = DiskUtils::FormatPartition(devPath, fsType, volumeName, quickFormat);
