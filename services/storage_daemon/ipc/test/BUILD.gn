@@ -177,6 +177,7 @@ ohos_unittest("storage_manager_clt_test") {
 
   external_deps = [
     "c_utils:utils",
+    "cJSON:cjson",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -218,6 +219,10 @@ ohos_unittest("storage_daemon_provider_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
+  if (enable_disk_manager) {
+    defines += [ "DISK_MANAGER" ]
+  }
+
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/utils",
@@ -226,7 +231,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/test",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/mock",
-    "${storage_daemon_path}/scan_device/src",
   ]
 
   sources = [
@@ -249,7 +253,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
-    "${storage_daemon_path}/scan_device/src/scan_device.cpp",
+    "${storage_daemon_path}/disk_manager/src/disk/scan_device.cpp",
     "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_daemon_path}/ipc/test/hi_audit_test.cpp",
     "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
@@ -260,9 +264,9 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/mock/user_manager_mock.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
+    "${storage_daemon_path}/volume/src/process.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
-    "${storage_daemon_path}/volume/src/process.cpp",
     "${storage_daemon_path}/utils/disk_utils.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",

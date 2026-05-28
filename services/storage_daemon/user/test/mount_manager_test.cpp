@@ -819,6 +819,24 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_002
+ * @tc.desc: Verify the UMountDisShareFile function with vector parameter.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_002 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(1));
+    errno = 5;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_002 end";
+}
+
+/**
  * @tc.name: Storage_Manager_MountManagerTest_UMountDfsDocs_002
  * @tc.desc: Verify the UMountDfsDocs function when UMount2 fails.
  * @tc.type: FUNC

@@ -14,7 +14,9 @@
  */
 
 #include <climits>
+#include <future>
 #include <libgen.h>
+#include <thread>
 
 #include "disk_manager/disk/disk_utils.h"
 
@@ -39,6 +41,12 @@ constexpr int32_t DEVICE_MAJOR_MIN = 0;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MIN = 0;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
+constexpr int32_t WAIT_THREAD_TIMEOUT_S = 60;
+const std::map<std::string, std::string> formatTypeMap_ = {
+    {"exfat", "mkfs.exfat"},
+    {"vfat", "newfs_msdos"},
+    {"ext4", "mke2fs"},
+};
 
 static bool IsValidBlockDevicePath(const std::string& devPath)
 {
@@ -202,5 +210,177 @@ int32_t DiskUtils::Partition(const std::string& diskPath,
     return E_OK;
 }
 
+int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
+{
+    std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
+    std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
+    std::thread partitionThread([devPath, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec get partition");
+        std::vector<std::string> temp;
+        std::vector<std::string> cmd = {"sgdisk", "-p", devPath};
+        int32_t res = ForkExec(cmd, &temp);
+        for (auto str : temp) {
+            LOGI("get partition output: %{public}s", str.c_str());
+        }
+        p.set_value({res, std::move(temp)});
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
+        partitionThread.detach();
+        return E_GET_PARTITION_TIMEOUT;
+    }
+    auto result = future.get();
+    partitionThread.join();
+    int32_t ret = result.first;
+    if (ret != E_OK) {
+        LOGE("[L3:DiskInfo] GetPartitionTableInfo: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
+        return E_GET_PARTITION_ERROR;
+    }
+    std::vector<std::string> lines = result.second;
+    for (const auto &line : lines) {
+        execRet += line;
+        execRet += "\n";
+    }
+    return E_OK;
+}
+
+int32_t DiskUtils::CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                   int64_t endSector, const std::string &typeCode)
+{
+    if (!IsValidBlockDevicePath(devPath)) {
+        LOGE("DiskUtils::CreatePartition invalid devPath");
+        return E_PARAMS_INVALID;
+    }
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread partitionThread([devPath, partitionNum, startSector, endSector, typeCode,
+                                 p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec create partition");
+        std::string partNum = std::to_string(partitionNum);
+        std::string sector = partNum + ":" + std::to_string(startSector) + ":" + std::to_string(endSector);
+        std::string code = partNum + ":" + typeCode;
+        std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, devPath};
+        std::vector<std::string> output;
+        int32_t ret = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("create partition output: %{public}s", str.c_str());
+        }
+        p.set_value(ret);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskUtils] exec create partition: <<< EXIT FAILED <<< timed out");
+        partitionThread.detach();
+        return E_CREATE_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    partitionThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskUtils] CreatePartitionInfo: <<< EXIT FAILED <<< create partition failed, err=%{public}d", ret);
+        return E_CREATE_PARTITION_ERROR;
+    }
+    LOGI("[L3:DiskUtils] CreatePartitionInfo: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+{
+    if (!IsValidBlockDevicePath(devPath)) {
+        LOGE("DiskUtils::DeletePartitionInfo invalid devPath");
+        return E_PARAMS_INVALID;
+    }
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread partitionThread([devPath, partitionNum, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec delete partition");
+        std::vector<std::string> cmd = {SGDISK_PATH, "-d", std::to_string(partitionNum), devPath};
+        std::vector<std::string> output;
+        int32_t ret = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("delete partition output: %{public}s", str.c_str());
+        }
+        p.set_value(ret);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskUtils] exec delete partition: <<< EXIT FAILED <<< timed out");
+        partitionThread.detach();
+        return E_DELETE_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    partitionThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskUtils] DeletePartitionInfo: <<< EXIT FAILED <<< delete partition failed, err=%{public}d", ret);
+        return E_DELETE_PARTITION_ERROR;
+    }
+    LOGI("[L3:DiskUtils] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::FormatPartition(const std::string &devPath, const std::string &fsType,
+                                   const std::string &volumeName, bool quickFormat)
+{
+    if (!IsValidBlockDevicePath(devPath)) {
+        LOGE("DiskUtils::FormatPartitionInfo invalid devPath");
+        return E_PARAMS_INVALID;
+    }
+    if (formatTypeMap_.find(fsType) == formatTypeMap_.end()) {
+        LOGE("DiskUtils::FormatPartitionInfo unsupported fsType=%{public}s", fsType.c_str());
+        return E_FORMAT_PARTITION_NOT_SUPPORT;
+    }
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread formatThread([devPath, fsType, volumeName, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec format partition");
+        std::vector<std::string> cmd = GetFormatCMD(fsType, devPath, volumeName);
+        if (!cmd.empty()) {
+            std::vector<std::string> output;
+            int32_t ret = ForkExec(cmd, &output);
+            for (auto str : output) {
+                LOGI("format partition output: %{public}s", str.c_str());
+            }
+            p.set_value(ret);
+        } else {
+            p.set_value(E_FORMAT_PARTITION_ERROR);
+        }
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskUtils] exec format partition: <<< EXIT FAILED <<< timed out");
+        formatThread.detach();
+        return E_FORMAT_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    formatThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskUtils] FormatPartitionInfo: <<< EXIT FAILED <<< format partition failed, err=%{public}d", ret);
+        return E_FORMAT_PARTITION_ERROR;
+    }
+    LOGI("[L3:DiskUtils] FormatPartitionInfo: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+std::vector<std::string> DiskUtils::GetFormatCMD(const std::string &fsType, const std::string &devPath,
+                                                 const std::string &volName)
+{
+    std::vector<std::string> cmd;
+    if (fsType == "vfat") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, "-A", devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-A", devPath};
+        }
+    } else if (fsType == "ext4") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, "-t", "ext4", devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, "-t", "ext4", devPath};
+        }
+    } else if (fsType == "exfat") {
+        if (volName.empty()) {
+            cmd = {formatTypeMap_.find(fsType)->second, devPath};
+        } else {
+            cmd = {formatTypeMap_.find(fsType)->second, "-L", volName, devPath};
+        }
+    }
+    return cmd;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

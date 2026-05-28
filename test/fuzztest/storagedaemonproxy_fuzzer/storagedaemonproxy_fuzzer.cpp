@@ -265,6 +265,20 @@ bool ResetSecretWithRecoveryKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& pro
     return true;
 }
 
+[[maybe_unused]]bool UMountDisShareFileVecFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(int)) {
+        return true;
+    }
+
+    std::vector<std::string> distributeDirs;
+    string distributeDir(reinterpret_cast<const char *>(data), size);
+    distributeDirs.push_back(distributeDir);
+    proxy->UMountDisShareFile(distributeDirs);
+    return true;
+}
+
 void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
 {
     CreateRecoverKeyFuzzTest(proxy, data, size);

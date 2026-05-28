@@ -21,10 +21,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include "scan_device.h"
+#include "disk_manager/disk/scan_device.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+using json = nlohmann::json;
 using namespace testing;
 using namespace testing::ext;
 
@@ -93,7 +94,6 @@ void ScanDeviceTest::CreateDeviceDir(const std::string &deviceName)
     CreateFileWithContent(devicePath + "/size", "2097152\n");
     CreateFileWithContent(devicePath + "/device/vendor", "TestVendor\n");
     CreateFileWithContent(devicePath + "/device/model", "TestModel\n");
-    CreateFileWithContent(devicePath + "/device/state", "running\n");
     CreateFileWithContent(devicePath + "/queue/rotational", "0\n");
     CreateFileWithContent(devicePath + "/removable", "0\n");
     CreateFileWithContent(devicePath + "/dev", "8:16\n");
@@ -140,42 +140,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_002, TestSi
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_002 end";
 }
 
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetDataDisks_003
- * @tc.desc: Test scanning ignores nvme0* system disks
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_003 start";
-
-    ScanDevice scanner(mockSysPath);
-    std::vector<BlockInfo> result = scanner.GetDataDisks();
-    for (const auto &disk : result) {
-        EXPECT_TRUE(disk.pciePath.find("nvme0") == std::string::npos);
-    }
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_003 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetDataDisks_004
- * @tc.desc: Test scanning ignores invalid nvme format
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_004 start";
-
-    ScanDevice scanner(mockSysPath);
-    std::vector<BlockInfo> result = scanner.GetDataDisks();
-    for (const auto &disk : result) {
-        EXPECT_TRUE(disk.pciePath.empty() || disk.pciePath.find("nvme") != 0 || disk.pciePath.find("nvme0") == 0 ||
-                    (disk.pciePath.find("nvme") == 0 && disk.pciePath.find('n') > 4));
-    }
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_004 end";
-}
 
 /**
  * @tc.name: Storage_Service_ScanDeviceTest_GetDataDisks_005
@@ -554,124 +518,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetInterfaceType_001, Te
 }
 
 /**
- * @tc.name: Storage_Service_ScanDeviceTest_GetDiskState_001
- * @tc.desc: Test getting disk state
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskState_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskState_001 start";
-
-    CreateDeviceDir("sdmock_b");
-
-    ScanDevice scanner(mockSysPath);
-    std::string state = scanner.GetDiskState("sdmock_b");
-    EXPECT_EQ(state, "running");
-
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskState_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetMediaType_001
- * @tc.desc: Test getting media type - SSD
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_001 start";
-
-    CreateDeviceDir("sdmock_b");
-
-    ScanDevice scanner(mockSysPath);
-    MediaType type = scanner.GetMediaType("sdmock_b", false);
-    EXPECT_EQ(type, MediaType::SSD);
-
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetMediaType_002
- * @tc.desc: Test getting media type - HDD
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_002 start";
-
-    CreateDeviceDir("sdmock_c");
-    CreateFileWithContent(mockSysPath + "/sdmock_c/queue/rotational", "1\n");
-
-    ScanDevice scanner(mockSysPath);
-    MediaType type = scanner.GetMediaType("sdmock_c", false);
-    EXPECT_EQ(type, MediaType::HDD);
-
-    DeleteDeviceDir("sdmock_c");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetMediaType_003
- * @tc.desc: Test getting media type - NVMe
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_003 start";
-
-    ScanDevice scanner(mockSysPath);
-    MediaType type = scanner.GetMediaType("nvme1n1", true);
-    EXPECT_EQ(type, MediaType::SSD);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_003 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetMediaType_004
- * @tc.desc: Test GetMediaType when rotational node read fails
- * @tc.required: A
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_004 start";
-    std::string devicePath = mockSysPath + "/sdmock_a";
-    mkdir(devicePath.c_str(), 0755);
-
-    ScanDevice scanner(mockSysPath);
-    MediaType type = scanner.GetMediaType("sdmock_a", false);
-    EXPECT_EQ(type, MediaType::UNKNOWN);
-
-    system(("rm -rf " + devicePath).c_str());
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_004 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetPciePath_001
- * @tc.desc: Test getting PCIe path
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetPciePath_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPciePath_001 start";
-
-    CreateDeviceDir("sdmock_b");
-    std::string linkTarget =
-        "/sys/devices/pci0000:00/0000:00:02.0/0000:01:00.0/host0/target0:00:0/0:00:00:0/block/sdmock_b";
-    std::string devicePath = mockSysPath + "/sdmock_b";
-    system(("rm -rf " + devicePath).c_str());
-    symlink(linkTarget.c_str(), devicePath.c_str());
-
-    ScanDevice scanner(mockSysPath);
-    std::string pciePath = scanner.GetPciePath("sdmock_b");
-    EXPECT_FALSE(pciePath.empty());
-    EXPECT_TRUE(pciePath.find("pci0000:00") != std::string::npos);
-
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPciePath_001 end";
-}
-
-/**
  * @tc.name: Storage_Service_ScanDeviceTest_GetBlockInfo_001
  * @tc.desc: Test getting complete block device info
  * @tc.type: FUNC
@@ -691,8 +537,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetBlockInfo_001, TestSi
     EXPECT_EQ(blockInfo.interfaceType, "SATA");
     EXPECT_EQ(blockInfo.vendor, "TestVendor");
     EXPECT_EQ(blockInfo.model, "TestModel");
-    EXPECT_EQ(blockInfo.state, "running");
-    EXPECT_EQ(blockInfo.mediaType, MediaType::SSD);
 
     DeleteDeviceDir("sdmock_b");
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetBlockInfo_001 end";
@@ -1061,7 +905,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_001, TestSize.
     CreateDeviceDir("sdmock_b");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_b");
+    std::string diskId = scanner.GetDiskId("sdmock_b", false);
     EXPECT_EQ(diskId, "disk-8-16");
 
     DeleteDeviceDir("sdmock_b");
@@ -1080,7 +924,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_002, TestSize.
     CreateFileWithContent(mockSysPath + "/sdmock_c/dev", "invalid_format\n");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_c");
+    std::string diskId = scanner.GetDiskId("sdmock_c", false);
     EXPECT_TRUE(diskId.empty());
 
     DeleteDeviceDir("sdmock_c");
@@ -1099,7 +943,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_003, TestSize.
     CreateFileWithContent(mockSysPath + "/sdmock_c/dev", "8:32\n");
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("sdmock_c");
+    std::string diskId = scanner.GetDiskId("sdmock_c", false);
     EXPECT_EQ(diskId, "disk-8-32");
 
     DeleteDeviceDir("sdmock_c");
@@ -1107,107 +951,28 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_003, TestSize.
 }
 
 /**
- * @tc.name: Storage_Service_ScanDeviceTest_GetUsedBytes_001
- * @tc.desc: Test getting used bytes
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetUsedBytes_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_001 start";
-
-    CreateDeviceDir("sdmock_b");
-    std::string part1Dir = mockSysPath + "/sdmock_b/sdmock_b1";
-    mkdir(part1Dir.c_str(), 0755);
-    CreateFileWithContent(part1Dir + "/size", "1048576\n");
-
-    std::string part2Dir = mockSysPath + "/sdmock_b/sdmock_b2";
-    mkdir(part2Dir.c_str(), 0755);
-    CreateFileWithContent(part2Dir + "/size", "1048576\n");
-
-    ScanDevice scanner(mockSysPath);
-    uint64_t usedBytes = scanner.GetUsedBytes("sdmock_b");
-    EXPECT_EQ(usedBytes, 1073741824ULL);
-
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetUsedBytes_002
- * @tc.desc: Test GetUsedBytes ignores subdirectories not ending with digit
+ * @tc.name: Storage_Service_ScanDeviceTest_GetDiskId_NVME
+ * @tc.desc: Test GetDiskId with uevent node containing newline
  * @tc.required: A
  */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetUsedBytes_002, TestSize.Level1)
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_NVME, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_002 start";
-    CreateDeviceDir("sdmock_b");
-    std::string invalidDir = mockSysPath + "/sdmock_b/sdmock_b_invalid";
-    mkdir(invalidDir.c_str(), 0755);
-    CreateFileWithContent(invalidDir + "/size", "1000\n");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME start";
+    CreateDeviceDir("nvme1n1");
+    std::string diskFile = mockSysPath + "/nvme1n1/uevent";
+    FILE *fp = fopen(diskFile.c_str(), "w");
+    if (fp) {
+        fprintf(fp, "MAJOR=8\n");
+        fprintf(fp, "MINOR=32\n");
+        fclose(fp);
+    }
 
     ScanDevice scanner(mockSysPath);
-    uint64_t usedBytes = scanner.GetUsedBytes("sdmock_b");
-    EXPECT_EQ(usedBytes, 0);
+    std::string diskId = scanner.GetDiskId("nvme1n1", true);
+    EXPECT_EQ(diskId, "disk-8-32");
 
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetUsedBytes_003
- * @tc.desc: Test GetUsedBytes with nonexistent device returns 0
- * @tc.required: A
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetUsedBytes_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_003 start";
-    ScanDevice scanner(mockSysPath);
-    uint64_t usedBytes = scanner.GetUsedBytes("sdmock_b");
-    EXPECT_EQ(usedBytes, 0);
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetUsedBytes_003 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetAvailableBytes_001
- * @tc.desc: Test getting available bytes
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetAvailableBytes_001 start";
-
-    CreateDeviceDir("sdmock_b");
-    std::string part1Dir = mockSysPath + "/sdmock_b/sdmock_b1";
-    mkdir(part1Dir.c_str(), 0755);
-    CreateFileWithContent(part1Dir + "/size", "1048576\n");
-
-    ScanDevice scanner(mockSysPath);
-    uint64_t availableBytes = scanner.GetAvailableBytes("sdmock_b");
-    EXPECT_EQ(availableBytes, 536870912ULL);
-
-    DeleteDeviceDir("sdmock_b");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetAvailableBytes_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetAvailableBytes_002
- * @tc.desc: Test GetAvailableBytes when usedBytes > sizeBytes returns 0
- * @tc.required: A
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetAvailableBytes_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetAvailableBytes_002 start";
-    CreateDeviceDir("sdmock_c");
-    CreateFileWithContent(mockSysPath + "/sdmock_c/size", "1000\n");
-    std::string part1Dir = mockSysPath + "/sdmock_c/sdmock_c1";
-    mkdir(part1Dir.c_str(), 0755);
-    CreateFileWithContent(part1Dir + "/size", "2000\n");
-
-    ScanDevice scanner(mockSysPath);
-    uint64_t availableBytes = scanner.GetAvailableBytes("sdmock_c");
-    EXPECT_EQ(availableBytes, 0);
-
-    DeleteDeviceDir("sdmock_c");
+    DeleteDeviceDir("nvme1n1");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_NVME end";
 }
 
 /**
@@ -1279,7 +1044,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetPort_003, TestSize.Le
 
 /**
  * @tc.name: Storage_Service_ScanDeviceTest_NewFields_001
- * @tc.desc: Test new BlockInfo fields (diskId, usedBytes, availableBytes, devicePath, port)
+ * @tc.desc: Test new BlockInfo fields (diskId, devicePath, port)
  * @tc.type: FUNC
  */
 HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_NewFields_001, TestSize.Level1)
@@ -1298,8 +1063,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_NewFields_001, TestSize.
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(blockInfo.sizeBytes, 1073741824ULL);
     EXPECT_EQ(blockInfo.diskId, "disk-8-16");
-    EXPECT_EQ(blockInfo.usedBytes, 536870912ULL);
-    EXPECT_EQ(blockInfo.availableBytes, 536870912ULL);
     EXPECT_EQ(blockInfo.devicePath, "/dev/block/sdmock_b");
 
     DeleteDeviceDir("sdmock_b");
@@ -1694,15 +1457,9 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_ToJson_001, Te
     info.model = "TestModel";
     info.interfaceType = "SATA";
     info.rpm = 5400;
-    info.state = "running";
-    info.mediaType = MediaType::SSD;
     info.removable = false;
     info.serialNumber = "SN12345";
-    info.pciePath = "/sys/devices/pci0000:00";
-    info.location = "slot1";
     info.diskId = "disk-8-16";
-    info.usedBytes = 536870912ULL;
-    info.availableBytes = 536870912ULL;
     info.devicePath = "/dev/block/sda";
     info.port = "ata1";
 
@@ -1712,118 +1469,13 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_ToJson_001, Te
     EXPECT_EQ(j["model"].get<std::string>(), "TestModel");
     EXPECT_EQ(j["interfaceType"].get<std::string>(), "SATA");
     EXPECT_EQ(j["rpm"].get<uint32_t>(), 5400);
-    EXPECT_EQ(j["state"].get<std::string>(), "running");
-    EXPECT_EQ(j["mediaType"].get<std::string>(), "SSD");
     EXPECT_EQ(j["removable"].get<bool>(), false);
     EXPECT_EQ(j["serialNumber"].get<std::string>(), "SN12345");
-    EXPECT_EQ(j["pciePath"].get<std::string>(), "/sys/devices/pci0000:00");
-    EXPECT_EQ(j["location"].get<std::string>(), "slot1");
     EXPECT_EQ(j["diskId"].get<std::string>(), "disk-8-16");
-    EXPECT_EQ(j["usedBytes"].get<uint64_t>(), 536870912ULL);
-    EXPECT_EQ(j["availableBytes"].get<uint64_t>(), 536870912ULL);
     EXPECT_EQ(j["devicePath"].get<std::string>(), "/dev/block/sda");
     EXPECT_EQ(j["port"].get<std::string>(), "ata1");
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_ToJson_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_ToJson_Hdd
- * @tc.desc: Test BlockInfo serialization for HDD and UNKNOWN media types
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_ToJson_Hdd, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_ToJson_Hdd start";
-
-    BlockInfo info;
-    info.mediaType = MediaType::HDD;
-    json j = info.ToJson();
-    EXPECT_EQ(j["mediaType"].get<std::string>(), "HDD");
-
-    info.mediaType = MediaType::UNKNOWN;
-    j = info.ToJson();
-    EXPECT_EQ(j["mediaType"].get<std::string>(), "UNKNOWN");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_ToJson_Hdd end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_FromJson_001
- * @tc.desc: Test BlockInfo deserialization from JSON
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_FromJson_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_FromJson_001 start";
-
-    json j = {
-        {"sizeBytes", 2147483648ULL},
-        {"vendor", "VendorA"},
-        {"model", "ModelB"},
-        {"interfaceType", "NVMe"},
-        {"rpm", 0},
-        {"state", "offline"},
-        {"mediaType", "SSD"},
-        {"removable", true},
-        {"serialNumber", "SN99999"},
-        {"pciePath", "/sys/devices/pci0001"},
-        {"location", "slot2"},
-        {"diskId", "disk-8-32"},
-        {"usedBytes", 1073741824ULL},
-        {"availableBytes", 1073741824ULL},
-        {"devicePath", "/dev/block/nvme1n1"},
-        {"port", ""}
-    };
-
-    BlockInfo info = BlockInfo::FromJson(j);
-    EXPECT_EQ(info.sizeBytes, 2147483648ULL);
-    EXPECT_EQ(info.vendor, "VendorA");
-    EXPECT_EQ(info.model, "ModelB");
-    EXPECT_EQ(info.interfaceType, "NVMe");
-    EXPECT_EQ(info.rpm, 0);
-    EXPECT_EQ(info.state, "offline");
-    EXPECT_EQ(info.mediaType, MediaType::SSD);
-    EXPECT_EQ(info.removable, true);
-    EXPECT_EQ(info.serialNumber, "SN99999");
-    EXPECT_EQ(info.pciePath, "/sys/devices/pci0001");
-    EXPECT_EQ(info.location, "slot2");
-    EXPECT_EQ(info.diskId, "disk-8-32");
-    EXPECT_EQ(info.usedBytes, 1073741824ULL);
-    EXPECT_EQ(info.availableBytes, 1073741824ULL);
-    EXPECT_EQ(info.devicePath, "/dev/block/nvme1n1");
-    EXPECT_EQ(info.port, "");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_FromJson_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_FromJson_Defaults
- * @tc.desc: Test BlockInfo deserialization from empty JSON returns defaults
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_FromJson_Defaults, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_FromJson_Defaults start";
-
-    json j = json::object();
-    BlockInfo info = BlockInfo::FromJson(j);
-    EXPECT_EQ(info.sizeBytes, 0ULL);
-    EXPECT_EQ(info.vendor, "");
-    EXPECT_EQ(info.model, "");
-    EXPECT_EQ(info.interfaceType, "");
-    EXPECT_EQ(info.rpm, 0U);
-    EXPECT_EQ(info.state, "");
-    EXPECT_EQ(info.mediaType, MediaType::UNKNOWN);
-    EXPECT_EQ(info.removable, false);
-    EXPECT_EQ(info.serialNumber, "");
-    EXPECT_EQ(info.diskId, "");
-    EXPECT_EQ(info.usedBytes, 0ULL);
-    EXPECT_EQ(info.availableBytes, 0ULL);
-    EXPECT_EQ(info.devicePath, "");
-    EXPECT_EQ(info.port, "");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_FromJson_Defaults end";
 }
 
 /**
@@ -1879,127 +1531,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_SerializeVecto
 }
 
 /**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_001
- * @tc.desc: Test deserializing JSON string to BlockInfo vector
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_001 start";
-
-    BlockInfo info1;
-    info1.sizeBytes = 1024;
-    info1.vendor = "V1";
-    info1.mediaType = MediaType::SSD;
-
-    std::string jsonStr = BlockInfo::SerializeVector({info1});
-    std::vector<BlockInfo> result = BlockInfo::DeserializeVector(jsonStr);
-
-    ASSERT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0].sizeBytes, 1024);
-    EXPECT_EQ(result[0].vendor, "V1");
-    EXPECT_EQ(result[0].mediaType, MediaType::SSD);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_Empty
- * @tc.desc: Test deserializing empty string returns empty vector
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_Empty, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_Empty start";
-
-    std::vector<BlockInfo> result = BlockInfo::DeserializeVector("");
-    EXPECT_EQ(result.size(), 0);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_Empty end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_InvalidJson
- * @tc.desc: Test deserializing invalid JSON string returns empty vector
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_InvalidJson, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_InvalidJson start";
-
-    std::vector<BlockInfo> result = BlockInfo::DeserializeVector("not valid json");
-    EXPECT_EQ(result.size(), 0);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_InvalidJson end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_NotArray
- * @tc.desc: Test deserializing non-array JSON returns empty vector
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_NotArray, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_NotArray start";
-
-    std::vector<BlockInfo> result = BlockInfo::DeserializeVector("{\"key\": \"value\"}");
-    EXPECT_EQ(result.size(), 0);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_DeserializeVector_NotArray end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_BlockInfo_RoundTrip
- * @tc.desc: Test BlockInfo serialize-then-deserialize round-trip consistency
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_BlockInfo_RoundTrip, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_RoundTrip start";
-
-    BlockInfo original;
-    original.sizeBytes = 999999ULL;
-    original.vendor = "RoundVendor";
-    original.model = "RoundModel";
-    original.interfaceType = "NVMe";
-    original.rpm = 100;
-    original.state = "active";
-    original.mediaType = MediaType::HDD;
-    original.removable = true;
-    original.serialNumber = "RT123";
-    original.pciePath = "/pci/path";
-    original.location = "loc";
-    original.diskId = "disk-1-2";
-    original.usedBytes = 500000ULL;
-    original.availableBytes = 499999ULL;
-    original.devicePath = "/dev/block/xxx";
-    original.port = "ata3";
-
-    std::string jsonStr = BlockInfo::SerializeVector({original});
-    std::vector<BlockInfo> result = BlockInfo::DeserializeVector(jsonStr);
-
-    ASSERT_EQ(result.size(), 1);
-    EXPECT_EQ(result[0].sizeBytes, original.sizeBytes);
-    EXPECT_EQ(result[0].vendor, original.vendor);
-    EXPECT_EQ(result[0].model, original.model);
-    EXPECT_EQ(result[0].interfaceType, original.interfaceType);
-    EXPECT_EQ(result[0].rpm, original.rpm);
-    EXPECT_EQ(result[0].state, original.state);
-    EXPECT_EQ(result[0].mediaType, original.mediaType);
-    EXPECT_EQ(result[0].removable, original.removable);
-    EXPECT_EQ(result[0].serialNumber, original.serialNumber);
-    EXPECT_EQ(result[0].pciePath, original.pciePath);
-    EXPECT_EQ(result[0].location, original.location);
-    EXPECT_EQ(result[0].diskId, original.diskId);
-    EXPECT_EQ(result[0].usedBytes, original.usedBytes);
-    EXPECT_EQ(result[0].availableBytes, original.availableBytes);
-    EXPECT_EQ(result[0].devicePath, original.devicePath);
-    EXPECT_EQ(result[0].port, original.port);
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_BlockInfo_RoundTrip end";
-}
-
-/**
  * @tc.name: Storage_Service_ScanDeviceTest_GetExternalDisks_001
  * @tc.desc: Test scanning external disks with empty directory
  * @tc.type: FUNC
@@ -2016,42 +1547,6 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetExternalDisks_001, Te
 }
 
 /**
- * @tc.name: Storage_Service_ScanDeviceTest_GetDiskState_002
- * @tc.desc: Test GetDiskState with nonexistent device returns Unknown
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskState_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskState_002 start";
-
-    ScanDevice scanner(mockSysPath);
-    std::string state = scanner.GetDiskState("nonexistent");
-    EXPECT_EQ(state, "Unknown");
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskState_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetMediaType_005
- * @tc.desc: Test GetMediaType with rotational value other than 0 or 1 returns UNKNOWN
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetMediaType_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_005 start";
-
-    CreateDeviceDir("sdmock_d");
-    CreateFileWithContent(mockSysPath + "/sdmock_d/queue/rotational", "2\n");
-
-    ScanDevice scanner(mockSysPath);
-    MediaType type = scanner.GetMediaType("sdmock_d", false);
-    EXPECT_EQ(type, MediaType::UNKNOWN);
-
-    DeleteDeviceDir("sdmock_d");
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetMediaType_005 end";
-}
-
-/**
  * @tc.name: Storage_Service_ScanDeviceTest_GetDiskId_004
  * @tc.desc: Test GetDiskId with nonexistent device returns empty
  * @tc.type: FUNC
@@ -2061,26 +1556,10 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDiskId_004, TestSize.
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 start";
 
     ScanDevice scanner(mockSysPath);
-    std::string diskId = scanner.GetDiskId("nonexistent");
+    std::string diskId = scanner.GetDiskId("nonexistent", false);
     EXPECT_TRUE(diskId.empty());
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDiskId_004 end";
-}
-
-/**
- * @tc.name: Storage_Service_ScanDeviceTest_GetPciePath_002
- * @tc.desc: Test GetPciePath with nonexistent device returns empty
- * @tc.type: FUNC
- */
-HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetPciePath_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPciePath_002 start";
-
-    ScanDevice scanner(mockSysPath);
-    std::string pciePath = scanner.GetPciePath("nonexistent");
-    EXPECT_TRUE(pciePath.empty());
-
-    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPciePath_002 end";
 }
 
 /**

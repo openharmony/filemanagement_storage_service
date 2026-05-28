@@ -391,8 +391,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
     EXPECT_CALL(*diskUtilMoc_, ReadMetadata(_, _, _, _)).WillOnce(testing::Return(0));
     EXPECT_CALL(*libraryFuncMock_, lstat(_, _)).WillOnce(Return(0)).WillOnce(Return(-1));
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(testing::Return(-1));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
 
     vol.fsType_ = "hmfs";
     vol.isUserdata_ = true;
@@ -1641,10 +1640,9 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(-1));
     int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Hmfs_002 end";
 }
@@ -1661,8 +1659,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(-1));
-    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
     int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_NE(ret, E_OK);
@@ -1682,8 +1679,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    EXPECT_CALL(*libraryFuncMock_, umount(_)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     int32_t ret = externalVolumeInfo_->DoMount4Hmfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
     EXPECT_EQ(ret, E_OK);

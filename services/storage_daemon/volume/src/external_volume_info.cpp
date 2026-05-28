@@ -42,8 +42,7 @@ constexpr uid_t FILE_MANAGER_UID = 1006;
 constexpr gid_t FILE_MANAGER_GID = 1006;
 constexpr const char *NTFS_LABEL_DESC_PREFIX = "Volume label :  ";
 constexpr const char* MNT_EXTERNAL_FILE_CONTEXT = "context=u:object_r:mnt_external_file:s0";
-constexpr const char* MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS =
-    "context=u:object_r:mnt_external_file:s0,errors=continue";
+constexpr const char* MNT_EXTERNAL_FILE_HMFS_CONTEXT = "context=u:object_r:mnt_external_file:s0,noacl";
 constexpr const char* IO_CHAR_SET = "utf8";
 using namespace std;
 using namespace OHOS::StorageService;
@@ -225,24 +224,9 @@ int32_t ExternalVolumeInfo::DoDestroy()
 int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
 {
     LOGI("[L3:ExternalVolumeInfo] DoMount4Hmfs: >>> ENTER <<<");
-
     const char *fsType = "hmfs";
-    auto mountData = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT_WITH_ERRORS);
-    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
-    if (ret == E_OK) {
-        StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
-    } else {
-        LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: initial mount failed, errno=%{public}d", errno);
-        return ret;
-    }
-    ret = umount(mountPath_.c_str());
-    if (ret != E_OK) {
-        LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: umount failed, errno=%{public}d", errno);
-        return ret;
-    }
-
-    auto mountDataWithoutOpt = StringPrintf(MNT_EXTERNAL_FILE_CONTEXT);
-    ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountDataWithoutOpt.c_str());
+    auto mountDataWithoutOpt = StringPrintf(MNT_EXTERNAL_FILE_HMFS_CONTEXT);
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, MS_RDONLY, mountDataWithoutOpt.c_str());
     if (ret != E_OK) {
         LOGE("[L3:ExternalVolumeInfo] DoMount4Hmfs: mount RO failed, errno=%{public}d", errno);
         return ret;

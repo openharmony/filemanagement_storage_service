@@ -108,12 +108,14 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     volumeexternal.SetPath(path);
     volumeexternal.SetDescription(description);
     auto result = volumeexternal.Marshalling(parcel);
+    GTEST_LOG_(INFO) << parcel.ReadString();
     GTEST_LOG_(INFO) << parcel.ReadInt32();
+    GTEST_LOG_(INFO) << parcel.ReadString();
     GTEST_LOG_(INFO) << parcel.ReadInt32();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadString();
     GTEST_LOG_(INFO) << parcel.ReadBool();
+    GTEST_LOG_(INFO) << parcel.ReadString();
+    GTEST_LOG_(INFO) << parcel.ReadString();
+    GTEST_LOG_(INFO) << parcel.ReadUint32();
     EXPECT_EQ(parcel.ReadInt32(), flags);
     EXPECT_EQ(parcel.ReadInt32(), fsType);
     EXPECT_EQ(parcel.ReadString(), fsUuid);
@@ -143,6 +145,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     std::string fsTypeStr = "f2fs";
     std::string extraInfo = "{\"USB_BASIC_INFO\":{\"DEVNUM\":\"2\"}}";
     bool errorFlag = false;
+    uint32_t partitionNum = 1;
     int32_t fsType = 1;
     std::string fsUuid = "300";
     std::string path = "/";
@@ -155,6 +158,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     parcel.WriteBool(errorFlag);
     parcel.WriteString(fsTypeStr);
     parcel.WriteString(extraInfo);
+    parcel.WriteUint32(partitionNum);
     parcel.WriteInt32(flags);
     parcel.WriteInt32(fsType);
     parcel.WriteString(fsUuid);
@@ -175,6 +179,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetDescription(), description);
     EXPECT_EQ(result->GetFsTypeString(), FS_TYPE_MAP[fsType]);
     EXPECT_EQ(result->VolumeCore::GetFsType(), fsTypeStr);
+    EXPECT_EQ(result->GetPartitionNum(), partitionNum);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
 }

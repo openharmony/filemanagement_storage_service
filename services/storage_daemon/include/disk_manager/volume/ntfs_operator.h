@@ -28,7 +28,8 @@ public:
 
     int32_t DoMount(const std::string& devPath,
                     const std::string& mountPath,
-                    unsigned long mountFlags) override;
+                    unsigned long mountFlags,
+                    const std::string& mountData) override;
     int32_t ReadMetadata(const std::string& devPath,
                          std::string& uuid,
                          std::string& type,

@@ -55,8 +55,9 @@ void DiskManagerService::OnDiskCreated(const Disk &disk)
 {
     std::lock_guard<std::mutex> lock(diskMapMutex_);
     if (diskMap_.find(disk.GetDiskId()) != diskMap_.end()) {
-        LOGE("DiskManagerService::OnDiskCreated the disk %{public}s already exists",
+        LOGI("DiskManagerService::OnDiskCreated the disk %{public}s already exists, update it.",
             GetAnonyString(disk.GetDiskId()).c_str());
+        diskMap_[disk.GetDiskId()] = std::make_shared<Disk>(disk);
         return;
     }
     auto diskPtr = std::make_shared<Disk>(disk);

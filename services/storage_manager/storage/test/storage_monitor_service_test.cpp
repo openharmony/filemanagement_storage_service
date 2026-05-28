@@ -194,6 +194,8 @@ using namespace StorageService;
 constexpr int32_t THREE_TIME = 3;
 constexpr int32_t FOUR_TIME = 4;
 constexpr int32_t ZERO_TIME = 0;
+constexpr int32_t EIGHT_TIME = 8;
+constexpr int32_t SIXTEEN_TIME = 16;
 constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
 int g_storageFlag = 0;
@@ -204,11 +206,14 @@ int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 }
 
 enum class LocalTimeStubMode {
-    NORMAL_MATCH,      // 返回满足条件的时间
-    NORMAL_NOT_MATCH,  // 返回不满足条件的时间
+    NORMAL_MATCH_16,      // 返回满足条件的时间
+    NORMAL_MATCH_8,      // 返回满足条件的时间
+    NORMAL_MATCH_0,      // 返回满足条件的时间
+    NORMAL_NOT_MATCH_2,  // 返回不满足条件的时间
+    NORMAL_NOT_MATCH_1,  // 返回不满足条件的时间
     RETURN_NULL        // 返回 nullptr
 };
-static LocalTimeStubMode g_localTimeStubMode = LocalTimeStubMode::NORMAL_MATCH;
+static LocalTimeStubMode g_localTimeStubMode = LocalTimeStubMode::NORMAL_MATCH_0;
 static std::tm g_fakeTm {};
 static std::mutex g_stubMutex;
 void SetLocalTimeStubMode(LocalTimeStubMode mode)
@@ -224,13 +229,31 @@ extern "C" std::tm *localtime(const std::time_t *timer)
     switch (g_localTimeStubMode) {
         case LocalTimeStubMode::RETURN_NULL:
             return nullptr;
-        case LocalTimeStubMode::NORMAL_NOT_MATCH:
-            // 构造一个“不匹配”的时间
+        case LocalTimeStubMode::NORMAL_NOT_MATCH_1:
+            // 构造一个分钟“不匹配”的时间
             g_fakeTm = {};
             g_fakeTm.tm_min  = THREE_TIME;
             g_fakeTm.tm_hour = FOUR_TIME;
             return &g_fakeTm;
-        case LocalTimeStubMode::NORMAL_MATCH:
+        case LocalTimeStubMode::NORMAL_NOT_MATCH_2:
+            // 构造一个小时“不匹配”的时间
+            g_fakeTm = {};
+            g_fakeTm.tm_min  = ZERO_TIME;
+            g_fakeTm.tm_hour = FOUR_TIME;
+            return &g_fakeTm;
+        case LocalTimeStubMode::NORMAL_MATCH_16:
+            // 构造一个“匹配”的时间，例如 16:00
+            g_fakeTm = {};
+            g_fakeTm.tm_min  = ZERO_TIME;   // 合法分钟
+            g_fakeTm.tm_hour = SIXTEEN_TIME;     // 合法小时
+            return &g_fakeTm;
+        case LocalTimeStubMode::NORMAL_MATCH_8:
+            // 构造一个“匹配”的时间，例如 8:00
+            g_fakeTm = {};
+            g_fakeTm.tm_min  = ZERO_TIME;   // 合法分钟
+            g_fakeTm.tm_hour = EIGHT_TIME;     // 合法小时
+            return &g_fakeTm;
+        case LocalTimeStubMode::NORMAL_MATCH_0:
         default:
             // 构造一个“匹配”的时间，例如 0:00
             g_fakeTm = {};
@@ -865,11 +888,11 @@ HWTEST_F(StorageMonitorServiceTest,
     service->HapAndSaStatisticsThd();
     EXPECT_TRUE(true);
  
-    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_NOT_MATCH);
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_NOT_MATCH_1);
     service->HapAndSaStatisticsThd();
     EXPECT_TRUE(true);
  
-    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_MATCH);
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_MATCH_0);
     service->HapAndSaStatisticsThd();
     EXPECT_TRUE(true);
  
@@ -1003,5 +1026,32 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CleanBundleCache_000
 
     g_testBundleMgrProxy = oldBundleMgrProxy;
     GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCache_0000 end";
+}
+
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsThd_0001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0001 start";
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_MATCH_16);
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0001 end";
+}
+
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsThd_0002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 start";
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_MATCH_8);
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0002 end";
+}
+
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_HapAndSaStatisticsThd_0004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0004 start";
+    SetLocalTimeStubMode(LocalTimeStubMode::NORMAL_NOT_MATCH_2);
+    service->HapAndSaStatisticsThd();
+    EXPECT_TRUE(true);
+    GTEST_LOG_(INFO) << "storage_monitor_service_HapAndSaStatisticsThd_0004 end";
 }
 }

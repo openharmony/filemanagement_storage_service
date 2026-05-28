@@ -17,13 +17,16 @@
 
 #include <cinttypes>
 #include <climits>
+#include <csignal>
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <fstream>
 #include <regex>
+#include <sstream>
+#include <sys/mount.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <thread>
+#include <unistd.h>
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
@@ -33,6 +36,7 @@
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
+#include "disk_manager/disk/scan_device.h"
 #include "volume/volume_manager.h"
 #endif
 #ifdef PC_USER_MANAGER
@@ -54,11 +58,10 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#ifdef DISK_MANAGER
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
 #include "disk_manager/volume/volume_operator_factory.h"
-#ifdef EXTERNAL_STORAGE_MANAGER
-#include "scan_device.h"
 #endif
 
 namespace OHOS {
@@ -75,10 +78,11 @@ constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
 constexpr size_t MAX_TYPE_LEN = 64;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
+constexpr size_t MAX_MOUNT_DATA_LEN = 1024;
 #endif
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
@@ -114,20 +118,42 @@ int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPat
         LOGE("ValidateBlockDevicePath: devPath contains invalid path segments");
         return E_PARAMS_INVALID;
     }
-    char realPath[PATH_MAX] = {0};
-    if (realpath(devPath.c_str(), realPath) == nullptr) {
-        LOGE("ValidateBlockDevicePath: realpath failed, errno=%{public}d", errno);
-        return E_PARAMS_INVALID;
-    }
-    if (std::string(realPath).find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0) {
         LOGE("ValidateBlockDevicePath: invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
-    verifiedPath = realPath;
+    char realPath[PATH_MAX] = {0};
+    if (realpath(devPath.c_str(), realPath) == nullptr) {
+        std::string dirPath = devPath;
+        size_t lastSlash = dirPath.rfind('/');
+        if (lastSlash == std::string::npos || lastSlash == 0) {
+            LOGE("ValidateBlockDevicePath: cannot determine parent directory");
+            return E_PARAMS_INVALID;
+        }
+        dirPath = dirPath.substr(0, lastSlash);
+        if (realpath(dirPath.c_str(), realPath) == nullptr) {
+            LOGE("ValidateBlockDevicePath: parent directory doesn't exist, errno=%{public}d", errno);
+            return E_PARAMS_INVALID;
+        }
+        std::string resolvedParent(realPath);
+        if (resolvedParent != "/dev/block" && resolvedParent.find("/dev/block/") != 0) {
+            LOGE("ValidateBlockDevicePath: resolved parent escapes /dev/block/");
+            return E_PARAMS_INVALID;
+        }
+        verifiedPath = devPath;
+    } else {
+        std::string resolvedPath(realPath);
+        if (resolvedPath.find("/dev/block/") != 0) {
+            LOGE("ValidateBlockDevicePath: invalid resolved path prefix");
+            return E_PARAMS_INVALID;
+        }
+        verifiedPath = realPath;
+    }
     return E_OK;
 }
 
-int32_t StorageDaemonProvider::ValidateMountPath(const std::string &mountPath)
+int32_t StorageDaemonProvider::ValidateMountPath(const std::string &mountPath,
+                                                 std::string &verifiedPath)
 {
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("ValidateMountPath: invalid mountPath");
@@ -137,15 +163,36 @@ int32_t StorageDaemonProvider::ValidateMountPath(const std::string &mountPath)
         LOGE("ValidateMountPath: mountPath contains invalid path segments");
         return E_PARAMS_INVALID;
     }
-    char realPath[PATH_MAX] = {0};
-    if (realpath(mountPath.c_str(), realPath) == nullptr) {
-        LOGE("ValidateMountPath: realpath failed, errno=%{public}d", errno);
-        return E_PARAMS_INVALID;
-    }
-    std::string resolvedPath(realPath);
-    if (resolvedPath.find("/mnt/data/") != 0) {
+    if (mountPath.find("/mnt/data/") != 0) {
         LOGE("ValidateMountPath: invalid mountPath prefix");
         return E_PARAMS_INVALID;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(mountPath.c_str(), realPath) == nullptr) {
+        std::string dirPath = mountPath;
+        size_t lastSlash = dirPath.rfind('/');
+        if (lastSlash == std::string::npos || lastSlash == 0) {
+            LOGE("ValidateMountPath: cannot determine parent directory");
+            return E_PARAMS_INVALID;
+        }
+        dirPath = dirPath.substr(0, lastSlash);
+        if (realpath(dirPath.c_str(), realPath) == nullptr) {
+            LOGE("ValidateMountPath: parent directory doesn't exist, errno=%{public}d", errno);
+            return E_PARAMS_INVALID;
+        }
+        std::string resolvedParent(realPath);
+        if (resolvedParent.find("/mnt/data/") != 0) {
+            LOGE("ValidateMountPath: resolved parent escapes /mnt/data/");
+            return E_PARAMS_INVALID;
+        }
+        verifiedPath = mountPath;
+    } else {
+        std::string resolvedPath(realPath);
+        if (resolvedPath.find("/mnt/data/") != 0) {
+            LOGE("ValidateMountPath: invalid resolved path prefix");
+            return E_PARAMS_INVALID;
+        }
+        verifiedPath = realPath;
     }
     return E_OK;
 }
@@ -1481,6 +1528,42 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
     return ret;
 }
 
+int32_t StorageDaemonProvider::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
+{
+    LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: >>> ENTER <<< distributeDirs size=%{public}zu",
+         distributeDirs.size());
+    std::string message = "distributeDirs size: " + std::to_string(distributeDirs.size());
+    HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
+    if (distributeDirs.empty()) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< distributeDirs empty");
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
+            0, "distributeDirs empty");
+        return E_PARAMS_INVALID;
+    }
+    std::string distributeDirPattern =
+        R"(^/data/service/el2/[0-9]+/hmdfs/account/data/.{1,100}/\.remote_share/[0-9a-zA-Z]{1,65}/.*)";
+    std::regex distributeDirRegex(distributeDirPattern);
+    std::vector<std::string> validDistributeDirs;
+    for (const auto &distributeDir : distributeDirs) {
+        if (std::regex_match(distributeDir, distributeDirRegex)) {
+            validDistributeDirs.push_back(distributeDir);
+        }
+    }
+    if (validDistributeDirs.empty()) {
+        LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: no valid distributeDir");
+        return E_PARAMS_INVALID;
+    }
+    int32_t ret = MountManager::GetInstance().UMountDisShareFile(validDistributeDirs);
+    HiAudit::GetInstance().WriteEnd("UMountDisShareFile", ret);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", ret, 0, "MountManager failed");
+    }
+    return ret;
+}
+
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
     LOGI("[L1:StorageDaemonProvider] InactiveUserPublicDirKey: >>> ENTER <<< userId=%{public}u", userId);
@@ -2039,21 +2122,15 @@ int32_t StorageDaemonProvider::CreateBlockDeviceNode(const std::string &devPath,
                                                      int32_t majorId,
                                                      int32_t minorId)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] CreateBlockDeviceNode: >>> ENTER <<< devPath=%{public}s, "
          "mode=0%{public}o, major=%{public}d, minor=%{public}d",
          devPath.c_str(), mode, majorId, minorId);
-    if (devPath.empty() || devPath.length() >= PATH_MAX) {
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: invalid devPath");
-        return E_PARAMS_INVALID;
-    }
-    if (IsFilePathInvalid(devPath)) {
-        LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: devPath contains invalid path segments");
-        return E_PARAMS_INVALID;
-    }
-    if (devPath.find("/dev/block/") != 0) {
-        LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: invalid devPath prefix");
-        return E_PARAMS_INVALID;
+        return ret;
     }
     if (majorId < 0 || majorId > DEVICE_MAJOR_MAX) {
         LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: invalid major=%{public}d", majorId);
@@ -2064,7 +2141,7 @@ int32_t StorageDaemonProvider::CreateBlockDeviceNode(const std::string &devPath,
         return E_PARAMS_INVALID;
     }
 
-    int32_t ret = DiskUtils::CreateBlockDeviceNode(devPath, mode, majorId, minorId);
+    ret = DiskUtils::CreateBlockDeviceNode(verifiedPath, mode, majorId, minorId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: <<< EXIT FAILED <<< ret=%{public}d", ret);
         return ret;
@@ -2079,7 +2156,7 @@ int32_t StorageDaemonProvider::CreateBlockDeviceNode(const std::string &devPath,
 
 int32_t StorageDaemonProvider::DestroyBlockDeviceNode(const std::string &devPath)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] DestroyBlockDeviceNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
@@ -2105,7 +2182,7 @@ int32_t StorageDaemonProvider::ReadPartitionTable(const std::string &devPath,
                                                   std::string &output,
                                                   int32_t &maxVolume)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] ReadPartitionTable: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
@@ -2130,9 +2207,10 @@ int32_t StorageDaemonProvider::ReadPartitionTable(const std::string &devPath,
 int32_t StorageDaemonProvider::Mount(const std::string &devPath,
                                      const std::string &mountPath,
                                      const std::string &fsType,
-                                     uint64_t mountFlags)
+                                     uint64_t mountFlags,
+                                     const std::string &mountData)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Mount: >>> ENTER <<< devPath=%{public}s, mountPath=%{public}s, "
          "fsType=%{public}s, mountFlags=%{public}" PRIu64,
         devPath.c_str(), mountPath.c_str(), fsType.c_str(), mountFlags);
@@ -2141,21 +2219,20 @@ int32_t StorageDaemonProvider::Mount(const std::string &devPath,
     if (ret != E_OK) {
         return ret;
     }
-    if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
+    std::string verifiedMountPath;
+    ret = ValidateMountPath(mountPath, verifiedMountPath);
+    if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Mount: invalid mountPath");
-        return E_PARAMS_INVALID;
-    }
-    if (IsFilePathInvalid(mountPath)) {
-        LOGE("[L1:StorageDaemonProvider] Mount: mountPath contains invalid path segments");
-        return E_PARAMS_INVALID;
-    }
-    if (mountPath.find("/mnt/data/") != 0) {
-        LOGE("[L1:StorageDaemonProvider] Mount: invalid mountPath prefix");
-        return E_PARAMS_INVALID;
+        return ret;
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] Mount: fsType is empty");
         return E_PARAMS_INVALID;
+    }
+    if (!mountData.empty()) {
+        if (mountData.size() > MAX_MOUNT_DATA_LEN) {
+            return E_PARAMS_INVALID;
+        }
     }
 
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
@@ -2164,7 +2241,7 @@ int32_t StorageDaemonProvider::Mount(const std::string &devPath,
         return E_NOT_SUPPORT;
     }
 
-    ret = op->Mount(verifiedDevPath, mountPath, mountFlags);
+    ret = op->Mount(verifiedDevPath, verifiedMountPath, static_cast<unsigned long>(mountFlags), mountData);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("Operator::Mount", ret);
@@ -2182,10 +2259,11 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
                                        const std::string &fsType,
                                        bool force)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Unmount: >>> ENTER <<< mountPath=%{public}s, fsType=%{public}s, force=%{public}d",
         mountPath.c_str(), fsType.c_str(), force);
-    int32_t ret = ValidateMountPath(mountPath);
+    std::string verifiedMountPath;
+    int32_t ret = ValidateMountPath(mountPath, verifiedMountPath);
     if (ret != E_OK) {
         return ret;
     }
@@ -2196,7 +2274,7 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
         return E_NOT_SUPPORT;
     }
 
-    ret = op->Unmount(mountPath, fsType, force);
+    ret = op->Unmount(verifiedMountPath, fsType, force);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Unmount: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("Operator::Unmount", ret);
@@ -2213,7 +2291,7 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
 int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
                                             const std::string &fsType)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] FormatVolume: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s",
         devPath.c_str(), fsType.c_str());
     std::string verifiedPath;
@@ -2250,7 +2328,7 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
                                      const std::string &fsType,
                                      bool autoFix)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Check: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s, autoFix=%{public}d",
         devPath.c_str(), fsType.c_str(), autoFix);
     std::string verifiedPath;
@@ -2286,7 +2364,7 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
 int32_t StorageDaemonProvider::Repair(const std::string &devPath,
                                       const std::string &fsType)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Repair: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s",
         devPath.c_str(), fsType.c_str());
     std::string verifiedPath;
@@ -2323,7 +2401,7 @@ int32_t StorageDaemonProvider::SetLabel(const std::string &devPath,
                                         const std::string &fsType,
                                         const std::string &label)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] SetLabel: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s, label=%{public}s",
         devPath.c_str(), fsType.c_str(), label.c_str());
     std::string verifiedPath;
@@ -2361,7 +2439,7 @@ int32_t StorageDaemonProvider::ReadMetadata(const std::string &devPath,
                                             std::string &type,
                                             std::string &label)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
@@ -2385,15 +2463,16 @@ int32_t StorageDaemonProvider::ReadMetadata(const std::string &devPath,
 int32_t StorageDaemonProvider::MountFuseDevice(const std::string &mountPath,
                                                int &fuseFd)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] MountFuseDevice: >>> ENTER <<< mountPath=%{public}s",
         mountPath.c_str());
-    int32_t ret = ValidateMountPath(mountPath);
+    std::string verifiedMountPath;
+    int32_t ret = ValidateMountPath(mountPath, verifiedMountPath);
     if (ret != E_OK) {
         return ret;
     }
 
-    ret = VolumeUtils::MountFuseDevice(mountPath, fuseFd);
+    ret = VolumeUtils::MountFuseDevice(verifiedMountPath, fuseFd);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountFuseDevice: <<< EXIT FAILED <<< ret=%{public}d", ret);
         return ret;
@@ -2409,7 +2488,7 @@ int32_t StorageDaemonProvider::MountFuseDevice(const std::string &mountPath,
 int32_t StorageDaemonProvider::Partition(const std::string &diskPath,
                                          const std::string &partitionType)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Partition: >>> ENTER <<< diskPath=%{public}s, type=%{public}s",
         diskPath.c_str(), partitionType.c_str());
     std::string verifiedPath;
@@ -2434,7 +2513,7 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskPath,
 int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
     std::string &blockInfos)
 {
-#ifdef EXTERNAL_STORAGE_MANAGER
+#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< type=%{public}s", type.c_str());
 
     if (type.empty() || type.size() > MAX_TYPE_LEN) {
@@ -2442,8 +2521,8 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
         return E_PARAMS_INVALID;
     }
 
-    ScanDevice scanDevice;
     std::vector<BlockInfo> disks;
+    ScanDevice scanDevice;
 
     if (type == "data") {
         disks = scanDevice.GetDataDisks();
@@ -2458,6 +2537,115 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
     LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT SUCCESS <<< count=%{public}zu", disks.size());
     return E_OK;
 #else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
+        return E_PARAMS_INVALID;
+    }
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                               int64_t endSector, const std::string &typeCode)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (partitionNum <= 0) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< partitionNum invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (startSector <= 0 || endSector <= 0 || startSector >= endSector) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< sector range invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (typeCode.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< typeCode empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
+         devPath.c_str(), partitionNum);
+    int32_t ret = DiskUtils::CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (partitionNum <= 0) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< partitionNum invalid");
+        return E_PARAMS_INVALID;
+    }
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
+         devPath.c_str(), partitionNum);
+    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] DeletePartitionAddon: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const std::string &fsType,
+                                               const std::string &volumeName, bool quickFormat)
+{
+    if (devPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (fsType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
+        return E_PARAMS_INVALID;
+    }
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
+         ", volumeName=%{public}s", devPath.c_str(), fsType.c_str(), volumeName.c_str());
+    int32_t ret = DiskUtils::FormatPartition(devPath, fsType, volumeName, quickFormat);
+    if (ret == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<<");
+    } else {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
+    }
+    return ret;
+#else
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }

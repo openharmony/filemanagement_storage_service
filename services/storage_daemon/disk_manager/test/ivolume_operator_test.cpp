@@ -32,9 +32,10 @@ using namespace testing::ext;
 
 class TestOperator : public IVolumeOperator {
 public:
-    MOCK_METHOD3(DoMount, int32_t(const std::string& devPath,
+    MOCK_METHOD4(DoMount, int32_t(const std::string& devPath,
                                    const std::string& mountPath,
-                                   unsigned long mountFlags));
+                                   unsigned long mountFlags,
+                                   const std::string& mountData));
 };
 
 class ExtIVolumeOperatorTest : public testing::Test {
@@ -176,7 +177,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_InvalidPrefix, TestSize.Level1)
 HWTEST_F(ExtIVolumeOperatorTest, Mount_MountPathNotExist_DoMountFail, TestSize.Level1)
 {
     std::string path = testDir_ + "/nonexistent_mount_path";
-    EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_ERR);
     rmdir(path.c_str());
@@ -186,7 +187,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_DoMountFailed_CleanupMountPath, TestSize.
 {
     std::string path = testDir_ + "/mount_fail_test";
     mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
-    EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_ERR);
     EXPECT_NE(access(path.c_str(), F_OK), 0);
@@ -196,7 +197,7 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_Success, TestSize.Level1)
 {
     std::string path = testDir_ + "/mount_ok_test";
     mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
-    EXPECT_CALL(*op_, DoMount(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
     int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
     EXPECT_EQ(ret, E_OK);
     struct stat st;

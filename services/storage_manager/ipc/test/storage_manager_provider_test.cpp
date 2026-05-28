@@ -1239,6 +1239,22 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_002
+ * @tc.desc: Verify the UMountDisShareFile function with vector parameter.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_002 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_InactiveUserPublicDirKey_001
  * @tc.desc: Verify the InactiveUserPublicDirKey function.
  * @tc.type: FUNC

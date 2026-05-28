@@ -43,6 +43,7 @@ const char *CLEAN_LEVEL_LOW = "clean_level_low";
 const char *CLEAN_LEVEL_MEDIUM = "clean_level_medium";
 const char *CLEAN_LEVEL_HIGH = "clean_level_high";
 const char *CLEAN_LEVEL_RICH = "clean_level_rich";
+const char *CLONE_STATE = "cloneState";
 const int32_t CLEAN_LOW_TIME = 1 * 60;
 const int32_t CLEAN_MEDIUM_TIME = 24 * 60 * 60;
 const int32_t CLEAN_HIGH_TIME = 7 * 24 * 60 * 60;

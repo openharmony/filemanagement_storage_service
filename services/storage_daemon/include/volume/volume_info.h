@@ -145,8 +145,8 @@ private:
     int32_t userIdOwner_;
     bool isUserdata_;
     std::string fsTypeBase_;
-    uint32_t partitionNum_;
     std::string extraInfo_;
+    uint32_t partitionNum_;
 protected:
     bool isDamaged_ = false;
 };

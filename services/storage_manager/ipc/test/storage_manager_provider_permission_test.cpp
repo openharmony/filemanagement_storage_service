@@ -1383,6 +1383,31 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_003
+ * @tc.desc: Verify the UMountDisShareFile function with vector parameter.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(1009);
+    std::vector<std::string> distributeDirs;
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data+");
+    ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    distributeDirs.clear();
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
  * @tc.desc: Verify the NotifyVolumeDamaged function.
  * @tc.type: FUNC
@@ -1411,9 +1436,14 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
     EXPECT_EQ(ret, E_OK);
 
     int64_t sizeBytes = 1024;
+    int32_t diskType = 1;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "vendor-1";
+    std::string sysPath = path;
     std::shared_ptr<Disk> result;
-    Disk disk(diskId, sizeBytes, path, vendor, 1);
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     storageManagerProviderTest_->NotifyDiskCreated(disk);
     ret = storageManagerProviderTest_->NotifyVolumeDamaged(
         VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
@@ -1450,9 +1480,14 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDama
     EXPECT_EQ(ret, E_OK);
 
     int64_t sizeBytes = 1024;
+    int32_t diskType = 1;
+    bool removable = true;
+    std::list<std::string> volumeIds;
+    std::string extraInfo;
     std::string vendor = "vendor-1";
+    std::string sysPath = path;
     std::shared_ptr<Disk> result;
-    Disk disk(diskId, sizeBytes, path, vendor, 1);
+    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
     storageManagerProviderTest_->NotifyDiskCreated(disk);
     ret = storageManagerProviderTest_->NotifyVolumeDamaged(
         VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});

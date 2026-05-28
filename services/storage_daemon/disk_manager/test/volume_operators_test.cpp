@@ -62,11 +62,11 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_DoMount, TestSize.Level1)
 {
     ExfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_EXFAT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_EXFAT_MOUNT);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, ExfatOperator_Format, TestSize.Level1)
@@ -113,11 +113,11 @@ HWTEST_F(ExtOperatorTest, NtfsOperator_DoMount, TestSize.Level1)
 {
     NtfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_NTFS_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_NTFS_MOUNT);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, NtfsOperator_Check, TestSize.Level1)
@@ -155,11 +155,11 @@ HWTEST_F(ExtOperatorTest, VfatOperator_DoMount, TestSize.Level1)
 {
     VfatOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_FAT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_FAT_MOUNT);
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, VfatOperator_Format, TestSize.Level1)
@@ -176,27 +176,41 @@ HWTEST_F(ExtOperatorTest, VfatOperator_Format, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_EmptyDevPath, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_EmptyMountPath, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_Success, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MountFailed, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_HMFS_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_HMFS_MOUNT);
+}
+
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_Success, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_Failed, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_HMFS_MOUNT);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_EmptyDevPath, TestSize.Level1)
@@ -289,7 +303,8 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyDevPath, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyLabel, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", ""), E_PARAMS_INVALID);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_Success, TestSize.Level1)
@@ -309,27 +324,27 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_Failed, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyDevPath, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyMountPath, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_Success, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_MountFailed, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_EXT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_EXT_MOUNT);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Success, TestSize.Level1)
@@ -363,7 +378,7 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_ReadOnly, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", MS_RDONLY, ""), E_OK);
 }
 
 /**
@@ -376,7 +391,7 @@ HWTEST_F(ExtOperatorTest, VfatOperator_DoMount_ReadOnly, TestSize.Level1)
 {
     VfatOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 /**

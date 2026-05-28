@@ -18,42 +18,49 @@
 
 #include "parcel.h"
 
+#include <cstdint>
+#include <list>
+#include <string>
+#include <vector>
+
 namespace OHOS {
 namespace StorageManager {
-enum {
+enum DiskType : int32_t {
     SD_FLAG = 1,
     USB_FLAG = 2,
     CD_FLAG = 3,
+    DATA_DISK_SSD = 4,
+    DATA_DISK_HDD = 5,
+    DISK_TYPE_UNKNOWN = 255
 };
 class Disk : public Parcelable {
 public:
     Disk();
-    Disk(const std::string &diskId, int64_t sizeBytes, const std::string &sysPath, const std::string &vendor,
-         int32_t diskType);
+    Disk(const std::string &diskId, int64_t sizeBytes, int32_t diskType, bool removable_,
+         const std::list<std::string> &volumeIds, const std::string &extraInfo, const std::string &vendor,
+         const std::string &sysPath);
 
     std::string GetDiskId() const;
-    std::string GetDiskName() const;
     int64_t GetSizeBytes() const;
-    std::string GetSysPath() const;
-    std::string GetVendor() const;
     void SetDiskType(int32_t diskType);
     int32_t GetDiskType() const;
-    int32_t GetMediaType() const;
-    int32_t GetRemovable() const;
+    bool GetRemovable() const;
+    std::list<std::string> GetVolumeIds() const;
     std::string GetExtraInfo() const;
+    std::string GetVendor() const;
+    std::string GetSysPath() const;
 
     bool Marshalling(Parcel &parcel) const override;
     static Disk *Unmarshalling(Parcel &parcel);
 private:
     std::string diskId_;
-    std::string diskName_;
     int64_t sizeBytes_ {};
-    std::string sysPath_;
-    std::string vendor_;
-    int32_t diskType_ {};
-    int32_t mediaType_ {};
-    int32_t removable_ = 1;
+    int32_t diskType_ {DISK_TYPE_UNKNOWN};
+    bool removable_ {true};
+    std::list<std::string> volumeIds_;
     std::string extraInfo_;
+    std::string vendor_;
+    std::string sysPath_;
 };
 } // namespace StorageManager
 } // namespace OHOS

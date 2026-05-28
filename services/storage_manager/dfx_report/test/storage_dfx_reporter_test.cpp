@@ -1024,5 +1024,88 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectS
     EXPECT_EQ(vec[4].saName, "OtherService");
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_007 end";
 }
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_001 start";
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(5);
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 5);
+    StorageDfxReporter::GetInstance().CloneEventReportTimesZeroisation();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 0);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_001 end";
+}
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_002,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_002 start";
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(0);
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 0);
+    StorageDfxReporter::GetInstance().CloneEventReportTimesZeroisation();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 0);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportTimesZeroisation_002 end";
+}
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_001 start";
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(0);
+    StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
+    EXPECT_CALL(*sss, GetUserStorageStats(_, _, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*stss, GetSystemSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(500), Return(0)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
+    EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
+    StorageDfxReporter::GetInstance().CloneEventReportStorageStatus();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_001 end";
+}
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_002,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_002 start";
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(2);
+    StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
+    StorageDfxReporter::GetInstance().CloneEventReportStorageStatus();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 2);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_002 end";
+}
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_003,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_003 start";
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(1);
+    StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
+    EXPECT_CALL(*sss, GetUserStorageStats(_, _, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(1000), Return(0)));
+    EXPECT_CALL(*stss, GetSystemSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(500), Return(0)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(100), Return(0)));
+    EXPECT_CALL(*sdc, GetRmgResourceSize(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(50), Return(0)));
+    EXPECT_CALL(*sss, GetBundleNameAndUid(_, _)).WillRepeatedly(Return(0));
+    EXPECT_CALL(*sdc, QueryOccupiedSpaceForSa(_, _, _, _)).WillRepeatedly(Return(0));
+    StorageDfxReporter::GetInstance().CloneEventReportStorageStatus();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_003 end";
+}
+
+HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_004,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_004 start";
+    StorageDfxReporter::GetInstance().CloneEventReportTimesZeroisation();
+    StorageDfxReporter::GetInstance().eventReportTimes_.store(3);
+    StorageDfxReporter::GetInstance().isHapAndSaRunning_.store(false);
+    StorageDfxReporter::GetInstance().CloneEventReportStorageStatus();
+    EXPECT_EQ(StorageDfxReporter::GetInstance().eventReportTimes_.load(), 3);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CloneEventReportStorageStatus_004 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
