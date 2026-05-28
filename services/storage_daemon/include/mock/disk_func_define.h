@@ -23,5 +23,6 @@
 #define ioctl Ioctl
 #define fileno Fileno
 #define realpath Realpath
+#define readlink Readlink
 
 #endif // OHOS_STORAGE_DAEMON_DISK_FUNC_DEFINE_H

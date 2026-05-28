@@ -626,7 +626,7 @@ std::string ReadFileContent(const std::string &path)
 
     infile.open(realPath);
     if (!infile) {
-        LOGE("[L8:FileUtils] ReadFileContent: <<< EXIT FAILED <<< Cannot open file");
+        LOGE("[L8:FileUtils] ReadFileContent: <<< EXIT FAILED <<< Cannot open file, errno: %{public}d.", errno);
         return "";
     }
 

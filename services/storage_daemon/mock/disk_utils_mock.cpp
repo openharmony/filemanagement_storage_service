@@ -114,5 +114,45 @@ int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid)
     }
     return IDiskUtilMoc::diskUtilMoc->ReadVolumeUuid(devPath, uuid);
 }
+
+std::string GetCDType(const std::string &diskPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetCDType(diskPath);
+}
+
+std::string GetOpticalDriveType(const std::string &diskPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetOpticalDriveType(diskPath);
+}
+
+int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteSpeed)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetOpticalDriveMaxWriteSpeed(diskPath, maxWriteSpeed);
+}
+
+std::string GetScsiBusNum(const std::string &sysPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetScsiBusNum(sysPath);
+}
+
+std::string GetOddDriverType(const std::string &sysPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetOddDriverType(sysPath);
+}
 }
 }

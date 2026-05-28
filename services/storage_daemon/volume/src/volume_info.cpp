@@ -74,7 +74,7 @@ int32_t VolumeInfo::Create(const std::string &volId, const std::string &diskId, 
     } else {
         diskFsType = "";
     }
-    if (!extraInfo.empty()) {
+    if (!extraInfo.empty() && diskFsType != "") {
         nlohmann::json extraInfoJson = nlohmann::json::parse(extraInfo);
         extraInfoJson["ODD_INFO"]["DISK_FSTYPE"] = diskFsType;
         extraInfo_ = extraInfoJson.dump();

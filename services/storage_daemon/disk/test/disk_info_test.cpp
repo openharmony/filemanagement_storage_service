@@ -1832,5 +1832,104 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetExtraInfo_001, TestSize.L
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetExtraInfo_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_SetExtraInfo_001
+ * @tc.desc: Verify the SetExtraInfo function with normal disk.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_SetExtraInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_001 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sda";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*diskUtilMoc_, GetScsiBusNum(testing::_)).WillRepeatedly(testing::Return("0"));
+
+    diskInfo->SetExtraInfo();
+
+    std::string extraInfo = diskInfo->GetExtraInfo();
+    EXPECT_FALSE(extraInfo.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_SetExtraInfo_002
+ * @tc.desc: Verify the SetExtraInfo function with CD/DVD disk type.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_SetExtraInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_002 start";
+
+    unsigned int major = 11;
+    unsigned int minor = 0;
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/sr0";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sr0";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device,
+        static_cast<int>(DiskInfo::DiskType::CD_DVD_BD));
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*diskUtilMoc_, GetScsiBusNum(testing::_)).WillRepeatedly(testing::Return("0"));
+    EXPECT_CALL(*diskUtilMoc_, GetOpticalDriveType(testing::_)).WillOnce(testing::Return("DVD"));
+    EXPECT_CALL(*diskUtilMoc_, GetCDType(testing::_)).WillOnce(testing::Return("DVD-ROM"));
+    EXPECT_CALL(*diskUtilMoc_, GetOpticalDriveMaxWriteSpeed(testing::_, testing::_))
+        .WillOnce(testing::Invoke([](const std::string &path, int32_t &speed) {
+            speed = 8;
+            return E_OK;
+        }));
+    EXPECT_CALL(*diskUtilMoc_, GetOddDriverType(testing::_)).WillOnce(testing::Return("usb-storage"));
+
+    diskInfo->SetExtraInfo();
+
+    std::string extraInfo = diskInfo->GetExtraInfo();
+    EXPECT_FALSE(extraInfo.empty());
+    EXPECT_NE(extraInfo.find("ODD_INFO"), std::string::npos);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_SetExtraInfo_003
+ * @tc.desc: Verify the SetExtraInfo function with empty vendor and product.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_SetExtraInfo_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_003 start";
+
+    unsigned int major = 8;
+    unsigned int minor = 1;
+    std::string sysPath = "/devices/platform/test2";
+    std::string devPath = "/dev/block/test2";
+    dev_t device = makedev(major, minor);
+    std::string diskName = "sdb";
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    EXPECT_CALL(*diskUtilMoc_, GetScsiBusNum(testing::_)).WillRepeatedly(testing::Return("1"));
+
+    diskInfo->SetExtraInfo();
+
+    std::string extraInfo = diskInfo->GetExtraInfo();
+    EXPECT_FALSE(extraInfo.empty());
+    EXPECT_NE(extraInfo.find("vendor"), std::string::npos);
+    EXPECT_NE(extraInfo.find("product"), std::string::npos);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_SetExtraInfo_003 end";
+}
 }
 }

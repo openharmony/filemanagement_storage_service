@@ -456,8 +456,7 @@ vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
             if (vc.GetFsType() == UDF || vc.GetFsType() == ISO9660) {
                 dvdDiskIds.push_back(vc.GetDiskId());
             }
-            if (vc.GetFsType() != UNDEFINED)
-            {
+            if (vc.GetFsType() != UNDEFINED) {
                 result.push_back(vc);
             }
         }

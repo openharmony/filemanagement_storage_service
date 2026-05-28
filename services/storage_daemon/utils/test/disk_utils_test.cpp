@@ -1042,16 +1042,26 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetScsiBusNum_003, TestSize.Level1)
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_003 end";
 }
 
-HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_001, TestSize.Level1)
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetScsiBusNum_004, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_001 start";
-    std::string sysPath = "/sys/block/sr0";
-    char linkTarget[] = "../../../usb-storage";
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_004 start";
+    std::string sysPath = "/sys/block/sda";
+    char linkTarget[] = "path/without/colon";
     
     EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
         strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
         return strlen(linkTarget);
     });
+    
+    std::string result = GetScsiBusNum(sysPath);
+    EXPECT_TRUE(result.empty());
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_004 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_001 start";
+    std::string sysPath = "/sys/block/sr0/usb-device";
     
     std::string result = GetOddDriverType(sysPath);
     EXPECT_EQ(result, "usb-storage");
@@ -1061,13 +1071,7 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_001, TestSize.Level1)
 HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_002 start";
-    std::string sysPath = "/sys/block/sr0";
-    char linkTarget[] = "../../../sata-link";
-    
-    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
-        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
-        return strlen(linkTarget);
-    });
+    std::string sysPath = "/sys/block/sr0/sata-link";
     
     std::string result = GetOddDriverType(sysPath);
     EXPECT_EQ(result, "AHCI");
@@ -1077,9 +1081,7 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_002, TestSize.Level1)
 HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_003 start";
-    std::string sysPath = "/sys/block/sr0";
-    
-    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce(Return(-1));
+    std::string sysPath = "/sys/block/sr0/other-type";
     
     std::string result = GetOddDriverType(sysPath);
     EXPECT_TRUE(result.empty());
@@ -1090,12 +1092,6 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_004, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_004 start";
     std::string sysPath = "/sys/block/sr0";
-    char linkTarget[] = "../../../other-type";
-    
-    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
-        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
-        return strlen(linkTarget);
-    });
     
     std::string result = GetOddDriverType(sysPath);
     EXPECT_TRUE(result.empty());

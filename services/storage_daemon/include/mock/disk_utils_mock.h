@@ -40,6 +40,8 @@ public:
     virtual std::string GetAnonyString(const std::string &value) = 0;
     virtual int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid) = 0;
     virtual std::string GetCDType(const std::string &diskPath) = 0;
+    virtual std::string GetOpticalDriveType(const std::string &diskPath) = 0;
+    virtual int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteSpeed) = 0;
     virtual int GetCDStatus(const char *device, int &status) = 0;
     virtual int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity) = 0;
     virtual int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity) = 0;
@@ -68,6 +70,8 @@ public:
     MOCK_METHOD1(GetAnonyString, std::string(const std::string &value));
     MOCK_METHOD2(ReadVolumeUuid, int32_t(const std::string &devPath, std::string &uuid));
     MOCK_METHOD1(GetCDType, std::string(const std::string &diskPath));
+    MOCK_METHOD1(GetOpticalDriveType, std::string(const std::string &diskPath));
+    MOCK_METHOD2(GetOpticalDriveMaxWriteSpeed, int(const std::string &diskPath, int32_t &maxWriteSpeed));
     MOCK_METHOD2(GetCDStatus, int(const char *device, int &status));
     MOCK_METHOD2(GetCdTotalCapacity, int(int fd, int64_t &cdTotalCapacity));
     MOCK_METHOD2(GetCdUsedCapacity, int(int fd, int64_t &cdUsedCapacity));

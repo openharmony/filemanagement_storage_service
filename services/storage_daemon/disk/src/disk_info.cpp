@@ -127,11 +127,6 @@ std::string DiskInfo::GetDevVendor() const
     return vendor_;
 }
 
-std::string DiskInfo::GetDevProduct() const
-{
-    return product_;
-}
-
 int32_t DiskInfo::GetDiskType() const
 {
     return diskType_;
@@ -281,15 +276,19 @@ void DiskInfo::SetExtraInfo()
     std::string scsiBusNum = GetScsiBusNum(sysPath_);
     cJSON_AddStringToObject(json, "scsiBusNum", scsiBusNum.c_str());
     std::string revPath(sysPath_ + "/device/rev");
-    std::string fwVersion = GetScsiBusNum(sysPath_);
+    std::string fwVersion = ReadFileContent(revPath);
     cJSON_AddStringToObject(json, "fwVersion", fwVersion.c_str());
     if (major(device_) == DISK_CD_MAJOR) {
-        extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = GetOpticalDriveType(devPath_);
-        extraInfoJson["ODD_INFO"]["DISC_TYPE"] = GetCDType(devPath_);
-        int32_t maxWriteSpeed = 0;
-        GetOpticalDriveMaxWriteSpeed(devPath_, maxWriteSpeed);
-        extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
-        extraInfoJson["ODD_INFO"]["ODD_DRIVER_TYPE"] = GetOddDriverType(sysPath_);
+        cJSON *oddInfo = cJSON_CreateObject();
+        if (oddInfo != nullptr) {
+            cJSON_AddStringToObject(oddInfo, "DRIVE_TYPE", GetOpticalDriveType(devPath_).c_str());
+            cJSON_AddStringToObject(oddInfo, "DISC_TYPE", GetCDType(devPath_).c_str());
+            int32_t maxWriteSpeed = 0;
+            GetOpticalDriveMaxWriteSpeed(devPath_, maxWriteSpeed);
+            cJSON_AddStringToObject(oddInfo, "MAX_WRITE_SPEED", (std::to_string(maxWriteSpeed) + "X").c_str());
+            cJSON_AddStringToObject(oddInfo, "ODD_DRIVER_TYPE", GetOddDriverType(sysPath_).c_str());
+            cJSON_AddItemToObject(json, "ODD_INFO", oddInfo);
+        }
     }
     char *jsonStr = cJSON_PrintUnformatted(json);
     if (jsonStr != nullptr) {
@@ -719,6 +718,7 @@ int DiskInfo::CreateVolume(dev_t dev, uint32_t partitionNum)
 {
     LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
+    SetExtraInfo();
 
     std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata, partitionNum, extraInfo_);
     if (volumeId.empty()) {

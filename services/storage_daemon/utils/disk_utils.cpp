@@ -955,6 +955,7 @@ std::string GetScsiBusNum(const std::string &sysPath)
     char linkTarget[PATH_MAX] = {0};
     ssize_t len = readlink(deviceLinkPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
     if (len > 0) {
+        linkTarget[len] = '\0';
         std::string linkStr(linkTarget);
         size_t lastSlash = linkStr.find_last_of('/');
         if (lastSlash != std::string::npos && lastSlash + 1 < linkStr.length()) {
@@ -966,7 +967,7 @@ std::string GetScsiBusNum(const std::string &sysPath)
         }
     }
     
-    LOGD("[L3:DiskUtils] GetScsiBusNum: <<< EXIT SUCCESS <<< (empty)");
+    LOGD("[L3:DiskUtils] GetScsiBusNum: <<< EXIT NOT FOUND <<< (empty)");
     return "";
 }
 
