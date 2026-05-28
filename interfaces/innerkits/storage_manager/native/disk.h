@@ -31,6 +31,7 @@ enum DiskType : int32_t {
     CD_FLAG = 3,
     DATA_DISK_SSD = 4,
     DATA_DISK_HDD = 5,
+    DVR_USB = 6,
     DISK_TYPE_UNKNOWN = 255
 };
 class Disk : public Parcelable {
