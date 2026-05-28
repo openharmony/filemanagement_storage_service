@@ -46,6 +46,8 @@ public:
     virtual int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity) = 0;
     virtual int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapacity) = 0;
     virtual int GetDvdConfiguration(int fd, int &dvdMedia) = 0;
+    virtual std::string GetScsiBusNum(const std::string &sysPath) = 0;
+    virtual std::string GetOddDriverType(const std::string &sysPath) = 0;
 public:
     static inline std::shared_ptr<IDiskUtilMoc> diskUtilMoc = nullptr;
 };
@@ -72,6 +74,8 @@ public:
     MOCK_METHOD2(GetDvdTotalCapacity, int(int fd, int64_t &dvdTotalCapacity));
     MOCK_METHOD2(GetDvdUsedCapacity, int(int fd, int64_t &dvdUsedCapacity));
     MOCK_METHOD2(GetDvdConfiguration, int(int fd, int &dvdMedia));
+    MOCK_METHOD1(GetScsiBusNum, std::string(const std::string &sysPath));
+    MOCK_METHOD1(GetOddDriverType, std::string(const std::string &sysPath));
 };
 }
 }

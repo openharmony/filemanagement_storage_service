@@ -997,5 +997,109 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_001, TestSize
 
     GTEST_LOG_(INFO) << "DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_001 end";
 }
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetScsiBusNum_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_001 start";
+    std::string sysPath = "/sys/block/sda";
+    char linkTarget[] = "../../../0:0:0:0";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
+        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
+        return strlen(linkTarget);
+    });
+    
+    std::string result = GetScsiBusNum(sysPath);
+    EXPECT_EQ(result, "0:0:0:0");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_001 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetScsiBusNum_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_002 start";
+    std::string sysPath = "/sys/block/sda";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce(Return(-1));
+    
+    std::string result = GetScsiBusNum(sysPath);
+    EXPECT_TRUE(result.empty());
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_002 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetScsiBusNum_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_003 start";
+    std::string sysPath = "/sys/block/sda";
+    char linkTarget[] = "nodivider";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
+        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
+        return strlen(linkTarget);
+    });
+    
+    std::string result = GetScsiBusNum(sysPath);
+    EXPECT_TRUE(result.empty());
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetScsiBusNum_003 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_001 start";
+    std::string sysPath = "/sys/block/sr0";
+    char linkTarget[] = "../../../usb-storage";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
+        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
+        return strlen(linkTarget);
+    });
+    
+    std::string result = GetOddDriverType(sysPath);
+    EXPECT_EQ(result, "usb-storage");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_001 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_002 start";
+    std::string sysPath = "/sys/block/sr0";
+    char linkTarget[] = "../../../sata-link";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
+        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
+        return strlen(linkTarget);
+    });
+    
+    std::string result = GetOddDriverType(sysPath);
+    EXPECT_EQ(result, "AHCI");
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_002 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_003 start";
+    std::string sysPath = "/sys/block/sr0";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce(Return(-1));
+    
+    std::string result = GetOddDriverType(sysPath);
+    EXPECT_TRUE(result.empty());
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_003 end";
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetOddDriverType_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_004 start";
+    std::string sysPath = "/sys/block/sr0";
+    char linkTarget[] = "../../../other-type";
+    
+    EXPECT_CALL(*diskFuncMock_, readlink(_, _, _)).WillOnce([&](const char* path, char* buf, size_t bufsiz) {
+        strncpy_s(buf, bufsiz, linkTarget, bufsiz - 1);
+        return strlen(linkTarget);
+    });
+    
+    std::string result = GetOddDriverType(sysPath);
+    EXPECT_TRUE(result.empty());
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetOddDriverType_004 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

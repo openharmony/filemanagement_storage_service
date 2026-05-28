@@ -79,8 +79,9 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
                               diskInfo.GetSysPath());
     storageManager_->NotifyDiskCreated(disk);
 
-    LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s",
-         diskInfo.GetDiskId().c_str());
+    LOGI("[L1:StorageManagerClient] NotifyDiskCreated: <<< EXIT SUCCESS <<< diskId=%{public}s,"
+        " extraInfo=%{public}s",
+         diskInfo.GetDiskId().c_str(), diskInfo.GetExtraInfo().c_str());
     return E_OK;
 }
 

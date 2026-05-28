@@ -83,6 +83,8 @@ private:
     /* device vendor infomation */
     std::string vendor_;
     std::string product_;
+    std::string devnum_;
+    std::string busnum_;
     std::string sysPath_;
     int status;
     bool isUserdata;

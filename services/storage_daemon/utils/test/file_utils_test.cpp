@@ -1018,5 +1018,198 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecInteractive_RealInteraction, TestS
     int ret = ForkExecInteractive(cmd, &output, &input);
     EXPECT_EQ(ret, E_OK);
 }
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileContent_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_001 start";
+    
+    std::string result = ReadFileContent("/data/service/not_exist_read_file_test.txt");
+    EXPECT_TRUE(result.empty());
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_001 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileContent_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_002 start";
+    
+    std::ofstream emptyFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(emptyFile.is_open());
+    emptyFile.close();
+    
+    std::string result = ReadFileContent(READ_FILE_TEST_PATH);
+    EXPECT_TRUE(result.empty());
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_002 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileContent_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_003 start";
+    
+    std::ofstream textFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(textFile.is_open());
+    textFile << "hello world";
+    textFile.close();
+    
+    std::string result = ReadFileContent(READ_FILE_TEST_PATH);
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "hello world");
+    
+    DeleteFile(READ_FILE_TEST_PATH);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_003 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileContent_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_004 start";
+    
+    std::ofstream textFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(textFile.is_open());
+    textFile << "line1" << std::endl;
+    textFile << "line2" << std::endl;
+    textFile << "line3";
+    textFile.close();
+    
+    std::string result = ReadFileContent(READ_FILE_TEST_PATH);
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "line1\nline2\nline3");
+    
+    DeleteFile(READ_FILE_TEST_PATH);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_004 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileContent_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_005 start";
+    
+    std::ofstream textFile(READ_FILE_TEST_PATH, std::ios::trunc);
+    ASSERT_TRUE(textFile.is_open());
+    textFile << "test with spaces and	tabs";
+    textFile.close();
+    
+    std::string result = ReadFileContent(READ_FILE_TEST_PATH);
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "test with spaces and\ttabs");
+    
+    DeleteFile(READ_FILE_TEST_PATH);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileContent_005 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_001 start";
+    
+    std::string testDir = "/data/test_parent_dirs";
+    std::string subDir1 = testDir + "/level1";
+    std::string subDir2 = subDir1 + "/level2";
+    MkDir(testDir, S_IRWXU);
+    MkDir(subDir1, S_IRWXU);
+    MkDir(subDir2, S_IRWXU);
+    
+    std::string targetFile = testDir + "/target.txt";
+    std::ofstream file(targetFile);
+    ASSERT_TRUE(file.is_open());
+    file << "found in root";
+    file.close();
+    
+    std::string result = ReadFileInParentDirs(subDir2, "target.txt");
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "found in root");
+    
+    StorageTest::StorageTestUtils::RmDirRecurse(testDir);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_001 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_002 start";
+    
+    std::string testDir = "/data/test_parent_not_found";
+    std::string subDir = testDir + "/level1";
+    MkDir(testDir, S_IRWXU);
+    MkDir(subDir, S_IRWXU);
+    
+    std::string result = ReadFileInParentDirs(subDir, "nonexistent.txt");
+    EXPECT_TRUE(result.empty());
+    
+    StorageTest::StorageTestUtils::RmDirRecurse(testDir);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_002 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_003 start";
+    
+    std::string result = ReadFileInParentDirs("", "test.txt");
+    EXPECT_TRUE(result.empty());
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_003 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_004 start";
+    
+    std::string result = ReadFileInParentDirs("/", "test.txt");
+    EXPECT_TRUE(result.empty());
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_004 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_005 start";
+    
+    std::string testDir = "/data/test_immediate_dir";
+    MkDir(testDir, S_IRWXU);
+    
+    std::string targetFile = testDir + "/immediate.txt";
+    std::ofstream file(targetFile);
+    ASSERT_TRUE(file.is_open());
+    file << "found immediately";
+    file.close();
+    
+    std::string result = ReadFileInParentDirs(testDir, "immediate.txt");
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "found immediately");
+    
+    StorageTest::StorageTestUtils::RmDirRecurse(testDir);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_005 end";
+}
+
+HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_006 start";
+    
+    std::string testDir = "/data/test_multiple_levels";
+    std::string level1 = testDir + "/a";
+    std::string level2 = level1 + "/b";
+    std::string level3 = level2 + "/c";
+    MkDir(testDir, S_IRWXU);
+    MkDir(level1, S_IRWXU);
+    MkDir(level2, S_IRWXU);
+    MkDir(level3, S_IRWXU);
+    
+    std::string targetFile = level1 + "/mid_level.txt";
+    std::ofstream file(targetFile);
+    ASSERT_TRUE(file.is_open());
+    file << "found at mid level";
+    file.close();
+    
+    std::string result = ReadFileInParentDirs(level3, "mid_level.txt");
+    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "found at mid level");
+    
+    StorageTest::StorageTestUtils::RmDirRecurse(testDir);
+    
+    GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_006 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
