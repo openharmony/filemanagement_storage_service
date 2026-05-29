@@ -240,7 +240,7 @@ int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string
         LOGE("[L3:DiskInfo] GetPartitionTableInfo: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
         return E_GET_PARTITION_ERROR;
     }
-    std::vector<std::string> lines = result.second;
+    std::vector<std::string> lines = std::move(result.second);
     for (const auto &line : lines) {
         execRet += line;
         execRet += "\n";
