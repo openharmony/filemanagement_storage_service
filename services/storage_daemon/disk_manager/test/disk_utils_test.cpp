@@ -587,11 +587,12 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithVolumeName, TestSize.Level1)
     std::string devPath = "/dev/block/sda1";
     std::string volName = "test_vol";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
-    EXPECT_EQ(cmd.size(), 4);
+    EXPECT_EQ(cmd.size(), 5);
     EXPECT_EQ(cmd[0], "newfs_msdos");
     EXPECT_EQ(cmd[1], "-L");
     EXPECT_EQ(cmd[2], "test_vol");
-    EXPECT_EQ(cmd[3], devPath);
+    EXPECT_EQ(cmd[3], "-A");
+    EXPECT_EQ(cmd[4], devPath);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithoutVolumeName, TestSize.Level1)
@@ -612,12 +613,13 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithVolumeName, TestSize.Level1)
     std::string devPath = "/dev/block/sda2";
     std::string volName = "ext4_vol";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
-    EXPECT_EQ(cmd.size(), 5);
+    EXPECT_EQ(cmd.size(), 6);
     EXPECT_EQ(cmd[0], "mke2fs");
     EXPECT_EQ(cmd[1], "-L");
     EXPECT_EQ(cmd[2], "ext4_vol");
     EXPECT_EQ(cmd[3], "-t");
     EXPECT_EQ(cmd[4], "ext4");
+    EXPECT_EQ(cmd[5], devPath);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithoutVolumeName, TestSize.Level1)
@@ -626,10 +628,11 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithoutVolumeName, TestSize.Level1)
     std::string devPath = "/dev/block/sda2";
     std::string volName = "";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
-    EXPECT_EQ(cmd.size(), 3);
+    EXPECT_EQ(cmd.size(), 4);
     EXPECT_EQ(cmd[0], "mke2fs");
     EXPECT_EQ(cmd[1], "-t");
     EXPECT_EQ(cmd[2], "ext4");
+    EXPECT_EQ(cmd[3], devPath);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_ExfatWithVolumeName, TestSize.Level1)
