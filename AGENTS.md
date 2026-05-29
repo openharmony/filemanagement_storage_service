@@ -21,6 +21,17 @@ AGENTS.md                        # 入口索引（本文档）
 │   ├─ disk-volume-lifecycle.md      # 磁盘卷生命周期（场景知识）
 │   ├─ crypto-key-management.md      # 密钥管理（场景知识）
 │   └─ storage-quota-monitoring.md   # 空间统计（场景知识）
+│
+├─ docs/storage-statistics/       # 空间统计子系统知识库（详见 knowledge.md）
+│   ├─ 01-architecture.md         # 空间统计架构总览
+│   ├─ 02-core-concepts.md        # 核心概念与术语
+│   ├─ 03-data-structures.md      # 数据结构与字段语义
+│   ├─ 04-workflows/              # 工作流文档
+│   ├─ 05-interfaces/             # 接口参考
+│   ├─ 06-debugging.md            # 调试与排障
+│   └─ 08-faq.md                  # 常见问题
+│
+├─ knowledge.md                   # 空间统计子系统知识库枢纽
 ```
 
 ## 快速索引
@@ -60,6 +71,26 @@ AGENTS.md                        # 入口索引（本文档）
 | EL1-EL5 加密、锁屏/解锁 | `docs/knowledge/crypto-key-management.md` |
 | Manager-Daemon IPC、崩溃恢复 | `docs/knowledge/ipc-interface-guide.md` |
 | 空间统计、配额管理 | `docs/knowledge/storage-quota-monitoring.md` |
+| 空间统计子系统完整知识库 | `knowledge.md` + `docs/storage-statistics/` |
+
+### 空间统计子系统
+
+| 需要了解 | 知识文件 |
+|----------|----------|
+| 空间统计整体架构和模块分层 | `docs/storage-statistics/01-architecture.md` |
+| BundleStats、StorageStats、quota、inode 等术语 | `docs/storage-statistics/02-core-concepts.md` |
+| BundleStats、StorageStats、NextDqBlk 等结构体 | `docs/storage-statistics/03-data-structures.md` |
+| 应用空间统计查询逻辑 | `docs/storage-statistics/04-workflows/01-app-storage-query.md` |
+| 用户分类存储统计逻辑 | `docs/storage-statistics/04-workflows/02-user-category-stats.md` |
+| 总量/可用量查询逻辑 | `docs/storage-statistics/04-workflows/03-total-free-query.md` |
+| 磁盘扫描逻辑或扫描路径 | `docs/storage-statistics/04-workflows/04-disk-scan.md` |
+| 存储监控阈值或缓存清理策略 | `docs/storage-statistics/04-workflows/05-storage-monitor-clean.md` |
+| DFX/日志/雷达打点 | `docs/storage-statistics/04-workflows/06-dfx-report.md` |
+| JS公共API接口 | `docs/storage-statistics/05-interfaces/01-js-public-api.md` |
+| JS系统API接口 | `docs/storage-statistics/05-interfaces/02-js-system-api.md` |
+| 模块内部及IPC接口 | `docs/storage-statistics/05-interfaces/03-inner-api.md` |
+| 日志查看、状态检查、问题定位 | `docs/storage-statistics/06-debugging.md` |
+| 空间统计常见问题 | `docs/storage-statistics/08-faq.md` |
 
 ### 调试与依赖
 
