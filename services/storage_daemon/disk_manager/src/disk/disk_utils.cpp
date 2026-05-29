@@ -212,6 +212,10 @@ int32_t DiskUtils::Partition(const std::string& diskPath,
 
 int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
 {
+    if (!IsValidBlockDevicePath(devPath)) {
+        LOGE("DiskUtils::GetPartitionTableInfo invalid devPath");
+        return E_PARAMS_INVALID;
+    }
     std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
     std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
     std::thread partitionThread([devPath, p = std::move(promise)]() mutable {
