@@ -14,6 +14,9 @@
  */
 
 #include "netlink/netlink_handler.h"
+#ifdef DISK_MANAGER
+#include "disk_manager_client.h"
+#endif
 
 #include "disk/disk_manager.h"
 #include "storage_service_errno.h"
@@ -51,20 +54,27 @@ int32_t NetlinkHandler::Stop()
 
 void NetlinkHandler::OnEvent(char *msg)
 {
-    LOGD("[L1:NetlinkHandler] OnEvent: >>> ENTER <<<");
-
+    if (msg == nullptr) {
+        LOGE("NetlinkHandler::OnEvent msg is nullptr");
+        return;
+    }
+    std::string convertedMsg;
+    for (char *p = msg; *p; p += strlen(p) + 1) {
+        if (!convertedMsg.empty()) convertedMsg += '\n';
+        convertedMsg += p;
+    }
     auto nlData = std::make_unique<NetlinkData>();
     nlData->Decode(msg);
-    if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
-        LOGI("[L1:NetlinkHandler] OnEvent: block device event, sysPath=%{public}s, devPath=%{public}s,"
-             "subsystem=%{public}s, action=%{public}d",
-            nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
-            nlData->GetSubsystem().c_str(), nlData->GetAction());
-        DiskManager::Instance().HandleDiskEvent(nlData.get());
-        LOGI("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< block event handled");
-    } else {
-        LOGI("[L1:NetlinkHandler] OnEvent: <<< EXIT SUCCESS <<< non-block subsystem=%{public}s, skipped",
-            nlData->GetSubsystem().c_str());
+
+    if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0 && nlData.get()->GetParam("DEVTYPE") == "disk") {
+        auto matchedDisk = DiskManager::Instance().MatchConfig(nlData.get());
+        if (matchedDisk == nullptr) {
+            LOGI("devPath=%{public}s not in whitelist, skip", nlData->GetDevpath().c_str());
+            return;
+        }
+#ifdef DISK_MANAGER
+        DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->OnBlockDiskUevent(convertedMsg);
+#endif
     }
 }
 } // StorageDaemon

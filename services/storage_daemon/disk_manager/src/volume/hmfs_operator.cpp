@@ -23,12 +23,17 @@
 #include <cerrno>
 #include <sys/mount.h>
 #include <vector>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace OHOS {
 namespace StorageDaemon {
 
 constexpr const char* HMFS_MOUNT_CONTEXT = "context=u:object_r:mnt_external_file:s0,noacl";
 constexpr unsigned long MOUNT_FLAG_MIGRATION_RO = 0x8000;
+constexpr uid_t ROOT_UID = 0;
+constexpr gid_t FILE_MANAGER_GID = 1006;
+constexpr mode_t MOUNT_DIR_MODE = 0775;
 
 int32_t HmfsOperator::DoMount(const std::string& devPath,
     const std::string& mountPath,
@@ -55,6 +60,17 @@ int32_t HmfsOperator::DoMount(const std::string& devPath,
         if (ret != E_OK) {
             LOGE("HmfsOperator::DoMount mount failed, errno=%{public}d", errno);
             return E_HMFS_MOUNT;
+        }
+    }
+
+    if (mountFlags != MOUNT_FLAG_MIGRATION_RO) {
+        if (chmod(mountPath.c_str(), MOUNT_DIR_MODE) != 0) {
+            LOGE("HmfsOperator::DoMount chmod failed on %{public}s, errno=%{public}d",
+                 mountPath.c_str(), errno);
+        }
+        if (chown(mountPath.c_str(), ROOT_UID, FILE_MANAGER_GID) != 0) {
+            LOGE("HmfsOperator::DoMount chown failed on %{public}s, errno=%{public}d",
+                 mountPath.c_str(), errno);
         }
     }
 

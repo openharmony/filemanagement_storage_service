@@ -127,37 +127,37 @@ HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_PathTooLong, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_PathTraversal, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/../sda1", 0600, 8, 1);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/../uttestdisk1", 0600, 8, 1);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_InvalidPrefix, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/sda1", 0600, 8, 1);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/uttestdisk1", 0600, 8, 1);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_MajorNegative, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/sda1", 0600, -1, 1);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/uttestdisk1", 0600, -1, 1);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_MajorTooLarge, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/sda1", 0600, 4096, 1);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/uttestdisk1", 0600, 4096, 1);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_MinorNegative, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/sda1", 0600, 8, -1);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/uttestdisk1", 0600, 8, -1);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_MinorTooLarge, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/sda1", 0600, 8, 1048576);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode("/dev/block/uttestdisk1", 0600, 8, 1048576);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
@@ -169,13 +169,13 @@ HWTEST_F(ExtDiskUtilsTest, DestroyBlockDeviceNode_EmptyPath, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, DestroyBlockDeviceNode_PathTraversal, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::DestroyBlockDeviceNode("/dev/block/../sda1");
+    int32_t ret = DiskUtils::DestroyBlockDeviceNode("/dev/block/../uttestdisk1");
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtDiskUtilsTest, DestroyBlockDeviceNode_InvalidPrefix, TestSize.Level1)
 {
-    int32_t ret = DiskUtils::DestroyBlockDeviceNode("/dev/sda1");
+    int32_t ret = DiskUtils::DestroyBlockDeviceNode("/dev/uttestdisk1");
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
@@ -200,7 +200,7 @@ HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_ForkExecFailed, TestSize.Level1)
     std::string output;
     int32_t maxVolume = 0;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    int32_t ret = DiskUtils::ReadPartitionTable("/dev/block/sda", output, maxVolume);
+    int32_t ret = DiskUtils::ReadPartitionTable("/dev/block/uttestdisk", output, maxVolume);
     EXPECT_EQ(ret, E_ERR);
 }
 
@@ -220,7 +220,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_ZapFailed, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_ERR));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "");
     EXPECT_EQ(ret, E_ERR);
 }
 
@@ -229,7 +229,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_PartFailed, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_OK))
         .WillOnce(Return(E_ERR));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "");
     EXPECT_EQ(ret, E_ERR);
 }
 
@@ -238,7 +238,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_Success, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .Times(2)
         .WillRepeatedly(Return(E_OK));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "");
     EXPECT_EQ(ret, E_OK);
 }
 
@@ -269,7 +269,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_SuccessWithOutput, TestSize.Level1)
             output->push_back("part line 1");
             return E_OK;
         }));
-    int32_t ret = DiskUtils::Partition("/dev/block/sda", "");
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "");
     EXPECT_EQ(ret, E_OK);
 }
 
@@ -313,7 +313,7 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_InvalidPrefix, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_ForkExecFailed, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
@@ -322,11 +322,11 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_ForkExecFailed, TestSize.Level1
 
 HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_Success, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Disk /dev/block/sda: 100 GiB");
+            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB");
             lines->push_back("Number  Start  End  Size  Type");
             return E_OK;
         }));
@@ -370,7 +370,7 @@ HWTEST_F(ExtDiskUtilsTest, CreatePartition_InvalidPrefix, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, CreatePartition_ForkExecFailed, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
     int64_t startSector = 2048;
     int64_t endSector = 102400;
@@ -382,7 +382,7 @@ HWTEST_F(ExtDiskUtilsTest, CreatePartition_ForkExecFailed, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, CreatePartition_Success, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
     int64_t startSector = 2048;
     int64_t endSector = 102400;
@@ -398,7 +398,7 @@ HWTEST_F(ExtDiskUtilsTest, CreatePartition_Success, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, CreatePartition_WithVfatType, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 2;
     int64_t startSector = 2048;
     int64_t endSector = 204800;
@@ -434,7 +434,7 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_InvalidPrefix, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_ForkExecFailed, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
@@ -443,7 +443,7 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_ForkExecFailed, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_Success, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
@@ -456,7 +456,7 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_Success, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_WithDifferentPartitionNum, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 5;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
@@ -495,7 +495,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_InvalidPrefix, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_UnsupportedFsType, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     std::string fsType = "unsupported_fs";
     std::string volumeName = "test_volume";
     bool quickFormat = true;
@@ -505,7 +505,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_UnsupportedFsType, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_ForkExecFailed, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     std::string fsType = "ext4";
     std::string volumeName = "test_volume";
     bool quickFormat = true;
@@ -516,7 +516,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_ForkExecFailed, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithExt4, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda1";
+    std::string devPath = "/dev/block/uttestdisk1";
     std::string fsType = "ext4";
     std::string volumeName = "test_volume";
     bool quickFormat = true;
@@ -531,7 +531,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithExt4, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithVfat, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda2";
+    std::string devPath = "/dev/block/uttestdisk2";
     std::string fsType = "vfat";
     std::string volumeName = "test_vfat";
     bool quickFormat = true;
@@ -546,7 +546,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithVfat, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithExfat, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda3";
+    std::string devPath = "/dev/block/uttestdisk3";
     std::string fsType = "exfat";
     std::string volumeName = "test_exfat";
     bool quickFormat = true;
@@ -561,7 +561,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithExfat, TestSize.Level1)
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithoutVolumeName, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda4";
+    std::string devPath = "/dev/block/uttestdisk4";
     std::string fsType = "ext4";
     std::string volumeName = "";
     bool quickFormat = true;
@@ -572,7 +572,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_SuccessWithoutVolumeName, TestSize.Le
 
 HWTEST_F(ExtDiskUtilsTest, FormatPartition_QuickFormatFalse, TestSize.Level1)
 {
-    std::string devPath = "/dev/block/sda5";
+    std::string devPath = "/dev/block/uttestdisk5";
     std::string fsType = "ext4";
     std::string volumeName = "test_volume";
     bool quickFormat = false;
@@ -584,7 +584,7 @@ HWTEST_F(ExtDiskUtilsTest, FormatPartition_QuickFormatFalse, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithVolumeName, TestSize.Level1)
 {
     std::string fsType = "vfat";
-    std::string devPath = "/dev/block/sda1";
+    std::string devPath = "/dev/block/uttestdisk1";
     std::string volName = "test_vol";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 5);
@@ -598,7 +598,7 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithoutVolumeName, TestSize.Level1)
 {
     std::string fsType = "vfat";
-    std::string devPath = "/dev/block/sda1";
+    std::string devPath = "/dev/block/uttestdisk1";
     std::string volName = "";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 3);
@@ -610,7 +610,7 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_VfatWithoutVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithVolumeName, TestSize.Level1)
 {
     std::string fsType = "ext4";
-    std::string devPath = "/dev/block/sda2";
+    std::string devPath = "/dev/block/uttestdisk2";
     std::string volName = "ext4_vol";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 6);
@@ -625,7 +625,7 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithoutVolumeName, TestSize.Level1)
 {
     std::string fsType = "ext4";
-    std::string devPath = "/dev/block/sda2";
+    std::string devPath = "/dev/block/uttestdisk2";
     std::string volName = "";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 4);
@@ -638,7 +638,7 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_Ext4WithoutVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_ExfatWithVolumeName, TestSize.Level1)
 {
     std::string fsType = "exfat";
-    std::string devPath = "/dev/block/sda3";
+    std::string devPath = "/dev/block/uttestdisk3";
     std::string volName = "exfat_vol";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 4);
@@ -651,7 +651,7 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_ExfatWithVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_ExfatWithoutVolumeName, TestSize.Level1)
 {
     std::string fsType = "exfat";
-    std::string devPath = "/dev/block/sda3";
+    std::string devPath = "/dev/block/uttestdisk3";
     std::string volName = "";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_EQ(cmd.size(), 2);
@@ -662,10 +662,187 @@ HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_ExfatWithoutVolumeName, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetFormatCMD_UnsupportedFsType, TestSize.Level1)
 {
     std::string fsType = "unsupported";
-    std::string devPath = "/dev/block/sda";
+    std::string devPath = "/dev/block/uttestdisk";
     std::string volName = "test";
     std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volName);
     EXPECT_TRUE(cmd.empty());
+}
+
+/**
+ * @tc.name: Partition_HmfsPathTraversal_001
+ * @tc.desc: Verify Partition with hmfs type and path traversal returns E_PARAMS_INVALID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsPathTraversal_001, TestSize.Level1)
+{
+    int32_t ret = DiskUtils::Partition("/dev/block/../sda", "hmfs");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+/**
+ * @tc.name: Partition_HmfsClearFailed_001
+ * @tc.desc: Verify Partition with hmfs type fails when sgdisk clear (step 1) fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsClearFailed_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_ERR);
+}
+
+/**
+ * @tc.name: Partition_HmfsPartFailed_001
+ * @tc.desc: Verify Partition with hmfs type fails when sgdisk partition (step 2) fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsPartFailed_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_ERR);
+}
+
+/**
+ * @tc.name: Partition_HmfsSuccess_001
+ * @tc.desc: Verify Partition with hmfs type succeeds when all three steps (clear, partition, mkfs) succeed.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsSuccess_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .Times(3)
+        .WillRepeatedly(Return(E_OK));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: Partition_HmfsSuccessWithOutput_001
+ * @tc.desc: Verify Partition with hmfs type handles output from all three steps correctly.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsSuccessWithOutput_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("GPT entries cleared");
+            return E_OK;
+        }))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Partition 1 created");
+            return E_OK;
+        }))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Info: format successful");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: Partition_HmfsVerifyClearCmd_001
+ * @tc.desc: Verify PartitionHmfs invokes sgdisk with -zog flag for clear step.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyClearCmd_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *, int *) {
+            EXPECT_EQ(cmd.size(), 3u);
+            EXPECT_EQ(cmd[1], "-zog");
+            return E_OK;
+        }))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: Partition_HmfsVerifyPartCmd_001
+ * @tc.desc: Verify PartitionHmfs invokes sgdisk with correct partition flags.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyPartCmd_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *, int *) {
+            EXPECT_EQ(cmd.size(), 4u);
+            EXPECT_EQ(cmd[1], "--new=0:0:-0");
+            EXPECT_EQ(cmd[2], "--typecode=0:8300");
+            return E_OK;
+        }))
+        .WillOnce(Return(E_OK));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExtDiskUtilsTest, CreateBlockDeviceNode_AlreadyExists, TestSize.Level1)
+{
+    std::string path = "/dev/block/ut_eexist_test_node_" + std::to_string(getpid());
+    dev_t dev = makedev(8, 200);
+    mode_t mode = 0660 | S_IFBLK;
+    ASSERT_EQ(mknod(path.c_str(), mode, dev), 0);
+    int32_t ret = DiskUtils::CreateBlockDeviceNode(path, 0660, 8, 200);
+    EXPECT_EQ(ret, E_OK);
+    unlink(path.c_str());
+}
+
+HWTEST_F(ExtDiskUtilsTest, DestroyBlockDeviceNode_NotExists, TestSize.Level1)
+{
+    std::string path = "/dev/block/ut_enoent_test_node_" + std::to_string(getpid());
+    unlink(path.c_str());
+    int32_t ret = DiskUtils::DestroyBlockDeviceNode(path);
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: Partition_HmfsMkfsFailed_001
+ * @tc.desc: Verify PartitionHmfs fails when mkfs.f2fs (step 3) fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsMkfsFailed_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_ERR);
+}
+
+/**
+ * @tc.name: Partition_HmfsVerifyMkfsCmd_001
+ * @tc.desc: Verify PartitionHmfs invokes mkfs.f2fs with correct flags for step 3.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyMkfsCmd_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *, int *) {
+            EXPECT_EQ(cmd.size(), 9u);
+            EXPECT_EQ(cmd[0], "mkfs.f2fs");
+            EXPECT_EQ(cmd[1], "-d1");
+            EXPECT_EQ(cmd[2], "-O");
+            EXPECT_EQ(cmd[3], "encrypt");
+            EXPECT_EQ(cmd[4], "-O");
+            EXPECT_EQ(cmd[5], "verity");
+            EXPECT_EQ(cmd[6], "-O");
+            EXPECT_EQ(cmd[7], "sb_checksum");
+            // cmd[8] is "/dev/block/uttestdisk1" (diskPath + "1")
+            EXPECT_NE(cmd[8].find("uttestdisk1"), std::string::npos);
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
+    EXPECT_EQ(ret, E_OK);
 }
 
 HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_IoHdrMemsetFailed, TestSize.Level1)

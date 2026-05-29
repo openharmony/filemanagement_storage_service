@@ -139,6 +139,75 @@ int32_t StartSocket(int32_t& socketFd)
     }
     return 0;
 }
+
+/**
+ * @tc.name: NetlinkHandlerTest_OnEvent_NullMsg_001
+ * @tc.desc: Verify OnEvent does not crash when msg is nullptr.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_OnEvent_NullMsg_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_NullMsg_001 start";
+    int32_t socket = -1;
+    std::shared_ptr<NetlinkHandler> handler = std::make_shared<NetlinkHandler>(socket);
+    char *nullMsg = nullptr;
+    handler->OnEvent(nullMsg);
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_NullMsg_001 end";
+}
+
+/**
+ * @tc.name: NetlinkHandlerTest_OnEvent_NonBlockSubsystem_001
+ * @tc.desc: Verify OnEvent skips events with non-block subsystem.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_OnEvent_NonBlockSubsystem_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_NonBlockSubsystem_001 start";
+    int32_t socket = -1;
+    std::shared_ptr<NetlinkHandler> handler = std::make_shared<NetlinkHandler>(socket);
+
+    std::string msg = "ACTION=add\0SUBSYSTEM=usb\0DEVPATH=/devices/usb1";
+    msg.resize(msg.size() + 1);
+    handler->OnEvent(const_cast<char *>(msg.c_str()));
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_NonBlockSubsystem_001 end";
+}
+
+/**
+ * @tc.name: NetlinkHandlerTest_OnEvent_BlockPartitionSkipped_001
+ * @tc.desc: Verify OnEvent skips block events where DEVTYPE is not disk (e.g. partition).
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_OnEvent_BlockPartitionSkipped_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_BlockPartitionSkipped_001 start";
+    int32_t socket = -1;
+    std::shared_ptr<NetlinkHandler> handler = std::make_shared<NetlinkHandler>(socket);
+
+    std::string msg = "ACTION=add\0SUBSYSTEM=block\0DEVTYPE=partition\0DEVPATH=/devices/sda1";
+    msg.resize(msg.size() + 1);
+    handler->OnEvent(const_cast<char *>(msg.c_str()));
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_BlockPartitionSkipped_001 end";
+}
+
+/**
+ * @tc.name: NetlinkHandlerTest_OnEvent_EmptyMsg_001
+ * @tc.desc: Verify OnEvent handles empty message without crash.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(NetlinkHandlerTest, NetlinkHandlerTest_OnEvent_EmptyMsg_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_EmptyMsg_001 start";
+    int32_t socket = -1;
+    std::shared_ptr<NetlinkHandler> handler = std::make_shared<NetlinkHandler>(socket);
+    char emptyMsg[] = "";
+    handler->OnEvent(emptyMsg);
+    GTEST_LOG_(INFO) << "NetlinkHandlerTest_OnEvent_EmptyMsg_001 end";
+}
+
 } // STORAGE_DAEMON
 } // OHOS
 

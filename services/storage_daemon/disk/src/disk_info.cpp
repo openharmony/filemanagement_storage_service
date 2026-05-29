@@ -158,7 +158,6 @@ std::list<std::string> DiskInfo::GetVolumeIds() const
 
 DiskInfo::~DiskInfo()
 {
-    DestroyDiskNode(devPath_);
 }
 
 int DiskInfo::Create()

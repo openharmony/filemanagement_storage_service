@@ -13,12 +13,14 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <climits>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <thread>
 #include <unistd.h>
 
 #include "disk_manager/volume/ivolume_operator.h"
@@ -350,6 +352,43 @@ HWTEST_F(ExtIVolumeOperatorTest, ReadMetadata_RealpathFailed, TestSize.Level1)
     std::string uuid, type, label;
     int32_t ret = dummy.ReadMetadata("/dev/block/nonexistent_device", uuid, type, label);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountSuccess, TestSize.Level1)
+{
+    std::string path = testDir_ + "/async_mount_ok";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _))
+        .WillOnce(Invoke([](const std::string &, const std::string &, unsigned long,
+                            const std::string &) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            return E_OK;
+        }));
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountFail_CleanupMountPath, TestSize.Level1)
+{
+    std::string path = testDir_ + "/async_mount_fail";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _))
+        .WillOnce(Invoke([](const std::string &, const std::string &, unsigned long,
+                            const std::string &) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            return E_ERR;
+        }));
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_NE(access(path.c_str(), F_OK), 0);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountImmediateReturn, TestSize.Level1)
+{
+    std::string path = testDir_ + "/async_mount_immediate";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0);
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
 }
 
 } // namespace StorageDaemon

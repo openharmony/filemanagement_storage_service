@@ -238,6 +238,10 @@ ohos_executable("storage_daemon") {
     "json:nlohmann_json_static",
   ]
 
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines += [
       "USER_CRYPTO_MANAGER",

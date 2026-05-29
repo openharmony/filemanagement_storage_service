@@ -89,7 +89,8 @@
         "usb_manager",
         "runtime_core",
         "json",
-        "resource_schedule_service"
+        "resource_schedule_service",
+        "disk_manager"
       ]
     },
     "build": {
@@ -98,8 +99,7 @@
         "fwk_group": [
           "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js",
           "//foundation/filemanagement/storage_service/interfaces/kits/taihe/key_manager:storage_service_key_manager_taihe",
-          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/storage_statistics:storage_service_storage_statistics_taihe",
-          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/volume_manager:storage_service_volume_manager_taihe"
+          "//foundation/filemanagement/storage_service/interfaces/kits/taihe/storage_statistics:storage_service_storage_statistics_taihe"
         ],
         "service_group": [
           "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",

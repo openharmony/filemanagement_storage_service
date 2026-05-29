@@ -20,6 +20,7 @@
 #include "disk.h"
 #include "message_parcel.h"
 #include "mock/uece_activation_callback_mock.h"
+#include "mock/disk_manager_client_mock.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
@@ -79,11 +80,26 @@ public:
     void TearDown();
 
     StorageManagerProvider *storageManagerProviderTest_;
+    std::shared_ptr<DiskManager::DiskManagerClientMock> dmClientMock_;
 };
 
 void StorageManagerProviderTest::SetUp(void)
 {
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
+    dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
+    DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
+    ON_CALL(*dmClientMock_, Mount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllVolumes(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetVolumeByUuid(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetVolumeById(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetFreeSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetTotalSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllDisks(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetDiskById(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Partition(_, _)).WillByDefault(Return(E_OK));
 }
 
 void StorageManagerProviderTest::TearDown(void)
@@ -342,7 +358,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_003, TestS
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_002 start";
     std::string volumeId = "testVolumeId";
     auto ret = storageManagerProviderTest_->Mount(volumeId);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_003 end";
 }
 
@@ -356,7 +372,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_003, Tes
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_002 start";
     std::string volumeId = "testVolumeId";
     auto ret = storageManagerProviderTest_->Unmount(volumeId);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_003 end";
 }
 
@@ -426,7 +442,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Partition_002, T
     std::string diskId = "testDiskId";
     int32_t type = 1;
     auto ret = storageManagerProviderTest_->Partition(diskId, type);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Partition_002 end";
 }
 
@@ -445,36 +461,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_003,
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_GetVolumeByUuid_003
- * @tc.desc: Verify the GetVolumeByUuid function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeByUuid_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeByUuid_003 start";
-    std::string fsUuid = "testUuid";
-    VolumeExternal volume;
-    auto ret = storageManagerProviderTest_->GetVolumeByUuid(fsUuid, volume);
-    EXPECT_NE(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeByUuid_003 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetVolumeById_003
- * @tc.desc: Verify the GetVolumeById function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeById_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeById_003 start";
-    std::string volumeId = "testVolumeId";
-    VolumeExternal volume;
-    auto ret = storageManagerProviderTest_->GetVolumeById(volumeId, volume);
-    EXPECT_NE(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeById_003 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_SetVolumeDescription_003
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
@@ -485,7 +471,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescrip
     std::string fsUuid = "testUuid";
     std::string description = "Test Volume Description";
     auto ret = storageManagerProviderTest_->SetVolumeDescription(fsUuid, description);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetVolumeDescription_003 end";
 }
 
@@ -500,7 +486,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Format_003, Test
     std::string volumeId = "testVolumeId";
     std::string fsType = "ext4";
     auto ret = storageManagerProviderTest_->Format(volumeId, fsType);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_Format_003 end";
 }
 
@@ -604,7 +590,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSizeOfVol
     std::string volumeUuid = "test-volume-uuid";
     int64_t freeSize = 0;
     auto ret = storageManagerProviderTest_->GetFreeSizeOfVolume(volumeUuid, freeSize);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeSizeOfVolume_003 end";
 }
 
@@ -619,7 +605,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVo
     const std::string volumeUuid = "test_volume_uuid";
     int64_t totalSize = 0;
     auto ret = storageManagerProviderTest_->GetTotalSizeOfVolume(volumeUuid, totalSize);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_003 end";
 }
 

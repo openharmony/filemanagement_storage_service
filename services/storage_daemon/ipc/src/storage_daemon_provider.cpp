@@ -2384,6 +2384,17 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
     }
 
     ret = op->Check(verifiedPath);
+    if (ret == E_VOL_NEED_FIX && autoFix) {
+        LOGI("[L1:StorageDaemonProvider] Check: need fix, auto repairing devPath=%{public}s", devPath.c_str());
+        ret = op->Repair(verifiedPath);
+        if (ret != E_OK) {
+            LOGE("[L1:StorageDaemonProvider] Check: auto repair failed, ret=%{public}d", ret);
+            StorageService::StorageRadar::ReportVolumeOperation("Operator::Repair", ret);
+            return ret;
+        }
+        LOGI("[L1:StorageDaemonProvider] Check: auto repair success");
+        return E_OK;
+    }
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Check: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("Operator::Check", ret);
