@@ -123,7 +123,7 @@ struct AllAppVec {
     std::vector<UidSaInfo> sysSaVec;     // 系统SA
     std::vector<UidSaInfo> sysAppVec;    // 系统应用
     std::vector<UidSaInfo> userAppVec;   // 用户应用
-    std::vector<UidSaInfo> otherAppVec;  // 其他应用
+    std::vector<UidSaInfo> otherAppVec;  // 其余应用
 };
 ```
 
@@ -132,7 +132,7 @@ struct AllAppVec {
 | sysSaVec | std::vector\<UidSaInfo\> | 系统SA列表 |
 | sysAppVec | std::vector\<UidSaInfo\> | 系统应用列表 |
 | userAppVec | std::vector\<UidSaInfo\> | 用户安装的应用列表 |
-| otherAppVec | std::vector\<UidSaInfo\> | 其他应用列表 |
+| otherAppVec | std::vector\<UidSaInfo\> | 其余应用列表 |
 
 ---
 

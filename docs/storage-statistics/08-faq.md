@@ -63,7 +63,7 @@ A: StorageManagerScan有以下前置条件：
 1. 设备必须正在充电
 2. 屏幕必须关闭（息屏状态）
 3. 电量必须大于10%
-4. 距上次扫描必须超过24小时（首次扫描除外）
+4. 距上次扫描必须超过24小时（初次扫描除外）
 检查所有条件是否同时满足。
 
 详见 docs/storage-statistics/04-workflows/04-disk-scan.md

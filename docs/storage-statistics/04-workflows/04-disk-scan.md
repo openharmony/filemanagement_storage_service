@@ -27,7 +27,7 @@ graph TD
 - Init: 监听COMMON_EVENT_USER_UNLOCKED广播
 - StartScan: 设备正在充电 + 屏幕关闭 + 电量>10%
 - StopScan: 不满足上述条件时
-- 防重入: CheckScanPreconditions要求首次扫描或距上次>=24小时
+- 防重入: CheckScanPreconditions要求初次扫描或距上次>=24小时
 
 ## 扫描执行流程
 

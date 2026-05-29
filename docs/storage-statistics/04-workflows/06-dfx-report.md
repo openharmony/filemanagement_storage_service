@@ -68,7 +68,7 @@ HAP/SA统计上报的extraData包含：
 - {main_blkaddr data:X MB, ovp_chunks data:X MB, metaData:X MB} — HMFS元数据
 - {anco image size:X MB} — ANCO镜像
 - {iNodes count:X, iNodes size:X MB} — inode使用
-- {sa totalSize:X MB, other totalSize:X MB} — SA和其他应用总占用
+- {sa totalSize:X MB, other totalSize:X MB} — SA及非SA应用总占用
 - {Sa data:uid:X,saName:XXX,size:X MB,iNodes:X} — 四类应用详情
 
 ## 目录统计上报流程

@@ -113,7 +113,7 @@ sequenceDiagram
 
 Inode阈值参数: const.storage_service.inode_alert_policy
 默认值: notify_l:25000/notify_m:100000/notify_h:10%/clean_l:37500/clean_m:5%/clean_h:12%
-支持绝对数字和百分比
+支持具体数值和百分比
 
 ### 时间阈值常量
 
