@@ -31,6 +31,8 @@ public:
     virtual bool UpgradeKey(KeyContext &ctx);
     virtual int32_t GenerateKey(const UserAuth &auth, KeyBlob &keyOut) = 0;
     virtual KeyBlob GenerateRandomKey(uint32_t keyLen) = 0;
+    virtual bool IsSupportNewAuthType() = 0;
+    virtual bool GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer) = 0;
 public:
     static inline std::shared_ptr<IHuksMaster> huksMasterMock = nullptr;
 };
@@ -44,6 +46,8 @@ public:
     MOCK_METHOD1(UpgradeKey, bool(KeyContext &ctx));
     MOCK_METHOD2(GenerateKey, int32_t(const UserAuth &auth, KeyBlob &keyOut));
     MOCK_METHOD1(GenerateRandomKey, KeyBlob(uint32_t keyLen));
+    MOCK_METHOD(bool, IsSupportNewAuthType, ());
+    MOCK_METHOD(bool, GetHuksVersion, (uint32_t &, uint32_t &));
 };
 }
 }

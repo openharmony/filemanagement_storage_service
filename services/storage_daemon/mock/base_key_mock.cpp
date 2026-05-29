@@ -201,3 +201,11 @@ int32_t BaseKey::InactiveKey(uint32_t flag, const std::string &mnt)
     }
     return IBaseKeyMoc::baseKeyMoc->InactiveKey(flag, mnt);
 }
+
+bool BaseKey::NeedUpgradeAuthType()
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return false;
+    }
+    return IBaseKeyMoc::baseKeyMoc->NeedUpgradeAuthType();
+}

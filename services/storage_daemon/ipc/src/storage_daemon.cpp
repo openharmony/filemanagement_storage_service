@@ -1958,7 +1958,7 @@ void StorageDaemon::UpgradeEl5AuthType(uint32_t userId, const std::vector<uint8_
         uint64_t secureUid = 0;
         KeyManager::GetInstance().GetSecureUid(userId, secureUid);
 
-        UserTokenSecret userTokenSecretDelete = {token, {}, {}, secureUid};
+        UserTokenSecret userTokenSecretDelete = {token, secret, {}, secureUid};
         int ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretDelete, EL5_KEY);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemon] Delete EL5 failed: %{public}d", ret);
@@ -1967,7 +1967,7 @@ void StorageDaemon::UpgradeEl5AuthType(uint32_t userId, const std::vector<uint8_
             return;
         }
 
-        UserTokenSecret userTokenSecretCreate = {token, secret, secret, secureUid};
+        UserTokenSecret userTokenSecretCreate = {token, {}, secret, secureUid};
         ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretCreate, EL5_KEY);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemon] Create EL5 failed: %{public}d", ret);

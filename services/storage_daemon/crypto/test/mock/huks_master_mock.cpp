@@ -81,3 +81,11 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     }
     return IHuksMaster::huksMasterMock->GenerateRandomKey(keyLen);
 }
+
+bool HuksMaster::IsSupportNewAuthType()
+{
+    if (IHuksMaster::huksMasterMock == nullptr) {
+        return false;
+    }
+    return IHuksMaster::huksMasterMock->IsSupportNewAuthType();
+}

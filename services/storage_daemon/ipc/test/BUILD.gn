@@ -39,6 +39,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
+    "${storage_daemon_path}/crypto/test/mock",
     "${storage_manager_path}/include",
     "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/utils",
@@ -58,7 +59,9 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/mock/iam_client_mock.cpp",
     "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
-    "$ROOT_DIR/crypto/src/huks_master.cpp",
+    "${storage_daemon_path}/crypto/test/mock/huks_master_mock.cpp",
+    "$ROOT_DIR/mock/base_key_mock.cpp",
+    "$ROOT_DIR/crypto/src/fscrypt_key_v2.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
@@ -70,6 +73,7 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   deps = [
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
@@ -208,11 +212,7 @@ ohos_unittest("storage_daemon_provider_test") {
   ]
 
   if (storage_service_user_crypto_manager) {
-    defines += [
-      "USER_CRYPTO_MANAGER",
-      "USER_CRYPTO_MIGRATE_KEY",
-      "PC_USER_MANAGER",
-    ]
+    defines += [ "USER_CRYPTO_MANAGER" ]
   }
 
   if (storage_service_external_storage_manager) {
@@ -230,25 +230,11 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/ipc/src",
     "${storage_daemon_path}/ipc/test",
     "${storage_daemon_path}/include/crypto",
-    "${storage_daemon_path}/include/mock",
   ]
 
   sources = [
     "${storage_daemon_path}/crypto/test/key_manager_mock.cpp",
     "${storage_daemon_path}/crypto/test/key_manager_ext_mock.cpp",
-    "${storage_daemon_path}/crypto/src/app_clone_key_manager.cpp",
-    "${storage_daemon_path}/crypto/src/base_key.cpp",
-    "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
-    "${storage_daemon_path}/crypto/src/fbex.cpp",
-    "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
-    "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
-    "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
-    "${storage_daemon_path}/crypto/src/huks_master.cpp",
-    "${storage_daemon_path}/crypto/src/iam_client.cpp",
-    "${storage_daemon_path}/crypto/src/key_backup.cpp",
-    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
-    "${storage_daemon_path}/crypto/src/openssl_crypto.cpp",
-    "${storage_daemon_path}/crypto/src/recover_manager.cpp",
     "${storage_daemon_path}/disk/src/disk_info.cpp",
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
@@ -267,7 +253,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/volume/src/process.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
-    "${storage_daemon_path}/utils/disk_utils.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
@@ -282,16 +267,12 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_params.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_table_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/format_params.cpp",
-    "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
@@ -318,15 +299,14 @@ ohos_unittest("storage_daemon_provider_test") {
     "hitrace:hitrace_meter",
     "huks:libhukssdk",
     "init:libbegetutil",
-    "init:libbeget_proxy",
     "ipc:ipc_single",
     "ipc:libdbinder",
     "json:nlohmann_json_static",
-    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
+    "json:nlohmann_json_static",
   ]
 
   if (storage_service_cloud_fuse) {
@@ -345,33 +325,6 @@ ohos_unittest("storage_daemon_provider_test") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
-  }
-
-  if (storage_service_el5_filekey_manager) {
-    defines += [ "EL5_FILEKEY_MANAGER" ]
-  }
-
-  if (enable_screenlock_manager) {
-    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
-    external_deps += [ "screenlock_mgr:screenlock_client" ]
-  }
-
-  if (enable_tee_client) {
-    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
-    external_deps += [ "tee_client:libteec" ]
-  }
-
-  if (storage_service_external_storage_qos_trans) {
-    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
-  }
-
-  if (enable_huks_hdi) {
-    defines += [ "HUKS_IDL_ENVIRONMENT" ]
-    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1" ]
-  }
-
-  if (storage_service_enable_fscrypt_data_reliability_option) {
-    defines += [ "EL2_INACTIVE_SPECIAL_HANDLING" ]
   }
 
   use_exceptions = true

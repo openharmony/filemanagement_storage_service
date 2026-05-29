@@ -336,11 +336,6 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     return KeyManagerMock::iKeyManagerMock_->NotifyUeceActivation(userId, resultCode, needGetAllAppKey);
 }
 
-std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type, bool isSave)
-{
-    return nullptr;
-}
-
 bool KeyManager::IsDirRecursivelyEmpty(const char* dirPath)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
@@ -355,6 +350,14 @@ bool KeyManager::GetSecureUid(uint32_t userId, uint64_t &secureUid)
         return false;
     }
     return KeyManagerMock::iKeyManagerMock_->GetSecureUid(userId, secureUid);
+}
+
+std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type, bool isSave)
+{
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return nullptr;
+    }
+    return KeyManagerMock::iKeyManagerMock_->GetUserElKey(user, type, isSave);
 }
 
 int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)

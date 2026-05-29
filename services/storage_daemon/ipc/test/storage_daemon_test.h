@@ -20,6 +20,8 @@
 #include <gtest/gtest.h>
 
 #include "file_utils_mock.h"
+#include "huks_master_mock.h"
+#include "base_key_mock.h"
 #include "iam_client_mock.h"
 #include "key_manager_ext_mock.h"
 #include "key_manager_mock.h"
@@ -55,6 +57,8 @@ public:
     std::shared_ptr<MountManagerMoc> mountManagerMock_ = nullptr;
     std::shared_ptr<IamClientMoc> iamClientMock_ = nullptr;
     std::shared_ptr<StorageDaemon> storageDaemon_ = nullptr;
+    std::shared_ptr<HuksMasterMock> huksMasterMock_ = nullptr;
+    std::shared_ptr<BaseKeyMoc> baseKeyMock_ = nullptr;
 
     static inline int g_setupFileSharingDir = 0;
     static inline bool g_saveStringToFile = true;

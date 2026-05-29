@@ -15,6 +15,9 @@
 
 #include "storage_daemon_test.h"
 
+#include "base_key.h"
+#include "fscrypt_key_v2.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 namespace Test {
@@ -620,6 +623,228 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_IsDirPathSupport_001, TestSize.Lev
         std::filesystem::rename(path + "_bak", path, errCode);
     }
 }
+
+#ifdef USER_CRYPTO_MANAGER
+/**
+ * @tc.name: StorageDaemonTest_CheckAndUpgradeUserAuthType_001
+ * @tc.desc: Verify CheckAndUpgradeUserAuthType when HUKS does not support new auth type.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_CheckAndUpgradeUserAuthType_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    EXPECT_CALL(*huksMasterMock_, IsSupportNewAuthType()).WillOnce(Return(false));
+    storageDaemon_->CheckAndUpgradeUserAuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_CheckAndUpgradeUserAuthType_002
+ * @tc.desc: Verify CheckAndUpgradeUserAuthType when HUKS supports new auth type and all keys need upgrade.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_CheckAndUpgradeUserAuthType_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    EXPECT_CALL(*huksMasterMock_, IsSupportNewAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(_, _, _)).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(_, _)).WillRepeatedly(Return(false));
+    storageDaemon_->CheckAndUpgradeUserAuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl2ToEl4AuthType_001
+ * @tc.desc: Verify UpgradeEl2ToEl4AuthType when all EL keys return nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL2_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
+    storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl2ToEl4AuthType_002
+ * @tc.desc: Verify UpgradeEl2ToEl4AuthType when EL2 key needs upgrade and DoStoreAndUpdate succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el2Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL2_KEY, false))
+        .WillOnce(Return(el2Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL2_KEY)).WillOnce(Return(E_OK));
+    storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl2ToEl4AuthType_003
+ * @tc.desc: Verify UpgradeEl2ToEl4AuthType when EL key does not need upgrade.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el2Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL2_KEY, false))
+        .WillOnce(Return(el2Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(false));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
+    storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl2ToEl4AuthType_004
+ * @tc.desc: Verify UpgradeEl2ToEl4AuthType when DoStoreAndUpdate fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el2Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL2_KEY, false))
+        .WillOnce(Return(el2Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY)).WillOnce(Return(-1));
+    storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_001
+ * @tc.desc: Verify UpgradeEl5AuthType when EL5 key is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false)).WillOnce(Return(nullptr));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_002
+ * @tc.desc: Verify UpgradeEl5AuthType when EL5 key does not need upgrade.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(false));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_003
+ * @tc.desc: Verify UpgradeEl5AuthType when EL5 upgrade succeeds (delete + create + update context).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_003, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+        .Times(2)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(E_OK));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_004
+ * @tc.desc: Verify UpgradeEl5AuthType when delete EL5 auth fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_004, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+        .WillOnce(Return(-1));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_005
+ * @tc.desc: Verify UpgradeEl5AuthType when create new EL5 auth fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_005, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(-1));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_006
+ * @tc.desc: Verify UpgradeEl5AuthType when GetSecureUid fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_006, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+        .Times(2)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(E_OK));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+
+/**
+ * @tc.name: StorageDaemonTest_UpgradeEl5AuthType_007
+ * @tc.desc: Verify UpgradeEl5AuthType when UpdateKeyContextByKeyType fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_007, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    auto el5Key = std::make_shared<FscryptKeyV2>("test");
+    EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL5_KEY, false))
+        .WillOnce(Return(el5Key));
+    EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
+    EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+        .Times(2)
+        .WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(-1));
+    storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
+}
+#endif
 } // Test
 } // STORAGE_DAEMON
 } // OHOS
