@@ -187,6 +187,8 @@ ohos_executable("storage_daemon") {
       "disk_manager/src/disk/disk_utils.cpp",
       "disk_manager/src/volume/volume_utils.cpp",
       "disk_manager/src/disk/scan_device.cpp",
+      "disk_manager/src/volume/udf_operator.cpp",
+      "disk_manager/src/volume/iso9660_operator.cpp",
       "disk_manager/src/volume/exfat_operator.cpp",
       "disk_manager/src/volume/ntfs_operator.cpp",
       "disk_manager/src/volume/vfat_operator.cpp",
@@ -422,6 +424,7 @@ ohos_shared_library("storage_common_utils") {
   sources = [
     "utils/disk_utils.cpp",
     "utils/file_utils.cpp",
+    "disk_manager/src/disk/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/storage_radar.cpp",
     "utils/storage_statistics_radar.cpp",

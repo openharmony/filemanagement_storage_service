@@ -19,6 +19,8 @@
 #include "disk_manager/volume/exfat_operator.h"
 #include "disk_manager/volume/hmfs_operator.h"
 #include "disk_manager/volume/ext4_operator.h"
+#include "disk_manager/volume/udf_operator.h"
+#include "disk_manager/volume/iso9660_operator.h"
 #include "storage_service_log.h"
 
 #include <mutex>
@@ -40,6 +42,8 @@ void VolumeOperatorFactory::RegisterOperators(
     operators["f2fs"] = std::make_shared<HmfsOperator>();
     operators["hmfs"] = std::make_shared<HmfsOperator>();
     operators["ext4"] = std::make_shared<Ext4Operator>();
+    operators["udf"] = std::make_shared<UdfOperator>();
+    operators["iso9660"] = std::make_shared<IsoOperator>();
 
     LOGI("VolumeOperatorFactory::RegisterOperators registered %{public}zu operators",
          operators.size());

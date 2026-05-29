@@ -70,4 +70,4 @@ char *Realpath(const char *path, char *resolved_path)
         return nullptr;
     }
     return DiskFunc::diskFunc_->realpath(path, resolved_path);
-}
+}

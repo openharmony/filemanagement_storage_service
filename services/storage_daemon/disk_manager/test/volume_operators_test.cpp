@@ -13,15 +13,21 @@
  * limitations under the License.
  */
 
+#include <climits>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <cstring>
 
+#include "securec.h"
 #include "disk_manager/volume/exfat_operator.h"
 #include "disk_manager/volume/hmfs_operator.h"
 #include "disk_manager/volume/ext4_operator.h"
 #include "disk_manager/volume/ntfs_operator.h"
 #include "disk_manager/volume/vfat_operator.h"
+#include "disk_manager/volume/udf_operator.h"
+#include "disk_manager/volume/iso9660_operator.h"
 #include "library_func_mock.h"
+#include "mock/disk_utils_mock.h"
 #include "mock/file_utils_mock.h"
 #include "storage_service_errno.h"
 
@@ -29,6 +35,23 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
+
+int g_realpathRet = 0;
+
+extern "C" char* realpath(const char *path, char *resolvedPath)
+{
+    (void)path;
+    if (g_realpathRet != 0) {
+        return nullptr;
+    }
+    if (resolvedPath == nullptr) {
+        return nullptr;
+    }
+    if (strcpy_s(resolvedPath, PATH_MAX, "/dev/block/sr0") != 0) {
+        return nullptr;
+    }
+    return resolvedPath;
+}
 
 static auto MakeForkExecWithExit(int exitCode, int retCode)
 {
@@ -44,17 +67,23 @@ public:
     {
         fileUtilMoc_ = std::make_shared<FileUtilMoc>();
         FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
         libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
         LibraryFunc::libraryFunc_ = libraryFuncMock_;
+        g_realpathRet = 0;
     }
     void TearDown() override
     {
         FileUtilMoc::fileUtilMoc = nullptr;
         fileUtilMoc_ = nullptr;
+        DiskUtilMoc::diskUtilMoc = nullptr;
+        diskUtilMoc_ = nullptr;
         LibraryFunc::libraryFunc_ = nullptr;
         libraryFuncMock_ = nullptr;
     }
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
     static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
 };
 
@@ -505,5 +534,174 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format_NoChild, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
 }
 
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_EmptyDevPath, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("", uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_PathTooLong, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_EQ(op.ReadMetadata(longPath, uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_RealpathFailed, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    g_realpathRet = -1;
+    EXPECT_EQ(op.ReadMetadata("/dev/block/mock_dev", uuid, type, label), E_PARAMS_INVALID);
+    g_realpathRet = 0;
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_InvalidPrefix, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("/invalid/path", uuid, type, label), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_Success, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("udf-uuid-1234"))
+        .WillOnce(Return("UDFVolume"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "udf-uuid-1234");
+    EXPECT_EQ(label, "UDFVolume");
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_UuidEmpty_GenerateRandom, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return(""))
+        .WillOnce(Return("UDFLabel"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(label, "UDFLabel");
+    EXPECT_FALSE(uuid.empty());
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_LabelEmpty_GetCDType, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, label;
+    std::string type = "udf";
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("udf-uuid-1234"))
+        .WillOnce(Return(""));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "udf-uuid-1234");
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_Check_BaseDefault, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.Check("/dev/block/mock_dev"), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_Repair_NotSupport, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_SetLabel_NotSupport, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "label"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_EmptyDevPath, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("", uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_PathTooLong, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_EQ(op.ReadMetadata(longPath, uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_RealpathFailed, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    g_realpathRet = -1;
+    EXPECT_EQ(op.ReadMetadata("/dev/block/mock_dev", uuid, type, label), E_PARAMS_INVALID);
+    g_realpathRet = 0;
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_InvalidPrefix, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("/invalid/path", uuid, type, label), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_Success, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("iso9660-uuid-1234"))
+        .WillOnce(Return("ISO9660Volume"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "iso9660-uuid-1234");
+    EXPECT_EQ(label, "ISO9660Volume");
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_UuidEmpty_GenerateRandom, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return(""))
+        .WillOnce(Return("IsoLabel"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(label, "IsoLabel");
+    EXPECT_FALSE(uuid.empty());
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_LabelEmpty_GetCDType, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, label;
+    std::string type = "udf";
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("iso9660-uuid-1234"))
+        .WillOnce(Return(""));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "iso9660-uuid-1234");
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_Check_BaseDefault, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.Check("/dev/block/mock_dev"), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_Repair_NotSupport, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_SetLabel_NotSupport, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "label"), E_NOT_SUPPORT);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

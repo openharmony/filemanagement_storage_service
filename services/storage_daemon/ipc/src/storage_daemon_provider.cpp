@@ -2288,6 +2288,42 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
 #endif
 }
 
+int32_t StorageDaemonProvider::QueryCDStatus(const std::string &devPath, int32_t &status)
+{
+    LOGI("[L1:StorageDaemonProvider] QueryCDStatus: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+#ifdef DISK_MANAGER
+    int32_t ret = DiskUtils::QueryCDStatus(devPath, status);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT SUCCESS <<< status=%{public}d", status);
+    return E_OK;
+#else
+    LOGI("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT NOT_SUPPORT <<<");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::EjectCD(const std::string &devPath)
+{
+    LOGI("[L1:StorageDaemonProvider] EjectCD: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+#ifdef DISK_MANAGER
+    int32_t ret = DiskUtils::EjectCD(devPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] EjectCD: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] EjectCD: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    LOGI("[L1:StorageDaemonProvider] EjectCD: <<< EXIT NOT_SUPPORT <<<");
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
                                             const std::string &fsType)
 {
