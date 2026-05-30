@@ -53,7 +53,6 @@ constexpr uint64_t BLOCK_COUNT = 512;
 
 constexpr int32_t ROOT_UID = 0;
 constexpr int32_t SYSTEM_UID = 1000;
-constexpr int32_t MEMMGR_UID = 1111;
 constexpr int32_t FOUNDATION_UID = 5523;
 const std::string SA_NAME_USERID = "userId";
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
@@ -290,9 +289,6 @@ void StorageDfxReporter::CorrectSaFromWhiteList(std::vector<UidSaInfo> &vec)
                 break;
             case SYSTEM_UID :
                 it.size = StorageManagerScan::GetInstance().GetSystemSize();
-                break;
-            case MEMMGR_UID :
-                it.size = StorageManagerScan::GetInstance().GetMemmgrSize();
                 break;
             default:
                 break;

@@ -959,23 +959,6 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectS
 }
 
 /**
- * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005
- * @tc.desc: Verify the CorrectSaFromWhiteList function with MEMMGR_UID.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005 start";
-    std::vector<UidSaInfo> vec;
-    UidSaInfo info(1111, "MemmgrService", 0, 300);
-    vec.push_back(info);
-    StorageDfxReporter::GetInstance().CorrectSaFromWhiteList(vec);
-    EXPECT_EQ(vec[0].uid, 1111);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_005 end";
-}
-
-/**
  * @tc.name: Storage_Service_StorageDfxReporterTest_CorrectSaFromWhiteList_006
  * @tc.desc: Verify the CorrectSaFromWhiteList function with other UID (should not update size).
  * @tc.type: FUNC

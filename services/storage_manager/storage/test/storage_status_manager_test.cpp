@@ -642,3 +642,25 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetAppSize_NegativeResult_0001, testi
 
     GTEST_LOG_(INFO) << "STORAGE_GetAppSize_NegativeResult_0001 end";
 }
+
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00002 start";
+    int64_t systemDataSize = 100;
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_OK));
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00002 end";
+}
+
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00003 start";
+    int64_t systemDataSize = 0;
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_)).WillRepeatedly(testing::Return(E_ERR));
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00003 end";
+}
