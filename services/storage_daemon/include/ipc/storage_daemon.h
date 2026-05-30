@@ -142,6 +142,15 @@ private:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret,
                              KeyType keyType);
+    void CheckAndUpgradeUserAuthType(uint32_t userId,
+                                     const std::vector<uint8_t> &token,
+                                     const std::vector<uint8_t> &secret);
+    void UpgradeEl2ToEl4AuthType(uint32_t userId,
+                                 const std::vector<uint8_t> &token,
+                                 const std::vector<uint8_t> &secret);
+    void UpgradeEl5AuthType(uint32_t userId,
+                            const std::vector<uint8_t> &token,
+                            const std::vector<uint8_t> &secret);
 };
 } // StorageDaemon
 } // OHOS

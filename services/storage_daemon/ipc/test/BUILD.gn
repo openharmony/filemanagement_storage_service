@@ -39,6 +39,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
+    "${storage_daemon_path}/crypto/test/mock",
     "${storage_manager_path}/include",
     "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/utils",
@@ -58,6 +59,9 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/mock/iam_client_mock.cpp",
     "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/src/key_crypto_utils.cpp",
+    "${storage_daemon_path}/crypto/test/mock/huks_master_mock.cpp",
+    "$ROOT_DIR/mock/base_key_mock.cpp",
+    "$ROOT_DIR/crypto/src/fscrypt_key_v2.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
@@ -69,6 +73,7 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   deps = [
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",

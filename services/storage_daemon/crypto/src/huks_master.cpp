@@ -401,15 +401,26 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
 
     LOGI("[L8:HuksMaster] AppendSecureAccessParams: append the secure access params when generate key");
 
-    HksParam param[] = {
-        { .tag = HKS_TAG_USER_AUTH_TYPE,
-            .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
-        { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
-        { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-        { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
-        { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 } // token timeout is 30 seconds when no challenge
-    };
-    return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
+        HksParam param[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
+            { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
+            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
+            { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
+        };
+        return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    } else {
+        HksParam param[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE,
+                .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
+        };
+        return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
+    }
 }
 
 static uint8_t g_processName[sizeof(uint32_t)] = {0};
@@ -535,23 +546,45 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
     LOGI("[L8:HuksMaster] AppendNonceAadToken: append the secure access params when encrypt/decrypt");
     ctx.nonce = HashWithPrefix("NONCE SHA512 prefix", auth.secret, CRYPTO_AES_NONCE_LEN);
     ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
-    HksParam addParam[] = {
-        { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
-        { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
-        { .tag = HKS_TAG_NONCE,
-          .blob =
-            { ctx.nonce.size, ctx.nonce.data.get() }
-        },
-        { .tag = HKS_TAG_ASSOCIATED_DATA,
-          .blob =
-            { ctx.aad.size, ctx.aad.data.get() }
-        },
-        { .tag = HKS_TAG_AUTH_TOKEN,
-          .blob =
-            { auth.token.size, auth.token.data.get() }
-        }
-    };
-    return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+
+    if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
+        HksParam addParam[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
+            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
+            { .tag = HKS_TAG_NONCE,
+              .blob =
+                { ctx.nonce.size, ctx.nonce.data.get() }
+            },
+            { .tag = HKS_TAG_ASSOCIATED_DATA,
+              .blob =
+                { ctx.aad.size, ctx.aad.data.get() }
+            },
+            { .tag = HKS_TAG_AUTH_TOKEN,
+              .blob =
+                { auth.token.size, auth.token.data.get() }
+            }
+        };
+        return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+    } else {
+        HksParam addParam[] = {
+            { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
+            { .tag = HKS_TAG_NONCE,
+              .blob =
+                { ctx.nonce.size, ctx.nonce.data.get() }
+            },
+            { .tag = HKS_TAG_ASSOCIATED_DATA,
+              .blob =
+                { ctx.aad.size, ctx.aad.data.get() }
+            },
+            { .tag = HKS_TAG_AUTH_TOKEN,
+              .blob =
+                { auth.token.size, auth.token.data.get() }
+            }
+        };
+        return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+    }
 }
 
 static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
@@ -733,6 +766,45 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
         LOGI("[L8:HuksMaster] GenerateRandomKey: <<< EXIT SUCCESS <<<");
     }
     return out;
+}
+
+bool HuksMaster::GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer)
+{
+    LOGI("[L8:HuksMaster] GetHuksVersion: >>> ENTER <<<");
+#ifdef HUKS_IDL_ENVIRONMENT
+    auto &proxy = GetInstance().hksHdiProxyInstance_;
+    if (proxy == nullptr) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< hksHdiProxyInstance_ is nullptr");
+        return false;
+    }
+    if (proxy->GetVersion == nullptr) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< GetVersion is nullptr");
+        return false;
+    }
+    auto ret = proxy->GetVersion(proxy, &majorVer, &minorVer);
+    if (ret != HKS_SUCCESS) {
+        LOGE("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< GetVersion failed, ret %{public}d", ret);
+        return false;
+    }
+    LOGI("[L8:HuksMaster] GetHuksVersion: <<< EXIT SUCCESS <<< majorVer=%{public}u, minorVer=%{public}u",
+         majorVer, minorVer);
+    return true;
+#endif
+    LOGI("[L8:HuksMaster] GetHuksVersion: <<< EXIT FAILED <<< HUKS_IDL_ENVIRONMENT not defined");
+    return false;
+}
+
+bool HuksMaster::IsSupportNewAuthType()
+{
+    uint32_t majorVer = 0;
+    uint32_t minorVer = 0;
+    if (!GetHuksVersion(majorVer, minorVer)) {
+        LOGI("[L8:HuksMaster] IsSupportNewAuthType: GetHuksVersion failed, support=false");
+        return false;
+    }
+    bool support = (majorVer >= 1 && minorVer >= 2);
+    LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);
+    return support;
 }
 
 int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)

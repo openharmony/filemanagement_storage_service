@@ -250,6 +250,10 @@ void StorageDaemonTest::SetUp()
     MountManagerMoc::mountManagerMoc = mountManagerMock_;
     iamClientMock_ = std::make_shared<IamClientMoc>();
     IamClientMoc::iamClientMoc = iamClientMock_;
+    huksMasterMock_ = std::make_shared<HuksMasterMock>();
+    HuksMasterMock::huksMasterMock = huksMasterMock_;
+    baseKeyMock_ = std::make_shared<BaseKeyMoc>();
+    IBaseKeyMoc::baseKeyMoc = baseKeyMock_;
 
     EXPECT_CALL(*keyManagerMock_, GetKeyDirByUserAndType(_, _)).WillRepeatedly(Invoke(GetKeyDirByUserAndType));
     EXPECT_CALL(*keyManagerMock_, GetNatoNeedRestorePath(_, _)).WillRepeatedly(Invoke(GetNatoNeedRestorePath));
@@ -274,6 +278,10 @@ void StorageDaemonTest::TearDown(void)
     mountManagerMock_ = nullptr;
     IamClientMoc::iamClientMoc = nullptr;
     iamClientMock_ = nullptr;
+    HuksMasterMock::huksMasterMock = nullptr;
+    huksMasterMock_ = nullptr;
+    IBaseKeyMoc::baseKeyMoc = nullptr;
+    baseKeyMock_ = nullptr;
     RefreshConfigDir();
 }
 

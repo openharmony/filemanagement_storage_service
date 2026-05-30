@@ -805,7 +805,7 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
         IamClient::GetInstance().GetSecureUid(user, secureUid);
         LOGE("[L3:KeyManager] GenerateUserKeyByType: token exists, secure uid obtained");
     }
-    UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
+    UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid, .userId = user };
     int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
     if (ret) {
         LOGE("[L3:KeyManager] GenerateUserKeyByType: <<< EXIT FAILED <<< [failed to create el key for user"
@@ -1134,7 +1134,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         KeyBlob originKey(plainText[i]);
         elxKey->SetOriginKey(originKey);
         i++;
-        auto ret = elxKey->StoreKey({authToken, newSecret, secureUid});
+        auto ret = elxKey->StoreKey({authToken, newSecret, secureUid, userId});
         if (ret != E_OK) {
             LOGE("[L3:KeyManager] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< [failed to store key]");
             return E_ELX_KEY_STORE_ERROR;
@@ -1147,7 +1147,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
             return E_PARAMS_NULLPTR_ERR;
         }
         bool tempUeceSupport = true;
-        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
+        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid, .userId = userId};
         auto ret = el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH);
         if (ret != E_OK) {
             el5Key->ClearKey();
@@ -1202,7 +1202,8 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
     LOGI("[L3:KeyManager] UpdateESecret: status=%{public}u", status);
-    UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid };
+    UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid,
+        .userId = user };
     saveESecretStatus[user] = true;
     auto ret = el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status);
     if (static_cast<uint32_t>(ret) == FILE_ENCRY_ERROR_UECE_AUTH_STATUS_WRONG) {
@@ -1253,8 +1254,8 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return E_PARAMS_NULLPTR_ERR;
     }
 
-    UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
-    UserAuth auth_newSec = { userTokenSecret.token, userTokenSecret.newSecret, userTokenSecret.secureUid };
+    UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid, user };
+    UserAuth auth_newSec = { userTokenSecret.token, userTokenSecret.newSecret, userTokenSecret.secureUid, user };
     LOGW("[L3:KeyManager] UpdateCeEceSeceUserAuth: param status token=%{public}d, oldSec=%{public}d,"
         "newSec=%{public}d", userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
@@ -1659,7 +1660,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         LOGE("[L3:KeyManager] ActiveElXUserKey: <<< EXIT FAILED <<< [failed to initialize el key]");
         return E_ELX_KEY_INIT_ERROR;
     }
-    UserAuth auth = { token, secret };
+    UserAuth auth = { token, secret, 0, user };
     auto keyResult = elKey->RestoreKey(auth);
     bool noKeyResult = (keyResult != E_OK) && (elKey->RestoreKey(NULL_KEY_AUTH) == E_OK);
     // key and no-key situation all failed, include upgrade situation, return err

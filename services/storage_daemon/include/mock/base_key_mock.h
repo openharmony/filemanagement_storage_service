@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,7 @@ public:
     virtual bool GetHashKey(KeyBlob &hashKey) = 0;
     virtual bool GenerateHashKey() = 0;
     virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt) = 0;
+    virtual bool NeedUpgradeAuthType() = 0;
 public:
     static inline std::shared_ptr<IBaseKeyMoc> baseKeyMoc = nullptr;
 };
@@ -74,7 +75,8 @@ public:
     MOCK_METHOD1(GetHashKey, bool(KeyBlob &hashKey));
     MOCK_METHOD0(GenerateHashKey, bool());
     MOCK_METHOD2(InactiveKey, int32_t(uint32_t flag, const std::string &mnt));
+    MOCK_METHOD0(NeedUpgradeAuthType, bool());
 };
 }
 }
-#endif
+#endif /* STORAGE_DAEMON_BASE_KEY_MOCK_H */
