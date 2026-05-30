@@ -611,6 +611,73 @@ bool ReadFile(const std::string &path, std::string *str)
     return ret;
 }
 
+std::string ReadFileContent(const std::string &path)
+{
+    LOGD("[L8:FileUtils] ReadFileContent: >>> ENTER <<< path=%{public}s", path.c_str());
+    
+    std::ifstream infile;
+    std::string result;
+
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("[L8:FileUtils] ReadFileContent: <<< EXIT FAILED <<< realpath failed, errno: %{public}d.", errno);
+        return "";
+    }
+
+    infile.open(realPath);
+    if (!infile) {
+        LOGE("[L8:FileUtils] ReadFileContent: <<< EXIT FAILED <<< Cannot open file, errno: %{public}d.", errno);
+        return "";
+    }
+
+    std::string line;
+    bool firstLine = true;
+    while (std::getline(infile, line)) {
+        if (!firstLine) {
+            result += "\n";
+        }
+        result += line;
+        firstLine = false;
+    }
+
+    infile.close();
+    
+    if (result.empty()) {
+        LOGE("[L8:FileUtils] ReadFileContent: <<< EXIT FAILED <<< file is empty");
+    } else {
+        LOGD("[L8:FileUtils] ReadFileContent: <<< EXIT SUCCESS <<<");
+    }
+    
+    return result;
+}
+
+std::string ReadFileInParentDirs(const std::string &startPath, const std::string &fileName)
+{
+    LOGD("[L3:DiskUtils] FindFileInParentDirs: >>> ENTER <<< startPath=%{public}s, fileName=%{public}s",
+         startPath.c_str(), fileName.c_str());
+    std::string currentPath = startPath;
+    while (!currentPath.empty() && currentPath != "/") {
+        std::string targetPath = currentPath + "/" + fileName;
+        std::string content = ReadFileContent(targetPath);
+        if (!content.empty()) {
+            LOGD("[L3:DiskUtils] FindFileInParentDirs: Found %{public}s at %{public}s",
+                fileName.c_str(), targetPath.c_str());
+            return content;
+        }
+        size_t lastSlash = currentPath.find_last_of('/');
+        if (lastSlash == 0) {
+            break;
+        }
+        if (lastSlash != std::string::npos) {
+            currentPath = currentPath.substr(0, lastSlash);
+        } else {
+            break;
+        }
+    }
+    LOGD("[L3:DiskUtils] FindFileInParentDirs: <<< EXIT SUCCESS <<< %{public}s not found", fileName.c_str());
+    return "";
+}
+
 static std::vector<char*> FormatCmd(std::vector<std::string> &cmd)
 {
     std::vector<char*>res;

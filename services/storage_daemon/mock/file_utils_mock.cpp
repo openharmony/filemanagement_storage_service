@@ -99,6 +99,11 @@ bool ReadFile(const std::string &path, std::string *str)
     return IFileUtilMoc::fileUtilMoc->ReadFile(path, str);
 }
 
+std::string ReadFileContent(const std::string &path)
+{
+    return IFileUtilMoc::fileUtilMoc->ReadFileContent(path);
+}
+
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, output, exitStatus);

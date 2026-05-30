@@ -728,7 +728,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     Disk disk1(diskId, 1, 1, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk1)));
     result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result.size(), 0);
 
     volumeId = "vol-11-1";
     diskId = "disk-11-1";
@@ -739,7 +739,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     Disk disk2(diskId, 1, 3, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk2)));
     result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 2);
+    EXPECT_EQ(result.size(), 1);
 
     volumeId = "vol-11-2";
     diskId = "disk-11-2";
@@ -750,7 +750,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0001, tes
     Disk disk3(diskId, 1, 3, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk3)));
     result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 3);
+    EXPECT_EQ(result.size(), 2);
     vmService.volumeMap_.clear();
     dmService.diskMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0001";
@@ -777,21 +777,21 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetAllVolumes_0002, tes
     Disk disk1(diskId, 1, 1, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk1)));
     std::vector<VolumeExternal> result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 1);
+    EXPECT_EQ(result.size(), 0);
 
     volumeId = "vol-11-1";
     diskId = "disk-11-1";
     Disk disk2(diskId, 1, 3, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk2)));
     result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 2);
+    EXPECT_EQ(result.size(), 1);
 
     volumeId = "vol-11-2";
     diskId = "disk-11-2";
     Disk disk3(diskId, 1, 3, true, {}, "", "test", "/");
     dmService.diskMap_.insert(make_pair(diskId, std::make_shared<Disk>(disk3)));
     result = vmService.GetAllVolumes();
-    EXPECT_EQ(result.size(), 3);
+    EXPECT_EQ(result.size(), 2);
     vmService.volumeMap_.clear();
     dmService.diskMap_.clear();
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetAllVolumes_0002";

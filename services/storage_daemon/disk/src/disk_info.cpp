@@ -19,6 +19,7 @@
 #include <regex>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
+#include <unistd.h>
 
 #include "cJSON.h"
 #include "ipc/storage_manager_client.h"
@@ -212,10 +213,11 @@ void DiskInfo::ReadMetadata()
     LOGI("[L3:DiskInfo] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath_.c_str());
     totalSize_ = -1;
     vendor_.clear();
+    devnum_.clear();
+    busnum_.clear();
     if (GetDevSize(devPath_, &totalSize_) != E_OK) {
         totalSize_ = -1;
     }
-
     unsigned int majorId = major(device_);
     if (majorId == DISK_MMC_MAJOR) {
         std::string path(sysPath_ + "/device/manfid");
@@ -251,7 +253,10 @@ void DiskInfo::ReadMetadata()
         return;
     }
     product_ = str;
-    LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< product=%{public}s", product_.c_str());
+    devnum_ = ReadFileInParentDirs(sysPath_, "devnum");
+    busnum_ = ReadFileInParentDirs(sysPath_, "busnum");
+    LOGI("[L3:DiskInfo] ReadMetadata: <<< EXIT SUCCESS <<< product=%{public}s, devnum =%{public}s, "
+        "busnum =%{public}s", product_.c_str(), devnum_.c_str(), busnum_.c_str());
 }
 
 void DiskInfo::SetExtraInfo()
@@ -263,6 +268,27 @@ void DiskInfo::SetExtraInfo()
     }
     cJSON_AddStringToObject(json, "vendor", vendor_.c_str());
     cJSON_AddStringToObject(json, "product", product_.c_str());
+    cJSON_AddStringToObject(json, "devnum", devnum_.c_str());
+    cJSON_AddStringToObject(json, "busnum", busnum_.c_str());
+    std::string devNode = "block " + std::to_string(major(device_)) + ":" + std::to_string(minor(device_));
+    cJSON_AddStringToObject(json, "devNode", devNode.c_str());
+    std::string scsiBusNum = GetScsiBusNum(sysPath_);
+    cJSON_AddStringToObject(json, "scsiBusNum", scsiBusNum.c_str());
+    std::string revPath(sysPath_ + "/device/rev");
+    std::string fwVersion = ReadFileContent(revPath);
+    cJSON_AddStringToObject(json, "fwVersion", fwVersion.c_str());
+    if (major(device_) == DISK_CD_MAJOR) {
+        cJSON *oddInfo = cJSON_CreateObject();
+        if (oddInfo != nullptr) {
+            cJSON_AddStringToObject(oddInfo, "DRIVE_TYPE", GetOpticalDriveType(devPath_).c_str());
+            cJSON_AddStringToObject(oddInfo, "DISC_TYPE", GetCDType(devPath_).c_str());
+            int32_t maxWriteSpeed = 0;
+            GetOpticalDriveMaxWriteSpeed(devPath_, maxWriteSpeed);
+            cJSON_AddStringToObject(oddInfo, "MAX_WRITE_SPEED", (std::to_string(maxWriteSpeed) + "X").c_str());
+            cJSON_AddStringToObject(oddInfo, "ODD_DRIVER_TYPE", GetOddDriverType(sysPath_).c_str());
+            cJSON_AddItemToObject(json, "ODD_INFO", oddInfo);
+        }
+    }
     char *jsonStr = cJSON_PrintUnformatted(json);
     if (jsonStr != nullptr) {
         extraInfo_ = jsonStr;
@@ -691,22 +717,9 @@ int DiskInfo::CreateVolume(dev_t dev, uint32_t partitionNum)
 {
     LOGI("[L3:DiskInfo] CreateVolume: >>> ENTER <<< dev=%{public}u,%{public}u", major(dev), minor(dev));
     auto &volume = VolumeManager::Instance();
+    SetExtraInfo();
 
-    nlohmann::json extraInfoJson;
-
-    if (major(device_) == DISK_CD_MAJOR) {
-        std::string driveType = GetOpticalDriveType(devPath_);
-        std::string discType = GetCDType(devPath_);
-        int32_t maxWriteSpeed = 0;
-        GetOpticalDriveMaxWriteSpeed(devPath_, maxWriteSpeed);
-        extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
-        extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
-        extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
-    }
-
-    std::string extraInfo = extraInfoJson.dump();
-
-    std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata, partitionNum, extraInfo);
+    std::string volumeId = volume.CreateVolume(GetDiskId(), dev, isUserdata, partitionNum, extraInfo_);
     if (volumeId.empty()) {
         LOGE("[L3:DiskInfo] CreateVolume: <<< EXIT FAILED <<< Create volume failed");
         return E_ERR;

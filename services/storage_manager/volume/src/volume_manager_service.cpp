@@ -456,7 +456,9 @@ vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
             if (vc.GetFsType() == UDF || vc.GetFsType() == ISO9660) {
                 dvdDiskIds.push_back(vc.GetDiskId());
             }
-            result.push_back(vc);
+            if (vc.GetFsType() != UNDEFINED) {
+                result.push_back(vc);
+            }
         }
     }
 
@@ -470,7 +472,7 @@ vector<VolumeExternal> VolumeManagerService::GetAllVolumes()
             LOGE("This disk has real volume, diskId: %{public}s", disk.GetDiskId().c_str());
             continue;
         }
-        VolumeCore core("0", CD_FLAG, disk.GetDiskId(), MOUNTED);
+        VolumeCore core("0", CD_FLAG, disk.GetDiskId(), MOUNTED, "udf", disk.GetExtraInfo());
         auto volumePtr = make_shared<VolumeExternal>(core);
         if (volumePtr == nullptr) {
             LOGE("volumePtr is nullptr !");

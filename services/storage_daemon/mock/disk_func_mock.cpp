@@ -71,3 +71,11 @@ char *Realpath(const char *path, char *resolved_path)
     }
     return DiskFunc::diskFunc_->realpath(path, resolved_path);
 }
+
+int Readlink(const char *path, char *buf, size_t bufsize)
+{
+    if (DiskFunc::diskFunc_ == nullptr) {
+        return -1;
+    }
+    return DiskFunc::diskFunc_->readlink(path, buf, bufsize);
+}

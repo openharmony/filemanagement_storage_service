@@ -946,5 +946,45 @@ int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity)
         blk_cnt + 1, blk_size, bdTotalCapacity);
     return E_OK;
 }
+
+std::string GetScsiBusNum(const std::string &sysPath)
+{
+    LOGD("[L3:DiskUtils] GetScsiBusNum: >>> ENTER <<<");
+    
+    std::string deviceLinkPath = sysPath + "/device";
+    char linkTarget[PATH_MAX] = {0};
+    ssize_t len = readlink(deviceLinkPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
+    if (len > 0) {
+        linkTarget[len] = '\0';
+        std::string linkStr(linkTarget);
+        size_t lastSlash = linkStr.find_last_of('/');
+        if (lastSlash != std::string::npos && lastSlash + 1 < linkStr.length()) {
+            std::string scsiAddr = linkStr.substr(lastSlash + 1);
+            if (scsiAddr.find(':') != std::string::npos) {
+                LOGD("[L3:DiskUtils] GetScsiBusNum: SCSI_BUS_NUM=%{public}s", scsiAddr.c_str());
+                return scsiAddr;
+            }
+        }
+    }
+    
+    LOGD("[L3:DiskUtils] GetScsiBusNum: <<< EXIT NOT FOUND <<< (empty)");
+    return "";
+}
+
+std::string GetOddDriverType(const std::string &sysPath)
+{
+    LOGD("[L3:DiskUtils] GetOddDriverType: >>> ENTER <<<");
+
+    if (sysPath.find("usb") != std::string::npos) {
+        LOGD("[L3:DiskUtils] GetOddDriverType: ODD_DRIVER_TYPE=usb-storage");
+        return "usb-storage";
+    } else if (sysPath.find("sata") != std::string::npos) {
+        LOGD("[L3:DiskUtils] GetOddDriverType: ODD_DRIVER_TYPE=AHCI");
+        return "AHCI";
+    }
+    
+    LOGD("[L3:DiskUtils] GetOddDriverType: <<< EXIT SUCCESS <<< (empty)");
+    return "";
+}
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
