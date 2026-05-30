@@ -871,8 +871,7 @@ int32_t QuotaManager::GetSystemCacheSize(const std::vector<int32_t> &uidList, in
     return E_NOT_SUPPORT;
 #else
     for (auto uid : uidList) {
-        if (uid == StorageService::ROOT_UID || uid == StorageService::SYSTEM_UID ||
-            uid == StorageService::MEMMGR_UID) {
+        if (uid == StorageService::ROOT_UID || uid == StorageService::SYSTEM_UID) {
             continue;
         }
         struct dqblk dq;

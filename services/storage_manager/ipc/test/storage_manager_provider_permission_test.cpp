@@ -28,6 +28,7 @@
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
+#include "mock/disk_manager_client_mock.h"
 #include "bundle_mgr_client.h"
 #include "volume_core.h"
 #include <cstdlib>
@@ -106,6 +107,7 @@ public:
     void TearDown();
 
     StorageManagerProvider *storageManagerProviderTest_;
+    std::shared_ptr<DiskManager::DiskManagerClientMock> dmClientMock_;
 };
 
 class MockBundleMgr : public AppExecFwk::IBundleMgr {
@@ -133,6 +135,20 @@ void StorageManagerProviderTest::SetUp(void)
     g_returnUpdateService = false;
     g_accessTokenType = 1;
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
+    dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
+    DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
+    ON_CALL(*dmClientMock_, Mount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllVolumes(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetVolumeByUuid(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetVolumeById(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetFreeSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetTotalSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllDisks(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetDiskById(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Partition(_, _)).WillByDefault(Return(E_OK));
 }
 
 void StorageManagerProviderTest::TearDown(void)
@@ -559,38 +575,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_002,
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_GetVolumeByUuid_002
- * @tc.desc: Verify the GetVolumeByUuid function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeByUuid_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeByUuid_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string fsUuid = "testUuid";
-    VolumeExternal volume;
-    auto ret = storageManagerProviderTest_->GetVolumeByUuid(fsUuid, volume);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeByUuid_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetVolumeById_002
- * @tc.desc: Verify the GetVolumeById function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetVolumeById_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeById_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    VolumeExternal volume;
-    auto ret = storageManagerProviderTest_->GetVolumeById(volumeId, volume);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetVolumeById_002 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_SetVolumeDescription_002
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
@@ -634,7 +618,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_002,
     std::string diskId = "testDiskId";
     Disk disk;
     auto ret = storageManagerProviderTest_->GetDiskById(diskId, disk);
-    EXPECT_EQ(ret, E_NON_EXIST);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetDiskById_002 end";
 }
 

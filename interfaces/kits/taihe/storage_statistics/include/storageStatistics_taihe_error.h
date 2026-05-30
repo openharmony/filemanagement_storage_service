@@ -55,7 +55,7 @@ const std::map<int, StorageTaiheErrorInfo> STORAGE_TAIHE_ERR_MAP {
     { E_JS_GET_PARTITION_ERROR, { 13600021, "Failed to get partition table info" } },
     { E_JS_CREATE_PARTITION_ERROR, { 13600022, "Failed to create partition" } },
     { E_JS_DELETE_PARTITION_ERROR, { 13600023, "Failed to delete partition" } },
-    { E_JS_FORMAT_PARTITION_ERROR, { 13600025, "Failed to format partition" } }
+    { E_JS_FORMAT_PARTITION_ERROR, { 13600032, "Failed to format partition" } }
 };
 
 class StorageTaiheError {

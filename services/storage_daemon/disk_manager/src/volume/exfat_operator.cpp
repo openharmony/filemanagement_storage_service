@@ -30,13 +30,16 @@ constexpr gid_t FILE_MANAGER_GID = 1006;
 
 int32_t ExfatOperator::DoMount(const std::string& devPath,
                                const std::string& mountPath,
-                               unsigned long mountFlags)
+                               unsigned long mountFlags,
+                               const std::string& mountData)
 {
     LOGI("ExfatOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
          devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     std::string options;
-    if (mountFlags & MS_RDONLY) {
+    if (!mountData.empty()) {
+        options = mountData;
+    } else if (mountFlags & MS_RDONLY) {
         options = StringPrintf("ro,uid=%d,gid=%d,dmask=0006,fmask=0007", FILE_MANAGER_UID, FILE_MANAGER_GID);
     } else {
         options = StringPrintf("rw,uid=%d,gid=%d,dmask=0006,fmask=0007", FILE_MANAGER_UID, FILE_MANAGER_GID);
@@ -50,17 +53,23 @@ int32_t ExfatOperator::DoMount(const std::string& devPath,
         mountPath
     };
 
-    std::vector<std::string> output;
-    int32_t ret = ForkExec(cmd, &output);
-
-    for (auto& str : output) {
-        LOGI("ExfatOperator::DoMount output: %{public}s", str.c_str());
-    }
-
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+    int32_t ret = ExtStorageMountForkExec(cmd);
     if (ret != E_OK) {
         LOGE("ExfatOperator::DoMount failed, ret=%{public}d, errno=%{public}d", ret, errno);
         return E_EXFAT_MOUNT;
     }
+#else
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(cmd, &output);
+    for (auto& str : output) {
+        LOGI("ExfatOperator::DoMount output: %{public}s", str.c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("ExfatOperator::DoMount failed, ret=%{public}d, errno=%{public}d", ret, errno);
+        return E_EXFAT_MOUNT;
+    }
+#endif
 
     LOGI("ExfatOperator::DoMount success");
     return E_OK;

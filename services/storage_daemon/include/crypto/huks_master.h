@@ -44,6 +44,8 @@ public:
     int32_t DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
     int32_t DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd);
     bool UpgradeKey(KeyContext &ctx);
+    static bool GetHuksVersion(uint32_t &majorVer, uint32_t &minorVer);
+    static bool IsSupportNewAuthType();
 
 private:
     HuksMaster();

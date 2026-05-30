@@ -110,6 +110,11 @@ ohos_shared_library("storage_manager") {
     "security_guard:libsg_collect_sdk",
   ]
 
+  if (enable_disk_manager) {
+    defines += [ "DISK_MANAGER" ]
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
+
   if (storage_service_storage_statistics_manager) {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [

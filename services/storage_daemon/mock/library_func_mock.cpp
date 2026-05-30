@@ -64,3 +64,19 @@ int lstat(const char *path, struct stat *buf)
     }
     return LibraryFunc::libraryFunc_->lstat(path, buf);
 }
+
+int chmod(const char *pathname, mode_t mode)
+{
+    if (LibraryFunc::libraryFunc_ == nullptr) {
+        return -1;
+    }
+    return LibraryFunc::libraryFunc_->chmod(pathname, mode);
+}
+
+int chown(const char *pathname, uid_t owner, gid_t group)
+{
+    if (LibraryFunc::libraryFunc_ == nullptr) {
+        return -1;
+    }
+    return LibraryFunc::libraryFunc_->chown(pathname, owner, group);
+}

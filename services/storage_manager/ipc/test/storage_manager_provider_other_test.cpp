@@ -26,6 +26,7 @@
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
 #include "mock/storage_daemon_communication_mock.h"
+#include "mock/disk_manager_client_mock.h"
 #include "mock/uece_activation_callback_mock.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
@@ -139,12 +140,27 @@ public:
     void SetUp();
     void TearDown() {};
     std::shared_ptr<StorageDaemonCommunicationMock> sdCommMock_;
+    std::shared_ptr<DiskManager::DiskManagerClientMock> dmClientMock_;
     std::unique_ptr<StorageManagerProvider> storageManagerProviderTest_ = nullptr;
 };
 
 void StorageManagerProviderTest::SetUp(void)
 {
     storageManagerProviderTest_ = std::make_unique<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
+    dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
+    DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
+    ON_CALL(*dmClientMock_, Mount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllVolumes(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetVolumeByUuid(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetVolumeById(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetFreeSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetTotalSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllDisks(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetDiskById(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Partition(_, _)).WillByDefault(Return(E_OK));
 }
 
 class MockBundleMgr : public AppExecFwk::IBundleMgr {
@@ -221,6 +237,79 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
     auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_003
+ * @tc.desc: Verify the UMountDisShareFile function with valid distributeDirs and DFS_UID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_004
+ * @tc.desc: Verify the UMountDisShareFile function with empty distributeDirs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_005
+ * @tc.desc: Verify the UMountDisShareFile function with invalid path characters.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/123456789/../../../etc/passwd");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDisShareFile_006
+ * @tc.desc: Verify the UMountDisShareFile function with multiple valid distributeDirs.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFile_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_006 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
+        "/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    distributeDirs.push_back("/data/service/el2/200/hmdfs/account/data"
+        "/com.example/.remote_share/xyz123456/Photo");
+    auto ret = storageManagerProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_006 end";
 }
 
 /**

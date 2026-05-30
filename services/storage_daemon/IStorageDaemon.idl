@@ -150,7 +150,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 204] void Mount([in] String devPath,
                               [in] String mountPath,
                               [in] String fsType,
-                              [in] unsigned long mountFlags);
+                              [in] unsigned long mountFlags,
+                              [in] String mountData);
      [ipccode 205] void Unmount([in] String mountPath,
                                 [in] String fsType,
                                 [in] boolean force);
@@ -173,5 +174,18 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 212] void Partition([in] String diskPath,
                                   [in] String partitionType);
      [ipccode 213] void GetBlockInfoByType([in] String type, [out] String blockInfos);
+     [ipccode 214] void GetPartitionTableInfo([in] String devPath, [out] String execRet);
+     [ipccode 215] void CreatePartition([in] String devPath,
+                                        [in] int partitionNum,
+                                        [in] long startSector,
+                                        [in] long endSector,
+                                        [in] String typeCode);
+     [ipccode 216] void DeletePartitionInfo([in] String devPath, [in] int partitionNum);
+     [ipccode 217] void FormatPartition([in] String devPath,
+                                        [in] String fsType,
+                                        [in] String volumeName,
+                                        [in] boolean quickFormat);
      [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
+     [ipccode 252] void EjectCD([in] String devPath);
+     [ipccode 253] void QueryCDStatus([in] String devPath, [out] int status);
 }

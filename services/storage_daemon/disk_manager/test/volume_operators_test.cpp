@@ -13,15 +13,21 @@
  * limitations under the License.
  */
 
+#include <climits>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <cstring>
 
+#include "securec.h"
 #include "disk_manager/volume/exfat_operator.h"
 #include "disk_manager/volume/hmfs_operator.h"
 #include "disk_manager/volume/ext4_operator.h"
 #include "disk_manager/volume/ntfs_operator.h"
 #include "disk_manager/volume/vfat_operator.h"
+#include "disk_manager/volume/udf_operator.h"
+#include "disk_manager/volume/iso9660_operator.h"
 #include "library_func_mock.h"
+#include "mock/disk_utils_mock.h"
 #include "mock/file_utils_mock.h"
 #include "storage_service_errno.h"
 
@@ -29,6 +35,23 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
+
+int g_realpathRet = 0;
+
+extern "C" char* realpath(const char *path, char *resolvedPath)
+{
+    (void)path;
+    if (g_realpathRet != 0) {
+        return nullptr;
+    }
+    if (resolvedPath == nullptr) {
+        return nullptr;
+    }
+    if (strcpy_s(resolvedPath, PATH_MAX, "/dev/block/sr0") != 0) {
+        return nullptr;
+    }
+    return resolvedPath;
+}
 
 static auto MakeForkExecWithExit(int exitCode, int retCode)
 {
@@ -44,17 +67,23 @@ public:
     {
         fileUtilMoc_ = std::make_shared<FileUtilMoc>();
         FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
         libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
         LibraryFunc::libraryFunc_ = libraryFuncMock_;
+        g_realpathRet = 0;
     }
     void TearDown() override
     {
         FileUtilMoc::fileUtilMoc = nullptr;
         fileUtilMoc_ = nullptr;
+        DiskUtilMoc::diskUtilMoc = nullptr;
+        diskUtilMoc_ = nullptr;
         LibraryFunc::libraryFunc_ = nullptr;
         libraryFuncMock_ = nullptr;
     }
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
     static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
 };
 
@@ -62,11 +91,11 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_DoMount, TestSize.Level1)
 {
     ExfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_EXFAT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_EXFAT_MOUNT);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, ExfatOperator_Format, TestSize.Level1)
@@ -113,11 +142,11 @@ HWTEST_F(ExtOperatorTest, NtfsOperator_DoMount, TestSize.Level1)
 {
     NtfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_NTFS_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_NTFS_MOUNT);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, NtfsOperator_Check, TestSize.Level1)
@@ -155,11 +184,11 @@ HWTEST_F(ExtOperatorTest, VfatOperator_DoMount, TestSize.Level1)
 {
     VfatOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_OK);
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0), E_FAT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", 0, ""), E_FAT_MOUNT);
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, VfatOperator_Format, TestSize.Level1)
@@ -176,27 +205,41 @@ HWTEST_F(ExtOperatorTest, VfatOperator_Format, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_EmptyDevPath, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_EmptyMountPath, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_Success, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MountFailed, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_HMFS_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_HMFS_MOUNT);
+}
+
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_Success, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_Failed, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_HMFS_MOUNT);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_EmptyDevPath, TestSize.Level1)
@@ -280,6 +323,53 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_Repair_BothFailed, TestSize.Level1)
     EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_VOL_FIX_FAILED);
 }
 
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckNeedFixThenRepairSuccess
+ * @tc.desc: Verify autofix flow: Check returns NEED_FIX, then Repair succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckNeedFixThenRepairSuccess, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR))
+        .WillOnce(MakeForkExecWithExit(1, E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_VOL_NEED_FIX);
+    int32_t repairRet = op.Repair("/dev/block/mock_dev");
+    EXPECT_EQ(repairRet, E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckNeedFixThenRepairFailed
+ * @tc.desc: Verify autofix flow: Check returns NEED_FIX, then Repair also fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckNeedFixThenRepairFailed, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR))
+        .WillOnce(MakeForkExecWithExit(0, E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_VOL_NEED_FIX);
+    int32_t repairRet = op.Repair("/dev/block/mock_dev");
+    EXPECT_EQ(repairRet, E_VOL_FIX_FAILED);
+}
+
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckOk_NoRepairNeeded
+ * @tc.desc: Verify autofix flow: Check returns OK, Repair should not be called.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckOk_NoRepairNeeded, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_OK);
+}
+
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyDevPath, TestSize.Level1)
 {
     HmfsOperator op;
@@ -289,7 +379,8 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyDevPath, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyLabel, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", ""), E_PARAMS_INVALID);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_Success, TestSize.Level1)
@@ -306,30 +397,100 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_Failed, TestSize.Level1)
     EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "MyLabel"), E_ERR);
 }
 
+/**
+ * @tc.name: HmfsOperator_DoMount_ChmodChownAfterMount_001
+ * @tc.desc: Verify chmod and chown are called after successful normal mount.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChmodChownAfterMount_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_MigrationRO_NoChmodChown_001
+ * @tc.desc: Verify chmod and chown are NOT called for migration RO mount.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_NoChmodChown_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).Times(0);
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).Times(0);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_ChmodFailedStillSucceeds_001
+ * @tc.desc: Verify DoMount returns E_OK even if chmod fails (error is logged only).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChmodFailedStillSucceeds_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_ChownFailedStillSucceeds_001
+ * @tc.desc: Verify DoMount returns E_OK even if chown fails (error is logged only).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChownFailedStillSucceeds_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_BothChmodChownFailed_001
+ * @tc.desc: Verify DoMount returns E_OK when both chmod and chown fail.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_BothChmodChownFailed_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyDevPath, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyMountPath, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0), E_PARAMS_INVALID);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "", 0, ""), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_Success, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_MountFailed, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0), E_EXT_MOUNT);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_EXT_MOUNT);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Success, TestSize.Level1)
@@ -363,7 +524,7 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_ReadOnly, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", MS_RDONLY, ""), E_OK);
 }
 
 /**
@@ -376,7 +537,7 @@ HWTEST_F(ExtOperatorTest, VfatOperator_DoMount_ReadOnly, TestSize.Level1)
 {
     VfatOperator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY), E_OK);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/usb", MS_RDONLY, ""), E_OK);
 }
 
 /**
@@ -490,5 +651,174 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format_NoChild, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
 }
 
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_EmptyDevPath, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("", uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_PathTooLong, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_EQ(op.ReadMetadata(longPath, uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_RealpathFailed, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    g_realpathRet = -1;
+    EXPECT_EQ(op.ReadMetadata("/dev/block/mock_dev", uuid, type, label), E_PARAMS_INVALID);
+    g_realpathRet = 0;
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_InvalidPrefix, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("/invalid/path", uuid, type, label), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_Success, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("udf-uuid-1234"))
+        .WillOnce(Return("UDFVolume"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "udf-uuid-1234");
+    EXPECT_EQ(label, "UDFVolume");
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_UuidEmpty_GenerateRandom, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return(""))
+        .WillOnce(Return("UDFLabel"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(label, "UDFLabel");
+    EXPECT_FALSE(uuid.empty());
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_LabelEmpty_GetCDType, TestSize.Level1)
+{
+    UdfOperator op;
+    std::string uuid, label;
+    std::string type = "udf";
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("udf-uuid-1234"))
+        .WillOnce(Return(""));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "udf-uuid-1234");
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_Check_BaseDefault, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.Check("/dev/block/mock_dev"), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_Repair_NotSupport, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_SetLabel_NotSupport, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "label"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_EmptyDevPath, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("", uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_PathTooLong, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_EQ(op.ReadMetadata(longPath, uuid, type, label), E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_RealpathFailed, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    g_realpathRet = -1;
+    EXPECT_EQ(op.ReadMetadata("/dev/block/mock_dev", uuid, type, label), E_PARAMS_INVALID);
+    g_realpathRet = 0;
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_InvalidPrefix, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("/invalid/path", uuid, type, label), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_Success, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("iso9660-uuid-1234"))
+        .WillOnce(Return("ISO9660Volume"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "iso9660-uuid-1234");
+    EXPECT_EQ(label, "ISO9660Volume");
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_UuidEmpty_GenerateRandom, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return(""))
+        .WillOnce(Return("IsoLabel"));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(label, "IsoLabel");
+    EXPECT_FALSE(uuid.empty());
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ReadMetadata_LabelEmpty_GetCDType, TestSize.Level1)
+{
+    IsoOperator op;
+    std::string uuid, label;
+    std::string type = "udf";
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("iso9660-uuid-1234"))
+        .WillOnce(Return(""));
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(uuid, "iso9660-uuid-1234");
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_Check_BaseDefault, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.Check("/dev/block/mock_dev"), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_Repair_NotSupport, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_SetLabel_NotSupport, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "label"), E_NOT_SUPPORT);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

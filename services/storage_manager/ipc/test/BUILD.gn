@@ -109,6 +109,10 @@ ohos_unittest("storage_manager_provider_test") {
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]
 }
@@ -138,6 +142,7 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
+    "${storage_manager_path}/mock/disk_manager_client_mock.cpp",
     "storage_manager_provider_permission_test.cpp",
     "${storage_manager_path}/disk/src/disk_notification.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
@@ -216,6 +221,10 @@ ohos_unittest("storage_manager_provider_permission_test") {
       "PC_USER_MANAGER",
     ]
   }
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]
 }
@@ -248,6 +257,7 @@ sources = [
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_manager_path}/mock/disk_manager_client_mock.cpp",
     "storage_manager_provider_premission_access_test.cpp",
   ]
 
@@ -341,6 +351,10 @@ sources = [
 
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
   }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]
@@ -444,6 +458,10 @@ ohos_unittest("storage_manager_provider_communication_test") {
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]
 }
@@ -473,6 +491,7 @@ ohos_unittest("storage_manager_provider_other_test") {
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
+    "${storage_manager_path}/mock/disk_manager_client_mock.cpp",
     "storage_manager_provider_other_test.cpp",
     
   ]
@@ -544,6 +563,10 @@ ohos_unittest("storage_manager_provider_other_test") {
 
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
   }
   cflags_cc = [ "--coverage"]
   ldflags = ["--coverage"]

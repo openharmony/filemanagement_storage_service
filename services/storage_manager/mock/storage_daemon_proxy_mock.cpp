@@ -392,8 +392,19 @@ int32_t StorageDaemonProxy::ReadPartitionTable(const std::string &devPath,
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::QueryCDStatus(const std::string &devPath, int32_t &status)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::EjectCD(const std::string &devPath)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::Mount(const std::string &devPath, const std::string &mountPath,
-                                  const std::string &fsType, uint64_t mountFlags)
+                                  const std::string &fsType, uint64_t mountFlags,
+                                  const std::string &mountData)
 {
     return E_OK;
 }
@@ -545,6 +556,28 @@ int32_t StorageDaemonProxy::VerifyBurnData(const std::string &volumeId, uint32_t
 }
 
 int32_t StorageDaemonProxy::GetBlockInfoByType(const std::string &type, std::string &blockInfos)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                            int64_t endSector, const std::string &typeCode)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::FormatPartition(const std::string &devPath, const std::string &fsType,
+                                            const std::string &volumeName, bool quickFormat)
 {
     return E_OK;
 }

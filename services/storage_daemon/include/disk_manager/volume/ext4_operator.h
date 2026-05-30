@@ -31,7 +31,8 @@ public:
 
     int32_t DoMount(const std::string& devPath,
                     const std::string& mountPath,
-                    unsigned long mountFlags) override;
+                    unsigned long mountFlags,
+                    const std::string& mountData) override;
     int32_t Format(const std::string& devPath) override;
 };
 

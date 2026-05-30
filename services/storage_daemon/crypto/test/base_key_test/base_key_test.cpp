@@ -25,6 +25,7 @@
 
 #include "directory_ex.h"
 #include "file_ex.h"
+#include "hks_param.h"
 
 #include "common_utils_mock.h"
 #include "fbex.h"
@@ -1099,5 +1100,73 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveKeyBlob_001, TestSize.Level1)
     (void)unlink(BASE_KEY_BLOB_SUCCESS_PATH.c_str());
  
     GTEST_LOG_(INFO) << "BaseKey_SaveKeyBlob_001 end";
+}
+
+static KeyBlob BuildShieldParamSet(const std::vector<HksParam> &params)
+{
+    HksParamSet *paramSet = nullptr;
+    EXPECT_EQ(HksInitParamSet(&paramSet), HKS_SUCCESS);
+    EXPECT_EQ(HksAddParams(paramSet, params.data(), params.size()), HKS_SUCCESS);
+    EXPECT_EQ(HksBuildParamSet(&paramSet), HKS_SUCCESS);
+    KeyBlob shield(paramSet->paramSetSize);
+    std::copy(reinterpret_cast<uint8_t *>(paramSet),
+        reinterpret_cast<uint8_t *>(paramSet) + paramSet->paramSetSize,
+        shield.data.get());
+    HksFreeParamSet(&paramSet);
+    return shield;
+}
+
+HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    elKey->keyContext_.shield.Clear();
+    EXPECT_FALSE(elKey->NeedUpgradeAuthType());
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_001 end";
+}
+
+HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    HksParam param = { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN };
+    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    EXPECT_TRUE(elKey->NeedUpgradeAuthType());
+    elKey->keyContext_.shield.Clear();
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_002 end";
+}
+
+HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_003 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    HksParam param = { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 };
+    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    EXPECT_FALSE(elKey->NeedUpgradeAuthType());
+    elKey->keyContext_.shield.Clear();
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_003 end";
+}
+
+HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_004 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    HksParam param = { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE };
+    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    EXPECT_FALSE(elKey->NeedUpgradeAuthType());
+    elKey->keyContext_.shield.Clear();
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_004 end";
+}
+
+HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_005 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::vector<uint8_t> invalidData{0, 0, 0, 0};
+    elKey->keyContext_.shield.Alloc(invalidData.size());
+    std::copy(invalidData.begin(), invalidData.end(), elKey->keyContext_.shield.data.get());
+    EXPECT_FALSE(elKey->NeedUpgradeAuthType());
+    elKey->keyContext_.shield.Clear();
+    GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_005 end";
 }
 } // OHOS::StorageDaemon

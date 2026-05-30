@@ -38,7 +38,6 @@ using namespace OHOS::StorageService;
 
 namespace OHOS {
 namespace StorageManager {
-constexpr const char* HYPERHOLD_PATH = "/data/service/el1/0/hyperhold";
 constexpr const char* RGM_MANAGER_PATH = "/data/service/el1/public/rgm_manager";
 constexpr const char* SCAN_RESULT_DIR = "/data/service/el1/public/storage_manager/database";
 constexpr const char* SCAN_RESULT_FILE = "scan_result.json";
@@ -52,7 +51,6 @@ constexpr int64_t TIME_INTERVAL_MS = 24 * 60 * 60 * 1000;  // Number of millisec
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
 constexpr int64_t DEFAULT_ROOT_SIZE = 4000000000;     // fallback root partition size
 constexpr int64_t DEFAULT_SYSTEM_SIZE = 100000000;     // fallback system size
-constexpr int64_t DEFAULT_MEMMGR_SIZE = 900000000;     // fallback memory manager size
 constexpr int64_t SCAN_SIZE_CHANGE_THRESHOLD = 1024 * 1024 * 1024;     // fallback memory manager size
 constexpr int32_t TOP_LARGE_COUNT = 15;
 
@@ -117,12 +115,6 @@ int64_t StorageManagerScan::GetSystemSize()
     return StorageManagerScan::systemSize_;
 }
 
-int64_t StorageManagerScan::GetMemmgrSize()
-{
-    std::lock_guard<std::mutex> lock(calSizeMutex_);
-    return StorageManagerScan::memmgrSize_;
-}
-
 int32_t StorageManagerScan::Init()
 {
     LOGI("StorageManagerScan::Init start.");
@@ -130,8 +122,8 @@ int32_t StorageManagerScan::Init()
     int32_t ret = LoadScanResultFromFile();
     if (ret == E_OK) {
         LOGI("StorageManagerScan::Init LoadScanResultFromFile success, root=%{public}lld,"
-            " system=%{public}lld, memmgr=%{public}lld", static_cast<long long>(rootSize_),
-            static_cast<long long>(systemSize_), static_cast<long long>(memmgrSize_));
+            " system=%{public}lld", static_cast<long long>(rootSize_),
+            static_cast<long long>(systemSize_));
         return E_OK;
     }
 
@@ -141,16 +133,14 @@ int32_t StorageManagerScan::Init()
         std::lock_guard<std::mutex> lock(calSizeMutex_);
         rootSize_ = DEFAULT_ROOT_SIZE;
         systemSize_ = DEFAULT_SYSTEM_SIZE;
-        memmgrSize_ = DEFAULT_MEMMGR_SIZE;
     }
     ret = SaveScanResultToFile();
     if (ret != E_OK) {
         LOGE("StorageManagerScan::Init SaveScanResultToFile failed, ret=%{public}d", ret);
         return ret;
     }
-    LOGI("StorageManagerScan::Init success, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
-        static_cast<long long>(rootSize_), static_cast<long long>(systemSize_),
-        static_cast<long long>(memmgrSize_));
+    LOGI("StorageManagerScan::Init success, root=%{public}lld, system=%{public}lld",
+        static_cast<long long>(rootSize_), static_cast<long long>(systemSize_));
     return E_OK;
 }
 
@@ -285,33 +275,17 @@ int32_t StorageManagerScan::ExecuteScan()
         return ret;
     }
 
-    ret = ScanSinglePath(HYPERHOLD_PATH, ROOT_UID, scanResult.hyperholdRootSize);
-    if (ret != E_OK) {
-        LOGE("ExecuteScan ScanSinglePath hyperhold failed, ret=%{public}d", ret);
-        return ret;
-    }
-
     ret = ScanSinglePath(RGM_MANAGER_PATH, ROOT_UID, scanResult.rgmManagerRootSize);
     if (ret != E_OK) {
         LOGE("ExecuteScan ScanSinglePath rgm_manager failed, ret=%{public}d", ret);
         return ret;
     }
 
-    std::map<int32_t, int64_t> uidSizeMap;
-    ret = GetQuotaSizeByUid({MEMMGR_UID}, uidSizeMap);
-    if (ret != E_OK) {
-        LOGE("ExecuteScan GetMemmgrQuotaSize failed, ret=%{public}d", ret);
-        return ret;
-    }
-    {
-        std::lock_guard<std::mutex> lock(calSizeMutex_);
-        memmgrSize_ = uidSizeMap[MEMMGR_UID];
-    }
     CalculateFinalSizes(startTimeMs, scanResult);
     SaveAndReportScanResults(scanResult);
-    LOGI("ExecuteScan success, duration=%{public}lldms, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
+    LOGI("ExecuteScan success, duration=%{public}lldms, root=%{public}lld, system=%{public}lld",
         static_cast<long long>(scanDurationMs_), static_cast<long long>(rootSize_),
-        static_cast<long long>(systemSize_), static_cast<long long>(memmgrSize_));
+        static_cast<long long>(systemSize_));
     return E_OK;
 }
 
@@ -344,7 +318,6 @@ void StorageManagerScan::ReportScanResult()
     extraData << "{scanDurationMs:" << scanDurationMs_ << "}" << std::endl;
     extraData << "{rootSize:" << ConvertBytesToMB(rootSize_, ACCURACY_NUM) << "MB}" << std::endl;
     extraData << "{systemSize:" << ConvertBytesToMB(systemSize_, ACCURACY_NUM) << "MB}" << std::endl;
-    extraData << "{memmgrSize:" << ConvertBytesToMB(memmgrSize_, ACCURACY_NUM) << "MB}" << std::endl;
     StorageService::StorageRadar::ReportSpaceRadar("StorageManagerScan", E_SCAN_RESULT, extraData.str());
     LOGI("ReportScanResult end");
 }
@@ -365,7 +338,6 @@ void StorageManagerScan::ReportLargeFilesAndDirs(const std::vector<LargeFileInfo
     extraData << "{scanDurationMs:" << scanDurationMs_ << "}" << std::endl;
     extraData << "{rootSize:" << ConvertBytesToMB(rootSize_, ACCURACY_NUM) << "MB}" << std::endl;
     extraData << "{systemSize:" << ConvertBytesToMB(systemSize_, ACCURACY_NUM) << "MB}" << std::endl;
-    extraData << "{memmgrSize:" << ConvertBytesToMB(memmgrSize_, ACCURACY_NUM) << "MB}" << std::endl;
 
     // Report large files (top 15 files > 1MB)
     if (!largeFiles.empty()) {
@@ -404,7 +376,7 @@ void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, const ScanResu
         std::lock_guard<std::mutex> lock(lastScanTimeMutex_);
         lastScanTime_ = endTimeMs;
     }
-    int64_t rootSize = scanResult.rootSize - scanResult.hyperholdRootSize - scanResult.rgmManagerRootSize;
+    int64_t rootSize = scanResult.rootSize - scanResult.rgmManagerRootSize;
     int64_t systemSize = scanResult.systemSize;
     int64_t fondationSize = scanResult.fondationSize;
     if (std::abs(rootSize + systemSize + fondationSize - rootSize_ - systemSize_ - fondationSize_) >
@@ -413,35 +385,7 @@ void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, const ScanResu
     }
     rootSize_ = rootSize;
     systemSize_ = systemSize;
-    memmgrSize_ = memmgrSize_ + scanResult.hyperholdRootSize;
     fondationSize_ = fondationSize;
-}
-
-int32_t StorageManagerScan::GetQuotaSizeByUid(const std::vector<int32_t>& uids, std::map<int32_t, int64_t>& uidSizeMap)
-{
-    if (stopScanFlag_.load()) {
-        LOGI("StorageManagerScan::GetQuotaSizeByUid ExecuteScan stopped by flag");
-        return E_ERR;
-    }
-    LOGI("GetQuotaSizeByUid start, uids size=%{public}zu", uids.size());
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("GetQuotaSizeByUid GetInstance StorageDaemonCommunication failed");
-        return E_SERVICE_IS_NULLPTR;
-    }
-
-    std::vector<NextDqBlk> dqBlks;
-    int32_t ret = sdCommunication->GetDqBlkSpacesByUids(uids, dqBlks);
-    if (ret != E_OK) {
-        LOGE("GetQuotaSizeByUid GetDqBlkSpacesByUids failed, ret=%{public}d", ret);
-        return ret;
-    }
-
-    for (const auto& dqBlk : dqBlks) {
-        uidSizeMap[dqBlk.dqbId] = dqBlk.dqbCurSpace;
-    }
-    LOGI("GetQuotaSizeByUid end");
-    return E_OK;
 }
 
 int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirWhiteList,
@@ -593,14 +537,12 @@ int32_t StorageManagerScan::LoadScanResultFromFile()
     }
     cJSON* rootSizeItem = cJSON_GetObjectItem(root, "rootSize");
     cJSON* systemSizeItem = cJSON_GetObjectItem(root, "systemSize");
-    cJSON* memmgrSizeItem = cJSON_GetObjectItem(root, "memmgrSize");
-    if (rootSizeItem == NULL || systemSizeItem == NULL || memmgrSizeItem == NULL) {
+    if (rootSizeItem == NULL || systemSizeItem == NULL) {
         LOGE("LoadScanResultFromFile: missing required fields");
         cJSON_Delete(root);
         return E_ERR;
     }
-    if (!cJSON_IsNumber(rootSizeItem) || !cJSON_IsNumber(systemSizeItem) ||
-        !cJSON_IsNumber(memmgrSizeItem)) {
+    if (!cJSON_IsNumber(rootSizeItem) || !cJSON_IsNumber(systemSizeItem)) {
         LOGE("LoadScanResultFromFile: invalid data type");
         cJSON_Delete(root);
         return E_ERR;
@@ -609,12 +551,10 @@ int32_t StorageManagerScan::LoadScanResultFromFile()
         std::lock_guard<std::mutex> lock(calSizeMutex_);
         rootSize_ = static_cast<int64_t>(rootSizeItem->valuedouble);
         systemSize_ = static_cast<int64_t>(systemSizeItem->valuedouble);
-        memmgrSize_ = static_cast<int64_t>(memmgrSizeItem->valuedouble);
     }
     cJSON_Delete(root);
-    LOGI("LoadScanResultFromFile success, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
-        static_cast<long long>(rootSize_), static_cast<long long>(systemSize_),
-        static_cast<long long>(memmgrSize_));
+    LOGI("LoadScanResultFromFile success, root=%{public}lld, system=%{public}lld",
+        static_cast<long long>(rootSize_), static_cast<long long>(systemSize_));
     return E_OK;
 }
 
@@ -636,7 +576,6 @@ int32_t StorageManagerScan::SaveScanResultToFile()
         std::lock_guard<std::mutex> lock(calSizeMutex_);
         cJSON_AddNumberToObject(root, "rootSize", static_cast<double>(rootSize_));
         cJSON_AddNumberToObject(root, "systemSize", static_cast<double>(systemSize_));
-        cJSON_AddNumberToObject(root, "memmgrSize", static_cast<double>(memmgrSize_));
     }
     char* jsonChar = cJSON_Print(root);
     cJSON_Delete(root);
@@ -657,9 +596,8 @@ int32_t StorageManagerScan::SaveScanResultToFile()
         LOGE("Failed to write to file, path=%{public}s", filePath.c_str());
     }
     outFile.close();
-    LOGI("SaveScanResultToFile success, path=%{public}s, root=%{public}lld, system=%{public}lld, memmgr=%{public}lld",
-        filePath.c_str(), static_cast<long long>(rootSize_), static_cast<long long>(systemSize_),
-        static_cast<long long>(memmgrSize_));
+    LOGI("SaveScanResultToFile success, path=%{public}s, root=%{public}lld, system=%{public}lld",
+        filePath.c_str(), static_cast<long long>(rootSize_), static_cast<long long>(systemSize_));
 
     return E_OK;
 }

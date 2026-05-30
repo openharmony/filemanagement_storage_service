@@ -278,7 +278,6 @@ group("storage_js") {
   deps = [
     ":keymanager",
     ":storagestatistics",
-    ":volumemanager",
     ":encryptedvolumemanager",
   ]
 }

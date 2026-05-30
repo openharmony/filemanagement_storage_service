@@ -18,6 +18,7 @@
 
 #include "burn_params.h"
 #include "utils/storage_radar.h"
+#include <nlohmann/json.hpp>
 #include <singleton.h>
 #include <regex>
 #ifdef STORAGE_STATISTICS_MANAGER
@@ -57,6 +58,9 @@
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
+#ifdef DISK_MANAGER
+#include "disk_manager_client.h"
+#endif
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -82,6 +86,38 @@ const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANA
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
 const std::string PERMISSION_ENCRYPT_VOLUME_MANAGER = "ohos.permission.ENCRYPT_VOLUME_MANAGER";
+
+namespace {
+#ifdef DISK_MANAGER
+StorageManager::Disk ConvertDisk(const OHOS::DiskManager::Disk &src)
+{
+    std::list<std::string> volumeIds;
+    const auto &srcVolumeIds = src.GetVolumeIds();
+    volumeIds.insert(volumeIds.end(), srcVolumeIds.begin(), srcVolumeIds.end());
+
+    std::string extraInfo = src.GetExtraInfo();
+    std::string sysPath = src.GetSysPath();
+
+    std::string vendor = "";
+
+    return StorageManager::Disk(src.GetDiskId(), src.GetSizeBytes(), src.GetDiskType(), src.GetRemovable(),
+        volumeIds, extraInfo, vendor, sysPath);
+}
+
+StorageManager::VolumeExternal ConvertVolumeExternal(const OHOS::DiskManager::VolumeExternal &src)
+{
+    StorageManager::VolumeCore vc(src.GetId(), src.GetType(), src.GetDiskId(), src.GetState(),
+                                   src.GetFsTypeString());
+    StorageManager::VolumeExternal ext(vc);
+    ext.SetFlags(src.GetFlags());
+    ext.SetFsType(src.GetFsType());
+    ext.SetFsUuid(src.GetUuid());
+    ext.SetPath(src.GetPath());
+    ext.SetDescription(src.GetDescription());
+    return ext;
+}
+#endif
+} // namespace
 
 bool CheckClientPermission(const std::string &permissionStr)
 {
@@ -161,10 +197,9 @@ void StorageManagerProvider::OnStart()
     int32_t ret = StorageManagerScan::GetInstance().LoadScanResultFromFile();
     if (ret == E_OK) {
         LOGI("StorageManagerProvider::OnStart LoadScanResultFromFile success, root=%{public}lld,"
-        " system=%{public}lld, memmgr=%{public}lld",
+        " system=%{public}lld",
             static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
-            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
-            static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()));
+            static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()));
     }
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
@@ -359,14 +394,14 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManagerProvider::getFreeSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    VolumeStorageStatusService& volumeStatsManager = VolumeStorageStatusService::GetInstance();
-    int32_t err = volumeStatsManager.GetFreeSizeOfVolume(volumeUuid, freeSize);
+
+#ifdef DISK_MANAGER
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetFreeSizeOfVolume(volumeUuid, freeSize);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetFreeSizeOfVolume", DEFAULT_USERID, err,
-            "setting");
+        StorageRadar::ReportGetStorageStatus("DiskManagerClient::GetFreeSizeOfVolume", DEFAULT_USERID, err, "setting");
     }
     return err;
 #else
@@ -379,14 +414,14 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManagerProvider::getTotalSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    VolumeStorageStatusService& volumeStatsManager = VolumeStorageStatusService::GetInstance();
-    int32_t err = volumeStatsManager.GetTotalSizeOfVolume(volumeUuid, totalSize);
+
+#ifdef DISK_MANAGER
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetTotalSizeOfVolume(volumeUuid, totalSize);
     if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetTotalSizeOfVolume", DEFAULT_USERID, err,
-            "setting");
+        StorageRadar::ReportGetStorageStatus("DiskManagerClient::GetTotalSizeOfVolume", DEFAULT_USERID, err, "setting");
     }
     return err;
 #else
@@ -702,15 +737,18 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
 {
     std::string message = "Mount Begin, volumeId:" + volumeId;
     StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, message, E_OK);
+
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Mount start");
-    int result = VolumeManagerService::GetInstance().Mount(volumeId);
+
+#ifdef DISK_MANAGER
+    int32_t result = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->Mount(volumeId);
+
     StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, "Mount End", result);
     if (result != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::Mount", result);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::Mount", result);
     }
     return result;
 #else
@@ -722,15 +760,18 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
 {
     std::string message = "Unmount Begin, volumeId:" + volumeId;
     StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, message, E_OK);
+
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Unmount start");
-    int result = VolumeManagerService::GetInstance().Unmount(volumeId);
+
+#ifdef DISK_MANAGER
+    int32_t result = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->Unmount(volumeId);
+
     StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, "Unmount End", result);
     if (result != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::Unmount", result);
     }
     return result;
 #else
@@ -760,12 +801,24 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetAllVolumes start");
-    vecOfVol = VolumeManagerService::GetInstance().GetAllVolumes();
+
+#ifdef DISK_MANAGER
+    std::vector<OHOS::DiskManager::VolumeExternal> dmVols;
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->GetAllVolumes(dmVols);
+    if (err == E_OK) {
+        vecOfVol.clear();
+        vecOfVol.reserve(dmVols.size());
+        for (const auto &dmVol : dmVols) {
+            vecOfVol.push_back(ConvertVolumeExternal(dmVol));
+        }
+    }
+
     LOGI("StorageManagerProvider::GetAllVolumes end, size:%{public}zu", vecOfVol.size());
-#endif
+    return err;
+#else
     return E_OK;
+#endif
 }
 
 int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
@@ -805,19 +858,22 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::Partition start, diskId: %{public}s", diskId.c_str());
-    DiskManagerService& diskManager = DiskManagerService::GetInstance();
-    int32_t err = diskManager.Partition(diskId, type);
+
+#ifdef DISK_MANAGER
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->Partition(diskId, type);
+
     StorageRadar::ReportFucBehavior("Partition", DEFAULT_USERID, "Partition End", err);
     if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::Partition", err);
     }
     return err;
 #else
     return E_OK;
 #endif
 }
+
 
 int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
@@ -828,27 +884,46 @@ int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef PC_USER_MANAGER
     LOGI("StorageManagerProvider::GetAllDisks start");
-    vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
-    LOGI("StorageManagerProvider::GetAllDisks success");
+
+#ifdef DISK_MANAGER
+    std::vector<OHOS::DiskManager::Disk> dmDisks;
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetAllDisks(dmDisks);
+    if (err == E_OK) {
+        vecOfDisk.clear();
+        vecOfDisk.reserve(dmDisks.size());
+        for (const auto &dmDisk : dmDisks) {
+            vecOfDisk.push_back(ConvertDisk(dmDisk));
+        }
+    }
+
+    LOGI("StorageManagerProvider::GetAllDisks end, size:%{public}zu", vecOfDisk.size());
+    return err;
+#else
     return E_OK;
 #endif
-    LOGI("StorageManagerProvider::GetAllDisks not support");
-    return E_OK;
 }
+
 
 int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetVolumeByUuid start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
-    int32_t err = VolumeManagerService::GetInstance().GetVolumeByUuid(fsUuid, vc);
+
+#ifdef DISK_MANAGER
+    OHOS::DiskManager::VolumeExternal dmVol;
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetVolumeByUuid(fsUuid, dmVol);
+    if (err == E_OK) {
+        vc = ConvertVolumeExternal(dmVol);
+    }
+
     if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeByUuid", err);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::GetVolumeByUuid", err);
     }
     return err;
 #else
@@ -856,22 +931,31 @@ int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, Volum
 #endif
 }
 
+
 int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, VolumeExternal &vc)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::GetVolumeById start, volId: %{public}s", volumeId.c_str());
-    int32_t err = VolumeManagerService::GetInstance().GetVolumeById(volumeId, vc);
+
+#ifdef DISK_MANAGER
+    OHOS::DiskManager::VolumeExternal dmVol;
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetVolumeById(volumeId, dmVol);
+    if (err == E_OK) {
+        vc = ConvertVolumeExternal(dmVol);
+    }
+
     if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeById", err);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::GetVolumeById", err);
     }
     return err;
 #else
     return E_OK;
 #endif
 }
+
 
 int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, const std::string &description)
 {
@@ -879,13 +963,16 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::SetVolumeDescription start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
-    int32_t err = VolumeManagerService::GetInstance().SetVolumeDescription(fsUuid, description);
+
+#ifdef DISK_MANAGER
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->SetVolumeDescription(fsUuid, description);
+
     StorageRadar::ReportFucBehavior("SetVolumeDescription", DEFAULT_USERID, "SetVolumeDescription End", err);
     if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::SetVolumeDescription", err);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::SetVolumeDescription", err);
     }
     return err;
 #else
@@ -893,25 +980,30 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
 #endif
 }
 
+
 int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::string &fsType)
 {
     StorageRadar::ReportFucBehavior("Format", DEFAULT_USERID, "Format Begin", E_OK);
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManagerProvider::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(),
-        fsType.c_str());
-    int32_t err = VolumeManagerService::GetInstance().Format(volumeId, fsType);
+    LOGI("StorageManagerProvider::Format start, volumeId: %{public}s, fsType: %{public}s",
+         volumeId.c_str(), fsType.c_str());
+
+#ifdef DISK_MANAGER
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->Format(volumeId, fsType);
+
     StorageRadar::ReportFucBehavior("Format", DEFAULT_USERID, "Format End", err);
     if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeManagerService::Format", err);
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::Format", err);
     }
     return err;
 #else
     return E_OK;
 #endif
 }
+
 
 int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &disk)
 {
@@ -926,16 +1018,22 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
         LOGE("diskId is empty");
         return E_PARAMS_INVALID;
     }
-#ifdef PC_USER_MANAGER
+
+#ifdef DISK_MANAGER
     LOGI("StorageManagerProvider::GetDiskById start, diskId: %{public}s", diskId.c_str());
-    int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
+
+    OHOS::DiskManager::Disk dmDisk;
+    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
+                    ->GetDiskById(diskId, dmDisk);
+    if (err == E_OK) {
+        disk = ConvertDisk(dmDisk);
+        LOGI("StorageManagerProvider::GetDiskById success");
+        return E_OK;
+    } else {
+        StorageRadar::ReportVolumeOperation("DiskManagerClient::GetDiskById", err);
         LOGI("StorageManagerProvider::GetDiskById failed");
         return err;
     }
-    LOGI("StorageManagerProvider::GetDiskById success");
-    return E_OK;
 #else
     LOGI("StorageManagerProvider::GetDiskById not support");
     return E_OK;

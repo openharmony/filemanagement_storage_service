@@ -28,7 +28,8 @@ public:
 
     int32_t Mount(const std::string& devPath,
                   const std::string& mountPath,
-                  unsigned long mountFlags);
+                  unsigned long mountFlags,
+                  const std::string& mountData = "");
     int32_t Unmount(const std::string& mountPath, const std::string& fsType, bool force);
 
     virtual int32_t ReadMetadata(const std::string& devPath,
@@ -45,7 +46,8 @@ public:
 private:
     virtual int32_t DoMount(const std::string& devPath,
                             const std::string& mountPath,
-                            unsigned long mountFlags) = 0;
+                            unsigned long mountFlags,
+                            const std::string& mountData) = 0;
 
     static int32_t EnsureMountPath(const std::string& mountPath);
     static int32_t RemoveMountPath(const std::string& mountPath);

@@ -837,6 +837,138 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_003
+ * @tc.desc: Verify the UMountDisShareFile function when MatchesDisSharePath returns false.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_003 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/test/invalid_path");
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_003 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_004
+ * @tc.desc: Verify the UMountDisShareFile function when IsPathMounted returns false.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_004 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(false));
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_004 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_005
+ * @tc.desc: Verify the UMountDisShareFile function when UMount2 succeeds.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_005 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(0));
+    errno = 0;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_005 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_006
+ * @tc.desc: Verify the UMountDisShareFile function when UMount2 fails with ENOENT.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_006 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(1));
+    errno = ENOENT;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_006 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_007
+ * @tc.desc: Verify the UMountDisShareFile function when UMount2 fails with EINVAL.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_007 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(1));
+    errno = EINVAL;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_007 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_008
+ * @tc.desc: Verify the UMountDisShareFile function with multiple distributeDirs.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_008 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
+        "/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/invalid_path");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(0));
+    errno = 0;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_008 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_009
+ * @tc.desc: Verify the UMountDisShareFile function with path containing no FILE_SEPARATOR after networkId.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_009 start";
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789");
+    EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillRepeatedly(Return(0));
+    errno = 0;
+    auto ret = MountManager::GetInstance().UMountDisShareFile(distributeDirs);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_009 end";
+}
+
+/**
  * @tc.name: Storage_Manager_MountManagerTest_UMountDfsDocs_002
  * @tc.desc: Verify the UMountDfsDocs function when UMount2 fails.
  * @tc.type: FUNC

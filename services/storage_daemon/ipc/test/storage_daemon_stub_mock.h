@@ -36,7 +36,8 @@ public:
     MOCK_METHOD4(CreateBlockDeviceNode, int32_t(const std::string &, uint32_t, int32_t, int32_t));
     MOCK_METHOD1(DestroyBlockDeviceNode, int32_t(const std::string &));
     MOCK_METHOD3(ReadPartitionTable, int32_t(const std::string &, std::string &, int32_t &));
-    MOCK_METHOD4(Mount, int32_t(const std::string &, const std::string &, const std::string &, uint64_t));
+    MOCK_METHOD5(Mount, int32_t(const std::string &, const std::string &, const std::string &, uint64_t,
+                                 const std::string &));
     MOCK_METHOD3(Unmount, int32_t(const std::string &, const std::string &, bool));
     MOCK_METHOD2(FormatVolume, int32_t(const std::string &, const std::string &));
     MOCK_METHOD3(Check, int32_t(const std::string &, const std::string &, bool));
@@ -45,6 +46,7 @@ public:
     MOCK_METHOD4(ReadMetadata, int32_t(const std::string &, std::string &, std::string &, std::string &));
     MOCK_METHOD2(MountFuseDevice, int32_t(const std::string &, int &));
     MOCK_METHOD2(Partition, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(QueryCDStatus, int32_t(const std::string &, int32_t &));
     MOCK_METHOD2(QueryUsbIsInUse, int32_t(const std::string &, bool &));
     MOCK_METHOD3(GetOddCapacity, int32_t(const std::string &, int64_t &, int64_t &));
 
@@ -134,6 +136,12 @@ public:
     MOCK_METHOD2(CreatePartition, int32_t(const std::string &, const PartitionParams &));
     MOCK_METHOD2(DeletePartition, int32_t(const std::string &, uint32_t));
     MOCK_METHOD3(FormatPartition, int32_t(const std::string &, uint32_t, const FormatParams &));
+    MOCK_METHOD1(EjectCD, int32_t(const std::string &));
+
+    MOCK_METHOD2(GetPartitionTableInfo, int32_t(const std::string &, std::string &));
+    MOCK_METHOD5(CreatePartition, int32_t(const std::string &, int32_t, int64_t, int64_t, const std::string &));
+    MOCK_METHOD2(DeletePartitionInfo, int32_t(const std::string &, int32_t));
+    MOCK_METHOD4(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &, bool));
 
     MOCK_METHOD2(Burn, int32_t(const std::string&, const BurnParams&));
     MOCK_METHOD2(VerifyBurnData, int32_t(const std::string&, uint32_t));

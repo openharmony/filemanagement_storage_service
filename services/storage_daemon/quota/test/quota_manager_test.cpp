@@ -1205,7 +1205,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetSystemCacheSize_001, TestSize.Lev
 HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetSystemCacheSize_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetSystemCacheSize_002 start";
-    std::vector<int32_t> uidList = {0, 1000, 1111}; // ROOT_UID, SYSTEM_UID, MEMMGR_UID
+    std::vector<int32_t> uidList = {0, 1000}; // ROOT_UID, SYSTEM_UID
     int64_t cacheSize = 0; // Output parameter, initialized to 0
     int32_t result = QuotaManager::GetInstance().GetSystemCacheSize(uidList, cacheSize);
     // These UIDs should be skipped, so cacheSize should remain 0

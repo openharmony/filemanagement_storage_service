@@ -23,26 +23,55 @@
 #include <cerrno>
 #include <sys/mount.h>
 #include <vector>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace OHOS {
 namespace StorageDaemon {
 
+constexpr const char* HMFS_MOUNT_CONTEXT = "context=u:object_r:mnt_external_file:s0,noacl";
+constexpr unsigned long MOUNT_FLAG_MIGRATION_RO = 0x8000;
+constexpr uid_t ROOT_UID = 0;
+constexpr gid_t FILE_MANAGER_GID = 1006;
+constexpr mode_t MOUNT_DIR_MODE = 0775;
+
 int32_t HmfsOperator::DoMount(const std::string& devPath,
     const std::string& mountPath,
-    unsigned long mountFlags)
+    unsigned long mountFlags,
+    const std::string& mountData)
 {
-    LOGI("HmfsOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), GetAnonyString(mountPath).c_str());
+    LOGI("HmfsOperator::DoMount devPath=%{public}s, mountPath=%{public}s, mountFlags=%{public}lu",
+         devPath.c_str(), GetAnonyString(mountPath).c_str(), mountFlags);
 
     if (devPath.empty() || mountPath.empty()) {
         LOGE("HmfsOperator::DoMount invalid parameters");
         return E_PARAMS_INVALID;
     }
 
-    int32_t ret = mount(devPath.c_str(), mountPath.c_str(), "hmfs", mountFlags, "");
-    if (ret != E_OK) {
-        LOGE("HmfsOperator::DoMount mount failed, errno=%{public}d", errno);
-        return E_HMFS_MOUNT;
+    int32_t ret;
+    if (mountFlags == MOUNT_FLAG_MIGRATION_RO) {
+        ret = mount(devPath.c_str(), mountPath.c_str(), "hmfs", MS_RDONLY, HMFS_MOUNT_CONTEXT);
+        if (ret != E_OK) {
+            LOGE("HmfsOperator::DoMount mount RO failed, errno=%{public}d", errno);
+            return E_HMFS_MOUNT;
+        }
+    } else {
+        ret = mount(devPath.c_str(), mountPath.c_str(), "hmfs", mountFlags, mountData.c_str());
+        if (ret != E_OK) {
+            LOGE("HmfsOperator::DoMount mount failed, errno=%{public}d", errno);
+            return E_HMFS_MOUNT;
+        }
+    }
+
+    if (mountFlags != MOUNT_FLAG_MIGRATION_RO) {
+        if (chmod(mountPath.c_str(), MOUNT_DIR_MODE) != 0) {
+            LOGE("HmfsOperator::DoMount chmod failed on %{public}s, errno=%{public}d",
+                 mountPath.c_str(), errno);
+        }
+        if (chown(mountPath.c_str(), ROOT_UID, FILE_MANAGER_GID) != 0) {
+            LOGE("HmfsOperator::DoMount chown failed on %{public}s, errno=%{public}d",
+                 mountPath.c_str(), errno);
+        }
     }
 
     LOGI("HmfsOperator::DoMount success");
@@ -62,9 +91,7 @@ int32_t HmfsOperator::Format(const std::string& devPath)
         "mkfs.f2fs",
         "-d1",
         "-O", "encrypt",
-        "-O", "quota",
         "-O", "verity",
-        "-O", "project_quota,extra_attr",
         "-O", "sb_checksum",
         devPath
     };
@@ -151,7 +178,7 @@ int32_t HmfsOperator::SetLabel(const std::string& devPath,
     LOGI("HmfsOperator::SetLabel devPath=%{public}s, label=%{public}s",
          devPath.c_str(), label.c_str());
 
-    if (devPath.empty() || label.empty()) {
+    if (devPath.empty()) {
         LOGE("HmfsOperator::SetLabel invalid parameters");
         return E_PARAMS_INVALID;
     }

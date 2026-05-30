@@ -155,10 +155,13 @@ public:
     virtual int32_t ReadPartitionTable(const std::string &devPath,
                                        std::string &output,
                                        int32_t &maxVolume) override;
+    virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
+    virtual int32_t EjectCD(const std::string &devPath) override;
     virtual int32_t Mount(const std::string &devPath,
                           const std::string &mountPath,
                           const std::string &fsType,
-                          uint64_t mountFlags) override;
+                          uint64_t mountFlags,
+                          const std::string &mountData) override;
     virtual int32_t Unmount(const std::string &mountPath,
                             const std::string &fsType,
                             bool force) override;
@@ -212,6 +215,12 @@ public:
         const OHOS::StorageManager::FormatParams &formatParams) override;
     virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
+    virtual int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet) override;
+    virtual int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                    int64_t endSector, const std::string &typeCode) override;
+    virtual int32_t DeletePartitionInfo(const std::string &devPath, int32_t partitionNum) override;
+    virtual int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
+                                    const std::string &volumeName, bool quickFormat = true) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
@@ -239,7 +248,7 @@ private:
     int32_t RawDataToStringVec(const StorageFileRawData &rawData, std::vector<std::string> &stringVec);
     void SetUserStatistics(uint32_t userId, RadarStatisticInfoType type);
     static int32_t ValidateBlockDevicePath(const std::string &devPath, std::string &verifiedPath);
-    static int32_t ValidateMountPath(const std::string &mountPath);
+    static int32_t ValidateMountPath(const std::string &mountPath, std::string &verifiedPath);
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // namespace StorageDaemon

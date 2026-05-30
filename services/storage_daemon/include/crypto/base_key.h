@@ -75,6 +75,7 @@ public:
     bool GetHashKey(KeyBlob &hashKey);
     bool GenerateHashKey();
     void ClearKeyInfo();
+    bool NeedUpgradeAuthType();
 
     KeyInfo keyInfo_;
     std::string GetDir() const

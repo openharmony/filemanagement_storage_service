@@ -624,14 +624,12 @@ int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
         return err;
     }
     systemDataSize = StorageManagerScan::GetInstance().GetRootSize() +
-        StorageManagerScan::GetInstance().GetSystemSize() +
-        StorageManagerScan::GetInstance().GetMemmgrSize() + otherUidSizeSum;
+        StorageManagerScan::GetInstance().GetSystemSize() + otherUidSizeSum;
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
-    LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld, memmgr=%{public}lld,"
+    LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld,"
         " other=%{public}lld, total=%{public}lld",
         static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
         static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
-        static_cast<long long>(StorageManagerScan::GetInstance().GetMemmgrSize()),
         static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemDataSize));
     return E_OK;
 }

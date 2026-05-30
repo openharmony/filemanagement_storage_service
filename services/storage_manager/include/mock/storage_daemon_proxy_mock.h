@@ -134,7 +134,8 @@ public:
     virtual int32_t ReadPartitionTable(const std::string &devPath,
                                        std::string &output, int32_t &maxVolume) override;
     virtual int32_t Mount(const std::string &devPath, const std::string &mountPath,
-                          const std::string &fsType, uint64_t mountFlags) override;
+                          const std::string &fsType, uint64_t mountFlags,
+                          const std::string &mountData) override;
     virtual int32_t Unmount(const std::string &mountPath,
                             const std::string &fsType, bool force) override;
     virtual int32_t FormatVolume(const std::string &devPath, const std::string &fsType) override;
@@ -178,6 +179,14 @@ public:
                                     const FormatParams &formatParams) override;
     virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
     virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
+    virtual int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet) override;
+    virtual int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
+                                    int64_t endSector, const std::string &typeCode) override;
+    virtual int32_t DeletePartitionInfo(const std::string &devPath, int32_t partitionNum) override;
+    virtual int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
+                                    const std::string &volumeName, bool quickFormat = true) override;
+    virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
+    virtual int32_t EjectCD(const std::string &devPath) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

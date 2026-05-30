@@ -859,7 +859,7 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("[L4:BaseKey] DoUpdateRestore: Get secure uid form iam failed, use default value");
     }
-    ret = StoreKey({ auth.token, auth.secret, secureUid });
+    ret = StoreKey({ auth.token, auth.secret, secureUid, userId });
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] DoUpdateRestore: <<< EXIT FAILED <<< Store old failed");
         return ret;
@@ -1062,6 +1062,43 @@ void BaseKey::SyncKeyDir() const
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
     LOGW("[L4:BaseKey] SyncKeyDir: fsync end. SD_DURATION: FSYNC: delay time = %{public}s", delay.c_str());
     (void)closedir(dir);
+}
+
+bool BaseKey::NeedUpgradeAuthType()
+{
+    LOGI("[L4:BaseKey] NeedUpgradeAuthType: >>> ENTER <<<");
+    if (keyContext_.shield.IsEmpty()) {
+        if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
+            LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield file not found, no upgrade needed");
+            return false;
+        }
+    }
+
+    HksParamSet *keyBlobParamSet = nullptr;
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(keyContext_.shield.data.get()),
+        keyContext_.shield.size, &keyBlobParamSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d, no upgrade needed", ret);
+        return false;
+    }
+
+    struct HksParam *authTypeAtl = nullptr;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_USER_AUTH_TYPE_ATL, &authTypeAtl);
+    if (ret == HKS_SUCCESS) {
+        HksFreeParamSet(&keyBlobParamSet);
+        LOGI("[L4:BaseKey] NeedUpgradeAuthType: has ATL auth type, no upgrade needed");
+        return false;
+    }
+
+    struct HksParam *authType = nullptr;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_USER_AUTH_TYPE, &authType);
+    HksFreeParamSet(&keyBlobParamSet);
+
+    bool needUpgrade = (ret == HKS_SUCCESS);
+    LOGI("[L4:BaseKey] NeedUpgradeAuthType: hasAuthType=%{public}d, needUpgrade=%{public}d",
+         (ret == HKS_SUCCESS), needUpgrade);
+
+    return needUpgrade;
 }
 
 bool BaseKey::UpgradeKeys()

@@ -30,15 +30,18 @@ constexpr gid_t FILE_MANAGER_GID = 1006;
 
 int32_t VfatOperator::DoMount(const std::string& devPath,
                               const std::string& mountPath,
-                              unsigned long mountFlags)
+                              unsigned long mountFlags,
+                              const std::string& mountData)
 {
     LOGI("VfatOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
          devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     unsigned long flags = mountFlags | MS_MGC_VAL;
-    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", FILE_MANAGER_UID, FILE_MANAGER_GID);
+    std::string data = mountData.empty() ?
+        StringPrintf("uid=%d,gid=%d,dmask=0006,fmask=0007,utf8", FILE_MANAGER_UID, FILE_MANAGER_GID) :
+        mountData;
 
-    int32_t ret = mount(devPath.c_str(), mountPath.c_str(), "vfat", flags, mountData.c_str());
+    int32_t ret = mount(devPath.c_str(), mountPath.c_str(), "vfat", flags, data.c_str());
     if (ret != E_OK) {
         LOGE("VfatOperator::DoMount failed, errno=%{public}d", errno);
         return E_FAT_MOUNT;
