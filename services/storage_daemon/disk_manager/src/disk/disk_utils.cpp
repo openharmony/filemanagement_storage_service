@@ -138,6 +138,10 @@ int32_t DiskUtils::DestroyBlockDeviceNode(const std::string& devPath)
     }
 
     if (TEMP_FAILURE_RETRY(unlink(devPath.c_str())) < 0) {
+        if (errno == ENOENT) {
+            LOGI("DiskUtils::DestroyBlockDeviceNode node does not exist, path=%{public}s", devPath.c_str());
+            return E_OK;
+        }
         LOGE("DiskUtils::DestroyBlockDeviceNode unlink failed, errno=%{public}d", errno);
         return E_ERR;
     }
@@ -188,6 +192,9 @@ int32_t DiskUtils::Partition(const std::string& diskPath,
     if (!IsValidBlockDevicePath(diskPath)) {
         LOGE("DiskUtils::Partition invalid diskPath");
         return E_PARAMS_INVALID;
+    }
+    if (partitionType == "hmfs") {
+        return PartitionHmfs(diskPath);
     }
 
     constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
@@ -583,6 +590,61 @@ int32_t DiskUtils::EjectCD(const std::string &devPath)
         return res;
     }
     LOGI("EjectCD: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
+{
+    std::vector<std::string> clearCmd = {
+        SGDISK_PATH,
+        "-zog",
+        diskPath
+    };
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(clearCmd, &output);
+    for (auto &str : output) {
+        LOGI("DiskUtils::PartitionHmfs clear: %{public}s", str.c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("DiskUtils::PartitionHmfs sgdisk clear failed, ret=%{public}d", ret);
+        return ret;
+    }
+
+    output.clear();
+    std::vector<std::string> partCmd = {
+        SGDISK_PATH,
+        "--new=0:0:-0",
+        "--typecode=0:8300",
+        diskPath
+    };
+    ret = ForkExec(partCmd, &output);
+    for (auto &str : output) {
+        LOGI("DiskUtils::PartitionHmfs new: %{public}s", str.c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("DiskUtils::PartitionHmfs sgdisk partition failed, ret=%{public}d", ret);
+        return ret;
+    }
+
+    output.clear();
+    std::string partStr = diskPath.find("/dev/block/nvme1n1") != std::string::npos ? "p1" : "1";
+    std::vector<std::string> mkfsCmd = {
+        "mkfs.f2fs",
+        "-d1",
+        "-O", "encrypt",
+        "-O", "verity",
+        "-O", "sb_checksum",
+        diskPath + partStr
+    };
+    ret = ForkExec(mkfsCmd, &output);
+    for (auto &str : output) {
+        LOGI("DiskUtils::PartitionHmfs mkfs: %{public}s", str.c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("DiskUtils::PartitionHmfs mkfs.f2fs failed, ret=%{public}d", ret);
+        return ret;
+    }
+
     return E_OK;
 }
 } // namespace StorageDaemon

@@ -59,6 +59,7 @@ int32_t Ext4Operator::Format(const std::string& devPath)
 
     std::vector<std::string> cmd = {
         "mke2fs",
+        "-F",
         "-t",
         "ext4",
         devPath

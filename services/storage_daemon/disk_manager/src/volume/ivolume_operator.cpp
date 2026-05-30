@@ -15,12 +15,15 @@
 
 #include "disk_manager/volume/ivolume_operator.h"
 
+#include <chrono>
 #include <climits>
 #include <csignal>
 #include <fcntl.h>
+#include <future>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <thread>
 #include <unistd.h>
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
@@ -34,6 +37,7 @@ namespace OHOS {
 namespace StorageDaemon {
 
 constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
+constexpr int32_t WAIT_MOUNT_TIMEOUT_S = 60;
 
 int32_t IVolumeOperator::EnsureMountPath(const std::string& mountPath)
 {
@@ -143,7 +147,23 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         LOGE("IVolumeOperator::Mount EnsureMountPath failed, ret=%{public}d", ret);
         return ret;
     }
-    ret = DoMount(devPath, mountPath, mountFlags, mountData);
+
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread mountThread([this, &devPath, &mountPath, mountFlags, &mountData,
+                             p = std::move(promise)]() mutable {
+        p.set_value(DoMount(devPath, mountPath, mountFlags, mountData));
+    });
+
+    if (future.wait_for(std::chrono::seconds(WAIT_MOUNT_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("IVolumeOperator::Mount timed out, devPath=%{public}s", devPath.c_str());
+        mountThread.detach();
+        RemoveMountPath(mountPath);
+        return E_TIMEOUT_MOUNT;
+    }
+
+    ret = future.get();
+    mountThread.join();
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount DoMount failed, ret=%{public}d", ret);
         RemoveMountPath(mountPath);

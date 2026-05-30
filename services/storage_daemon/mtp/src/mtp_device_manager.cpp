@@ -14,6 +14,10 @@
  */
 
 #include "mtp/mtp_device_manager.h"
+
+#ifdef DISK_MANAGER
+#include "disk_manager_client.h"
+#endif
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -79,24 +83,11 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         return ret;
     }
     std::vector<std::string> cmdVec = {
-        device.type,
-        "-o",
-        "uid=" + std::to_string(FILE_MANAGER_UID),
-        "-o",
-        "gid=" + std::to_string(FILE_MANAGER_GID),
-        "-o",
-        "allow_other",
-        "-o",
-        "enable-move",
-        "-o",
-        "max_idle_threads=10",
-        "-o",
-        "max_threads=20",
-        "-o",
-        "context=u:object_r:mnt_external_file:s0",
-        "--device",
-        std::to_string(DEFAULT_DEV_INDEX),
-        device.path,
+        device.type, "-o", "uid=" + std::to_string(FILE_MANAGER_UID),
+        "-o", "gid=" + std::to_string(FILE_MANAGER_GID), "-o", "allow_other",
+        "-o", "enable-move", "-o", "max_idle_threads=10", "-o", "max_threads=20",
+        "-o", "context=u:object_r:mnt_external_file:s0",
+        "--device", std::to_string(DEFAULT_DEV_INDEX), device.path,
     };
     std::vector<std::string> result;
     int32_t err = ForkExec(cmdVec, &result);
@@ -109,11 +100,12 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         isMounting_ = false;
         return err != 0 ? err : E_MTP_MOUNT_FAILED;
     }
-
     LOGI("[L2:MtpDeviceManager] MountDevice: <<< EXIT SUCCESS <<< id=%{public}s", device.id.c_str());
     isMounting_ = false;
-    StorageManagerClient client;
-    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid, device.type);
+#ifdef DISK_MANAGER
+    DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpMounted(
+        device.id, device.path, device.vendor, device.uuid, device.type);
+#endif
     return E_OK;
 }
 
@@ -127,10 +119,11 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
         if (ret != 0) {
             LOGW("[L2:MtpDeviceManager] UmountDevice: umount2 failed in force mode, errno=%{public}d", errno);
             if (needNotify) {
-                StorageManagerClient client;
-                client.NotifyMtpUnmounted(device.id, isBadRemove);
+#ifdef DISK_MANAGER
+                DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+                    device.id, isBadRemove);
+#endif
             }
-            LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< force mode completed");
             return E_OK;
         }
         ret = rmdir(device.path.c_str());
@@ -138,14 +131,15 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
             LOGW("[L2:MtpDeviceManager] UmountDevice: remove failed in force mode, errno=%{public}d", errno);
         }
         if (needNotify) {
-            StorageManagerClient client;
-            client.NotifyMtpUnmounted(device.id, isBadRemove);
+#ifdef DISK_MANAGER
+            DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+                device.id, isBadRemove);
+#endif
         }
         rmdir(device.path.c_str());
         LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< force umount completed");
         return E_OK;
     }
-
     int ret = umount(device.path.c_str());
     if (ret != E_OK) {
         LOGE("[L2:MtpDeviceManager] UmountDevice: <<< EXIT FAILED <<< umount failed, errno=%{public}d", errno);
@@ -153,14 +147,14 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
     }
     int err = rmdir(device.path.c_str());
     if (err != E_OK) {
-        LOGE("[L2:MtpDeviceManager] UmountDevice: <<< EXIT FAILED <<< remove failed, path=%{public}s, errno=%{public}d",
-            device.path.c_str(), errno);
+        LOGE("[L2:MtpDeviceManager] UmountDevice: <<< EXIT FAILED <<< remove failed, errno=%{public}d", errno);
         return E_SYS_KERNEL_ERR;
     }
-    LOGI("[L2:MtpDeviceManager] UmountDevice: unmount success");
     if (needNotify) {
-        StorageManagerClient client;
-        client.NotifyMtpUnmounted(device.id, isBadRemove);
+#ifdef DISK_MANAGER
+        DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+            device.id, isBadRemove);
+#endif
     }
     rmdir(device.path.c_str());
     LOGI("[L2:MtpDeviceManager] UmountDevice: <<< EXIT SUCCESS <<< id=%{public}s", device.id.c_str());

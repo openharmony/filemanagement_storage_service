@@ -323,6 +323,53 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_Repair_BothFailed, TestSize.Level1)
     EXPECT_EQ(op.Repair("/dev/block/mock_dev"), E_VOL_FIX_FAILED);
 }
 
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckNeedFixThenRepairSuccess
+ * @tc.desc: Verify autofix flow: Check returns NEED_FIX, then Repair succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckNeedFixThenRepairSuccess, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR))
+        .WillOnce(MakeForkExecWithExit(1, E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_VOL_NEED_FIX);
+    int32_t repairRet = op.Repair("/dev/block/mock_dev");
+    EXPECT_EQ(repairRet, E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckNeedFixThenRepairFailed
+ * @tc.desc: Verify autofix flow: Check returns NEED_FIX, then Repair also fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckNeedFixThenRepairFailed, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR))
+        .WillOnce(MakeForkExecWithExit(0, E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_VOL_NEED_FIX);
+    int32_t repairRet = op.Repair("/dev/block/mock_dev");
+    EXPECT_EQ(repairRet, E_VOL_FIX_FAILED);
+}
+
+/**
+ * @tc.name: HmfsOperator_AutoFix_CheckOk_NoRepairNeeded
+ * @tc.desc: Verify autofix flow: Check returns OK, Repair should not be called.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_AutoFix_CheckOk_NoRepairNeeded, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t checkRet = op.Check("/dev/block/mock_dev");
+    EXPECT_EQ(checkRet, E_OK);
+}
+
 HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_EmptyDevPath, TestSize.Level1)
 {
     HmfsOperator op;
@@ -348,6 +395,76 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_SetLabel_Failed, TestSize.Level1)
     HmfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "MyLabel"), E_ERR);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_ChmodChownAfterMount_001
+ * @tc.desc: Verify chmod and chown are called after successful normal mount.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChmodChownAfterMount_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_MigrationRO_NoChmodChown_001
+ * @tc.desc: Verify chmod and chown are NOT called for migration RO mount.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_NoChmodChown_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, MS_RDONLY, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).Times(0);
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).Times(0);
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0x8000, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_ChmodFailedStillSucceeds_001
+ * @tc.desc: Verify DoMount returns E_OK even if chmod fails (error is logged only).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChmodFailedStillSucceeds_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_ChownFailedStillSucceeds_001
+ * @tc.desc: Verify DoMount returns E_OK even if chown fails (error is logged only).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChownFailedStillSucceeds_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
+}
+
+/**
+ * @tc.name: HmfsOperator_DoMount_BothChmodChownFailed_001
+ * @tc.desc: Verify DoMount returns E_OK when both chmod and chown fail.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_BothChmodChownFailed_001, TestSize.Level1)
+{
+    HmfsOperator op;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, chmod(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*libraryFuncMock_, chown(_, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", 0, ""), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyDevPath, TestSize.Level1)

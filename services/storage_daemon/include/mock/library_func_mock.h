@@ -36,6 +36,8 @@ public:
     virtual int statvfs(const char *path, struct statvfs *buf) = 0;
     virtual int open(const char *path, int flags) = 0;
     virtual int close(int) = 0;
+    virtual int chmod(const char *pathname, mode_t mode) = 0;
+    virtual int chown(const char *pathname, uid_t owner, gid_t group) = 0;
 public:
     static inline std::shared_ptr<LibraryFunc> libraryFunc_ = nullptr;
 };
@@ -52,6 +54,8 @@ public:
     MOCK_METHOD2(statvfs, int(const char *path, struct statvfs *buf));
     MOCK_METHOD2(open, int(const char *path, int flags));
     MOCK_METHOD1(close, int(int));
+    MOCK_METHOD2(chmod, int(const char *pathname, mode_t mode));
+    MOCK_METHOD3(chown, int(const char *pathname, uid_t owner, gid_t group));
     MOCK_METHOD3(ioctl, int(int fd, unsigned long request, void *data));
 };
 }
