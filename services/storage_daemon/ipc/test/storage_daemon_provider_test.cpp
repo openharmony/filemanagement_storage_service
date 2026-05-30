@@ -1588,6 +1588,106 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_003
+ * @tc.desc: Verify the UMountDisShareFile function when MountManager returns E_OK.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_)).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_004
+ * @tc.desc: Verify the UMountDisShareFile function when MountManager returns error.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_)).WillOnce(Return(E_ERR));
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_005
+ * @tc.desc: Verify the UMountDisShareFile function with multiple valid distributeDirs.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_005 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    distributeDirs.push_back("/data/service/el2/200/hmdfs/account/data"
+        "/com.example/.remote_share/xyz123456/Photo");
+    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_)).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_005 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_006
+ * @tc.desc: Verify the UMountDisShareFile function with mixed valid and invalid distributeDirs.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_006 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
+        "/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/invalid_path");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    EXPECT_CALL(*mountManagerMoc_, UMountDisShareFile(_)).WillOnce(Return(E_OK));
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_006 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_007
+ * @tc.desc: Verify the UMountDisShareFile function with all invalid distributeDirs.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_007 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/invalid1");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/invalid2");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/invalid3");
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(distributeDirs);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_007 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_OnAddSystemAbility_001
  * @tc.desc: Verify the OnAddSystemAbility function.
  * @tc.type: FUNC

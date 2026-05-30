@@ -1255,6 +1255,51 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDisShareFile_0003
+ * @tc.name: Daemon_communication_UMountDisShareFile_0003
+ * @tc.desc: Test function of UMountDisShareFile interface when daemon returns error.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0003, testing::ext::TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
+    MockAllSuccess();
+    EXPECT_CALL(*sd, UMountDisShareFile(_)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(sdCommunication->UMountDisShareFile(distributeDirs), E_ERR);
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDisShareFile_0004
+ * @tc.name: Daemon_communication_UMountDisShareFile_0004
+ * @tc.desc: Test function of UMountDisShareFile interface with multiple distributeDirs.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0004, testing::ext::TestSize.Level1)
+{
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::vector<std::string> distributeDirs;
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
+        "/com.test/.remote_share/123456789/Photo");
+    distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test"
+        "/.remote_share/abcdefghij/data/storage/el2/base");
+    distributeDirs.push_back("/data/service/el2/200/hmdfs/account/data"
+        "/com.example/.remote_share/xyz123456/Photo");
+    MockAllSuccess();
+    EXPECT_CALL(*sd, UMountDisShareFile(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UMountDisShareFile(distributeDirs), E_OK);
+}
+
+/**
 * @tc.number: SUB_STORAGE_Daemon_communication_InactiveUserPublicDirKey_0000
 * @tc.name: Daemon_communication_InactiveUserPublicDirKey_0000
 * @tc.desc: Test function of InactiveUserPublicDirKey interface for SUCCESS.
