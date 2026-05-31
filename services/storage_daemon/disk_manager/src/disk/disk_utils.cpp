@@ -593,6 +593,21 @@ int32_t DiskUtils::EjectCD(const std::string &devPath)
     return E_OK;
 }
 
+std::string DiskUtils::DiskPathToVolPath(const std::string& diskPath)
+{
+    auto pos = diskPath.find("/disk-");
+    if (pos == std::string::npos) {
+        return diskPath;
+    }
+    std::string volPath = diskPath.substr(0, pos + 1) + "vol" + diskPath.substr(pos + 5);
+    auto lastDash = volPath.rfind('-');
+    if (lastDash != std::string::npos && lastDash > pos + 1) {
+        volPath = volPath.substr(0, lastDash + 1) +
+                  std::to_string(std::stoi(volPath.substr(lastDash + 1)) + 1);
+    }
+    return volPath;
+}
+
 int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
 {
     std::vector<std::string> clearCmd = {
@@ -627,14 +642,14 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
     }
 
     output.clear();
-    std::string partStr = diskPath.find("/dev/block/nvme1n1") != std::string::npos ? "p1" : "1";
+    std::string volPath = DiskPathToVolPath(diskPath);
     std::vector<std::string> mkfsCmd = {
         "mkfs.f2fs",
         "-d1",
         "-O", "encrypt",
         "-O", "verity",
         "-O", "sb_checksum",
-        diskPath + partStr
+        volPath
     };
     ret = ForkExec(mkfsCmd, &output);
     for (auto &str : output) {

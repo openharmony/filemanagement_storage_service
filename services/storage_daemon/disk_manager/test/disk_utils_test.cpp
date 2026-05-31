@@ -837,8 +837,8 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyMkfsCmd_001, TestSize.Level1)
             EXPECT_EQ(cmd[5], "verity");
             EXPECT_EQ(cmd[6], "-O");
             EXPECT_EQ(cmd[7], "sb_checksum");
-            // cmd[8] is "/dev/block/uttestdisk1" (diskPath + "1")
-            EXPECT_NE(cmd[8].find("uttestdisk1"), std::string::npos);
+            // cmd[8] is unchanged since path has no "/disk-" prefix
+            EXPECT_EQ(cmd[8], "/dev/block/uttestdisk");
             return E_OK;
         }));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
@@ -878,6 +878,66 @@ HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_Success, TestSize.Level1)
     uint8_t buf[64] = {0};
     EXPECT_EQ(ExecuteScsiCmd(fd, cdb, sizeof(cdb), buf, sizeof(buf)), E_OK);
     GTEST_LOG_(INFO) << "ExecuteScsiCmd_Success end";
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_001
+ * @tc.desc: Verify normal disk path conversion (disk-X-Y → vol-X-Y+1).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_001, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-8-0"), "/dev/block/vol-8-1");
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_002
+ * @tc.desc: Verify path without /disk- prefix is returned unchanged.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_002, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/sda"), "/dev/block/sda");
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_003
+ * @tc.desc: Verify minor number increment with non-zero value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_003, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-8-5"), "/dev/block/vol-8-6");
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_004
+ * @tc.desc: Verify large major/minor numbers are handled correctly.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_004, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-259-10"), "/dev/block/vol-259-11");
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_005
+ * @tc.desc: Verify empty string is returned unchanged.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_005, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath(""), "");
+}
+
+/**
+ * @tc.name: DiskPathToVolPath_006
+ * @tc.desc: Verify disk path with disk- in wrong position (no leading /) is returned unchanged.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_006, TestSize.Level1)
+{
+    EXPECT_EQ(DiskUtils::DiskPathToVolPath("disk-8-0"), "disk-8-0");
 }
 
 } // namespace StorageDaemon

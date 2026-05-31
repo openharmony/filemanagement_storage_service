@@ -50,6 +50,7 @@ public:
                                    const std::string &volumeName, bool quickFormat);
     static std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
                                                  const std::string &volName);
+    static std::string DiskPathToVolPath(const std::string& diskPath);
     static int32_t PartitionHmfs(const std::string& diskPath);
     static int32_t QueryCDStatus(const std::string &devPath, int32_t &status);
     static int32_t EjectCD(const std::string &devPath);
