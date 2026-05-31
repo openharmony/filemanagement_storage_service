@@ -1540,7 +1540,9 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetExternalDisks_001, Te
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetExternalDisks_001 start";
 
     ScanDevice scanner(mockSysPath);
-    std::vector<BlockInfo> result = scanner.GetExternalDisks();
+    std::string devName = "test";
+    std::string diskId = "test"
+    std::vector<BlockInfo> result = scanner.GetExternalDisks(devName, diskId);
     EXPECT_EQ(result.size(), 0);
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetExternalDisks_001 end";
