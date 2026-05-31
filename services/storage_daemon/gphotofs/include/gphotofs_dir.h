@@ -28,14 +28,13 @@ struct Dir {
     bool listed;
     bool refresh;
     bool loading;
-    bool dirty;
     int offset;
     std::map<std::string, File*> files;
     std::map<std::string, Dir*> dirs;
     std::mutex lock;
 
     explicit Dir(const std::string& name) : name(name), listed(false),
-        refresh(false), loading(false), dirty(false), offset(0) {}
+        refresh(false), loading(false), offset(0) {}
     ~Dir();
 
     void AddFile(File *file);
@@ -55,8 +54,6 @@ struct Dir {
     bool GetRefresh();
     bool TryBeginLoad();
     void EndLoad();
-    void SetDirty(bool stat);
-    bool GetDirty();
 };
 
 #endif // GPHOTOFS2_DIR_H

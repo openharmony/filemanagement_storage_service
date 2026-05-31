@@ -1542,10 +1542,6 @@ static int Readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         LOGE("gphoto readdir return by finddir = null");
         return -ENOENT;
     }
-    if (dir->GetDirty()) {
-        LOGI("dir is dirty, not show");
-        return 0;
-    }
 
     LOGI("readdir seq=%{public}llu listed=%{public}d dirs=%{public}zu files=%{public}zu",
         static_cast<unsigned long long>(seq), dir->GetListed(), dir->dirs.size(), dir->files.size());
@@ -1827,13 +1823,10 @@ static int GpOpendir(const char *path, struct fuse_file_info *fileInfo)
         static_cast<unsigned long long>(seq), dir->GetListed(), dir->dirs.size(), dir->files.size());
     g_loadOnGoing.store(true);
     int ret = ListFolderPartial(path, dir, ctx, false);
-    if (!ret && dir->GetDirty()) {
-        dir->SetDirty(false);
-    }
     if (ret) {
-        dir->SetListed(true);
-        dir->SetDirty(true);
-        LOGE("gphoto gp_opendir return 0 err = %{public}d", ret);
+        g_loadOnGoing.store(false);
+        LOGE("gphoto gp_opendir return err = %{public}d", ret);
+        return ret;
     }
     g_loadOnGoing.store(!dir->GetListed());
     return 0;
