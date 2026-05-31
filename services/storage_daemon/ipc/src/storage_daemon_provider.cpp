@@ -2561,8 +2561,8 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
                                                   std::string &blockInfos)
 {
 #ifdef DISK_MANAGER
-    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< devName=%{public}s, diskId=%{public}s, "
-         "type=%{public}s", devName.c_str(), diskId.c_str(), type.c_str());
+    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< diskId=%{public}s, type=%{public}s",
+         diskId.c_str(), type.c_str());
 
     if (type.empty() || type.size() > MAX_TYPE_LEN) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
