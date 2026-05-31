@@ -21,6 +21,8 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <cinttypes>
+#include <linux/fs.h>
 #include <linux/hdreg.h>
 #include <regex>
 #include <algorithm>
@@ -212,12 +214,13 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
     return dataDisks;
 }
 
-std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName)
+std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, const std::string &diskId)
 {
     std::vector<BlockInfo> externalDisks;
     BlockInfo info;
+    info.diskId = diskId;
     uint64_t size = -1;
-    std::string sizePath = devBlockPath + SPLIT_STRING + devName;
+    std::string sizePath = devBlockPath + SPLIT_STRING + diskId;
     GetExternalDiskSize(sizePath, &size);
     info.sizeBytes = size;
     info.vendor = GetVendor(devName);

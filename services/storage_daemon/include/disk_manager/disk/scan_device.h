@@ -46,7 +46,7 @@ public:
     ~ScanDevice() = default;
 
     std::vector<BlockInfo> GetDataDisks();
-    std::vector<BlockInfo> GetExternalDisks(const std::string &devPath);
+    std::vector<BlockInfo> GetExternalDisks(const std::string &devName, const std::string &diskId);
 
 private:
     int GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo);
