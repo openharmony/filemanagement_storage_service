@@ -183,7 +183,7 @@ public:
                                     int &fuseFd) override;
     virtual int32_t Partition(const std::string &diskPath,
                               const std::string &partitionType) override;
-    virtual int32_t GetBlockInfoByType(const std::string &devName, const std::string &diskId, const std::string &type,
+    virtual int32_t GetBlockInfoByType(const std::string &type, const std::string &diskId,
                                        std::string &blockInfos) override;
     //disk crypt api
     virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
