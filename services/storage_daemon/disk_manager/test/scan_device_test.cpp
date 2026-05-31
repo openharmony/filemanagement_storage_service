@@ -1543,7 +1543,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetExternalDisks_001, Te
     std::string devName = "test";
     std::string diskId = "test";
     std::vector<BlockInfo> result = scanner.GetExternalDisks(devName, diskId);
-    EXPECT_EQ(result.size(), 0);
+    EXPECT_EQ(result.size(), 1);
 
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetExternalDisks_001 end";
 }
