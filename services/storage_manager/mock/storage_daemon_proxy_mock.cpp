@@ -555,7 +555,8 @@ int32_t StorageDaemonProxy::VerifyBurnData(const std::string &volumeId, uint32_t
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GetBlockInfoByType(const std::string &type, std::string &blockInfos)
+int32_t StorageDaemonProxy::GetBlockInfoByType(const std::string &devName, const std::string &type,
+                                               std::string &blockInfos)
 {
     return E_OK;
 }

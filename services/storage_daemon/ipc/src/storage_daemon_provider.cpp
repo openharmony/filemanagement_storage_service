@@ -2557,11 +2557,12 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskPath,
 #endif
 }
 
-int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
+int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &devName, const std::string &type,
     std::string &blockInfos)
 {
 #ifdef DISK_MANAGER
-    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< type=%{public}s", type.c_str());
+    LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< devName=%{public}s, type=%{public}s",
+         devName.c_str(), type.c_str());
 
     if (type.empty() || type.size() > MAX_TYPE_LEN) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
@@ -2574,7 +2575,7 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type,
     if (type == "data") {
         disks = scanDevice.GetDataDisks();
     } else if (type == "external") {
-        disks = scanDevice.GetExternalDisks();
+        disks = scanDevice.GetExternalDisks(devName);
     } else {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: unsupported type=%{public}s", type.c_str());
         return E_PARAMS_INVALID;

@@ -46,7 +46,7 @@ public:
     ~ScanDevice() = default;
 
     std::vector<BlockInfo> GetDataDisks();
-    std::vector<BlockInfo> GetExternalDisks();
+    std::vector<BlockInfo> GetExternalDisks(const std::string &devPath);
 
 private:
     int GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo);
@@ -69,6 +69,7 @@ private:
     std::string GetPort(const std::string &pciePath, const bool isNvmeDevice);
     bool IsValidNvmeDevice(const std::string &deviceName);
     bool ParseStringToUlongLong(const std::string &str, unsigned long long &result);
+    bool GetExternalDiskSize(const std::string &path, uint64_t *size);
 
     std::string sysBlockPath;
     std::string devBlockPath;

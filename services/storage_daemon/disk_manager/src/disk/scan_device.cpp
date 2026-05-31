@@ -212,10 +212,41 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
     return dataDisks;
 }
 
-std::vector<BlockInfo> ScanDevice::GetExternalDisks()
+std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName)
 {
     std::vector<BlockInfo> externalDisks;
+    BlockInfo info;
+    uint64_t size = -1;
+    std::string sizePath = devBlockPath + SPLIT_STRING + devName;
+    GetExternalDiskSize(sizePath, &size);
+    info.sizeBytes = size;
+    info.vendor = GetVendor(devName);
+    info.model = GetModel(devName);
+    externalDisks.push_back(info);
     return externalDisks;
+}
+
+bool ScanDevice::GetExternalDiskSize(const std::string &path, uint64_t *size)
+{
+    FILE *f = fopen(path.c_str(), "r");
+    if (f == nullptr) {
+        LOGE("[L2:ScanDevice] GetExternalDiskSize: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
+        return false;
+    }
+    int fd = fileno(f);
+    if (fd < 0) {
+        LOGE("[L2:ScanDevice] GetExternalDiskSize: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
+        (void)fclose(f);
+        return false;
+    }
+    if (ioctl(fd, BLKGETSIZE64, size)) {
+        LOGE("[L2:ScanDevice] GetExternalDiskSize: <<< EXIT FAILED <<< get size failed, errno=%{public}d", errno);
+        (void)fclose(f);
+        return false;
+    }
+    (void)fclose(f);
+    LOGI("[L2:ScanDevice] GetExternalDiskSize: <<< EXIT SUCCESS <<< size=%{public}" PRIu64, *size);
+    return true;
 }
 
 int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo)
