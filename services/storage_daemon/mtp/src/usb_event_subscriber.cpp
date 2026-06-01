@@ -44,12 +44,10 @@ void UsbEventSubscriber::SubscribeCommonEvent(void)
     LOGI("[L2:UsbEventSubscriber] SubscribeCommonEvent: >>> ENTER <<<");
     if (usbEventSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_STATE);
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_PORT_CHANGED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED);
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_ATTACHED);
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_DETACHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_ENTER_HIBERNATE);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_EXIT_HIBERNATE);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         usbEventSubscriber_ = std::make_shared<UsbEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(usbEventSubscriber_)) {
@@ -65,22 +63,6 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
     LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: >>> ENTER <<<");
     auto want = data.GetWant();
     std::string action = want.GetAction();
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_STATE) {
-        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_STATE, data=%{public}s",
-            data.GetData().c_str());
-    }
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_PORT_CHANGED) {
-        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_PORT_CHANGED, data=%{public}s",
-            data.GetData().c_str());
-    }
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_ATTACHED) {
-        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_ACCESSORY_ATTACHED, data=%{public}s",
-            data.GetData().c_str());
-    }
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_DETACHED) {
-        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_ACCESSORY_DETACHED, data=%{public}s",
-            data.GetData().c_str());
-    }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED) {
         std::string usbInfo = data.GetData();
         LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_USB_DEVICE_ATTACHED, data=%{public}s",
@@ -103,6 +85,19 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
         if (ShouldHandleMtpDevice(usbInfo, deviceType)) {
             GetValueFromUsbDataInfo(data.GetData(), devNum, busLocation);
             MtpDeviceMonitor::GetInstance().UmountDetachedMtpDevice(busLocation, devNum);
+        }
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_ENTER_HIBERNATE) {
+        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_ENTER_HIBERNATE, unmount all MTP devices");
+        MtpDeviceMonitor::GetInstance().UmountAllMtpDevice();
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_EXIT_HIBERNATE) {
+        LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_EXIT_HIBERNATE, remount MTP devices");
+        bool hasMtp = false;
+        if (MtpDeviceMonitor::GetInstance().HasMTPDevice(hasMtp) == E_OK && hasMtp) {
+            MtpDeviceMonitor::GetInstance().MountMtpDeviceByBroadcast(DeviceType::UNKNOWN, 0, 0);
+        } else {
+            LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: no MTP device found after hibernate exit");
         }
     }
     LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: <<< EXIT SUCCESS <<<");
