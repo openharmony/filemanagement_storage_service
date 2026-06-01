@@ -173,7 +173,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [out] FileDescriptor fuseFd);
      [ipccode 212] void Partition([in] String diskPath,
                                   [in] String partitionType);
-     [ipccode 213] void GetBlockInfoByType([in] String type, [out] String blockInfos);
+     [ipccode 213] void GetBlockInfoByType([in] String type, [in] String diskId, [out] String blockInfos);
      [ipccode 214] void GetPartitionTableInfo([in] String devPath, [out] String execRet);
      [ipccode 215] void CreatePartition([in] String devPath,
                                         [in] int partitionNum,
