@@ -95,6 +95,7 @@ void StorageDfxReporter::CloneEventReportStorageStatus()
         return;
     }
     eventReportTimes_.fetch_add(1);
+    isCloneStorageRuning_.store(true);
     CheckAndTriggerHapAndSaStatistics();
 }
 
@@ -126,8 +127,12 @@ void StorageDfxReporter::ExecuteHapAndSaStatistics(int32_t userId)
     CollectSubUserStorageStats(extraData);
 
     PrintOverLongLog(extraData.str());
-    StorageService::StorageRadar::ReportSpaceRadar("StartReportHapAndSaStorageStatus",
-        E_STORAGE_STATUS, extraData.str());
+    std::string orgPkgName = "RoutineStorageStatus";
+    if (isCloneStorageRuning_.load() == true) {
+        orgPkgName = "CloneStorageStatus";
+        isCloneStorageRuning_.store(false);
+    }
+    StorageService::StorageRadar::ReportStorageStatusRadar(orgPkgName, extraData.str());
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus end.");
     LOGI("Hap and Sa statistics thread completed.");
 }

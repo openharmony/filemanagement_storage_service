@@ -67,6 +67,7 @@ private:
 
     std::atomic<bool> isHapAndSaRunning_{false};
     std::atomic<int32_t> eventReportTimes_ = 0;
+    std::atomic<bool> isCloneStorageRuning_{false};
 
     int32_t CheckSystemUidSize(const std::vector<NextDqBlk> &dqBlks, int64_t &totalSize,
                                int64_t &rootSize, int64_t &systemSize, int64_t &foundationSize);

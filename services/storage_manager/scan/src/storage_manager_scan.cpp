@@ -49,8 +49,8 @@ constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t SCAN_TIMEOUT_MS = 30000;       // The scanning times out after 30 seconds.
 constexpr int64_t TIME_INTERVAL_MS = 24 * 60 * 60 * 1000;  // Number of milliseconds in 24 hours
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
-constexpr int64_t DEFAULT_ROOT_SIZE = 4000000000;     // fallback root partition size
-constexpr int64_t DEFAULT_SYSTEM_SIZE = 100000000;     // fallback system size
+constexpr int64_t DEFAULT_ROOT_SIZE = 200000000;     // fallback root partition size
+constexpr int64_t DEFAULT_SYSTEM_SIZE = 10000000;     // fallback system size
 constexpr int64_t SCAN_SIZE_CHANGE_THRESHOLD = 1024 * 1024 * 1024;     // fallback memory manager size
 constexpr int32_t TOP_LARGE_COUNT = 15;
 

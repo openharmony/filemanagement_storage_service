@@ -59,6 +59,7 @@ constexpr int32_t ACCURACY_NUM = 2;
 constexpr int32_t MAX_UID_COUNT = 100000;
 constexpr int32_t BLOCK_BYTE = 512;
 constexpr int32_t TOP_SPACE_COUNT = 20;
+constexpr int32_t SA_TOP_SPACE_COUNT = 50;
 constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
 constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
@@ -67,7 +68,6 @@ constexpr int32_t FOUR_K = 4096;
 constexpr int32_t TOP_LARGE_COUNT = 15;
 constexpr uint64_t LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024;
 constexpr uint64_t LARGE_DIR_SIZE_THRESHOLD = 5 * 1024 * 1024;
-constexpr double SA_SIZE_THRESHOLD_MB = 100.0;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 
@@ -421,21 +421,23 @@ void QuotaManager::SortAndCutSaInfoVec(std::vector<UidSaInfo> &vec, bool isSa)
         vec.erase(vec.begin() + std::min(static_cast<size_t>(TOP_SPACE_COUNT), vec.size()), vec.end());
         return;
     }
+    if (vec.size() <= SA_TOP_SPACE_COUNT) {
+        return;
+    }
     std::vector<int32_t> uidList;
     if (ParseSystemDataConfigFile(uidList) != E_OK) {
         LOGE("[L2:QuotaManager] ParseSystemDataConfigFile: failed");
     }
-    for (auto it = vec.rbegin(); it != vec.rend();) {
-        if (ConvertBytesToMB(it->size, ACCURACY_NUM) >= SA_SIZE_THRESHOLD_MB) {
-            break;
-        }
+    std::vector<UidSaInfo> tmpVec;
+    for (auto it = vec.begin() + SA_TOP_SPACE_COUNT; it != vec.end(); it++) {
         auto ret = std::find(uidList.begin(), uidList.end(), it->uid);
-        it++;
-        auto element = it.base();
-        if (ret == uidList.end()) {
-            vec.erase(element);
+        if (ret != uidList.end()) {
+            UidSaInfo info(it->uid, it->saName, it->size, it->iNodes);
+            tmpVec.push_back(info);
         }
     }
+    vec.erase(vec.begin() + std::min(static_cast<size_t>(SA_TOP_SPACE_COUNT), vec.size()), vec.end());
+    vec.insert(vec.end(), tmpVec.begin(), tmpVec.end());
 }
 
 void QuotaManager::GetOccupiedSpaceForUidList(AllAppVec &allVec, uint64_t &iNodes)

@@ -1760,8 +1760,8 @@ HWTEST_F(StorageManagerScanTest, STORAGE_Init_00004, testing::ext::TestSize.Leve
     system(("mkdir -p " + testDir).c_str());
     int32_t ret = storageManagerScan.Init();
     EXPECT_EQ(ret, E_OK);
-    constexpr int64_t defaultRootSize = 4000000000;
-    constexpr int64_t defaultSystemSize = 100000000;
+    constexpr int64_t defaultRootSize = 200000000;
+    constexpr int64_t defaultSystemSize = 10000000;
     EXPECT_EQ(storageManagerScan.GetRootSize(), defaultRootSize);
     EXPECT_EQ(storageManagerScan.GetSystemSize(), defaultSystemSize);
     std::remove(testFile.c_str());
@@ -1867,7 +1867,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_LoadScanResultFromFile_00011, testing::
     std::string testFile = testDir + "/scan_result.json";
     system(("mkdir -p " + testDir).c_str());
     std::ofstream outFile(testFile);
-    outFile << R"({"rootSize":"104857600","systemSize":a123})";
+    outFile << R"({"rootSize":104857600,"systemSize":"a123"})";
     outFile.close();
     int32_t ret = storageManagerScan.LoadScanResultFromFile();
     EXPECT_EQ(ret, E_ERR);

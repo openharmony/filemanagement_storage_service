@@ -578,7 +578,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_ProcessVecList_002, TestSize.Level1)
 
 /**
  * @tc.name: QuotaManagerTest_SortAndCutSaInfoVec_001
- * @tc.desc: Test SortAndCutSaInfoVec with isSa parameter.
+ * @tc.desc: Test SortAndCutSaInfoVec with isSa parameter and small vector size.
  * @tc.type: FUNC
  * @tc.require: AR000XXXX
  */
@@ -593,8 +593,10 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_001, TestSize.Le
     };
 
     QuotaManager::GetInstance().SortAndCutSaInfoVec(vec, true);
+    EXPECT_EQ(vec.size(), 4);
     if (!vec.empty()) {
         EXPECT_EQ(vec[0].size, 8192 * BYTES_PRE_MB);
+        EXPECT_EQ(vec[0].uid, 4004);
     }
 
     std::vector<UidSaInfo> vec2 = {
@@ -605,8 +607,10 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_001, TestSize.Le
     };
 
     QuotaManager::GetInstance().SortAndCutSaInfoVec(vec2, false);
+    EXPECT_EQ(vec2.size(), 4);
     if (!vec2.empty()) {
         EXPECT_EQ(vec2[0].size, 8192);
+        EXPECT_EQ(vec2[0].uid, 4004);
     }
 
     GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_001 end";
@@ -660,7 +664,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUidStorageStats_0
 
 /**
  * @tc.name: QuotaManagerTest_SortAndCutSaInfoVec_002
- * @tc.desc: Test SortAndCutSaInfoVec with large vector.
+ * @tc.desc: Test SortAndCutSaInfoVec with isSa false and vector size equals TOP_SPACE_COUNT.
  * @tc.type: FUNC
  * @tc.require: AR000XXXX
  */
@@ -674,9 +678,11 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_002, TestSize.Le
     }
 
     QuotaManager::GetInstance().SortAndCutSaInfoVec(vec, false);
+    EXPECT_EQ(vec.size(), 20);
 
     if (!vec.empty()) {
         EXPECT_EQ(vec[0].size, 20 * 1024);
+        EXPECT_EQ(vec[0].uid, 1019);
     }
 
     GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_002 end";
@@ -684,7 +690,7 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_002, TestSize.Le
 
 /**
  * @tc.name: QuotaManagerTest_SortAndCutSaInfoVec_003
- * @tc.desc: Test SortAndCutSaInfoVec with isSa true (no size limit).
+ * @tc.desc: Test SortAndCutSaInfoVec with isSa true and vector size less than SA_TOP_SPACE_COUNT.
  * @tc.type: FUNC
  * @tc.require: AR000XXXX
  */
@@ -698,11 +704,43 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_003, TestSize.Le
     }
 
     QuotaManager::GetInstance().SortAndCutSaInfoVec(vec, true);
+    EXPECT_EQ(vec.size(), 20);
     if (!vec.empty()) {
         EXPECT_EQ(vec[0].size, 20 * 1024 * BYTES_PRE_MB);
+        EXPECT_EQ(vec[0].uid, 1019);
     }
 
     GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_003 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_SortAndCutSaInfoVec_004
+ * @tc.desc: Test SortAndCutSaInfoVec with isSa true and vector size greater than SA_TOP_SPACE_COUNT.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_004 start";
+
+    std::vector<UidSaInfo> vec;
+    constexpr int32_t saTopCount = 50;
+    for (int i = 0; i < 60; i++) {
+        vec.push_back({1000 + i, "sa" + std::to_string(i), (60 - i) * 1024});
+    }
+    vec.push_back({1111, "memmgr", 1024});
+
+    QuotaManager::GetInstance().SortAndCutSaInfoVec(vec, true);
+    EXPECT_EQ(vec.size(), saTopCount + 1);
+
+    if (!vec.empty()) {
+        EXPECT_EQ(vec[0].size, 60 * 1024);
+        EXPECT_EQ(vec[0].uid, 1000);
+        EXPECT_EQ(vec[saTopCount - 1].size, 11 * 1024);
+        EXPECT_EQ(vec[saTopCount].size, 1024);
+    }
+
+    GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_004 end";
 }
 
 /**

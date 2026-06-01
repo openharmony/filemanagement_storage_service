@@ -21,12 +21,14 @@
 #include "storage_service_log.h"
 #include "hi_audit.h"
 #include <iomanip>
+#include "parameters.h"
 
 namespace OHOS {
 namespace StorageService {
 constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
 constexpr const char *FILE_STORAGE_BEHAVIOR_EVENTS = "FILE_BACKUP_EVENTS";
 constexpr char STORAGESERVICE_DOMAIN[] = "FILEMANAGEMENT";
+constexpr char KEY_IS_DEBUGGABLE[] = "const.debuggable";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
 constexpr int32_t GLOBAL_USER_ID = 0;
@@ -175,12 +177,11 @@ void StorageRadar::ReportSpaceRadar(const std::string &funcName, int ret, const 
     StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
-void StorageRadar::ReportStorageStatusRadar(const std::string &funcName, const std::string &extraData)
+void StorageRadar::ReportStorageStatusRadar(const std::string &orgPkgName, const std::string &extraData)
 {
     RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
+        .orgPkg = orgPkgName,
         .userId = GLOBAL_USER_ID,
-        .funcName = funcName,
         .extraData = extraData
     };
     StorageRadar::GetInstance().RecordStorageStatusResult(param, FILE_STORAGE_STATUS_STATISTIC);
@@ -189,10 +190,11 @@ void StorageRadar::ReportStorageStatusRadar(const std::string &funcName, const s
 bool StorageRadar::RecordStorageStatusResult(const RadarParameter &parRes, const std::string &eventName)
 {
     int32_t res = E_OK;
+    bool rootStatus = (system::GetParameter(KEY_IS_DEBUGGABLE, "0") != "0");
     HiSysEventParam params[STORAGE_STATUS_STATISTIC_PARAMS_LEN] = {
         {.name = "ORG_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.orgPkg.c_str() }, .arraySize = 0, },
         {.name = "USER_ID", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.userId }, .arraySize = 0, },
-        {.name = "FUNC", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.funcName.c_str() }, .arraySize = 0, },
+        {.name = "ROOT_STATUS", .t = HISYSEVENT_BOOL, .v = { .b = rootStatus }, .arraySize = 0, },
         {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
             .arraySize = 0, },
     };
