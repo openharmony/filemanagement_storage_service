@@ -30,24 +30,7 @@ namespace StorageDaemon {
 constexpr uid_t FILE_MANAGER_UID = 1006;
 constexpr gid_t FILE_MANAGER_GID = 1006;
 
-static std::string ExtractLabelFromLine(const std::string& line, const std::string& prefix)
-{
-    size_t pos = line.find(prefix);
-    if (pos == std::string::npos) {
-        return "";
-    }
-    size_t colonPos = line.find(':', pos + prefix.length());
-    if (colonPos == std::string::npos) {
-        return "";
-    }
-    std::string label = line.substr(colonPos + 1);
-    size_t start = label.find_first_not_of(" \t");
-    size_t end = label.find_last_not_of(" \t\r\n");
-    if (start != std::string::npos && end != std::string::npos) {
-        label = label.substr(start, end - start + 1);
-    }
-    return label;
-}
+constexpr const char *NTFS_LABEL_PREFIX = "Volume label :  ";
 
 static std::string GetNtfsLabelFallback(const std::string& devPath)
 {
@@ -55,21 +38,39 @@ static std::string GetNtfsLabelFallback(const std::string& devPath)
     std::vector<std::string> cmd = {"ntfslabel", "-v", devPath};
     std::vector<std::string> output;
     int32_t ret = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("NtfsOperator::GetNtfsLabelFallback output: %{public}s", str.c_str());
+    }
     if (ret != E_OK) {
         LOGW("NtfsOperator::GetNtfsLabelFallback ForkExec failed, ret=%{public}d", ret);
         return "";
     }
 
-    const std::string prefix = "Volume label";
-    for (const auto& line : output) {
-        std::string label = ExtractLabelFromLine(line, prefix);
-        if (!label.empty()) {
-            LOGI("NtfsOperator::GetNtfsLabelFallback label=%{public}s", label.c_str());
-            return label;
-        }
+    // Split output by '\n' into individual lines, same as old SplitOutputIntoLines
+    std::vector<std::string> lines;
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+        lines.insert(lines.end(), split.begin(), split.end());
     }
-    LOGW("NtfsOperator::GetNtfsLabelFallback no label found in output");
-    return "";
+    if (lines.empty()) {
+        LOGW("NtfsOperator::GetNtfsLabelFallback no lines in output");
+        return "";
+    }
+
+    // Iterate backwards to find last occurrence of label prefix, same as old logic
+    std::string volDesc;
+    for (size_t i = lines.size() - 1; i < lines.size(); --i) {
+        std::string &line = lines[i];
+        std::string::size_type index = line.find(NTFS_LABEL_PREFIX);
+        if (index == std::string::npos) {
+            continue;
+        }
+        volDesc = line.substr(index + strlen(NTFS_LABEL_PREFIX));
+        break;
+    }
+    LOGI("NtfsOperator::GetNtfsLabelFallback label=%{public}s", volDesc.c_str());
+    return volDesc;
 }
 
 int32_t NtfsOperator::ReadMetadata(const std::string& devPath,

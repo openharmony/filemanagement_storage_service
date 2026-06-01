@@ -641,25 +641,6 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
         return ret;
     }
 
-    output.clear();
-    std::string volPath = DiskPathToVolPath(diskPath);
-    std::vector<std::string> mkfsCmd = {
-        "mkfs.f2fs",
-        "-d1",
-        "-O", "encrypt",
-        "-O", "verity",
-        "-O", "sb_checksum",
-        volPath
-    };
-    ret = ForkExec(mkfsCmd, &output);
-    for (auto &str : output) {
-        LOGI("DiskUtils::PartitionHmfs mkfs: %{public}s", str.c_str());
-    }
-    if (ret != E_OK) {
-        LOGE("DiskUtils::PartitionHmfs mkfs.f2fs failed, ret=%{public}d", ret);
-        return ret;
-    }
-
     return E_OK;
 }
 } // namespace StorageDaemon
