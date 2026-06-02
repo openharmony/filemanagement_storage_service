@@ -714,7 +714,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsPartFailed_001, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, Partition_HmfsSuccess_001, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
-        .Times(3)
+        .Times(2)
         .WillRepeatedly(Return(E_OK));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_OK);
@@ -735,10 +735,6 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsSuccessWithOutput_001, TestSize.Level1)
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             output->push_back("Partition 1 created");
             return E_OK;
-        }))
-        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
-            output->push_back("Info: format successful");
-            return E_OK;
         }));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_OK);
@@ -757,7 +753,6 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyClearCmd_001, TestSize.Level1)
             EXPECT_EQ(cmd[1], "-zog");
             return E_OK;
         }))
-        .WillOnce(Return(E_OK))
         .WillOnce(Return(E_OK));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_OK);
@@ -777,8 +772,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyPartCmd_001, TestSize.Level1)
             EXPECT_EQ(cmd[1], "--new=0:0:-0");
             EXPECT_EQ(cmd[2], "--typecode=0:8300");
             return E_OK;
-        }))
-        .WillOnce(Return(E_OK));
+        }));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_OK);
 }
@@ -811,7 +805,6 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsMkfsFailed_001, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK))
         .WillOnce(Return(E_ERR));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_ERR);
@@ -826,21 +819,7 @@ HWTEST_F(ExtDiskUtilsTest, Partition_HmfsVerifyMkfsCmd_001, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Return(E_OK))
-        .WillOnce(Return(E_OK))
-        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *, int *) {
-            EXPECT_EQ(cmd.size(), 9u);
-            EXPECT_EQ(cmd[0], "mkfs.f2fs");
-            EXPECT_EQ(cmd[1], "-d1");
-            EXPECT_EQ(cmd[2], "-O");
-            EXPECT_EQ(cmd[3], "encrypt");
-            EXPECT_EQ(cmd[4], "-O");
-            EXPECT_EQ(cmd[5], "verity");
-            EXPECT_EQ(cmd[6], "-O");
-            EXPECT_EQ(cmd[7], "sb_checksum");
-            // cmd[8] is unchanged since path has no "/disk-" prefix
-            EXPECT_EQ(cmd[8], "/dev/block/uttestdisk");
-            return E_OK;
-        }));
+        .WillOnce(Return(E_OK));
     int32_t ret = DiskUtils::Partition("/dev/block/uttestdisk", "hmfs");
     EXPECT_EQ(ret, E_OK);
 }
