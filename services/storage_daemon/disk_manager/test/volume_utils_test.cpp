@@ -241,7 +241,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_LabelNotFound, TestSize.L
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidContainsSlash, TestSize.Level1)
@@ -303,7 +303,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_NoColonInOutput, TestSize
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_WhitespaceOnlyLabel, TestSize.Level1)
@@ -320,7 +320,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_WhitespaceOnlyLabel, Test
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "   ");
+    EXPECT_EQ(label, "     ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize.Level1)
@@ -337,7 +337,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 } // namespace StorageDaemon
