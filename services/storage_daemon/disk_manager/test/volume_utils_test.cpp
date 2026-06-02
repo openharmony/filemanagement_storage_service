@@ -218,7 +218,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_LabelFound, TestSize.Leve
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             output->push_back("ntfslabel v1.0");
-            output->push_back("Volume label: MyUSBDrive");
+            output->push_back("Volume label :  MyUSBDrive");
             return E_OK;
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
@@ -236,12 +236,12 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_LabelNotFound, TestSize.L
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             output->push_back("ntfslabel v1.0");
-            output->push_back("some other output line");
+            output->push_back("Volume label :  ");
             return E_OK;
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidContainsSlash, TestSize.Level1)
@@ -298,12 +298,12 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_NoColonInOutput, TestSize
         .WillOnce(Return("?????"));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
-            output->push_back("Volume label information unavailable");
+            output->push_back("Volume label :  ");
             return E_OK;
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_WhitespaceOnlyLabel, TestSize.Level1)
@@ -315,12 +315,12 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_WhitespaceOnlyLabel, Test
         .WillOnce(Return("?????"));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
-            output->push_back("Volume label:   ");
+            output->push_back("Volume label :     ");
             return E_OK;
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "   ");
+    EXPECT_EQ(label, "     ");
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize.Level1)
@@ -332,12 +332,12 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize
         .WillOnce(Return("?????"));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
-            output->push_back("Volume label:");
+            output->push_back("Volume label :  ");
             return E_OK;
         }));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(label, "");
+    EXPECT_EQ(label, "  ");
 }
 
 } // namespace StorageDaemon

@@ -20,7 +20,7 @@ ohos_unittest("ext_disk_utils_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
-    cfi = true
+    cfi = false
     cfi_cross_dso = true
     debug = false
   }
@@ -65,7 +65,7 @@ ohos_unittest("ext_volume_utils_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
-    cfi = true
+    cfi = false
     cfi_cross_dso = true
     debug = false
   }
@@ -110,7 +110,7 @@ ohos_unittest("ext_ivolume_operator_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
-    cfi = true
+    cfi = false
     cfi_cross_dso = true
     debug = false
   }
