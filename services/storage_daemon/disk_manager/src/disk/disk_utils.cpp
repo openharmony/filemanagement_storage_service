@@ -532,14 +532,24 @@ int IsCDBlank(const std::string &diskPath, bool &isCDBlank)
 {
     isCDBlank = false;
     uint8_t buf[MAX_BUF];
-    if (ReadCDDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) == E_OK) {
-        uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
-        isCDBlank = (discStatus == 0);
-        LOGI("IsCDBlank: <<< EXIT SUCCESS <<< isBlank=%{public}d", isCDBlank);
-        return E_OK;
+    
+    if (ReadCDDiscInfo(diskPath, READ_DISC_INFO_OPCODE, buf, sizeof(buf)) != E_OK) {
+        LOGE("IsCDBlank: Unable to read disc information.");
+        return E_ERR;
     }
-    LOGE("IsCDBlank:Unable to read disc information.");
-    return E_ERR;
+
+    uint8_t discStatus = buf[DISC_STATUS_BYTE_INDEX] & DISC_STATUS_MASK;
+    std::string diskType = GetCDType(diskPath);
+    if (discStatus == 0) {
+        isCDBlank = true;
+    } else if (diskType == "DVD+RW" || diskType == "BD-RE") {
+        std::string fsType = GetBlkidData(diskPath, "TYPE");
+        isCDBlank = fsType.empty();
+        LOGI("IsCDBlank: %{public}s has filesystem=%{public}s", diskType.c_str(), fsType.c_str());
+    }
+    
+    LOGI("IsCDBlank: <<< EXIT SUCCESS <<< isBlank=%{public}d", isCDBlank);
+    return E_OK;
 }
 
 int32_t DiskUtils::QueryCDStatus(const std::string &devPath, int32_t &status)
