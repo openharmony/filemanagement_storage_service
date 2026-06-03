@@ -3,7 +3,10 @@ sysPattern /devices/platform/usbhost/fd000000.dwc3/* label disk flag 0
 sysPattern /devices/platform/fd800000.usb/* label disk flag 0
 sysPattern /devices/platform/soc/f9890000.ehci/* label disk flag 0
 sysPattern /devices/platform/hi_mci.1/mmc_host/mmc1/* label disk flag 0
+sysPattern /devices/platform/soc/soc:ap-ahb/22210000.sdio/mmc_host/mmc1/* label disk flag 0
 sysPattern /devices/platform/hisi_usb/f8600000.dwc3/* label disk flag 0
 sysPattern /devices/platform/hisi_usb/efc00000.dwc3/* label disk flag 0
 sysPattern /devices/platform/hiusb/hiusb_port/* label disk flag 0
 sysPattern /devices/platform/hisi_usb/f8400000.dwc3/* label disk flag 0
+sysPattern /devices/platform/soc/25100000.usb3/25100000.dwc3/* label disk flag 0
+
