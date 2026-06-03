@@ -28,7 +28,6 @@ constexpr const char *FILE_STORAGE_MANAGER_FAULT = "FILE_STORAGE_MANAGER_FAULT";
 constexpr const char *FILE_STORAGE_FAULT = "FILE_STORAGE_FAULT";
 constexpr const char *FILE_STORAGE_STATUS_FAULT = "FILE_STORAGE_STATUS_FAULT";
 constexpr const char *FILE_STORAGE_STATUS_STATISTIC = "FILE_STORAGE_STATUS_STATISTIC";
-constexpr const char *FILE_STORAGE_STATUS_BEHAVIOR = "FILE_STORAGE_STATUS_BEHAVIOR";
 
 enum class BizScene : int32_t {
     STORAGE_START = 0,
@@ -159,7 +158,7 @@ public:
     static int64_t RecordCurrentTime();
     static void ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData);
-    static void ReportStorageStatusRadar(const std::string &funcName, const std::string &extraData);
+    static void ReportStorageStatusRadar(const std::string &orgPkgName, const std::string &extraData);
     static void ReportSetQuotaByBaseline(const std::string &funcName, const std::string &extraData);
     static void ReportFucBehavior(const std::string &funcName, uint32_t userId, const std::string &extraData,
         int32_t ret);
