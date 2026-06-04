@@ -117,6 +117,9 @@ int32_t NtfsOperator::DoMount(const std::string& devPath,
 #endif
     }
 
+#ifdef CDC_STORAGE
+    options += ",nodev,noexec";
+#endif
     std::vector<std::string> cmd = {
         "mount.ntfs",
         devPath,

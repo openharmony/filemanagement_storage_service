@@ -45,6 +45,9 @@ int32_t ExfatOperator::DoMount(const std::string& devPath,
         options = StringPrintf("rw,uid=%d,gid=%d,dmask=0006,fmask=0007", FILE_MANAGER_UID, FILE_MANAGER_GID);
     }
 
+#ifdef CDC_STORAGE
+    options += ",nodev,noexec";
+#endif
     std::vector<std::string> cmd = {
         "mount.exfat",
         "-o",
