@@ -315,8 +315,12 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, int32_t parti
         return E_PARAMS_INVALID;
     }
     LOGI("damage partition start");
-    ExecAsyncDamagePartition(devPath, partitionNum);
-    LOGI("damage partition end");
+    int32_t damageRet = ExecAsyncDamagePartition(devPath, partitionNum);
+    if (damageRet != E_OK) {
+        LOGE("DiskUtils::DeletePartitionInfo damage partition failed, ret=%{public}d", damageRet);
+        return damageRet;
+    }
+    LOGI("damage partition end, delete partition start");
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([devPath, partitionNum, p = std::move(promise)]() mutable {

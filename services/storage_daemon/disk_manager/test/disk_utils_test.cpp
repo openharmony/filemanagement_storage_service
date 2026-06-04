@@ -432,11 +432,12 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_InvalidPrefix, TestSize.Level1)
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
-HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_ForkExecFailed, TestSize.Level1)
+HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_DamageFailed, TestSize.Level1)
 {
     std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Return(E_ERR));
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
     EXPECT_EQ(ret, E_DELETE_PARTITION_ERROR);
 }
@@ -446,7 +447,8 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_Success, TestSize.Level1)
     std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 1;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
-        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+        .Times(2)
+        .WillRepeatedly(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             output->push_back("Deleting partition 1");
             return E_OK;
         }));
@@ -454,12 +456,59 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_Success, TestSize.Level1)
     EXPECT_EQ(ret, E_OK);
 }
 
+HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_DeleteFailedAfterDamageSuccess, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    int32_t partitionNum = 1;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Damage partition 1");
+            return E_OK;
+        }))
+        .WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
+    EXPECT_EQ(ret, E_DELETE_PARTITION_ERROR);
+}
+
 HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_WithDifferentPartitionNum, TestSize.Level1)
 {
     std::string devPath = "/dev/block/uttestdisk";
     int32_t partitionNum = 5;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .Times(2)
+        .WillRepeatedly(Return(E_OK));
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncDamagePartition_Success, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    int32_t partitionNum = 1;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Damage partition 1");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncDamagePartition(devPath, partitionNum);
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncDamagePartition_ForkExecFailed, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    int32_t partitionNum = 1;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::ExecAsyncDamagePartition(devPath, partitionNum);
+    EXPECT_EQ(ret, E_DELETE_PARTITION_ERROR);
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncDamagePartition_WithDifferentPartitionNum, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    int32_t partitionNum = 3;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = DiskUtils::ExecAsyncDamagePartition(devPath, partitionNum);
     EXPECT_EQ(ret, E_OK);
 }
 
