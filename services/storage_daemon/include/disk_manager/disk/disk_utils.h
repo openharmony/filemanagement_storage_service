@@ -54,6 +54,7 @@ public:
     static int32_t PartitionHmfs(const std::string& diskPath);
     static int32_t QueryCDStatus(const std::string &devPath, int32_t &status);
     static int32_t EjectCD(const std::string &devPath);
+    static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
 };
 
 int ExecuteScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);

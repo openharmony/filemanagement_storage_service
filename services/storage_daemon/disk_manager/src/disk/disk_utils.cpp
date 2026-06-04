@@ -314,6 +314,9 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, int32_t parti
         LOGE("DiskUtils::DeletePartitionInfo invalid devPath");
         return E_PARAMS_INVALID;
     }
+    LOGI("damage partition start");
+    ExecAsyncDamagePartition(devPath, partitionNum);
+    LOGI("damage partition end");
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
     std::thread partitionThread([devPath, partitionNum, p = std::move(promise)]() mutable {
@@ -338,6 +341,35 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, int32_t parti
         return E_DELETE_PARTITION_ERROR;
     }
     LOGI("[L3:DiskUtils] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum)
+{
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread partitionThread([devPath, partitionNum, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec damage partition");
+        std::vector<std::string> cmd = {SGDISK_PATH, "-d", std::to_string(partitionNum), devPath};
+        std::vector<std::string> output;
+        int32_t ret = ForkExec(cmd, &output);
+        for (auto str : output) {
+            LOGI("damage partition output: %{public}s", str.c_str());
+        }
+        p.set_value(ret);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskUtils] exec damage partition: <<< EXIT FAILED <<< timed out");
+        partitionThread.detach();
+        return E_DELETE_PARTITION_TIMEOUT;
+    }
+    int32_t ret = future.get();
+    partitionThread.join();
+    if (ret != E_OK) {
+        LOGE("[L3:DiskUtils] ExecAsyncDamagePartition: <<< EXIT FAILED <<< damage part failed, err=%{public}d", ret);
+        return E_DELETE_PARTITION_ERROR;
+    }
+    LOGI("[L3:DiskUtils] ExecAsyncDamagePartition: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
