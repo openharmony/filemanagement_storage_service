@@ -572,7 +572,8 @@ int32_t StorageDaemonProxy::CreatePartition(const std::string &devPath, int32_t 
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, const std::string &diskId,
+                                                int32_t partitionNum)
 {
     return E_OK;
 }
