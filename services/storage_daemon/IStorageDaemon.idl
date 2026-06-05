@@ -180,7 +180,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [in] long startSector,
                                         [in] long endSector,
                                         [in] String typeCode);
-     [ipccode 216] void DeletePartitionInfo([in] String devPath, [in] String devName, [in] int partitionNum);
+     [ipccode 216] void DeletePartitionInfo([in] String devPath, [in] String diskId, [in] int partitionNum);
      [ipccode 217] void FormatPartition([in] String devPath,
                                         [in] String fsType,
                                         [in] String volumeName,
