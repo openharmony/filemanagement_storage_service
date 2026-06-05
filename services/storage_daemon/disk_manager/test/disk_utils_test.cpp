@@ -440,8 +440,8 @@ HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_DamageFailed, TestSize.Level1)
     std::string devPath = "/dev/block/uttestdisk";
     std::string diskId = "uttestdisk";
     int32_t partitionNum = 1;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
-        .WillOnce(Return(E_ERR));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     int32_t ret = DiskUtils::DeletePartitionInfo(devPath, diskId, partitionNum);
     EXPECT_EQ(ret, E_DELETE_PARTITION_ERROR);
 }
