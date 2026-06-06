@@ -145,6 +145,10 @@ ohos_executable("storage_daemon") {
     defines += [ "PC_EXT4_ENABLE" ]
   }
 
+  if (car_device_enable) {
+    defines += [ "CDC_STORAGE" ]
+  }
+
   cflags = [
     "-fstack-protector-strong",
     "-O2",
