@@ -2642,10 +2642,15 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
 #endif
 }
 
-int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, int32_t partitionNum)
+int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, const std::string &diskId,
+                                                   int32_t partitionNum)
 {
     if (devPath.empty()) {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath empty");
+        return E_PARAMS_INVALID;
+    }
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< diskId empty");
         return E_PARAMS_INVALID;
     }
     if (partitionNum <= 0) {
@@ -2653,9 +2658,9 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, i
         return E_PARAMS_INVALID;
     }
 #ifdef DISK_MANAGER
-    LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
-         devPath.c_str(), partitionNum);
-    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, partitionNum);
+    LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, diskId=%{public}s,"
+         "partitionNum=%{public}d", devPath.c_str(), diskId.c_str(), partitionNum);
+    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, diskId, partitionNum);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
     } else {

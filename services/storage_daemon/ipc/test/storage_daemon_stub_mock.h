@@ -140,7 +140,7 @@ public:
 
     MOCK_METHOD2(GetPartitionTableInfo, int32_t(const std::string &, std::string &));
     MOCK_METHOD5(CreatePartition, int32_t(const std::string &, int32_t, int64_t, int64_t, const std::string &));
-    MOCK_METHOD2(DeletePartitionInfo, int32_t(const std::string &, int32_t));
+    MOCK_METHOD3(DeletePartitionInfo, int32_t(const std::string &, const std::string &, int32_t));
     MOCK_METHOD4(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &, bool));
 
     MOCK_METHOD2(Burn, int32_t(const std::string&, const BurnParams&));

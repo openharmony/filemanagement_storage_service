@@ -3206,9 +3206,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInf
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string devPath = "";
+    std::string diskId = "disk-8-0";
     int32_t partitionNum = 1;
 
-    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, partitionNum);
+    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 end";
 }
@@ -3224,11 +3225,31 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInf
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string devPath = "/dev/block/disk-8-0";
+    std::string diskId = "disk-8-0";
     int32_t partitionNum = -1;
 
-    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, partitionNum);
+    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_003
+ * @tc.desc: Verify the DeletePartitionInfo function with empty diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/disk-8-0";
+    std::string diskId = "";
+    int32_t partitionNum = 1;
+
+    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_003 end";
 }
 
 /**

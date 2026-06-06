@@ -45,7 +45,7 @@ public:
     static int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet);
     static int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
                                    int64_t endSector, const std::string &typeCode);
-    static int32_t DeletePartitionInfo(const std::string &devPath, int32_t partitionNum);
+    static int32_t DeletePartitionInfo(const std::string &devPath, const std::string &diskId, int32_t partitionNum);
     static int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
                                    const std::string &volumeName, bool quickFormat);
     static std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
@@ -54,6 +54,7 @@ public:
     static int32_t PartitionHmfs(const std::string& diskPath);
     static int32_t QueryCDStatus(const std::string &devPath, int32_t &status);
     static int32_t EjectCD(const std::string &devPath);
+    static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
 };
 
 int ExecuteScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
