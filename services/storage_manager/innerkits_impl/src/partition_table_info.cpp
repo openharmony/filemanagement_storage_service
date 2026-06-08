@@ -135,6 +135,9 @@ PartitionTableInfo *PartitionTableInfo::Unmarshalling(Parcel &parcel)
     obj->alignSector_ = parcel.ReadUint32();
 
     uint32_t partitionSize = parcel.ReadUint32();
+    if (partitionSize >= MAX_PARTITION_COUNT) {
+        partitionSize = MAX_PARTITION_COUNT;
+    }
     for (uint32_t i = 0; i < partitionSize; i++) {
         PartitionInfo* partition = PartitionInfo::Unmarshalling(parcel);
         if (partition == nullptr) {
@@ -143,9 +146,6 @@ PartitionTableInfo *PartitionTableInfo::Unmarshalling(Parcel &parcel)
         }
         obj->partitions_.push_back(*partition);
         delete partition;
-        if (i >= MAX_PARTITION_COUNT) {
-            break;
-        }
     }
     return obj;
 }

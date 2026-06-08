@@ -95,10 +95,10 @@ private:
     std::vector<std::string> sgdiskLines_;
     std::map<uint32_t, std::string> vendorMap_;
     DiskType diskType_;
-    uint64_t totalSector_;
-    uint64_t lastUsableSector_;
-    uint32_t sectorSize_;
-    uint32_t alignSector_;
+    uint64_t totalSector_ {0};
+    uint64_t lastUsableSector_ {0};
+    uint32_t sectorSize_ {512};
+    uint32_t alignSector_ {2048};
     bool removable_ = true;
     std::string extraInfo_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
