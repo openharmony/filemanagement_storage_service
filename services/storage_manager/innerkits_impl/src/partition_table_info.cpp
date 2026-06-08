@@ -136,7 +136,8 @@ PartitionTableInfo *PartitionTableInfo::Unmarshalling(Parcel &parcel)
 
     uint32_t partitionSize = parcel.ReadUint32();
     if (partitionSize >= MAX_PARTITION_COUNT) {
-        partitionSize = MAX_PARTITION_COUNT;
+        delete obj;
+        return nullptr;
     }
     for (uint32_t i = 0; i < partitionSize; i++) {
         PartitionInfo* partition = PartitionInfo::Unmarshalling(parcel);

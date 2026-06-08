@@ -112,7 +112,8 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
     obj->extraInfo_ = parcel.ReadString();
     uint32_t volSize = parcel.ReadUint32();
     if (volSize >= MAX_VOLUME_COUNT) {
-        volSize = MAX_VOLUME_COUNT;
+        delete obj;
+        return nullptr;
     }
     for (uint32_t i = 0; i < volSize; i++) {
         std::string volId = parcel.ReadString();
