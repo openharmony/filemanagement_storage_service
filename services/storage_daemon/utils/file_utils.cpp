@@ -736,12 +736,11 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         (void)close(pipeFd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
+            (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
-            ssize_t bytesRead = 0;
-            while ((bytesRead = read(pipeFd[0], buf, BUF_LEN - 1)) > 0) {
-                buf[bytesRead] = '\0';
-                output->push_back(std::string(buf, bytesRead));
-                (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
+            while (read(pipeFd[0], buf, BUF_LEN - 1) > 0) {
+                LOGE("[L8:FileUtils] ForkExec: read output chunk errno=%{public}d", errno);
+                output->push_back(buf);
             }
         }
         (void)close(pipeFd[0]);
@@ -829,16 +828,14 @@ static void ReadPipeOutput(int pipeFd, std::vector<std::string> &output)
 {
     LOGI("[L8:FileUtils] ReadPipeOutput: start!!!");
     char buf[BUF_LEN] = { 0 };
+    (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
     output.clear();
-    ssize_t bytesRead = 0;
-    while ((bytesRead = read(pipeFd, buf, BUF_LEN - 1)) > 0) {
-        buf[bytesRead] = '\0';
+    while (read(pipeFd, buf, BUF_LEN - 1) > 0) {
         if (strstr(buf, "[2k") != nullptr) {
             break;
         }
         LOGI("[L8:FileUtils] ReadPipeOutput: get result %{public}s", buf);
-        output.push_back(std::string(buf, bytesRead));
-        (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
+        output.push_back(buf);
     }
     LOGI("[L8:FileUtils] ReadPipeOutput: ReadPipeOutput end!!!");
 }
