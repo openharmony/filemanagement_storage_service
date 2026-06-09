@@ -152,6 +152,40 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Disk_Unmarshalling_0001
+ * @tc.name: Disk_Unmarshalling_0001
+ * @tc.desc: Test function of Unmarshalling interface for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(DiskTest, Disk_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_Unmarshalling_0001";
+    std::string diskId = "300";
+    int64_t sizeBytes = 3000;
+    int32_t diskType = USB_FLAG;
+    bool removable = true;
+    uint32_t invalidSize = 257;
+    std::string extraInfo = "{\"vendor\":\"test\"}";
+    std::list<std::string> volumeIds = {"vol1", "vol2"};
+    Parcel parcel;
+    parcel.WriteString(diskId);
+    parcel.WriteInt64(sizeBytes);
+    parcel.WriteInt32(diskType);
+    parcel.WriteBool(removable);
+    parcel.WriteString(extraInfo);
+    parcel.WriteUint32(invalidSize);
+    for (const auto &volId : volumeIds) {
+        parcel.WriteString(volId);
+    }
+    auto result = Disk::Unmarshalling(parcel);
+    ASSERT_TRUE(result == nullptr);
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0001";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Disk_GetRemovable_0000
  * @tc.name: Disk_GetRemovable_0000
  * @tc.desc: Test function of GetRemovable interface for SUCCESS.

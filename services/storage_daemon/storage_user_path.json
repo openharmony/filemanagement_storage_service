@@ -791,6 +791,18 @@
             "mode": "0711",
             "uid": 0,
             "gid": 0
+        },
+        {
+            "path": "/mnt/data/<userId>/",
+            "mode": "0711",
+            "uid": 0,
+            "gid": 0
+        },
+        {
+            "path": "/mnt/data/<userId>/userExternal",
+            "mode": "02771",
+            "uid": 1006,
+            "gid": 1006
         }
     ],
     "virtual": [
@@ -830,12 +842,7 @@
             "uid": 0,
             "gid": 0
         },
-        {
-            "path": "/mnt/data/<userId>/",
-            "mode": "0711",
-            "uid": 0,
-            "gid": 0
-        },
+
         {
             "path": "/mnt/data/<userId>/cloud",
             "mode": "0711",
@@ -859,12 +866,6 @@
             "mode": "0711",
             "uid": 1008,
             "gid": 1008
-        },
-        {
-            "path": "/mnt/data/<userId>/userExternal",
-            "mode": "02771",
-            "uid": 1006,
-            "gid": 1006
         },
         {
             "path": "/mnt/data/<userId>/hmdfs",

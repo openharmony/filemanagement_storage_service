@@ -17,6 +17,7 @@
 
 namespace OHOS {
 namespace StorageManager {
+constexpr unsigned int MAX_VOLUME_COUNT = 256;
 Disk::Disk() {}
 
 Disk::Disk(const std::string &diskId, int64_t sizeBytes, int32_t diskType, bool removable_,
@@ -110,6 +111,10 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
     obj->removable_ = parcel.ReadBool();
     obj->extraInfo_ = parcel.ReadString();
     uint32_t volSize = parcel.ReadUint32();
+    if (volSize >= MAX_VOLUME_COUNT) {
+        delete obj;
+        return nullptr;
+    }
     for (uint32_t i = 0; i < volSize; i++) {
         std::string volId = parcel.ReadString();
         obj->volumeIds_.push_back(volId);
