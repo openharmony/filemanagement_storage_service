@@ -304,6 +304,28 @@ HWTEST_F(PartitionTableInfoTest, PartitionTableInfo_Unmarshalling_002, TestSize.
 }
 
 /**
+ * @tc.name: PartitionTableInfo_Unmarshalling_003
+ * @tc.desc: Verify Unmarshalling deserializes PartitionTableInfo correctly with MBR type and partitions.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(PartitionTableInfoTest, PartitionTableInfo_Unmarshalling_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "PartitionTableInfoTest-begin PartitionTableInfo_Unmarshalling_003";
+    Parcel parcel;
+    parcel.WriteString("disk-8-1");
+    parcel.WriteString("MBR");
+    parcel.WriteUint32(257);
+    parcel.WriteUint64(204800);
+    parcel.WriteUint32(512);
+    parcel.WriteUint32(2048);
+    parcel.WriteUint32(257);
+    auto result = PartitionTableInfo::Unmarshalling(parcel);
+    ASSERT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "PartitionTableInfoTest-end PartitionTableInfo_Unmarshalling_002";
+}
+
+/**
  * @tc.name: PartitionTableInfo_MarshallingUnmarshalling_001
  * @tc.desc: Verify Marshalling and Unmarshalling with empty values for boundary testing.
  * @tc.type: FUNC
