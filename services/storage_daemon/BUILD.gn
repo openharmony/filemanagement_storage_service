@@ -24,6 +24,7 @@ idl_gen_interface("storage_daemon_interface") {
 }
 
 ohos_source_set("storage_daemon_ipc") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     debug = false
     cfi = true
@@ -45,6 +46,7 @@ ohos_source_set("storage_daemon_ipc") {
 }
 
 ohos_source_set("storage_daemon_header") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     debug = false
     cfi = true
