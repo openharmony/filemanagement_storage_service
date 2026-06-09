@@ -41,6 +41,8 @@ public:
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
     void MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t busLocation, uint8_t devNum);
+    void UmountAllMtpDevice();
+    int32_t HasMTPDevice(bool &hasMtp);
 
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
@@ -55,11 +57,9 @@ private:
     MtpDeviceMonitor();
     ~MtpDeviceMonitor();
     void MonitorDevice();
-    void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);
     bool IsNeedDisableMtp();
     bool IsHwitDevice();
-    int32_t HasMTPDevice(bool &hasMtp);
     int32_t MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
     int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
     int32_t GetGphotoDevices(std::vector<MtpDeviceInfo> &devInfos, uint32_t busLocation, uint8_t devNum);
