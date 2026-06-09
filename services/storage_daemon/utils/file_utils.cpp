@@ -709,6 +709,43 @@ void GetExitStatus(int *exitStatus, int inputExitStatus)
     }
 }
 
+static void ReadPipeOutputForExec(int pipeFdRead, std::vector<std::string> *output)
+{
+    if (!output) {
+        return;
+    }
+    char buf[BUF_LEN] = { 0 };
+    output->clear();
+    ssize_t bytesRead = 0;
+    while ((bytesRead = read(pipeFdRead, buf, BUF_LEN - 1)) > 0) {
+        buf[bytesRead] = '\0';
+        output->emplace_back(buf, bytesRead);
+        (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
+    }
+}
+
+static int CheckChildProcessExitStatus(pid_t pid, int &status, int *exitStatus)
+{
+    waitpid(pid, &status, 0);
+    if (errno == ECHILD) {
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: ECHILD");
+        return E_NO_CHILD;
+    }
+    if (!WIFEXITED(status)) {
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exits abnormally, errno=%{public}d,"
+             "status=%{public}d", errno, status);
+        return E_WIFEXITED;
+    }
+    int tempExitStatus = WEXITSTATUS(status);
+    GetExitStatus(exitStatus, tempExitStatus);
+    if (tempExitStatus != 0) {
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exited with error, errno=%{public}d, "
+             "status=%{public}d", errno, status);
+        return E_WEXITSTATUS;
+    }
+    return E_OK;
+}
+
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     LOGD("[L8:FileUtils] ForkExec: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
@@ -734,32 +771,11 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         _exit(1);
     } else {
         (void)close(pipeFd[1]);
-        if (output) {
-            char buf[BUF_LEN] = { 0 };
-            (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
-            output->clear();
-            while (read(pipeFd[0], buf, BUF_LEN - 1) > 0) {
-                LOGE("[L8:FileUtils] ForkExec: read output chunk errno=%{public}d", errno);
-                output->push_back(buf);
-            }
-        }
+        ReadPipeOutputForExec(pipeFd[0], output);
         (void)close(pipeFd[0]);
-        waitpid(pid, &status, 0);
-        if (errno == ECHILD) {
-            LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< ECHILD");
-            return E_NO_CHILD;
-        }
-        if (!WIFEXITED(status)) {
-            LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< Process exits abnormally, errno=%{public}d,"
-                "status=%{public}d", errno, status);
-            return E_WIFEXITED;
-        }
-        int tempExitStatus = WEXITSTATUS(status);
-        GetExitStatus(exitStatus, tempExitStatus);
-        if (tempExitStatus != 0) {
-            LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< Process exited with error, errno=%{public}d,"
-                "status=%{public}d", errno, status);
-            return E_WEXITSTATUS;
+        int ret = CheckChildProcessExitStatus(pid, status, exitStatus);
+        if (ret != E_OK) {
+            return ret;
         }
     }
     LOGD("[L8:FileUtils] ForkExec: <<< EXIT SUCCESS <<<");
