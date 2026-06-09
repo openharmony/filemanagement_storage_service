@@ -736,11 +736,13 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         (void)close(pipeFd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
-            (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
-            while (read(pipeFd[0], buf, BUF_LEN - 1) > 0) {
+            ssize_t bytesRead = 0;
+            while ((bytesRead = read(pipeFd[0], buf, BUF_LEN - 1)) > 0) {
                 LOGE("[L8:FileUtils] ForkExec: read output chunk errno=%{public}d", errno);
-                output->push_back(buf);
+                buf[bytesRead] = '\0';
+                output->emplace_back(buf, bytesRead);
+                (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             }
         }
         (void)close(pipeFd[0]);
