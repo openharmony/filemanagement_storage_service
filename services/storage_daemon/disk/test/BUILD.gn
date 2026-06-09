@@ -16,7 +16,7 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ROOT_DIR = "${storage_daemon_path}"
 
-ohos_unittest("disk_manager_test") {
+ohos_unittest("disk_mgr_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -240,6 +240,6 @@ group("storage_daemon_disk_test") {
     ":disk_config_test",
     ":disk_info_sup_test",
     ":disk_info_test",
-    ":disk_manager_test",
+    ":disk_mgr_test",
   ]
 }
