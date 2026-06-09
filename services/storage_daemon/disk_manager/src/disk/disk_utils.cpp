@@ -14,9 +14,13 @@
  */
 
 #include <climits>
+#include <cinttypes>
+#include <fstream>
 #include <future>
 #include <libgen.h>
+#include <regex>
 #include <thread>
+#include <sstream>
 
 #include "disk_manager/disk/disk_utils.h"
 
@@ -58,6 +62,109 @@ const std::map<std::string, std::string> formatTypeMap_ = {
     {"vfat", "newfs_msdos"},
     {"ext4", "mke2fs"},
 };
+
+static std::string TrimString(const std::string &str)
+{
+    size_t start = str.find_first_not_of(" \t\r\n");
+    if (start == std::string::npos) {
+        return "";
+    }
+    size_t end = str.find_last_not_of(" \t\r\n");
+    return str.substr(start, end - start + 1);
+}
+
+static bool ParseKeyValuePair(const std::string &key, const std::string &value,
+                              BurnOptions &options)
+{
+    if (key == "diskName") {
+        if (value.empty()) {
+            LOGE("[L3:DiskUtils] ParseBurnOptions: diskName is empty");
+            return false;
+        }
+        options.diskName = value;
+        return true;
+    }
+    if (key == "burnPath") {
+        if (value.empty()) {
+            LOGE("[L3:DiskUtils] ParseBurnOptions: burnPath is empty");
+            return false;
+        }
+        options.burnPath = value;
+        return true;
+    }
+    if (key == "fsType") {
+        if (value.empty()) {
+            LOGE("[L3:DiskUtils] ParseBurnOptions: fsType is empty");
+            return false;
+        }
+        options.fsType = value;
+        return true;
+    }
+    if (key == "isIsoImage") {
+        options.isIsoImage = (value == "true" || value == "1");
+        return true;
+    }
+    if (key == "isIncBurnSupport") {
+        options.isIncBurnSupport = (value == "true" || value == "1");
+        return true;
+    }
+    if (key == "burnSpeed") {
+        char *endPtr = nullptr;
+        errno = 0;
+        unsigned long speed = strtoul(value.c_str(), &endPtr, 10);
+        if (errno != 0 || endPtr == value.c_str() || *endPtr != '\0') {
+            LOGE("[L3:DiskUtils] ParseBurnOptions: invalid burnSpeed: %{public}s", value.c_str());
+            return false;
+        }
+        options.burnSpeed = static_cast<uint32_t>(speed);
+        return true;
+    }
+
+    LOGW("[L3:DiskUtils] ParseBurnOptions: unknown key ignored: %{public}s", key.c_str());
+    return true;
+}
+
+int32_t ParseBurnOptions(const std::string &burnOptions, BurnOptions &parsedOptions)
+{
+    LOGI("[L3:DiskUtils] ParseBurnOptions: >>> ENTER <<<");
+    
+    if (burnOptions.empty()) {
+        LOGE("[L3:DiskUtils] ParseBurnOptions: burnOptions is empty");
+        return E_PARAMS_INVALID;
+    }
+    parsedOptions = BurnOptions();
+    std::istringstream stream(burnOptions);
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        size_t equalPos = line.find('=');
+        if (equalPos == std::string::npos) {
+            LOGW("[L3:DiskUtils] ParseBurnOptions: invalid line format: %{public}s", line.c_str());
+            continue;
+        }
+        std::string key = TrimString(line.substr(0, equalPos));
+        std::string value = TrimString(line.substr(equalPos + 1));
+        if (!ParseKeyValuePair(key, value, parsedOptions)) {
+            return E_PARAMS_INVALID;
+        }
+    }
+    if (parsedOptions.diskName.empty() || parsedOptions.burnPath.empty() ||
+        parsedOptions.fsType.empty()) {
+        LOGE("[L3:DiskUtils] ParseBurnOptions: missing required fields - "
+             "diskName=%{public}s, burnPath=%{public}s, fsType=%{public}s",
+             parsedOptions.diskName.empty() ? "<missing>" : "<present>",
+             parsedOptions.burnPath.empty() ? "<missing>" : "<present>",
+             parsedOptions.fsType.empty() ? "<missing>" : "<present>");
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L3:DiskUtils] ParseBurnOptions: <<< EXIT SUCCESS <<< diskName=%{public}s, burnPath=%{public}s, "
+         "fsType=%{public}s, burnSpeed=%{public}u, isIsoImage=%{public}d, isIncBurnSupport=%{public}d",
+         parsedOptions.diskName.c_str(), parsedOptions.burnPath.c_str(), parsedOptions.fsType.c_str(),
+         parsedOptions.burnSpeed, parsedOptions.isIsoImage, parsedOptions.isIncBurnSupport);
+    return E_OK;
+}
 
 static bool IsValidBlockDevicePath(const std::string& devPath)
 {
@@ -684,6 +791,271 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
         return ret;
     }
 
+    return E_OK;
+}
+
+int32_t DiskUtils::Erase(const std::string &devPath)
+{
+    LOGI("Erase: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {};
+    std::string oddLabel = GetCDType(devPath);
+    if (oddLabel.find("CD") != std::string::npos) {
+        std::string wodimPath = "dev=" + devPath;
+        cmd = {"wodim", wodimPath, "blank=fast"};
+    } else if (oddLabel == "DVD+RW") {
+        cmd = {"dvd+rw-format", "-force", devPath};
+    } else if (oddLabel == "DVD-RW") {
+        cmd = {"dvd+rw-format", "-blank=full", devPath};
+    } else {
+        cmd = {"dvd+rw-format", "-blank", devPath};
+    }
+    int res = ForkExec(cmd, &output);
+    if (res != E_OK) {
+        for (auto str : output) {
+            LOGI("Erase output: %{public}s", str.c_str());
+        }
+        LOGE("Erase: <<< EXIT FAILED <<< ForkExec erase failed, err=%{public}d", res);
+        return res;
+    }
+    LOGI("Erase: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::Eject(const std::string &devName)
+{
+    LOGI("Eject: >>> ENTER <<< devName=%{public}s", devName.c_str());
+    std::string deviceLinkPath = "/sys/block/" + devName;
+
+    char linkTarget[PATH_MAX] = {0};
+    ssize_t len = readlink(deviceLinkPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
+    if (len <= 0) {
+        LOGE("Eject: Failed to read symlink %{public}s, errno=%{public}d",
+             deviceLinkPath.c_str(), errno);
+        return E_ERR;
+    }
+    linkTarget[len] = '\0';
+    std::string linkStr(linkTarget);
+    std::regex targetRegex(R"(target(\d+:\d+:\d+))");
+    std::smatch match;
+    if (!std::regex_search(linkStr, match, targetRegex) || match.size() <= 1) {
+        LOGE("Eject: Failed to extract SCSI device from path: %{public}s", linkStr.c_str());
+        return E_ERR;
+    }
+    std::string scsiDev = match[1].str();
+    std::replace(scsiDev.begin(), scsiDev.end(), ':', ',');
+    LOGI("Eject: Extracted SCSI device: %{public}s", scsiDev.c_str());
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {
+        "wodim",
+        "-eject",
+        "dev=" + scsiDev
+    };
+    int res = ForkExec(cmd, &output);
+    if (res != E_OK) {
+        for (const auto &str : output) {
+            LOGI("Eject output: %{public}s", str.c_str());
+        }
+        LOGE("Eject: <<< EXIT FAILED <<< ForkExec failed, err=%{public}d", res);
+        return res;
+    }
+    LOGI("Eject: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t ValidateBurnOptions(const BurnOptions &options)
+{
+    LOGI("[L3:DiskUtils] ValidateBurnOptions: >>> ENTER <<< "
+         "diskName=%{public}s, burnPath=%{public}s, fsType=%{public}s",
+         options.diskName.c_str(), options.burnPath.c_str(), options.fsType.c_str());
+    if (options.diskName.empty()) {
+        LOGE("[L3:DiskUtils] ValidateBurnOptions: diskName is empty");
+        return E_PARAMS_INVALID;
+    }
+    struct stat st;
+    if (stat(options.burnPath.c_str(), &st) != 0) {
+        LOGE("[L3:DiskUtils] ValidateBurnOptions: burnPath does not exist: %{public}s, errno=%{public}d",
+             options.burnPath.c_str(), errno);
+        return E_PARAMS_INVALID;
+    }
+    if (options.isIsoImage) {
+        if (!S_ISREG(st.st_mode)) {
+            LOGE("[L3:DiskUtils] ValidateBurnOptions: isIsoImage=true but burnPath is not a regular file: %{public}s",
+                 options.burnPath.c_str());
+            return E_PARAMS_INVALID;
+        }
+    } else {
+        if (!S_ISDIR(st.st_mode)) {
+            LOGE("[L3:DiskUtils] ValidateBurnOptions: isIsoImage=false but burnPath is not a directory: %{public}s",
+                 options.burnPath.c_str());
+            return E_PARAMS_INVALID;
+        }
+    }
+    LOGI("[L3:DiskUtils] ValidateBurnOptions: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+std::string GetLastNumberSimple(const std::vector<std::string>& lines)
+{
+    LOGI("GetLastNumberSimple: >>> ENTER <<<");
+    std::vector<std::string> allLines;
+    for (const auto& item : lines) {
+        if (item.find('\n') != std::string::npos) {
+            std::istringstream iss(item);
+            std::string line;
+            while (std::getline(iss, line)) {
+                allLines.push_back(line);
+            }
+        } else {
+            allLines.push_back(item);
+        }
+    }
+
+    std::regex pattern(R"(^\s*\d+,\d+\s*$)");
+    for (const auto& line : allLines) {
+        if (std::regex_match(line, pattern)) {
+            auto start = line.find_first_not_of(" \t\r\n");
+            if (start == std::string::npos) return "";
+            auto end = line.find_last_not_of(" \t\r\n");
+            return line.substr(start, end - start + 1);
+        }
+    }
+
+    return "";
+}
+int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr)
+{
+    LOGI("BurnGetIncBurnAddr: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+
+    cmd = {"wodim", devPath, "-msinfo"};
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("BurnGetIncBurnAddr:s=%{public}s", s.c_str());
+        }
+        LOGE("BurnGetIncBurnAddr:<<< EXIT FAILED <<< failed for devPath: %{public}s",
+            devPath.c_str());
+        return err;
+    }
+    incBurnAddr = GetLastNumberSimple(output);
+    LOGI("BurnGetIncBurnAddr:<<< EXIT SUCCESS <<<"
+         "devPath=%{public}s, incBurnAddr=%{public}s",
+         devPath.c_str(), incBurnAddr.c_str());
+    return err;
+}
+
+static int32_t GetLatestProgressFromFile(const char* filePath, int32_t &progress)
+{
+    progress = 0;
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        LOGE("GetLatestProgressFromFile:<<< EXIT FAILED <<< open failed");
+        return E_NOT_SUPPORT;
+    }
+    std::string content;
+    std::getline(file, content);
+    if (file.fail() && !file.eof()) {
+        LOGE("GetLatestProgressFromFile:<<< EXIT FAILED <<< getline failed");
+        return E_NOT_SUPPORT;
+    }
+    if (content.empty()) {
+        LOGE("GetLatestProgressFromFile:<<< EXIT FAILED <<< empty content");
+        return E_NOT_SUPPORT;
+    }
+    LOGI("GetLatestProgressFromFile content = %{public}s", content.c_str());
+    std::istringstream iss(content);
+    int32_t tempProgress = 0;
+    iss >> tempProgress;
+    if (iss.fail()) {
+        LOGE("GetLatestProgressFromFile:<<< EXIT FAILED <<< iss failed");
+        return E_NOT_SUPPORT;
+    }
+    progress = tempProgress;
+    return E_OK;
+}
+
+int32_t DiskUtils::GetVolumeOpProcess(const std::string &volId, int32_t &progressPct)
+{
+    LOGI("GetVolumeOpProcess: >>> ENTER <<< volId=%{public}s", volId.c_str());
+    int32_t err = 0;
+
+    std::string filePath;
+    if (!GetRealPath("/data/local/vol_tmp/" + volId, filePath)) {
+        LOGE("GetVolumeOpProcess:<<< EXIT FAILED <<< volId: %{public}s",
+            volId.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (IsFilePathInvalid(filePath)) {
+        LOGE("GetVolumeOpProcess:<<< EXIT FAILED <<<filePath: %{public}s",
+            filePath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    LOGI("GetVolumeOpProcess filePath = %{public}s", filePath.c_str());
+
+    err = GetLatestProgressFromFile(filePath.c_str(), progressPct);
+    if (err != E_OK) {
+        LOGE("GetVolumeOpProcess:<<< EXIT FAILED <<< volId: %{public}s",
+            volId.c_str());
+        return err;
+    }
+    LOGI("GetVolumeOpProcess:<<< EXIT SUCCESS <<< volId=%{public}s, progressPct=%{public}d",
+        volId.c_str(), progressPct);
+    return err;
+}
+
+int32_t DiskUtils::VerifyBurnData(const std::string &devPath, int32_t verifyType)
+{
+    LOGI("VerifyBurnData:<<< ENTER <<< devPath=%{public}s, verifyType=%{public}d", devPath.c_str(), verifyType);
+    return E_OK;
+}
+
+int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
+{
+    LOGI("GetCapacity: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int cmdFd = open(devPath.c_str(), O_RDONLY|O_NONBLOCK);
+    if (cmdFd < 0) {
+        LOGE("GetCapacity:<<< EXIT FAILED <<< open failed");
+        return E_ERR;
+    }
+    std::string oddLabel = GetCDType(devPath);
+    LOGI("label is %{public}s", oddLabel.c_str());
+    int err1 = E_OK;
+    int err2 = E_OK;
+    int64_t usedSize = 0;
+    if (oddLabel == "DVD-RW" || oddLabel == "DVD-R" || oddLabel == "DVD+R") {
+        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "DVD+RW") {
+        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+        usedSize = totalSize;
+    } else if (oddLabel == "CD-RW" || oddLabel == "CD-R") {
+        err1 = GetCdTotalCapacity(cmdFd, totalSize);
+        err2 = GetCdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "BD-R" || oddLabel == "BD-RE") {
+        err1 = GetBdTotalCapacity(cmdFd, totalSize);
+        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
+    } else if (oddLabel == "BD-ROM") {
+        err1 = GetBdTotalCapacity(cmdFd, totalSize);
+        usedSize = totalSize;
+    } else {
+        totalSize = 0;
+        usedSize = 0;
+    }
+    LOGI("totalsize is %{public}" PRId64 ", usedsize is : %{public}" PRId64, totalSize, usedSize);
+    if (err1 != E_OK || err2 != E_OK) {
+        close(cmdFd);
+        return E_ERR;
+    }
+    if (usedSize > totalSize) {
+        freeSize = 0;
+    } else {
+        freeSize = totalSize - usedSize;
+    }
+    close(cmdFd);
     return E_OK;
 }
 } // namespace StorageDaemon

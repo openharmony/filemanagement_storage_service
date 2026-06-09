@@ -1218,66 +1218,6 @@ int32_t StorageDaemonCommunication::Decrypt(const std::string &volumeId, const s
     return storageDaemon_->Decrypt(volumeId, pazzword);
 }
 
-int32_t StorageDaemonCommunication::Eject(const std::string &diskId)
-{
-    LOGI("StorageDaemonCommunication::Eject start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::Eject connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Eject service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->Eject(diskId);
-}
-
-int32_t StorageDaemonCommunication::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
-{
-    LOGI("StorageDaemonCommunication::GetOpticalDriveOpsProgress start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::GetOpticalDriveOpsProgress connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::GetOpticalDriveOpsProgress service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->GetOpticalDriveOpsProgress(volumeId, progress);
-}
-
-int32_t StorageDaemonCommunication::Erase(const std::string &volumeId)
-{
-    LOGI("StorageDaemonCommunication::Erase start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::Erase connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Erase service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->Erase(volumeId);
-}
-
-int32_t StorageDaemonCommunication::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
-{
-    LOGI("StorageDaemonCommunication::CreateIsoImage start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::CreateIsoImage connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::CreateIsoImage service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->CreateIsoImage(volumeId, filePath);
-}
-
 int32_t StorageDaemonCommunication::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
 {
     LOGI("StorageDaemonCommunication::GetPartitionTable start");
@@ -1337,36 +1277,6 @@ int32_t StorageDaemonCommunication::FormatPartition(const std::string &diskId, u
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->FormatPartition(diskId, partitionNum, formatParams);
-}
-
-int32_t StorageDaemonCommunication::Burn(const std::string &volumeId, const BurnParams &params)
-{
-    LOGI("StorageDaemonCommunication::Burn start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::Burn connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Burn service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->Burn(volumeId, params);
-}
-
-int32_t StorageDaemonCommunication::VerifyBurnData(const std::string &volumeId, uint32_t verType)
-{
-    LOGI("StorageDaemonCommunication::VerifyBurnData start");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("StorageDaemonCommunication::VerifyBurnData connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::VerifyBurnData service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->VerifyBurnData(volumeId, verType);
 }
 } // namespace StorageManager
 } // namespace OHOS

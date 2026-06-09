@@ -14,6 +14,8 @@
  */
 
 #include "disk_manager/disk/scan_device.h"
+#include "utils/disk_utils.h"
+#include "utils/file_utils.h"
 
 #include "storage_service_log.h"
 #include <charconv>
@@ -28,6 +30,8 @@
 #include <algorithm>
 #include <cctype>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <unistd.h>
 
 namespace OHOS {
@@ -47,6 +51,7 @@ constexpr const char *DEV_NODE = "/dev";
 constexpr const char *MODEL_NODE = "/device/model";
 constexpr const char *VENDOR_NODE = "/device/vendor";
 constexpr const char *UEVENT_NODE = "/uevent";
+constexpr const char *REVNUM_NODE = "/device/rev";
 constexpr const char *MAJOR_KEY = "MAJOR=";
 constexpr const char *MINOR_KEY = "MINOR=";
 constexpr const char *SERIAL_NODE = "/device/serial";
@@ -56,6 +61,9 @@ constexpr const char *NVME_PREFIX = "nvme";
 constexpr const char *DISK_ID_PREFIX = "disk-";
 constexpr const char *DISK_ID_CONTACT = "-";
 constexpr const char *ATA_PORT_PATTERN = "ata([0-9]+)";
+constexpr const char *PARENT_DIR_PREFIX = "../";
+constexpr const size_t PARENT_DIR_PREFIX_LEN = 3;
+constexpr const size_t PARENT_DIR_SKIP_LEN = 2;
 
 const uint64_t SECTOR_SIZE = 512;
 const int NUMBER_BASE = 10;
@@ -71,32 +79,6 @@ ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBl
 }
 
 using json = nlohmann::json;
-
-json BlockInfo::ToJson() const
-{
-    return json{
-        {"sizeBytes", sizeBytes},
-        {"vendor", vendor},
-        {"model", model},
-        {"interfaceType", interfaceType},
-        {"rpm", rpm},
-        {"removable", removable},
-        {"serialNumber", serialNumber},
-        {"diskId", diskId},
-        {"devicePath", devicePath},
-        {"port", port}
-    };
-}
-
-std::string BlockInfo::SerializeVector(const std::vector<BlockInfo>& infos)
-{
-    json j = json::array();
-    for (const auto& info : infos) {
-        j.push_back(info.ToJson());
-    }
-    return j.dump();
-}
-
 
 bool ScanDevice::ReadRemovableNode(const std::string &deviceName, bool &isRemovable)
 {
@@ -214,17 +196,68 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
     return dataDisks;
 }
 
+std::string ScanDevice::GetRealPath(const std::string &deviceName)
+{
+    std::string modelPath = sysBlockPath + SPLIT_STRING + deviceName;
+    LOGI("GetRealPath modelPath: %{public}s", modelPath.c_str());
+    char linkTarget[PATH_MAX] = {0};
+    ssize_t len = readlink(modelPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
+    std::string linkTargetStr;
+    if (len > 0) {
+        linkTargetStr.assign(linkTarget, len);
+        if (linkTargetStr.size() >= PARENT_DIR_PREFIX_LEN &&
+            linkTargetStr.substr(0, PARENT_DIR_PREFIX_LEN) == PARENT_DIR_PREFIX) {
+            linkTargetStr = "/sys" + linkTargetStr.substr(PARENT_DIR_SKIP_LEN);
+            LOGI("GetRealPath linkTargetStr: %{public}s", linkTargetStr.c_str());
+            return linkTargetStr;
+        }
+    } else if (len == -1) {
+        LOGE("readlink failed for: %s", modelPath.c_str());
+        linkTargetStr.clear();
+    }
+    return "";
+}
+
 std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, const std::string &diskId)
 {
+    LOGE("[L2:ScanDevice] GetExternalDisks ENTER");
     std::vector<BlockInfo> externalDisks;
     BlockInfo info;
     info.diskId = diskId;
     uint64_t size = -1;
+    std::string devPath = std::string(DEV_PATH) + SPLIT_STRING + devName;
     std::string sizePath = devBlockPath + SPLIT_STRING + diskId;
+    std::string realPath = GetRealPath(devName);
     GetExternalDiskSize(sizePath, &size);
     info.sizeBytes = size;
     info.vendor = GetVendor(devName);
     info.model = GetModel(devName);
+    info.devnum = ReadFileInParentDirs(realPath, "devnum");
+    info.busnum = ReadFileInParentDirs(realPath, "busnum");
+    info.devNode = GetDevNode(devName);
+    info.scsiBusNum = GetScsiBusNum(realPath);
+    info.fwVersion = GetFwVersion(devName);
+    struct stat st;
+    if (stat(devPath.c_str(), &st) == 0 && S_ISBLK(st.st_mode)) {
+        dev_t dev = st.st_rdev;
+        if (major(dev) == DISK_CD_MAJOR) {
+            nlohmann::json extraInfoJson;
+            std::string driveType = GetOpticalDriveType(devPath);
+            std::string discType = GetCDType(devPath);
+            std::string oddDriveType = GetOddDriverType(realPath);
+            int32_t maxWriteSpeed = 0;
+            GetOpticalDriveMaxWriteSpeed(devPath, maxWriteSpeed);
+            extraInfoJson["DRIVE_TYPE"] = driveType;
+            extraInfoJson["DISC_TYPE"] = discType;
+            extraInfoJson["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
+            extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
+            info.ODD_INFO = extraInfoJson;
+        }
+    }
+    LOGE("[L2:ScanDevice] GetExternalDisks: info.devnum=%{public}s, info.busnum=%{public}s,"
+         "info.devNode=%{public}s, info.scsiBusNum=%{public}s, info.fwVersion=%{public}s, info.ODD_INFO=%{public}s",
+         info.devnum.c_str(), info.busnum.c_str(), info.devNode.c_str(), info.scsiBusNum.c_str(),
+         info.fwVersion.c_str(), info.ODD_INFO.dump().c_str());
     externalDisks.push_back(info);
     return externalDisks;
 }
@@ -254,9 +287,33 @@ bool ScanDevice::GetExternalDiskSize(const std::string &path, uint64_t *size)
 
 int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo)
 {
+    std::string devPath = std::string(DEV_PATH) + SPLIT_STRING + deviceName;
+    std::string realPath = GetRealPath(deviceName);
     blockInfo.sizeBytes = GetDiskSize(deviceName);
     blockInfo.vendor = GetVendor(deviceName);
     blockInfo.model = GetModel(deviceName);
+    blockInfo.devnum = ReadFileInParentDirs(realPath, "devnum");
+    blockInfo.busnum = ReadFileInParentDirs(realPath, "busnum");
+    blockInfo.devNode = GetDevNode(deviceName);
+    blockInfo.scsiBusNum = GetScsiBusNum(realPath);
+    blockInfo.fwVersion = GetFwVersion(deviceName);
+    struct stat st;
+    if (stat(devPath.c_str(), &st) == 0 && S_ISBLK(st.st_mode)) {
+        dev_t dev = st.st_rdev;
+        if (major(dev) == DISK_CD_MAJOR) {
+            nlohmann::json extraInfoJson;
+            std::string driveType = GetOpticalDriveType(devPath);
+            std::string discType = GetCDType(devPath);
+            std::string oddDriveType = GetOddDriverType(realPath);
+            int32_t maxWriteSpeed = 0;
+            GetOpticalDriveMaxWriteSpeed(devPath, maxWriteSpeed);
+            extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
+            extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
+            extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
+            extraInfoJson["ODD_INFO"]["ODD_DRIVER_TYPE"] = oddDriveType;
+            blockInfo.ODD_INFO = extraInfoJson;
+        }
+    }
     blockInfo.interfaceType = GetInterfaceType(deviceName);
     blockInfo.rpm = GetDiskRpm(deviceName, isNvmeDevice);
     blockInfo.serialNumber = GetSerialNumber(deviceName, isNvmeDevice);
@@ -264,6 +321,10 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
     std::string pciePath = GetPciePath(deviceName);
     blockInfo.devicePath = GetDevicePath(deviceName);
     blockInfo.port = GetPort(pciePath, isNvmeDevice);
+    LOGE("[L2:ScanDevice] GetBlockInfo: info.devnum=%{public}s, info.busnum=%{public}s,"
+        "info.devNode=%{public}s, info.scsiBusNum=%{public}s, info.fwVersion=%{public}s, info.ODD_INFO=%{public}s",
+        blockInfo.devnum.c_str(), blockInfo.busnum.c_str(), blockInfo.devNode.c_str(), blockInfo.scsiBusNum.c_str(),
+        blockInfo.fwVersion.c_str(), blockInfo.ODD_INFO.dump().c_str());
     return 0;
 }
 
@@ -560,6 +621,111 @@ std::string ScanDevice::GetPort(const std::string &pciePath, const bool isNvmeDe
     }
     LOGE("GetPort failed: no match found in pciePath");
     return "";
+}
+
+std::string ScanDevice::ReadFileContent(const std::string &path)
+{
+    LOGD("[L8:ScanDevice] ReadFileContent: >>> ENTER <<< path=%{public}s", path.c_str());
+    std::ifstream infile;
+    std::string result;
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("[L8:ScanDevice] ReadFileContent: <<< EXIT FAILED <<< realpath failed, errno: %{public}d.", errno);
+        return "";
+    }
+    infile.open(realPath);
+    if (!infile) {
+        LOGE("[L8:ScanDevice] ReadFileContent: <<< EXIT FAILED <<< Cannot open file, errno: %{public}d.", errno);
+        return "";
+    }
+    std::string line;
+    bool firstLine = true;
+    while (std::getline(infile, line)) {
+        if (!firstLine) {
+            result += "\n";
+        }
+        result += line;
+        firstLine = false;
+    }
+    infile.close();
+    if (result.empty()) {
+        LOGE("[L8:ScanDevice] ReadFileContent: <<< EXIT FAILED <<< file is empty");
+    } else {
+        LOGD("[L8:ScanDevice] ReadFileContent: <<< EXIT SUCCESS <<<");
+    }
+    return result;
+}
+
+std::string ScanDevice::GetDevnum(const std::string &deviceName)
+{
+    std::string modelPath = sysBlockPath + SPLIT_STRING + deviceName;
+    LOGI("GetDevnum modelPath: %{public}s", modelPath.c_str());
+    char linkTarget[PATH_MAX] = {0};
+    ssize_t len = readlink(modelPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
+    std::string linkTargetStr;
+    if (len > 0) {
+        linkTargetStr.assign(linkTarget, len);
+        if (linkTargetStr.size() >= PARENT_DIR_PREFIX_LEN &&
+            linkTargetStr.substr(0, PARENT_DIR_PREFIX_LEN) == PARENT_DIR_PREFIX) {
+            linkTargetStr = "/sys" + linkTargetStr.substr(PARENT_DIR_SKIP_LEN);
+            LOGI("GetDevnum linkTargetStr: %{public}s", linkTargetStr.c_str());
+            std::string content = ReadFileInParentDirs(linkTargetStr, "devnum");
+            LOGI("GetDevnum success: %{public}s", content.c_str());
+            return content;
+        }
+    } else if (len == -1) {
+        LOGE("readlink failed for: %s", modelPath.c_str());
+        linkTargetStr.clear();
+    }
+    LOGE("GetDevnum: read node of model failed");
+    return "Unknown";
+}
+ 
+std::string ScanDevice::GetBusnum(const std::string &deviceName)
+{
+    std::string modelPath = sysBlockPath + SPLIT_STRING + deviceName;
+    LOGI("GetBusnum modelPath: %{public}s", modelPath.c_str());
+    char linkTarget[PATH_MAX] = {0};
+    ssize_t len = readlink(modelPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
+    std::string linkTargetStr;
+    if (len > 0) {
+        linkTargetStr.assign(linkTarget, len);
+        if (linkTargetStr.size() >= PARENT_DIR_PREFIX_LEN &&
+            linkTargetStr.substr(0, PARENT_DIR_PREFIX_LEN) == PARENT_DIR_PREFIX) {
+            linkTargetStr = "/sys" + linkTargetStr.substr(PARENT_DIR_SKIP_LEN);
+            LOGI("GetDevnum linkTargetStr: %{public}s", linkTargetStr.c_str());
+            std::string content = ReadFileInParentDirs(linkTargetStr, "busnum");
+            LOGI("GetDevnum success: %{public}s", content.c_str());
+            return content;
+        }
+    } else if (len == -1) {
+        LOGE("readlink failed for: %s", modelPath.c_str());
+        linkTargetStr.clear();
+    }
+    LOGE("GetBusnum: read node of model failed");
+    return "Unknown";
+}
+ 
+std::string ScanDevice::GetDevNode(const std::string &deviceName)
+{
+    struct stat st;
+    std::string devNode;
+    std::string devPath = std::string(DEV_PATH) + SPLIT_STRING + deviceName;
+    LOGI("GetDevNode devPath: %{public}s", devPath.c_str());
+    if (stat(devPath.c_str(), &st) == 0 && S_ISBLK(st.st_mode)) {
+        dev_t dev = st.st_rdev;
+        devNode = "block " + std::to_string(major(dev)) + ":" + std::to_string(minor(dev));
+    }
+    LOGI("GetDevNode devNode: %{public}s", devNode.c_str());
+    return devNode;
+}
+
+std::string ScanDevice::GetFwVersion(const std::string &deviceName)
+{
+    std::string modelPath = sysBlockPath + SPLIT_STRING + deviceName + REVNUM_NODE;
+    std::string content = ReadFileContent(modelPath);
+    LOGI("GetFwVersion content: %{public}s", content.c_str());
+    return content;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

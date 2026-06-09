@@ -129,16 +129,10 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 79] void  Unlock([in] String volumeId, [in] String pazzword);
      [ipccode 80] void  Decrypt([in] String volumeId, [in] String pazzword);
      [ipccode 81] void  GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
-     [ipccode 82] void  Eject([in] String volId);
-     [ipccode 83] void  GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
- 	[ipccode 84] void Erase([in] String volId);
- 	[ipccode 85] void CreateIsoImage([in] String volId, [in] String filePath);
      [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
      [ipccode 87] void  CreatePartition([in] String diskId, [in] PartitionParams partitionParams);
      [ipccode 88] void  DeletePartition([in] String diskId, [in] unsigned int partitionNum);
      [ipccode 89] void  FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatParams formatParams);
-     [ipccode 90] void  Burn([in] String volId, [in] BurnParams params);
-     [ipccode 91] void  VerifyBurnData([in] String volId, [in] unsigned int verType);
      [ipccode 201] void CreateBlockDeviceNode([in] String devPath,
                                               [in] unsigned int mode,
                                               [in] int major,
@@ -186,6 +180,16 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [in] String volumeName,
                                         [in] boolean quickFormat);
      [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
+     [ipccode 251] void GetCapacity([in] String devPath, [out] long totalSize, [out] long freeSize);
      [ipccode 252] void EjectCD([in] String devPath);
      [ipccode 253] void QueryCDStatus([in] String devPath, [out] int status);
+     [ipccode 254] void Erase([in] String devPath);
+     [ipccode 255] void Eject([in] String devName);
+     [ipccode 256] void CreateIsoImage([in] String devPath,
+                                       [in] String filePath,
+                                       [in] String fsType,
+                                       [in] String mountPath);
+     [ipccode 257] void Burn([in] String devPath, [in] String burnOptions, [in] String fsType);
+     [ipccode 258] void GetVolumeOpProcess([in] String volumeId, [out] int process);
+     [ipccode 259] void VerifyBurnData([in] String devPath, [in] int verType);
 }

@@ -43,12 +43,6 @@ public:
     virtual int32_t CreatePartition(const std::string &diskId, const PartitionParams &params);
     virtual int32_t DeletePartition(const std::string &diskId, int32_t partitionNum);
     virtual int32_t FormatPartition(const std::string &diskId, int32_t partitionNum, const FormatParams &params);
-    virtual int32_t EraseVolume(const std::string &volumeId);
-    virtual int32_t EjectVolume(const std::string &volumeId);
-    virtual int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
-    virtual int32_t BurnVolume(const std::string &volumeId, const std::string &burnOptions);
-    virtual int32_t GetVolumeOpProcess(const std::string &volumeId, int32_t &progressPct);
-    virtual int32_t VerifyBurnData(const std::string &volumeId, int32_t verifyType);
     virtual int32_t ResetProxy();
     virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                      const std::string &uuid, const std::string &fsType);
@@ -80,16 +74,6 @@ public:
                 (const std::string &diskId, int32_t partitionNum), (override));
     MOCK_METHOD(int32_t, FormatPartition,
                 (const std::string &diskId, int32_t partitionNum, const FormatParams &params), (override));
-    MOCK_METHOD(int32_t, EraseVolume, (const std::string &volumeId), (override));
-    MOCK_METHOD(int32_t, EjectVolume, (const std::string &volumeId), (override));
-    MOCK_METHOD(int32_t, CreateIsoImage,
-                (const std::string &volumeId, const std::string &filePath), (override));
-    MOCK_METHOD(int32_t, BurnVolume,
-                (const std::string &volumeId, const std::string &burnOptions), (override));
-    MOCK_METHOD(int32_t, GetVolumeOpProcess,
-                (const std::string &volumeId, int32_t &progressPct), (override));
-    MOCK_METHOD(int32_t, VerifyBurnData,
-                (const std::string &volumeId, int32_t verifyType), (override));
     MOCK_METHOD(int32_t, ResetProxy, (), (override));
     MOCK_METHOD(int32_t, NotifyMtpMounted,
                 (const std::string &id, const std::string &path, const std::string &desc,

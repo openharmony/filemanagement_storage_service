@@ -99,36 +99,6 @@ int32_t DiskManagerClient::FormatPartition(const std::string &diskId, int32_t pa
     return IDiskManagerClientMock::diskManagerClientMock->FormatPartition(diskId, partitionNum, params);
 }
 
-int32_t DiskManagerClient::EraseVolume(const std::string &volumeId)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->EraseVolume(volumeId);
-}
-
-int32_t DiskManagerClient::EjectVolume(const std::string &volumeId)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->EjectVolume(volumeId);
-}
-
-int32_t DiskManagerClient::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->CreateIsoImage(volumeId, filePath);
-}
-
-int32_t DiskManagerClient::BurnVolume(const std::string &volumeId, const std::string &burnOptions)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->BurnVolume(volumeId, burnOptions);
-}
-
-int32_t DiskManagerClient::GetVolumeOpProcess(const std::string &volumeId, int32_t &progressPct)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetVolumeOpProcess(volumeId, progressPct);
-}
-
-int32_t DiskManagerClient::VerifyBurnData(const std::string &volumeId, int32_t verifyType)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->VerifyBurnData(volumeId, verifyType);
-}
-
 int32_t DiskManagerClient::ResetProxy()
 {
     return IDiskManagerClientMock::diskManagerClientMock->ResetProxy();

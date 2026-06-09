@@ -153,17 +153,11 @@ public:
     int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
     int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
 
-    int32_t Eject(const std::string &diskId);
-    int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
-    int32_t Erase(const std::string &volumeId);
-    int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
     // disk partition api
     int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
     int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams);
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
-    int32_t Burn(const std::string &volumeId, const BurnParams &params);
-    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

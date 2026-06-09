@@ -36,7 +36,6 @@
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
-#include "disk_manager/disk/scan_device.h"
 #include "volume/volume_manager.h"
 #endif
 #ifdef PC_USER_MANAGER
@@ -59,6 +58,7 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #ifdef DISK_MANAGER
+#include "disk_manager/disk/scan_device.h"
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
 #include "disk_manager/volume/volume_operator_factory.h"
@@ -1881,90 +1881,6 @@ int32_t StorageDaemonProvider::GetOddCapacity(const std::string& volumeId, int64
 #endif
 }
 
-int32_t StorageDaemonProvider::Eject(const std::string &diskId)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    if (diskId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  diskId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = DiskManager::Instance().HandleEject(diskId);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<<  ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Eject", ret);
-    }
-    LOGI("[L1:StorageDaemonProvider] Eject: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
-    return ret;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    if (volId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT FAILED <<<  volId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = VolumeManager::Instance().GetOpticalDriveOpsProgress(volId, progress);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT FAILED <<< ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::GetOpticalDriveOpsProgress", ret);
-    }
-    LOGI("[L1:StorageDaemonProvider] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    return ret;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::Erase(const std::string &volId)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] Erase: >>> ENTER <<< volId=%{public}s",
-        volId.c_str());
-    if (volId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<<  volId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = VolumeManager::Instance().Erase(volId);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<<  ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Erase", ret);
-    } else {
-        LOGI("[L1:StorageDaemonProvider] Erase: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return ret;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::CreateIsoImage(const std::string &volId, const std::string &filePath)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] CreateIsoImage: >>> ENTER <<< volId=%{public}s,"
-        " filePath=%{public}s", volId.c_str(), filePath.c_str());
-    if (volId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<<  volId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = VolumeManager::Instance().CreateIsoImage(volId, filePath);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<<  ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::CreateIsoImage", ret);
-    } else {
-        LOGI("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return ret;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
 int32_t StorageDaemonProvider::GetPartitionTable(const std::string &diskId,
     OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
 {
@@ -2073,46 +1989,6 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &diskId, uint32
     return ret;
 #else
     LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::Burn(const std::string &volumeId, const BurnParams &params)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] Burn: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    if (volumeId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<<  volId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = VolumeManager::Instance().Burn(volumeId, params);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<<  ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Burn", ret);
-    }
-    LOGI("[L1:StorageDaemonProvider] Burn: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    return ret;
-#else
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::VerifyBurnData(const std::string &volumeId, uint32_t verType)
-{
-#ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    if (volumeId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<<  volId is empty");
-        return E_PARAMS_INVALID;
-    }
-    int32_t ret = VolumeManager::Instance().VerifyBurnData(volumeId, verType);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<< ret is %{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::VerifyBurnData", ret);
-    }
-    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    return ret;
-#else
     return E_NOT_SUPPORT;
 #endif
 }
@@ -2696,6 +2572,210 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const
     return ret;
 #else
     LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::Erase(const std::string &devPath)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Erase: >>> ENTER <<< devPath=%{public}s",
+        devPath.c_str());
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+
+    ret = DiskUtils::Erase(verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] Erase: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::Eject(const std::string &devName)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< devName=%{public}s",
+        devName.c_str());
+
+    int32_t ret = DiskUtils::Eject(devName);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] Eject: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::CreateIsoImage(const std::string &devPath,
+                                              const std::string &filePath,
+                                              const std::string &fsType,
+                                              const std::string &mountPath)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreateIsoImage: >>> ENTER <<< devPath=%{public}s, filePath=%{public}s, "
+         "fsType=%{public}s, mountPath=%{public}s",
+         devPath.c_str(), filePath.c_str(), fsType.c_str(), mountPath.c_str());
+    std::string verifiedDevPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedDevPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+    if (IsFilePathInvalid(filePath)) {
+        return E_PARAMS_INVALID;
+    }
+    if (fsType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: fsType is empty");
+        return E_PARAMS_INVALID;
+    }
+    std::string verifiedMountPath;
+    ret = ValidateMountPath(mountPath, verifiedMountPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Mount: invalid mountPath");
+        return ret;
+    }
+
+    auto op = VolumeOperatorFactory::CreateOperator(fsType);
+    if (op == nullptr) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: no operator for fsType=%{public}s", fsType.c_str());
+        return E_NOT_SUPPORT;
+    }
+
+    ret = op->CreateIsoImage(verifiedDevPath, filePath, verifiedMountPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("Operator::CreateIsoImage", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::Burn(const std::string &devPath,
+                                    const std::string &burnOptions,
+                                    const std::string &fsType)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] Burn: >>> ENTER <<< devPath=%{public}s, burnOptions=%{public}s",
+        devPath.c_str(), burnOptions.c_str());
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+    BurnOptions parsedOptions;
+    ret = ParseBurnOptions(burnOptions, parsedOptions);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Burn ParseBurnOptions: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+    ret = ValidateBurnOptions(parsedOptions);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Burn DiskUtils::ValidateBurnOptions: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+    auto op = VolumeOperatorFactory::CreateOperator(parsedOptions.fsType);
+    if (op == nullptr) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: no operator for fsType=%{public}s", fsType.c_str());
+        return E_NOT_SUPPORT;
+    }
+    ret = op->Burn(verifiedPath, parsedOptions);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        StorageService::StorageRadar::ReportVolumeOperation("Operator::Burn", ret);
+        return ret;
+    }
+    LOGI("[L1:StorageDaemonProvider] Burn: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetVolumeOpProcess(const std::string &volumeId, int32_t &progressPct)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetVolumeOpProcess: >>> ENTER <<< volumeId=%{public}s",
+        volumeId.c_str());
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath("/dev/block/" + volumeId, verifiedPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+
+    ret = DiskUtils::GetVolumeOpProcess(volumeId, progressPct);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] GetVolumeOpProcess: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] GetVolumeOpProcess: <<< EXIT SUCCESS <<<progressPct = %{public}d", progressPct);
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::VerifyBurnData(const std::string &devPath, int32_t verifyType)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: >>> ENTER <<< devPath=%{public}s",
+        devPath.c_str());
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+
+    ret = DiskUtils::VerifyBurnData(verifiedPath, verifyType);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::GetCapacity(const std::string &devPath, int64_t &totalSize, int64_t &freeSize)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetCapacity: >>> ENTER <<< devPath=%{public}s",
+        devPath.c_str());
+    std::string verifiedPath;
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+
+    ret = DiskUtils::GetCapacity(verifiedPath, totalSize, freeSize);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] GetCapacity: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] GetCapacity: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#else
     return E_NOT_SUPPORT;
 #endif
 }

@@ -110,5 +110,145 @@ int32_t UdfOperator::ReadMetadata(const std::string& devPath,
          GetAnonyString(uuid).c_str(), type.c_str(), GetAnonyString(label).c_str());
     return E_OK;
 }
+
+int32_t UdfOperator::CreateIsoImage(const std::string& devPath,
+                                    const std::string& filePath,
+                                    const std::string& mountPath)
+{
+    LOGI("UdfOperator CreateIsoImage:>>> ENTER <<< devPath=%{public}s", devPath.c_str());
+
+    std::vector<std::string> output;
+    std::vector<std::string> cmd = {"genisoimage", "-V", "ISOIMAGE", "-udf", "-J", "-r", "-o", filePath, mountPath};
+    int32_t err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("UdfOperator CreateIsoImage:s=%{public}s", s.c_str());
+        }
+        LOGE("UdfOperator CreateIsoImage:<<< EXIT FAILED <<< failed for devPath: %{public}s",
+            devPath.c_str());
+    } else {
+        LOGI("UdfOperator CreateIsoImage:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
+    }
+    return err;
+}
+
+int32_t UdfOperator::DoCDBurn(const std::string &devPath,
+                              const BurnOptions &burnOptions,
+                              bool isDiskEmpty,
+                              const std::string &incBurnAddr)
+{
+    LOGI("DoCDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+    if (!burnOptions.isIsoImage) {
+        std::string midPath = burnOptions.burnPath + "/" + "midFile.iso";
+        if (isDiskEmpty) {
+            cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-o", midPath, burnOptions.burnPath};
+        } else {
+            cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-C", incBurnAddr, "-M",
+                    devPath, "-o", midPath, burnOptions.burnPath};
+        }
+        err = ForkExec(cmd, &output);
+        if (err != E_OK) {
+            for (const auto& s : output) {
+                LOGI("UdfOperator DoCDBurn:s=%{public}s", s.c_str());
+            }
+            LOGE("DoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
+            return err;
+        }
+        if (isDiskEmpty) {
+            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", midPath};
+        } else {
+            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", midPath};
+        }
+    } else {
+        cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", burnOptions.burnPath};
+    }
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("UdfOperator DoCDBurn:s=%{public}s", s.c_str());
+        }
+        LOGE("DoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
+        return err;
+    }
+    cmd = {"rm", "-rf", "/data/local/vol_tmp"};
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("UdfOperator DoCDBurn:s=%{public}s", s.c_str());
+        }
+        LOGE("DoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
+        return err;
+    }
+    LOGI("DoCDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
+    return err;
+}
+
+int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty)
+{
+    LOGI("DoDVDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t err = 0;
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+    if (!burnOptions.isIsoImage) {
+        if (isDiskEmpty) {
+            cmd = {"growisofs", "-Z", devPath, "-udf", "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+        } else {
+            cmd = {"growisofs", "-M", devPath, "-udf", "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+        }
+    } else {
+        std::string isoBurnPath = devPath + "=" + burnOptions.burnPath;
+        cmd = {"growisofs", "-Z", isoBurnPath};
+    }
+    err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("UdfOperator DoDVDBurn:s=%{public}s", s.c_str());
+        }
+        LOGE("DoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s",
+             devPath.c_str());
+        return err;
+    }
+
+    LOGI("DoDVDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
+    return err;
+}
+
+int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOptions)
+{
+    LOGI("Burn devPath = %{public}s", devPath.c_str());
+
+    int32_t err = 0;
+
+    bool isDiskEmpty = false;
+    bool isBlankCD = false;
+    int blankRet = IsCDBlank(devPath, isBlankCD);
+    if (blankRet == E_OK && isBlankCD) {
+        isDiskEmpty = true;
+    }
+    std::string diskType = GetCDType(devPath);
+    std::string incBurnAddr;
+    if (diskType.find("CD") != std::string::npos) {
+        if (!isDiskEmpty) {
+            err = GetIncBurnAddr("dev=" + devPath, incBurnAddr);
+            if (err != E_OK) {
+                LOGE("Burn:<<< EXIT FAILED <<< devPath=%{public}s", devPath.c_str());
+                return err;
+            }
+        }
+        err = DoCDBurn(devPath, burnOptions, isDiskEmpty, incBurnAddr);
+    } else {
+        err = DoDVDBurn(devPath, burnOptions, isDiskEmpty);
+    }
+    if (err != E_OK) {
+        LOGE("Burn:<<< EXIT FAILED <<< devPath:=%{public}s", devPath.c_str());
+        return err;
+    }
+
+    LOGI("Burn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

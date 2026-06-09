@@ -241,5 +241,19 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
     return E_OK;
 }
 
+int32_t IVolumeOperator::CreateIsoImage(const std::string& devPath,
+                                        const std::string& filePath,
+                                        const std::string& mountPath)
+{
+    LOGI("IVolumeOperator::CreateIsoImage devPath=%{public}s, filePath=%{public}s, mountPath=%{public}s",
+         devPath.c_str(), GetAnonyString(filePath).c_str(), GetAnonyString(mountPath).c_str());
+    return E_NOT_SUPPORT;
+}
+
+int32_t IVolumeOperator::Burn(const std::string &devPath, const BurnOptions &burnOptions)
+{
+    LOGI("IVolumeOperator::Burn devPath=%{public}s", devPath.c_str());
+    return E_NOT_SUPPORT;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

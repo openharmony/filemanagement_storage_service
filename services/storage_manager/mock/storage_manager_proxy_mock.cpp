@@ -522,26 +522,6 @@ int32_t StorageManagerProxy::Decrypt(const std::string &volumeId, const std::str
     return E_OK;
 }
 
-int32_t StorageManagerProxy::Eject(const std::string &volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Erase(const std::string &volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
 {
     return E_OK;
@@ -559,16 +539,6 @@ int32_t StorageManagerProxy::DeletePartition(const std::string &diskId, uint32_t
 
 int32_t StorageManagerProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
     const FormatParams &formatParams)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Burn(const std::string &volumeId, const BurnParams &params)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::VerifyBurnData(const std::string &volumeId, uint32_t verType)
 {
     return E_OK;
 }
