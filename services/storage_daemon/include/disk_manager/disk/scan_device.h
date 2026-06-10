@@ -64,6 +64,7 @@ private:
     std::string GetDevNode(const std::string &deviceName);
     std::string GetFwVersion(const std::string &deviceName);
     std::string GetRealPath(const std::string &deviceName);
+    nlohmann::json ParseMediaInfoLines(const std::vector<std::string> &output);
 
     std::string sysBlockPath;
     std::string devBlockPath;
