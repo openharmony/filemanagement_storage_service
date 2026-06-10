@@ -28,6 +28,8 @@
 #include <linux/hdreg.h>
 #include <regex>
 #include <algorithm>
+#include <unordered_set>
+#include <sstream>
 #include <cctype>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -220,7 +222,7 @@ std::string ScanDevice::GetRealPath(const std::string &deviceName)
 
 std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, const std::string &diskId)
 {
-    LOGE("[L2:ScanDevice] GetExternalDisks ENTER");
+    LOGI("[L2:ScanDevice] GetExternalDisks ENTER");
     std::vector<BlockInfo> externalDisks;
     BlockInfo info;
     info.diskId = diskId;
@@ -251,15 +253,62 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
             extraInfoJson["DISC_TYPE"] = discType;
             extraInfoJson["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
             extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
+            std::vector<std::string> cmd = { "dvd+rw-mediainfo", devPath };
+            std::vector<std::string> output;
+            int32_t ret = ForkExec(cmd, &output);
+            LOGI("GetExternalDisks ForkExec ret=%{public}d", ret);
+            for (const auto &str : output) {
+                LOGI("GetExternalDisks output: %{public}s", str.c_str());
+            }
+            extraInfoJson["SPEED_INFO"] = ParseMediaInfoLines(output);
             info.ODD_INFO = extraInfoJson;
         }
     }
-    LOGE("[L2:ScanDevice] GetExternalDisks: info.devnum=%{public}s, info.busnum=%{public}s,"
+    LOGI("[L2:ScanDevice] GetExternalDisks: info.devnum=%{public}s, info.busnum=%{public}s,"
          "info.devNode=%{public}s, info.scsiBusNum=%{public}s, info.fwVersion=%{public}s, info.ODD_INFO=%{public}s",
          info.devnum.c_str(), info.busnum.c_str(), info.devNode.c_str(), info.scsiBusNum.c_str(),
          info.fwVersion.c_str(), info.ODD_INFO.dump().c_str());
     externalDisks.push_back(info);
     return externalDisks;
+}
+
+nlohmann::json ScanDevice::ParseMediaInfoLines(const std::vector<std::string> &output)
+{
+    LOGI("[L2:ScanDevice] ParseMediaInfoLines: output size=%{public}d", static_cast<int>(output.size()));
+    std::unordered_set<std::string> seen;
+    nlohmann::json speedArr = nlohmann::json::array();
+    for (const auto &chunk : output) {
+        std::stringstream ss(chunk);
+        std::string line;
+        while (std::getline(ss, line)) {
+            size_t colonPos = line.find(':');
+            if (colonPos == std::string::npos) {
+                continue;
+            }
+            std::string key = line.substr(0, colonPos);
+            size_t keyStart = key.find_first_not_of(" \t");
+            if (keyStart != std::string::npos) {
+                key = key.substr(keyStart);
+            }
+            if (key.find("Write Speed") != 0) {
+                continue;
+            }
+            std::string value = line.substr(colonPos + 1);
+            size_t valStart = value.find_first_not_of(" \t");
+            if (valStart != std::string::npos) {
+                value = value.substr(valStart);
+            }
+            size_t xPos = value.find('x');
+            if (xPos != std::string::npos) {
+                value = value.substr(0, xPos);
+            }
+            if (seen.insert(value).second) {
+                speedArr.push_back(value);
+            }
+        }
+    }
+    LOGI("[L2:ScanDevice] ParseMediaInfoLines: speedArr=%{public}s", speedArr.dump().c_str());
+    return speedArr;
 }
 
 bool ScanDevice::GetExternalDiskSize(const std::string &path, uint64_t *size)
