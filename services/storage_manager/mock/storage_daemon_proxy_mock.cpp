@@ -504,26 +504,6 @@ int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::stri
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::Eject(const std::string &volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Erase(const std::string &volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::CreateIsoImage(const std::string &volumeId, const std::string &filePath)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
 {
     return E_OK;
@@ -541,16 +521,6 @@ int32_t StorageDaemonProxy::DeletePartition(const std::string &diskId, uint32_t 
 
 int32_t StorageDaemonProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
     const FormatParams &formatParams)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Burn(const std::string &volumeId, const BurnParams &params)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::VerifyBurnData(const std::string &volumeId, uint32_t verType)
 {
     return E_OK;
 }
@@ -580,6 +550,46 @@ int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, cons
 
 int32_t StorageDaemonProxy::FormatPartition(const std::string &devPath, const std::string &fsType,
                                             const std::string &volumeName, bool quickFormat)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Erase(const std::string &devPath)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Eject(const std::string &devName)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::CreateIsoImage(const std::string &devPath,
+                                           const std::string &filePath,
+                                           const std::string &fsType,
+                                           const std::string &mountPath)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::Burn(const std::string &devPath,
+                                 const std::string &burnOptions,
+                                 const std::string &fsType)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetVolumeOpProcess(const std::string &devPath, int32_t &progressPct)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::VerifyBurnData(const std::string &devPath, int32_t verifyType)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
 {
     return E_OK;
 }

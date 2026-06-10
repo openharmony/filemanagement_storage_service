@@ -148,6 +148,10 @@ ohos_unittest("scan_device_test") {
     "hilog:libhilog",
     "json:nlohmann_json_static",
   ]
+
+  if (enable_disk_manager) {
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
+  }
 }
 
 ohos_unittest("ext_volume_utils_test") {

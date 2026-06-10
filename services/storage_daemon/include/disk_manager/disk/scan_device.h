@@ -21,24 +21,12 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
+#include "block_info.h"
+
+using OHOS::DiskManager::BlockInfo;
+
 namespace OHOS {
 namespace StorageDaemon {
-
-struct BlockInfo {
-    uint64_t sizeBytes;
-    std::string vendor;
-    std::string model;
-    std::string interfaceType;
-    uint32_t rpm;
-    bool removable;
-    std::string serialNumber;
-    std::string diskId;
-    std::string devicePath;
-    std::string port;
-
-    nlohmann::json ToJson() const;
-    static std::string SerializeVector(const std::vector<BlockInfo>& infos);
-};
 
 class ScanDevice {
 public:
@@ -70,6 +58,12 @@ private:
     bool IsValidNvmeDevice(const std::string &deviceName);
     bool ParseStringToUlongLong(const std::string &str, unsigned long long &result);
     bool GetExternalDiskSize(const std::string &path, uint64_t *size);
+    std::string ReadFileContent(const std::string &path);
+    std::string GetDevnum(const std::string &deviceName);
+    std::string GetBusnum(const std::string &deviceName);
+    std::string GetDevNode(const std::string &deviceName);
+    std::string GetFwVersion(const std::string &deviceName);
+    std::string GetRealPath(const std::string &deviceName);
 
     std::string sysBlockPath;
     std::string devBlockPath;

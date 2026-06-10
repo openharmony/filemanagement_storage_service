@@ -59,27 +59,7 @@ int32_t VolumeInfo::Create(const std::string &volId, const std::string &diskId, 
         LOGE("[L3:VolumeInfo] Create: <<< EXIT FAILED <<< GetFsTypeByDev failed, err=%{public}d", err);
         return err;
     }
-    LOGI("[L3:VolumeInfo] Create: fsTypeBase_=%{public}s", fsTypeBase_.c_str());
-    if (fsTypeBase_ == "iso9660") {
-        std::string iso9660Type = "";
-        std::string nodePath = "/dev/block/" + volId;
-        err = GetIso9660Type(nodePath, iso9660Type);
-        if (err != E_OK) {
-            LOGE("[L3:VolumeInfo] Create: <<< EXIT FAILED <<< GetIso9660Type failed, err=%{public}d", err);
-            return err;
-        }
-        diskFsType = iso9660Type;
-    } else if (fsTypeBase_ == "udf") {
-        diskFsType = "UDF";
-    } else {
-        diskFsType = "";
-    }
-    if (!extraInfo.empty() && diskFsType != "") {
-        nlohmann::json extraInfoJson = nlohmann::json::parse(extraInfo);
-        extraInfoJson["ODD_INFO"]["DISK_FSTYPE"] = diskFsType;
-        extraInfo_ = extraInfoJson.dump();
-    }
-
+    extraInfo_ = extraInfo;
     LOGI("[L3:VolumeInfo] Create: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
     return E_OK;
 }
@@ -517,110 +497,9 @@ int32_t VolumeInfo::Decrypt(const std::string &volumeId, const std::string &pazz
     return E_OK;
 }
 
-int32_t VolumeInfo::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
-{
-    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    if (volId.empty()) {
-        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress volId is empty");
-        return E_NON_EXIST;
-    }
-    if (volId != GetVolumeId()) {
-        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress:<<< EXIT FAILED <<<"
-            "volId: %{public}s, volume id: %{public}s",
-            volId.c_str(), GetVolumeId().c_str());
-        return E_PARAMS_INVALID;
-    }
-
-    uint32_t progressDefaultValue = 0;
-    progress = 0;
-    int32_t err = DoGetOpticalDriveOpsProgress(volId, progressDefaultValue);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeInfo::DoGetOpticalDriveOpsProgress", err);
-        LOGE("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT FAILED <<< volId=%{public}s", volId.c_str());
-        return err;
-    }
-    progress = progressDefaultValue;
-    LOGI("[L3:VolumeInfo] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s, progress=%{public}d",
-        volId.c_str(), progress);
-    return err;
-}
-int32_t VolumeInfo::Erase(const std::string &volId)
-{
-    LOGI("[L3:VolumeInfo] Erase: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    int32_t err = DoErase(volId);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeInfo::DoErase", err);
-        LOGE("[L3:VolumeInfo] DoErase :<<< EXIT FAILED <<<err: %{public}d", err);
-    } else {
-        LOGI("[L3:VolumeInfo] Erase: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return err;
-}
-
-int32_t VolumeInfo::CreateIsoImage(const std::string &volId, const std::string &filePath)
-{
-    LOGI("[L3:VolumeInfo] CreateIsoImage: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    int32_t err = DoCreateIsoImage(volId, filePath);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeInfo::DoCreateIsoImage", err);
-        LOGE("[L3:VolumeInfo] DoCreateIsoImage:<<< EXIT FAILED <<<err: %{public}d", err);
-    } else {
-        LOGI("[L3:VolumeInfo] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return err;
-}
-
 uint32_t VolumeInfo::GetPartitionNum()
 {
     return partitionNum_;
-}
-
-int32_t VolumeInfo::Burn(const std::string &volumeId, const BurnParams &params)
-{
-    LOGI("[L3:VolumeInfo] Burn: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    if (volumeId.empty()) {
-        LOGE("[L3:VolumeInfo] Burn volId is empty");
-        return E_NON_EXIST;
-    }
-    if (volumeId != GetVolumeId()) {
-        LOGE("[L3:VolumeInfo] Burn:<<< EXIT FAILED <<<"
-            "volId: %{public}s, volume id: %{public}s",
-            volumeId.c_str(), GetVolumeId().c_str());
-        return E_PARAMS_INVALID;
-    }
-
-    int32_t err = DoBurn(volumeId, params);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeInfo::DoBurn", err);
-        LOGE("[L3:VolumeInfo] DoBurn failed, err: %{public}d", err);
-    } else {
-        LOGI("[L3:VolumeInfo] Burn: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    }
-    return err;
-}
-
-int32_t VolumeInfo::VerifyBurnData(const std::string &volumeId, uint32_t verType)
-{
-    LOGI("[L3:VolumeInfo] VerifyBurnData: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    if (volumeId.empty()) {
-        LOGE("[L3:VolumeInfo] VerifyBurnData volId is empty");
-        return E_NON_EXIST;
-    }
-    if (volumeId != GetVolumeId()) {
-        LOGE("[L3:VolumeInfo] VerifyBurnData:<<< EXIT FAILED <<<"
-            "volId: %{public}s, volume id: %{public}s",
-            volumeId.c_str(), GetVolumeId().c_str());
-        return E_PARAMS_INVALID;
-    }
-
-    int32_t err = DoVerifyBurnData(volumeId, verType);
-    if (err != E_OK) {
-        StorageRadar::ReportVolumeOperation("VolumeInfo::DoVerifyBurnData", err);
-        LOGE("[L3:VolumeInfo] DoVerifyBurnData failed, err: %{public}d", err);
-    } else {
-        LOGI("[L3:VolumeInfo] VerifyBurnData: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    }
-    return err;
 }
 } // StorageDaemon
 } // OHOS

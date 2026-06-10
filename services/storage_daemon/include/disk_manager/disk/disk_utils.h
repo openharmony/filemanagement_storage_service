@@ -18,9 +18,24 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace OHOS {
 namespace StorageDaemon {
+
+/**
+ * @brief Burn options structure for optical disc burning operations
+ */
+struct BurnOptions {
+    std::string diskName;        // 光盘卷标名称
+    std::string burnPath;        // 刻录源路径（文件或目录）
+    std::string fsType;          // 文件系统类型（ISO9660, UDF等）
+    uint32_t burnSpeed;          // 刻录速度
+    bool isIsoImage;             // 是否为ISO镜像文件
+    bool isIncBurnSupport;       // 是否支持增量刻录
+    
+    BurnOptions() : burnSpeed(0), isIsoImage(false), isIncBurnSupport(false) {}
+};
 
 /**
  * @brief Disk-level utility operations for external storage management
@@ -54,6 +69,11 @@ public:
     static int32_t PartitionHmfs(const std::string& diskPath);
     static int32_t QueryCDStatus(const std::string &devPath, int32_t &status);
     static int32_t EjectCD(const std::string &devPath);
+    static int32_t Erase(const std::string &devPath);
+    static int32_t Eject(const std::string &devName);
+    static int32_t GetVolumeOpProcess(const std::string &volId, int32_t &progressPct);
+    static int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType);
+    static int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize);
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
 };
 
@@ -62,6 +82,10 @@ int ReadCDDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, 
 int GetCDDiskStatus(const char *device, int &status);
 int IsCDExist(const std::string &diskPath, bool &isCDExist);
 int IsCDBlank(const std::string &diskPath, bool &isCDBlank);
+int32_t ParseBurnOptions(const std::string &burnOptions, BurnOptions &parsedOptions);
+int32_t ValidateBurnOptions(const BurnOptions &options);
+std::string GetLastNumberSimple(const std::vector<std::string>& lines);
+int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr);
 
 } // namespace StorageDaemon
 } // namespace OHOS

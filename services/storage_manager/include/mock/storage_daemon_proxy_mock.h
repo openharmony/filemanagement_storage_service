@@ -167,18 +167,12 @@ public:
     virtual int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
     virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
-    virtual int32_t Eject(const std::string &volId) override;
-    virtual int32_t GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress) override;
-    virtual int32_t Erase(const std::string &volId) override;
-    virtual int32_t CreateIsoImage(const std::string &volId, const std::string &filePath) override;
     // disk partition api
     virtual int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
     virtual int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams) override;
     virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
                                     const FormatParams &formatParams) override;
-    virtual int32_t Burn(const std::string &volumeId, const BurnParams &params) override;
-    virtual int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType) override;
     virtual int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet) override;
     virtual int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
                                     int64_t endSector, const std::string &typeCode) override;
@@ -188,6 +182,18 @@ public:
                                     const std::string &volumeName, bool quickFormat = true) override;
     virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
     virtual int32_t EjectCD(const std::string &devPath) override;
+    virtual int32_t Erase(const std::string &devPath) override;
+    virtual int32_t Eject(const std::string &devName) override;
+    virtual int32_t CreateIsoImage(const std::string &devPath,
+                                   const std::string &filePath,
+                                   const std::string &fsType,
+                                   const std::string &mountPath) override;
+    virtual int32_t Burn(const std::string &devPath,
+                         const std::string &burnOptions,
+                         const std::string &fsType) override;
+    virtual int32_t GetVolumeOpProcess(const std::string &devPath, int32_t &progressPct) override;
+    virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
+    virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

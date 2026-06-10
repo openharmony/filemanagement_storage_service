@@ -612,68 +612,6 @@ int32_t VolumeManager::Decrypt(const std::string &volumeId, const std::string &p
     return E_OK;
 }
 
-int32_t VolumeManager::GetOpticalDriveOpsProgress(const std::string &volId, uint32_t &progress)
-{
-    LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s does not exist.",
-            volId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->GetOpticalDriveOpsProgress(volId, progress);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] GetOpticalDriveOpsProgress :<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
-            volId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::GetOpticalDriveOpsProgress", err);
-        return err;
-    }
-    LOGI("[L2:VolumeManager] GetOpticalDriveOpsProgress: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    return E_OK;
-}
-
-int32_t VolumeManager::Erase(const std::string &volId)
-{
-    LOGI("[L2:VolumeManager] Erase: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] Erase:<<< EXIT FAILED <<< %{public}s does not exist.", volId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->Erase(volId);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] Erase:<<< EXIT FAILED <<< %{public}s failed err: %{public}d", volId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::Erase", err);
-        return err;
-    } else {
-        LOGI("[L2:VolumeManager] Erase: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return E_OK;
-}
-
-int32_t VolumeManager::CreateIsoImage(const std::string &volId, const std::string &filePath)
-{
-    LOGI("[L2:VolumeManager] CreateIsoImage: >>> ENTER <<< volId=%{public}s", volId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] CreateIsoImage:<<< EXIT FAILED <<< %{public}s does not exist.", volId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->CreateIsoImage(volId, filePath);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] CreateIsoImage:<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
-            volId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::CreateIsoImage", err);
-        return err;
-    } else {
-        LOGI("[L2:VolumeManager] CreateIsoImage: <<< EXIT SUCCESS <<< volId=%{public}s", volId.c_str());
-    }
-    return E_OK;
-}
-
 bool VolumeManager::IsDiskHasMountedVolume(std::string &diskId)
 {
     std::lock_guard<std::mutex> lock(volumesMutex_);
@@ -733,45 +671,6 @@ std::string VolumeManager::GetFsTypeByDiskIdAndPartNum(std::string &diskId, uint
         return info->GetFsTypeBase();
     }
     return "";
-}
-
-int32_t VolumeManager::Burn(const std::string &volumeId, const BurnParams &params)
-{
-    LOGI("[L2:VolumeManager] Burn: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] Burn:<<< EXIT FAILED <<< %{public}s does not exist.", volumeId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->Burn(volumeId, params);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] Burn:<<< EXIT FAILED <<< %{public}s failed err: %{public}d", volumeId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::Burn", err);
-        return err;
-    }
-    LOGI("[L2:VolumeManager] Burn: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    return E_OK;
-}
-
-int32_t VolumeManager::VerifyBurnData(const std::string &volumeId, uint32_t verType)
-{
-    LOGI("[L2:VolumeManager] VerifyBurnData: >>> ENTER <<< volId=%{public}s", volumeId.c_str());
-    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
-    if (info == nullptr) {
-        LOGE("[L2:VolumeManager] VerifyBurnData:<<< EXIT FAILED <<< %{public}s does not exist.", volumeId.c_str());
-        return E_NON_EXIST;
-    }
-
-    int32_t err = info->VerifyBurnData(volumeId, verType);
-    if (err != E_OK) {
-        LOGE("[L2:VolumeManager] VerifyBurnData:<<< EXIT FAILED <<< %{public}s failed err: %{public}d",
-             volumeId.c_str(), err);
-        StorageRadar::ReportVolumeOperation("VolumeInfo::VerifyBurnData", err);
-        return err;
-    }
-    LOGI("[L2:VolumeManager] VerifyBurnData: <<< EXIT SUCCESS <<< volId=%{public}s", volumeId.c_str());
-    return E_OK;
 }
 } // StorageDaemon
 } // OHOS

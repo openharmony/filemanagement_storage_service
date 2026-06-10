@@ -146,15 +146,9 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 100] void VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
     [ipccode 101] void Unlock([in] String volumeId, [in] String pazzword);
     [ipccode 102] void Decrypt([in] String volumeId, [in] String pazzword);
-    [ipccode 103] void Eject([in] String volId);
-    [ipccode 104] void GetOpticalDriveOpsProgress([in] String volId, [out] unsigned int progress);
-    [ipccode 105] void Erase([in] String volId);
-    [ipccode 106] void CreateIsoImage([in] String volId, [in] String filePath);
     [ipccode 107] void GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
     [ipccode 108] void CreatePartition([in] String diskId, [in] PartitionParams partitionParams);
     [ipccode 109] void DeletePartition([in] String diskId, [in] unsigned int partitionNum);
     [ipccode 110] void FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatParams formatParams);
-    [ipccode 111] void Burn([in] String volId, [in] BurnParams params);
-    [ipccode 112] void VerifyBurnData([in] String volId, [in] unsigned int verType);
     [ipccode 113] void UMountDisShareFile([in] String[] distributeDirs);
 }

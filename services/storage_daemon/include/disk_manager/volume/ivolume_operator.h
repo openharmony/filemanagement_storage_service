@@ -18,6 +18,7 @@
 
 #include <string>
 #include "storage_service_errno.h"
+#include "disk_manager/disk/disk_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -42,6 +43,10 @@ public:
     virtual int32_t Repair(const std::string& devPath) { return E_NOT_SUPPORT; }
     virtual int32_t SetLabel(const std::string& devPath,
                              const std::string& label) { return E_NOT_SUPPORT; }
+    virtual int32_t CreateIsoImage(const std::string& devPath,
+                                   const std::string& filePath,
+                                   const std::string& mountPath);
+    virtual int32_t Burn(const std::string &devPath, const BurnOptions &burnOptions);
 
 private:
     virtual int32_t DoMount(const std::string& devPath,

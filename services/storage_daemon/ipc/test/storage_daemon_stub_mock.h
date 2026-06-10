@@ -126,10 +126,6 @@ public:
     MOCK_METHOD2(VerifyCryptPasswd, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Unlock, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Decrypt, int32_t(const std::string &, const std::string &));
-    MOCK_METHOD1(Eject, int32_t(const std::string &));
-    MOCK_METHOD2(GetOpticalDriveOpsProgress, int32_t(const std::string &, uint32_t &));
-    MOCK_METHOD1(Erase, int32_t(const std::string &));
-    MOCK_METHOD2(CreateIsoImage, int32_t(const std::string &, const std::string &));
 
     // disk partition api
     MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
@@ -143,9 +139,15 @@ public:
     MOCK_METHOD3(DeletePartitionInfo, int32_t(const std::string &, const std::string &, int32_t));
     MOCK_METHOD4(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &, bool));
 
-    MOCK_METHOD2(Burn, int32_t(const std::string&, const BurnParams&));
-    MOCK_METHOD2(VerifyBurnData, int32_t(const std::string&, uint32_t));
     MOCK_METHOD3(GetBlockInfoByType, int32_t(const std::string &, const std::string &, std::string &));
+    MOCK_METHOD1(Erase, int32_t(const std::string &));
+    MOCK_METHOD1(Eject, int32_t(const std::string &));
+    MOCK_METHOD4(CreateIsoImage, int32_t(const std::string &, const std::string &,
+        const std::string &, const std::string &));
+    MOCK_METHOD3(Burn, int32_t(const std::string &, const std::string &, const std::string &));
+    MOCK_METHOD2(GetVolumeOpProcess, int32_t(const std::string &, int32_t &));
+    MOCK_METHOD2(VerifyBurnData, int32_t(const std::string &, int32_t));
+    MOCK_METHOD3(GetCapacity, int32_t(const std::string &, int64_t &, int64_t &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS

@@ -17,6 +17,7 @@
 #define OHOS_STORAGE_DAEMON_ISO_OPERATOR_H
 
 #include "disk_manager/volume/ivolume_operator.h"
+#include "disk_manager/disk/disk_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -34,6 +35,15 @@ public:
                     const std::string& mountPath,
                     unsigned long mountFlags,
                     const std::string& mountData) override;
+    int32_t CreateIsoImage(const std::string& devPath,
+                           const std::string& filePath,
+                           const std::string& mountPath) override;
+    int32_t DoCDBurn(const std::string &devPath,
+                     const BurnOptions &burnOptions,
+                     bool isDiskEmpty,
+                     const std::string &incBurnAddr);
+    int32_t DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty);
+    int32_t Burn(const std::string &devPath, const BurnOptions &burnOptions) override;
 };
 
 } // namespace StorageDaemon

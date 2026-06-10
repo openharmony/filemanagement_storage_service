@@ -51,12 +51,6 @@ public:
     void NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
     void NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr);
 
-    int32_t Eject(const std::string &volumeId);
-    int32_t GetOpticalDriveOpsProgress(const std::string &volumeId, uint32_t &progress);
-    int32_t Erase(const std::string &volumeId);
-    int32_t CreateIsoImage(const std::string &volumeId, const std::string &filePath);
-    int32_t Burn(const std::string &volumeId, const BurnParams &params);
-    int32_t VerifyBurnData(const std::string &volumeId, uint32_t verType);
 private:
     VolumeManagerService();
     ~VolumeManagerService();
