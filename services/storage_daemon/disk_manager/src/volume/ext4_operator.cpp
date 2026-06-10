@@ -14,6 +14,7 @@
  */
 
 #include "disk_manager/volume/ext4_operator.h"
+#include "parameters.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/string_utils.h"
@@ -24,12 +25,22 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+const std::string KEY_CUST = "const.cust.custPath";
+const std::string CUST_TOBBASIC = "tobbasic";
+
 int32_t Ext4Operator::DoMount(const std::string& devPath,
                               const std::string& mountPath,
                               unsigned long mountFlags,
                               const std::string& mountData)
 {
 #ifdef PC_EXT4_ENABLE
+    std::string custParam = system::GetParameter(KEY_CUST, "");
+    bool cond = (custParam.find(CUST_TOBBASIC) != std::string::npos);
+    if (!cond) {
+        LOGE("PC is not tobbasic, exit. custParam=%{public}s", custParam.c_str());
+        return E_NOT_SUPPORT;
+    }
+
     LOGI("Ext4Operator::Mount devPath=%{public}s, mountPath=%{public}s", devPath.c_str(),
          GetAnonyString(mountPath).c_str());
 
