@@ -1124,5 +1124,22 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
     close(cmdFd);
     return E_OK;
 }
+
+int32_t DiskUtils::CleanTempDirectory()
+{
+    LOGI("CleanTempDirectory: >>> ENTER <<<");
+    std::vector<std::string> cmd = {"rm", "-rf", "/data/local/vol_tmp"};
+    std::vector<std::string> output;
+    int32_t err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("CleanTempDirectory: output=%{public}s", s.c_str());
+        }
+        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf /data/local/vol_tmp failed, err=%{public}d", err);
+        return err;
+    }
+    LOGI("CleanTempDirectory: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

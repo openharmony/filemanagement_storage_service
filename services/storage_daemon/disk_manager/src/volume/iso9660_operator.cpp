@@ -139,12 +139,15 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
                               const std::string &incBurnAddr)
 {
     LOGI("BurnDoCDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    int32_t err = 0;
-
+    int32_t err = DiskUtils::CleanTempDirectory();
+    if (err != E_OK) {
+        LOGE("DoCDBurn:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s", devPath.c_str());
+        return err;
+    }
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
-        std::string midPath = burnOptions.burnPath + "/" + "midFile.iso";
+        std::string midPath = "/data/local/vol_tmp/midFile.iso";
         if (isDiskEmpty) {
             cmd = {"genisoimage", "-V", burnOptions.diskName, "-J", "-r", "-o", midPath, burnOptions.burnPath};
         } else {
@@ -175,13 +178,9 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-    cmd = {"rm", "-rf", "/data/local/vol_tmp"};
-    err = ForkExec(cmd, &output);
+    err = DiskUtils::CleanTempDirectory();
     if (err != E_OK) {
-        for (const auto& s : output) {
-            LOGI("IsoOperator DoCDBurn:s=%{public}s", s.c_str());
-        }
-        LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
+        LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
 

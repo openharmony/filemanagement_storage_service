@@ -75,6 +75,7 @@ public:
     static int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType);
     static int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize);
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
+    static int32_t CleanTempDirectory();
 };
 
 int ExecuteScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
