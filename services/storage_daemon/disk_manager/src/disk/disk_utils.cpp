@@ -1031,46 +1031,46 @@ int32_t DiskUtils::VerifyBurnData(const std::string &devPath, int32_t verifyType
 
 static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
 {
-    unsigned char cmd_buf[GET_CAPACITY_CMD_BUF_LEN] = {0};
-    int cmd_len = GET_DVD_USED_CAPACITY_CMD_LEN;
-    unsigned char data_buf[GET_CAPACITY_DATA_BUF_LEN] = {0};
-    unsigned int data_len = GET_DVD_USED_CAPACITY_DATA_LEN;
+    unsigned char cmdBuf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmdLen = GET_DVD_USED_CAPACITY_CMD_LEN;
+    unsigned char dataBuf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    unsigned int dataLen = GET_DVD_USED_CAPACITY_DATA_LEN;
     int ret = 0;
-    unsigned int blk_cnt = 0;
-    unsigned int blk_size = 0;
+    unsigned int blkCnt = 0;
+    unsigned int blkSize = 0;
     /*
      * 使用 SCSI READ CAPACITY 指令 (0x25) 获取DVD+RW光盘容量信息。
      * 字段详解:
-     * cmd_buf[0]: 操作码 0x25 (GPCMD_READ_CDVD_CAPACITY)。
+     * cmdBuf[0]: 操作码 0x25 (GPCMD_READ_CDVD_CAPACITY)。
      *             用于请求光盘的最后逻辑块地址 (Last LBA) 和块大小 (Block Length)。
-     * cmd_buf[7-8]: 分配长度 (Allocation Length)。
+     * cmdBuf[7-8]: 分配长度 (Allocation Length)。
      *               告知驱动器返回数据的最大长度（通常为 8 字节）。
-     *               高 8 位填入 cmd_buf[7]，低 8 位填入 cmd_buf[8]。
+     *               高 8 位填入 cmdBuf[7]，低 8 位填入 cmdBuf[8]。
      * 返回数据:
-     * data_buf[0-3]: 最后逻辑块地址 (Last LBA)。
-     * data_buf[4-7]: 块大小 (Block Length)。
+     * dataBuf[0-3]: 最后逻辑块地址 (Last LBA)。
+     * dataBuf[4-7]: 块大小 (Block Length)。
      * 注意：此指令返回的 LBA 需加 1 才是总扇区数。
      */
-    cmd_buf[0] = GPCMD_READ_CDVD_CAPACITY;
-    cmd_buf[CDB_ALLOCATION_LENGTH_HIGH] = (data_len >> BYTE_SHIFT_8) & BYTE_MASK;
-    cmd_buf[CDB_ALLOCATION_LENGTH_LOW] = data_len & BYTE_MASK;
-    ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, data_len);
+    cmdBuf[0] = GPCMD_READ_CDVD_CAPACITY;
+    cmdBuf[CDB_ALLOCATION_LENGTH_HIGH] = (dataLen >> BYTE_SHIFT_8) & BYTE_MASK;
+    cmdBuf[CDB_ALLOCATION_LENGTH_LOW] = dataLen & BYTE_MASK;
+    ret = SendScsiCmd(fd, cmdBuf, cmdLen, dataBuf, dataLen);
     if (ret != 0) {
         LOGE("GetDvdPlusRwTotalCapacity SendScsiCmd failed, ret val is %{public}d", ret);
         return E_ERR;
     }
  
-    blk_cnt = ((unsigned int)data_buf[LAST_LBA_BYTE_0] << BYTE_SHIFT_24) |
-              ((unsigned int)data_buf[LAST_LBA_BYTE_1] << BYTE_SHIFT_16) |
-              ((unsigned int)data_buf[LAST_LBA_BYTE_2] << BYTE_SHIFT_8) |
-              data_buf[LAST_LBA_BYTE_3];
-    blk_size = ((unsigned int)data_buf[BLOCK_SIZE_BYTE_0] << BYTE_SHIFT_24) |
-               ((unsigned int)data_buf[BLOCK_SIZE_BYTE_1] << BYTE_SHIFT_16) |
-               ((unsigned int)data_buf[BLOCK_SIZE_BYTE_2] << BYTE_SHIFT_8) |
-               data_buf[BLOCK_SIZE_BYTE_3];
-    dvdTotalCapacity = static_cast<int64_t>(blk_cnt + 1) * blk_size;
+    blkCnt = (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_0]) << BYTE_SHIFT_24) |
+             (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_1]) << BYTE_SHIFT_16) |
+             (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_2]) << BYTE_SHIFT_8) |
+             dataBuf[LAST_LBA_BYTE_3];
+    blkSize = (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_0]) << BYTE_SHIFT_24) |
+              (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_1]) << BYTE_SHIFT_16) |
+              (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_2]) << BYTE_SHIFT_8) |
+              dataBuf[BLOCK_SIZE_BYTE_3];
+    dvdTotalCapacity = static_cast<int64_t>(blkCnt + 1) * blkSize;
     LOGI("GetDvdPlusRwTotalCapacity used_capacity: %{public}u * %{public}u = %{public}" PRIu64,
-        blk_cnt + 1, blk_size, dvdTotalCapacity);
+        blkCnt + 1, blkSize, dvdTotalCapacity);
     return E_OK;
 }
 
