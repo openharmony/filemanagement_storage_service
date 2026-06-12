@@ -54,14 +54,9 @@ int32_t EncryptedVolumeManagerService::Encrypt(const std::string &volumeId, cons
         return E_VOL_STATE;
     }
 
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     volumePtr.SetState(VolumeState::ENCRYPTING);
-    result = sdCommunication->Encrypt(volumeId, pazzword);
+    result = sdCommunication.Encrypt(volumeId, pazzword);
     if (result != E_OK) {
         volumePtr.SetState(VolumeState::MOUNTED);
     }
@@ -82,13 +77,8 @@ int32_t EncryptedVolumeManagerService::GetCryptProgressById(const std::string &v
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->GetCryptProgressById(volumeId, progress);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.GetCryptProgressById(volumeId, progress);
 }
 
 int32_t EncryptedVolumeManagerService::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
@@ -105,13 +95,8 @@ int32_t EncryptedVolumeManagerService::GetCryptUuidById(const std::string &volum
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->GetCryptUuidById(volumeId, uuid);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.GetCryptUuidById(volumeId, uuid);
 }
 
 int32_t EncryptedVolumeManagerService::BindRecoverKeyToPasswd(const std::string &volumeId,
@@ -129,13 +114,8 @@ int32_t EncryptedVolumeManagerService::BindRecoverKeyToPasswd(const std::string 
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
 }
 
 int32_t EncryptedVolumeManagerService::UpdateCryptPasswd(const std::string &volumeId,
@@ -153,13 +133,8 @@ int32_t EncryptedVolumeManagerService::UpdateCryptPasswd(const std::string &volu
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->UpdateCryptPasswd(volumeId, pazzword, newPazzword);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.UpdateCryptPasswd(volumeId, pazzword, newPazzword);
 }
 
 int32_t EncryptedVolumeManagerService::ResetCryptPasswd(const std::string &volumeId,
@@ -177,13 +152,8 @@ int32_t EncryptedVolumeManagerService::ResetCryptPasswd(const std::string &volum
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->ResetCryptPasswd(volumeId, recoverKey, newPazzword);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.ResetCryptPasswd(volumeId, recoverKey, newPazzword);
 }
 
 int32_t EncryptedVolumeManagerService::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
@@ -201,13 +171,8 @@ int32_t EncryptedVolumeManagerService::VerifyCryptPasswd(const std::string &volu
         return E_VOL_STATE;
     }
 
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->VerifyCryptPasswd(volumeId, pazzword);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.VerifyCryptPasswd(volumeId, pazzword);
 }
 
 int32_t EncryptedVolumeManagerService::Unlock(const std::string &volumeId, const std::string &pazzword)
@@ -223,13 +188,8 @@ int32_t EncryptedVolumeManagerService::Unlock(const std::string &volumeId, const
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->Unlock(volumeId, pazzword);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.Unlock(volumeId, pazzword);
 }
 
 int32_t EncryptedVolumeManagerService::Decrypt(const std::string &volumeId, const std::string &pazzword)
@@ -245,13 +205,8 @@ int32_t EncryptedVolumeManagerService::Decrypt(const std::string &volumeId, cons
             " current state: %{public}d", volumeId.c_str(), static_cast<int32_t>(volumePtr.GetState()));
         return E_VOL_STATE;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    return sdCommunication->Decrypt(volumeId, pazzword);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.Decrypt(volumeId, pazzword);
 }
 } // StorageManager
 } // OHOS

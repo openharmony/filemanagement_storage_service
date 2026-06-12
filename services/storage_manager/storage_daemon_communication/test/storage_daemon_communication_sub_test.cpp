@@ -108,7 +108,7 @@ public:
 
 void StorageDaemonCommunicationTest::SetUp()
 {
-    sdCommunication = make_shared<StorageDaemonCommunication>();
+    sdCommunication = StorageDaemonCommunication::CreateForTesting();
     sa = make_shared<SystemAbilityMock>();
     SystemAbilityMock::sab = sa;
     sam = sptr(new SystemAbilityManagerMock());

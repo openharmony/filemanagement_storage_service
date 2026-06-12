@@ -158,9 +158,8 @@ int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
     LOGE("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
     LOGE("GetFileStorageStats end");
     return err;
 }
@@ -189,8 +188,8 @@ int32_t StorageStatusManager::GetUserStorageStats(StorageStats &storageStats)
 int32_t StorageStatusManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule)
 {
     bool isCeEncrypt = false;
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int ret = sdCommunication->GetFileEncryptStatus(userId, isCeEncrypt, true);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int ret = sdCommunication.GetFileEncryptStatus(userId, isCeEncrypt, true);
     if (ret != E_OK || isCeEncrypt) {
         LOGE("User %{public}d de has not decrypt.", userId);
         return ret;
@@ -659,13 +658,9 @@ int32_t StorageStatusManager::GetMetaDataSize(int64_t &metaDataSize)
 
 int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
 {
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("StorageStatusManager::GetSystemDataSize StorageDaemonCommunication is nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int64_t otherUidSizeSum = 0;
-    int32_t err = sdCommunication->GetSystemDataSize(otherUidSizeSum);
+    int32_t err = sdCommunication.GetSystemDataSize(otherUidSizeSum);
     if (err != E_OK) {
         LOGE("StorageStatusManager::GetSystemDataSize GetOtherUidSizeSum failed, err=%{public}d", err);
         return err;

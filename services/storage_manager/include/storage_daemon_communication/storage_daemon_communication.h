@@ -16,7 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 #define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 
-#include <singleton.h>
+#include <nocopyable.h>
 #include "istorage_daemon.h"
 #include "iuece_activation_callback.h"
 #include "partition_params.h"
@@ -25,7 +25,32 @@
 namespace OHOS {
 namespace StorageManager {
 class StorageDaemonCommunication : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageDaemonCommunication);
+public:
+    static StorageDaemonCommunication& GetInstance()
+    {
+        static StorageDaemonCommunication instance;
+        return instance;
+    }
+    static std::shared_ptr<StorageDaemonCommunication> CreateForTesting()
+    {
+        return std::shared_ptr<StorageDaemonCommunication>(new StorageDaemonCommunication());
+    }
+    static void SetInstanceForTesting(const std::shared_ptr<StorageDaemonCommunication>& testInstance)
+    {
+        instance_ptr_for_testing_ = testInstance;
+    }
+    static StorageDaemonCommunication& GetInstanceForTesting()
+    {
+        if (instance_ptr_for_testing_ != nullptr) {
+            return *instance_ptr_for_testing_;
+        }
+        return GetInstance();
+    }
+    static void ResetInstanceForTesting()
+    {
+        instance_ptr_for_testing_ = nullptr;
+    }
+    ~StorageDaemonCommunication();
 
 public:
     int32_t Connect();
@@ -160,9 +185,11 @@ public:
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
 
 private:
+    StorageDaemonCommunication();
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;
+    static std::shared_ptr<StorageDaemonCommunication> instance_ptr_for_testing_;
 };
 
 class SdDeathRecipient : public IRemoteObject::DeathRecipient {

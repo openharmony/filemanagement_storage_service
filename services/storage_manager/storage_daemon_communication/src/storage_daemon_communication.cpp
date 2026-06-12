@@ -29,6 +29,8 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+std::shared_ptr<StorageDaemonCommunication> StorageDaemonCommunication::instance_ptr_for_testing_ = nullptr;
+
 StorageDaemonCommunication::StorageDaemonCommunication()
 {
     LOGI("DEBUG StorageDaemonCommunication constructer");
@@ -516,8 +518,8 @@ void StorageDaemonCommunication::ForceLockUserScreen()
 void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     LOGE("StorageDaemonCommunication::OnRemoteDied, storage_daemon process has died.");
-    DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ResetSdProxy();
-    DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ForceLockUserScreen();
+    StorageDaemonCommunication::GetInstance().ResetSdProxy();
+    StorageDaemonCommunication::GetInstance().ForceLockUserScreen();
 }
 
 std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFileRawData &rawData,

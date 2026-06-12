@@ -63,14 +63,14 @@ void EncryptedVolumeManagerServiceTest::SetUp(void)
     volumeManagerServiceMock_ = std::make_shared<MockVolumeManagerService>();
     storageDaemonCommunicationMock_ = std::make_shared<MockStorageDaemonCommunication>();
     volumeExternMock = std::make_shared<VolumeExternalMock>();
-    DelayedSingleton<StorageDaemonCommunication>::instance_ = storageDaemonCommunicationMock_;
+    StorageDaemonCommunication::SetInstanceForTesting(storageDaemonCommunicationMock_);
 }
 
 void EncryptedVolumeManagerServiceTest::TearDown()
 {
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
-    DelayedSingleton<StorageDaemonCommunication>::instance_ = nullptr;
+    StorageDaemonCommunication::ResetInstanceForTesting();
 }
 
 HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_0, testing::ext::TestSize.Level1)
@@ -102,9 +102,7 @@ HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_1, tes
     std::string pazzword = "testPasswd";
     auto volumePtr = vmService.volumeMap_[volumeId];
     volumePtr->SetState(VolumeState::MOUNTED);
-    DelayedSingleton<StorageDaemonCommunication>::instance_ = nullptr;
     int32_t result = encryptVmService.Encrypt(volumeId, pazzword);
-    DelayedSingleton<StorageDaemonCommunication>::instance_ = storageDaemonCommunicationMock_;
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "EncryptedVolumeManagerServiceTest-end Storage_manager_proxy_Encrypt_1";
 }
