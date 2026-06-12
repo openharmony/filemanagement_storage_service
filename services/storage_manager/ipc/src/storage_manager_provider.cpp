@@ -1375,7 +1375,7 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("keyId :  %{public}s", keyId.c_str());
+    LOGI("keyId :  %{public}s", GetAnonyString(keyId).c_str());
     std::vector<int32_t> ids;
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != 0 || ids.empty()) {
