@@ -29,6 +29,7 @@ namespace StorageDaemon {
 constexpr int UID_FILE_MANAGER = 1006;
 constexpr const char* MNT_EXTERNAL_FILE_CONTEXT = "context=u:object_r:mnt_external_file:s0";
 constexpr const char* IO_CHAR_SET = "utf8";
+constexpr const char* MID_PATH = "/data/local/tmp/midFile.iso";
 
 int32_t IsoOperator::DoMount(const std::string& devPath,
                              const std::string& mountPath,
@@ -139,17 +140,20 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
                               const std::string &incBurnAddr)
 {
     LOGI("BurnDoCDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    int32_t err = 0;
-
+    int32_t err = DiskUtils::CleanTempDirectory();
+    if (err != E_OK) {
+        LOGE("DoCDBurn:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s", devPath.c_str());
+        return err;
+    }
+    DeleteFile(MID_PATH);
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
-        std::string midPath = burnOptions.burnPath + "/" + "midFile.iso";
         if (isDiskEmpty) {
-            cmd = {"genisoimage", "-V", burnOptions.diskName, "-J", "-r", "-o", midPath, burnOptions.burnPath};
+            cmd = {"genisoimage", "-V", burnOptions.diskName, "-J", "-r", "-o", MID_PATH, burnOptions.burnPath};
         } else {
             cmd = {"genisoimage", "-V", burnOptions.diskName, "-J", "-r", "-C", incBurnAddr, "-M", devPath, "-o",
-                    midPath, burnOptions.burnPath};
+                    MID_PATH, burnOptions.burnPath};
         }
         err = ForkExec(cmd, &output);
         if (err != E_OK) {
@@ -160,9 +164,9 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
             return err;
         }
         if (isDiskEmpty) {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", midPath};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", MID_PATH};
         } else {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", midPath};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", MID_PATH};
         }
     } else {
         cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", burnOptions.burnPath};
@@ -175,16 +179,12 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-    cmd = {"rm", "-rf", "/data/local/vol_tmp"};
-    err = ForkExec(cmd, &output);
+    DeleteFile(MID_PATH);
+    err = DiskUtils::CleanTempDirectory();
     if (err != E_OK) {
-        for (const auto& s : output) {
-            LOGI("IsoOperator DoCDBurn:s=%{public}s", s.c_str());
-        }
-        LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
+        LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-
     LOGI("BurnDoCDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
     return err;
 }

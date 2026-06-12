@@ -56,6 +56,22 @@ constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
 constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
 constexpr int32_t READ_DISC_INFO_OPCODE = 0x51;
+constexpr uint8_t GET_CAPACITY_CMD_BUF_LEN = 16;
+constexpr uint8_t GET_CAPACITY_DATA_BUF_LEN = 48;
+constexpr uint8_t GET_DVD_USED_CAPACITY_CMD_LEN = 10;
+constexpr uint8_t GET_DVD_USED_CAPACITY_DATA_LEN = 8;
+constexpr uint8_t BYTE_SHIFT_24 = 24;
+constexpr uint8_t BYTE_SHIFT_16 = 16;
+constexpr uint8_t BYTE_SHIFT_8 = 8;
+constexpr uint8_t BYTE_MASK = 0xff;
+constexpr uint8_t LAST_LBA_BYTE_0 = 0;
+constexpr uint8_t LAST_LBA_BYTE_1 = 1;
+constexpr uint8_t LAST_LBA_BYTE_2 = 2;
+constexpr uint8_t LAST_LBA_BYTE_3 = 3;
+constexpr uint8_t BLOCK_SIZE_BYTE_0 = 4;
+constexpr uint8_t BLOCK_SIZE_BYTE_1 = 5;
+constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
+constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
@@ -1013,6 +1029,51 @@ int32_t DiskUtils::VerifyBurnData(const std::string &devPath, int32_t verifyType
     return E_OK;
 }
 
+static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
+{
+    unsigned char cmdBuf[GET_CAPACITY_CMD_BUF_LEN] = {0};
+    int cmdLen = GET_DVD_USED_CAPACITY_CMD_LEN;
+    unsigned char dataBuf[GET_CAPACITY_DATA_BUF_LEN] = {0};
+    unsigned int dataLen = GET_DVD_USED_CAPACITY_DATA_LEN;
+    int ret = 0;
+    unsigned int blkCnt = 0;
+    unsigned int blkSize = 0;
+    /*
+     * 使用 SCSI READ CAPACITY 指令 (0x25) 获取DVD+RW光盘容量信息。
+     * 字段详解:
+     * cmdBuf[0]: 操作码 0x25 (GPCMD_READ_CDVD_CAPACITY)。
+     *             用于请求光盘的最后逻辑块地址 (Last LBA) 和块大小 (Block Length)。
+     * cmdBuf[7-8]: 分配长度 (Allocation Length)。
+     *               告知驱动器返回数据的最大长度（通常为 8 字节）。
+     *               高 8 位填入 cmdBuf[7]，低 8 位填入 cmdBuf[8]。
+     * 返回数据:
+     * dataBuf[0-3]: 最后逻辑块地址 (Last LBA)。
+     * dataBuf[4-7]: 块大小 (Block Length)。
+     * 注意：此指令返回的 LBA 需加 1 才是总扇区数。
+     */
+    cmdBuf[0] = GPCMD_READ_CDVD_CAPACITY;
+    cmdBuf[CDB_ALLOCATION_LENGTH_HIGH] = (dataLen >> BYTE_SHIFT_8) & BYTE_MASK;
+    cmdBuf[CDB_ALLOCATION_LENGTH_LOW] = dataLen & BYTE_MASK;
+    ret = SendScsiCmd(fd, cmdBuf, cmdLen, dataBuf, dataLen);
+    if (ret != 0) {
+        LOGE("GetDvdPlusRwTotalCapacity SendScsiCmd failed, ret val is %{public}d", ret);
+        return E_ERR;
+    }
+ 
+    blkCnt = (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_0]) << BYTE_SHIFT_24) |
+             (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_1]) << BYTE_SHIFT_16) |
+             (static_cast<unsigned int>(dataBuf[LAST_LBA_BYTE_2]) << BYTE_SHIFT_8) |
+             dataBuf[LAST_LBA_BYTE_3];
+    blkSize = (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_0]) << BYTE_SHIFT_24) |
+              (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_1]) << BYTE_SHIFT_16) |
+              (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_2]) << BYTE_SHIFT_8) |
+              dataBuf[BLOCK_SIZE_BYTE_3];
+    dvdTotalCapacity = static_cast<int64_t>(blkCnt + 1) * blkSize;
+    LOGI("GetDvdPlusRwTotalCapacity used_capacity: %{public}u * %{public}u = %{public}" PRIu64,
+        blkCnt + 1, blkSize, dvdTotalCapacity);
+    return E_OK;
+}
+
 int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
 {
     LOGI("GetCapacity: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
@@ -1030,7 +1091,7 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
         err1 = GetDvdTotalCapacity(cmdFd, totalSize);
         err2 = GetDvdUsedCapacity(cmdFd, usedSize);
     } else if (oddLabel == "DVD+RW") {
-        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+        err1 = GetDvdPlusRwTotalCapacity(cmdFd, totalSize);
         usedSize = totalSize;
     } else if (oddLabel == "CD-RW" || oddLabel == "CD-R") {
         err1 = GetCdTotalCapacity(cmdFd, totalSize);
@@ -1045,7 +1106,12 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
         totalSize = 0;
         usedSize = 0;
     }
-    LOGI("totalsize is %{public}" PRId64 ", usedsize is : %{public}" PRId64, totalSize, usedSize);
+    bool isBlankCD = false;
+    int blankRet = IsCDBlank(devPath, isBlankCD);
+    if (blankRet == E_OK && isBlankCD) {
+        usedSize = 0;
+    }
+    LOGI("GetCapacity totalsize is %{public}" PRId64 ", usedsize is : %{public}" PRId64, totalSize, usedSize);
     if (err1 != E_OK || err2 != E_OK) {
         close(cmdFd);
         return E_ERR;
@@ -1056,6 +1122,23 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
         freeSize = totalSize - usedSize;
     }
     close(cmdFd);
+    return E_OK;
+}
+
+int32_t DiskUtils::CleanTempDirectory()
+{
+    LOGI("CleanTempDirectory: >>> ENTER <<<");
+    std::vector<std::string> cmd = {"rm", "-rf", "/data/local/vol_tmp"};
+    std::vector<std::string> output;
+    int32_t err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        for (const auto& s : output) {
+            LOGI("CleanTempDirectory: output=%{public}s", s.c_str());
+        }
+        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf /data/local/vol_tmp failed, err=%{public}d", err);
+        return err;
+    }
+    LOGI("CleanTempDirectory: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 } // namespace StorageDaemon
