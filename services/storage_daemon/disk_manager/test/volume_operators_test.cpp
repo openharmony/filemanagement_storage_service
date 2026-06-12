@@ -31,6 +31,17 @@
 #include "mock/file_utils_mock.h"
 #include "storage_service_errno.h"
 
+namespace {
+    std::string g_getParameter;
+}
+
+namespace OHOS::system {
+std::string GetParameter(const std::string& key, const std::string& def)
+{
+    return g_getParameter;
+}
+} // OHOS::system
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
@@ -470,6 +481,7 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_BothChmodChownFailed_001, TestSiz
 HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_EmptyDevPath, TestSize.Level1)
 {
     Ext4Operator op;
+    g_getParameter = "tobbasic/cn";
     EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_PARAMS_INVALID);
 }
 
@@ -525,6 +537,19 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_ReadOnly, TestSize.Level1)
     Ext4Operator op;
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     EXPECT_EQ(op.DoMount("/dev/block/mock_dev", "/mock/mnt/data", MS_RDONLY, ""), E_OK);
+}
+
+/**
+ * @tc.name: Ext4Operator_DoMount_all/cn
+ * @tc.desc: Verify Ext4Operator::DoMount not tobbasic.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09ML
+ */
+HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_E_NOT_SUPPORT, TestSize.Level1)
+{
+    Ext4Operator op;
+    g_getParameter = "all/cn";
+    EXPECT_EQ(op.DoMount("", "/mock/mnt/data", 0, ""), E_NOT_SUPPORT);
 }
 
 /**
