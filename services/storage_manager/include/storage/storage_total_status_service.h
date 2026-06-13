@@ -40,6 +40,8 @@ public:
     }
     int32_t GetSystemSize(int64_t &systemSize);
     int32_t GetTotalSize(int64_t &totalSize);
+    int32_t GetDataTotalSize(int64_t &dataTotalSize);
+    int32_t GetRawFreeSize(int64_t &rawFreeSize);
     int32_t GetFreeSize(int64_t &freeSize);
     int32_t GetTotalInodes(int64_t &totalInodes);
     int32_t GetFreeInodes(int64_t &freeInodes);

@@ -20,6 +20,7 @@
 
 #include "ipc_skeleton.h"
 #include "storage/bundle_manager_connector.h"
+#include "storage/storage_status_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
@@ -79,16 +80,64 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
     return E_OK;
 }
 
+int32_t StorageTotalStatusService::GetDataTotalSize(int64_t &dataTotalSize)
+{
+    int32_t ret = GetSizeOfPath(PATH_DATA, static_cast<int32_t>(StorageStatType::TOTAL), dataTotalSize);
+    if (ret != E_OK) {
+        LOGE("GetDataTotalSize failed, please check");
+        StorageRadar::ReportGetStorageStatus("GetDataTotalSize", DEFAULT_USERID, ret, "setting");
+        return ret;
+    }
+    LOGI("StorageTotalStatusService::GetDataTotalSize success, (/data)totalSize=%{public}lld",
+        static_cast<long long>(dataTotalSize));
+    return E_OK;
+}
+
+int32_t StorageTotalStatusService::GetRawFreeSize(int64_t &rawFreeSize)
+{
+    int32_t ret = GetSizeOfPath(PATH_DATA, static_cast<int32_t>(StorageStatType::FREE), rawFreeSize);
+    if (ret != E_OK) {
+        LOGE("GetRawFreeSize failed, please check");
+        StorageRadar::ReportGetStorageStatus("GetRawFreeSize", DEFAULT_USERID, ret, "setting");
+        return ret;
+    }
+    LOGI("StorageTotalStatusService::GetRawFreeSize success, (/data)rawFreeSize=%{public}lld",
+        static_cast<long long>(rawFreeSize));
+    return E_OK;
+}
+
 int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
 {
-    int32_t ret = GetSizeOfPath(PATH_DATA, static_cast<int32_t>(StorageStatType::FREE), freeSize);
+    int32_t ret = GetRawFreeSize(freeSize);
     if (ret != E_OK) {
-        LOGE("GetFreeSize failed, please check");
-        StorageRadar::ReportGetStorageStatus("GetFreeSize", DEFAULT_USERID, ret, "setting");
+        return ret;
     }
-    LOGE("StorageTotalStatusService::GetFreeSize success, (/data)freeSize=%{public}lld",
-        static_cast<long long>(freeSize));
-    return ret;
+
+    int64_t metaDataSize = 0;
+    ret = StorageStatusManager::GetInstance().GetMetaDataSize(metaDataSize);
+    if (ret != E_OK || metaDataSize <= 0) {
+        LOGE("StorageTotalStatusService::GetFreeSize GetMetaDataSize failed, ret=%{public}d, skip freeMetadata, "
+            "(/data)freeSize=%{public}lld", ret, static_cast<long long>(freeSize));
+        return E_OK;
+    }
+
+    int64_t dataTotalSize = 0;
+    ret = GetDataTotalSize(dataTotalSize);
+    if (ret != E_OK || dataTotalSize <= 0) {
+        LOGE("StorageTotalStatusService::GetFreeSize GetDataTotalSize failed, ret=%{public}d, skip freeMetadata, "
+            "(/data)freeSize=%{public}lld", ret, static_cast<long long>(freeSize));
+        return E_OK;
+    }
+
+    int64_t freeMetadata = static_cast<int64_t>(
+        (static_cast<double>(freeSize) / static_cast<double>(dataTotalSize)) * metaDataSize);
+    if (freeMetadata > 0) {
+        freeSize += freeMetadata;
+    }
+    LOGE("StorageTotalStatusService::GetFreeSize success, rawFreeSize=%{public}lld, freeMetaSize=%{public}lld, "
+        "freeSize=%{public}lld", static_cast<long long>(freeSize - freeMetadata),
+        static_cast<long long>(freeMetadata), static_cast<long long>(freeSize));
+    return E_OK;
 }
 
 int32_t StorageTotalStatusService::GetTotalInodes(int64_t &totalInodes)

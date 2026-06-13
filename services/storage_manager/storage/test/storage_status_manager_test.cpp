@@ -32,6 +32,8 @@
 namespace {
 using namespace OHOS;
 using namespace OHOS::StorageManager;
+constexpr int64_t MOCK_FREE_30GB = INT64_C(30) * 1024 * 1024 * 1024;
+constexpr int64_t MOCK_TOTAL_100GB = INT64_C(100) * 1024 * 1024 * 1024;
 const std::vector<int64_t> bundleStatsInfo = {0, 1, std::numeric_limits<int64_t>::max() - 8, 10, 0};
 int g_bundleFlag = 1;
 ErrCode g_getNameIndexRet = ERR_OK;
@@ -664,3 +666,339 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00003, testing::ext
     EXPECT_EQ(ret, E_ERR);
     GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00003 end";
 }
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0001
+ * @tc.name: STORAGE_GetMetaDataSize_0001
+ * @tc.desc: Test GetMetaDataSize normal success path.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0001 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    // blkSize=100, chunkSize=10 => metaDataSize = 100*4096 + 10*4096*512 = 409600 + 20971520 = 21381120
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::_, testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(100), testing::Return(E_OK)));
+    // Override second call for chunkPath
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(10), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(metaDataSize, 100 * 4096 + 10 * 4096 * 512);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0001 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0002
+ * @tc.name: STORAGE_GetMetaDataSize_0002
+ * @tc.desc: Test GetMetaDataSize when GetDataSizeByPath for blkPath fails.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0002 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(E_ERR));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0002 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0003
+ * @tc.name: STORAGE_GetMetaDataSize_0003
+ * @tc.desc: Test GetMetaDataSize when GetDataSizeByPath for chunkPath fails.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0003 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    // blkPath succeeds, chunkPath fails
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(100), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::Return(E_ERR));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_NE(ret, E_OK);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0003 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0004
+ * @tc.name: STORAGE_GetMetaDataSize_0004
+ * @tc.desc: Test GetMetaDataSize when blkSize is negative.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0004 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::_, testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(-1), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    // When GetDataSizeByPath returns E_OK but value is negative, function returns ret (E_OK)
+    EXPECT_EQ(ret, E_OK);
+    // metaDataSize stays at initial value 0 since function returns early before calculation
+    EXPECT_EQ(metaDataSize, 0);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0004 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0005
+ * @tc.name: STORAGE_GetMetaDataSize_0005
+ * @tc.desc: Test GetMetaDataSize multiplication overflow detection (blkSize).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0005 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    int64_t overflowVal = std::numeric_limits<int64_t>::max();
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(overflowVal), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(1), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_EQ(ret, E_CALCULATE_OVERFLOW_UP);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0005 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0006
+ * @tc.name: STORAGE_GetMetaDataSize_0006
+ * @tc.desc: Test GetMetaDataSize multiplication overflow detection (chunkSize).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0006 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    int64_t overflowVal = std::numeric_limits<int64_t>::max();
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(1), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(overflowVal), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_EQ(ret, E_CALCULATE_OVERFLOW_UP);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0006 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0007
+ * @tc.name: STORAGE_GetMetaDataSize_0007
+ * @tc.desc: Test GetMetaDataSize addition overflow detection.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0007, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0007 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    // blkSize such that blkSize * FOUR_K > MAX_INT64 - (1 * FOUR_K * BLOCK_BYTE)
+    // Set blkSize to a value where blkResult + chunkResult overflows
+    int64_t blkSize = std::numeric_limits<int64_t>::max() / 4096;  // blkResult near MAX_INT64
+    int64_t chunkSize = 1;  // chunkResult = 1 * 4096 * 512 = 2097152
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(blkSize), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(chunkSize), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    EXPECT_EQ(ret, E_CALCULATE_OVERFLOW_UP);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0007 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetMetaDataSize_0008
+ * @tc.name: STORAGE_GetMetaDataSize_0008
+ * @tc.desc: Test GetMetaDataSize when chunkSize is negative.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetMetaDataSize_0008, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0008 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(100), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(-5), testing::Return(E_OK)));
+
+    int64_t metaDataSize = 0;
+    int32_t ret = service->GetMetaDataSize(metaDataSize);
+    // When GetDataSizeByPath returns E_OK but chunkSize is negative, function returns ret (E_OK)
+    EXPECT_EQ(ret, E_OK);
+    // metaDataSize stays at initial value 0 since function returns early before calculation
+    EXPECT_EQ(metaDataSize, 0);
+    GTEST_LOG_(INFO) << "STORAGE_GetMetaDataSize_0008 end";
+}
+
+/**
+ * @tc.number: STORAGE_GetSystemDataSize_00004
+ * @tc.name: STORAGE_GetSystemDataSize_00004
+ * @tc.desc: Test GetSystemDataSize with successful metadata split.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00004, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00004 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    // Mock IPC GetSystemDataSize to return E_OK
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(5000), testing::Return(E_OK)));
+    // Mock GetRawFreeSize returns 30GB raw free
+    EXPECT_CALL(*stss, GetRawFreeSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(MOCK_FREE_30GB), testing::Return(E_OK)));
+    // Mock GetDataTotalSize returns 100GB total
+    EXPECT_CALL(*stss, GetDataTotalSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(MOCK_TOTAL_100GB), testing::Return(E_OK)));
+    // Mock GetDataSizeByPath for GetMetaDataSize: blkSize=1000, chunkSize=0 => metaDataSize=4096000
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(1000), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(0), testing::Return(E_OK)));
+
+    int64_t systemDataSize = 0;
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    // usedMetadata = metaDataSize - freeMetadata = 4096000 - (30GB/100GB)*4096000 = 2867200
+    // systemDataSize >= otherUidSizeSum(5000) + usedMetadata(2867200)
+    EXPECT_GE(systemDataSize, 5000 + 2867200);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00004 end, systemDataSize=" << systemDataSize;
+}
+
+/**
+ * @tc.number: STORAGE_GetSystemDataSize_00005
+ * @tc.name: STORAGE_GetSystemDataSize_00005
+ * @tc.desc: Test GetSystemDataSize when GetMetaDataSize fails (graceful degradation).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00005, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00005 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(5000), testing::Return(E_OK)));
+    // GetDataSizeByPath fails => GetMetaDataSize fails
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::_, testing::_))
+        .WillRepeatedly(testing::Return(E_ERR));
+
+    int64_t systemDataSize = 0;
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    // usedMetadata is 0 (degradation), systemDataSize >= otherUidSizeSum(5000)
+    EXPECT_GE(systemDataSize, 5000);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00005 end, systemDataSize=" << systemDataSize;
+}
+
+/**
+ * @tc.number: STORAGE_GetSystemDataSize_00006
+ * @tc.name: STORAGE_GetSystemDataSize_00006
+ * @tc.desc: Test GetSystemDataSize when GetRawFreeSize fails (graceful degradation, usedMetadata=0).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00006 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(5000), testing::Return(E_OK)));
+    // GetRawFreeSize fails
+    EXPECT_CALL(*stss, GetRawFreeSize(testing::_))
+        .WillRepeatedly(testing::Return(E_ERR));
+    EXPECT_CALL(*stss, GetDataTotalSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(MOCK_TOTAL_100GB), testing::Return(E_OK)));
+    // GetMetaDataSize succeeds
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(1000), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(0), testing::Return(E_OK)));
+
+    int64_t systemDataSize = 0;
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    // usedMetadata is 0 (degradation), systemDataSize >= otherUidSizeSum(5000)
+    EXPECT_GE(systemDataSize, 5000);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00006 end, systemDataSize=" << systemDataSize;
+}
+
+/**
+ * @tc.number: STORAGE_GetSystemDataSize_00007
+ * @tc.name: STORAGE_GetSystemDataSize_00007
+ * @tc.desc: Test GetSystemDataSize when GetDataTotalSize returns 0 (graceful degradation).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageStatusManagerTest, STORAGE_GetSystemDataSize_00007, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00007 start";
+    auto service = DelayedSingleton<StorageStatusManager>::GetInstance();
+    EXPECT_CALL(*sdc, GetSystemDataSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(5000), testing::Return(E_OK)));
+    EXPECT_CALL(*stss, GetRawFreeSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(MOCK_FREE_30GB), testing::Return(E_OK)));
+    // GetDataTotalSize returns 0 => dataTotalSize <= 0 branch
+    EXPECT_CALL(*stss, GetDataTotalSize(testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<0>(0), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::Not(testing::HasSubstr("ovp_chunks")), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(1000), testing::Return(E_OK)));
+    EXPECT_CALL(*sdc, GetDataSizeByPath(testing::HasSubstr("ovp_chunks"), testing::_))
+        .WillRepeatedly(testing::DoAll(testing::SetArgReferee<1>(0), testing::Return(E_OK)));
+
+    int64_t systemDataSize = 0;
+    int32_t ret = service->GetSystemDataSize(systemDataSize);
+    EXPECT_EQ(ret, E_OK);
+    // usedMetadata is 0 (degradation), systemDataSize >= otherUidSizeSum(5000)
+    EXPECT_GE(systemDataSize, 5000);
+    GTEST_LOG_(INFO) << "STORAGE_GetSystemDataSize_00007 end, systemDataSize=" << systemDataSize;
+}
+

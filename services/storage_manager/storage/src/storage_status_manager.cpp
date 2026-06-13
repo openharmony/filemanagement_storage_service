@@ -47,6 +47,11 @@ namespace {
 const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
+constexpr const char *HMFS_PATH = "/sys/fs/hmfs/userdata";
+constexpr const char *MAIN_BLKADDR = "/main_blkaddr";
+constexpr const char *OVP_CHUNKS = "/ovp_chunks";
+constexpr int64_t FOUR_K = 4096;
+constexpr int64_t BLOCK_BYTE = 512;
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
 const string MULTI_USER_URI_FLAG = "user=";
 constexpr int DECIMAL_PLACE = 2;
@@ -610,6 +615,48 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
     return E_OK;
 }
 
+int32_t StorageStatusManager::GetMetaDataSize(int64_t &metaDataSize)
+{
+    metaDataSize = 0;
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("StorageStatusManager::GetMetaDataSize: sdCommunication is nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+
+    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
+    int64_t blkSize = -1;
+    int32_t ret = sdCommunication->GetDataSizeByPath(blkPath, blkSize);
+    if (ret != E_OK || blkSize < 0) {
+        LOGE("StorageStatusManager::GetMetaDataSize: GetDataSizeByPath blkPath failed, ret=%{public}d", ret);
+        return ret;
+    }
+
+    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
+    int64_t chunkSize = -1;
+    ret = sdCommunication->GetDataSizeByPath(chunkPath, chunkSize);
+    if (ret != E_OK || chunkSize < 0) {
+        LOGE("StorageStatusManager::GetMetaDataSize: GetDataSizeByPath chunkPath failed, ret=%{public}d", ret);
+        return ret;
+    }
+
+    if (blkSize > MAX_INT64 / FOUR_K || chunkSize > MAX_INT64 / (FOUR_K * BLOCK_BYTE)) {
+        LOGE("StorageStatusManager::GetMetaDataSize: overflow detected, blkSize=%{public}lld, chunkSize=%{public}lld",
+            static_cast<long long>(blkSize), static_cast<long long>(chunkSize));
+        return E_CALCULATE_OVERFLOW_UP;
+    }
+    int64_t blkResult = blkSize * FOUR_K;
+    int64_t chunkResult = chunkSize * FOUR_K * BLOCK_BYTE;
+    if (blkResult > MAX_INT64 - chunkResult) {
+        LOGE("StorageStatusManager::GetMetaDataSize: addition overflow detected");
+        return E_CALCULATE_OVERFLOW_UP;
+    }
+    metaDataSize = blkResult + chunkResult;
+    LOGI("StorageStatusManager::GetMetaDataSize: blkSize=%{public}lld, chunkSize=%{public}lld, total=%{public}lld",
+        static_cast<long long>(blkSize), static_cast<long long>(chunkSize), static_cast<long long>(metaDataSize));
+    return E_OK;
+}
+
 int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
 {
     auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -623,14 +670,38 @@ int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
         LOGE("StorageStatusManager::GetSystemDataSize GetOtherUidSizeSum failed, err=%{public}d", err);
         return err;
     }
+
+    int64_t usedMetadata = 0;
+    int64_t metaDataSize = 0;
+    int64_t freeSize = 0;
+    int64_t dataTotalSize = 0;
+    int32_t freeRet = StorageTotalStatusService::GetInstance().GetRawFreeSize(freeSize);
+    int32_t totalRet = StorageTotalStatusService::GetInstance().GetDataTotalSize(dataTotalSize);
+    err = GetMetaDataSize(metaDataSize);
+    if (err != E_OK || metaDataSize <= 0) {
+        LOGE("StorageStatusManager::GetSystemDataSize GetMetaDataSize failed, ret=%{public}d, skip usedMetadata",
+            err);
+    } else if (freeRet != E_OK || totalRet != E_OK || dataTotalSize <= 0) {
+        LOGE("StorageStatusManager::GetSystemDataSize get freeSize or totalSize failed, "
+            "freeRet=%{public}d, totalRet=%{public}d, skip usedMetadata", freeRet, totalRet);
+    } else {
+        int64_t freeMetadata = static_cast<int64_t>(
+            (static_cast<double>(freeSize) / static_cast<double>(dataTotalSize)) * metaDataSize);
+        usedMetadata = metaDataSize - freeMetadata;
+        if (usedMetadata < 0) {
+            usedMetadata = 0;
+        }
+    }
+
     systemDataSize = StorageManagerScan::GetInstance().GetRootSize() +
-        StorageManagerScan::GetInstance().GetSystemSize() + otherUidSizeSum;
+        StorageManagerScan::GetInstance().GetSystemSize() + otherUidSizeSum + usedMetadata;
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
-    LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld,"
-        " other=%{public}lld, total=%{public}lld",
+    LOGE("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld,"
+        " other=%{public}lld, usedMeta=%{public}lld, total=%{public}lld",
         static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
         static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
-        static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemDataSize));
+        static_cast<long long>(otherUidSizeSum), static_cast<long long>(usedMetadata),
+        static_cast<long long>(systemDataSize));
     return E_OK;
 }
 } // StorageManager

@@ -85,7 +85,6 @@ private:
     int32_t ParseConfigFile(const std::string &path, std::vector<UidSaInfo> &vec);
     int32_t ParseSystemDataConfigFile(std::vector<int32_t> &uidList);
     int32_t GetSystemCacheSize(const std::vector<int32_t> &uidList, int64_t &cacheSize);
-    int32_t GetMetaDataSize(int64_t &metaDataSize);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
     int32_t AddBlksRecurse(const std::string &path, int64_t &blks, uid_t uid);
     int32_t AddBlks(const std::string &path, int64_t &blks, uid_t uid);
