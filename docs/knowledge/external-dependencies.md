@@ -1,134 +1,40 @@
-# 外部依赖
+# 外部依赖约束
 
-本文记录外部依赖服务和编译宏影响。
+本文只记录编译宏对代码行为的影响和依赖不可用时的处理规则。密钥操作依赖见 `crypto-key-management.md`，HUKS 封装见源码 `crypto/huks_master.h`。
 
-## 外部依赖服务
+## 编译宏行为差异
 
-| 依赖服务 | 用途 | 头文件 | 检查方法 |
-|----------|------|--------|----------|
-| HUKS | 密钥加密/解密 | `crypto/huks_master.h` | `HuksMaster::GetInstance().IsHuksAvailable()` |
-| TEE | 安全执行环境（恢复密钥） | 编译宏 | 检查 `RECOVER_KEY_TEE_ENVIRONMENT` |
-| OsAccount | 用户账号管理 | `os_account_manager.h` | `OsAccountManager::IsOsAccountServiceAvailable()` |
-| AccessToken | 权限管理 | `accesstoken_kit.h` | `AccessTokenKit::GetTokenType()` |
-| BundleFramework | 应用信息查询 | `bundle_mgr_interface.h` | 检查连接状态 |
-| HiSysEvent | 事件上报 | `hisysevent.h` | 直接调用 |
-| HiLog | 日志输出 | `hilog/log.h` | 直接调用 |
+| 编译宏 | 影响范围 | 行为差异 | 不考虑的后果 |
+|--------|----------|----------|--------------|
+| `USER_CRYPTO_MIGRATE_KEY` | UpdateUserAuth | 增加 `needGenerateShield` 参数 | 只写2参数版本，宏定义时编译失败 |
+| `RECOVER_KEY_TEE_ENVIRONMENT` | RecoverManager | 恢复密钥使用 TEE 环境 | 非 TEE 环境下调用了 TEE 专属接口 |
+| `EL5_FILEKEY_MANAGER` | KeyManager | UECE 回调注册功能 | 不处理 UECE 导致 EL5 密钥未激活 |
+| `USER_AUTH_FRAMEWORK` | IAMClient | 使用 `userauth_client.h` 代替 `iam_client.h` | include 了不存在的头文件 |
+| `HUKS_IDL_ENVIRONMENT` | HuksMaster | HUKS 使用 HDI 1.1 接口 | 链接了错误的 HUKS 库 |
+| `SUPPORT_RECOVERY_KEY_SERVICE` | KeyManager | 恢复密钥服务支持 | 未实现恢复密钥流程 |
 
-## 依赖不可用时的处理
+新增代码涉及上述宏影响的功能时，必须同时考虑宏定义和未定义两种行为，不要只写一种。
 
-### HUKS 不可用
+## 依赖不可用时的处理规则
 
-```cpp
-int32_t KeyManager::GenerateUserKeys(uint32_t userId, uint32_t flags) {
-    if (!HuksMaster::GetInstance().IsHuksAvailable()) {
-        LOGE("HUKS not available, cannot generate keys for user %{public}d", userId);
-        return E_GLOBAL_KEY_INIT_ERROR;
-    }
-    // ...
-}
-```
+| 依赖 | 检查方法 | 不可用时返回 | 不可用时不可做 |
+|------|----------|--------------|----------------|
+| HUKS | `HuksMaster::GetInstance().IsHuksAvailable()` | `E_GLOBAL_KEY_INIT_ERROR` | 不要继续生成/激活密钥 |
+| OsAccount | `OsAccountManager::IsOsAccountExists()` | `E_SA_IS_NULLPTR` | 不要操作不存在用户的目录 |
+| AccessToken | `AccessTokenKit::GetTokenType()` | `E_PERMISSION_DENIED` | 不要跳过权限校验 |
+| BundleFramework | 检查连接状态 | `E_GET_UID_ERROR` 或 `E_BUNDLEMGR_ERROR` | 不要假设应用 UID 可查 |
 
-### OsAccount 不可用
-
-```cpp
-int32_t UserManager::PrepareUserDirs(uint32_t userId) {
-    bool isOsAccountExists = false;
-    int32_t ret = OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
-    if (ret != E_OK || !isOsAccountExists) {
-        LOGE("OsAccount %{public}d not exists", userId);
-        return E_SA_IS_NULLPTR;
-    }
-    // ...
-}
-```
-
-### AccessToken 权限检查
-
-```cpp
-int32_t StorageManagerProvider::Mount(const std::string &volumeId) {
-    uint32_t tokenId = IPCSkeleton::GetCallingTokenID();
-    if (AccessTokenKit::GetTokenType(tokenId) == TOKEN_INVALID) {
-        LOGE("Invalid token");
-        return E_PERMISSION_DENIED;
-    }
-    // ...
-}
-```
-
-## 编译宏影响
-
-关键编译宏会影响代码行为，写代码时需注意：
-
-| 编译宏 | 影响范围 | 行为差异 |
-|--------|----------|----------|
-| `USER_CRYPTO_MIGRATE_KEY` | KeyManager | `UpdateUserAuth` 增加 `needGenerateShield` 参数 |
-| `RECOVER_KEY_TEE_ENVIRONMENT` | RecoverManager | 恢复密钥使用 TEE 环境，新增 `FileBasedEncryptfsMount` |
-| `EL5_FILEKEY_MANAGER` | KeyManager | UECE 回调注册功能 `RegisterUeceActivationCallback` |
-| `USER_AUTH_FRAMEWORK` | IAMClient | 用户认证框架支持，启用后依赖 `userauth_client` |
-| `HUKS_IDL_ENVIRONMENT` | HuksMaster | HUKS HDI 接口版本，使用 `libhuks_proxy_1.1` |
-| `SUPPORT_RECOVERY_KEY_SERVICE` | KeyManager | 恢复密钥服务支持 |
-
-### USER_CRYPTO_MIGRATE_KEY
-
-```cpp
-#ifdef USER_CRYPTO_MIGRATE_KEY
-int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
-                   bool needGenerateShield = true);  // 有额外参数
-#else
-int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret);  // 无额外参数
-#endif
-
-// 写代码时应考虑宏是否定义
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    ret = KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret, true);
-#else
-    ret = KeyManager::GetInstance().UpdateUserAuth(userId, userTokenSecret);
-#endif
-```
-
-### RECOVER_KEY_TEE_ENVIRONMENT
-
-```cpp
-#ifdef RECOVER_KEY_TEE_ENVIRONMENT
-// TEE 环境下的恢复密钥处理
-int32_t FileBasedEncryptfsMount();
-int32_t InstallEmptyUserKeyForRecovery(uint32_t userId);
-#endif
-```
-
-### EL5_FILEKEY_MANAGER
-
-```cpp
-#ifdef EL5_FILEKEY_MANAGER
-// UECE 回调注册
-int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &callback);
-int32_t UnregisterUeceActivationCallback();
-#endif
-```
-
-### USER_AUTH_FRAMEWORK
-
-```cpp
-#ifdef USER_AUTH_FRAMEWORK
-// 使用用户认证框架
-#include "userauth_client.h"
-// IAM 认证调用
-#else
-// 使用旧版 IAM 接口
-#include "iam_client.h"
-#endif
-```
+依赖不可用时必须返回具体错误码并上报 StorageRadar，不要静默忽略或返回 E_ERR。
 
 ## 依赖初始化顺序
 
-```
-1. Daemon 启动
-   └ InitGlobalDeviceKey() → 检查 HUKS
-   └ InitGlobalUserKeys() → 加载所有用户 EL1 密钥
-   └ NetlinkManager::Start() → 监听设备事件
+1. Daemon 启动：`InitGlobalDeviceKey()` → 检查 HUKS → 加载 EL1 密钥 → 启动 Netlink
+2. Manager 启动：懒连接 Daemon → 启动监控 → 订阅用户事件
 
-2. Manager 启动
-   └ StorageDaemonCommunication::Connect() → 连接 Daemon
-   └ StorageMonitorService::Start() → 启动监控
-   └ AccountSubscriber::Subscribe() → 监听用户事件
-```
+不要假设 Manager 启动时所有依赖已就绪。
+
+## 修改前检查
+
+- 涉及的编译宏是否考虑了定义/未定义两种行为？
+- 依赖不可用时是否返回了具体错误码？
+- 新增依赖是否添加了可用性检查？

@@ -1,198 +1,53 @@
-# 用户目录生命周期
+# 用户目录生命周期约束
 
-本文记录用户目录创建/销毁时序、目录结构、多用户隔离规则和典型场景完整流程。
+本文只记录用户存储操作的时序约束、隔离规则和回滚要求。密钥激活时序见 `crypto-key-management.md`，卷状态约束见 `disk-volume-lifecycle.md`，线程死锁见 `constraints-and-traps.md`。
 
-## 用户生命周期时序
+## 时序约束
 
-用户存储操作必须严格按以下顺序执行，不能跳步或乱序：
+用户存储操作必须严格按以下顺序执行，不可跳步或乱序：
 
-```
-1. PrepareAddUser(userId, flags)
-   ├ UserManager::PrepareUserDirs(userId)    // 创建目录
-   ├ KeyManager::GenerateUserKeys(userId, flags) // 生成密钥
-   └ 设置目录加密策略
-
-2. StartUser(userId)
-   ├ MountManager::MountEl1Dirs(userId)     // 挂载 EL1 目录
-   ├ KeyManager::ActiveUserKey(userId, EL1_KEY) // 激活 EL1 密钥
-   └ 挂载 HMDFS、沙箱等
-
-3. CompleteAddUser(userId)
-   ├ KeyManager::ActiveUserKey(userId, EL2_KEY) // 激活 EL2-EL4 密钥
-   ├ 完成用户注册
-
-4. StopUser(userId)
-   ├ KeyManager::InactiveUserKey(userId)    // 停用密钥
-   └ 卸载挂载点
-
-5. RemoveUser(userId, flags)
-   ├ UserManager::DestroyUserDirs(userId)   // 销毁目录
-   ├ KeyManager::DeleteUserKeys(userId)     // 删除密钥
-```
+| 步骤 | 触发 | 不可跳过的原因 |
+|------|------|----------------|
+| PrepareAddUser | OsAccount READY | 创建目录和生成 EL1 密钥，后续步骤依赖目录存在 |
+| StartUser | OsAccount STARTING | 挂载存储、激活 EL1 密钥，EL2-EL4 封装在此之后才可激活 |
+| CompleteAddUser | OsAccount UNLOCKED | 激活 EL2-EL4 密钥，跳过则这些等级的加密数据不可访问 |
 
 `AccountSubscriber` 监听 `OsAccountState` 事件自动触发对应步骤，不要绕过它直接调用 Daemon。
 
-## EL 等级目录结构
+## 失败回滚
 
-每个用户拥有独立的加密等级目录：
+目录创建是链式操作（EL1→EL2→EL3→EL4→EL5→权限设置），任何一步失败必须回滚全部已创建目录。密钥生成失败也必须销毁已创建的目录，不要保留半成品状态。
 
-| 等级 | 路径 | 密钥激活时机 | 典型内容 |
-|------|------|--------------|----------|
-| EL1 | `/data/service/el1/public/{userId}` | StartUser | 设备级全局数据 |
-| EL2 | `/data/service/el2/{userId}` | CompleteAddUser / UnlockUserScreen | 用户凭据保护数据 |
-| EL3 | `/data/service/el3/{userId}` | CompleteAddUser | 高安全等级数据 |
-| EL4 | `/data/service/el4/{userId}` | CompleteAddUser | 最高安全等级数据 |
-| EL5 | `/data/app/el5/{userId}` | UECE 激活 | 应用级加密 |
+## EL 等级隔离
 
-### 目录创建顺序
+| 等级 | 路径 | 密钥激活时机 | 不可访问条件 |
+|------|------|--------------|--------------|
+| EL1 | `/data/service/el1/public/{userId}` | StartUser | 密钥未激活时 |
+| EL2 | `/data/service/el2/{userId}` | CompleteAddUser / UnlockUserScreen | **锁屏时不可访问** |
+| EL3 | `/data/service/el3/{userId}` | CompleteAddUser | 密钥未激活时 |
+| EL4 | `/data/service/el4/{userId}` | CompleteAddUser | 密钥未激活时 |
+| EL5 | `/data/app/el5/{userId}` | UECE 回调 | 回调未触发时 |
 
-```cpp
-// UserManager::PrepareUserDirs() 实现顺序
-int32_t UserManager::PrepareUserDirs(uint32_t userId) {
-    // 1. 基础用户目录
-    CreateDir("/data/user/" + userId);           // 主目录
-    CreateSymlink("/data/user/" + userId, "/data/media/" + userId); // 媒体链接
-    
-    // 2. 服务目录（各 EL 等级）
-    CreateDir("/data/service/el1/public/" + userId);
-    CreateDir("/data/service/el2/" + userId);
-    CreateDir("/data/service/el3/" + userId);
-    CreateDir("/data/service/el4/" + userId);
-    
-    // 3. 应用目录
-    CreateDir("/data/app/el1/" + userId);
-    CreateDir("/data/app/el2/" + userId);
-    CreateDir("/data/app/el5/" + userId);
-    
-    // 4. HMDFS 挂载点
-    CreateDir("/mnt/hmdfs/" + userId + "/account");
-    CreateDir("/mnt/hmdfs/" + userId + "/non_account");
-    CreateDir("/mnt/hmdfs/" + userId + "/cloud");
-    
-    // 5. 沙箱目录
-    CreateDir("/mnt/sandbox/" + userId);
-    
-    // 6. 设置权限和 SELinux
-    SetPermissions(userId);
-    return E_OK;
-}
-```
+不可用 EL1 密钥操作 EL2 目录，密钥和目录等级必须匹配。
 
-## 多用户隔离规则
+## 用户隔离
 
-### 用户 ID 范围
+不可用一个用户的密钥或挂载点操作另一个用户的数据路径。userId=100 的密钥只操作 userId=100 的目录，userId=105 的密钥只操作 userId=105 的目录。
 
-```cpp
-START_USER_ID = 100           // 最小用户 ID
-MAX_USER_ID = 10738           // 最大用户 ID
-START_APP_CLONE_USER_ID = ... // AppClone 起始 ID
-MAX_APP_CLONE_USER_ID = ...   // AppClone 最大 ID
-USER_ID_BASE = 200000         // UID 计算基数
-// uid = USER_ID_BASE * userId + appId
-```
+## NATO 和 AppClone
 
-### 隔离规则
+- NATO 用户有独立的恢复密钥目录（`el2_NATO/{userId}`），不要与普通用户密钥路径混用。
+- AppClone 用户 ID 范围独立，密钥管理使用 `AppCloneKeyManager` 而非 `KeyManager`，不要用 `KeyManager::GetInstance()` 操作 AppClone 用户。
 
-```cpp
-// 错误：跨用户操作
-KeyManager::GetInstance().ActiveUserKey(100);  // 激活用户 100 的密钥
-AccessDirectory("/data/service/el2/105");     // 访问用户 105 的目录
+## 修改前检查
 
-// 正确：使用目标用户的密钥
-KeyManager::GetInstance().ActiveUserKey(105);
-AccessDirectory("/data/service/el2/105");
-```
-
-## NATO 和 AppClone 用户
-
-### NATO 用户
-
-NATO（Non-Authenticated Trusted OS）用户有独立的恢复目录：
-
-```
-/data/service/el1/public/storage_daemon/sd/el2_NATO/{userId}
-/data/service/el1/public/storage_daemon/sd/el3_NATO/{userId}
-/data/service/el1/public/storage_daemon/sd/el4_NATO/{userId}
-```
-
-### AppClone 用户
-
-AppClone 用户 ID 范围独立，密钥管理使用 `AppCloneKeyManager`：
-
-```cpp
-if (IsAppCloneUser(userId)) {
-    AppCloneKeyManager::GetInstance().GenerateUserKeys(userId, flags);
-} else {
-    KeyManager::GetInstance().GenerateUserKeys(userId, flags);
-}
-```
-
-## 失败回滚机制
-
-```cpp
-int32_t UserManager::PrepareUserDirs(uint32_t userId) {
-    int32_t ret = CreateEl1Dirs(userId);
-    if (ret != E_OK) {
-        RollbackUserDirs(userId);  // 回滚已创建的目录
-        return E_CREATE_DIR_RECURSIVE_FAILED;
-    }
-    
-    ret = CreateEl2Dirs(userId);
-    if (ret != E_OK) {
-        RollbackUserDirs(userId);
-        return E_CREATE_DIR_RECURSIVE_FAILED;
-    }
-    // ... EL3-EL5 类似
-    
-    return E_OK;
-}
-
-void UserManager::RollbackUserDirs(uint32_t userId) {
-    RemoveDir("/data/user/" + userId);
-    RemoveDir("/data/service/el1/public/" + userId);
-    RemoveDir("/data/service/el2/" + userId);
-    RemoveDir("/data/service/el3/" + userId);
-    RemoveDir("/data/service/el4/" + userId);
-    RemoveDir("/data/app/el1/" + userId);
-    RemoveDir("/data/app/el2/" + userId);
-    RemoveDir("/data/app/el5/" + userId);
-}
-```
-
-## 典型场景：用户创建完整流程
-
-```
-系统触发 OsAccountManager::CreateOsAccount()
-  └ AccountSubscriber::OnAccountStateChanged(userId, READY)
-    └ StorageManagerProvider::PrepareAddUser(userId, flags)
-       DelayedSingleton<StorageDaemonCommunication>::GetInstance()->PrepareAddUser()
-         StorageDaemonProvider::PrepareUserDirs()
-           UserManager::PrepareUserDirs()
-           KeyManager::GenerateUserKeys(userId, flags)
-             HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce)  // 加密密钥
-             BaseKey::StoreKey()           // 存储密钥文件
-             SetDirectoryElPolicy()        // 设置加密策略
-
-用户解锁后：
-   AccountSubscriber::OnAccountStateChanged(userId, UNLOCKED)
-     StorageManagerProvider::CompleteAddUser(userId)
-       KeyManager::ActiveUserKey(userId, EL2_KEY)
-         解密并安装 EL2 密钥到内核
-```
-
-## 头文件路径
-
-```
-services/storage_daemon/include/user/user_manager.h        # UserManager 定义
-services/storage_daemon/include/user/mount_manager.h       # 挂载管理
-services/storage_daemon/include/crypto/key_manager.h       # 密钥管理
-services/storage_manager/include/account_subscriber/account_subscriber.h # 用户事件订阅
-```
+- 当前步骤处于时序哪个位置？前置步骤是否已完成？
+- 失败时是否回滚了全部已创建状态？
+- 密钥等级和目录等级是否匹配？
+- 用户 ID 是否与操作目标匹配？
 
 ## 测试指引
 
-- 目录创建/销毁：`UserManagerTest`
-- 多用户隔离：`StorageManagerProviderTest`
-- 用户生命周期：`AccountSubscriberTest`
-- 密钥操作：`KeyManagerTest`
+- 时序覆盖：`UserManagerTest`、`StorageManagerProviderTest`
+- 多用户隔离：至少覆盖跨用户密钥/目录操作拒绝场景
 - 涉及真实挂载/加密：需要板侧验证
