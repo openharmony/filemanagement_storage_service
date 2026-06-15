@@ -76,6 +76,7 @@ constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
 constexpr bool ENCRYPTED = true;
+constexpr uint32_t MOUNT_MAX_WAIT_TIME = 2;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -1196,7 +1197,8 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->InactiveUserKey(userId);
     StorageRadar::ReportFucBehavior("InactiveUserKey", userId, "InactiveUserKey End", err);
-    int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId, ENCRYPTED);
+    int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId,
+        ENCRYPTED, MOUNT_MAX_WAIT_TIME);
     LOGI("Send encrypted status: userId: %{public}d, ret is %{public}d", userId, ret);
     return err;
 #else
