@@ -35,9 +35,10 @@ ohos_taihe("run_taihe") {
 }
 
 taihe_shared_library("storage_statistics_taihe") {
-  taihe_generated_file_path = "$taihe_generated_file_path"
-  subsystem_name = "$subsystem_name"
   part_name = "$part_name"
+  shlib_type = "ani"
+  subsystem_name = "$subsystem_name"
+  taihe_generated_file_path = "$taihe_generated_file_path"
 
   sanitize = {
     integer_overflow = true
@@ -65,16 +66,21 @@ taihe_shared_library("storage_statistics_taihe") {
 
   cflags = [
     "-D_FORTIFY_SOURCE=2",
-    "-fstack-protector-strong",
+    "-Oz",
     "-Werror",
     "-fPIC",
-    "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
-    "-Oz",
+    "-ffunction-sections",
     "-flto",
+    "-fno-unwind-tables",
+    "-fstack-protector-strong",
+    "-fvisibility=hidden",
   ]
-  ldflags = [ "-flto" ]
+  ldflags = [
+    "-flto",
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
+  ]
 
   sources = get_target_outputs(":run_taihe")
   sources += [
