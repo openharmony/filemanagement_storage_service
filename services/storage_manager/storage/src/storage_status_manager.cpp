@@ -696,7 +696,7 @@ int32_t StorageStatusManager::GetSystemDataSize(int64_t &systemDataSize)
     systemDataSize = StorageManagerScan::GetInstance().GetRootSize() +
         StorageManagerScan::GetInstance().GetSystemSize() + otherUidSizeSum + usedMetadata;
     StorageRadar::ReportFucBehavior("GetSystemDataSize", DEFAULT_USERID, "GetSystemDataSize End", err);
-    LOGE("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld,"
+    LOGI("StorageStatusManager::GetSystemDataSize root=%{public}lld, system=%{public}lld,"
         " other=%{public}lld, usedMeta=%{public}lld, total=%{public}lld",
         static_cast<long long>(StorageManagerScan::GetInstance().GetRootSize()),
         static_cast<long long>(StorageManagerScan::GetInstance().GetSystemSize()),
