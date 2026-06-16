@@ -185,7 +185,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, Test
 HWTEST_F(StorageDaemonCommunicationTest, SUB_STORAGE_Daemon_communication_SetDirEncryptionPolicy_0000,
     testing::ext::TestSize.Level1)
 {
-
     std::string dirPath = "/data/service/test";
     uint32_t userId = 100;
     uint32_t type = 2;
@@ -212,7 +211,6 @@ HWTEST_F(StorageDaemonCommunicationTest, SUB_STORAGE_Daemon_communication_SetDir
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.PrepareAddUser(0, 0), E_SA_IS_NULLPTR);
 
@@ -235,7 +233,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.RemoveUser(0, 0), E_SA_IS_NULLPTR);
 
@@ -258,7 +255,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, T
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.PrepareStartUser(0), E_SA_IS_NULLPTR);
 
@@ -281,7 +277,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.StopUser(0), E_SA_IS_NULLPTR);
 
@@ -304,7 +299,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, Tes
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.CompleteAddUser(0), E_SA_IS_NULLPTR);
 
@@ -327,7 +321,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Mount("", 0), E_SA_IS_NULLPTR);
 
@@ -350,7 +343,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, TestSi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Unmount(""), E_SA_IS_NULLPTR);
 
@@ -373,7 +365,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, Test
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.TryToFix("", 0), E_SA_IS_NULLPTR);
 
@@ -396,7 +387,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, Tes
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Check(""), E_SA_IS_NULLPTR);
 
@@ -419,7 +409,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, TestSi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Partition("", 0), E_SA_IS_NULLPTR);
 
@@ -442,7 +431,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, Te
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Format("", ""), E_SA_IS_NULLPTR);
 
@@ -465,7 +453,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, TestS
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.SetVolumeDescription("", ""), E_SA_IS_NULLPTR);
 
@@ -488,7 +475,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_0000, TestSize.Level1)
 {
-
     string diskPath;
     bool isInUse = false;
     MockConnectFail();
@@ -510,7 +496,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryptedKeys_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.EraseAllUserEncryptedKeys(), E_SA_IS_NULLPTR);
 
@@ -533,7 +518,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_EraseAllUserEncryp
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_0000, TestSize.Level1)
 {
-
     vector<uint8_t> token;
     vector<uint8_t> oldSecret;
     vector<uint8_t> newSecret;
@@ -559,7 +543,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithRecoveryKey_0000, TestSize.Level1)
 {
-
     vector<uint8_t> authToken;
     vector<uint8_t> newSecret;
     vector<std::vector<uint8_t>> plainText;
@@ -586,7 +569,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithR
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000, TestSize.Level1)
 {
-
     vector<uint8_t> token;
     vector<uint8_t> secret;
     MockConnectFail();
@@ -611,7 +593,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.InactiveUserKey(0), E_SA_IS_NULLPTR);
 
@@ -634,7 +615,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_LockUserScreen_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.LockUserScreen(0), E_SA_IS_NULLPTR);
 
@@ -657,7 +637,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_LockUserScreen_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStatus_0000, TestSize.Level1)
 {
-
     bool isEncrypted = false;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.GetFileEncryptStatus(0, isEncrypted, false), E_SA_IS_NULLPTR);
@@ -681,7 +660,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStat
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveStatus_0000, TestSize.Level1)
 {
-
     bool needActive = false;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.GetUserNeedActiveStatus(0, needActive), E_SA_IS_NULLPTR);
@@ -705,7 +683,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveS
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0000, TestSize.Level1)
 {
-
     vector<uint8_t> token;
     vector<uint8_t> secret;
     MockConnectFail();
@@ -730,7 +707,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatus_0000, TestSize.Level1)
 {
-
     bool lockScreenStatus = false;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.GetLockScreenStatus(0, lockScreenStatus), E_SA_IS_NULLPTR);
@@ -754,7 +730,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatu
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UpdateKeyContext(0, false), E_SA_IS_NULLPTR);
 
@@ -777,7 +752,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_0000, TestSize.Level1)
 {
-
     sdCommunication.ResetSdProxy();
     EXPECT_EQ(sdCommunication.ResetSdProxy(), E_OK);
 
@@ -800,7 +774,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_0000, TestSize.Level1)
 {
-
     StorageFileRawData uriList;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.CreateShareFile(uriList, 0, 0)[0], E_SA_IS_NULLPTR);
@@ -825,7 +798,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_0000, TestSize.Level1)
 {
-
     StorageFileRawData uriList;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.DeleteShareFile(0, uriList), E_SA_IS_NULLPTR);
@@ -849,7 +821,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_0000, TestSize.Level1)
 {
-
     string bundleDataDirPath;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.SetBundleQuota(0, bundleDataDirPath, 0), E_SA_IS_NULLPTR);
@@ -873,7 +844,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_0000, TestSize.Level1)
 {
-
     int64_t size = 0;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.GetOccupiedSpace(0, 0, size), E_SA_IS_NULLPTR);
@@ -897,7 +867,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_0000, TestSize.Level1)
 {
-
     string keyId;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.GenerateAppkey(0, 0, keyId), E_SA_IS_NULLPTR);
@@ -921,7 +890,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.DeleteAppkey(0, ""), E_SA_IS_NULLPTR);
 
@@ -944,7 +912,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0000, TestSize.Level1)
 {
-
     vector<uint8_t> token;
     vector<uint8_t> secret;
     MockConnectFail();
@@ -969,7 +936,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000, TestSize.Level1)
 {
-
     vector<uint8_t> key;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.SetRecoverKey(key), E_SA_IS_NULLPTR);
@@ -993,7 +959,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_0000, TestSize.Level1)
 {
-
     string relativePath;
     string networkId;
     string deviceId;
@@ -1019,7 +984,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_0000, TestSize.Level1)
 {
-
     string relativePath;
     string networkId;
     string deviceId;
@@ -1045,7 +1009,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_0000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountMediaFuse_0000, TestSize.Level1)
 {
-
     int32_t devFd = 0;
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     MockConnectFail();
@@ -1071,7 +1034,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountMediaFuse_000
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_0000, TestSize.Level1)
 {
-
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UMountMediaFuse(0), E_SA_IS_NULLPTR);
@@ -1096,7 +1058,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_00
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_0000, TestSize.Level1)
 {
-
     string path;
     int32_t fuseFd = 0;
     MockConnectFail();
@@ -1121,7 +1082,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_0
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_0000, TestSize.Level1)
 {
-
     string path;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UMountFileMgrFuse(0, path), E_SA_IS_NULLPTR);
@@ -1145,7 +1105,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDisShareFile_0001, testing::ext::TestSize.Level1)
 {
-
     std::map<std::string, std::string> shareFiles;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.MountDisShareFile(0, shareFiles), E_SA_IS_NULLPTR);
@@ -1169,7 +1128,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDisShareFile_
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0001, testing::ext::TestSize.Level1)
 {
-
     std::string networkId;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UMountDisShareFile(0, networkId), E_SA_IS_NULLPTR);
@@ -1193,7 +1151,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0002, testing::ext::TestSize.Level1)
 {
-
     std::vector<std::string> distributeDirs;
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UMountDisShareFile(distributeDirs), E_SA_IS_NULLPTR);
@@ -1217,7 +1174,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0003, testing::ext::TestSize.Level1)
 {
-
     std::vector<std::string> distributeDirs;
     distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data/com.test/.remote_share/123456789/Photo");
     MockAllSuccess();
@@ -1236,7 +1192,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0004, testing::ext::TestSize.Level1)
 {
-
     std::vector<std::string> distributeDirs;
     distributeDirs.push_back("/data/service/el2/100/hmdfs/account/data"
         "/com.test/.remote_share/123456789/Photo");
@@ -1260,7 +1215,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserPublicDirKey_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.InactiveUserPublicDirKey(0), E_SA_IS_NULLPTR);
 
@@ -1283,7 +1237,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserPublic
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserPublicDirPolicy_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UpdateUserPublicDirPolicy(0), E_SA_IS_NULLPTR);
 
@@ -1306,7 +1259,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserPublicDi
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpaceForSa_001, TestSize.Level1)
 {
-
     std::vector<UidSaInfo> vec;
     int64_t totalSize = 0;
     std::map<int32_t, std::string> bundleNameAndUid;
@@ -1333,7 +1285,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpace
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000, TestSize.Level1)
 {
-
     std::string volumeId = "vol-usb-001";
     int fuseFd = -1;
     std::string fsUuid;
@@ -1359,7 +1310,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActivationCallback_001, TestSize.Level1)
 {
-
     sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
     MockConnectFail();
     EXPECT_EQ(sdCommunication.RegisterUeceActivationCallback(ueceCallback), E_SA_IS_NULLPTR);
@@ -1383,7 +1333,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActiva
 */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActivationCallback_001, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
 
@@ -1406,7 +1355,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.CreateUserDir("", 0, 0, 0), E_SA_IS_NULLPTR);
 
@@ -1429,7 +1377,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001,
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSecretWithRecoveryKey_001, TestSize.Level1)
 {
-
     uint32_t userId = 100;
     uint32_t rkType = 100;
     MockConnectFail();
@@ -1454,7 +1401,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSecretWithRec
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001, TestSize.Level1)
 {
-
     const std::string path = "test_file.txt";
     const std::vector<std::string> inputList = {"unrelated_process_1", "unrelated_process_2"};
     std::vector<std::string> outputList;
@@ -1481,7 +1427,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_IsFileOccupied_001
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDataSizeByPath_001, TestSize.Level1)
 {
-
     std::string path = "/data/test/path";
     int64_t size = 0;
     MockConnectFail();
