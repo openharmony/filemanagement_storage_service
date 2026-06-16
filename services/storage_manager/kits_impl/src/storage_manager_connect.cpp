@@ -28,6 +28,12 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageManager {
+StorageManagerConnect& StorageManagerConnect::GetInstance()
+{
+    static StorageManagerConnect instance;
+    return instance;
+}
+
 StorageManagerConnect::StorageManagerConnect() {}
 StorageManagerConnect::~StorageManagerConnect() {}
 
@@ -389,7 +395,7 @@ int32_t StorageManagerConnect::DeactivateUserKey(uint32_t userId)
 void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     LOGI("SmDeathRecipient::OnRemoteDied reset proxy.");
-    DelayedSingleton<StorageManagerConnect>::GetInstance()->ResetProxy();
+    StorageManagerConnect::GetInstance().ResetProxy();
 }
 
 bool IsSystemApp()

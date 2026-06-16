@@ -29,7 +29,6 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
-std::shared_ptr<StorageDaemonCommunication> StorageDaemonCommunication::instance_ptr_for_testing_ = nullptr;
 
 StorageDaemonCommunication::StorageDaemonCommunication()
 {

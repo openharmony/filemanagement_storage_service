@@ -31,26 +31,6 @@ public:
         static StorageDaemonCommunication instance;
         return instance;
     }
-    static std::shared_ptr<StorageDaemonCommunication> CreateForTesting()
-    {
-        return std::shared_ptr<StorageDaemonCommunication>(new StorageDaemonCommunication());
-    }
-    static void SetInstanceForTesting(const std::shared_ptr<StorageDaemonCommunication>& testInstance)
-    {
-        instance_ptr_for_testing_ = testInstance;
-    }
-    static StorageDaemonCommunication& GetInstanceForTesting()
-    {
-        if (instance_ptr_for_testing_ != nullptr) {
-            return *instance_ptr_for_testing_;
-        }
-        return GetInstance();
-    }
-    static void ResetInstanceForTesting()
-    {
-        instance_ptr_for_testing_ = nullptr;
-    }
-    ~StorageDaemonCommunication();
 
 public:
     int32_t Connect();
@@ -186,10 +166,10 @@ public:
 
 private:
     StorageDaemonCommunication();
+    ~StorageDaemonCommunication();
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;
-    static std::shared_ptr<StorageDaemonCommunication> instance_ptr_for_testing_;
 };
 
 class SdDeathRecipient : public IRemoteObject::DeathRecipient {

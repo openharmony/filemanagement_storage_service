@@ -25,7 +25,6 @@
 #include "volume_core.h"
 #include "storage_service_errno.h"
 #include "volume_manager_service_mock.h"
-#include "storage_daemon_communication/storage_daemon_communication.h"
 
 namespace {
 using namespace std;
@@ -42,7 +41,6 @@ public:
     void TearDown();
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
     std::shared_ptr<MockVolumeManagerService> volumeManagerServiceMock_;
-    std::shared_ptr<MockStorageDaemonCommunication> storageDaemonCommunicationMock_;
     std::shared_ptr<VolumeExternalMock> volumeExternMock;
 };
 
@@ -61,16 +59,13 @@ void EncryptedVolumeManagerServiceTest::SetUp(void)
     fileUtilMoc_ = make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     volumeManagerServiceMock_ = std::make_shared<MockVolumeManagerService>();
-    storageDaemonCommunicationMock_ = std::make_shared<MockStorageDaemonCommunication>();
     volumeExternMock = std::make_shared<VolumeExternalMock>();
-    StorageDaemonCommunication::SetInstanceForTesting(storageDaemonCommunicationMock_);
 }
 
 void EncryptedVolumeManagerServiceTest::TearDown()
 {
     FileUtilMoc::fileUtilMoc = nullptr;
     fileUtilMoc_ = nullptr;
-    StorageDaemonCommunication::ResetInstanceForTesting();
 }
 
 HWTEST_F(EncryptedVolumeManagerServiceTest, Storage_manager_proxy_Encrypt_0, testing::ext::TestSize.Level1)

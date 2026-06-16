@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_MANAGER_CONNECT_H
 
 #include <nocopyable.h>
-#include <singleton.h>
 
 #include "ext_bundle_stats.h"
 #include "istorage_manager.h"
@@ -29,8 +28,8 @@
 namespace OHOS {
 namespace StorageManager {
 class StorageManagerConnect : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageManagerConnect);
 public:
+    static StorageManagerConnect& GetInstance();
     int32_t Connect();
     int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag);
     int32_t GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize);
@@ -85,6 +84,8 @@ public:
     int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
 private:
+    StorageManagerConnect();
+    ~StorageManagerConnect();
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;
