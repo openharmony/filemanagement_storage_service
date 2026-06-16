@@ -46,9 +46,6 @@ constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr const char *DATA_DEV_PATH = "/dev/block/by-name/userdata";
 constexpr const char* SYSTEM_DATA_CONFIG_PATH = "/etc/storage_statistic_systemdata.json";
 constexpr const char* SYSTEM_DATA_KEY = "storage.statistic.systemdata";
-constexpr const char* HMFS_PATH = "/sys/fs/hmfs/userdata";
-constexpr const char* MAIN_BLKADDR = "/main_blkaddr";
-constexpr const char* OVP_CHUNKS = "/ovp_chunks";
 constexpr const char* SCAN_EXCLUDE_PATH = "/data/local/tmp";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
@@ -64,7 +61,6 @@ constexpr int32_t BYTES_PRE_KB = 1024;
 constexpr int32_t LINE_MAX_LEN = 32;
 constexpr int32_t MAX_WHITE_PATH_COUNT = 10;
 constexpr int32_t MAX_WHITE_UID_COUNT = 3;
-constexpr int32_t FOUR_K = 4096;
 constexpr int32_t TOP_LARGE_COUNT = 15;
 constexpr uint64_t LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024;
 constexpr uint64_t LARGE_DIR_SIZE_THRESHOLD = 5 * 1024 * 1024;
@@ -791,25 +787,14 @@ int32_t QuotaManager::GetSystemDataSize(int64_t &otherUidSizeSum)
         LOGE("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
         return E_GET_SYSTEM_DATA_SIZE_ERROR;
     }
-    int64_t systemCacheSize = 0;
-    ret = GetSystemCacheSize(uidList, systemCacheSize);
+    ret = GetSystemCacheSize(uidList, otherUidSizeSum);
     if (ret != E_OK) {
         LOGE("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
-        systemCacheSize = 0;
+        otherUidSizeSum = 0;
         return E_GET_SYSTEM_DATA_SIZE_ERROR;
     }
-    LOGI("[L2:QuotaManager] GetSystemDataSize: system_cache=%{public}lld", static_cast<long long>(systemCacheSize));
-    int64_t metaDataSize = 0;
-    ret = GetMetaDataSize(metaDataSize);
-    if (ret != E_OK) {
-        LOGW("[L2:QuotaManager] GetSystemDataSize: failed, ret=%{public}d", ret);
-        metaDataSize = 0;
-    }
-    LOGI("[L2:QuotaManager] GetSystemDataSize: filesystem_metadata=%{public}lld", static_cast<long long>(metaDataSize));
-    otherUidSizeSum = systemCacheSize + metaDataSize;
-    LOGI("[L2:QuotaManager] GetSystemDataSize: end, total=%{public}lld (cache=%{public}lld + meta=%{public}lld)",
-        static_cast<long long>(otherUidSizeSum), static_cast<long long>(systemCacheSize),
-        static_cast<long long>(metaDataSize));
+    LOGI("[L2:QuotaManager] GetSystemDataSize: otherUidSizeSum=%{public}lld",
+        static_cast<long long>(otherUidSizeSum));
     return E_OK;
 }
 
@@ -893,37 +878,6 @@ int32_t QuotaManager::GetSystemCacheSize(const std::vector<int32_t> &uidList, in
     LOGI("[L2:QuotaManager] GetSystemCacheSize: end, cacheSize=%{public}lld", static_cast<long long>(cacheSize));
     return E_OK;
 #endif
-}
-
-int32_t QuotaManager::GetMetaDataSize(int64_t &metaDataSize)
-{
-    LOGI("GetMetaDataSize start");
-    std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
-    int64_t blkSize = -1;
-    int32_t ret = GetFileData(blkPath, blkSize);
-    if (ret != E_OK || blkSize < 0) {
-        LOGE("GetMetaDataSize failed to read main_blkaddr, ret=%{public}d, blkSize=%{public}lld",
-             ret, static_cast<long long>(blkSize));
-        return E_GET_SYSTEM_DATA_SIZE_ERROR;
-    }
-    std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
-    int64_t chunkSize = -1;
-    ret = GetFileData(chunkPath, chunkSize);
-    if (ret != E_OK || chunkSize < 0) {
-        LOGE("GetMetaDataSize failed to read ovp_chunks, ret=%{public}d, chunkSize=%{public}lld",
-             ret, static_cast<long long>(chunkSize));
-        return E_GET_SYSTEM_DATA_SIZE_ERROR;
-    }
-    if (blkSize > INT64_MAX / FOUR_K || chunkSize > INT64_MAX / (FOUR_K * BLOCK_BYTE)) {
-        LOGE("GetMetaDataSize overflow detected: blkSize=%{public}lld, chunkSize=%{public}lld",
-             static_cast<long long>(blkSize), static_cast<long long>(chunkSize));
-        return E_CALCULATE_OVERFLOW_UP;
-    }
-    metaDataSize = static_cast<int64_t>(blkSize * FOUR_K + chunkSize * FOUR_K * BLOCK_BYTE);
-    LOGI("GetMetaDataSize end: blkSize=%{public}lld, chunkSize=%{public}lld, total=%{public}lld",
-        static_cast<long long>(blkSize), static_cast<long long>(chunkSize),
-        static_cast<long long>(metaDataSize));
-    return E_OK;
 }
 
 int32_t QuotaManager::ScanDirectoryEntries(const std::string &path, std::vector<int64_t> &blks,

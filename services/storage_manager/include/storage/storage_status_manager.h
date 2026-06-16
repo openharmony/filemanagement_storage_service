@@ -48,6 +48,7 @@ public:
     int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats);
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
     int32_t GetSystemDataSize(int64_t &systemDataSize);
+    int32_t GetMetaDataSize(int64_t &metaDataSize);
 private:
     StorageStatusManager();
     ~StorageStatusManager();

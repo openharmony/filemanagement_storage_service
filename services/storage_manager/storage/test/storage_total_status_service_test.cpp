@@ -494,3 +494,89 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetCurrentBundleIno
     g_callingUid = 5523;
     g_getBundleInodeCountRet = ERR_OK;
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetDataTotalSize_0000
+ * @tc.name: Storage_total_status_service_GetDataTotalSize_0000
+ * @tc.desc: Test function of GetDataTotalSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetDataTotalSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetDataTotalSize_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t dataTotalSize = 0;
+    int32_t result = service.GetDataTotalSize(dataTotalSize);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GT(dataTotalSize, 0);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetDataTotalSize_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetFreeSize_WithMetadata_0000
+ * @tc.name: Storage_total_status_service_GetFreeSize_WithMetadata_0000
+ * @tc.desc: Test GetFreeSize with metadata calculation (graceful degradation on Linux without HMFS).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_WithMetadata_0000,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_GetFreeSize_WithMetadata_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t freeSize = 0;
+    int32_t result = service.GetFreeSize(freeSize);
+    // On Linux without HMFS, GetMetaDataSize will fail but GetFreeSize should still return E_OK (graceful degradation)
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(freeSize, 0);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_GetFreeSize_WithMetadata_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetRawFreeSize_0000
+ * @tc.name: Storage_total_status_service_GetRawFreeSize_0000
+ * @tc.desc: Test function of GetRawFreeSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetRawFreeSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetRawFreeSize_0000";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t rawFreeSize = 0;
+    int32_t result = service.GetRawFreeSize(rawFreeSize);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_GE(rawFreeSize, 0);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetRawFreeSize_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetRawFreeSize_0001
+ * @tc.name: Storage_total_status_service_GetRawFreeSize_0001
+ * @tc.desc: Test GetRawFreeSize returns value not less than 0 and GetFreeSize >= GetRawFreeSize.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetRawFreeSize_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetRawFreeSize_0001";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int64_t rawFreeSize = 0;
+    int64_t freeSize = 0;
+    int32_t rawRet = service.GetRawFreeSize(rawFreeSize);
+    int32_t freeRet = service.GetFreeSize(freeSize);
+    EXPECT_EQ(rawRet, E_OK);
+    EXPECT_EQ(freeRet, E_OK);
+    // GetFreeSize = rawFreeSize + freeMetadata (>= rawFreeSize when metadata available)
+    EXPECT_GE(freeSize, rawFreeSize);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetRawFreeSize_0001";
+}

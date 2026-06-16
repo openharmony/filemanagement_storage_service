@@ -1272,42 +1272,6 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetSystemCacheSize_003, TestSize.Lev
 }
 
 /**
- * @tc.name: QuotaManagerTest_GetMetaDataSize_001
- * @tc.desc: Test GetMetaDataSize when file paths are invalid or files don't exist
- * @tc.type: FUNC
- * @tc.require: AR20260114725643
- */
-HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetMetaDataSize_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaDataSize_001 start";
-    // This test verifies error handling when HMFS sysfs files don't exist
-    // which is typical on non-HMFS systems
-    int64_t metaDataSize = 0;
-    int32_t result = QuotaManager::GetInstance().GetMetaDataSize(metaDataSize);
-    // On systems without HMFS, this should return error
-    EXPECT_TRUE(result == E_OK || result == E_GET_SYSTEM_DATA_SIZE_ERROR);
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaDataSize_001 end";
-}
-
-/**
- * @tc.name: QuotaManagerTest_GetMetaDataSize_002
- * @tc.desc: Test GetMetaDataSize overflow check
- * @tc.type: FUNC
- * @tc.require: AR20260114725643
- */
-HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetMetaDataSize_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaDataSize_002 start";
-    // This test verifies the overflow detection in GetMetaDataSize
-    // The function checks for overflow before calculating metadata size
-    int64_t metaDataSize = 0;
-    int32_t result = QuotaManager::GetInstance().GetMetaDataSize(metaDataSize);
-    // If files don't exist, returns error; if they exist, checks for overflow
-    EXPECT_TRUE(result == E_OK || result == E_GET_SYSTEM_DATA_SIZE_ERROR || result == E_CALCULATE_OVERFLOW_UP);
-    GTEST_LOG_(INFO) << "QuotaManagerTest_GetMetaDataSize_002 end";
-}
-
-/**
  * @tc.name: QuotaManagerTest_AddBlksRecurseMultiUids_001
  * @tc.desc: Test AddBlksRecurseMultiUids with valid directory
  * @tc.type: FUNC
