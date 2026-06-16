@@ -31,7 +31,6 @@ config("storage_daemon_crypto_config") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 }
 

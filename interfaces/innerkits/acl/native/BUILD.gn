@@ -59,7 +59,6 @@ ohos_shared_library("storage_manager_acl") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 
   ldflags = [
