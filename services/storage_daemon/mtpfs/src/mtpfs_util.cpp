@@ -31,6 +31,7 @@
 #include <climits>
 #include <libmtp.h>
 #include <libusb.h>
+#include <securec.h>
 
 #include "file_utils.h"
 #include "storage_service_errno.h"

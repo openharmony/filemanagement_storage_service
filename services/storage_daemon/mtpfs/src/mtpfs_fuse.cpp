@@ -18,6 +18,7 @@
 #include <fuse_opt.h>
 #include <thread>
 #include <unistd.h>
+#include <securec.h>
 
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
