@@ -1580,7 +1580,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetSystemDataSize_
 
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Encrypt_0000, TestSize.Level1)
 {
-
     MockConnectFail();
     EXPECT_EQ(sdCommunication.Encrypt("", ""), E_SA_IS_NULLPTR);
 
