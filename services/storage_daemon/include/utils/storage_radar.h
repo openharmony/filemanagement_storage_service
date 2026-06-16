@@ -126,6 +126,7 @@ public:
     bool RecordFunctionResult(const RadarParameter &parameterRes,
                              const std::string &eventName = FILE_STORAGE_MANAGER_FAULT);
     bool RecordStorageStatusResult(const RadarParameter &parRes, const std::string &eventName);
+    bool RecordFaultResult(const RadarParameter &parRes, const std::string &eventName);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
 	                                const std::string &keyElxLevel);
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
@@ -159,6 +160,7 @@ public:
     static void ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSpaceRadar(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportStorageStatusRadar(const std::string &orgPkgName, const std::string &extraData);
+    static void ReportStorageStatusRadar(const std::string &funcName, int ret, const std::string &extraData);
     static void ReportSetQuotaByBaseline(const std::string &funcName, const std::string &extraData);
     static void ReportFucBehavior(const std::string &funcName, uint32_t userId, const std::string &extraData,
         int32_t ret);
