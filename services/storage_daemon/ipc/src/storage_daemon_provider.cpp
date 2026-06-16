@@ -712,7 +712,7 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
         return err;
     }
     err = StorageDaemon::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
-                                                                     plainText);
+                                                                    plainText);
     if (err == E_OK) {
         LOGI("[L1:StorageDaemonProvider] UpdateUseAuthWithRecoveryKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     } else {
