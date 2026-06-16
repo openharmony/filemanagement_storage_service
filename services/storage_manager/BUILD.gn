@@ -35,7 +35,6 @@ config("storage_manager_config") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 }
 

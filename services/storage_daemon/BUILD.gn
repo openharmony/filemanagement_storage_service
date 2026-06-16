@@ -158,7 +158,6 @@ ohos_executable("storage_daemon") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 
   if (storage_service_user_file_sharing) {
@@ -376,7 +375,6 @@ ohos_executable("sdc") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 
   ldflags = [
@@ -452,7 +450,6 @@ ohos_shared_library("storage_common_utils") {
     "-fdata-sections",
     "-fvisibility=hidden",
     "-flto",
-    "-fno-unwind-tables",
   ]
 
   ldflags = [
