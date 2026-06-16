@@ -30,7 +30,12 @@ config("storage_manager_config") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
-    "-O2",
+    "-Oz",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-fvisibility=hidden",
+    "-flto",
+    "-fno-unwind-tables",
   ]
 }
 
@@ -81,6 +86,14 @@ ohos_shared_library("storage_manager") {
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
+
+  ldflags = [
+    "-flto",
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
+    "-Wl,-z,max-page-size=4096",
+    "-Wl,-z,separate-code",
+  ]
 
   configs = [ ":storage_manager_config" ]
 
