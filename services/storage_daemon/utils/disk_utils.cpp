@@ -572,23 +572,19 @@ std::string GetOpticalDriveType(const std::string &diskPath)
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< GetConfiguration not supported");
         return "";
     }
-
     uint32_t dataLen = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
     if (dataLen < FEATURE_CODE_LENGTH || dataLen > MAX_BUF - FEATURE_CODE_LENGTH) {
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< Invalid data length=%{public}d",
              dataLen);
         return "";
     }
-
     uint16_t currentProfile = (buf[6] << 8) | buf[7];
     LOGI("[L8:DiskUtils] GetOpticalDriveType: currentProfile=0x%{public}x", currentProfile);
-
     bool hasDvdRw = false;
     bool hasDvdR = false;
     bool hasBdRe = false;
     bool hasBdR = false;
     bool hasBdRom = false;
-
     for (size_t i = FEATURE_START;
          i + ADDITIONAL_LEN < std::min(static_cast<size_t>(dataLen + FEATURE_CODE_LENGTH), sizeof(buf));) {
         uint16_t feature = (buf[i] << FEATURE_START) | buf[i + LOW_BYTE_OFFSET];
@@ -606,13 +602,11 @@ std::string GetOpticalDriveType(const std::string &diskPath)
         }
         i += FEATURE_CODE_LENGTH + additionalLen;
     }
-
-    if (hasBdRe || hasBdR || hasBdRom) {return "BD RE";}
+    if (hasBdRe || hasBdR || hasBdRom) {return "BD-RE";}
     if (hasDvdRw || hasDvdR) {return "DVD RW";}
     if (currentProfile != 0) {
         return DiskType2Str(static_cast<uint8_t>(currentProfile & 0xFF));
     }
-
     LOGW("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT NO MATCH <<< No matching profile found");
     return "";
 }
