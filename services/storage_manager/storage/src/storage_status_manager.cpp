@@ -617,15 +617,10 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
 int32_t StorageStatusManager::GetMetaDataSize(int64_t &metaDataSize)
 {
     metaDataSize = 0;
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("StorageStatusManager::GetMetaDataSize: sdCommunication is nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     std::string blkPath = std::string(HMFS_PATH) + std::string(MAIN_BLKADDR);
     int64_t blkSize = -1;
-    int32_t ret = sdCommunication->GetDataSizeByPath(blkPath, blkSize);
+    int32_t ret = sdCommunication.GetDataSizeByPath(blkPath, blkSize);
     if (ret != E_OK || blkSize < 0) {
         LOGE("StorageStatusManager::GetMetaDataSize: GetDataSizeByPath blkPath failed, ret=%{public}d", ret);
         return ret;
@@ -633,7 +628,7 @@ int32_t StorageStatusManager::GetMetaDataSize(int64_t &metaDataSize)
 
     std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
     int64_t chunkSize = -1;
-    ret = sdCommunication->GetDataSizeByPath(chunkPath, chunkSize);
+    ret = sdCommunication.GetDataSizeByPath(chunkPath, chunkSize);
     if (ret != E_OK || chunkSize < 0) {
         LOGE("StorageStatusManager::GetMetaDataSize: GetDataSizeByPath chunkPath failed, ret=%{public}d", ret);
         return ret;
