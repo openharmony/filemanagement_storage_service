@@ -143,7 +143,9 @@ void StorageDaemonCommunicationTest::MockAllSuccess()
     sdCommunication.ResetSdProxy();
     EXPECT_CALL(*sa, GetSystemAbilityManager()).Times(AnyNumber()).WillRepeatedly(Return(sam));
     EXPECT_CALL(*sam, GetSystemAbility(_)).Times(AnyNumber()).WillRepeatedly(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([&sdCommunication {sdCommunication}] () {	 
+         sdCommunication.storageDaemon_ = nullptr; 
+     }), Return(true)));
 }
 
 /**
