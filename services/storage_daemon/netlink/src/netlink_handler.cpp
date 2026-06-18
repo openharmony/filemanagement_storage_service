@@ -73,7 +73,7 @@ void NetlinkHandler::OnEvent(char *msg)
             return;
         }
 #ifdef DISK_MANAGER
-        DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->OnBlockDiskUevent(convertedMsg);
+        OHOS::DiskManager::DiskManagerClient::GetInstance().OnBlockDiskUevent(convertedMsg);
 #endif
     }
 }
