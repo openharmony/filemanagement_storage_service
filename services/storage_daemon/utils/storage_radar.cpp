@@ -35,6 +35,7 @@ constexpr int32_t GLOBAL_USER_ID = 0;
 constexpr int32_t PARAMS_LEN = 12;
 constexpr int32_t BEHAVIOR_PARAMS_LEN = 4;
 constexpr int32_t STORAGE_STATUS_STATISTIC_PARAMS_LEN = 4;
+constexpr int32_t STORAGE_STATUS_FAULT_PARAMS_LEN = 10;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
@@ -204,6 +205,51 @@ bool StorageRadar::RecordStorageStatusResult(const RadarParameter &parRes, const
         LOGE("StorageRadar ERROR, res :%{public}d", res);
         return false;
     }
+    return true;
+}
+
+void StorageRadar::ReportStorageStatusRadar(const std::string &funcName, int ret, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = GLOBAL_USER_ID,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_STATUS_FAULT);
+}
+
+bool StorageRadar::RecordFaultResult(const RadarParameter &parRes, const std::string &eventName)
+{
+    int32_t res = E_OK;
+    HiSysEventParam params[STORAGE_STATUS_FAULT_PARAMS_LEN] = {
+        {.name = "ORG_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.orgPkg.c_str() }, .arraySize = 0, },
+        {.name = "USER_ID", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.userId }, .arraySize = 0, },
+        {.name = "FUNC", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.funcName.c_str() }, .arraySize = 0, },
+        {.name = "BIZ_SCENE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(parRes.bizScene) },
+            .arraySize = 0, },
+        {.name = "BIZ_STAGE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(parRes.bizStage) },
+            .arraySize = 0, },
+        {.name = "TO_CALL_PKG", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.toCallPkg.c_str() },
+            .arraySize = 0, },
+        {.name = "FILE_STATUS", .t = HISYSEVENT_STRING, .v = { .s = (char *)parRes.extraData.c_str() },
+            .arraySize = 0, },
+        {.name = "STAGE_RES", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(StageRes::STAGE_FAIL) },
+            .arraySize = 0, },
+        {.name = "ERROR_CODE", .t = HISYSEVENT_INT32, .v = { .i32 = parRes.errorCode }, .arraySize = 0 },
+        {.name = "BIZ_STATE", .t = HISYSEVENT_INT32, .v = { .i32 = static_cast<int32_t>(BizState::BIZ_STATE_START) },
+            .arraySize = 0, },
+    };
+    res = OH_HiSysEvent_Write(STORAGESERVICE_DOMAIN, eventName.c_str(), HISYSEVENT_FAULT,
+        params, STORAGE_STATUS_FAULT_PARAMS_LEN);
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+        return false;
+    }
+
     return true;
 }
 
