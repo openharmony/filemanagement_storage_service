@@ -1,6 +1,6 @@
 # 实现必做清单
 
-本文只记录实现新功能时的必做步骤，不包含代码模板。IPC 新增流程见 `ipc-interface-guide.md`，代码放置见 `architecture.md`，命名规范见 `code-conventions.md`。
+本文只记录实现新功能时的必做步骤，不包含代码模板。IPC 新增流程见 [[ipc-interface-guide]]，代码放置见 [[architecture]]。
 
 ## 所有公开接口的必做步骤
 

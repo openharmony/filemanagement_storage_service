@@ -1,6 +1,6 @@
 # 空间统计与配额约束
 
-本文只记录配额操作的前提条件、空间查询约束和监控阈值规则。IPC 调用约束见 `ipc-interface-guide.md`，线程安全见 `constraints-and-traps.md`。
+本文只记录配额操作的前提条件、空间查询约束和监控阈值规则。IPC 调用约束见 [[ipc-interface-guide]]，线程安全见 [[constraints-and-traps]]。
 
 ## 配额前提条件
 
@@ -16,13 +16,16 @@
 
 ## 监控阈值规则
 
-| 空间阈值 | 值 | 触发行为 |
-|------|------|----------|
-| 通知低 | 500 MB | 发送低空间通知 |
-| 通知中 | 2 GB | 发送中空间通知 |
-| 清理低 | 750 MB | 触发 RICH 级清理 |
-| 清理中 | 总量 5% | 触发 HIGH 级清理 |
-| 清理高 | 总量 12% | 触发 MEDIUM 级清理 |
+默认值定义于 `services/storage_manager/storage/src/storage_monitor_service.cpp` 的 `DEFAULT_PARAMS`，可通过系统参数 `const.storage_service.storage_alert_policy` 覆盖：
+
+| 阈值键 | 默认值 | 触发行为 | 源码符号 |
+|--------|--------|----------|----------|
+| `notify_l` | 500 MB | 发送低空间通知 | `BIZ_STAGE_THRESHOLD_NOTIFY_LOW` |
+| `notify_m` | 2 GB | 发送中空间通知 | `BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM` |
+| `notify_h` | 总量 10% | 发送高空间通知 | `BIZ_STAGE_THRESHOLD_NOTIFY_HIGH` |
+| `clean_l` | 750 MB | 触发 LOW 级清理 | `BIZ_STAGE_THRESHOLD_CLEAN_LOW` |
+| `clean_m` | 总量 5% | 触发 MEDIUM 级清理 | `BIZ_STAGE_THRESHOLD_CLEAN_MEDIUM` |
+| `clean_h` | 总量 12% | 触发 HIGH 级清理 | `BIZ_STAGE_THRESHOLD_CLEAN_HIGH` |
 
 清理按应用缓存大小排序，优先清理大缓存应用。清理通知发给应用，不主动删除应用数据。
 

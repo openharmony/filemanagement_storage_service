@@ -51,6 +51,19 @@ prebuilts/build-tools/linux-x86/bin/ninja -C out/rk3568 StorageDaemonProviderTes
 | 权限不足 | `E_PERMISSION_DENIED` | E_ERR |
 | 参数无效 | `E_PARAMS_INVALID` | E_ERR |
 
+### 错误码范围
+
+基础值 `STORAGE_SERVICE_SYS_CAP_TAG = 13600000`（定义于 `interfaces/innerkits/storage_manager/native/storage_service_errno.h`）：
+
+| 范围 | 类别 | 示例 |
+|------|------|------|
+| 0 | 成功（`E_OK`） | — |
+| 13600001-13600025 | 通用错误 | `E_PERMISSION_DENIED`、`E_NON_EXIST`、`E_PARAMS_INVALID` |
+| 13600201-13600245 | 密钥管理 | `E_USERID_RANGE`、`E_ELX_KEY_STORE_ERROR`、`E_ELX_KEY_ACTIVE_ERROR` |
+| 13600350-13600353 | 密钥完整性 | `E_DIR_INTEGRITY_ERR`、`E_KEY_SIZE_ERROR` |
+| 13601201 | BundleManager | `E_BUNDLEMGR_ERROR` |
+| 13601701-13601719 | 卷状态 | `E_VOL_STATE`、`E_TIMEOUT_MOUNT` |
+
 ### 日志必打节点
 
 | 流程 | 必打节点 | 级别 |
@@ -88,13 +101,3 @@ prebuilts/build-tools/linux-x86/bin/ninja -C out/rk3568 StorageDaemonProviderTes
 | 时序跳步、状态跳转、锁屏访问、跨用户、IPC 死锁 | `docs/knowledge/constraints-and-traps.md` |
 | 日志查看、SA 状态检查、问题定位 | `docs/knowledge/debugging-guide.md` |
 | 编译宏差异、HUKS/OsAccount 不可用 | `docs/knowledge/external-dependencies.md` |
-
-## 项目约束
-
-- 用户时序不可跳步：`PrepareAddUser → StartUser → CompleteAddUser`，缺步会导致 EL2-EL4 密钥未激活。
-- 卷状态不可跳转：`MOUNTED → EJECTING → REMOVED`，必须经过 EJECTING，不可直接置 REMOVED。
-- EL2 密钥锁屏移除、解锁安装：锁屏时不可访问 EL2 加密数据，必须在解锁后才操作。
-- 用户隔离：不可用 userId=100 的密钥操作 userId=105 的目录，密钥和目录必须匹配。
-- IPC 死锁预防：不要在持有 Manager 锁时调用 Daemon IPC，先释放锁再发起 IPC。
-- 错误码必须具体：禁止使用 E_ERR，必须使用对应类别的具体错误码（如 E_USERID_RANGE、E_VOL_STATE）。
-- C++ 改动优先复用项目宏和返回约定：LOGI/LOGE/LOGW/LOGD、E_OK/E_PARAMS_INVALID、StorageRadar::Report*。
