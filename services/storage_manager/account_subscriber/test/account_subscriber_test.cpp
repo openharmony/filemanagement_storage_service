@@ -23,12 +23,20 @@
 #include "common_event_manager.h"
 #include "common_event_support.h"
 
+extern "C" {
+    int g_ret = 0;
+    [[maybe_unused]]int AppSpawnClientSendUserLockStatus(int32_t userId, bool lockStatus, uint32_t timeSec)
+    {
+        return g_ret;
+    }
+}
+
 namespace OHOS {
 namespace StorageManager {
 using namespace std;
 using namespace testing::ext;
-static constexpr const char *SYS_PARAM_APPSPAWN_UNLOCK_MOUNT = "startup.appspawn.unlock_mount.";
 
+static constexpr int32_t APPSPAWN_TIMEOUT = 0xD000011;
 class AccountSubscriberTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -289,8 +297,11 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_SendUserLockStatusToAppSpawn_
     GTEST_LOG_(INFO) << "Account_Subscriber_SendUserLockStatusToAppSpawn_0000-begin";
     int32_t userId = 100;
     bool lockStatus = false;
-    int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId, lockStatus);
+    int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId, lockStatus, 2);
     EXPECT_EQ(ret, 0);
+    g_ret = -1;
+    ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId, lockStatus, 2);
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "Account_Subscriber_SendUserLockStatusToAppSpawn_0000 end";
 }
 
@@ -307,100 +318,18 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_MountCryptoPathAgain_0000, Te
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_MountCryptoPathAgain_0000-begin";
     int32_t userId = 100;
-    AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_.count(userId), 0);
+    g_ret = E_OK;
+    int32_t ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    g_ret = APPSPAWN_TIMEOUT;
+    ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, g_ret);
+
+    g_ret = E_MOUNT_AGAIN_FAILED;
+    ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, g_ret);
     GTEST_LOG_(INFO) << "Account_Subscriber_MountCryptoPathAgain_0000 end";
-}
-
-/**
-* @tc.number: SUB_STORAGE_Account_Subscriber_OnUnlockParamChanged_0000
-* @tc.name: Account_Subscriber_OnUnlockParamChanged_0000
-* @tc.desc: Test OnUnlockParamChanged with null parameters
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: issueI9G5A0
-*/
-HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnUnlockParamChanged_0000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0000-begin";
-    int32_t userId = 100;
-    AccountSubscriber::GetInstance().paramChangedMap_[userId] = PARAM_UNKNOWN;
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(nullptr, "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-    AccountSubscriber::GetInstance().OnUnlockParamChanged("test.key", nullptr, &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0000 end";
-}
-
-/**
-* @tc.number: SUB_STORAGE_Account_Subscriber_OnUnlockParamChanged_0001
-* @tc.name: Account_Subscriber_OnUnlockParamChanged_0001
-* @tc.desc: Test OnUnlockParamChanged with valid parameters and value equals "0"
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: issueI9G5A0
-*/
-HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnUnlockParamChanged_0001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0001-begin";
-    AccountSubscriber::GetInstance().paramChangedMap_.clear();
-    int32_t userId = 100;
-    AccountSubscriber::GetInstance().paramChangedMap_[userId] = PARAM_UNKNOWN;
-    std::string testKey = std::string("test.key") +
-        std::string(SYS_PARAM_APPSPAWN_UNLOCK_MOUNT) + std::to_string(userId);
-
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(
-        testKey.c_str(),
-        "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-
-    testKey = std::string(SYS_PARAM_APPSPAWN_UNLOCK_MOUNT);
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(
-        testKey.c_str(),
-        "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-
-    testKey = std::string(SYS_PARAM_APPSPAWN_UNLOCK_MOUNT) + std::string("test.key");
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(
-        testKey.c_str(),
-        "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-
-    int32_t tmpUserId = 101;
-    testKey = std::string(SYS_PARAM_APPSPAWN_UNLOCK_MOUNT) + std::to_string(tmpUserId);
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(
-        testKey.c_str(),
-        "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_UNKNOWN);
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0001 end";
-}
-
-/**
-* @tc.number: SUB_STORAGE_Account_Subscriber_OnUnlockParamChanged_0002
-* @tc.name: Account_Subscriber_OnUnlockParamChanged_0002
-* @tc.desc: Test OnUnlockParamChanged with valid parameters and value not equals "0"
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: issueI9G5A0
-*/
-HWTEST_F(AccountSubscriberTest, Account_Subscriber_OnUnlockParamChanged_0002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0002-begin";
-    AccountSubscriber::GetInstance().paramChangedMap_.clear();
-    int32_t userId = 100;
-    AccountSubscriber::GetInstance().paramChangedMap_[userId] = PARAM_UNKNOWN;
-    std::string testKey = std::string(SYS_PARAM_APPSPAWN_UNLOCK_MOUNT) + std::to_string(userId);
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(testKey.c_str(),
-        "1", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_FAIL);
-
-    AccountSubscriber::GetInstance().OnUnlockParamChanged(testKey.c_str(),
-        "0", &AccountSubscriber::GetInstance());
-    EXPECT_EQ(AccountSubscriber::GetInstance().paramChangedMap_[userId], PARAM_SUCCESS);
-    GTEST_LOG_(INFO) << "Account_Subscriber_OnUnlockParamChanged_0002 end";
 }
 } // namespace StorageManager
 } // namespace OHOS
