@@ -101,3 +101,11 @@ prebuilts/build-tools/linux-x86/bin/ninja -C out/rk3568 StorageDaemonProviderTes
 | 时序跳步、状态跳转、锁屏访问、跨用户、IPC 死锁 | `docs/knowledge/constraints-and-traps.md` |
 | 日志查看、SA 状态检查、问题定位 | `docs/knowledge/debugging-guide.md` |
 | 编译宏差异、HUKS/OsAccount 不可用 | `docs/knowledge/external-dependencies.md` |
+
+## 项目约束
+
+- 用户时序不可跳步：`PrepareAddUser → StartUser → CompleteAddUser`，缺步会导致 EL2-EL4 密钥未激活。
+- 卷状态不可跳转：`MOUNTED → EJECTING → REMOVED`，必须经过 EJECTING，不可直接置 REMOVED。
+- EL2 密钥锁屏移除、解锁安装：锁屏时不可访问 EL2 加密数据，必须在解锁后才操作。
+- 用户隔离：不可用 userId=100 的密钥操作 userId=105 的目录，密钥和目录必须匹配。
+- IPC 死锁预防：不要在持有 Manager 锁时调用 Daemon IPC，先释放锁再发起 IPC。
