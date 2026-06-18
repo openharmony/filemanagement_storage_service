@@ -65,6 +65,10 @@ private:
     std::string GetFwVersion(const std::string &deviceName);
     std::string GetRealPath(const std::string &deviceName);
     nlohmann::json ParseMediaInfoLines(const std::vector<std::string> &output);
+    bool IsValidSpeedString(const std::string &speedStr);
+    std::string GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo);
+    nlohmann::json ParseWodimPrcapOutput(const std::vector<std::string> &output);
+    nlohmann::json GetSpeedInfo(const std::string &devPath, const std::string &discType, std::string &maxWriteSpeed);
 
     std::string sysBlockPath;
     std::string devBlockPath;
