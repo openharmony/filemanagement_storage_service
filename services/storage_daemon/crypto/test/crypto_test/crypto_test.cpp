@@ -42,19 +42,23 @@ public:
     void TearDown();
 };
 
-void CryptoTest::SetUpTestCase(void) {
+void CryptoTest::SetUpTestCase(void)
+{
     // input testsuit setup step，setup invoked before all testcases
 }
 
-void CryptoTest::TearDownTestCase(void) {
+void CryptoTest::TearDownTestCase(void)
+{
     // input testsuit teardown step，teardown invoked after all testcases
 }
 
-void CryptoTest::SetUp(void) {
+void CryptoTest::SetUp(void)
+{
     // input testcase setup step，setup invoked before each testcases
 }
 
-void CryptoTest::TearDown(void) {
+void CryptoTest::TearDown(void)
+{
     // input testcase teardown step，teardown invoked after each testcases
 }
 

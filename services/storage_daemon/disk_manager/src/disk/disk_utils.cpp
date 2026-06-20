@@ -813,6 +813,10 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
 int32_t DiskUtils::Erase(const std::string &devPath)
 {
     LOGI("Erase: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t res = CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("Erase: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
+    }
     std::vector<std::string> output;
     std::vector<std::string> cmd = {};
     std::string oddLabel = GetCDType(devPath);
@@ -826,13 +830,17 @@ int32_t DiskUtils::Erase(const std::string &devPath)
     } else {
         cmd = {"dvd+rw-format", "-blank", devPath};
     }
-    int res = ForkExec(cmd, &output);
+    int err = ForkExec(cmd, &output);
+    for (auto str : output) {
+        LOGI("Erase output: %{public}s", str.c_str());
+    }
+    if (err != E_OK) {
+        LOGE("Erase: <<< EXIT FAILED <<< ForkExec erase failed, err=%{public}d", err);
+        return err;
+    }
+    res = CleanTempDirectory();
     if (res != E_OK) {
-        for (auto str : output) {
-            LOGI("Erase output: %{public}s", str.c_str());
-        }
-        LOGE("Erase: <<< EXIT FAILED <<< ForkExec erase failed, err=%{public}d", res);
-        return res;
+        LOGE("Erase: CleanTempDirectory exit failed, non-critical, res=%{public}d", res);
     }
     LOGI("Erase: <<< EXIT SUCCESS <<<");
     return E_OK;
@@ -846,8 +854,7 @@ int32_t DiskUtils::Eject(const std::string &devName)
     char linkTarget[PATH_MAX] = {0};
     ssize_t len = readlink(deviceLinkPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
     if (len <= 0) {
-        LOGE("Eject: Failed to read symlink %{public}s, errno=%{public}d",
-             deviceLinkPath.c_str(), errno);
+        LOGE("Eject: Failed to read symlink %{public}s, errno=%{public}d", deviceLinkPath.c_str(), errno);
         return E_ERR;
     }
     linkTarget[len] = '\0';
@@ -868,10 +875,10 @@ int32_t DiskUtils::Eject(const std::string &devName)
         "dev=" + scsiDev
     };
     int res = ForkExec(cmd, &output);
+    for (const auto &str : output) {
+        LOGI("Eject output: %{public}s", str.c_str());
+    }
     if (res != E_OK) {
-        for (const auto &str : output) {
-            LOGI("Eject output: %{public}s", str.c_str());
-        }
         LOGE("Eject: <<< EXIT FAILED <<< ForkExec failed, err=%{public}d", res);
         return res;
     }
@@ -1000,7 +1007,7 @@ int32_t DiskUtils::GetVolumeOpProcess(const std::string &volId, int32_t &progres
     int32_t err = 0;
 
     std::string filePath;
-    if (!GetRealPath("/data/local/vol_tmp/" + volId, filePath)) {
+    if (!GetRealPath("/data/local/vol_tmp/percent", filePath)) {
         LOGE("GetVolumeOpProcess:<<< EXIT FAILED <<< volId: %{public}s",
             volId.c_str());
         return E_PARAMS_INVALID;
@@ -1128,14 +1135,14 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
 int32_t DiskUtils::CleanTempDirectory()
 {
     LOGI("CleanTempDirectory: >>> ENTER <<<");
-    std::vector<std::string> cmd = {"rm", "-rf", "/data/local/vol_tmp"};
+    std::vector<std::string> cmd = {"rm", "-rf", "/data/local/vol_tmp/percent"};
     std::vector<std::string> output;
     int32_t err = ForkExec(cmd, &output);
     if (err != E_OK) {
         for (const auto& s : output) {
             LOGI("CleanTempDirectory: output=%{public}s", s.c_str());
         }
-        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf /data/local/vol_tmp failed, err=%{public}d", err);
+        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf /data/local/vol_tmp/percent failed, err=%{public}d", err);
         return err;
     }
     LOGI("CleanTempDirectory: <<< EXIT SUCCESS <<<");

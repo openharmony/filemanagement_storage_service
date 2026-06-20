@@ -119,20 +119,27 @@ int32_t IsoOperator::CreateIsoImage(const std::string &devPath,
 {
     LOGI("IsoOperator CreateIsoImage:>>> ENTER <<< devPath=%{public}s, mountPath=%{public}s",
         devPath.c_str(), mountPath.c_str());
+    int32_t res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("IsoOperator CreateIsoImage: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
+    }
     std::vector<std::string> output;
     std::vector<std::string> cmd = {"genisoimage", "-V", "ISOIMAGE", "-J", "-r", "-o", filePath, mountPath};
 
     int32_t err = ForkExec(cmd, &output);
+    for (const auto& s : output) {
+        LOGI("IsoOperator CreateIsoImage:s=%{public}s", s.c_str());
+    }
     if (err != E_OK) {
-        for (const auto& s : output) {
-            LOGI("IsoOperator CreateIsoImage:s=%{public}s", s.c_str());
-        }
-        LOGE("IsoOperator CreateIsoImage:<<< EXIT FAILED <<< failed for devPath: %{public}s",
-            devPath.c_str());
+        LOGE("IsoOperator CreateIsoImage:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
+    res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("IsoOperator CreateIsoImage: CleanTempDirectory exit failed, non-critical, res=%{public}d", res);
+    }
     LOGI("IsoOperator CreateIsoImage:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
-    return err;
+    return E_OK;
 }
 
 int32_t IsoOperator::PrepareIsoImage(const std::string &devPath,
@@ -151,12 +158,9 @@ int32_t IsoOperator::PrepareIsoImage(const std::string &devPath,
              devPath.c_str());
         return E_ERR;
     }
-    err = DiskUtils::CleanTempDirectory();
-    if (err != E_OK) {
-        LOGE("PrepareIsoImage:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s",
-             devPath.c_str());
-        RmDirRecurse(BURN_TMP_DIR);
-        return err;
+    int32_t res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("PrepareIsoImage: CleanTempDirectory failed, non-critical, res=%{public}d", res);
     }
     if (burnOptions.isIsoImage) {
         LOGI("PrepareIsoImage: Using existing ISO image, skip generation");
@@ -194,72 +198,78 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< PrepareIsoImage failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
+    std::string speedOpt = "-speed=" + std::to_string(burnOptions.burnSpeed);
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
         if (isDiskEmpty) {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", MID_PATH};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", speedOpt, MID_PATH};
         } else {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", MID_PATH};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", speedOpt, MID_PATH};
         }
     } else {
-        cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", burnOptions.burnPath};
+        cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", speedOpt, burnOptions.burnPath};
     }
     err = ForkExec(cmd, &output);
+    for (const auto& s : output) {
+        LOGI("IsoOperator DoCDBurn:s=%{public}s", s.c_str());
+    }
     if (err != E_OK) {
-        for (const auto& s : output) {
-            LOGI("IsoOperator DoCDBurn:s=%{public}s", s.c_str());
-        }
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< wodim failed for devPath: %{public}s", devPath.c_str());
         RmDirRecurse(BURN_TMP_DIR);
         return err;
     }
-    err = DiskUtils::CleanTempDirectory();
-    if (err != E_OK) {
-        LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< CleanTempDirectory failed for devPath: %{public}s", devPath.c_str());
-        RmDirRecurse(BURN_TMP_DIR);
-        return err;
+    int32_t res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("BurnDoCDBurn: CleanTempDirectory failed, non-critical, res=%{public}d", res);
     }
     RmDirRecurse(BURN_TMP_DIR);
     LOGI("BurnDoCDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
-    return err;
+    return E_OK;
 }
 
 int32_t IsoOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty)
 {
     LOGI("BurnDoDVDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("BurnDoDVDBurn: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
+    }
     int32_t err = 0;
-
+    std::string speedOpt = "-speed=" + std::to_string(burnOptions.burnSpeed);
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
         if (isDiskEmpty) {
-            cmd = {"growisofs", "-Z", devPath, "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+            cmd = {"growisofs", speedOpt, "-Z", devPath,
+                   "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
         } else {
-            cmd = {"growisofs", "-M", devPath, "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+            cmd = {"growisofs", speedOpt, "-M", devPath,
+                   "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
         }
     } else {
         std::string isoBurnPath = devPath + "=" + burnOptions.burnPath;
         cmd = {"growisofs", "-Z", isoBurnPath};
     }
     err = ForkExec(cmd, &output);
+    for (const auto& s : output) {
+        LOGI("IsoOperator DoDVDBurn:s=%{public}s", s.c_str());
+    }
     if (err != E_OK) {
-        for (const auto& s : output) {
-            LOGI("IsoOperator DoDVDBurn:s=%{public}s", s.c_str());
-        }
-        LOGE("BurnDoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s",
-             devPath.c_str());
+        LOGE("BurnDoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-
+    res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("BurnDoDVDBurn: CleanTempDirectory exit failed, non-critical, res=%{public}d", res);
+    }
     LOGI("BurnDoDVDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
-    return err;
+    return E_OK;
 }
 
 int32_t IsoOperator::Burn(const std::string &devPath, const BurnOptions &burnOptions)
 {
     LOGI("Burn devPath = %{public}s", devPath.c_str());
-
     int32_t err = 0;
 
     bool isDiskEmpty = false;
@@ -286,7 +296,6 @@ int32_t IsoOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
         LOGE("Burn:<<< EXIT FAILED <<< devPath:=%{public}s", devPath.c_str());
         return err;
     }
-
     LOGI("Burn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
     return E_OK;
 }
