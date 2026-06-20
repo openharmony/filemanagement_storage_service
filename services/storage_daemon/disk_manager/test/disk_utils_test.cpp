@@ -976,5 +976,45 @@ HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_006, TestSize.Level1)
     EXPECT_EQ(DiskUtils::DiskPathToVolPath("disk-8-0"), "disk-8-0");
 }
 
+/**
+ * @tc.name: CleanTempDirectory_001
+ * @tc.desc: Verify CleanTempDirectory returns E_ERR when ForkExec fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_001, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_ERR);
+}
+
+/**
+ * @tc.name: CleanTempDirectory_002
+ * @tc.desc: Verify CleanTempDirectory returns E_OK when ForkExec succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_002, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_OK);
+}
+
+/**
+ * @tc.name: CleanTempDirectory_003
+ * @tc.desc: Verify CleanTempDirectory returns E_ERR when ForkExec fails with output.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_003, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("rm: cannot remove");
+            return E_ERR;
+        }));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_ERR);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

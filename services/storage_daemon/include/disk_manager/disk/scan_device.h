@@ -64,6 +64,8 @@ private:
     std::string GetDevNode(const std::string &deviceName);
     std::string GetFwVersion(const std::string &deviceName);
     std::string GetRealPath(const std::string &deviceName);
+    std::string FormatSpeedValue(double speedVal);
+    std::string ExtractSpeedFromLine(const std::string &line);
     nlohmann::json ParseMediaInfoLines(const std::vector<std::string> &output);
     bool IsValidSpeedString(const std::string &speedStr);
     std::string GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo);

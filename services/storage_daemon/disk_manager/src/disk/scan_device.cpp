@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <cerrno>
 #include <cinttypes>
 #include <linux/fs.h>
 #include <linux/hdreg.h>
@@ -267,6 +268,54 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
     return externalDisks;
 }
 
+std::string ScanDevice::FormatSpeedValue(double speedVal)
+{
+    if (speedVal == static_cast<int64_t>(speedVal)) {
+        return std::to_string(static_cast<int64_t>(speedVal));
+    }
+    std::string formatted = std::to_string(speedVal);
+    while (formatted.back() == '0') {
+        formatted.pop_back();
+    }
+    if (formatted.back() == '.') {
+        formatted.pop_back();
+    }
+    return formatted;
+}
+
+std::string ScanDevice::ExtractSpeedFromLine(const std::string &line)
+{
+    size_t colonPos = line.find(':');
+    if (colonPos == std::string::npos) {
+        return "";
+    }
+    std::string key = line.substr(0, colonPos);
+    size_t keyStart = key.find_first_not_of(" \t");
+    if (keyStart != std::string::npos) {
+        key = key.substr(keyStart);
+    }
+    if (key.find("Write Speed") != 0) {
+        return "";
+    }
+    std::string value = line.substr(colonPos + 1);
+    size_t valStart = value.find_first_not_of(" \t");
+    if (valStart != std::string::npos) {
+        value = value.substr(valStart);
+    }
+    size_t xPos = value.find('x');
+    if (xPos != std::string::npos) {
+        value = value.substr(0, xPos);
+    }
+    errno = 0;
+    char *endPtr = nullptr;
+    double speedVal = std::strtod(value.c_str(), &endPtr);
+    if (errno != 0 || endPtr == value.c_str() || speedVal < 0) {
+        LOGE("[L2:ScanDevice] ExtractSpeedFromLine: invalid speed value=%{public}s", value.c_str());
+        return "";
+    }
+    return FormatSpeedValue(speedVal);
+}
+
 nlohmann::json ScanDevice::ParseMediaInfoLines(const std::vector<std::string> &output)
 {
     LOGI("[L2:ScanDevice] ParseMediaInfoLines: output size=%{public}d", static_cast<int>(output.size()));
@@ -276,29 +325,12 @@ nlohmann::json ScanDevice::ParseMediaInfoLines(const std::vector<std::string> &o
         std::stringstream ss(chunk);
         std::string line;
         while (std::getline(ss, line)) {
-            size_t colonPos = line.find(':');
-            if (colonPos == std::string::npos) {
+            std::string formatted = ExtractSpeedFromLine(line);
+            if (formatted.empty()) {
                 continue;
             }
-            std::string key = line.substr(0, colonPos);
-            size_t keyStart = key.find_first_not_of(" \t");
-            if (keyStart != std::string::npos) {
-                key = key.substr(keyStart);
-            }
-            if (key.find("Write Speed") != 0) {
-                continue;
-            }
-            std::string value = line.substr(colonPos + 1);
-            size_t valStart = value.find_first_not_of(" \t");
-            if (valStart != std::string::npos) {
-                value = value.substr(valStart);
-            }
-            size_t xPos = value.find('x');
-            if (xPos != std::string::npos) {
-                value = value.substr(0, xPos);
-            }
-            if (seen.insert(value).second) {
-                speedArr.push_back(value);
+            if (seen.insert(formatted).second) {
+                speedArr.push_back(formatted);
             }
         }
     }
