@@ -340,6 +340,7 @@ ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessagePa
     MessageParcel tempParcel;
     if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
         LOGE("Fail to ParseFrom");
+        free(buffer);
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
 
