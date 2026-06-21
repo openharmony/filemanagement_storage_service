@@ -1081,54 +1081,73 @@ static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
     return E_OK;
 }
 
-int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
+int32_t DiskUtils::GetDiscCapacity(int cmdFd, const std::string& discType,
+                                   int64_t &totalSize, int64_t &usedSize)
 {
-    LOGI("GetCapacity: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    int cmdFd = open(devPath.c_str(), O_RDONLY|O_NONBLOCK);
-    if (cmdFd < 0) {
-        LOGE("GetCapacity:<<< EXIT FAILED <<< open failed");
-        return E_ERR;
-    }
-    std::string oddLabel = GetCDType(devPath);
-    LOGI("label is %{public}s", oddLabel.c_str());
     int err1 = E_OK;
     int err2 = E_OK;
-    int64_t usedSize = 0;
-    if (oddLabel == "DVD-RW" || oddLabel == "DVD-R" || oddLabel == "DVD+R") {
+    if (discType == "DVD-RW" || discType == "DVD-R" || discType == "DVD+R") {
         err1 = GetDvdTotalCapacity(cmdFd, totalSize);
         err2 = GetDvdUsedCapacity(cmdFd, usedSize);
-    } else if (oddLabel == "DVD+RW") {
+    } else if (discType == "DVD+RW") {
         err1 = GetDvdPlusRwTotalCapacity(cmdFd, totalSize);
         usedSize = totalSize;
-    } else if (oddLabel == "CD-RW" || oddLabel == "CD-R") {
+    } else if (discType == "CD-RW" || discType == "CD-R") {
         err1 = GetCdTotalCapacity(cmdFd, totalSize);
         err2 = GetCdUsedCapacity(cmdFd, usedSize);
-    } else if (oddLabel == "BD-R" || oddLabel == "BD-RE") {
+    } else if (discType == "BD-R" || discType == "BD-RE") {
         err1 = GetBdTotalCapacity(cmdFd, totalSize);
         err2 = GetDvdUsedCapacity(cmdFd, usedSize);
-    } else if (oddLabel == "BD-ROM") {
+    } else if (discType == "BD-ROM") {
         err1 = GetBdTotalCapacity(cmdFd, totalSize);
         usedSize = totalSize;
     } else {
         totalSize = 0;
         usedSize = 0;
     }
-    bool isBlankCD = false;
-    int blankRet = IsCDBlank(devPath, isBlankCD);
-    if (blankRet == E_OK && isBlankCD) {
-        usedSize = 0;
-    }
-    LOGI("GetCapacity totalsize is %{public}" PRId64 ", usedsize is : %{public}" PRId64, totalSize, usedSize);
     if (err1 != E_OK || err2 != E_OK) {
-        close(cmdFd);
         return E_ERR;
     }
-    if (usedSize > totalSize) {
-        freeSize = 0;
-    } else {
-        freeSize = totalSize - usedSize;
+    return E_OK;
+}
+
+void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::string& discType,
+                                        int64_t &totalSize, int64_t &usedSize)
+{
+    bool isBlankDisc = false;
+    int blankRet = IsCDBlank(devPath, isBlankDisc);
+    if (blankRet != E_OK || !isBlankDisc) {
+        return;
     }
+    usedSize = 0;
+    if (discType == "BD-R" || discType == "BD-RE") {
+        constexpr int64_t BD_RE_MIN_CAPACITY = 1 * 1024 * 1024;
+        if (totalSize < BD_RE_MIN_CAPACITY) {
+            LOGW("AdjustBlankDiscCapacity: BD disc capacity too small, using nominal 24.8GB");
+            totalSize = 24878364672LL;
+        }
+    }
+}
+
+int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
+{
+    LOGI("GetCapacity: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int cmdFd = open(devPath.c_str(), O_RDONLY | O_NONBLOCK);
+    if (cmdFd < 0) {
+        LOGE("GetCapacity:<<< EXIT FAILED <<< open failed");
+        return E_ERR;
+    }
+    std::string discType = GetCDType(devPath);
+    LOGI("label is %{public}s", discType.c_str());
+    int64_t usedSize = 0;
+    int32_t ret = GetDiscCapacity(cmdFd, discType, totalSize, usedSize);
     close(cmdFd);
+    if (ret != E_OK) {
+        return E_ERR;
+    }
+    AdjustBlankDiscCapacity(devPath, discType, totalSize, usedSize);
+    LOGI("GetCapacity totalsize is %{public}" PRId64 ", usedsize is %{public}" PRId64, totalSize, usedSize);
+    freeSize = (usedSize > totalSize) ? 0 : totalSize - usedSize;
     return E_OK;
 }
 

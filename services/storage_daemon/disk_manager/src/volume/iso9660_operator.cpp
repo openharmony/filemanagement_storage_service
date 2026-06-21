@@ -249,7 +249,7 @@ int32_t IsoOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
         }
     } else {
         std::string isoBurnPath = devPath + "=" + burnOptions.burnPath;
-        cmd = {"growisofs", "-Z", isoBurnPath};
+        cmd = {"growisofs", speedOpt, "-Z", isoBurnPath};
     }
     err = ForkExec(cmd, &output);
     for (const auto& s : output) {

@@ -74,6 +74,10 @@ public:
     static int32_t GetVolumeOpProcess(const std::string &volId, int32_t &progressPct);
     static int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType);
     static int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize);
+    static int32_t GetDiscCapacity(int cmdFd, const std::string& discType,
+                                   int64_t &totalSize, int64_t &usedSize);
+    static void AdjustBlankDiscCapacity(const std::string& devPath, const std::string& discType,
+                                        int64_t &totalSize, int64_t &usedSize);
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
     static int32_t CleanTempDirectory();
 };
