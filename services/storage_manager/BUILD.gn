@@ -33,7 +33,6 @@ config("storage_manager_config") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
     "-flto",
   ]
 }
