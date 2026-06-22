@@ -20,6 +20,7 @@
 #include "utils/set_flag_utils.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
+#include "utils/file_utils.h"
 #include <dlfcn.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -1037,6 +1038,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     UserManager::GetInstance().CheckDirsFromVec(userId);
+    std::thread([this]() { CleanOrphanNode(); }).detach();
 
 #ifdef USER_CRYPTO_MANAGER
     int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);

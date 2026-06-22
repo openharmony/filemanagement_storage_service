@@ -91,6 +91,7 @@ bool IsFileExist(const std::string &path);
 bool IsFilePathInvalid(const std::string &filePath);
 bool GetRealPath(const std::string &path, std::string &realPath);
 std::string MaskSensitiveInfo(const std::string &input);
+bool CleanOrphanNode();
 } // namespace StorageDaemon
 } // namespace OHOS
 
