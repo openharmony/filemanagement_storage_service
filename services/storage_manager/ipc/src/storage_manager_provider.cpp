@@ -291,9 +291,8 @@ int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("PrepareAddUser::CheckUserIdRange", userId, err, extraData);
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->PrepareAddUser(userId, flags);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.PrepareAddUser(userId, flags);
     StorageRadar::ReportFucBehavior("PrepareAddUser", userId, "PrepareAddUser End", err);
     return err;
 }
@@ -314,9 +313,8 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("RemoveUser::CheckUserIdRange", userId, err, extraData);
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->RemoveUser(userId, flags);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.RemoveUser(userId, flags);
     StorageRadar::ReportFucBehavior("RemoveUser", userId, "RemoveUser End", err);
     return err;
 }
@@ -338,9 +336,8 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
         StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->PrepareStartUser(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.PrepareStartUser(userId);
     StorageRadar::ReportFucBehavior("PrepareStartUser", userId, "PrepareStartUser End", err);
     StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
@@ -360,9 +357,8 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
         StorageRadar::ReportUserManager("StopUser::CheckUserIdRange", userId, err, "");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->StopUser(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.StopUser(userId);
     StorageRadar::ReportFucBehavior("StopUser", userId, "StopUser End", err);
     if (err != E_USERID_RANGE) {
         ResetUserEventRecord(userId);
@@ -383,9 +379,8 @@ int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
         LOGE("StorageManagerProvider::CompleteAddUser userId %{public}d out of range", userId);
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->CompleteAddUser(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.CompleteAddUser(userId);
     StorageRadar::ReportFucBehavior("CompleteAddUser", userId, "CompleteAddUser End", err);
     return err;
 }
@@ -459,9 +454,8 @@ int32_t StorageManagerProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo>
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->ListUserdataDirInfo(scanDirs);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.ListUserdataDirInfo(scanDirs);
     StorageRadar::ReportFucBehavior("ListUserdataDirInfo", DEFAULT_USERID, "ListUserdataDirInfo End", err);
     return err;
 }
@@ -485,9 +479,8 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
         return err;
     }
     
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->SetDirEncryptionPolicy(userId, dirPath, level);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.SetDirEncryptionPolicy(userId, dirPath, level);
     StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy End", err);
     return err;
 #else
@@ -1054,9 +1047,8 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
     isInUse = true;
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManagerProvider::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->QueryUsbIsInUse(diskPath, isInUse);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.QueryUsbIsInUse(diskPath, isInUse);
     StorageRadar::ReportFucBehavior("QueryUsbIsInUse", DEFAULT_USERID, "QueryUsbIsInUse End", err);
     return err;
 #else
@@ -1079,9 +1071,8 @@ int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->EraseAllUserEncryptedKeys();
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.EraseAllUserEncryptedKeys();
     StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys End", err);
     return err;
 #else
@@ -1109,9 +1100,8 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, "UpdateUserAuth End", err);
     return err;
 #else
@@ -1136,9 +1126,8 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
     StorageRadar::ReportFucBehavior("UpdateUseAuthWithRecoveryKey", userId, "UpdateUseAuthWithRecoveryKey End", err);
     return err;
     #else
@@ -1167,9 +1156,8 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
         StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->ActiveUserKey(userId, token, secret);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.ActiveUserKey(userId, token, secret);
     StorageRadar::ReportFucBehavior("ActiveUserKey", userId, "ActiveUserKey End", err);
     StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::ACTIVE_USER_KEY_DELAY_SECOND);
     StorageDaemon::DecreaseThreadPriority("storage_manager");
@@ -1193,9 +1181,8 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->InactiveUserKey(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.InactiveUserKey(userId);
     StorageRadar::ReportFucBehavior("InactiveUserKey", userId, "InactiveUserKey End", err);
     int32_t ret = AccountSubscriber::GetInstance().SendUserLockStatusToAppSpawn(userId,
         ENCRYPTED, MOUNT_MAX_WAIT_TIME);
@@ -1238,9 +1225,8 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->LockUserScreen(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.LockUserScreen(userId);
     return err;
 #else
     return E_OK;
@@ -1260,9 +1246,8 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     std::string message = "GetFileEncryptStatus End, isEncrypted:" + std::to_string(isEncrypted) +
                           ", needCheckDirMount" + std::to_string(needCheckDirMount);
     StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, message, err);
@@ -1285,9 +1270,8 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetUserNeedActiveStatus(userId, needActive);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.GetUserNeedActiveStatus(userId, needActive);
     return err;
 #else
     return E_OK;
@@ -1308,9 +1292,8 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UnlockUserScreen(userId, token, secret);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UnlockUserScreen(userId, token, secret);
     return err;
 #else
     return E_OK;
@@ -1330,9 +1313,8 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.GetLockScreenStatus(userId, lockScreenStatus);
     return err;
 #else
     return E_OK;
@@ -1357,9 +1339,8 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
         StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "GenerateAppkey End", err);
     StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
@@ -1392,9 +1373,8 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->DeleteAppkey(userId, keyId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.DeleteAppkey(userId, keyId);
     StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, "DeleteAppkey End", err);
     return err;
 #else
@@ -1421,9 +1401,8 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->CreateRecoverKey(userId, userType, token, secret);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.CreateRecoverKey(userId, userType, token, secret);
     StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, "CreateRecoverKey End", err);
     return err;
 #else
@@ -1453,9 +1432,8 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->SetRecoverKey(key);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.SetRecoverKey(key);
     StorageRadar::ReportFucBehavior("SetRecoverKey", DEFAULT_USERID, "SetRecoverKey End", err);
     return err;
 #else
@@ -1477,9 +1455,8 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateKeyContext(userId, needRemoveTmpKey);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UpdateKeyContext(userId, needRemoveTmpKey);
     StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, "UpdateKeyContext End", err);
     return err;
 #else
@@ -1499,9 +1476,8 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    funcResult = sdCommunication->CreateShareFile(rawData, tokenId, flag);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    funcResult = sdCommunication.CreateShareFile(rawData, tokenId, flag);
     StorageRadar::ReportFucBehavior("CreateShareFile", DEFAULT_USERID, "CreateShareFile End", E_OK);
     return E_OK;
 }
@@ -1514,9 +1490,8 @@ int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageF
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->DeleteShareFile(tokenId, rawData);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.DeleteShareFile(tokenId, rawData);
     StorageRadar::ReportFucBehavior("DeleteShareFile", DEFAULT_USERID, "DeleteShareFile End", err);
     return err;
 }
@@ -1537,9 +1512,8 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
     StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, "SetBundleQuota End", err);
     return err;
 }
@@ -1592,9 +1566,8 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::MountDfsDocs start.");
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.MountDfsDocs(userId, relativePath, networkId, deviceId);
     StorageRadar::ReportFucBehavior("MountDfsDocs", userId, "MountDfsDocs End", err);
     return err;
 }
@@ -1623,9 +1596,8 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
         return E_PERMISSION_DENIED;
     }
     LOGI("StorageManagerProvider::UMountDfsDocs start.");
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UMountDfsDocs(userId, relativePath, networkId, deviceId);
     StorageRadar::ReportFucBehavior("UMountDfsDocs", userId, "UMountDfsDocs End", err);
     return err;
 }
@@ -1704,9 +1676,8 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
         return E_PERMISSION_DENIED;
     }
     devFd = -1;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->MountMediaFuse(userId, devFd);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.MountMediaFuse(userId, devFd);
     StorageRadar::ReportFucBehavior("MountMediaFuse", userId, "MountMediaFuse End", err);
     return err;
 #endif
@@ -1741,9 +1712,8 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
              MEDIALIBRARY_BUNDLE_NAME.c_str());
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UMountMediaFuse(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UMountMediaFuse(userId);
     StorageRadar::ReportFucBehavior("UMountMediaFuse", userId, "UMountMediaFuse End", err);
     return err;
 #endif
@@ -1767,9 +1737,8 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         return E_PERMISSION_DENIED;
     }
     fuseFd = -1;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.MountFileMgrFuse(userId, path, fuseFd);
     StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, "MountFileMgrFuse End", err);
     return err;
 }
@@ -1789,9 +1758,8 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UMountFileMgrFuse(userId, path);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UMountFileMgrFuse(userId, path);
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
@@ -1810,9 +1778,8 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
         return E_PARAMS_INVALID;
     }
     isOccupy = false;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.IsFileOccupied(path, inputList, outputList, isOccupy);
     StorageRadar::ReportFucBehavior("IsFileOccupied", DEFAULT_USERID, "IsFileOccupied End", err);
     return err;
 }
@@ -1834,9 +1801,8 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, key);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.ResetSecretWithRecoveryKey(userId, rkType, key);
     StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, "ResetSecretWithRecoveryKey End", err);
     return err;
 #else
@@ -1865,9 +1831,8 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
             return E_PARAMS_INVALID;
         }
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->MountDisShareFile(userId, shareFiles);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.MountDisShareFile(userId, shareFiles);
     StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile End", err);
     return err;
 }
@@ -1894,9 +1859,8 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("networkId is invalid");
         return E_PARAMS_INVALID;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UMountDisShareFile(userId, networkId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.UMountDisShareFile(userId, networkId);
     StorageRadar::ReportFucBehavior("UMountDisShareFile", userId, "UMountDisShareFile End", err);
     return err;
 }
@@ -1927,9 +1891,8 @@ int32_t StorageManagerProvider::UMountDisShareFile(const std::vector<std::string
         LOGI("UMountDisShareFile: no valid distributeDir");
         return E_PARAMS_INVALID;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UMountDisShareFile(validDistributeDirs);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.UMountDisShareFile(validDistributeDirs);
     StorageRadar::ReportFucBehavior("UMountDisShareFile", uid, "UMountDisShareFile End", err);
     return err;
 }
@@ -1948,9 +1911,8 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->InactiveUserPublicDirKey(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.InactiveUserPublicDirKey(userId);
     LOGI("inactive user public dir key, userId: %{public}d, err: %{public}d", userId, err);
     StorageRadar::ReportFucBehavior("InactiveUserPublicDirKey", userId, "InactiveUserPublicDirKey End", err);
     return err;
@@ -1973,9 +1935,8 @@ int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
         LOGE("User ID out of range");
         return err;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateUserPublicDirPolicy(userId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UpdateUserPublicDirPolicy(userId);
     LOGI("Update policy userId: %{public}u, err: %{public}d", userId, err);
     StorageRadar::ReportFucBehavior("UpdateUserPublicDirPolicy", userId, "UpdateUserPublicDirPolicy End", err);
     return err;
@@ -1997,9 +1958,8 @@ int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceA
         LOGE("callback is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->RegisterUeceActivationCallback(ueceCallback);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.RegisterUeceActivationCallback(ueceCallback);
     StorageRadar::ReportFucBehavior("RegisterUeceActivationCallback", DEFAULT_USERID,
                                     "RegisterUeceActivationCallback End", err);
     return err;
@@ -2014,9 +1974,8 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         return E_PERMISSION_DENIED;
     }
     LOGI("Enter UnregisterUeceActivationCallback");
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UnregisterUeceActivationCallback();
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.UnregisterUeceActivationCallback();
     StorageRadar::ReportFucBehavior("UnregisterUeceActivationCallback", DEFAULT_USERID,
                                     "UnregisterUeceActivationCallback End", err);
     return err;
@@ -2046,9 +2005,8 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
         return E_PARAMS_INVALID;
     }
     
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    auto ret = sdCommunication->CreateUserDir(path, mode, uid, gid);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    auto ret = sdCommunication.CreateUserDir(path, mode, uid, gid);
     LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);

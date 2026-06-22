@@ -36,11 +36,5 @@ public:
     MOCK_METHOD(int32_t, GetVolumeById, (const std::string &, VolumeExternal &));
 };
 
-class MockStorageDaemonCommunication : public StorageDaemonCommunication {
-public:
-    MOCK_METHOD(int32_t, Encrypt, (const std::string &, const std::string &));
-    MOCK_METHOD(int32_t, GetCryptProgressById, (const std::string &, int32_t &));
-};
-}
-}
+}}
 #endif // VOLUME_MANAGER_SERVICE_MOCK_H

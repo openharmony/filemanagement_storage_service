@@ -73,12 +73,8 @@ int32_t VolumeStorageStatusService::GetOddSize(const std::string& volumeUuid, in
     }
     auto volumeId = volExternalInfo->GetId();
     LOGI("get odd size : volumeid is %{public}s", volumeId.c_str());
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        return E_ERR;
-    }
-    int ret = sdCommunication->GetOddCapacity(volumeId, totalSize, freeSize);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int ret = sdCommunication.GetOddCapacity(volumeId, totalSize, freeSize);
     return ret;
 #else
     return E_ERR;

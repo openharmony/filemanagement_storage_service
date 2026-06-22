@@ -54,7 +54,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetTotalSizeOfVolume(uuidString,
             *resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -104,7 +104,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetFreeSizeOfVolume(uuidString,
             *resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -183,7 +183,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     int32_t statFlag = static_cast<int32_t>(std::get<2>(result));
     auto bundleStats = std::make_shared<BundleStats>();
     auto cbExec = [nameString, bundleStats, index, statFlag]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetBundleStats(nameString,
             *bundleStats, index, statFlag);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -241,7 +241,7 @@ napi_value ListUserdataDirInfo(napi_env env, napi_callback_info info)
 
     auto scanDirs = std::make_shared<std::vector<UserdataDirInfo>>();
     auto cbExec = [scanDirs]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->ListUserdataDirInfo(*scanDirs);
+        int32_t errNum = StorageManagerConnect::GetInstance().ListUserdataDirInfo(*scanDirs);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -279,7 +279,7 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
     }
 
     auto cbExec = [bundleStats, statFlag]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetCurrentBundleStats(*bundleStats,
             statFlag);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -322,7 +322,7 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     auto cbExec = [resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize(*resultSize);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetSystemSize(*resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -376,9 +376,9 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     auto cbExec = [fac, userId, storageStats]() -> NError {
         int32_t errNum;
         if (!fac) {
-            errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(*storageStats);
+            errNum = StorageManagerConnect::GetInstance().GetUserStorageStats(*storageStats);
         } else {
-            errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId, *storageStats);
+            errNum = StorageManagerConnect::GetInstance().GetUserStorageStats(userId, *storageStats);
         }
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -424,7 +424,7 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     auto cbExec = [resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetTotalSize(*resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -458,7 +458,7 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     auto cbExec = [resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetFreeSize(*resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -492,7 +492,7 @@ napi_value GetTotalSizeSync(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     
-    int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
+    int32_t errNum = StorageManagerConnect::GetInstance().GetTotalSize(*resultSize);
     if (errNum != E_OK) {
         NError(Convert2JsErrNum(errNum)).ThrowErr(env);
         return nullptr;
@@ -511,7 +511,7 @@ napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     
-    int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
+    int32_t errNum = StorageManagerConnect::GetInstance().GetFreeSize(*resultSize);
     if (errNum != E_OK) {
         NError(Convert2JsErrNum(errNum)).ThrowErr(env);
         return nullptr;
@@ -529,7 +529,7 @@ napi_value GetTotalInodes(napi_env env, napi_callback_info info)
  
     auto resultInodes = std::make_shared<int64_t>();
     auto cbExec = [resultInodes]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalInodes(*resultInodes);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetTotalInodes(*resultInodes);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -569,7 +569,7 @@ napi_value GetFreeInodes(napi_env env, napi_callback_info info)
  
     auto resultInodes = std::make_shared<int64_t>();
     auto cbExec = [resultInodes]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeInodes(*resultInodes);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetFreeInodes(*resultInodes);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -609,7 +609,7 @@ napi_value GetCurrentBundleInodes(napi_env env, napi_callback_info info)
  
     auto resultInodes = std::make_shared<int64_t>();
     auto cbExec = [resultInodes]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleInodes(*resultInodes);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetCurrentBundleInodes(*resultInodes);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -649,7 +649,7 @@ napi_value GetSystemDataSize(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     auto cbExec = [resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemDataSize(*resultSize);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetSystemDataSize(*resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -739,7 +739,7 @@ napi_value SetExtBundleStats(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [userId, stats]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetExtBundleStats(userId, *stats);
+        int32_t errNum = StorageManagerConnect::GetInstance().SetExtBundleStats(userId, *stats);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -780,7 +780,7 @@ napi_value GetExtBundleStats(napi_env env, napi_callback_info info)
     std::string businessName = std::string(nameBuf.get());
     extStats->businessName_ = businessName;
     auto cbExec = [userId, extStats]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetExtBundleStats(userId, *extStats);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetExtBundleStats(userId, *extStats);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -817,7 +817,7 @@ napi_value GetAllExtBundleStats(napi_env env, napi_callback_info info)
     }
     auto statsVec = std::make_shared<std::vector<ExtBundleStats>>();
     auto cbExec = [userId, statsVec]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllExtBundleStats(userId,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetAllExtBundleStats(userId,
             *statsVec);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));

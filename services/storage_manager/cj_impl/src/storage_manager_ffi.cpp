@@ -36,12 +36,7 @@ FFI_EXPORT void FfiFileStorStatsGetCurrentBundleStats(NativeBundleStats *stats, 
     }
     StorageManager::BundleStats bundleStats = {};
     uint32_t statFlag = 0;
-    auto service = DelayedSingleton<CjStorageStatusService>::GetInstance();
-    if (service == nullptr) {
-        *errCode = E_IPCSS;
-        return;
-    }
-    int32_t errNum = service->GetCurrentBundleStats(bundleStats, statFlag);
+    int32_t errNum = CjStorageStatusService::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
     if (errNum != E_OK) {
         *errCode = Convert2CjErrNum(errNum);
         return;
@@ -56,12 +51,7 @@ FFI_EXPORT void FfiFileStorStatsGetCurrentBundleStats(NativeBundleStats *stats, 
 FFI_EXPORT int64_t FfiFileStorStatsGetTotalSize(int32_t *errCode)
 {
     int64_t totalSize = 0;
-    auto service = DelayedSingleton<CjStorageStatusService>::GetInstance();
-    if (service == nullptr) {
-        *errCode = E_IPCSS;
-        return 0;
-    }
-    int32_t errNum = service->GetTotalSize(totalSize);
+    int32_t errNum = CjStorageStatusService::GetInstance().GetTotalSize(totalSize);
     if (errNum != E_OK) {
         *errCode = Convert2CjErrNum(errNum);
         return 0;
@@ -73,12 +63,7 @@ FFI_EXPORT int64_t FfiFileStorStatsGetTotalSize(int32_t *errCode)
 FFI_EXPORT int64_t FfiFileStorStatsGetFreeSize(int32_t *errCode)
 {
     int64_t freeSize = 0;
-    auto service = DelayedSingleton<CjStorageStatusService>::GetInstance();
-    if (service == nullptr) {
-        *errCode = E_IPCSS;
-        return 0;
-    }
-    int32_t errNum = service->GetFreeSize(freeSize);
+    int32_t errNum = CjStorageStatusService::GetInstance().GetFreeSize(freeSize);
     if (errNum != E_OK) {
         *errCode = Convert2CjErrNum(errNum);
         return 0;

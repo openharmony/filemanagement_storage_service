@@ -65,7 +65,7 @@ napi_value Encrypt(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, pwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             Encrypt(*volIdStr, *pwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -103,7 +103,7 @@ napi_value GetCryptProgressById(napi_env env, napi_callback_info info)
     }
     auto progress = std::make_shared<int32_t>();
     auto cbExec = [volIdStr, progress]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             GetCryptProgressById(*volIdStr, *progress);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -140,7 +140,7 @@ napi_value GetCryptUuidById(napi_env env, napi_callback_info info)
     }
     auto uuid = std::make_shared<std::string>();
     auto cbExec = [volIdStr, uuid]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             GetCryptUuidById(*volIdStr, *uuid);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -178,7 +178,7 @@ napi_value BindRecoverKeyToPasswd(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, pwdStr, reKeyStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             BindRecoverKeyToPasswd(*volIdStr, *pwdStr, *reKeyStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -218,7 +218,7 @@ napi_value UpdateCryptPasswd(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, pwdStr, nPwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             UpdateCryptPasswd(*volIdStr, *pwdStr, *nPwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -258,7 +258,7 @@ napi_value ResetCryptPasswd(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, reKeyStr, nPwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             ResetCryptPasswd(*volIdStr, *reKeyStr, *nPwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -297,7 +297,7 @@ napi_value VerifyCryptPasswd(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, pwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             VerifyCryptPasswd(*volIdStr, *pwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -336,7 +336,7 @@ napi_value Unlock(napi_env env, napi_callback_info info)
     }
 
     auto cbExec = [volIdStr, pwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             Unlock(*volIdStr, *pwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -374,7 +374,7 @@ napi_value Decrypt(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto cbExec = [volIdStr, pwdStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->
+        int32_t result = StorageManagerConnect::GetInstance().
             Decrypt(*volIdStr, *pwdStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));

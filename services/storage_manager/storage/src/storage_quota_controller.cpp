@@ -50,16 +50,11 @@ void StorageQuotaController::UpdateBaseLineByUid()
         LOGE("ReadCcmConfigFile failed");
         return;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("StorageDaemonCommunication instance is nullptr");
-        return;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
     std::map<int32_t, int32_t> resultMap;
     for (const auto &param : params) {
-        int32_t ret = sdCommunication->SetBundleQuota(param.uid, QUOTA_DEVICE_DATA_PATH,  param.baseline);
+        int32_t ret = sdCommunication.SetBundleQuota(param.uid, QUOTA_DEVICE_DATA_PATH,  param.baseline);
         if (ret != E_OK) {
             LOGE("SetBundleQuota failed for uid=%{public}d, baseline=%{public}d, ret=%{public}d",
                 param.uid, param.baseline, ret);

@@ -92,9 +92,8 @@ int32_t DiskManagerService::Partition(const std::string &diskId, int32_t type)
         }
     }
 
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->Partition(diskId, type);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.Partition(diskId, type);
     return err;
 }
 
@@ -129,9 +128,8 @@ int32_t DiskManagerService::GetPartitionTable(const std::string &diskId, Partiti
             return E_NON_EXIST;
         }
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->GetPartitionTable(diskId, partitionTableInfo);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.GetPartitionTable(diskId, partitionTableInfo);
 }
 
 int32_t DiskManagerService::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
@@ -143,9 +141,8 @@ int32_t DiskManagerService::CreatePartition(const std::string &diskId, const Par
             return E_NON_EXIST;
         }
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->CreatePartition(diskId, partitionParams);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.CreatePartition(diskId, partitionParams);
 }
 
 int32_t DiskManagerService::DeletePartition(const std::string &diskId, uint32_t partitionNum)
@@ -157,9 +154,8 @@ int32_t DiskManagerService::DeletePartition(const std::string &diskId, uint32_t 
             return E_NON_EXIST;
         }
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->DeletePartition(diskId, partitionNum);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.DeletePartition(diskId, partitionNum);
 }
 
 int32_t DiskManagerService::FormatPartition(const std::string &diskId, uint32_t partitionNum,
@@ -172,9 +168,8 @@ int32_t DiskManagerService::FormatPartition(const std::string &diskId, uint32_t 
             return E_NON_EXIST;
         }
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->FormatPartition(diskId, partitionNum, formatParams);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    return sdCommunication.FormatPartition(diskId, partitionNum, formatParams);
 }
 }
 }
