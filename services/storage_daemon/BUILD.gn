@@ -373,7 +373,6 @@ ohos_executable("sdc") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
     "-flto",
   ]
 
@@ -448,7 +447,6 @@ ohos_shared_library("storage_common_utils") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
     "-flto",
   ]
 
