@@ -386,9 +386,26 @@ int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string
         return E_GET_PARTITION_ERROR;
     }
     std::vector<std::string> lines = std::move(result.second);
-    for (const auto &line : lines) {
+    std::vector<std::string> fixedLines;
+    for (size_t i = 0; i < lines.size(); i++) {
+        std::string line = lines[i];
+        while (!line.empty() && line.back() != '\n' && i + 1 < lines.size()) {
+            std::string nextLine = lines[i + 1];
+            if (nextLine.empty() || std::isspace(nextLine[0]) || std::isdigit(nextLine[0])) {
+                line += nextLine;
+                i++;
+            } else {
+                break;
+            }
+        }
+        fixedLines.push_back(line);
+    }
+    for (const auto &line : fixedLines) {
         execRet += line;
-        execRet += "\n";
+        if (!line.empty() && line.back() != '\n') {
+            execRet += "\n";
+        }
+        LOGI("partition line: %{public}s", line.c_str());
     }
     return E_OK;
 }
