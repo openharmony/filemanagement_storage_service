@@ -361,34 +361,31 @@ int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string
         LOGE("DiskUtils::GetPartitionTableInfo invalid devPath");
         return E_PARAMS_INVALID;
     }
-    std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
-    std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
-    std::thread partitionThread([devPath, p = std::move(promise)]() mutable {
-        LOGI("[L3:DiskUtils] exec get partition");
-        std::vector<std::string> temp;
-        std::vector<std::string> cmd = {"sgdisk", "-p", devPath};
-        int32_t res = ForkExec(cmd, &temp);
-        for (auto str : temp) {
-            LOGI("get partition output: %{public}s", str.c_str());
-        }
-        p.set_value({res, std::move(temp)});
-    });
-    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
-        LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
-        partitionThread.detach();
-        return E_GET_PARTITION_TIMEOUT;
-    }
-    auto result = future.get();
-    partitionThread.join();
-    int32_t ret = result.first;
+    std::vector<std::string> lines;
+    int32_t ret = ExecAsyncGetPartitionTableInfo(devPath, lines);
     if (ret != E_OK) {
-        LOGE("[L3:DiskInfo] GetPartitionTableInfo: <<< EXIT FAILED <<< exec get partition failed, err=%{public}d", ret);
-        return E_GET_PARTITION_ERROR;
+        return ret;
     }
-    std::vector<std::string> lines = std::move(result.second);
-    for (const auto &line : lines) {
+    std::vector<std::string> fixedLines;
+    for (size_t i = 0; i < lines.size(); i++) {
+        std::string line = lines[i];
+        while (!line.empty() && line.back() != '\n' && i + 1 < lines.size()) {
+            std::string nextLine = lines[i + 1];
+            if (nextLine.empty() || std::isspace(nextLine[0]) || std::isdigit(nextLine[0])) {
+                line += nextLine;
+                i++;
+            } else {
+                break;
+            }
+        }
+        fixedLines.push_back(line);
+    }
+    for (const auto &line : fixedLines) {
         execRet += line;
-        execRet += "\n";
+        if (!line.empty() && line.back() != '\n') {
+            execRet += "\n";
+        }
+        LOGI("partition line: %{public}s", line.c_str());
     }
     return E_OK;
 }
@@ -494,6 +491,37 @@ int32_t DiskUtils::ExecAsyncDamagePartition(const std::string &devPath, int32_t 
         return E_DELETE_PARTITION_ERROR;
     }
     LOGI("[L3:DiskUtils] ExecAsyncDamagePartition: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, std::vector<std::string> &lines)
+{
+    std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
+    std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
+    std::thread partitionThread([devPath, p = std::move(promise)]() mutable {
+        LOGI("[L3:DiskUtils] exec get partition");
+        std::vector<std::string> temp;
+        std::vector<std::string> cmd = {"sgdisk", "-p", devPath};
+        int32_t res = ForkExec(cmd, &temp);
+        for (auto str : temp) {
+            LOGI("get partition output: %{public}s", str.c_str());
+        }
+        p.set_value({res, std::move(temp)});
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
+        partitionThread.detach();
+        return E_GET_PARTITION_TIMEOUT;
+    }
+    auto result = future.get();
+    partitionThread.join();
+    if (result.first != E_OK) {
+        LOGE("[L3:DiskUtils] ExecAsyncGetPartitionTableInfo: <<< EXIT FAILED <<< exec failed, err=%{public}d",
+             result.first);
+        return E_GET_PARTITION_ERROR;
+    }
+    lines = std::move(result.second);
+    LOGI("[L3:DiskUtils] ExecAsyncGetPartitionTableInfo: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

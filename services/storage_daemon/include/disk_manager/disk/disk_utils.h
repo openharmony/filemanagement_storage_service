@@ -79,6 +79,7 @@ public:
     static void AdjustBlankDiscCapacity(const std::string& devPath, const std::string& discType,
                                         int64_t &totalSize, int64_t &usedSize);
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
+    static int32_t ExecAsyncGetPartitionTableInfo(const std::string &devPath, std::vector<std::string> &lines);
     static int32_t CleanTempDirectory();
 };
 
