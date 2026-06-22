@@ -394,8 +394,8 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
         GetAnonyString(volumeUuid).c_str());
 
 #ifdef DISK_MANAGER
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetFreeSizeOfVolume(volumeUuid, freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("DiskManagerClient::GetFreeSizeOfVolume", DEFAULT_USERID, err, "setting");
     }
@@ -414,8 +414,8 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
         GetAnonyString(volumeUuid).c_str());
 
 #ifdef DISK_MANAGER
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetTotalSizeOfVolume(volumeUuid, totalSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("DiskManagerClient::GetTotalSizeOfVolume", DEFAULT_USERID, err, "setting");
     }
@@ -738,7 +738,7 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
     LOGI("StorageManagerProvider::Mount start");
 
 #ifdef DISK_MANAGER
-    int32_t result = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->Mount(volumeId);
+    int32_t result = OHOS::DiskManager::DiskManagerClient::GetInstance().Mount(volumeId);
 
     StorageRadar::ReportFucBehavior("Mount", DEFAULT_USERID, "Mount End", result);
     if (result != E_OK) {
@@ -761,7 +761,7 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
     LOGI("StorageManagerProvider::Unmount start");
 
 #ifdef DISK_MANAGER
-    int32_t result = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->Unmount(volumeId);
+    int32_t result = OHOS::DiskManager::DiskManagerClient::GetInstance().Unmount(volumeId);
 
     StorageRadar::ReportFucBehavior("Unmount", DEFAULT_USERID, "Unmount End", result);
     if (result != E_OK) {
@@ -799,7 +799,7 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
 
 #ifdef DISK_MANAGER
     std::vector<OHOS::DiskManager::VolumeExternal> dmVols;
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->GetAllVolumes(dmVols);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance().GetAllVolumes(dmVols);
     if (err == E_OK) {
         vecOfVol.clear();
         vecOfVol.reserve(dmVols.size());
@@ -855,8 +855,8 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
     LOGI("StorageManagerProvider::Partition start, diskId: %{public}s", diskId.c_str());
 
 #ifdef DISK_MANAGER
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->Partition(diskId, type);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .Partition(diskId, type);
 
     StorageRadar::ReportFucBehavior("Partition", DEFAULT_USERID, "Partition End", err);
     if (err != E_OK) {
@@ -882,8 +882,8 @@ int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
 
 #ifdef DISK_MANAGER
     std::vector<OHOS::DiskManager::Disk> dmDisks;
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetAllDisks(dmDisks);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetAllDisks(dmDisks);
     if (err == E_OK) {
         vecOfDisk.clear();
         vecOfDisk.reserve(dmDisks.size());
@@ -910,8 +910,8 @@ int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, Volum
 
 #ifdef DISK_MANAGER
     OHOS::DiskManager::VolumeExternal dmVol;
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetVolumeByUuid(fsUuid, dmVol);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetVolumeByUuid(fsUuid, dmVol);
     if (err == E_OK) {
         vc = ConvertVolumeExternal(dmVol);
     }
@@ -935,8 +935,8 @@ int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, Volum
 
 #ifdef DISK_MANAGER
     OHOS::DiskManager::VolumeExternal dmVol;
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetVolumeById(volumeId, dmVol);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetVolumeById(volumeId, dmVol);
     if (err == E_OK) {
         vc = ConvertVolumeExternal(dmVol);
     }
@@ -961,8 +961,8 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
         GetAnonyString(fsUuid).c_str());
 
 #ifdef DISK_MANAGER
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->SetVolumeDescription(fsUuid, description);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .SetVolumeDescription(fsUuid, description);
 
     StorageRadar::ReportFucBehavior("SetVolumeDescription", DEFAULT_USERID, "SetVolumeDescription End", err);
     if (err != E_OK) {
@@ -985,8 +985,8 @@ int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::s
          volumeId.c_str(), fsType.c_str());
 
 #ifdef DISK_MANAGER
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->Format(volumeId, fsType);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .Format(volumeId, fsType);
 
     StorageRadar::ReportFucBehavior("Format", DEFAULT_USERID, "Format End", err);
     if (err != E_OK) {
@@ -1017,8 +1017,8 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     LOGI("StorageManagerProvider::GetDiskById start, diskId: %{public}s", diskId.c_str());
 
     OHOS::DiskManager::Disk dmDisk;
-    int32_t err = DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()
-                    ->GetDiskById(diskId, dmDisk);
+    int32_t err = OHOS::DiskManager::DiskManagerClient::GetInstance()
+                     .GetDiskById(diskId, dmDisk);
     if (err == E_OK) {
         disk = ConvertDisk(dmDisk);
         LOGI("StorageManagerProvider::GetDiskById success");
