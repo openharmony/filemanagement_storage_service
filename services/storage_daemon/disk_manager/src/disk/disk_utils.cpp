@@ -1147,12 +1147,30 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     if (blankRet != E_OK || !isBlankDisc) {
         return;
     }
+    
     usedSize = 0;
-    if (discType == "BD-R" || discType == "BD-RE") {
-        constexpr int64_t BD_RE_MIN_CAPACITY = 1 * 1024 * 1024;
-        if (totalSize < BD_RE_MIN_CAPACITY) {
-            LOGW("AdjustBlankDiscCapacity: BD disc capacity too small, using nominal 24.8GB");
-            totalSize = 24878364672LL;
+    if (discType != "DVD+RW" && discType != "BD-R" && discType != "BD-RE") {
+        return;
+    }
+    
+    std::vector<std::string> cmd = {"dvd+rw-mediainfo", devPath};
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(cmd, &output);
+    if (ret != E_OK) {
+        LOGE("AdjustBlankDiscCapacity: ForkExec failed, ret=%{public}d", ret);
+        return;
+    }
+    
+    std::regex pattern(R"(\bunformatted:\s+\d+\*2048=(\d+))");
+    for (const auto& line : output) {
+        std::smatch match;
+        if (std::regex_search(line, match, pattern)) {
+            int64_t mediaInfoCapacity = std::stoll(match[1].str());
+            if (mediaInfoCapacity > 0) {
+                totalSize = mediaInfoCapacity;
+                LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
+            }
+            return;
         }
     }
 }
@@ -1170,12 +1188,14 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
     int64_t usedSize = 0;
     int32_t ret = GetDiscCapacity(cmdFd, discType, totalSize, usedSize);
     close(cmdFd);
-    if (ret != E_OK) {
-        return E_ERR;
-    }
+
     AdjustBlankDiscCapacity(devPath, discType, totalSize, usedSize);
     LOGI("GetCapacity totalsize is %{public}" PRId64 ", usedsize is %{public}" PRId64, totalSize, usedSize);
     freeSize = (usedSize > totalSize) ? 0 : totalSize - usedSize;
+
+    if (ret != E_OK) {
+        LOGI("GetCapacity: <<< EXIT FAILED <<<");
+    }
     return E_OK;
 }
 

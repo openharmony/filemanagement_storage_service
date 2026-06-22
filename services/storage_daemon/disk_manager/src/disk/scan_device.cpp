@@ -248,15 +248,15 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
             std::string driveType = GetOpticalDriveType(devPath);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
-            extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
-            extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
-            extraInfoJson["ODD_INFO"]["ODD_DRIVER_TYPE"] = oddDriveType;
+            extraInfoJson["DRIVE_TYPE"] = driveType;
+            extraInfoJson["DISC_TYPE"] = discType;
+            extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
             
             std::string maxWriteSpeed;
             nlohmann::json speedInfo = GetSpeedInfo(devPath, discType, maxWriteSpeed);
             
-            extraInfoJson["ODD_INFO"]["SPEED_INFO"] = speedInfo;
-            extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
+            extraInfoJson["SPEED_INFO"] = speedInfo;
+            extraInfoJson["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
             info.ODD_INFO = extraInfoJson;
         }
     }
@@ -502,15 +502,15 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
             std::string driveType = GetOpticalDriveType(devPath);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
-            extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
-            extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
-            extraInfoJson["ODD_INFO"]["ODD_DRIVER_TYPE"] = oddDriveType;
+            extraInfoJson["DRIVE_TYPE"] = driveType;
+            extraInfoJson["DISC_TYPE"] = discType;
+            extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
             
             std::string maxWriteSpeed;
             nlohmann::json speedInfo = GetSpeedInfo(devPath, discType, maxWriteSpeed);
             
-            extraInfoJson["ODD_INFO"]["SPEED_INFO"] = speedInfo;
-            extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
+            extraInfoJson["SPEED_INFO"] = speedInfo;
+            extraInfoJson["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
             blockInfo.ODD_INFO = extraInfoJson;
         }
     }
