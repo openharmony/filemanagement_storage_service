@@ -1072,12 +1072,12 @@ HWTEST_F(StorageManagerScanTest, STORAGE_CalculateFinalSizes_00002, testing::ext
     // Set initial sizes
     storageManagerScan.rootSize_ = 1024 * 1024 * 100; // 100MB
     storageManagerScan.systemSize_ = 1024 * 1024 * 200; // 200MB
-    storageManagerScan.fondationSize_ = 1024 * 1024 * 300; // 300MB
+    storageManagerScan.foundationSize_ = 1024 * 1024 * 300; // 300MB
     // Set scan results with large change (> 1GB threshold)
     scanResult.rootSize = 1024 * 1024 * 1200; // 1200MB
     scanResult.rgmManagerRootSize = 1024 * 1024 * 50;
     scanResult.systemSize = 1024 * 1024 * 200;
-    scanResult.fondationSize = 1024 * 1024 * 300;
+    scanResult.foundationSize = 1024 * 1024 * 300;
     // Add large files and dirs
     scanResult.largeFiles.push_back(LargeFileInfo("/data/large_file.dat", 1024 * 1024 * 10));
     scanResult.largeDirs.push_back(LargeDirInfo("/data/large_dir", 1024 * 1024 * 20));
@@ -1186,14 +1186,14 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00004, testing::ext::Te
     EXPECT_EQ(ret, E_OK);
     EXPECT_EQ(scanResult.rootSize, 0);
     EXPECT_EQ(scanResult.systemSize, 0);
-    EXPECT_EQ(scanResult.fondationSize, 0);
+    EXPECT_EQ(scanResult.foundationSize, 0);
     GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00004 end";
 }
 
 /**
  * @tc.number: STORAGE_ScanDirectories_00005
  * @tc.name: STORAGE_ScanDirectories_00005
- * @tc.desc: Test function of ScanDirectories with FONDATION_UID.
+ * @tc.desc: Test function of ScanDirectories with FOUNDATION_UID.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -1204,14 +1204,14 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ScanDirectories_00005, testing::ext::Te
     GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00005 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     std::vector<std::string> whiteList = {"/etc"};
-    std::vector<int32_t> uids = {0, 1000, 5523}; // 5523 is FONDATION_UID
+    std::vector<int32_t> uids = {0, 1000, 5523}; // 5523 is FOUNDATION_UID
     ScanResult scanResult;
     std::vector<DirSpaceInfo> resultDirs = {{"/etc", 5523, 3072}};
     EXPECT_CALL(*sdc, GetDirListSpaceByPaths(_, _, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(resultDirs), Return(E_OK)));
     int32_t ret = storageManagerScan.ScanDirectories(whiteList, uids, scanResult);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(scanResult.fondationSize, 3072);
+    EXPECT_EQ(scanResult.foundationSize, 3072);
     GTEST_LOG_(INFO) << "STORAGE_ScanDirectories_00005 end";
 }
 
@@ -1674,7 +1674,7 @@ HWTEST_F(StorageManagerScanTest, STORAGE_ReportLargeFilesAndDirs_00004, testing:
 /**
  * @tc.number: STORAGE_CalculateFinalSizes_00003
  * @tc.name: STORAGE_CalculateFinalSizes_00003
- * @tc.desc: Test function of CalculateFinalSizes with fondationSize.
+ * @tc.desc: Test function of CalculateFinalSizes with foundationSize.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -1690,12 +1690,12 @@ HWTEST_F(StorageManagerScanTest, STORAGE_CalculateFinalSizes_00003, testing::ext
     scanResult.rootSize = 1024 * 1024 * 500;
     scanResult.rgmManagerRootSize = 1024 * 1024 * 50;
     scanResult.systemSize = 1024 * 1024 * 200;
-    scanResult.fondationSize = 1024 * 1024 * 100;
-    storageManagerScan.fondationSize_ = 0;
+    scanResult.foundationSize = 1024 * 1024 * 100;
+    storageManagerScan.foundationSize_ = 0;
     storageManagerScan.CalculateFinalSizes(startTimeMs, scanResult);
     EXPECT_EQ(storageManagerScan.rootSize_, 1024 * 1024 * (500 - 50));
     EXPECT_EQ(storageManagerScan.systemSize_, scanResult.systemSize);
-    EXPECT_EQ(storageManagerScan.fondationSize_, scanResult.fondationSize);
+    EXPECT_EQ(storageManagerScan.foundationSize_, scanResult.foundationSize);
     GTEST_LOG_(INFO) << "STORAGE_CalculateFinalSizes_00003 end";
 }
 

@@ -260,7 +260,7 @@ int32_t StorageManagerScan::ExecuteScan()
     auto startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         scanStartTime_.time_since_epoch()).count();
 
-    std::vector<int32_t> scanUids = {ROOT_UID, SYSTEM_UID, FONDATION_UID};
+    std::vector<int32_t> scanUids = {ROOT_UID, SYSTEM_UID, FOUNDATION_UID};
     std::vector<std::string> whiteList = GetDirWhiteList();
     ScanResult scanResult;
     int32_t ret = ScanDirectories(whiteList, scanUids, scanResult);
@@ -372,14 +372,14 @@ void StorageManagerScan::CalculateFinalSizes(int64_t startTimeMs, const ScanResu
     }
     int64_t rootSize = scanResult.rootSize - scanResult.rgmManagerRootSize;
     int64_t systemSize = scanResult.systemSize;
-    int64_t fondationSize = scanResult.fondationSize;
-    if (std::abs(rootSize + systemSize + fondationSize - rootSize_ - systemSize_ - fondationSize_) >
+    int64_t foundationSize = scanResult.foundationSize;
+    if (std::abs(rootSize + systemSize + foundationSize - rootSize_ - systemSize_ - foundationSize_) >
         SCAN_SIZE_CHANGE_THRESHOLD) {
         ReportLargeFilesAndDirs(scanResult.largeFiles, scanResult.largeDirs);
     }
     rootSize_ = rootSize;
     systemSize_ = systemSize;
-    fondationSize_ = fondationSize;
+    foundationSize_ = foundationSize;
 }
 
 int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirWhiteList,
@@ -407,13 +407,13 @@ int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirW
             result.rootSize += dirInfo.size;
         } else if (dirInfo.uid == static_cast<uint32_t>(SYSTEM_UID)) {
             result.systemSize += dirInfo.size;
-        } else if (dirInfo.uid == static_cast<uint32_t>(FONDATION_UID)) {
-            result.fondationSize += dirInfo.size;
+        } else if (dirInfo.uid == static_cast<uint32_t>(FOUNDATION_UID)) {
+            result.foundationSize += dirInfo.size;
         }
     }
-    LOGI("ScanDirectories end, rootSize=%{public}lld, systemSize=%{public}lld, fondationSize=%{public}lld",
+    LOGI("ScanDirectories end, rootSize=%{public}lld, systemSize=%{public}lld, foundationSize=%{public}lld",
         static_cast<long long>(result.rootSize), static_cast<long long>(result.systemSize),
-        static_cast<long long>(result.fondationSize));
+        static_cast<long long>(result.foundationSize));
     return E_OK;
 }
 

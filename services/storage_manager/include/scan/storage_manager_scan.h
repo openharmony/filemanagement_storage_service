@@ -36,7 +36,7 @@ namespace StorageManager {
 struct ScanResult {
     int64_t rootSize = 0;
     int64_t systemSize = 0;
-    int64_t fondationSize = 0;
+    int64_t foundationSize = 0;
     int64_t rgmManagerRootSize = 0;
     std::vector<LargeFileInfo> largeFiles;
     std::vector<LargeDirInfo> largeDirs;
@@ -99,7 +99,7 @@ private:
     bool isFirstScan_{true};    // First scan flag
     int64_t rootSize_ = 0;           // Space occupied by the root user (byte)
     int64_t systemSize_ = 0;         // Space occupied by the system user (byte)
-    int64_t fondationSize_ = 0;         // Size of the space occupied by the fondation user (byte)
+    int64_t foundationSize_ = 0;         // Size of the space occupied by the foundation user (byte)
     int64_t scanDurationMs_ = 0;     // Scanning duration (ms)
     int64_t lastScanTime_ = 0;       // Last scan timestamp (ms)
 };
