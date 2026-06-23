@@ -154,5 +154,6 @@ std::string GetOddDriverType(const std::string &sysPath)
     }
     return IDiskUtilMoc::diskUtilMoc->GetOddDriverType(sysPath);
 }
+
 }
 }

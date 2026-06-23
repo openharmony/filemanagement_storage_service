@@ -546,7 +546,12 @@ std::string TrimSpaces(const std::string &str)
 
 bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
 {
-    std::ifstream file(path);
+    char realPath[PATH_MAX] = {0};
+    if (path.size() >= PATH_MAX || realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("[L8:ScanDevice] ReadSysfsNode: %{public}s realpath failed, errno=%{public}d", path.c_str(), errno);
+        return false;
+    }
+    std::ifstream file(realPath);
     if (!file.is_open()) {
         LOGE("Open %{public}s failed", path.c_str());
         return false;

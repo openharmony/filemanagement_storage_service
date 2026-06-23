@@ -41,7 +41,8 @@ int32_t UdfOperator::DoMount(const std::string& devPath,
 
     int32_t cdStatus = 0;
     int32_t ret = DiskUtils::QueryCDStatus(devPath, cdStatus);
-    if (ret == E_OK && (cdStatus & 0x01) != 0 && (cdStatus & 0x02) != 0) {
+    uint32_t statusMask = static_cast<uint32_t>(cdStatus);
+    if (ret == E_OK && (statusMask & 0x01) != 0 && (statusMask & 0x02) != 0) {
         LOGI("UdfOperator::DoMount empty disc, skip mount");
         return E_OK;
     }
