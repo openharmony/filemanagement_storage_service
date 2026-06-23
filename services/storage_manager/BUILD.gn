@@ -31,9 +31,6 @@ config("storage_manager_config") {
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
     "-Oz",
-    "-ffunction-sections",
-    "-fdata-sections",
-    "-flto",
   ]
 }
 
@@ -86,7 +83,6 @@ ohos_shared_library("storage_manager") {
   }
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
     "-Wl,-z,max-page-size=4096",
