@@ -121,9 +121,9 @@ int32_t KeyBackup::RemoveNode(const std::string &pathName)
     return ret;
 }
 
-int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth, bool needFixFiles)
+int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth)
 {
-    LOGI("[L4:KeyBackup] TryRestoreKey: >>> ENTER <<< needFixFiles=%{public}d", needFixFiles);
+    LOGI("[L4:KeyBackup] TryRestoreKey: >>> ENTER <<<");
     if (baseKey == nullptr) {
         LOGE("[L4:KeyBackup] TryRestoreKey: <<< EXIT FAILED <<< basekey is nullptr");
         return -1;
@@ -132,18 +132,13 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     std::string backupDir;
     GetBackupDir(keyDir, backupDir);
     if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST) == E_OK) {
-        if (needFixFiles) {
-            std::thread fixFileThread([this, keyDir, backupDir]() { CheckAndFixFiles(keyDir, backupDir); });
-            fixFileThread.detach();
-        }
+        CheckAndFixFiles(keyDir, backupDir);
         LOGI("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by main key success");
         return 0;
     }
     LOGE("[L4:KeyBackup] TryRestoreKey: origKey failed, try backupKey");
     if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST) == E_OK) {
-        if (needFixFiles) {
-            CheckAndFixFiles(backupDir, keyDir);
-        }
+        CheckAndFixFiles(backupDir, keyDir);
         LOGI("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by back key success");
         return 0;
     }
