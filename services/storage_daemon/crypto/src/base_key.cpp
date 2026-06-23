@@ -583,16 +583,13 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool n
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, 0, "", "candidate is empty");
-        if (needFixFiles) {
-            auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth, needFixFiles);
-            if (ret == 0) {
-                LOGI("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
-                return E_OK;
-            }
-            StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
-            LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
-            return ret;
+        auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth, needFixFiles);
+        if (ret == 0) {
+            LOGI("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
+            return E_OK;
         }
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
+        LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
         if (DoRestoreKey(auth, dir_ + PATH_LATEST) == E_OK) {
             LOGI("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from main key");
             return E_OK;
