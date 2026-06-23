@@ -42,7 +42,7 @@ public:
     int32_t StoreKey(const UserAuth &auth);
 #endif
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
-    int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
+    int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true, bool needFixFiles = true);
     int32_t RestoreKey4Nato(const std::string &keyDir, KeyType type);
     virtual int32_t ActiveKey(const KeyBlob &authToken, uint32_t flag,
         const std::string &mnt = std::string(MNT_DATA)) = 0;

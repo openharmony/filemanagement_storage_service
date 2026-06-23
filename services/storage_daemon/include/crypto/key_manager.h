@@ -59,14 +59,14 @@ public:
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                        bool needGenerateShield = true);
     int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
-                                KeyType type, bool needGenerateShield);
+                                KeyType type, bool needGenerateShield, bool needFixFiles = true);
 #else
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret);
     std::string CheckSecretStatus(struct UserTokenSecret &userTokenSecret);
     void HandleEl2Error(int ret, unsigned int user, const std::string &secretInfo,
                         const std::string &reportPrefix, const std::string &level);
     int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
-                                KeyType type);
+                                KeyType type, bool needFixFiles = true);
 
 #endif
     int UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,

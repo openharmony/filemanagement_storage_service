@@ -142,17 +142,17 @@ int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const Key
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        KeyType type, bool needGenerateShield)
+                                        KeyType type, bool needGenerateShield, bool needFixFiles)
 #else
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        KeyType type)
+                                        KeyType type, bool needFixFiles)
 #endif
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;
     }
-    return KeyManagerMock::iKeyManagerMock_->UpdateCeEceSeceUserAuth(user, userTokenSecret, type);
+    return KeyManagerMock::iKeyManagerMock_->UpdateCeEceSeceUserAuth(user, userTokenSecret, type, needFixFiles);
 }
 
 int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)

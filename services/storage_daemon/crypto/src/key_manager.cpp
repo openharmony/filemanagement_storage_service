@@ -1009,7 +1009,7 @@ int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecre
         return ret;
     }
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true, false);
     if (ret != 0) {
         LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
         queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
@@ -1017,7 +1017,7 @@ int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecre
             user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
     }
 #else
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, false);
     if (ret != 0) {
         LOGE("[L3:KeyManager] UpdateUserAuthByKeyType:user %{public}u UpdateCeEceSeceUserAuth "
             "el%{public}u fail", user, keyType);
@@ -1235,11 +1235,11 @@ int KeyManager::DoChangerPinCodeClassE(unsigned int user, std::shared_ptr<BaseKe
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        KeyType type, bool needGenerateShield)
+                                        KeyType type, bool needGenerateShield, bool needFixFiles)
 #else
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        KeyType type)
+                                        KeyType type, bool needFixFiles)
 #endif
 {
     LOGW("[L3:KeyManager] UpdateCeEceSeceUserAuth: >>> ENTER <<< [user=%{public}u, type=%{public}u]", user, type);
@@ -1263,8 +1263,8 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         KeyBlob token(userTokenSecret.token);
         auth.token = std::move(token);
     }
-    if ((item->RestoreKey(auth) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH) != E_OK) &&
-        (item->RestoreKey(auth_newSec) != E_OK)) {
+    if ((item->RestoreKey(auth, true, needFixFiles) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH, true, needFixFiles) != E_OK) &&
+        (item->RestoreKey(auth_newSec, true, needFixFiles) != E_OK)) {
         LOGE("[L3:KeyManager] UpdateCeEceSeceUserAuth: <<< EXIT FAILED <<< [failed to restore key]");
         return E_RESTORE_KEY_FAILED;
     }

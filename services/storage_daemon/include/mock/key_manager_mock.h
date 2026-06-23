@@ -35,7 +35,7 @@ public:
     virtual int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret) = 0;
     virtual int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,
         const std::vector<uint8_t> &secret) = 0;
-    virtual int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType type) = 0;
+    virtual int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType type, bool needFixFiles = true) = 0;
     virtual int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type) = 0;
     virtual int ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken) = 0;
     virtual std::string GetNatoNeedRestorePath(uint32_t userId, KeyType type) = 0;
@@ -82,7 +82,7 @@ public:
     MOCK_METHOD(int, UpdateUserAuth, (unsigned int, struct UserTokenSecret &));
     MOCK_METHOD(int, ActiveCeSceSeceUserKey, (unsigned int, KeyType,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
-    MOCK_METHOD(int, UpdateCeEceSeceUserAuth, (unsigned int, struct UserTokenSecret &, KeyType));
+    MOCK_METHOD(int, UpdateCeEceSeceUserAuth, (unsigned int, struct UserTokenSecret &, KeyType, bool));
     MOCK_METHOD(int, UpdateCeEceSeceKeyContext, (unsigned int, KeyType));
     MOCK_METHOD(int, ActiveElxUserKey4Nato, (unsigned int, KeyType, const KeyBlob &));
     MOCK_METHOD(std::string, GetNatoNeedRestorePath, (uint32_t, KeyType));
