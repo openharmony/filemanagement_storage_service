@@ -79,3 +79,9 @@ if ("${target_platform}" == "car") {
 } else {
   car_device_enable = false
 }
+
+if ("${target_platform}" == "phone") {
+  phone_device_enable = true
+} else {
+  phone_device_enable = false
+}

@@ -49,7 +49,9 @@ void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
+#ifdef PHONE_DEVICE_ENABLE
         matchingSkills.AddEvent(CLONE_EVENT_NAME);
+#endif
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
         if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
