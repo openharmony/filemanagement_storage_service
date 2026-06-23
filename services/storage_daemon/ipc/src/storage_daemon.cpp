@@ -668,11 +668,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     }
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret,
                                         .secureUid = secureUid };
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, true, false);
-#else
     ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
-#endif
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthOld: <<< EXIT FAILED <<< UpdateCeEceSeceUserAuth"
             "userId=%{public}u, ret=%{public}d", userId, ret);
