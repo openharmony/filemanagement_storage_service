@@ -988,7 +988,8 @@ std::string BuildTimeInfo(int64_t start, int64_t end)
     return " start: " + std::to_string(start) + " ,end: " + std::to_string(end) + " ,duration: " + duration;
 }
 
-int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType, bool needFixFiles)
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user,
+    struct UserTokenSecret &userTokenSecret, KeyType keyType, bool needFixFiles)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::string secretInfo = BuildSecretStatus(userTokenSecret);
@@ -1263,7 +1264,8 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         KeyBlob token(userTokenSecret.token);
         auth.token = std::move(token);
     }
-    if ((item->RestoreKey(auth, true, needFixFiles) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH, true, needFixFiles) != E_OK) &&
+    if ((item->RestoreKey(auth, true, needFixFiles) != E_OK) &&
+        (item->RestoreKey(NULL_KEY_AUTH, true, needFixFiles) != E_OK) &&
         (item->RestoreKey(auth_newSec, true, needFixFiles) != E_OK)) {
         LOGE("[L3:KeyManager] UpdateCeEceSeceUserAuth: <<< EXIT FAILED <<< [failed to restore key]");
         return E_RESTORE_KEY_FAILED;

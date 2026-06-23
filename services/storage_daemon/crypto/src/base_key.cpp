@@ -578,8 +578,8 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
 
 int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool needFixFiles)
 {
-    LOGD("[L4:BaseKey] RestoreKey: >>> ENTER <<< auth token %{public}d, auth secret %{public}d, needFixFiles=%{public}d",
-        auth.token.IsEmpty(), auth.secret.IsEmpty(), needFixFiles);
+    LOGD("[L4:BaseKey] RestoreKey: >>> ENTER <<< auth token %{public}d, auth secret %{public}d,"
+        " needFixFiles=%{public}d", auth.token.IsEmpty(), auth.secret.IsEmpty(), needFixFiles);
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest

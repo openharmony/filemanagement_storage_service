@@ -35,7 +35,8 @@ public:
     virtual int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret) = 0;
     virtual int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,
         const std::vector<uint8_t> &secret) = 0;
-    virtual int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType type, bool needFixFiles = true) = 0;
+    virtual int UpdateCeEceSeceUserAuth(unsigned int user,
+        struct UserTokenSecret &userTokenSecret, KeyType type, bool needFixFiles = true) = 0;
     virtual int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type) = 0;
     virtual int ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken) = 0;
     virtual std::string GetNatoNeedRestorePath(uint32_t userId, KeyType type) = 0;
