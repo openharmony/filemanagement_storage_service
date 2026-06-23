@@ -360,12 +360,12 @@ std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType typ
     return KeyManagerMock::iKeyManagerMock_->GetUserElKey(user, type, isSave);
 }
 
-int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType, bool needFixFiles)
 {
     if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
         return E_OK;
     }
-    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuthByKeyType(user, userTokenSecret, keyType);
+    return KeyManagerMock::iKeyManagerMock_->UpdateUserAuthByKeyType(user, userTokenSecret, keyType, needFixFiles);
 }
 
 int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)

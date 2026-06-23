@@ -141,7 +141,8 @@ private:
     int32_t DoStoreAndUpdate(uint32_t userId,
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret,
-                             KeyType keyType);
+                             KeyType keyType,
+                             bool needFixFiles = true);
     void CheckAndUpgradeUserAuthType(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret);

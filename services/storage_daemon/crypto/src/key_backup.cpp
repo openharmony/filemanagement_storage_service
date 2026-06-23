@@ -141,9 +141,7 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     }
     LOGE("[L4:KeyBackup] TryRestoreKey: origKey failed, try backupKey");
     if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST) == E_OK) {
-        if (needFixFiles) {
-            CheckAndFixFiles(backupDir, keyDir);
-        }
+        CheckAndFixFiles(backupDir, keyDir);
         LOGI("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by back key success");
         return 0;
     }

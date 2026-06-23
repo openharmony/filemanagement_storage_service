@@ -988,7 +988,7 @@ std::string BuildTimeInfo(int64_t start, int64_t end)
     return " start: " + std::to_string(start) + " ,end: " + std::to_string(end) + " ,duration: " + duration;
 }
 
-int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType)
+int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecret &userTokenSecret, KeyType keyType, bool needFixFiles)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::string secretInfo = BuildSecretStatus(userTokenSecret);
@@ -1009,7 +1009,7 @@ int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecre
         return ret;
     }
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true, false);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, true, needFixFiles);
     if (ret != 0) {
         LOGE("user %{public}u UpdateCeEceSeceUserAuth el%{public}u fail", user, keyType);
         queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
@@ -1017,7 +1017,7 @@ int KeyManager::UpdateUserAuthByKeyType(unsigned int user, struct UserTokenSecre
             user, ret, "EL" + std::to_string(keyType), secretInfo + queryTime);
     }
 #else
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, false);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, keyType, needFixFiles);
     if (ret != 0) {
         LOGE("[L3:KeyManager] UpdateUserAuthByKeyType:user %{public}u UpdateCeEceSeceUserAuth "
             "el%{public}u fail", user, keyType);

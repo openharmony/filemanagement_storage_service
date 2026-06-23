@@ -413,7 +413,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(_, _)).WillRepeatedly(Return(E_OK));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _)).WillOnce(Return(E_OK))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _, _)).WillOnce(Return(E_OK))
         .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_PARAMS_NULLPTR_ERR));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(_, _)).WillRepeatedly(Return(E_OK));
 

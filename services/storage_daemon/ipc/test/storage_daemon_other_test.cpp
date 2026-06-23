@@ -680,7 +680,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_002, TestS
     EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
     EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL2_KEY)).WillOnce(Return(E_OK));
     storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
 }
@@ -717,7 +717,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl2ToEl4AuthType_004, TestS
     EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL3_KEY, false)).WillOnce(Return(nullptr));
     EXPECT_CALL(*keyManagerMock_, GetUserElKey(userId_, EL4_KEY, false)).WillOnce(Return(nullptr));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY)).WillOnce(Return(-1));
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL2_KEY, _)).WillOnce(Return(-1));
     storageDaemon_->UpgradeEl2ToEl4AuthType(userId_, token_, secret_);
 }
 
@@ -761,7 +761,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_003, TestSize.L
         .WillOnce(Return(el5Key));
     EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY, _))
         .Times(2)
         .WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(E_OK));
@@ -781,7 +781,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_004, TestSize.L
         .WillOnce(Return(el5Key));
     EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY, _))
         .WillOnce(Return(-1));
     storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
 }
@@ -799,7 +799,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_005, TestSize.L
         .WillOnce(Return(el5Key));
     EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY, _))
         .WillOnce(Return(E_OK))
         .WillOnce(Return(-1));
     storageDaemon_->UpgradeEl5AuthType(userId_, token_, secret_);
@@ -818,7 +818,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_006, TestSize.L
         .WillOnce(Return(el5Key));
     EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(Return(false));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY, _))
         .Times(2)
         .WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(E_OK));
@@ -838,7 +838,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpgradeEl5AuthType_007, TestSize.L
         .WillOnce(Return(el5Key));
     EXPECT_CALL(*baseKeyMock_, NeedUpgradeAuthType()).WillOnce(Return(true));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(userId_, _)).WillOnce(DoAll(SetArgReferee<1>(100), Return(true)));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(userId_, _, EL5_KEY, _))
         .Times(2)
         .WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(userId_, EL5_KEY)).WillOnce(Return(-1));

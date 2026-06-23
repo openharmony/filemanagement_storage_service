@@ -668,7 +668,11 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     }
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret,
                                         .secureUid = secureUid };
-    ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, true);
+#else
+    ret = KeyManager::GetInstance().UpdateCeEceSeceUserAuth(userId, userTokenSecret, type);
+#endif
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthOld: <<< EXIT FAILED <<< UpdateCeEceSeceUserAuth"
             "userId=%{public}u, ret=%{public}d", userId, ret);
@@ -1884,7 +1888,8 @@ int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
 int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret,
-                                        KeyType keyType)
+                                        KeyType keyType,
+                                        bool needFixFiles)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
     uint64_t secureUid = { 0 };
@@ -1892,7 +1897,7 @@ int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
         LOGE("GetSecureUid failed, userId:%{public}u", userId);
     }
     UserTokenSecret userTokenSecret = { token, secret, secret, secureUid };
-    auto ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecret, keyType);
+    auto ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecret, keyType, needFixFiles);
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, ret:%{public}d, userId:%{public}u, keyType:%{public}u", ret, userId, keyType);
         return ret;
@@ -1935,7 +1940,7 @@ void StorageDaemon::UpgradeEl2ToEl4AuthType(uint32_t userId, const std::vector<u
             continue;
         }
 
-        int ret = DoStoreAndUpdate(userId, token, secret, type);
+        int ret = DoStoreAndUpdate(userId, token, secret, type, false);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemon] Upgrade EL%{public}u failed: %{public}d", type, ret);
             StorageRadar::ReportUserKeyResult("CheckAndUpgradeUserAuthType", userId, ret,
