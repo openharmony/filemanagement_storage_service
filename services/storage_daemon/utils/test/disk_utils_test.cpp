@@ -980,6 +980,59 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadConfiguration_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: DiskUtilsTest_ReadConfiguration_002
+ * @tc.desc: Verify ReadConfiguration with nullptr buf returns E_PARAMS_INVALID.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadConfiguration_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_002 start";
+
+    std::string diskPath = "/dev/sr0";
+    int ret = ReadConfiguration(diskPath, nullptr, 64);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_002 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_ReadConfiguration_003
+ * @tc.desc: Verify ReadConfiguration with zero len returns E_PARAMS_INVALID.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadConfiguration_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_003 start";
+
+    std::string diskPath = "/dev/sr0";
+    uint8_t buf[64] = {0};
+    int ret = ReadConfiguration(diskPath, buf, 0);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_003 end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_ReadConfiguration_004
+ * @tc.desc: Verify ReadConfiguration with negative len returns E_PARAMS_INVALID.
+ * @tc.type: FUNC
+ * @tc.require: AR20260114725643
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_ReadConfiguration_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_004 start";
+
+    std::string diskPath = "/dev/sr0";
+    uint8_t buf[64] = {0};
+    int ret = ReadConfiguration(diskPath, buf, -1);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "DiskUtilsTest_ReadConfiguration_004 end";
+}
+
+/**
  * @tc.name: DiskUtilsTest_GetOpticalDriveMaxWriteSpeed_002
  * @tc.desc: Verify GetOpticalDriveMaxWriteSpeed fails when Mode Sense fails.
  * @tc.type: FUNC

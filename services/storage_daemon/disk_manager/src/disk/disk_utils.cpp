@@ -786,22 +786,6 @@ int32_t DiskUtils::EjectCD(const std::string &devPath)
     LOGI("EjectCD: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
-
-std::string DiskUtils::DiskPathToVolPath(const std::string& diskPath)
-{
-    auto pos = diskPath.find("/disk-");
-    if (pos == std::string::npos) {
-        return diskPath;
-    }
-    std::string volPath = diskPath.substr(0, pos + 1) + "vol" + diskPath.substr(pos + 5);
-    auto lastDash = volPath.rfind('-');
-    if (lastDash != std::string::npos && lastDash > pos + 1) {
-        volPath = volPath.substr(0, lastDash + 1) +
-                  std::to_string(std::stoi(volPath.substr(lastDash + 1)) + 1);
-    }
-    return volPath;
-}
-
 int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
 {
     std::vector<std::string> clearCmd = {
@@ -1103,7 +1087,7 @@ static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
               (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_1]) << BYTE_SHIFT_16) |
               (static_cast<unsigned int>(dataBuf[BLOCK_SIZE_BYTE_2]) << BYTE_SHIFT_8) |
               dataBuf[BLOCK_SIZE_BYTE_3];
-    dvdTotalCapacity = static_cast<int64_t>(blkCnt + 1) * blkSize;
+    dvdTotalCapacity = (static_cast<int64_t>(blkCnt) + 1) * static_cast<int64_t>(blkSize);
     LOGI("GetDvdPlusRwTotalCapacity used_capacity: %{public}u * %{public}u = %{public}" PRIu64,
         blkCnt + 1, blkSize, dvdTotalCapacity);
     return E_OK;

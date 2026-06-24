@@ -456,8 +456,13 @@ int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, in
 int ReadConfiguration(const std::string &diskPath, uint8_t *buf, int len)
 {
     LOGI("[L8:DiskUtils] ReadConfiguration: >>> ENTER <<< diskPath=%{public}s, len=%{public}d", diskPath.c_str(), len);
+    if (len <= 0 || buf == nullptr) {
+        LOGE("[L8:DiskUtils] ReadConfiguration: invalid params, len=%{public}d", len);
+        return E_PARAMS_INVALID;
+    }
+    uint32_t allocLen = static_cast<uint32_t>(len);
     uint8_t cdb[GET_CONFIG_CDB_LEN] = { GET_CONFIG_OPCODE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        static_cast<uint8_t>((len >> 8) & 0xFF), static_cast<uint8_t>(len & 0xFF) };
+        static_cast<uint8_t>((allocLen >> 8) & 0xFF), static_cast<uint8_t>(allocLen & 0xFF) };
 
     int ret = SendScsiCmdByPath(diskPath, cdb, sizeof(cdb), buf, len);
     if (ret == 0) {
@@ -652,7 +657,7 @@ int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteS
         } else if (driveType.find("DVD") != std::string::npos || driveType.find("dvd") != std::string::npos) {
             speedBase = DVD_SPEED_KBPS;
         }
-        maxWriteSpeed = maxWriteSpeedKBps / speedBase;
+        maxWriteSpeed = static_cast<int32_t>(maxWriteSpeedKBps / speedBase);
         LOGI("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: <<< EXIT SUCCESS <<< maxWriteSpeed=%{public}d",
              maxWriteSpeed);
         return E_OK;
@@ -935,7 +940,7 @@ int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity)
             ((unsigned int)data_buf[BLOCK_SIZE_BYTE_1] << BYTE_SHIFT_16) |
             ((unsigned int)data_buf[BLOCK_SIZE_BYTE_2] << BYTE_SHIFT_8) |
             data_buf[BLOCK_SIZE_BYTE_3];
-    bdTotalCapacity = static_cast<int64_t>(blk_cnt + 1) * blk_size;
+    bdTotalCapacity = static_cast<int64_t>(blk_cnt + 1) * static_cast<int64_t>(blk_size);
     LOGI("bd total_capacity: %{public}u * %{public}u = %{public}" PRId64 " bytes",
         blk_cnt + 1, blk_size, bdTotalCapacity);
     return E_OK;

@@ -609,6 +609,26 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ReadSysfsNode_002, TestS
 }
 
 /**
+ * @tc.name: Storage_Service_ScanDeviceTest_ReadSysfsNode_003
+ * @tc.desc: Test reading sysfs node - path exceeds PATH_MAX
+ * @tc.required: A
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ReadSysfsNode_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_ReadSysfsNode_003 start";
+
+    ScanDevice scanner(mockSysPath);
+    std::string content;
+    std::string longPath(PATH_MAX, 'a');
+
+    bool ret = scanner.ReadSysfsNode(longPath, content);
+
+    EXPECT_FALSE(ret);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_ReadSysfsNode_003 end";
+}
+
+/**
  * @tc.name: Storage_Service_ScanDeviceTest_ReadSysfsNode_TrimsLeadingSpaces_001
  * @tc.desc: Test ReadSysfsNode trims leading spaces
  * @tc.required: A

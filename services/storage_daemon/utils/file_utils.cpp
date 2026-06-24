@@ -709,7 +709,7 @@ void GetExitStatus(int *exitStatus, int inputExitStatus)
     }
 }
 
-static void ReadPipeOutputForExec(int pipeFdRead, std::vector<std::string> *output)
+static void ReadPipeOutputForExec(int pipeFdRead, std::vector<std::string> *output, const std::string &cmdName)
 {
     if (!output) {
         return;
@@ -719,6 +719,7 @@ static void ReadPipeOutputForExec(int pipeFdRead, std::vector<std::string> *outp
     ssize_t bytesRead = 0;
     while ((bytesRead = read(pipeFdRead, buf, BUF_LEN - 1)) > 0) {
         buf[bytesRead] = '\0';
+        LOGE("[L8:FileUtils] ReadPipeOutputForExec: cmd=%{public}s", cmdName.c_str());
         output->emplace_back(buf, bytesRead);
         (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
     }
@@ -771,7 +772,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         _exit(1);
     } else {
         (void)close(pipeFd[1]);
-        ReadPipeOutputForExec(pipeFd[0], output);
+        ReadPipeOutputForExec(pipeFd[0], output, cmd.empty() ? "" : cmd[0]);
         (void)close(pipeFd[0]);
         int ret = CheckChildProcessExitStatus(pid, status, exitStatus);
         if (ret != E_OK) {
