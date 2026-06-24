@@ -156,8 +156,6 @@ ohos_executable("storage_daemon") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
-    "-flto",
   ]
 
   if (storage_service_user_file_sharing) {
@@ -324,7 +322,6 @@ ohos_executable("storage_daemon") {
   }
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
     "-Wl,-z,max-page-size=4096",
@@ -373,11 +370,9 @@ ohos_executable("sdc") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-flto",
   ]
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
   ]
@@ -447,11 +442,9 @@ ohos_shared_library("storage_common_utils") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-flto",
   ]
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
   ]

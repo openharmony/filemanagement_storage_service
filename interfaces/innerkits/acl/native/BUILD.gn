@@ -57,11 +57,9 @@ ohos_shared_library("storage_manager_acl") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-flto",
   ]
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
   ]

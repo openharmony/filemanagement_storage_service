@@ -121,11 +121,9 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "-Oz",
     "-ffunction-sections",
     "-fdata-sections",
-    "-flto",
   ]
 
   ldflags = [
-    "-flto",
     "-Wl,--gc-sections",
     "-Wl,-O1",
   ]

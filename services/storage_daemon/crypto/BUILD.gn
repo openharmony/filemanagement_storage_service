@@ -29,8 +29,6 @@ config("storage_daemon_crypto_config") {
     "-Wall",
     "-ffunction-sections",
     "-fdata-sections",
-    "-fvisibility=hidden",
-    "-flto",
   ]
 }
 
