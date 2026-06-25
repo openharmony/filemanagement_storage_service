@@ -259,10 +259,9 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
         return E_VOL_MOUNT_ERR;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t result = Check(volumePtr->GetId());
-    if (result != E_OK || sdCommunication == nullptr) {
+    if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Check", result);
         return result;
@@ -276,7 +275,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         }
     }
 
-    result = sdCommunication->Mount(volumeId, 0);
+    result = sdCommunication.Mount(volumeId, 0);
     if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
     }
@@ -303,16 +302,11 @@ bool VolumeManagerService::IsUsbFuseByType(const std::string &fsType)
 int32_t VolumeManagerService::MountUsbFuse(const std::string &volumeId)
 {
     LOGI("VolumeManagerService::MountUsbFuse in");
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
     std::string fsUuid;
     int32_t fuseFd;
-    int32_t result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    int32_t result = sdCommunication.MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (result == E_OK) {
         result = VolumeManagerServiceExt::GetInstance().NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
     }
@@ -344,17 +338,12 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
             volumePtr->GetState());
         return E_VOL_UMOUNT_ERR;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     volumePtr->SetState(VolumeState::EJECTING);
 
     SaveVolumeFreeSize(volumePtr);
 
-    int32_t result = sdCommunication->Unmount(volumeId);
+    int32_t result = sdCommunication.Unmount(volumeId);
     if (result == E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
         volumePtr->Reset();
@@ -405,11 +394,9 @@ int32_t VolumeManagerService::TryToFix(std::string volumeId)
         LOGE("volumePtr is nullptr for volumeId");
         return E_VOLUMEEX_IS_NULLPTR;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        result = sdCommunication->TryToFix(volumeId, 0);
-    } else {
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    result = sdCommunication.TryToFix(volumeId, 0);
+    if (result != E_OK) {
         volumePtr->Reset();
         StorageRadar::ReportVolumeOperation("VolumeManagerService::DAMAGED", result);
     }
@@ -435,13 +422,8 @@ int32_t VolumeManagerService::Check(std::string volumeId)
     if (volumePtr->GetFsType() == FsType::MTP) {
         return E_OK;
     }
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    int32_t result = sdCommunication->Check(volumeId);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t result = sdCommunication.Check(volumeId);
     return result;
 }
 
@@ -537,13 +519,8 @@ int32_t VolumeManagerService::SetVolumeDescription(std::string fsUuid, std::stri
                 LOGE("VolumeManagerService::SetVolumeDescription volume state is not unmounted!");
                 return E_VOL_STATE;
             }
-            std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-            sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-            if (sdCommunication == nullptr) {
-                LOGE("sdCommunication is nullptr");
-                return E_PARAMS_NULLPTR_ERR;
-            }
-            return sdCommunication->SetVolumeDescription(volume->GetId(), description);
+            auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+            return sdCommunication.SetVolumeDescription(volume->GetId(), description);
         }
     }
     return E_NON_EXIST;
@@ -573,13 +550,8 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
         return E_VOL_STATE;
     }
     // check fstype!!!!
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return E_PARAMS_NULLPTR_ERR;
-    }
-    int32_t result = sdCommunication->Format(volumeId, fsType);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t result = sdCommunication.Format(volumeId, fsType);
     if (result != E_OK) {
         return result;
     }

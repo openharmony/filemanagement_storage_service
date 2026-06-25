@@ -16,7 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 #define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 
-#include <singleton.h>
+#include <nocopyable.h>
 #include "istorage_daemon.h"
 #include "iuece_activation_callback.h"
 #include "partition_params.h"
@@ -25,7 +25,12 @@
 namespace OHOS {
 namespace StorageManager {
 class StorageDaemonCommunication : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageDaemonCommunication);
+public:
+    static StorageDaemonCommunication& GetInstance()
+    {
+        static StorageDaemonCommunication instance;
+        return instance;
+    }
 
 public:
     int32_t Connect();
@@ -160,6 +165,8 @@ public:
     int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
 
 private:
+    StorageDaemonCommunication();
+    ~StorageDaemonCommunication();
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;

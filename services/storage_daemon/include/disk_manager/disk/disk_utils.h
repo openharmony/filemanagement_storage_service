@@ -65,7 +65,6 @@ public:
                                    const std::string &volumeName, bool quickFormat);
     static std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
                                                  const std::string &volName);
-    static std::string DiskPathToVolPath(const std::string& diskPath);
     static int32_t PartitionHmfs(const std::string& diskPath);
     static int32_t QueryCDStatus(const std::string &devPath, int32_t &status);
     static int32_t EjectCD(const std::string &devPath);
@@ -74,7 +73,12 @@ public:
     static int32_t GetVolumeOpProcess(const std::string &volId, int32_t &progressPct);
     static int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType);
     static int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize);
+    static int32_t GetDiscCapacity(int cmdFd, const std::string& discType,
+                                   int64_t &totalSize, int64_t &usedSize);
+    static void AdjustBlankDiscCapacity(const std::string& devPath, const std::string& discType,
+                                        int64_t &totalSize, int64_t &usedSize);
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
+    static int32_t ExecAsyncGetPartitionTableInfo(const std::string &devPath, std::vector<std::string> &lines);
     static int32_t CleanTempDirectory();
 };
 

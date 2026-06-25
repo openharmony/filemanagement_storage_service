@@ -168,12 +168,8 @@ void StorageManagerScan::StopScan()
     }
     LOGI("StorageManagerScan::StopScan terminate the scanning thread");
     stopScanFlag_.store(true);
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("sdCommunication is nullptr");
-        return;
-    }
-    int32_t ret = sdCommunication->SetStopScanFlag(true);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t ret = sdCommunication.SetStopScanFlag(true);
     if (ret != E_OK) {
         LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
     } else {
@@ -217,14 +213,12 @@ void StorageManagerScan::LaunchScanWorker()
         return;
     }
     stopScanFlag_.store(false);
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        int32_t ret = sdCommunication->SetStopScanFlag(false);
-        if (ret != E_OK) {
-            LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
-        } else {
-            LOGI("Successfully reset stop scan flag.");
-        }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t ret = sdCommunication.SetStopScanFlag(false);
+    if (ret != E_OK) {
+        LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
+    } else {
+        LOGI("Successfully reset stop scan flag.");
     }
 
     // Scan worker thread
@@ -398,14 +392,10 @@ int32_t StorageManagerScan::ScanDirectories(const std::vector<std::string>& dirW
     LOGI("ScanDirectories start, whiteList size=%{public}zu, uids size=%{public}zu",
          dirWhiteList.size(), uids.size());
 
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("ScanDirectories GetInstance StorageDaemonCommunication failed");
-        return E_SERVICE_IS_NULLPTR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
     std::vector<DirSpaceInfo> resultDirs;
-    int32_t ret = sdCommunication->GetDirListSpaceByPaths(dirWhiteList, uids, resultDirs,
+    int32_t ret = sdCommunication.GetDirListSpaceByPaths(dirWhiteList, uids, resultDirs,
         result.largeFiles, result.largeDirs);
     if (ret != E_OK) {
         LOGE("ScanDirectories GetDirListSpaceByPaths failed, ret=%{public}d", ret);
@@ -436,16 +426,12 @@ int32_t StorageManagerScan::ScanSinglePath(const std::string& path, int32_t uid,
     LOGI("ScanSinglePath start, path=%{public}s, uid=%{public}d", path.c_str(), uid);
     size = 0;
 
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("ScanSinglePath GetInstance StorageDaemonCommunication failed");
-        return E_SERVICE_IS_NULLPTR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
     std::vector<DirSpaceInfo> dirInfos = {{path, uid, 0}};
     std::vector<DirSpaceInfo> resultDirs;
 
-    int32_t ret = sdCommunication->GetDirListSpace(dirInfos, resultDirs);
+    int32_t ret = sdCommunication.GetDirListSpace(dirInfos, resultDirs);
     if (ret != E_OK) {
         LOGE("ScanSinglePath GetDirListSpace failed, ret=%{public}d", ret);
         return ret;

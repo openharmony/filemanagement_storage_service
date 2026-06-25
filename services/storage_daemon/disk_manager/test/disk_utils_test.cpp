@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <fcntl.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -333,6 +334,103 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_Success, TestSize.Level1)
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     EXPECT_EQ(ret, E_OK);
     EXPECT_TRUE(execRet.find("Disk") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineMergeWithSpace, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB");
+            lines->push_back("Number  Start  End");
+            lines->push_back("  Size  Type");
+            lines->push_back("1  2048  102400\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Number  Start  End  Size  Type") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineMergeWithDigit, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Partition entry:");
+            lines->push_back("1 2048 102400");
+            lines->push_back("2 204800 409600\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Partition entry:1 2048 102400") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineNoMergeWithLetter, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Number  Start  End");
+            lines->push_back("Disk label: gpt\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Number  Start  End\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find("Disk label: gpt\n") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_MultiLineMerge, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Entry:");
+            lines->push_back(" start=2048");
+            lines->push_back(" end=102400");
+            lines->push_back(" type=ext4\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Entry: start=2048 end=102400 type=ext4\n") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineEndsWithNewline, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB\n");
+            lines->push_back("Number  Start  End\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(std::count(execRet.begin(), execRet.end(), '\n'), 2);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_EmptyLineHandling, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Disk info:");
+            lines->push_back("");
+            lines->push_back("  extra data\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Disk info:  extra data\n") != std::string::npos);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreatePartition_EmptyPath, TestSize.Level1)
@@ -917,63 +1015,43 @@ HWTEST_F(ExtDiskUtilsTest, ExecuteScsiCmd_Success, TestSize.Level1)
 }
 
 /**
- * @tc.name: DiskPathToVolPath_001
- * @tc.desc: Verify normal disk path conversion (disk-X-Y → vol-X-Y+1).
+ * @tc.name: CleanTempDirectory_001
+ * @tc.desc: Verify CleanTempDirectory returns E_ERR when ForkExec fails.
  * @tc.type: FUNC
  */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_001, TestSize.Level1)
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_001, TestSize.Level1)
 {
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-8-0"), "/dev/block/vol-8-1");
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_ERR);
 }
 
 /**
- * @tc.name: DiskPathToVolPath_002
- * @tc.desc: Verify path without /disk- prefix is returned unchanged.
+ * @tc.name: CleanTempDirectory_002
+ * @tc.desc: Verify CleanTempDirectory returns E_OK when ForkExec succeeds.
  * @tc.type: FUNC
  */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_002, TestSize.Level1)
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_002, TestSize.Level1)
 {
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/sda"), "/dev/block/sda");
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_OK);
 }
 
 /**
- * @tc.name: DiskPathToVolPath_003
- * @tc.desc: Verify minor number increment with non-zero value.
+ * @tc.name: CleanTempDirectory_003
+ * @tc.desc: Verify CleanTempDirectory returns E_ERR when ForkExec fails with output.
  * @tc.type: FUNC
  */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_003, TestSize.Level1)
+HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_003, TestSize.Level1)
 {
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-8-5"), "/dev/block/vol-8-6");
-}
-
-/**
- * @tc.name: DiskPathToVolPath_004
- * @tc.desc: Verify large major/minor numbers are handled correctly.
- * @tc.type: FUNC
- */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_004, TestSize.Level1)
-{
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath("/dev/block/disk-259-10"), "/dev/block/vol-259-11");
-}
-
-/**
- * @tc.name: DiskPathToVolPath_005
- * @tc.desc: Verify empty string is returned unchanged.
- * @tc.type: FUNC
- */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_005, TestSize.Level1)
-{
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath(""), "");
-}
-
-/**
- * @tc.name: DiskPathToVolPath_006
- * @tc.desc: Verify disk path with disk- in wrong position (no leading /) is returned unchanged.
- * @tc.type: FUNC
- */
-HWTEST_F(ExtDiskUtilsTest, DiskPathToVolPath_006, TestSize.Level1)
-{
-    EXPECT_EQ(DiskUtils::DiskPathToVolPath("disk-8-0"), "disk-8-0");
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("rm: cannot remove");
+            return E_ERR;
+        }));
+    int32_t ret = DiskUtils::CleanTempDirectory();
+    EXPECT_EQ(ret, E_ERR);
 }
 
 } // namespace StorageDaemon

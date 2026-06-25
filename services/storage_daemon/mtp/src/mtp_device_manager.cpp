@@ -103,7 +103,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     LOGI("[L2:MtpDeviceManager] MountDevice: <<< EXIT SUCCESS <<< id=%{public}s", device.id.c_str());
     isMounting_ = false;
 #ifdef DISK_MANAGER
-    DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpMounted(
+    OHOS::DiskManager::DiskManagerClient::GetInstance().NotifyMtpMounted(
         device.id, device.path, device.vendor, device.uuid, device.type);
 #endif
     return E_OK;
@@ -120,7 +120,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
             LOGW("[L2:MtpDeviceManager] UmountDevice: umount2 failed in force mode, errno=%{public}d", errno);
             if (needNotify) {
 #ifdef DISK_MANAGER
-                DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+                OHOS::DiskManager::DiskManagerClient::GetInstance().NotifyMtpUnmounted(
                     device.id, isBadRemove);
 #endif
             }
@@ -132,7 +132,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
         }
         if (needNotify) {
 #ifdef DISK_MANAGER
-            DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+            OHOS::DiskManager::DiskManagerClient::GetInstance().NotifyMtpUnmounted(
                 device.id, isBadRemove);
 #endif
         }
@@ -152,7 +152,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
     }
     if (needNotify) {
 #ifdef DISK_MANAGER
-        DelayedSingleton<OHOS::DiskManager::DiskManagerClient>::GetInstance()->NotifyMtpUnmounted(
+        OHOS::DiskManager::DiskManagerClient::GetInstance().NotifyMtpUnmounted(
             device.id, isBadRemove);
 #endif
     }

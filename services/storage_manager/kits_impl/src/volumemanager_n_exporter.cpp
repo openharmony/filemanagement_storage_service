@@ -52,7 +52,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
     }
     auto volumeInfo = std::make_shared<std::vector<VolumeExternal>>();
     auto cbExec = [volumeInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllVolumes(*volumeInfo);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetAllVolumes(*volumeInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -127,7 +127,7 @@ napi_value Mount(napi_env env, napi_callback_info info)
 
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Mount(volumeIdString);
+        int32_t result = StorageManagerConnect::GetInstance().Mount(volumeIdString);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -168,7 +168,7 @@ napi_value Unmount(napi_env env, napi_callback_info info)
 
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Unmount(volumeIdString);
+        int32_t result = StorageManagerConnect::GetInstance().Unmount(volumeIdString);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -210,7 +210,7 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, volumeInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetVolumeByUuid(uuidString,
             *volumeInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -267,7 +267,7 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString, volumeInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetVolumeById(volumeIdString,
             *volumeInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -335,7 +335,7 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
     std::string uuidString(uuid.get());
     std::string descStr(description.get());
     auto cbExec = [uuidString, descStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetVolumeDescription(uuidString,
+        int32_t result = StorageManagerConnect::GetInstance().SetVolumeDescription(uuidString,
             descStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -390,7 +390,7 @@ napi_value Format(napi_env env, napi_callback_info info)
     std::string volumeIdString(volumeId.get());
     std::string fsTypeString(fsType.get());
     auto cbExec = [volumeIdString, fsTypeString]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Format(volumeIdString, fsTypeString);
+        int32_t result = StorageManagerConnect::GetInstance().Format(volumeIdString, fsTypeString);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -443,7 +443,7 @@ napi_value Partition(napi_env env, napi_callback_info info)
 
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, type]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Partition(diskIdString, type);
+        int32_t result = StorageManagerConnect::GetInstance().Partition(diskIdString, type);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -475,7 +475,7 @@ napi_value GetAllDisks(napi_env env, napi_callback_info info)
     }
     auto diskInfo = std::make_shared<std::vector<Disk>>();
     auto cbExec = [diskInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllDisks(*diskInfo);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetAllDisks(*diskInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -541,7 +541,7 @@ napi_value GetDiskById(napi_env env, napi_callback_info info)
     auto diskInfo = std::make_shared<Disk>();
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, diskInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetDiskById(diskIdString, *diskInfo);
+        int32_t errNum = StorageManagerConnect::GetInstance().GetDiskById(diskIdString, *diskInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -598,7 +598,7 @@ napi_value GetPartitionTable(napi_env env, napi_callback_info info)
     auto partitionTableInfo = std::make_shared<PartitionTableInfo>();
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, partitionTableInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetPartitionTable(diskIdString,
+        int32_t errNum = StorageManagerConnect::GetInstance().GetPartitionTable(diskIdString,
             *partitionTableInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
@@ -709,7 +709,7 @@ napi_value CreatePartition(napi_env env, napi_callback_info info)
     }
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, partitionParams]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->CreatePartition(diskIdString,
+        int32_t result = StorageManagerConnect::GetInstance().CreatePartition(diskIdString,
             partitionParams);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -759,7 +759,7 @@ napi_value DeletePartition(napi_env env, napi_callback_info info)
     }
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, partitionNum]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->DeletePartition(diskIdString,
+        int32_t result = StorageManagerConnect::GetInstance().DeletePartition(diskIdString,
             partitionNum);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
@@ -837,7 +837,7 @@ napi_value FormatPartition(napi_env env, napi_callback_info info)
     }
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, partitionNum, formatParams]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->FormatPartition(diskIdString,
+        int32_t result = StorageManagerConnect::GetInstance().FormatPartition(diskIdString,
             partitionNum, formatParams);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));

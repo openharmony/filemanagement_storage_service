@@ -82,6 +82,10 @@ ohos_shared_library("storage_manager") {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
+  if (phone_device_enable) {
+    defines += [ "PHONE_DEVICE_ENABLE" ]
+  }
+
   ldflags = [
     "-Wl,--gc-sections",
     "-Wl,-O1",

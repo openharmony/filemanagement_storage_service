@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <cerrno>
 #include <cinttypes>
 #include <linux/fs.h>
 #include <linux/hdreg.h>
@@ -247,20 +248,15 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
             std::string driveType = GetOpticalDriveType(devPath);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
-            int32_t maxWriteSpeed = 0;
-            GetOpticalDriveMaxWriteSpeed(devPath, maxWriteSpeed);
             extraInfoJson["DRIVE_TYPE"] = driveType;
             extraInfoJson["DISC_TYPE"] = discType;
-            extraInfoJson["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
             extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
-            std::vector<std::string> cmd = { "dvd+rw-mediainfo", devPath };
-            std::vector<std::string> output;
-            int32_t ret = ForkExec(cmd, &output);
-            LOGI("GetExternalDisks ForkExec ret=%{public}d", ret);
-            for (const auto &str : output) {
-                LOGI("GetExternalDisks output: %{public}s", str.c_str());
-            }
-            extraInfoJson["SPEED_INFO"] = ParseMediaInfoLines(output);
+            
+            std::string maxWriteSpeed;
+            nlohmann::json speedInfo = GetSpeedInfo(devPath, discType, maxWriteSpeed);
+            
+            extraInfoJson["SPEED_INFO"] = speedInfo;
+            extraInfoJson["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
             info.ODD_INFO = extraInfoJson;
         }
     }
@@ -272,6 +268,54 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
     return externalDisks;
 }
 
+std::string ScanDevice::FormatSpeedValue(double speedVal)
+{
+    if (speedVal == static_cast<int64_t>(speedVal)) {
+        return std::to_string(static_cast<int64_t>(speedVal));
+    }
+    std::string formatted = std::to_string(speedVal);
+    while (formatted.back() == '0') {
+        formatted.pop_back();
+    }
+    if (formatted.back() == '.') {
+        formatted.pop_back();
+    }
+    return formatted;
+}
+
+std::string ScanDevice::ExtractSpeedFromLine(const std::string &line)
+{
+    size_t colonPos = line.find(':');
+    if (colonPos == std::string::npos) {
+        return "";
+    }
+    std::string key = line.substr(0, colonPos);
+    size_t keyStart = key.find_first_not_of(" \t");
+    if (keyStart != std::string::npos) {
+        key = key.substr(keyStart);
+    }
+    if (key.find("Write Speed") != 0) {
+        return "";
+    }
+    std::string value = line.substr(colonPos + 1);
+    size_t valStart = value.find_first_not_of(" \t");
+    if (valStart != std::string::npos) {
+        value = value.substr(valStart);
+    }
+    size_t xPos = value.find('x');
+    if (xPos != std::string::npos) {
+        value = value.substr(0, xPos);
+    }
+    errno = 0;
+    char *endPtr = nullptr;
+    double speedVal = std::strtod(value.c_str(), &endPtr);
+    if (errno != 0 || endPtr == value.c_str() || speedVal < 0) {
+        LOGE("[L2:ScanDevice] ExtractSpeedFromLine: invalid speed value=%{public}s", value.c_str());
+        return "";
+    }
+    return FormatSpeedValue(speedVal);
+}
+
 nlohmann::json ScanDevice::ParseMediaInfoLines(const std::vector<std::string> &output)
 {
     LOGI("[L2:ScanDevice] ParseMediaInfoLines: output size=%{public}d", static_cast<int>(output.size()));
@@ -281,34 +325,138 @@ nlohmann::json ScanDevice::ParseMediaInfoLines(const std::vector<std::string> &o
         std::stringstream ss(chunk);
         std::string line;
         while (std::getline(ss, line)) {
-            size_t colonPos = line.find(':');
-            if (colonPos == std::string::npos) {
+            std::string formatted = ExtractSpeedFromLine(line);
+            if (formatted.empty()) {
                 continue;
             }
-            std::string key = line.substr(0, colonPos);
-            size_t keyStart = key.find_first_not_of(" \t");
-            if (keyStart != std::string::npos) {
-                key = key.substr(keyStart);
-            }
-            if (key.find("Write Speed") != 0) {
-                continue;
-            }
-            std::string value = line.substr(colonPos + 1);
-            size_t valStart = value.find_first_not_of(" \t");
-            if (valStart != std::string::npos) {
-                value = value.substr(valStart);
-            }
-            size_t xPos = value.find('x');
-            if (xPos != std::string::npos) {
-                value = value.substr(0, xPos);
-            }
-            if (seen.insert(value).second) {
-                speedArr.push_back(value);
+            if (seen.insert(formatted).second) {
+                speedArr.push_back(formatted);
             }
         }
     }
     LOGI("[L2:ScanDevice] ParseMediaInfoLines: speedArr=%{public}s", speedArr.dump().c_str());
     return speedArr;
+}
+
+bool ScanDevice::IsValidSpeedString(const std::string &speedStr)
+{
+    if (speedStr.empty()) {
+        return false;
+    }
+    
+    bool hasDot = false;
+    bool hasDigit = false;
+    
+    for (char c : speedStr) {
+        if (c == '.') {
+            if (hasDot) {
+                return false;
+            }
+            hasDot = true;
+        } else if (c >= '0' && c <= '9') {
+            hasDigit = true;
+        } else {
+            return false;
+        }
+    }
+    
+    return hasDigit;
+}
+
+std::string ScanDevice::GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo)
+{
+    LOGI("[L2:ScanDevice] GetMaxSpeedFromSpeedInfo: >>> ENTER <<< speedInfo=%{public}s", speedInfo.dump().c_str());
+    if (speedInfo.empty()) {
+        LOGE("[L2:ScanDevice] GetMaxSpeedFromSpeedInfo: <<< EXIT FAILED <<< speedInfo is empty");
+        return "";
+    }
+    double maxSpeed = 0.0;
+    std::string maxSpeedStr;
+    for (const auto &speed : speedInfo) {
+        std::string speedStr = speed.get<std::string>();
+        if (!IsValidSpeedString(speedStr)) {
+            LOGE("[L2:ScanDevice] GetMaxSpeedFromSpeedInfo: invalid speed format, speed=%{public}s",
+                 speedStr.c_str());
+            continue;
+        }
+        double speedValue = std::stod(speedStr);
+        if (speedValue > maxSpeed) {
+            maxSpeed = speedValue;
+            maxSpeedStr = speedStr;
+        }
+    }
+    LOGI("[L2:ScanDevice] GetMaxSpeedFromSpeedInfo: <<< EXIT SUCCESS <<< maxSpeedStr=%{public}s",
+         maxSpeedStr.c_str());
+    return maxSpeedStr;
+}
+
+nlohmann::json ScanDevice::ParseWodimPrcapOutput(const std::vector<std::string> &output)
+{
+    LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: >>> ENTER <<<");
+    
+    std::unordered_set<std::string> seen;
+    nlohmann::json speedArr = nlohmann::json::array();
+    
+    for (const auto &line : output) {
+        if (line.find("Write speed #") == std::string::npos) {
+            continue;
+        }
+        
+        size_t cdPos = line.find("(CD");
+        if (cdPos == std::string::npos) {
+            continue;
+        }
+        
+        size_t xPos = line.find('x', cdPos);
+        if (xPos == std::string::npos) {
+            continue;
+        }
+        
+        std::string speedStr = line.substr(cdPos + 3, xPos - (cdPos + 3));
+        speedStr.erase(std::remove_if(speedStr.begin(), speedStr.end(), ::isspace), speedStr.end());
+        
+        if (!speedStr.empty() && seen.insert(speedStr).second) {
+            speedArr.push_back(speedStr);
+            LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: found CD speed=%{public}s", speedStr.c_str());
+        }
+    }
+    
+    LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: <<< EXIT SUCCESS <<< speedArr=%{public}s", speedArr.dump().c_str());
+    return speedArr;
+}
+
+nlohmann::json ScanDevice::GetSpeedInfo(const std::string &devPath,
+                                        const std::string &discType,
+                                        std::string &maxWriteSpeed)
+{
+    LOGI("[L2:ScanDevice] GetSpeedInfo: >>> ENTER <<< devPath=%{public}s, discType=%{public}s",
+         devPath.c_str(), discType.c_str());
+    nlohmann::json speedInfo;
+    bool isCD = (discType.find("CD") != std::string::npos || discType.find("cd") != std::string::npos);
+    if (isCD) {
+        LOGI("GetSpeedInfo: discType contains CD, using wodim -prcap");
+        std::vector<std::string> cmd = { "wodim", "dev=" + devPath, "-prcap" };
+        std::vector<std::string> output;
+        int32_t ret = ForkExec(cmd, &output);
+        LOGI("GetSpeedInfo wodim -prcap ret=%{public}d", ret);
+        for (const auto &str : output) {
+            LOGI("GetSpeedInfo wodim output: %{public}s", str.c_str());
+        }
+        speedInfo = ParseWodimPrcapOutput(output);
+    } else {
+        LOGI("GetSpeedInfo: discType does not contain CD, using dvd+rw-mediainfo");
+        std::vector<std::string> cmd = { "dvd+rw-mediainfo", devPath };
+        std::vector<std::string> output;
+        int32_t ret = ForkExec(cmd, &output);
+        LOGI("GetSpeedInfo dvd+rw-mediainfo ret=%{public}d", ret);
+        for (const auto &str : output) {
+            LOGI("GetSpeedInfo output: %{public}s", str.c_str());
+        }
+        speedInfo = ParseMediaInfoLines(output);
+    }
+    maxWriteSpeed = GetMaxSpeedFromSpeedInfo(speedInfo);
+    LOGI("[L2:ScanDevice] GetSpeedInfo: <<< EXIT SUCCESS <<< maxWriteSpeed=%{public}s", maxWriteSpeed.c_str());
+    return speedInfo;
 }
 
 bool ScanDevice::GetExternalDiskSize(const std::string &path, uint64_t *size)
@@ -354,12 +502,15 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
             std::string driveType = GetOpticalDriveType(devPath);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
-            int32_t maxWriteSpeed = 0;
-            GetOpticalDriveMaxWriteSpeed(devPath, maxWriteSpeed);
-            extraInfoJson["ODD_INFO"]["DRIVE_TYPE"] = driveType;
-            extraInfoJson["ODD_INFO"]["DISC_TYPE"] = discType;
-            extraInfoJson["ODD_INFO"]["MAX_WRITE_SPEED"] = std::to_string(maxWriteSpeed) + "X";
-            extraInfoJson["ODD_INFO"]["ODD_DRIVER_TYPE"] = oddDriveType;
+            extraInfoJson["DRIVE_TYPE"] = driveType;
+            extraInfoJson["DISC_TYPE"] = discType;
+            extraInfoJson["ODD_DRIVER_TYPE"] = oddDriveType;
+            
+            std::string maxWriteSpeed;
+            nlohmann::json speedInfo = GetSpeedInfo(devPath, discType, maxWriteSpeed);
+            
+            extraInfoJson["SPEED_INFO"] = speedInfo;
+            extraInfoJson["MAX_WRITE_SPEED"] = maxWriteSpeed + "X";
             blockInfo.ODD_INFO = extraInfoJson;
         }
     }
@@ -395,7 +546,12 @@ std::string TrimSpaces(const std::string &str)
 
 bool ScanDevice::ReadSysfsNode(const std::string &path, std::string &content)
 {
-    std::ifstream file(path);
+    char realPath[PATH_MAX] = {0};
+    if (path.size() >= PATH_MAX || realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("[L8:ScanDevice] ReadSysfsNode: %{public}s realpath failed, errno=%{public}d", path.c_str(), errno);
+        return false;
+    }
+    std::ifstream file(realPath);
     if (!file.is_open()) {
         LOGE("Open %{public}s failed", path.c_str());
         return false;

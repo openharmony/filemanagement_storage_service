@@ -22,14 +22,8 @@ constexpr int64_t DEFAULTSIZE = -1;
 
 int64_t GetFreeSizeSync2()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    auto errNum = instance->GetFreeSize(*resultSize);
+    auto errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetFreeSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -39,14 +33,8 @@ int64_t GetFreeSizeSync2()
 
 int64_t GetTotalSizeSync2()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetTotalSize(*resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetTotalSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -56,14 +44,8 @@ int64_t GetTotalSizeSync2()
 
 int64_t GetTotalInodesSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultInodes = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetTotalInodes(*resultInodes);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetTotalInodes(*resultInodes);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -73,14 +55,8 @@ int64_t GetTotalInodesSync()
  
 int64_t GetFreeInodesSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultInodes = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetFreeInodes(*resultInodes);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetFreeInodes(*resultInodes);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -90,14 +66,8 @@ int64_t GetFreeInodesSync()
 
 int64_t GetCurrentBundleInodesSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultInodes = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetCurrentBundleInodes(*resultInodes);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetCurrentBundleInodes(*resultInodes);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -107,14 +77,8 @@ int64_t GetCurrentBundleInodesSync()
 
 int64_t GetSystemDataSizeSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetSystemDataSize(*resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetSystemDataSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -124,15 +88,10 @@ int64_t GetSystemDataSizeSync()
 
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
     uint32_t statFlag = 0;
     auto resultStats = std::make_shared<OHOS::StorageManager::BundleStats>();
-    auto errNum = instance->GetCurrentBundleStats(*resultStats, statFlag);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetCurrentBundleStats(*resultStats, statFlag);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
@@ -142,14 +101,8 @@ ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync()
 
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
-    auto errNum = instance->GetUserStorageStats(*resultStats);
+    auto errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetUserStorageStats(*resultStats);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
@@ -160,15 +113,10 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync()
 
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userId)
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
     int32_t userId_i = static_cast<int32_t>(userId);
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
-    auto errNum = instance->GetUserStorageStats(userId_i, *resultStats);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetUserStorageStats(userId_i, *resultStats);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
@@ -179,15 +127,9 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t 
 
 int64_t GetFreeSizeOfVolumeSync(::taihe::string_view volumeUuid)
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     std::string uid = std::string(volumeUuid);
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetFreeSizeOfVolume(uid, *resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetFreeSizeOfVolume(uid, *resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -197,14 +139,8 @@ int64_t GetFreeSizeOfVolumeSync(::taihe::string_view volumeUuid)
 
 int64_t GetSystemSizeSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetSystemSize(*resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetSystemSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -214,15 +150,9 @@ int64_t GetSystemSizeSync()
 
 int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     std::string uid = std::string(volumeUuid);
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetTotalSizeOfVolume(uid, *resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetTotalSizeOfVolume(uid, *resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -233,12 +163,6 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
 ::ohos::file::storageStatistics::BundleStats GetBundleStatsSync(::taihe::string_view packageName,
     ::taihe::optional_view<int32_t> index)
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
-    }
     std::string nameString = std::string(packageName);
     if (nameString.empty()) {
         LOGE("packageName is empty!");
@@ -251,7 +175,8 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
     }
     uint32_t statFlag = 0;
     auto bundleStats = std::make_shared<OHOS::StorageManager::BundleStats>();
-    auto errNum = instance->GetBundleStats(nameString, *bundleStats, indexVelue, statFlag);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetBundleStats(nameString, *bundleStats, indexVelue, statFlag);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
@@ -261,14 +186,8 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
 
 int64_t GetFreeSizeSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetFreeSize(*resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetFreeSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -278,14 +197,8 @@ int64_t GetFreeSizeSync()
 
 int64_t GetTotalSizeSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return DEFAULTSIZE;
-    }
     auto resultSize = std::make_shared<int64_t>();
-    int32_t errNum = instance->GetTotalSize(*resultSize);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetTotalSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return DEFAULTSIZE;
@@ -299,18 +212,13 @@ void SetExtBundleStatsSync(int32_t userId, ohos::file::storageStatistics::ExtBun
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS_INVALID);
         return;
     }
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return;
-    }
     uint32_t userId_i = static_cast<uint32_t>(userId);
     OHOS::StorageManager::ExtBundleStats extBundleStats;
     extBundleStats.businessName_ = stats.businessName.c_str();
     extBundleStats.businessSize_ = static_cast<uint64_t>(stats.size);
     extBundleStats.showFlag_ = stats.flag;
-    auto errNum = instance->SetExtBundleStats(userId_i, extBundleStats);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.SetExtBundleStats(userId_i, extBundleStats);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return;
@@ -323,16 +231,11 @@ ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t user
         OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS_INVALID);
         return { "", DEFAULTSIZE, false };
     }
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return { "", DEFAULTSIZE, false };
-    }
     uint32_t userId_i = static_cast<uint32_t>(userId);
     OHOS::StorageManager::ExtBundleStats extBundleStats;
     extBundleStats.businessName_ = businessName.c_str();
-    auto errNum = instance->GetExtBundleStats(userId_i, extBundleStats);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetExtBundleStats(userId_i, extBundleStats);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { "", DEFAULTSIZE, false };
@@ -348,16 +251,9 @@ taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStats
         return taihe::array<ohos::file::storageStatistics::ExtBundleStats>::make(0,
             ohos::file::storageStatistics::ExtBundleStats{});
     }
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return taihe::array<ohos::file::storageStatistics::ExtBundleStats>::make(0,
-            ohos::file::storageStatistics::ExtBundleStats{});
-    }
     uint32_t userId_i = static_cast<uint32_t>(userId);
     std::vector<OHOS::StorageManager::ExtBundleStats> statsVec;
-    auto errNum = instance->GetAllExtBundleStats(userId_i, statsVec);
+    auto errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().GetAllExtBundleStats(userId_i, statsVec);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return taihe::array<ohos::file::storageStatistics::ExtBundleStats>::make(0,
@@ -375,15 +271,8 @@ taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStats
 
 taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync()
 {
-    auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
-    if (instance == nullptr) {
-        LOGE("Get StorageManagerConnect instance failed");
-        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_IPCSS);
-        return taihe::array<ohos::file::storageStatistics::UserdataDirInfo>::make(0,
-            ohos::file::storageStatistics::UserdataDirInfo{});
-    }
     auto scanDirs = std::make_shared<std::vector<OHOS::StorageManager::UserdataDirInfo>>();
-    int32_t errNum = instance->ListUserdataDirInfo(*scanDirs);
+    int32_t errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().ListUserdataDirInfo(*scanDirs);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return taihe::array<ohos::file::storageStatistics::UserdataDirInfo>::make(0,

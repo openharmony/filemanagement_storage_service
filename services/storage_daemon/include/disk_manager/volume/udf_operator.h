@@ -43,6 +43,12 @@ public:
                      const std::string &incBurnAddr);
     int32_t DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty);
     int32_t Burn(const std::string &devPath, const BurnOptions &burnOptions) override;
+
+private:
+    int32_t PrepareIsoImage(const std::string &devPath,
+                            const BurnOptions &burnOptions,
+                            bool isDiskEmpty,
+                            const std::string &incBurnAddr);
 };
 
 } // namespace StorageDaemon

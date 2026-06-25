@@ -17,7 +17,6 @@
 #define STORAGE_MANAGER_IMPL_H
 
 #include <nocopyable.h>
-#include <singleton.h>
 
 #include "bundle_stats.h"
 #include "istorage_manager.h"
@@ -27,7 +26,8 @@ namespace OHOS {
 namespace CJStorageManager {
 
 class CjStorageStatusService : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(CjStorageStatusService);
+public:
+    static CjStorageStatusService& GetInstance();
 
 public:
     int32_t Connect();
@@ -38,6 +38,8 @@ public:
     int32_t ResetProxy();
 
 private:
+    CjStorageStatusService();
+    ~CjStorageStatusService();
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;

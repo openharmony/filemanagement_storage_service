@@ -25,6 +25,12 @@ using namespace OHOS::StorageManager;
 
 namespace OHOS {
 namespace CJStorageManager {
+CjStorageStatusService& CjStorageStatusService::GetInstance()
+{
+    static CjStorageStatusService instance;
+    return instance;
+}
+
 CjStorageStatusService::CjStorageStatusService() {}
 CjStorageStatusService::~CjStorageStatusService() {}
 
@@ -118,11 +124,7 @@ int32_t CjStorageStatusService::ResetProxy()
 void CjSmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     LOGI("SmDeathRecipient::OnRemoteDied reset proxy.");
-    auto service = DelayedSingleton<CjStorageStatusService>::GetInstance();
-    if (service == nullptr) {
-        return;
-    }
-    service->ResetProxy();
+    CjStorageStatusService::GetInstance().ResetProxy();
 }
 
 int32_t Convert2CjErrNum(int32_t errNum)

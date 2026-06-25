@@ -239,12 +239,7 @@ void StorageDfxReporter::CollectMetadataAndAnco(std::ostringstream &extraData)
 
 int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostringstream &extraData)
 {
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
-        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("Get StorageDaemonCommunication instance failed.");
-        return E_ERR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int64_t usedInodes = 0;
     int32_t ret = StorageTotalStatusService::GetInstance().GetUsedInodes(usedInodes);
     if (ret != E_OK) {
@@ -262,13 +257,13 @@ int32_t StorageDfxReporter::CollectBundleStatistics(int32_t userId, std::ostring
     AllAppVec allVec;
     int64_t saTotalSize = 0;
     int64_t othersTotalSize = 0;
-    if (sdCommunication->QueryOccupiedSpaceForSa(allVec.sysSaVec, saTotalSize,
+    if (sdCommunication.QueryOccupiedSpaceForSa(allVec.sysSaVec, saTotalSize,
         bundleNameAndUid, StorageDaemon::AppType::SYS_SA) != E_OK ||
-        sdCommunication->QueryOccupiedSpaceForSa(allVec.sysAppVec, othersTotalSize,
+        sdCommunication.QueryOccupiedSpaceForSa(allVec.sysAppVec, othersTotalSize,
         bundleNameAndUid, StorageDaemon::AppType::SYS_APP) != E_OK ||
-        sdCommunication->QueryOccupiedSpaceForSa(allVec.userAppVec, othersTotalSize,
+        sdCommunication.QueryOccupiedSpaceForSa(allVec.userAppVec, othersTotalSize,
         bundleNameAndUid, StorageDaemon::AppType::USER_APP) != E_OK ||
-        sdCommunication->QueryOccupiedSpaceForSa(allVec.otherAppVec, othersTotalSize,
+        sdCommunication.QueryOccupiedSpaceForSa(allVec.otherAppVec, othersTotalSize,
         bundleNameAndUid, StorageDaemon::AppType::OTHER_APP) != E_OK) {
         extraData << "{bundleCount:" << bundleNameAndUid.size() << "}" << std::endl;
         return E_OK;
@@ -366,13 +361,9 @@ void StorageDfxReporter::GetMetaDataSize(std::ostringstream &extraData)
     std::string chunkPath = std::string(HMFS_PATH) + std::string(OVP_CHUNKS);
 
     int64_t blkSize = -1;
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("Get StorageDaemonCommunication instance failed.");
-        return;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
-    auto ret = sdCommunication->GetDataSizeByPath(blkPath, blkSize);
+    auto ret = sdCommunication.GetDataSizeByPath(blkPath, blkSize);
     if (ret == E_OK && blkSize != -1) {
         extraData << "{main_blkaddr data is:" << ConvertBytesToMB(blkSize * FOUR_K, ACCURACY_NUM)
         << "MB}" << std::endl;
@@ -381,7 +372,7 @@ void StorageDfxReporter::GetMetaDataSize(std::ostringstream &extraData)
     }
 
     int64_t chunkSize = -1;
-    ret = sdCommunication->GetDataSizeByPath(chunkPath, chunkSize);
+    ret = sdCommunication.GetDataSizeByPath(chunkPath, chunkSize);
     if (ret == E_OK && chunkSize != -1) {
         extraData << "{ovp_chunks data is:" << ConvertBytesToMB(chunkSize * FOUR_K * BLOCK_COUNT, ACCURACY_NUM)
         << "MB}" << std::endl;
@@ -403,12 +394,8 @@ void StorageDfxReporter::GetAncoDataSize(std::ostringstream &extraData)
     LOGI("begin get Anco info.");
 
     uint64_t imageSize = 0;
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("Get StorageDaemonCommunication instance failed.");
-        return;
-    }
-    sdCommunication->GetRmgResourceSize("rgm_hmos", imageSize);
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    sdCommunication.GetRmgResourceSize("rgm_hmos", imageSize);
     extraData << "{anco image size:" << ConvertBytesToMB(imageSize, ACCURACY_NUM) << "MB}" << std::endl;
     LOGI("end get Anco info.");
 }
@@ -417,14 +404,9 @@ int32_t StorageDfxReporter::StartReportDirStatus()
 {
     LOGI("StorageDfxReporter StartReportDirStatus start.");
 
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication == nullptr) {
-        LOGE("Get StorageDaemonCommunication instance failed.");
-        return E_ERR;
-    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     std::vector<NextDqBlk> dqBlks;
-    int32_t ret = sdCommunication->GetDqBlkSpacesByUids(SYS_UIDS, dqBlks);
+    int32_t ret = sdCommunication.GetDqBlkSpacesByUids(SYS_UIDS, dqBlks);
     if (ret != E_OK) {
         LOGE("GetDqBlkSpacesByUids failed, ret=%{public}d.", ret);
         return ret;
@@ -486,15 +468,10 @@ int32_t StorageDfxReporter::CheckSystemUidSize(const std::vector<NextDqBlk> &dqB
 void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSize,
     int64_t foundationSize, std::ostringstream &extraData)
 {
-    std::shared_ptr<StorageDaemonCommunication> sdCommunicationInstance;
-    sdCommunicationInstance = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunicationInstance == nullptr) {
-        LOGE("Get StorageDaemonCommunication instance failed.");
-        return;
-    }
+    auto& sdCommunicationInstance = StorageDaemonCommunication::GetInstance();
     std::vector<DirSpaceInfo> rootDirs = GetRootDirList();
     std::vector<DirSpaceInfo> rootOutDirs;
-    int32_t ret = sdCommunicationInstance->GetDirListSpace(rootDirs, rootOutDirs);
+    int32_t ret = sdCommunicationInstance.GetDirListSpace(rootDirs, rootOutDirs);
     if (ret == E_OK) {
         extraData << "{root size:" << ConvertBytesToMB(rootSize, ACCURACY_NUM) << "MB}" << std::endl;
         extraData << "{root directories:}" << std::endl;
@@ -502,7 +479,7 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
     }
     std::vector<DirSpaceInfo> systemDirs = GetSystemDirList();
     std::vector<DirSpaceInfo> systemOutDirs;
-    ret = sdCommunicationInstance->GetDirListSpace(systemDirs, systemOutDirs);
+    ret = sdCommunicationInstance.GetDirListSpace(systemDirs, systemOutDirs);
     if (ret == E_OK) {
         extraData << "{system size:" << ConvertBytesToMB(systemSize, ACCURACY_NUM) << "MB}" << std::endl;
         extraData << "{system directories:}" << std::endl;
@@ -510,14 +487,14 @@ void StorageDfxReporter::CollectDirStatistics(int64_t rootSize, int64_t systemSi
     }
     std::vector<DirSpaceInfo> foundationDirs = GetFoundationDirList();
     std::vector<DirSpaceInfo> foundationOutDirs;
-    ret = sdCommunicationInstance->GetDirListSpace(foundationDirs, foundationOutDirs);
+    ret = sdCommunicationInstance.GetDirListSpace(foundationDirs, foundationOutDirs);
     if (ret == E_OK) {
         extraData << "{foundation size:" << ConvertBytesToMB(foundationSize, ACCURACY_NUM) << "MB}" << std::endl;
         extraData << "{foundation directories:}" << std::endl;
         AppendDirInfo(foundationOutDirs, extraData);
     }
     std::string ancoData;
-    ret = sdCommunicationInstance->GetAncoSizeData(ancoData);
+    ret = sdCommunicationInstance.GetAncoSizeData(ancoData);
     if (ret == E_OK) {
         extraData << ancoData;
     }
@@ -685,14 +662,12 @@ bool StorageDfxReporter::CheckScanPreconditions()
 void StorageDfxReporter::LaunchScanWorker()
 {
     isScanRunning_.store(true);
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        int32_t ret = sdCommunication->SetStopScanFlag(false);
-        if (ret != E_OK) {
-            LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
-        } else {
-            LOGI("Successfully reset stop scan flag.");
-        }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t ret = sdCommunication.SetStopScanFlag(false);
+    if (ret != E_OK) {
+        LOGE("Failed to reset stop scan flag, ret=%{public}d", ret);
+    } else {
+        LOGI("Successfully reset stop scan flag.");
     }
     std::thread([this]() {
         pthread_setname_np(pthread_self(), "storage_scan_task");
@@ -728,16 +703,12 @@ void StorageDfxReporter::StopScan()
         LOGI("No scan is running, skip StopScan.");
         return;
     }
-    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    if (sdCommunication != nullptr) {
-        int32_t ret = sdCommunication->SetStopScanFlag(true);
-        if (ret != E_OK) {
-            LOGE("Failed to set stop scan flag, ret=%{public}d", ret);
-        } else {
-            LOGI("Successfully set stop scan flag to true.");
-        }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t ret = sdCommunication.SetStopScanFlag(true);
+    if (ret != E_OK) {
+        LOGE("Failed to set stop scan flag, ret=%{public}d", ret);
     } else {
-        LOGE("StorageDaemonCommunication instance is nullptr.");
+        LOGI("Successfully set stop scan flag to true.");
     }
     if (isScanRunning_.load()) {
         isScanRunning_.store(false);
