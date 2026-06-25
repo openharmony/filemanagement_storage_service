@@ -413,7 +413,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreOneUserKey_005, TestSize.Le
     EXPECT_CALL(*keyManagerMock_, RestoreUserKey(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirsForUpdate(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, GetSecureUid(_, _)).WillRepeatedly(Return(E_OK));
-    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _)).WillOnce(Return(E_OK))
+    EXPECT_CALL(*keyManagerMock_, UpdateUserAuthByKeyType(_, _, _, _)).WillOnce(Return(E_OK))
         .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_PARAMS_NULLPTR_ERR));
     EXPECT_CALL(*keyManagerMock_, UpdateKeyContextByKeyType(_, _)).WillRepeatedly(Return(E_OK));
 
@@ -860,7 +860,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillOnce(Return(false)).WillOnce(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_ERR));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillRepeatedly(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthOld(userId_, EL1_KEY, token_, secret_), E_ERR);
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthOld(userId_, EL1_KEY, token_, secret_), E_ERR);
@@ -878,7 +878,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillOnce(Return(E_ERR));
 
     EXPECT_EQ(storageDaemon_->PrepareUserDirsAndUpdateUserAuthOld(userId_, EL1_KEY, token_, secret_), E_ERR);
@@ -896,7 +896,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_ERR));
 
@@ -915,7 +915,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
 
@@ -935,7 +935,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuthOl
 
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ACTIVE_REPEATED));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillOnce(Return(E_OK));
     
@@ -1414,7 +1414,7 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_ActiveUserKeyAndPrepare_005, TestS
     EXPECT_EQ(storageDaemon_->GetNeedRestoreVersion(userId_, EL1_KEY), "1");
     EXPECT_CALL(*keyManagerMock_, ActiveCeSceSeceUserKey(_, _, _, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_OK));
     EXPECT_CALL(*iamClientMock_, GetSecureUid(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceUserAuth(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*keyManagerMock_, UpdateCeEceSeceKeyContext(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*userManagerMock_, PrepareUserDirs(_, _)).WillRepeatedly(Return(E_OK));
  
