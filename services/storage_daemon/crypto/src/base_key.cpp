@@ -1067,16 +1067,15 @@ void BaseKey::SyncKeyDir() const
 bool BaseKey::NeedUpgradeAuthType()
 {
     LOGI("[L4:BaseKey] NeedUpgradeAuthType: >>> ENTER <<<");
-    if (keyContext_.shield.IsEmpty()) {
-        if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
-            LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield file not found, no upgrade needed");
-            return false;
-        }
+    KeyBlob shield;
+    if (!LoadKeyBlob(shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
+        LOGI("[L4:BaseKey] NeedUpgradeAuthType: shield file not found, no upgrade needed");
+        return false;
     }
 
     HksParamSet *keyBlobParamSet = nullptr;
-    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(keyContext_.shield.data.get()),
-        keyContext_.shield.size, &keyBlobParamSet);
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(shield.data.get()),
+        shield.size, &keyBlobParamSet);
     if (ret != HKS_SUCCESS) {
         LOGE("[L4:BaseKey] NeedUpgradeAuthType: HksGetParamSet failed %{public}d, no upgrade needed", ret);
         return false;
