@@ -1,6 +1,6 @@
 # 代码放置与单例陷阱
 
-本文只记录新增代码的放置位置规则和单例获取方式的易错点。IPC 新增流程见 `ipc-interface-guide.md`，命名规范见 `code-conventions.md`。
+本文只记录新增代码的放置位置规则和单例获取方式的易错点。IPC 新增流程见 [[ipc-interface-guide]]。
 
 ## 新增代码放置位置
 
