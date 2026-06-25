@@ -153,7 +153,9 @@ ohos_executable("storage_daemon") {
 
   cflags = [
     "-fstack-protector-strong",
-    "-O2",
+    "-Oz",
+    "-ffunction-sections",
+    "-fdata-sections",
   ]
 
   if (storage_service_user_file_sharing) {
@@ -320,6 +322,8 @@ ohos_executable("storage_daemon") {
   }
 
   ldflags = [
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
     "-Wl,-z,max-page-size=4096",
     "-Wl,-z,separate-code",
   ]
@@ -363,7 +367,14 @@ ohos_executable("sdc") {
 
   cflags = [
     "-fstack-protector-strong",
-    "-O2",
+    "-Oz",
+    "-ffunction-sections",
+    "-fdata-sections",
+  ]
+
+  ldflags = [
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
   ]
 
   configs = [ ":sdc_config" ]
@@ -428,7 +439,14 @@ ohos_shared_library("storage_common_utils") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
-    "-O2",
+    "-Oz",
+    "-ffunction-sections",
+    "-fdata-sections",
+  ]
+
+  ldflags = [
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
   ]
 
   sources = [

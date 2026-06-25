@@ -30,7 +30,7 @@ config("storage_manager_config") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
-    "-O2",
+    "-Oz",
   ]
 }
 
@@ -85,6 +85,13 @@ ohos_shared_library("storage_manager") {
   if (phone_device_enable) {
     defines += [ "PHONE_DEVICE_ENABLE" ]
   }
+
+  ldflags = [
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
+    "-Wl,-z,max-page-size=4096",
+    "-Wl,-z,separate-code",
+  ]
 
   configs = [ ":storage_manager_config" ]
 

@@ -54,6 +54,14 @@ ohos_shared_library("storage_manager_acl") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
+    "-Oz",
+    "-ffunction-sections",
+    "-fdata-sections",
+  ]
+
+  ldflags = [
+    "-Wl,--gc-sections",
+    "-Wl,-O1",
   ]
 
   external_deps = [

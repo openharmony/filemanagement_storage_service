@@ -25,9 +25,10 @@ config("storage_daemon_crypto_config") {
   ]
 
   cflags = [
-    "-g3",
+    "-Oz",
     "-Wall",
-    "-O2",
+    "-ffunction-sections",
+    "-fdata-sections",
   ]
 }
 
