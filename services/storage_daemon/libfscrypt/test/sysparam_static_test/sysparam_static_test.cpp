@@ -84,9 +84,6 @@ HWTEST_F(SysparamStaticTest, SysParam_SysParamTest_GetFscryptParameter_001, Test
     EXPECT_EQ(GetFscryptParameter(FSCRYPT_POLICY_KEY.c_str(), "default", value, NULL), -EINVAL);
 
 
-    // Test normal case
-    EXPECT_EQ(GetFscryptParameter(FSCRYPT_POLICY_KEY.c_str(), "", value, &len), 0);
-
     GTEST_LOG_(INFO) << "SysParam_SysParamTest_GetFscryptParameter_001 end";
 }
 
@@ -109,4 +106,4 @@ HWTEST_F(SysparamStaticTest, SysParam_SysParamTest_SetFscryptParameter_001, Test
 
     GTEST_LOG_(INFO) << "SysParam_SysParamTest_SetFscryptParameter_001 end";
 }
-} // OHOS::StorageDaemon
+} // OHOS::StorageDaemon

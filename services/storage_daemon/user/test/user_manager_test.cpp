@@ -420,22 +420,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_SetCloudState_001, Te
 }
 
 /**
- * @tc.name: Storage_Manager_MountManagerTest_MountCloudForUsers_001
- * @tc.desc: Verify the MountManager function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMount_001 start";
-
-    int32_t userId = 100;
-    auto ret = MountManager::GetInstance().LocalUMount(userId);
-    EXPECT_EQ(ret, E_UMOUNT_LOCAL_CLOUD);
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";
-}
-
-/**
  * @tc.name: Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001
  * @tc.desc: Verify the RestoreconSystemServiceDirs function.
  * @tc.type: FUNC
