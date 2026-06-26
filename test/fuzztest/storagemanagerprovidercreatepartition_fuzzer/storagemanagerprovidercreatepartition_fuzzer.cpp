@@ -16,11 +16,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -35,64 +35,22 @@ std::shared_ptr<StorageManagerProvider> storageManagerProvider =
 
 // ipccode 108: CreatePartition([in] String diskId, [in] PartitionParams) — IStorageManager.idl
 constexpr uint32_t CODE_CREATE_PARTITION = 108;
-constexpr const char *DISK_ID_PREFIX = "disk-8-";
+constexpr size_t MAX_DISK_ID_LENGTH = 64;
 constexpr size_t MAX_TYPE_CODE_LENGTH = 32;
 
 bool CreatePartitionFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if (data == nullptr) {
         return false;
     }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(CODE_CREATE_PARTITION, datas, reply, option);
-    return true;
-}
-
-bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
-{
-    // partitionNum(4) + startSector(8) + endSector(8) + at least 1 char for typeCode
-    constexpr size_t minTypeCodeChars = 1;
-    constexpr size_t minDataSize = sizeof(int32_t) + sizeof(uint64_t) * 2 + minTypeCodeChars;
-    if ((data == nullptr) || (size < minDataSize)) {
-        return false;
-    }
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
 
     PartitionParams partitionParams;
-    size_t offset = 0;
-
-    if (offset + sizeof(int32_t) <= size) {
-        int32_t partitionNum = *reinterpret_cast<const int32_t *>(data + offset);
-        partitionParams.SetPartitionNum(partitionNum);
-        offset += sizeof(int32_t);
-    }
-
-    if (offset + sizeof(uint64_t) <= size) {
-        uint64_t startSector = *reinterpret_cast<const uint64_t *>(data + offset);
-        partitionParams.SetStartSector(startSector);
-        offset += sizeof(uint64_t);
-    }
-
-    if (offset + sizeof(uint64_t) <= size) {
-        uint64_t endSector = *reinterpret_cast<const uint64_t *>(data + offset);
-        partitionParams.SetEndSector(endSector);
-        offset += sizeof(uint64_t);
-    }
-
-    if (offset < size) {
-        size_t typeCodeLen = std::min(size - offset, MAX_TYPE_CODE_LENGTH);
-        std::string typeCode(reinterpret_cast<const char *>(data + offset), typeCodeLen);
-        partitionParams.SetTypeCode(typeCode);
-    }
-
-    std::string diskId = DISK_ID_PREFIX;
-    uint8_t minor = data[0];
-    diskId += std::to_string(minor);
+    partitionParams.SetPartitionNum(fdp.ConsumeIntegral<int32_t>());
+    partitionParams.SetStartSector(fdp.ConsumeIntegral<uint64_t>());
+    partitionParams.SetEndSector(fdp.ConsumeIntegral<uint64_t>());
+    partitionParams.SetTypeCode(fdp.ConsumeRandomLengthString(MAX_TYPE_CODE_LENGTH));
 
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
@@ -114,6 +72,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageManager::CreatePartitionFuzzTest(data, size);
-    OHOS::StorageManager::CreatePartitionFuzzTestWithOpts(data, size);
     return 0;
 }

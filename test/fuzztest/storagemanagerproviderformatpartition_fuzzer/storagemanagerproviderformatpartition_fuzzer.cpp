@@ -22,6 +22,7 @@
 
 #include "accesstoken_kit.h"
 #include "format_params.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -36,58 +37,23 @@ std::shared_ptr<StorageManagerProvider> storageManagerProvider =
 // ipccode 110: FormatPartition([in] String diskId, [in] unsigned int partitionNum,
 //                               [in] FormatParams) — IStorageManager.idl
 constexpr uint32_t CODE_FORMAT_PARTITION = 110;
-constexpr const char *DISK_ID_PREFIX = "disk-8-";
+constexpr size_t MAX_DISK_ID_LENGTH = 64;
 constexpr size_t MAX_FS_TYPE_LENGTH = 16;
 constexpr size_t MAX_VOLUME_NAME_LENGTH = 32;
-constexpr uint32_t DEFAULT_PARTITION_NUM = 1;
 
 bool FormatPartitionFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if (data == nullptr) {
         return false;
     }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(CODE_FORMAT_PARTITION, datas, reply, option);
-    return true;
-}
-
-bool FormatPartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
-{
-    constexpr size_t minExtraDataSize = 4;
-    if ((data == nullptr) || (size < sizeof(uint32_t) + sizeof(uint8_t) + minExtraDataSize)) {
-        return false;
-    }
-
-    std::string diskId = DISK_ID_PREFIX;
-    uint8_t minor = data[0];
-    diskId += std::to_string(minor);
-
-    size_t offset = 1;
-    uint32_t partitionNum = 0;
-    if (offset + sizeof(uint32_t) <= size) {
-        partitionNum = *reinterpret_cast<const uint32_t *>(data + offset);
-        offset += sizeof(uint32_t);
-    }
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
+    uint32_t partitionNum = fdp.ConsumeIntegral<uint32_t>();
 
     FormatParams formatParams;
-    if (offset < size) {
-        size_t fsTypeLen = std::min(size - offset, MAX_FS_TYPE_LENGTH);
-        std::string fsType(reinterpret_cast<const char *>(data + offset), fsTypeLen);
-        formatParams.SetFsType(fsType);
-        offset += fsTypeLen;
-
-        if (offset < size) {
-            size_t volNameLen = std::min(size - offset, MAX_VOLUME_NAME_LENGTH);
-            std::string volName(reinterpret_cast<const char *>(data + offset), volNameLen);
-            formatParams.SetVolumeName(volName);
-        }
-    }
+    formatParams.SetFsType(fdp.ConsumeRandomLengthString(MAX_FS_TYPE_LENGTH));
+    formatParams.SetQuickFormat(fdp.ConsumeBool());
+    formatParams.SetVolumeName(fdp.ConsumeRandomLengthString(MAX_VOLUME_NAME_LENGTH));
 
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
@@ -104,16 +70,15 @@ bool FormatPartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
 
 bool FormatPartitionFuzzTestFSTypes(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(uint8_t))) {
+    if (data == nullptr) {
         return false;
     }
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
+    uint32_t partitionNum = fdp.ConsumeIntegral<uint32_t>();
 
     const char *fsTypes[] = { "vfat", "ext4", "exfat", "ntfs", "invalid", "", "\0\0\0", nullptr };
     constexpr size_t validFsTypeCount = 6; // excluding "" and "\0\0\0"
-
-    uint8_t minor = data[0];
-    std::string diskId = std::string(DISK_ID_PREFIX) + std::to_string(minor);
-    uint32_t partitionNum = DEFAULT_PARTITION_NUM;
 
     for (size_t i = 0; i < validFsTypeCount; i++) {
         FormatParams formatParams;
@@ -143,7 +108,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageManager::FormatPartitionFuzzTest(data, size);
-    OHOS::StorageManager::FormatPartitionFuzzTestWithOpts(data, size);
     OHOS::StorageManager::FormatPartitionFuzzTestFSTypes(data, size);
     return 0;
 }

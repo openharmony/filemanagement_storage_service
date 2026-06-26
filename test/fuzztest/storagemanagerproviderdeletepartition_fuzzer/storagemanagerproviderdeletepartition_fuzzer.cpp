@@ -16,11 +16,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -34,38 +34,16 @@ std::shared_ptr<StorageManagerProvider> storageManagerProvider =
 
 // ipccode 109: DeletePartition([in] String diskId, [in] unsigned int partitionNum) — IStorageManager.idl
 constexpr uint32_t CODE_DELETE_PARTITION = 109;
+constexpr size_t MAX_DISK_ID_LENGTH = 64;
 
 bool DeletePartitionFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if (data == nullptr) {
         return false;
     }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(CODE_DELETE_PARTITION, datas, reply, option);
-    return true;
-}
-
-bool DeletePartitionFuzzTestWithParams(const uint8_t *data, size_t size)
-{
-    if ((data == nullptr) || (size < sizeof(uint32_t) + sizeof(uint8_t))) {
-        return false;
-    }
-
-    std::string diskId = "disk-8-";
-    uint8_t minor = data[0];
-    diskId += std::to_string(minor);
-
-    size_t offset = 1;
-    uint32_t partitionNum = 0;
-    if (offset + sizeof(uint32_t) <= size) {
-        partitionNum = *reinterpret_cast<const uint32_t *>(data + offset);
-    }
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
+    uint32_t partitionNum = fdp.ConsumeIntegral<uint32_t>();
 
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
@@ -81,12 +59,11 @@ bool DeletePartitionFuzzTestWithParams(const uint8_t *data, size_t size)
 
 bool DeletePartitionFuzzTestBoundary(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(uint8_t))) {
+    if (data == nullptr) {
         return false;
     }
-
-    uint8_t minor = data[0];
-    std::string diskId = "disk-8-" + std::to_string(minor);
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
 
     // Cover edge cases: 0, 1, 15, 128, MAX_UINT32
     uint32_t boundaryValues[] = { 0, 1, 15, 128, UINT32_MAX };
@@ -112,7 +89,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageManager::DeletePartitionFuzzTest(data, size);
-    OHOS::StorageManager::DeletePartitionFuzzTestWithParams(data, size);
     OHOS::StorageManager::DeletePartitionFuzzTestBoundary(data, size);
     return 0;
 }

@@ -16,11 +16,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -38,28 +38,11 @@ constexpr size_t MAX_DISK_ID_LENGTH = 64;
 
 bool GetPartitionTableFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if (data == nullptr) {
         return false;
     }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(CODE_GET_PARTITION_TABLE, datas, reply, option);
-    return true;
-}
-
-bool GetPartitionTableFuzzTestWithDiskId(const uint8_t *data, size_t size)
-{
-    if ((data == nullptr) || (size == 0)) {
-        return false;
-    }
-
-    size_t diskIdLen = std::min(size, MAX_DISK_ID_LENGTH);
-    std::string diskId(reinterpret_cast<const char *>(data), diskIdLen);
+    FuzzedDataProvider fdp(data, size);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_DISK_ID_LENGTH);
 
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
@@ -80,6 +63,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageManager::GetPartitionTableFuzzTest(data, size);
-    OHOS::StorageManager::GetPartitionTableFuzzTestWithDiskId(data, size);
     return 0;
 }

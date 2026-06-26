@@ -16,12 +16,12 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <vector>
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "ipc/storage_manager_provider.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -43,41 +43,14 @@ constexpr size_t MAX_DIR_LENGTH = 128;
 
 bool UMountDisShareFileVectorFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if (data == nullptr) {
         return false;
     }
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(CODE_UMOUNT_DIS_SHARE_FILE_BY_DIRS, datas, reply, option);
-    return true;
-}
-
-bool UMountDisShareFileVectorFuzzTestWithDirs(const uint8_t *data, size_t size)
-{
-    if ((data == nullptr) || (size == 0)) {
-        return false;
-    }
-
-    size_t count = static_cast<size_t>(data[0]) % MAX_DIR_COUNT;
+    FuzzedDataProvider fdp(data, size);
+    uint8_t count = fdp.ConsumeIntegral<uint8_t>() % MAX_DIR_COUNT;
     std::vector<std::string> distributeDirs;
-    size_t offset = 1;
-    for (size_t i = 0; i < count; i++) {
-        if (offset >= size) {
-            break;
-        }
-        size_t dirLen = static_cast<size_t>(data[offset]) % MAX_DIR_LENGTH;
-        offset++;
-        if (offset + dirLen > size) {
-            dirLen = (size > offset) ? (size - offset) : 0;
-        }
-        std::string dir(reinterpret_cast<const char *>(data + offset), dirLen);
-        distributeDirs.push_back(dir);
-        offset += dirLen;
+    for (uint8_t i = 0; i < count; i++) {
+        distributeDirs.push_back(fdp.ConsumeRandomLengthString(MAX_DIR_LENGTH));
     }
 
     MessageParcel datas;
@@ -99,6 +72,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageManager::UMountDisShareFileVectorFuzzTest(data, size);
-    OHOS::StorageManager::UMountDisShareFileVectorFuzzTestWithDirs(data, size);
     return 0;
 }
