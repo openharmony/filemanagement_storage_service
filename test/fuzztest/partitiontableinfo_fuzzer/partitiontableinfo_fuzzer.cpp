@@ -20,6 +20,8 @@
 #include <memory>
 
 namespace OHOS {
+constexpr size_t MAX_STRING_LEN = 256;
+
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
 {
     if (data == nullptr) {
@@ -31,8 +33,8 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     uint32_t partitionCount = fdp.ConsumeIntegral<uint32_t>();
     uint32_t sectorSize = fdp.ConsumeIntegral<uint32_t>();
     uint32_t alignSector = fdp.ConsumeIntegral<uint32_t>();
-    std::string diskId = fdp.ConsumeRandomLengthString(256);
-    std::string tableType = fdp.ConsumeRandomLengthString(256);
+    std::string diskId = fdp.ConsumeRandomLengthString(MAX_STRING_LEN);
+    std::string tableType = fdp.ConsumeRandomLengthString(MAX_STRING_LEN);
 
     Parcel parcel;
     StorageManager::PartitionTableInfo partitionTableInfo;
