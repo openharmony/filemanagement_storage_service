@@ -836,7 +836,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
             ret = DoUpdateRestoreVx(auth, path, update_version);
         }
     }
-    LOGI("[L4:BaseKey] DoRestoreKey: end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
+    LOGD("[L4:BaseKey] DoRestoreKey: end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
     return ret;
 }
 
@@ -1222,7 +1222,7 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     KeyContext keyCtx;
     auto candidate = GetCandidateDir();
     std::string path = candidate.empty() ? keyPath : candidate;
-    LOGI("[L4:BaseKey] DecryptKeyBlob: Key path is exist : %{public}d", FileExists(path));
+    LOGD("[L4:BaseKey] DecryptKeyBlob: Key path is exist : %{public}d", FileExists(path));
 
     if (!LoadKeyBlob(keyCtx.shield, path + PATH_SHIELD)) {
         LOGE("[L4:BaseKey] DecryptKeyBlob: <<< EXIT FAILED <<< Load KeyBlob shield failed");

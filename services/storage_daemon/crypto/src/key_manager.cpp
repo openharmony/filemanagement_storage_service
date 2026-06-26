@@ -1711,7 +1711,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
-    LOGD("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
+    LOGI("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
@@ -1782,7 +1782,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
             "Unlock failed, user=" + std::to_string(user) + ", ret=" + std::to_string(ret));
         return E_UNLOCK_SCREEN_FAILED;
     }
-    LOGI("[L3:KeyManager] UnlockEceSece: <<< EXIT SUCCESS <<< [user=%{public}u, saveESecretStatus=%{public}d]",
+    LOGD("[L3:KeyManager] UnlockEceSece: <<< EXIT SUCCESS <<< [user=%{public}u, saveESecretStatus=%{public}d]",
         user, saveESecretStatus[user]);
     return E_OK;
 }
@@ -1791,7 +1791,7 @@ int32_t KeyManager::UnlockUece(uint32_t user,
                                const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &secret)
 {
-    LOGD("[L3:KeyManager] UnlockUece: >>> ENTER <<< [user=%{public}u]", user);
+    LOGI("[L3:KeyManager] UnlockUece: >>> ENTER <<< [user=%{public}u]", user);
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);

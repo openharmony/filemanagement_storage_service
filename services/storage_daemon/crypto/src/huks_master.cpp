@@ -516,7 +516,7 @@ static int AppendNonceAadTokenEx(KeyContext &ctx, const UserAuth &auth, HksParam
 
 static int AppendNewNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSet *paramSet, const bool isEncrypt)
 {
-    LOGI("[L8:HuksMaster] AppendNewNonceAadToken: append the secure access params when encrypt/decrypt");
+    LOGD("[L8:HuksMaster] AppendNewNonceAadToken: append the secure access params when encrypt/decrypt");
     if (isEncrypt) {
         ctx.nonce = HuksMaster::GenerateRandomKey(CRYPTO_HKS_NONCE_LEN);
         LOGI("[L8:HuksMaster] AppendNewNonceAadToken: Encrypt generate new nonce size: %{public}d", ctx.nonce.size);
@@ -1007,7 +1007,7 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     if (ret != E_OK) {
         LOGE("[L8:HuksMaster] DecryptKeyEx: <<< EXIT FAILED <<< HuksHalTripleStage failed");
     } else {
-        LOGI("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
+        LOGD("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
     }
 
     HksFreeParamSet(&paramSet2);

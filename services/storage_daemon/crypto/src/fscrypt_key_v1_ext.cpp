@@ -194,7 +194,7 @@ int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_
              "%{public}d, %{public}d", userId_, flag);
         return ret;
     }
-    LOGI("[L6:FscryptExt] UnlockUserScreenExt: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] UnlockUserScreenExt: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

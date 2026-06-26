@@ -155,7 +155,7 @@ int32_t KeyBackup::TryRestoreUeceKey(const std::shared_ptr<BaseKey> &baseKey,
                                      KeyBlob &planKey,
                                      KeyBlob &decryptedKey)
 {
-    LOGI("[L4:KeyBackup] TryRestoreUeceKey: >>> ENTER <<<");
+    LOGD("[L4:KeyBackup] TryRestoreUeceKey: >>> ENTER <<<");
     if (baseKey == nullptr) {
         LOGE("[L4:KeyBackup] TryRestoreUeceKey: <<< EXIT FAILED <<< basekey is nullptr");
         return -1;

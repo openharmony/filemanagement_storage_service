@@ -220,7 +220,7 @@ int32_t FscryptKeyV1::UnlockUserScreen(const KeyBlob &authToken, uint32_t flag,
         }
     }
     keyInfo_.key.Clear();
-    LOGI("[L5:FscryptKeyV1] UnlockUserScreen: <<< EXIT SUCCESS <<<");
+    LOGD("[L5:FscryptKeyV1] UnlockUserScreen: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -281,7 +281,7 @@ int32_t FscryptKeyV1::UpdateClassEBackUp(uint32_t userId)
 int32_t FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
                                       bool needSyncCandidate)
 {
-    LOGI("[L5:FscryptKeyV1] DoDecryptClassE: >>> ENTER <<<");
+    LOGD("[L5:FscryptKeyV1] DoDecryptClassE: >>> ENTER <<<");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
@@ -507,7 +507,7 @@ int32_t FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
         LOGE("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: <<< EXIT FAILED <<< SaveKeyBlob failed");
         return E_SAVE_KEY_BLOB_ERROR;
     }
-    LOGW("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: <<< EXIT SUCCESS <<<");
+    LOGD("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

@@ -622,7 +622,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
         LOGE("[L7:FBEX] UnlockScreenToKernel: memcpy failed %{public}d", errops);
     }
     (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
-    LOGI("[L7:FBEX] UnlockScreenToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] UnlockScreenToKernel: <<< EXIT SUCCESS <<<");
     return ret;
 }
 
@@ -694,7 +694,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
         return 0;
     }
     UnlockSendSecret(status, bufferSize, eBuffer.size, eBuffer.data, ops.eBuffer);
-    LOGI("[L7:FBEX] ReadESecretToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] ReadESecretToKernel: <<< EXIT SUCCESS <<<");
     return 0;
 }
 
@@ -712,7 +712,7 @@ int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length
         LOGE("[L7:FBEX] UnlockSendSecret: <<< EXIT FAILED <<< memcpy failed %{public}d", errBuffer);
         return 0;
     }
-    LOGI("[L7:FBEX] UnlockSendSecret: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] UnlockSendSecret: <<< EXIT SUCCESS <<<");
     return 0;
 }
 
