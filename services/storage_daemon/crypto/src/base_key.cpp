@@ -73,7 +73,7 @@ BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(ke
 
 static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
 {
-    LOGI("[L4:BaseKey] DoTempStore: >>> ENTER <<<");
+    LOGD("[L4:BaseKey] DoTempStore: >>> ENTER <<<");
     KeyBlob tempAad(sourceCtx.aad);
     KeyBlob tempNonce(sourceCtx.nonce);
     KeyBlob tempRndEnc(sourceCtx.rndEnc);
@@ -82,7 +82,7 @@ static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
     targetCtx.nonce = std::move(tempNonce);
     targetCtx.rndEnc = std::move(tempRndEnc);
     targetCtx.shield = std::move(tempShield);
-    LOGI("[L4:BaseKey] DoTempStore: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:BaseKey] DoTempStore: <<< EXIT SUCCESS <<<");
 }
 
 bool BaseKey::InitKey(bool needGenerateKey)
@@ -807,7 +807,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 
     std::string encryptType;
     LoadStringFromFile(path + SUFFIX_NEED_UPDATE, encryptType);
-    LOGI("[L4:BaseKey] DoRestoreKey: encrypt type : %{public}s, keyInfo empty: %{public}u",
+    LOGD("[L4:BaseKey] DoRestoreKey: encrypt type : %{public}s, keyInfo empty: %{public}u",
         encryptType.c_str(), keyInfo_.key.IsEmpty());
 
     uint32_t keyType = GetTypeFromDir();
@@ -1252,7 +1252,7 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     decryptedKey = std::move(planKeyInfo.key);
     planKeyInfo.key.Clear();
     ClearKeyContext(keyCtx);
-    LOGI("[L4:BaseKey] DecryptKeyBlob: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:BaseKey] DecryptKeyBlob: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

@@ -149,7 +149,7 @@ int KeyManagerExt::ActiveUserKey(uint32_t userId,
                                  const std::vector<uint8_t>& token,
                                  const std::vector<uint8_t>& secret)
 {
-    LOGI("[L3:KeyManagerExt] ActiveUserKey: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L3:KeyManagerExt] ActiveUserKey: >>> ENTER <<< userId=%{public}u", userId);
     if (!IsServiceExtSoLoaded()) {
         LOGI("[L3:KeyManagerExt] ActiveUserKey: <<< EXIT SUCCESS <<< user key ext policy is disabled");
         return E_OK;
@@ -167,13 +167,13 @@ int KeyManagerExt::ActiveUserKey(uint32_t userId,
         return ret;
     }
 
-    LOGI("[L3:KeyManagerExt] ActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+    LOGD("[L3:KeyManagerExt] ActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return ret;
 }
 
 int KeyManagerExt::InActiveUserKey(uint32_t userId)
 {
-    LOGI("[L3:KeyManagerExt] InActiveUserKey: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L3:KeyManagerExt] InActiveUserKey: >>> ENTER <<< userId=%{public}u", userId);
     if (!IsServiceExtSoLoaded()) {
         LOGI("[L3:KeyManagerExt] InActiveUserKey: <<< EXIT SUCCESS <<< user key ext policy is disabled");
         return E_OK;
@@ -191,7 +191,7 @@ int KeyManagerExt::InActiveUserKey(uint32_t userId)
             "DoInactiveUserKey failed");
         return ret;
     }
-    LOGI("[L3:KeyManagerExt] InActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+    LOGD("[L3:KeyManagerExt] InActiveUserKey: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return E_OK;
 }
 

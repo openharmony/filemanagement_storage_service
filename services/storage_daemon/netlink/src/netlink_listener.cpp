@@ -87,7 +87,7 @@ void NetlinkListener::RecvUeventMsg()
             break;
         }
         if (count >= UEVENT_MSG_LEN) {
-            LOGW("[L3:NetlinkListener] RecvUeventMsg: message too long, count=%{public}zd, skip", count);
+            LOGD("[L3:NetlinkListener] RecvUeventMsg: message too long, count=%{public}zd, skip", count);
             continue;
         }
 

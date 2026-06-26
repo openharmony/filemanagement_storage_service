@@ -553,7 +553,7 @@ int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScre
 
     int32_t ret = client->GetLockScreenStatus(userId, lockScreenStatus);
     if (ret == E_OK) {
-        LOGI("[L1:IPC] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u, status=%{public}d",
+        LOGD("[L1:IPC] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u, status=%{public}d",
              userId, lockScreenStatus);
     } else {
         LOGE("[L1:IPC] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}u, err=%{public}d", userId, ret);

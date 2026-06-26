@@ -61,7 +61,7 @@ void KeyBackup::CreateBackup(const std::string &from, const std::string &to, boo
         }
     }
     CheckAndCopyFiles(from, to);
-    LOGI("[L4:KeyBackup] CreateBackup: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:KeyBackup] CreateBackup: <<< EXIT SUCCESS <<<");
 }
 
 int32_t KeyBackup::RemoveNode(const std::string &pathName)
@@ -123,7 +123,7 @@ int32_t KeyBackup::RemoveNode(const std::string &pathName)
 
 int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth, bool needFixFiles)
 {
-    LOGI("[L4:KeyBackup] TryRestoreKey: >>> ENTER <<< needFixFiles=%{public}d", needFixFiles);
+    LOGD("[L4:KeyBackup] TryRestoreKey: >>> ENTER <<< needFixFiles=%{public}d", needFixFiles);
     if (baseKey == nullptr) {
         LOGE("[L4:KeyBackup] TryRestoreKey: <<< EXIT FAILED <<< basekey is nullptr");
         return -1;
@@ -486,7 +486,7 @@ void KeyBackup::CheckAndFixFiles(const std::string &from, const std::string &to)
 {
     LOGD("[L4:KeyBackup] CheckAndFixFiles: >>> ENTER <<< from=%{public}s, to=%{public}s", from.c_str(), to.c_str());
     CreateBackup(from, to, false);
-    LOGI("[L4:KeyBackup] CheckAndFixFiles: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:KeyBackup] CheckAndFixFiles: <<< EXIT SUCCESS <<<");
 }
 
 void KeyBackup::FsyncFile(const std::string &dirName)
@@ -645,7 +645,7 @@ void KeyBackup::CheckAndCopyFiles(const std::string &from, const std::string &to
     if (closedir(dir) < 0) {
         LOGE("[L4:KeyBackup] CheckAndCopyFiles: close dir failed, from=%{public}s", from.c_str());
     }
-    LOGI("[L4:KeyBackup] CheckAndCopyFiles: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:KeyBackup] CheckAndCopyFiles: <<< EXIT SUCCESS <<<");
 }
 
 int32_t KeyBackup::HandleCopyDir(const std::string &from, const std::string &to)
@@ -680,7 +680,7 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
     }
 
     if (srcData.compare(dstData) == 0) {
-        LOGI("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<< files are same");
+        LOGD("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<< files are same");
         return 0;
     }
 
@@ -695,9 +695,9 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
         SetAttr(dstFile, attr);
     }
     FsyncFile(dstFile);
-    LOGW("[L4:KeyBackup] CheckAndCopyOneFile: copy srcFile=%{public}s dstFile=%{public}s succ",
+    LOGD("[L4:KeyBackup] CheckAndCopyOneFile: copy srcFile=%{public}s dstFile=%{public}s succ",
          srcFile.c_str(), dstFile.c_str());
-    LOGI("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<<");
     return 0;
 }
 

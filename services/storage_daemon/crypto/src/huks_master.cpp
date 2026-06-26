@@ -941,7 +941,7 @@ int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyI
 
 int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
 {
-    LOGI("[L8:HuksMaster] DecryptKey: >>> ENTER <<<");
+    LOGD("[L8:HuksMaster] DecryptKey: >>> ENTER <<<");
 #ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("[L8:HuksMaster] DecryptKey: <<< EXIT FAILED <<< bad shield input, size %{public}d", ctx.shield.size);
@@ -968,13 +968,13 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
     if (ret != E_OK) {
         LOGE("[L8:HuksMaster] DecryptKey: <<< EXIT FAILED <<< HuksHalTripleStage failed");
     } else {
-        LOGI("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
+        LOGD("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
     }
 
     HksFreeParamSet(&paramSet2);
     return ret;
 #endif
-    LOGI("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
+    LOGD("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

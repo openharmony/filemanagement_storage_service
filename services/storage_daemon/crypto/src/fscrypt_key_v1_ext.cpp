@@ -55,7 +55,7 @@ uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
     LOGD("[L6:FscryptExt] GetMappedUserId: >>> ENTER <<< userId=%{public}u, type=%{public}u", userId, type);
     std::error_code errCode;
     if (!std::filesystem::exists(NEED_RESTORE_PATH, errCode)) {
-        LOGE("[L6:FscryptExt] GetMappedUserId: <<< EXIT SUCCESS <<< restore path not exists, return original"
+        LOGD("[L6:FscryptExt] GetMappedUserId: <<< EXIT SUCCESS <<< restore path not exists, return original"
              "userId=%{public}u", userId);
         return userId;
     }
@@ -315,13 +315,13 @@ int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, KeyBlob &classEBuffer, cons
              userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
         return ret;
     }
-    LOGI("[L6:FscryptExt] ReadClassE: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] ReadClassE: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int32_t FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length)
 {
-    LOGI("[L6:FscryptExt] WriteClassE: >>> ENTER <<< status=%{public}u", status);
+    LOGD("[L6:FscryptExt] WriteClassE: >>> ENTER <<< status=%{public}u", status);
     if (!FBEX::IsFBEXSupported()) {
         LOGI("[L6:FscryptExt] WriteClassE: <<< EXIT SUCCESS <<< FBEX not supported, return E_OK");
         return E_OK;
@@ -336,7 +336,7 @@ int32_t FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uin
              "%{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
         return ret;
     }
-    LOGI("[L6:FscryptExt] WriteClassE: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] WriteClassE: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -380,13 +380,13 @@ int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 
 int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
 {
-    LOGI("[L6:FscryptExt] LockUserScreenExt: >>> ENTER <<< flag=%{public}u", flag);
+    LOGD("[L6:FscryptExt] LockUserScreenExt: >>> ENTER <<< flag=%{public}u", flag);
     if (!FBEX::IsFBEXSupported()) {
         LOGI("[L6:FscryptExt] LockUserScreenExt: <<< EXIT SUCCESS <<< FBEX not supported, return E_OK");
         return E_OK;
     }
     uint32_t user = GetMappedUserId(userId_, type_);
-    LOGI("[L6:FscryptExt] LockUserScreenExt: type_ is %{public}u, map userId %{public}u to %{public}u",
+    LOGD("[L6:FscryptExt] LockUserScreenExt: type_ is %{public}u, map userId %{public}u to %{public}u",
          type_, userId_, user);
     int32_t ret = FBEX::LockScreenToKernel(user);
     if (ret != E_OK) {
@@ -396,7 +396,7 @@ int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     }
     //Used to associate el3 and el4 kernels.
     elType = type_;
-    LOGI("[L6:FscryptExt] LockUserScreenExt: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] LockUserScreenExt: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -408,14 +408,14 @@ int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
         return E_OK;
     }
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
-    LOGI("[L6:FscryptExt] LockUeceExt: type_ is %{public}u, map userId %{public}u to %{public}u",
+    LOGD("[L6:FscryptExt] LockUeceExt: type_ is %{public}u, map userId %{public}u to %{public}u",
          type_, userId_, userIdDouble);
     int32_t ret = FBEX::LockUece(userId_, userIdDouble, isFbeSupport);
     if (ret != E_OK) {
         LOGE("[L6:FscryptExt] LockUeceExt: <<< EXIT FAILED <<< LockUeceExt failed");
         return ret;
     }
-    LOGI("[L6:FscryptExt] LockUeceExt: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] LockUeceExt: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -431,7 +431,7 @@ uint32_t FscryptKeyV1Ext::GetUserIdFromDir()
         (void)OHOS::StrToInt(last, userId);
     }
 
-    LOGI("[L6:FscryptExt] GetUserIdFromDir: <<< EXIT SUCCESS <<< dir_: %{public}s, get userId is %{public}d",
+    LOGD("[L6:FscryptExt] GetUserIdFromDir: <<< EXIT SUCCESS <<< dir_: %{public}s, get userId is %{public}d",
          dir_.c_str(), userId);
     return static_cast<uint32_t>(userId);
 }
@@ -473,7 +473,7 @@ uint32_t FscryptKeyV1Ext::GetTypeFromDir()
             break;
         }
     }
-    LOGI("[L6:FscryptExt] GetTypeFromDir: <<< EXIT SUCCESS <<< el string is %{public}s, parse type %{public}d",
+    LOGD("[L6:FscryptExt] GetTypeFromDir: <<< EXIT SUCCESS <<< el string is %{public}s, parse type %{public}d",
          el.c_str(), type);
     return type;
 }

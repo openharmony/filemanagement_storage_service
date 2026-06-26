@@ -151,7 +151,7 @@ bool FBEX::IsFBEXSupported()
         return false;
     }
     bool result = versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0;
-    LOGI("[L7:FBEX] IsFBEXSupported: <<< EXIT %s <<<", result ? "SUCCESS" : "FAILED");
+    LOGD("[L7:FBEX] IsFBEXSupported: <<< EXIT %s <<<", result ? "SUCCESS" : "FAILED");
     return result;
 }
 
@@ -493,7 +493,7 @@ int FBEX::UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble)
 // for el3 & el4
 int FBEX::LockScreenToKernel(uint32_t userId)
 {
-    LOGI("[L7:FBEX] LockScreenToKernel: >>> ENTER <<< userId: %{public}d", userId);
+    LOGD("[L7:FBEX] LockScreenToKernel: >>> ENTER <<< userId: %{public}d", userId);
 
     int fd = open(FBEX_CMD_PATH, O_RDWR);
     if (fd < 0) {
@@ -509,7 +509,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("[L7:FBEX] LockScreenToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("[L7:FBEX] LockScreenToKernel: <<< EXIT %s <<<", ret == 0 ? "SUCCESS" : "FAILED");
+    LOGD("[L7:FBEX] LockScreenToKernel: <<< EXIT %s <<<", ret == 0 ? "SUCCESS" : "FAILED");
     return ret;
 }
 
@@ -557,7 +557,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
 // for el5
 int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
-    LOGI("[L7:FBEX] LockUece: >>> ENTER <<< userId: %{public}d", userIdDouble);
+    LOGD("[L7:FBEX] LockUece: >>> ENTER <<< userId: %{public}d", userIdDouble);
 
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
@@ -718,7 +718,7 @@ int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length
 
 int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length)
 {
-    LOGI("[L7:FBEX] WriteESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
+    LOGD("[L7:FBEX] WriteESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
         userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (!CheckWriteBuffValid(eBuffer, length, status)) {
         LOGE("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<< write e secret param invalid");
@@ -763,7 +763,7 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
         return -errno;
     }
     close(fd);
-    LOGI("[L7:FBEX] WriteESecretToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] WriteESecretToKernel: <<< EXIT SUCCESS <<<");
     return 0;
 }
 
