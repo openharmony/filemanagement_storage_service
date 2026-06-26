@@ -37,7 +37,8 @@ void FuzzNextDqBlk(FuzzedDataProvider &fdp)
     nextDqBlk.dqbValid = fdp.ConsumeIntegral<uint32_t>();
     nextDqBlk.dqbId = fdp.ConsumeIntegral<uint32_t>();
     nextDqBlk.Marshalling(parcel);
-    auto unmarshallingNextDqBlk = std::unique_ptr<StorageManager::NextDqBlk>(nextDqBlk.Unmarshalling(parcel));
+    auto unmarshallingNextDqBlk =
+        std::unique_ptr<StorageManager::NextDqBlk>(nextDqBlk.Unmarshalling(parcel));
 }
 
 void FuzzDirSpaceInfo(FuzzedDataProvider &fdp)
@@ -48,7 +49,8 @@ void FuzzDirSpaceInfo(FuzzedDataProvider &fdp)
     dirSpaceInfo.uid = fdp.ConsumeIntegral<uint32_t>();
     dirSpaceInfo.size = fdp.ConsumeIntegral<int64_t>();
     dirSpaceInfo.Marshalling(parcel);
-    auto unmarshallingDirSpaceInfo = std::unique_ptr<StorageManager::DirSpaceInfo>(dirSpaceInfo.Unmarshalling(parcel));
+    auto unmarshallingDirSpaceInfo =
+        std::unique_ptr<StorageManager::DirSpaceInfo>(dirSpaceInfo.Unmarshalling(parcel));
 }
 
 void FuzzUidSaInfo(FuzzedDataProvider &fdp)
@@ -60,7 +62,8 @@ void FuzzUidSaInfo(FuzzedDataProvider &fdp)
     uidSaInfo.size = fdp.ConsumeIntegral<int64_t>();
     uidSaInfo.iNodes = fdp.ConsumeIntegral<uint64_t>();
     uidSaInfo.Marshalling(parcel);
-    auto unmarshallingUidSaInfo = std::unique_ptr<StorageManager::UidSaInfo>(uidSaInfo.Unmarshalling(parcel));
+    auto unmarshallingUidSaInfo =
+        std::unique_ptr<StorageManager::UidSaInfo>(uidSaInfo.Unmarshalling(parcel));
 }
 
 void FuzzLargeFileInfo(FuzzedDataProvider &fdp)
@@ -70,7 +73,8 @@ void FuzzLargeFileInfo(FuzzedDataProvider &fdp)
     largeFileInfo.path = fdp.ConsumeRandomLengthString(MAX_STRING_LEN);
     largeFileInfo.size = fdp.ConsumeIntegral<int64_t>();
     largeFileInfo.Marshalling(parcel);
-    auto unmarshallingLargeFileInfo = std::unique_ptr<StorageManager::LargeFileInfo>(largeFileInfo.Unmarshalling(parcel));
+    auto unmarshallingLargeFileInfo =
+        std::unique_ptr<StorageManager::LargeFileInfo>(largeFileInfo.Unmarshalling(parcel));
 }
 
 void FuzzLargeDirInfo(FuzzedDataProvider &fdp)
@@ -80,7 +84,8 @@ void FuzzLargeDirInfo(FuzzedDataProvider &fdp)
     largeDirInfo.path = fdp.ConsumeRandomLengthString(MAX_STRING_LEN);
     largeDirInfo.totalSize = fdp.ConsumeIntegral<int64_t>();
     largeDirInfo.Marshalling(parcel);
-    auto unmarshallingLargeDirInfo = std::unique_ptr<StorageManager::LargeDirInfo>(largeDirInfo.Unmarshalling(parcel));
+    auto unmarshallingLargeDirInfo =
+        std::unique_ptr<StorageManager::LargeDirInfo>(largeDirInfo.Unmarshalling(parcel));
 }
 
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
