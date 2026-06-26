@@ -494,7 +494,7 @@ std::string StorageStatusManager::GetCallingBundleName()
             LOGE("GetNativeTokenInfo failed");
             return "";
         }
-        LOGI("GetCallingBundleName success for sa, callBundleName: %{public}s", tokenInfo.processName.c_str());
+        LOGD("GetCallingBundleName success for sa, callBundleName: %{public}s", tokenInfo.processName.c_str());
         return tokenInfo.processName;
     }
     if (tokenType == Security::AccessToken::TOKEN_HAP) {
@@ -543,7 +543,7 @@ int32_t StorageStatusManager::InsertOrUpdateExtBundleStats(uint32_t userId,
                                                            const ExtBundleStats &stats,
                                                            std::string callingBundleName)
 {
-    LOGI("InsertOrUpdateExtBundleStats, userId: %{public}u, business: %{public}s", userId, stats.businessName_.c_str());
+    LOGD("InsertOrUpdateExtBundleStats, userId: %{public}u, business: %{public}s", userId, stats.businessName_.c_str());
 
     // 转换为存储格式 - 不再需要类型转换
     BundleExtStats bundleStat;
@@ -562,7 +562,7 @@ int32_t StorageStatusManager::InsertOrUpdateExtBundleStats(uint32_t userId,
         return ret;
     }
 
-    LOGI("InsertOrUpdateExtBundleStats success, business: %{public}s", stats.businessName_.c_str());
+    LOGD("InsertOrUpdateExtBundleStats success, business: %{public}s", stats.businessName_.c_str());
     return E_OK;
 }
 

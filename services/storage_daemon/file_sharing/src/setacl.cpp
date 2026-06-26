@@ -202,7 +202,7 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
         return {};
     }
 
-    LOGI("[L3:FileSharing] AclEntryParseText: <<< EXIT SUCCESS <<< entryTxt=%{public}s", entryTxt.c_str());
+    LOGD("[L3:FileSharing] AclEntryParseText: <<< EXIT SUCCESS <<< entryTxt=%{public}s", entryTxt.c_str());
     return entry;
 }
 
@@ -233,7 +233,7 @@ Acl AclFromMode(const std::string &file)
           .id = AclXattrHeader::ACL_UNDEFINED_ID, }
     );
 
-    LOGI("[L3:FileSharing] AclFromMode: <<< EXIT SUCCESS <<< file=%{public}s", file.c_str());
+    LOGD("[L3:FileSharing] AclFromMode: <<< EXIT SUCCESS <<< file=%{public}s", file.c_str());
     return acl;
 }
 
@@ -244,11 +244,11 @@ Acl AclFromFile(const std::string &file)
     ssize_t len = getxattr(file.c_str(), Acl::ACL_XATTR_ACCESS, buf, BUF_SIZE);
     if (len != -1) {
         acl.DeSerialize(buf, BUF_SIZE);
-        LOGI("[L3:FileSharing] AclFromFile: <<< EXIT SUCCESS <<< file=%{public}s, len=%{public}zd",
+        LOGD("[L3:FileSharing] AclFromFile: <<< EXIT SUCCESS <<< file=%{public}s, len=%{public}zd",
              file.c_str(), len);
         return acl;
     }
-    LOGI("[L3:FileSharing] AclFromFile: no xattr, use mode, file=%{public}s", file.c_str());
+    LOGD("[L3:FileSharing] AclFromFile: no xattr, use mode, file=%{public}s", file.c_str());
     return AclFromMode(file);
 }
 
@@ -256,7 +256,7 @@ Acl AclFromFile(const std::string &file)
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
-    LOGI("[L3:FileSharing] AclSetAttribution: >>> ENTER <<< file=%{public}s, attrName=%{public}s",
+    LOGD("[L3:FileSharing] AclSetAttribution: >>> ENTER <<< file=%{public}s, attrName=%{public}s",
          targetFile.c_str(), aclAttrName);
 
     if (strcmp(aclAttrName, Acl::ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
@@ -311,7 +311,7 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
         return -1;
     }
 
-    LOGI("[L3:FileSharing] AclSetAttribution: <<< EXIT SUCCESS <<< file=%{public}s, attrName=%{public}s",
+    LOGD("[L3:FileSharing] AclSetAttribution: <<< EXIT SUCCESS <<< file=%{public}s, attrName=%{public}s",
          targetFile.c_str(), aclAttrName);
     return 0;
 }
@@ -332,11 +332,11 @@ int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
 
 int AclSetAccess(const std::string &targetFile, const std::string &entryTxt)
 {
-    LOGI("[L3:FileSharing] AclSetAccess: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
+    LOGD("[L3:FileSharing] AclSetAccess: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
         targetFile.c_str(), entryTxt.c_str());
     int ret = AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_ACCESS);
     if (ret == 0) {
-        LOGI("[L3:FileSharing] AclSetAccess: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
+        LOGD("[L3:FileSharing] AclSetAccess: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
     } else {
         LOGE("[L3:FileSharing] AclSetAccess: <<< EXIT FAILED <<< file=%{public}s, ret=%{public}d",
             targetFile.c_str(), ret);

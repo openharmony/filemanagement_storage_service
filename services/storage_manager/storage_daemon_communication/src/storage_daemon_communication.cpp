@@ -384,7 +384,7 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -431,7 +431,7 @@ int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
                                                      const std::vector<uint8_t> &token,
                                                      const std::vector<uint8_t> &secret)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -446,7 +446,7 @@ int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");

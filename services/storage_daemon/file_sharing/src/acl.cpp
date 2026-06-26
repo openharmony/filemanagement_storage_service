@@ -173,14 +173,14 @@ char *Acl::Serialize(size_t &bufSize)
         restSize -= sizeof(AclXattrEntry);
     }
 
-    LOGI("[L4:Acl] Serialize: <<< EXIT SUCCESS <<< bufSize=%{public}zu, entries=%{public}zu",
+    LOGD("[L4:Acl] Serialize: <<< EXIT SUCCESS <<< bufSize=%{public}zu, entries=%{public}zu",
          bufSize, entries.size());
     return buf;
 }
 
 int Acl::DeSerialize(const char *p, size_t size)
 {
-    LOGI("[L4:Acl] DeSerialize: >>> ENTER <<< size=%{public}zu", size);
+    LOGD("[L4:Acl] DeSerialize: >>> ENTER <<< size=%{public}zu", size);
 
     if (p == nullptr || size > BUF_MAX_SIZE || size < sizeof(AclXattrHeader)) {
         errno = EINVAL;
@@ -215,7 +215,7 @@ int Acl::DeSerialize(const char *p, size_t size)
         return -1;
     }
 
-    LOGI("[L4:Acl] DeSerialize: <<< EXIT SUCCESS <<< entries=%{public}zu", entries.size());
+    LOGD("[L4:Acl] DeSerialize: <<< EXIT SUCCESS <<< entries=%{public}zu", entries.size());
     return 0;
 }
 
