@@ -68,6 +68,11 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidergettotalinodes_fuzzer:fuzztest",
     "storagemanagerprovidergetfreeinodes_fuzzer:fuzztest",
     "storagemanagerprovidergetcurrentbundleinodes_fuzzer:fuzztest",
+    "storagemanagerprovidergetpartitiontable_fuzzer:fuzztest",
+    "storagemanagerprovidercreatepartition_fuzzer:fuzztest",
+    "storagemanagerproviderdeletepartition_fuzzer:fuzztest",
+    "storagemanagerproviderformatpartition_fuzzer:fuzztest",
+    "storagemanagerproviderumountdissharefilevector_fuzzer:fuzztest",
   ]
 }
 
