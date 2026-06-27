@@ -883,6 +883,8 @@ int32_t DiskUtils::Eject(const std::string &devName)
     std::vector<std::string> output;
     std::vector<std::string> cmd = {
         "wodim",
+        "-d",
+        "-v",
         "-eject",
         "dev=" + scsiDev
     };
