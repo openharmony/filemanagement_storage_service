@@ -323,7 +323,7 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
     }
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -343,7 +343,7 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
     }
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -406,7 +406,7 @@ int32_t StorageManagerProvider::SetDirEncryptionPolicy(uint32_t userId, const st
     StorageRadar::ReportFucBehavior("SetDirEncryptionPolicy", userId, "SetDirEncryptionPolicy End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -569,7 +569,7 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     }
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -634,7 +634,7 @@ int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
     StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -663,7 +663,7 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
     StorageRadar::ReportFucBehavior("UpdateUserAuth", userId, "UpdateUserAuth End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -747,7 +747,7 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     LOGI("Send encrypted status: userId: %{public}d, ret is %{public}d", userId, ret);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -787,7 +787,7 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     err = sdCommunication.LockUserScreen(userId);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -818,7 +818,7 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     return err;
 #else
     StorageDaemon::DecreaseThreadPriority("storage_manager");
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -843,7 +843,7 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
     StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, message, err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -864,7 +864,7 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
     err = sdCommunication.GetUserNeedActiveStatus(userId, needActive);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -886,7 +886,7 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
     err = sdCommunication.GetLockScreenStatus(userId, lockScreenStatus);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -947,7 +947,7 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
     StorageRadar::ReportFucBehavior("DeleteAppkey", DEFAULT_USERID, "DeleteAppkey End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -975,7 +975,7 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
     StorageRadar::ReportFucBehavior("CreateRecoverKey", userId, "CreateRecoverKey End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1006,7 +1006,7 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     StorageRadar::ReportFucBehavior("SetRecoverKey", DEFAULT_USERID, "SetRecoverKey End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1029,7 +1029,7 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     StorageRadar::ReportFucBehavior("UpdateKeyContext", userId, "UpdateKeyContext End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1107,7 +1107,7 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
     }
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1333,7 +1333,7 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     StorageRadar::ReportFucBehavior("ResetSecretWithRecoveryKey", userId, "ResetSecretWithRecoveryKey End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1446,7 +1446,7 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
     StorageRadar::ReportFucBehavior("InactiveUserPublicDirKey", userId, "InactiveUserPublicDirKey End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1470,7 +1470,7 @@ int32_t StorageManagerProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     StorageRadar::ReportFucBehavior("UpdateUserPublicDirPolicy", userId, "UpdateUserPublicDirPolicy End", err);
     return err;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1602,7 +1602,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1631,7 +1631,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 
@@ -1660,7 +1660,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
     }
     return E_OK;
 #else
-    return E_NOT_SUPPORT;
+    return E_OK;
 #endif
 }
 

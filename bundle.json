@@ -14,7 +14,8 @@
     "subsystem": "filemanagement",
     "syscap": [
       "SystemCapability.FileManagement.StorageService.SpatialStatistics",
-      "SystemCapability.FileManagement.StorageService.Encryption"
+      "SystemCapability.FileManagement.StorageService.Encryption",
+      "SystemCapability.FileManagement.StorageService.Volume"
     ],
     "features": [
       "storage_service_fstools",
