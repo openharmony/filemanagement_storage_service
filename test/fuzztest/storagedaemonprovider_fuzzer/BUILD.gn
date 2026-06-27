@@ -33,11 +33,15 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${target_gen_dir}",
   ]
   cflags = [
+    "-fno-lto",
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
+  ldflags = [ "-fno-lto" ]
+
+  configs = [ "${storage_service_path}/test/fuzztest:storage_daemon_fuzz_no_lto" ]
 
   sources = [
     "${storage_daemon_path}/crypto/src/key_manager.cpp",

@@ -12,6 +12,11 @@
 # limitations under the License.
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
+config("storage_daemon_fuzz_no_lto") {
+  cflags = [ "-fno-lto" ]
+  ldflags = [ "-fno-lto" ]
+}
+
 group("storage_manager_provider_fuzztest") {
   testonly = true
   deps = [
