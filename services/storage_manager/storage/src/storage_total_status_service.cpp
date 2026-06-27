@@ -134,7 +134,7 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
     if (freeMetadata > 0) {
         freeSize += freeMetadata;
     }
-    LOGE("StorageTotalStatusService::GetFreeSize success, rawFreeSize=%{public}lld, freeMetaSize=%{public}lld, "
+    LOGD("StorageTotalStatusService::GetFreeSize success, rawFreeSize=%{public}lld, freeMetaSize=%{public}lld, "
         "freeSize=%{public}lld", static_cast<long long>(freeSize - freeMetadata),
         static_cast<long long>(freeMetadata), static_cast<long long>(freeSize));
     return E_OK;

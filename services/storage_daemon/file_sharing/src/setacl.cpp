@@ -318,11 +318,11 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
 {
-    LOGI("[L3:FileSharing] AclSetDefault: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
+    LOGD("[L3:FileSharing] AclSetDefault: >>> ENTER <<< file=%{public}s, entryTxt=%{public}s",
         targetFile.c_str(), entryTxt.c_str());
     int ret = AclSetAttribution(targetFile, entryTxt, Acl::ACL_XATTR_DEFAULT);
     if (ret == 0) {
-        LOGI("[L3:FileSharing] AclSetDefault: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
+        LOGD("[L3:FileSharing] AclSetDefault: <<< EXIT SUCCESS <<< file=%{public}s", targetFile.c_str());
     } else {
         LOGE("[L3:FileSharing] AclSetDefault: <<< EXIT FAILED <<< file=%{public}s, ret=%{public}d",
             targetFile.c_str(), ret);
