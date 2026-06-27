@@ -771,12 +771,7 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
                                                  const std::vector<uint8_t> &token,
                                                  const std::vector<uint8_t> &secret)
 {
-    StorageDaemon::IncreaseThreadPriority("storage_manager");
-    std::string message = "UnlockUserScreen Begin, token size: " + std::to_string(token.size()) +
-                          ", secret size: " + std::to_string(secret.size());
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, message, E_OK);
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
@@ -784,16 +779,12 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
-        StorageDaemon::DecreaseThreadPriority("storage_manager");
         return err;
     }
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     err = sdCommunication.UnlockUserScreen(userId, token, secret);
-    StorageRadar::ReportFucBehavior("UnlockUserScreen", userId, "UnlockUserScreen End", err);
-    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return err;
 #else
-    StorageDaemon::DecreaseThreadPriority("storage_manager");
     return E_OK;
 #endif
 }
@@ -1314,11 +1305,9 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
 }
 
 
-int32_t StorageManagerProvider::MountDisShareFile(int32_t userId,
-                                                  const std::map<std::string, std::string> &shareFiles)
+int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
-    std::string message = "MountDisShareFile Begin, shareFiles size: " + std::to_string(shareFiles.size());
-    StorageRadar::ReportFucBehavior("MountDisShareFile", userId, message, E_OK);
+    StorageRadar::ReportFucBehavior("MountDisShareFile", userId, "MountDisShareFile Begin", E_OK);
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (uid != DFS_UID) {
         LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
@@ -1333,6 +1322,7 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId,
     }
     for (const auto &item : shareFiles) {
         if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
+            LOGE("shareFiles is invalid");
             return E_PARAMS_INVALID;
         }
     }

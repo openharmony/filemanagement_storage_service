@@ -24,22 +24,57 @@ ohos_fuzztest("StorageDaemonProxyUpdateKeyContextFuzzTest") {
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
+    "${storage_daemon_path}/crypto:libsdcrypto",
+    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   sources = [
+    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/mock/storage_manager_client.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "storagedaemonproxyupdatekeycontext_fuzzer.cpp",
   ]
 
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
+    "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "huks:libhukssdk",
+    "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
+    "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "zlib:shared_libz",
   ]
 
   if (enable_user_auth_framework) {
@@ -47,17 +82,11 @@ ohos_fuzztest("StorageDaemonProxyUpdateKeyContextFuzzTest") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  external_deps += [ "huks:libhukssdk" ]
-
   cflags = [
-    "-fno-lto",
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
-  ]
-  ldflags = [
-    "-fno-lto",
   ]
 }
 

@@ -24,20 +24,47 @@ ohos_fuzztest("StorageDaemonProviderOnRemoteRequestFuzzTest") {
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
-    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_service_path}/test/fuzztest/storagedaemonstub_fuzzer:storage_daemon_stub_fuzztest",
+    "${storage_daemon_path}/crypto:libsdcrypto",
+    "${storage_daemon_path}:storage_common_utils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   sources = [
+    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovideronremoterequest_fuzzer/storagedaemonprovideronremoterequest_fuzzer.cpp",
+    "${storage_daemon_path}/utils/storage_xcollie.cpp",
   ]
 
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
+    "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
+    "config_policy:configpolicy_util",
     "c_utils:utils",
+    "crypto_framework:crypto_framework_lib",
+    "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "huks:libhukssdk",
+    "init:libbegetutil",
     "ipc:ipc_single",
+    "json:nlohmann_json_static",
+    "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -47,17 +74,12 @@ ohos_fuzztest("StorageDaemonProviderOnRemoteRequestFuzzTest") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  external_deps += [ "huks:libhukssdk" ]
-
   cflags = [
-    "-fno-lto",
+
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
-  ]
-  ldflags = [
-    "-fno-lto",
   ]
 }
 
