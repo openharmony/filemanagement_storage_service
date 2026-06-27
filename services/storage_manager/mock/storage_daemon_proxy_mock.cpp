@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include "burn_params.h"
 #include "mock/storage_daemon_proxy_mock.h"
 #include "storage_service_errno.h"
 
@@ -27,50 +26,12 @@ int32_t StorageDaemonProxy::Shutdown()
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::Mount(const std::string &volId, uint32_t flags)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::UMount(const std::string &volId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::TryToFix(const std::string &volId, uint32_t flags)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Check(const std::string &volId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Format(const std::string &volId, const std::string &fsType)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Partition(const std::string &diskId, int32_t type)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::SetVolumeDescription(const std::string &volId, const std::string &description)
-{
-    return E_OK;
-}
 
 int32_t StorageDaemonProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize)
-{
-    return E_OK;
-}
 
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
@@ -307,10 +268,6 @@ int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec,
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
-{
-    return E_OK;
-}
 
 int32_t StorageDaemonProxy::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback)
 {
@@ -452,78 +409,6 @@ int32_t StorageDaemonProxy::Partition(const std::string &diskPath, const std::st
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
-{
-    progress = 0;
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
-                                                   const std::string &pazzword,
-                                                   const std::string &recoverKey)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::UpdateCryptPasswd(const std::string &volumeId,
-                                              const std::string &pazzword,
-                                              const std::string &newPazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::ResetCryptPasswd(const std::string &volumeId,
-                                             const std::string &recoverKey,
-                                             const std::string &newPazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::DeletePartition(const std::string &diskId, uint32_t partitionNum)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatParams &formatParams)
-{
-    return E_OK;
-}
 
 int32_t StorageDaemonProxy::GetBlockInfoByType(const std::string &type, const std::string &diskId,
                                                std::string &blockInfos)

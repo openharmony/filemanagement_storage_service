@@ -80,6 +80,10 @@ public:
     static int32_t ExecAsyncDamagePartition(const std::string &devPath, int32_t partitionNum);
     static int32_t ExecAsyncGetPartitionTableInfo(const std::string &devPath, std::vector<std::string> &lines);
     static int32_t CleanTempDirectory();
+    static int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+
+private:
+    static bool IsMtpDeviceInUse(const std::string &diskPath);
 };
 
 int ExecuteScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);

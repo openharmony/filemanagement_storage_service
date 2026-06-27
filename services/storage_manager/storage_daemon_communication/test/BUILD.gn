@@ -154,7 +154,6 @@ ohos_unittest("storage_daemon_communication_sub_test") {
 group("storage_manager_communication_test") {
   testonly = true
   deps = [
-    ":storage_daemon_communication_sub_test",
     ":storage_daemon_communication_test",
   ]
 }

@@ -183,9 +183,6 @@ ohos_executable("storage_daemon") {
       "netlink/src/netlink_handler.cpp",
       "netlink/src/netlink_listener.cpp",
       "netlink/src/netlink_manager.cpp",
-      "volume/src/external_volume_info.cpp",
-      "volume/src/volume_info.cpp",
-      "volume/src/volume_manager.cpp",
     ]
   }
 

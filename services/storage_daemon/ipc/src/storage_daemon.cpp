@@ -38,7 +38,6 @@
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
-#include "volume/volume_manager.h"
 #endif
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"

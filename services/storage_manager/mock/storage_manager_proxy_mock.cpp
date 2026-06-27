@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include "burn_params.h"
 #include "mock/storage_manager_proxy_mock.h"
 #include "storage_service_errno.h"
 
@@ -150,66 +149,6 @@ int32_t StorageManagerProxy::GetBundleStats(const std::string& pkgName, BundleSt
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeCreated(const VolumeCore& vc)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Mount(const std::string& volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::TryToFix(const std::string& volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Unmount(const std::string& volumeId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyDiskCreated(const Disk& disk)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyDiskDestroyed(const std::string& diskId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Partition(const std::string& diskId, int32_t type)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 {
     return E_OK;
@@ -229,7 +168,7 @@ int32_t StorageManagerProxy::GetTotalInodes(int64_t &totalInodes)
 {
     return E_OK;
 }
- 
+
 int32_t StorageManagerProxy::GetFreeInodes(int64_t &freeInodes)
 {
     return E_OK;
@@ -251,36 +190,6 @@ int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &s
 }
 
 int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetVolumeByUuid(const std::string& fsUuid, VolumeExternal &vc)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetVolumeById(const std::string& volumeId, VolumeExternal &vc)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::SetVolumeDescription(const std::string& fsUuid, const std::string& description)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Format(const std::string& volumeId, const std::string& fsType)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetDiskById(const std::string& diskId, Disk &disk)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
     return E_OK;
 }
@@ -335,22 +244,6 @@ int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 }
 
 int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                              const std::string &uuid, const std::string &fsType)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::IsUsbFuseByType(const std::string &fsType, bool &enabled)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, bool isBadRemove)
 {
     return E_OK;
 }
@@ -416,7 +309,7 @@ int32_t StorageManagerProxy::UnregisterUeceActivationCallback()
     return E_OK;
 }
 
-int32_t StorageManagerProxy::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
+int32_t StorageManagerProxy::CreateUserDir(const std::string &path, uint32_t mode, uint32_t uid, uint32_t gid)
 {
     return E_OK;
 }
@@ -462,83 +355,6 @@ int32_t StorageManagerProxy::IsOsAccountExists(unsigned int userId, bool &isOsAc
 }
 
 int32_t StorageManagerProxy::GetSystemDataSize(int64_t &systemDataSize)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Encrypt(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetCryptProgressById(const std::string &volumeId, int32_t &progress)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetCryptUuidById(const std::string &volumeId, std::string &uuid)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::BindRecoverKeyToPasswd(const std::string &volumeId,
-                                                    const std::string &pazzword,
-                                                    const std::string &recoverKey)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::UpdateCryptPasswd(const std::string &volumeId,
-                                               const std::string &pazzword,
-                                               const std::string &newPazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::ResetCryptPasswd(const std::string &volumeId,
-                                              const std::string &recoverKey,
-                                              const std::string &newPazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Unlock(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::Decrypt(const std::string &volumeId, const std::string &pazzword)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::CreatePartition(const std::string &diskId, const PartitionParams &partitionParams)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::DeletePartition(const std::string &diskId, uint32_t partitionNum)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::FormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const FormatParams &formatParams)
 {
     return E_OK;
 }

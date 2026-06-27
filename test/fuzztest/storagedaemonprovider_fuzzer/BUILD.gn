@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/config/components/idl_tool/idl.gni")
 import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
@@ -19,147 +18,47 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ohos_fuzztest("StorageDaemonProviderFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer"
-  include_dirs = [
-    "${storage_service_common_path}/include",
-    "${storage_daemon_path}/include",
-    "${storage_daemon_path}/include/crypto",
-    "${storage_daemon_path}/include/ipc",
-    "${storage_daemon_path}/include/quota",
-    "${storage_daemon_path}/include/user",
-    "${storage_daemon_path}/include/utils",
-    "${storage_daemon_path}/include/anco",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_manager_path}/include",
-    "${target_gen_dir}",
-  ]
-  cflags = [
-    "-g",
-    "-O0",
-    "-Wno-unused-variable",
-    "-fno-omit-frame-pointer",
-  ]
-
-  sources = [
-    "${storage_daemon_path}/crypto/src/key_manager.cpp",
-    "${storage_daemon_path}/disk/src/disk_config.cpp",
-    "${storage_daemon_path}/disk/src/disk_info.cpp",
-    "${storage_daemon_path}/disk/src/disk_manager.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
-    "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
-    "${storage_daemon_path}/disk_manager/src/disk/scan_device.cpp",
-    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
-    "${storage_daemon_path}/netlink/src/netlink_data.cpp",
-    "${storage_daemon_path}/netlink/src/netlink_handler.cpp",
-    "${storage_daemon_path}/netlink/src/netlink_listener.cpp",
-    "${storage_daemon_path}/netlink/src/netlink_manager.cpp",
-    "${storage_daemon_path}/quota/quota_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
-    "${storage_daemon_path}/user/src/system_mount_manager.cpp",
-    "${storage_daemon_path}/user/src/user_manager.cpp",
-    "${storage_daemon_path}/user/src/user_path_resolver.cpp",
-    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
-    "${storage_daemon_path}/volume/src/process.cpp",
-    "${storage_daemon_path}/volume/src/volume_info.cpp",
-    "${storage_daemon_path}/volume/src/volume_manager.cpp",
-    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
-    "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/udf_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/iso9660_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/exfat_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/hmfs_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/ext4_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/ivolume_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/ntfs_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/vfat_operator.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/volume_operator_factory.cpp",
-    "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
-    "${storage_daemon_path}/utils/storage_xcollie.cpp",
-  ]
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
     "STORAGE_DAEMON_FUZZ_TEST",
-    "EXTERNAL_STORAGE_MANAGER",
-    "USER_CRYPTO_MANAGER",
-    "USER_CRYPTO_MIGRATE_KEY",
-    "DFS_SERVICE",
-    "STORAGE_SERVICE_MEDIA_FUSE",
-    "EL5_FILEKEY_MANAGER"
   ]
-
-  if (enable_disk_manager) {
-    defines += [ "DISK_MANAGER" ]
-  }
-
   deps = [
-    "${storage_daemon_path}:sdc",
-    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
-    "${storage_daemon_path}/crypto:libsdcrypto",
-    "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
-  external_deps = [
-    "ability_base:zuri",
-    "ability_runtime:abilitykit_native",
-    "app_file_service:fileshare_native",
-    "app_file_service:fileuri_native",
-    "app_file_service:sandbox_helper_native",
-    "bundle_framework:appexecfwk_core",
-    "cJSON:cjson",
-    "config_policy:configpolicy_util",
-    "c_utils:utils",
-    "eventhandler:libeventhandler",
-    "hicollie:libhicollie",
-    "hilog:libhilog",
-    "hisysevent:libhisysevent",
-    "huks:libhukssdk",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "json:nlohmann_json_static",
-    "openssl:libcrypto_shared",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "zlib:shared_libz",
-    "crypto_framework:crypto_framework_lib",
-    "access_token:el5_filekey_manager_sdk",
-    "ability_runtime:app_manager",
-    "os_account:os_account_innerkits",
-    "resource_schedule_service:ressched_client",
-    "json:nlohmann_json_static",
+  sources = [
+    "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
   ]
 
-  if (enable_disk_manager) {
-    external_deps += [ "disk_manager:disk_manager_innerkits" ]
-  }
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
-  if (storage_service_cloud_fuse) {
-    defines += [ "DFS_SERVICE" ]
-    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
-  }
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
 
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  if (enable_tee_client) {
-    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
-    external_deps += [ "tee_client:libteec" ]
-  }
-  if (storage_service_media_fuse) {
-    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
-    external_deps += [ "ability_runtime:app_manager" ]
-  }
+  external_deps += [ "huks:libhukssdk" ]
 
-  if (enable_huks_hdi) {
-    defines += [ "HUKS_IDL_ENVIRONMENT" ]
-    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
-  }
-  use_exceptions = true
+  cflags = [
+    "-fno-lto",
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  ldflags = [
+    "-fno-lto",
+  ]
 }
 
 group("fuzztest") {

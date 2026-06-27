@@ -19,8 +19,6 @@
 #include <nocopyable.h>
 #include "istorage_daemon.h"
 #include "iuece_activation_callback.h"
-#include "partition_params.h"
-#include "format_params.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -40,16 +38,6 @@ public:
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
     int32_t CompleteAddUser(int32_t userId);
-
-    int32_t Mount(std::string volumeId, int32_t flag);
-    int32_t Unmount(std::string volumeId);
-    int32_t TryToFix(std::string volumeId, int32_t flag);
-    int32_t Check(std::string volumeId);
-    int32_t Partition(std::string diskId, int32_t type);
-    int32_t Format(std::string volumeId, std::string type);
-    int32_t SetVolumeDescription(std::string volumeId, std::string description);
-    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
-    int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize);
 
     // fscrypt api
     int32_t EraseAllUserEncryptedKeys();
@@ -116,7 +104,6 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
         const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type);
-    int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
 
     // el5 filekey manager
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
@@ -140,29 +127,6 @@ public:
     int32_t GetSystemDataSize(int64_t &otherUidSizeSum);
 
     int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs);
-
-    //disk crypt api
-    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword);
-    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress);
-    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid);
-    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
-                            const std::string &pazzword,
-                            const std::string &recoverKey);
-    int32_t UpdateCryptPasswd(const std::string &volumeId,
-                        const std::string &pazzword,
-                        const std::string &newPazzword);
-    int32_t ResetCryptPasswd(const std::string &volumeId,
-                        const std::string &recoverKey,
-                        const std::string &newPazzword);
-    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword);
-    int32_t Unlock(const std::string &volumeId, const std::string &pazzword);
-    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword);
-
-    // disk partition api
-    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo);
-    int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams);
-    int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum);
-    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum, const FormatParams &formatParams);
 
 private:
     StorageDaemonCommunication();

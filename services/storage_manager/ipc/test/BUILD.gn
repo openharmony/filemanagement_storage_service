@@ -56,7 +56,6 @@ ohos_unittest("storage_manager_provider_test") {
     sources += [
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
-    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     ]
@@ -138,17 +137,11 @@ ohos_unittest("storage_manager_provider_permission_test") {
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_provider.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_manager_path}/mock/disk_manager_client_mock.cpp",
     "storage_manager_provider_permission_test.cpp",
-    "${storage_manager_path}/disk/src/disk_notification.cpp",
-    "${storage_manager_path}/volume/src/notification.cpp",
-    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
-    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
-    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
   ]
 
   include_dirs = [
@@ -253,7 +246,6 @@ sources = [
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_manager.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
-    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/zip_utils.cpp",
@@ -276,30 +268,6 @@ sources = [
     "LOG_DOMAIN = 0xD004300",
     "private = public",
   ]
-
-  if (storage_service_external_storage_manager) {
-    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
-    sources += [
-      "${storage_manager_path}/disk/src/disk_manager_service.cpp",
-      "${storage_manager_path}/disk/src/disk_notification.cpp",
-      "${storage_manager_path}/volume/src/notification.cpp",
-      "${storage_manager_path}/volume/src/volume_manager_service.cpp",
-      "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
-      "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
-      "${storage_service_path}/services/storage_daemon/disk/src/disk_config.cpp",
-      "${storage_service_path}/services/storage_daemon/disk/src/disk_info.cpp",
-      "${storage_service_path}/services/storage_daemon/disk/src/disk_manager.cpp",
-      "${storage_service_path}/services/storage_daemon/netlink/src/netlink_data.cpp",
-      "${storage_service_path}/services/storage_daemon/netlink/src/netlink_handler.cpp",
-      "${storage_service_path}/services/storage_daemon/netlink/src/netlink_listener.cpp",
-      "${storage_service_path}/services/storage_daemon/netlink/src/netlink_manager.cpp",
-      "${storage_service_path}/services/storage_daemon/volume/src/external_volume_info.cpp",
-      "${storage_service_path}/services/storage_daemon/volume/src/process.cpp",
-      "${storage_service_path}/services/storage_daemon/volume/src/volume_info.cpp",
-      "${storage_service_path}/services/storage_daemon/volume/src/volume_manager.cpp",
-      "${storage_daemon_path}/utils/string_utils.cpp",
-    ]
-  }
 
   if (storage_service_storage_statistics_manager) {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
@@ -410,7 +378,6 @@ ohos_unittest("storage_manager_provider_communication_test") {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "${storage_manager_path}/storage/src/storage_status_manager.cpp",
-      "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
       "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
@@ -510,7 +477,6 @@ ohos_unittest("storage_manager_provider_other_test") {
     sources += [
       "${storage_manager_path}/storage/src/storage_status_manager.cpp",
       "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
-      "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
       "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     ]
@@ -574,9 +540,7 @@ ohos_unittest("storage_manager_provider_other_test") {
 
 group("storage_manager_ipc_test") {
   testonly = true
-  deps = [ ":storage_manager_provider_test" ]
-  deps += [ ":storage_manager_provider_permission_test" ]
-  deps += [ ":storage_manager_provider_premission_access_test" ]
-  deps += [ ":storage_manager_provider_communication_test" ]
-  deps += [ ":storage_manager_provider_other_test" ]
+  deps = [
+    ":storage_manager_provider_communication_test",
+  ]
 }

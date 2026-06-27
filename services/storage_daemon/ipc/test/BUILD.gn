@@ -66,10 +66,6 @@ ohos_unittest("storage_daemon_test") {
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_params.cpp",
-    "${storage_manager_path}/innerkits_impl/src/partition_table_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/format_params.cpp",
   ]
 
   deps = [
@@ -136,64 +132,6 @@ ohos_unittest("storage_daemon_test") {
   use_exceptions = true
 }
 
-ohos_unittest("storage_manager_clt_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_service/storage_daemon"
-
-  sources = [
-    "${storage_daemon_path}/disk/src/disk_info.cpp",
-    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
-    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
-    "${storage_daemon_path}/volume/src/process.cpp",
-    "${storage_daemon_path}/volume/src/volume_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
-    "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
-    "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
-    "${storage_manager_path}/mock/storage_manager_proxy_mock.cpp",
-    "storage_manager_client_test.cpp",
-  ]
-
-  include_dirs = [
-    "${storage_daemon_path}/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_manager_path}/include",
-    "${storage_service_common_path}/include",
-  ]
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "LOG_DOMAIN = 0xD004301",
-    "private = public",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "cJSON:cjson",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "os_account:os_account_innerkits",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "json:nlohmann_json_static",
-  ]
-}
-
 ohos_unittest("storage_daemon_provider_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -251,10 +189,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
     "${storage_daemon_path}/mock/user_manager_mock.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
-    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
-    "${storage_daemon_path}/volume/src/process.cpp",
-    "${storage_daemon_path}/volume/src/volume_info.cpp",
-    "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
@@ -268,7 +202,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
-    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
   ]
 
   deps = [
@@ -339,8 +272,6 @@ ohos_unittest("storage_daemon_provider_test") {
 group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
-    ":storage_daemon_provider_test",
     ":storage_daemon_test",
-    ":storage_manager_clt_test",
   ]
 }

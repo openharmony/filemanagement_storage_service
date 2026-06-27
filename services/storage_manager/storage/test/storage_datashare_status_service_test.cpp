@@ -33,7 +33,6 @@
 #include "bundlemgr/bundle_mgr_interface.h"
 #include "datashare_helper_mock.h"
 #include "datashare_result_set_mock.h"
-#include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"

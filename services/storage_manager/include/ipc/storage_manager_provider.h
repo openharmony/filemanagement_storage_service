@@ -20,7 +20,6 @@
 #include "storage_manager_stub.h"
 #include "system_ability.h"
 #include "storage_file_raw_data.h"
-#include "burn_params.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -56,36 +55,6 @@ public:
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type) override;
 
-    int32_t NotifyVolumeCreated(const VolumeCore &vc) override;
-    int32_t NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr) override;
-    int32_t NotifyVolumeDamaged(const VolumeInfoStr &volumeInfoStr) override;
-    int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state) override;
-
-    int32_t Mount(const std::string &volumeId) override;
-    int32_t Unmount(const std::string &volumeId) override;
-    int32_t TryToFix(const std::string &volumeId) override;
-
-    int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override;
-
-    int32_t NotifyDiskCreated(const Disk &disk) override;
-    int32_t NotifyDiskDestroyed(const std::string &diskId) override;
-    int32_t Partition(const std::string &diskId, int32_t type) override;
-    int32_t GetAllDisks(std::vector<Disk> &vecOfDisk) override;
-
-    int32_t GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc) override;
-    int32_t GetVolumeById(const std::string &volumeId, VolumeExternal &vc) override;
-    int32_t SetVolumeDescription(const std::string &fsUuid, const std::string &description) override;
-    int32_t Format(const std::string &volumeId, const std::string &fsType) override;
-    int32_t GetDiskById(const std::string &diskId, Disk &disk) override;
-    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
-
-    int32_t NotifyMtpMounted(const std::string &id,
-                             const std::string &path,
-                             const std::string &desc,
-                             const std::string &uuid,
-                             const std::string &fsType) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, bool isBadRemove) override;
-    int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled) override;
     // fscrypt api
     int32_t EraseAllUserEncryptedKeys() override;
     int32_t UpdateUserAuth(uint32_t userId,
@@ -174,30 +143,6 @@ public:
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists) override;
     int32_t GetSystemDataSize(int64_t &systemDataSize) override;
 
-    //disk crypt api
-    int32_t NotifyEncryptVolumeStateChanged(const VolumeInfoStr &volumeInfoStr) override;
-    int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
-    int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
-    int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
-    int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
-                                const std::string &pazzword,
-                                const std::string &recoverKey) override;
-    int32_t UpdateCryptPasswd(const std::string &volumeId,
-                                    const std::string &pazzword,
-                                    const std::string &newPazzword) override;
-    int32_t ResetCryptPasswd(const std::string &volumeId,
-                                    const std::string &recoverKey,
-                                    const std::string &newPazzword) override;
-    int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
-    int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
-    int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
-
-    // disk partition api
-    int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
-    int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams) override;
-    int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
-    int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
-                            const FormatParams &formatParams) override;
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

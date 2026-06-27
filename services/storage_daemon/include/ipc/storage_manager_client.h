@@ -17,8 +17,6 @@
 #define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 
 #include "istorage_manager.h"
-#include "disk/disk_info.h"
-#include "volume/volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -26,23 +24,9 @@ class StorageManagerClient final {
 public:
     StorageManagerClient() = default;
 
-    int32_t NotifyDiskCreated(DiskInfo &diskInfo);
-    int32_t NotifyDiskDestroyed(std::string id);
-
-    int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info);
-    int32_t NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo);
-    int32_t NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> volumeInfo);
-    int32_t NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state);
-
-    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid, const std::string &fsType);
-    int32_t NotifyMtpUnmounted(const std::string &id, const bool isBadRemove);
-
-    int32_t IsUsbFuseByType(const std::string &fsType, bool &enabled);
     int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx);
     int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids);
     int32_t IsOsAccountExists(unsigned int userId, bool &isOsAccountExists);
-    int32_t NotifyEncryptVolumeStateChanged(std::shared_ptr<VolumeInfo> volumeInfo);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

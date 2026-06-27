@@ -32,7 +32,7 @@ std::shared_ptr<StorageDaemon::StorageDaemonProvider> storageDaemonProvider =
 
 bool UMountFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UNMOUNT);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);

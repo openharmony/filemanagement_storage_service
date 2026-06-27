@@ -16,9 +16,7 @@
 #include <gtest/gtest.h>
 #include <linux/kdev_t.h>
 #include <sys/mount.h>
-#include "external_volume_info.h"
-#include "process.h"
-#include "external_volume_info_mock.h"
+#include "volume/process.h"
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

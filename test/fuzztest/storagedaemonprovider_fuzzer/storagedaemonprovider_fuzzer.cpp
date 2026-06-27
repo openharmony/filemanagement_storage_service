@@ -317,19 +317,26 @@ static void HandleBasicStorageOps(FuzzedDataProvider& provider,
     switch (code) {
         case FUNC_SHUTDOWN: providerObj->Shutdown(); break;
         case FUNC_MOUNT: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            uint32_t flags = provider.ConsumeIntegral<uint32_t>();
-            providerObj->Mount(volId, flags);
+            std::string devPath = provider.ConsumeRandomLengthString();
+            std::string mountPath = provider.ConsumeRandomLengthString();
+            std::string fsType = provider.ConsumeRandomLengthString();
+            uint64_t flags = provider.ConsumeIntegral<uint64_t>();
+            std::string mountData = provider.ConsumeRandomLengthString();
+            providerObj->Mount(devPath, mountPath, fsType, flags, mountData);
             break;
         }
         case FUNC_UMOUNT: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            providerObj->UMount(volId);
+            std::string mountPath = provider.ConsumeRandomLengthString();
+            std::string fsType = provider.ConsumeRandomLengthString();
+            bool force = provider.ConsumeBool();
+            providerObj->Unmount(mountPath, fsType, force);
             break;
         }
         case FUNC_CHECK: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            providerObj->Check(volId);
+            std::string devPath = provider.ConsumeRandomLengthString();
+            std::string fsType = provider.ConsumeRandomLengthString();
+            bool autoFix = provider.ConsumeBool();
+            providerObj->Check(devPath, fsType, autoFix);
             break;
         }
         default: break;
@@ -340,27 +347,9 @@ static void HandleDiskFormatOps(FuzzedDataProvider& provider,
                                 OHOS::StorageDaemon::StorageDaemonProvider* providerObj,
                                 StorageDaemonFunction code)
 {
-    switch (code) {
-        case FUNC_FORMAT: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            std::string fsType = provider.ConsumeRandomLengthString();
-            providerObj->Format(volId, fsType);
-            break;
-        }
-        case FUNC_PARTITION: {
-            std::string diskId = provider.ConsumeRandomLengthString();
-            int type = provider.ConsumeIntegral<int>();
-            providerObj->Partition(diskId, type);
-            break;
-        }
-        case FUNC_SET_VOLUME_DESCRIPTION: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            std::string description = provider.ConsumeRandomLengthString();
-            providerObj->SetVolumeDescription(volId, description);
-            break;
-        }
-        default: break;
-    }
+    (void)provider;
+    (void)providerObj;
+    (void)code;
 }
 
 static void HandleDiskFixUsbOps(FuzzedDataProvider& provider,
@@ -369,9 +358,6 @@ static void HandleDiskFixUsbOps(FuzzedDataProvider& provider,
 {
     switch (code) {
         case FUNC_TRY_TO_FIX: {
-            std::string volId = provider.ConsumeRandomLengthString();
-            uint32_t flags = provider.ConsumeIntegral<uint32_t>();
-            providerObj->TryToFix(volId, flags);
             break;
         }
         case FUNC_QUERY_USB_IS_IN_USE: {
@@ -733,10 +719,6 @@ static void HandleFuseMountOps(FuzzedDataProvider& provider,
             break;
         }
         case FUNC_MOUNT_USB_FUSE: {
-            std::string volumeId = provider.ConsumeRandomLengthString();
-            std::string fsUuid = provider.ConsumeRandomLengthString();
-            int fuseFd = -1;
-            providerObj->MountUsbFuse(volumeId, fsUuid, fuseFd);
             break;
         }
         default: break;

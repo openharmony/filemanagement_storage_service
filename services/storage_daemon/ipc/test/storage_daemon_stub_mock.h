@@ -18,7 +18,6 @@
 #include "gmock/gmock.h"
 
 #include "storage_daemon_stub.h"
-#include "volume/volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -26,13 +25,6 @@ class StorageDaemonStubMock : public StorageDaemonStub {
 public:
     MOCK_METHOD0(Shutdown, int32_t(void));
 
-    MOCK_METHOD2(Mount, int32_t(const std::string &, uint32_t));
-    MOCK_METHOD1(UMount, int32_t(const std::string &));
-    MOCK_METHOD2(TryToFix, int32_t(const std::string &, uint32_t));
-    MOCK_METHOD1(Check, int32_t(const std::string &));
-    MOCK_METHOD2(Format, int32_t(const std::string &, const std::string &));
-    MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));
-    MOCK_METHOD2(SetVolumeDescription, int32_t(const std::string &, const std::string &));
     MOCK_METHOD4(CreateBlockDeviceNode, int32_t(const std::string &, uint32_t, int32_t, int32_t));
     MOCK_METHOD1(DestroyBlockDeviceNode, int32_t(const std::string &));
     MOCK_METHOD3(ReadPartitionTable, int32_t(const std::string &, std::string &, int32_t &));
@@ -48,7 +40,6 @@ public:
     MOCK_METHOD2(Partition, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(QueryCDStatus, int32_t(const std::string &, int32_t &));
     MOCK_METHOD2(QueryUsbIsInUse, int32_t(const std::string &, bool &));
-    MOCK_METHOD3(GetOddCapacity, int32_t(const std::string &, int64_t &, int64_t &));
 
     MOCK_METHOD1(StartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));
@@ -99,7 +90,6 @@ public:
     MOCK_METHOD1(InactiveUserPublicDirKey, int32_t(uint32_t));
     MOCK_METHOD4(QueryOccupiedSpaceForSa, int32_t(std::vector<UidSaInfo> &, int64_t &,
         const std::map<int32_t, std::string> &, int32_t));
-    MOCK_METHOD3(MountUsbFuse, int32_t(const std::string &, std::string &, int &));
     MOCK_METHOD1(RegisterUeceActivationCallback, int32_t(const sptr<IUeceActivationCallback>&));
     MOCK_METHOD0(UnregisterUeceActivationCallback, int32_t(void));
     MOCK_METHOD3(SetDirEncryptionPolicy, int32_t(uint32_t, const std::string &, uint32_t));
@@ -116,30 +106,13 @@ public:
     MOCK_METHOD5(GetDirListSpaceByPaths, int32_t(const std::vector<std::string> &, const std::vector<int32_t> &,
         std::vector<DirSpaceInfo> &, std::vector<LargeFileInfo> &, std::vector<LargeDirInfo> &));
 
-    //disk crypt api
-    MOCK_METHOD2(Encrypt, int32_t(const std::string &, const std::string &));
-    MOCK_METHOD2(GetCryptProgressById, int32_t(const std::string &, int32_t &));
-    MOCK_METHOD2(GetCryptUuidById, int32_t(const std::string &, std::string &));
-    MOCK_METHOD3(BindRecoverKeyToPasswd, int32_t(const std::string &, const std::string &, const std::string &));
-    MOCK_METHOD3(UpdateCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
-    MOCK_METHOD3(ResetCryptPasswd, int32_t(const std::string &, const std::string &, const std::string &));
-    MOCK_METHOD2(VerifyCryptPasswd, int32_t(const std::string &, const std::string &));
-    MOCK_METHOD2(Unlock, int32_t(const std::string &, const std::string &));
-    MOCK_METHOD2(Decrypt, int32_t(const std::string &, const std::string &));
-
-    // disk partition api
-    MOCK_METHOD2(GetPartitionTable, int32_t(const std::string &, PartitionTableInfo &));
-    MOCK_METHOD2(CreatePartition, int32_t(const std::string &, const PartitionParams &));
-    MOCK_METHOD2(DeletePartition, int32_t(const std::string &, uint32_t));
-    MOCK_METHOD3(FormatPartition, int32_t(const std::string &, uint32_t, const FormatParams &));
-    MOCK_METHOD1(EjectCD, int32_t(const std::string &));
-
     MOCK_METHOD2(GetPartitionTableInfo, int32_t(const std::string &, std::string &));
     MOCK_METHOD5(CreatePartition, int32_t(const std::string &, int32_t, int64_t, int64_t, const std::string &));
     MOCK_METHOD3(DeletePartitionInfo, int32_t(const std::string &, const std::string &, int32_t));
     MOCK_METHOD4(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &, bool));
 
     MOCK_METHOD3(GetBlockInfoByType, int32_t(const std::string &, const std::string &, std::string &));
+    MOCK_METHOD1(EjectCD, int32_t(const std::string &));
     MOCK_METHOD1(Erase, int32_t(const std::string &));
     MOCK_METHOD1(Eject, int32_t(const std::string &));
     MOCK_METHOD4(CreateIsoImage, int32_t(const std::string &, const std::string &,

@@ -19,14 +19,8 @@
 #include <gmock/gmock.h>
 
 #include "disk/disk_info.h"
-#include "partition_params.h"
-#include "partition_table_info.h"
 
 namespace OHOS {
-namespace StorageManager {
-class FormatParams;
-}
-
 namespace StorageDaemon {
 class DiskInfoTestMock : public DiskInfo {
 public:
@@ -37,7 +31,6 @@ public:
     MOCK_METHOD0(Destroy, int(void));
     MOCK_METHOD0(ReadPartition, int(void));
     MOCK_METHOD1(CreateVolume, int(dev_t));
-    MOCK_METHOD0(Partition, int(void));
     MOCK_METHOD0(GetDevice, dev_t(void));
     MOCK_METHOD0(GetDiskId, std::string(void));
     MOCK_METHOD0(GetDevPath, std::string(void));
@@ -45,12 +38,6 @@ public:
     MOCK_METHOD0(GetSysPath, std::string(void));
     MOCK_METHOD0(GetDevVendor, std::string(void));
     MOCK_METHOD0(GetDiskType, int(void));
-
-    // New methods for PR #2812
-    MOCK_METHOD1(CreatePartition, int32_t(const OHOS::StorageManager::PartitionParams&));
-    MOCK_METHOD1(DeletePartition, int32_t(uint32_t));
-    MOCK_METHOD2(FormatPartition, int32_t(uint32_t, const OHOS::StorageManager::FormatParams&));
-    MOCK_METHOD1(GetPartitionTable, int32_t(OHOS::StorageManager::PartitionTableInfo&));
 };
 }
 }

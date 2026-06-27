@@ -66,18 +66,6 @@ ohos_shared_library("storage_manager") {
     defines += [ "PC_USER_MANAGER" ]
   }
 
-  if (storage_service_external_storage_manager) {
-    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
-    sources += [
-      "disk/src/disk_manager_service.cpp",
-      "disk/src/disk_notification.cpp",
-      "volume/src/notification.cpp",
-      "volume/src/volume_manager_service.cpp",
-      "volume/src/volume_manager_service_ext.cpp",
-      "volume/src/encrypted_volume_manager_service.cpp",
-    ]
-  }
-
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
@@ -137,7 +125,6 @@ ohos_shared_library("storage_manager") {
       "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_manager.cpp",
       "storage/src/storage_total_status_service.cpp",
-      "storage/src/volume_storage_status_service.cpp",
       "storage/src/storage_quota_controller.cpp",
     ]
     external_deps += [
@@ -205,14 +192,6 @@ group("storage_manager_unit_test") {
     deps += [
       "scan/test:storage_manager_scan_test",
       "storage/test:storage_manager_storage_test",
-    ]
-  }
-
-  if (storage_service_external_storage_manager) {
-    deps += [
-      "dfx_report/test:storage_manager_dfx_report_test",
-      "disk/test:storage_manager_disk_test",
-      "volume/test:storage_manager_volume_test",
     ]
   }
 }
