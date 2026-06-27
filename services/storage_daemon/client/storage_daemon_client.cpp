@@ -484,7 +484,7 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 {
-    LOGI("[L1:IPC] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:IPC] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("[L1:IPC] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, service check failed, err=%{public}d",
@@ -500,7 +500,7 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 
     int32_t ret = client->LockUserScreen(userId);
     if (ret == E_OK) {
-        LOGI("[L1:IPC] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+        LOGD("[L1:IPC] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     } else {
         LOGE("[L1:IPC] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, err=%{public}d", userId, ret);
     }
@@ -510,7 +510,7 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
-    LOGI("[L1:IPC] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenLen=%{public}zu, secretLen=%{public}zu",
+    LOGD("[L1:IPC] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenLen=%{public}zu, secretLen=%{public}zu",
          userId, token.size(), secret.size());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
@@ -527,7 +527,7 @@ int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector
 
     int32_t ret = client->UnlockUserScreen(userId, token, secret);
     if (ret == E_OK) {
-        LOGI("[L1:IPC] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+        LOGD("[L1:IPC] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     } else {
         LOGE("[L1:IPC] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, err=%{public}d", userId, ret);
     }

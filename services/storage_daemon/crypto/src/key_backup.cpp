@@ -40,7 +40,7 @@ struct FileNode {
 
 void KeyBackup::CreateBackup(const std::string &from, const std::string &to, bool removeOld)
 {
-    LOGI("[L4:KeyBackup] CreateBackup: >>> ENTER <<< from=%{public}s, to=%{public}s, removeOld=%{public}d",
+    LOGD("[L4:KeyBackup] CreateBackup: >>> ENTER <<< from=%{public}s, to=%{public}s, removeOld=%{public}d",
         from.c_str(), to.c_str(), removeOld ? 1 : 0);
     if (access(from.c_str(), 0) != 0) {
         LOGE("[L4:KeyBackup] CreateBackup: <<< EXIT FAILED <<< from path not exist, path=%{public}s", from.c_str());
@@ -136,7 +136,7 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
             std::thread fixFileThread([this, keyDir, backupDir]() { CheckAndFixFiles(keyDir, backupDir); });
             fixFileThread.detach();
         }
-        LOGI("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by main key success");
+        LOGD("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by main key success");
         return 0;
     }
     LOGE("[L4:KeyBackup] TryRestoreKey: origKey failed, try backupKey");
@@ -183,7 +183,7 @@ int32_t KeyBackup::TryRestoreUeceKey(const std::shared_ptr<BaseKey> &baseKey,
 
 int32_t KeyBackup::GetBackupDir(std::string &origDir, std::string &backupDir)
 {
-    LOGI("[L4:KeyBackup] GetBackupDir: >>> ENTER <<< origDir=%{public}s", origDir.c_str());
+    LOGD("[L4:KeyBackup] GetBackupDir: >>> ENTER <<< origDir=%{public}s", origDir.c_str());
     if (origDir == DEVICE_EL1_DIR) {
         backupDir = std::string(DEVICE_EL1_DIR) + BACKUP_NAME;
         LOGI("[L4:KeyBackup] GetBackupDir: <<< EXIT SUCCESS <<< backupDir=%{public}s", backupDir.c_str());
@@ -198,7 +198,7 @@ int32_t KeyBackup::GetBackupDir(std::string &origDir, std::string &backupDir)
     std::string prefixStr = origDir.substr(0, slashIndex);
     std::string endStr = origDir.substr(slashIndex);
     backupDir = prefixStr + BACKUP_NAME + endStr;
-    LOGI("[L4:KeyBackup] GetBackupDir: <<< EXIT SUCCESS <<< backupDir=%{public}s", backupDir.c_str());
+    LOGD("[L4:KeyBackup] GetBackupDir: <<< EXIT SUCCESS <<< backupDir=%{public}s", backupDir.c_str());
     return 0;
 }
 
@@ -665,7 +665,7 @@ int32_t KeyBackup::HandleCopyDir(const std::string &from, const std::string &to)
 
 int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::string &dstFile)
 {
-    LOGI("[L4:KeyBackup] CheckAndCopyOneFile: >>> ENTER <<< srcFile=%{public}s, dstFile=%{public}s",
+    LOGD("[L4:KeyBackup] CheckAndCopyOneFile: >>> ENTER <<< srcFile=%{public}s, dstFile=%{public}s",
          srcFile.c_str(), dstFile.c_str());
     std::string srcData;
     if (!ReadFileToString(srcFile, srcData)) {

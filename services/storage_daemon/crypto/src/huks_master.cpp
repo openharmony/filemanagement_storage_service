@@ -522,7 +522,7 @@ static int AppendNewNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksPara
         LOGI("[L8:HuksMaster] AppendNewNonceAadToken: Encrypt generate new nonce size: %{public}d", ctx.nonce.size);
     }
     ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
-    LOGI("[L8:HuksMaster] AppendNewNonceAadToken: secret/token is empty : %{public}d / %{public}d",
+    LOGD("[L8:HuksMaster] AppendNewNonceAadToken: secret/token is empty : %{public}d / %{public}d",
          auth.secret.IsEmpty(), auth.token.IsEmpty());
     if (auth.secret.IsEmpty() && auth.token.IsEmpty()) {
         LOGI("[L8:HuksMaster] AppendNewNonceAadToken: token & secret is empty, Only append nonce & aad!");
@@ -1013,7 +1013,7 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     HksFreeParamSet(&paramSet2);
     return ret;
 #endif
-    LOGI("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
+    LOGD("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

@@ -180,13 +180,13 @@ int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, KeyBlob &iv, uint32_t
 
 int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size, const KeyBlob &authToken)
 {
-    LOGI("[L6:FscryptExt] UnlockUserScreenExt: >>> ENTER <<< flag=%{public}u", flag);
+    LOGD("[L6:FscryptExt] UnlockUserScreenExt: >>> ENTER <<< flag=%{public}u", flag);
     if (!FBEX::IsFBEXSupported()) {
         LOGI("[L6:FscryptExt] UnlockUserScreenExt: <<< EXIT SUCCESS <<< FBEX not supported, return E_OK");
         return E_OK;
     }
     uint32_t user = GetMappedUserId(userId_, type_);
-    LOGI("[L6:FscryptExt] UnlockUserScreenExt: type_ is %{public}u, map userId %{public}u to %{public}u",
+    LOGD("[L6:FscryptExt] UnlockUserScreenExt: type_ is %{public}u, map userId %{public}u to %{public}u",
          type_, userId_, user);
     int32_t ret = FBEX::UnlockScreenToKernel(user, type_, iv, size, authToken);
     if (ret != E_OK) {
@@ -201,12 +201,12 @@ int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_
 int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId,
                                         std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
 {
-    LOGI("[L6:FscryptExt] GenerateAppkey: >>> ENTER <<< userId=%{public}u, hashId=%{public}u", user, hashId);
+    LOGD("[L6:FscryptExt] GenerateAppkey: >>> ENTER <<< userId=%{public}u, hashId=%{public}u", user, hashId);
     if (!FBEX::IsFBEXSupported()) {
         LOGI("[L6:FscryptExt] GenerateAppkey: <<< EXIT SUCCESS <<< FBEX not supported, return E_OK");
         return E_OK;
     }
-    LOGI("[L6:FscryptExt] GenerateAppkey: map userId %{public}u to %{public}u", userId_, user);
+    LOGD("[L6:FscryptExt] GenerateAppkey: map userId %{public}u to %{public}u", userId_, user);
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     auto ret = FBEX::GenerateAppkey(userIdToFbe, hashId, appKey, size);
@@ -214,7 +214,7 @@ int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId,
         LOGE("[L6:FscryptExt] GenerateAppkey: <<< EXIT FAILED <<< GenerateAppkey failed, user %{public}d", user);
         return ret;
     }
-    LOGI("[L6:FscryptExt] GenerateAppkey: <<< EXIT SUCCESS <<<");
+    LOGD("[L6:FscryptExt] GenerateAppkey: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -300,14 +300,14 @@ int32_t FscryptKeyV1Ext::UpdateClassEBackUp(uint32_t userId)
 int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, KeyBlob &classEBuffer, const KeyBlob &authToken,
                                     bool &isFbeSupport)
 {
-    LOGI("[L6:FscryptExt] ReadClassE: >>> ENTER <<< status=%{public}u", status);
+    LOGD("[L6:FscryptExt] ReadClassE: >>> ENTER <<< status=%{public}u", status);
     if (!FBEX::IsFBEXSupported()) {
         LOGI("[L6:FscryptExt] ReadClassE: <<< EXIT SUCCESS <<< FBEX not supported, return E_OK");
         return E_OK;
     }
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
-    LOGI("[L6:FscryptExt] ReadClassE: type_: %{public}u, userId %{public}u to %{public}u",
+    LOGD("[L6:FscryptExt] ReadClassE: type_: %{public}u, userId %{public}u to %{public}u",
          type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
     auto ret = FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, authToken, isFbeSupport);
     if (ret != E_OK) {
@@ -328,7 +328,7 @@ int32_t FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uin
     }
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
-    LOGI("[L6:FscryptExt] WriteClassE: type_ is %{public}u, map userId %{public}u to %{public}u",
+    LOGD("[L6:FscryptExt] WriteClassE: type_ is %{public}u, map userId %{public}u to %{public}u",
          type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
     auto ret = FBEX::WriteESecretToKernel(userIdToFbe, status, classEBuffer, length);
     if (ret != E_OK) {

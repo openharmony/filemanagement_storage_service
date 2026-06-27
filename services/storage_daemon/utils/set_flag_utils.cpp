@@ -50,7 +50,7 @@ void SetFlagUtils::SetDelFlagsRecursive(const std::string& path)
 
 void SetFlagUtils::SetDelFlagsImpl(const std::string& path, int openFlags)
 {
-    LOGI("SetFlagUtils SetDelFlagsImpl for path start.");
+    LOGD("SetFlagUtils SetDelFlagsImpl for path start.");
     char absPath[PATH_MAX] = {0};
     if (realpath(path.c_str(), absPath) == nullptr) {
         LOGE("SetFlagUtils Failed to get realpath, errno: %{public}d", errno);

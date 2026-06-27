@@ -195,7 +195,7 @@ static inline int MemcpyFbeOptsEV1(FbeOptsEV1 &ops, const KeyBlob &authToken, ui
     int err = EOK;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("[L7:FBEX] MemcpyFbeOptsEV1: memcpy end for ev1, res is %{public}d", err);
+        LOGD("[L7:FBEX] MemcpyFbeOptsEV1: memcpy end for ev1, res is %{public}d", err);
     }
     err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, size);
     if (err != EOK) {
@@ -584,7 +584,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, const KeyBlob &authToken)
 {
-    LOGI("[L7:FBEX] UnlockScreenToKernel: >>> ENTER <<< userId: %{public}d, type: %{public}u", userId, type);
+    LOGD("[L7:FBEX] UnlockScreenToKernel: >>> ENTER <<< userId: %{public}d, type: %{public}u", userId, type);
     if (!CheckIvValid(iv, size)) {
         LOGE("[L7:FBEX] UnlockScreenToKernel: <<< EXIT FAILED <<< install key param invalid");
         std::string extraData = "size = " + std::to_string(size);
@@ -649,7 +649,7 @@ void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint3
 int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyBlob &eBuffer,
                               const KeyBlob &authToken, bool &isFbeSupport)
 {
-    LOGI("[L7:FBEX] ReadESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
+    LOGD("[L7:FBEX] ReadESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
         userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (eBuffer.IsEmpty() || !CheckPreconditions(userIdToFbe, status, eBuffer.data, eBuffer.size, isFbeSupport)) {
         std::string extraData = "status = " + std::to_string(status) + ", size = " + std::to_string(eBuffer.size);
@@ -759,7 +759,7 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
             + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
         StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
         close(fd);
-        LOGI("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<<");
+        LOGE("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<<");
         return -errno;
     }
     close(fd);

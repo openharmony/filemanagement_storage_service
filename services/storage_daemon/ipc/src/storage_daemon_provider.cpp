@@ -942,7 +942,7 @@ int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &
     StorageXCollie::CancelTimer(timerId);
     HiAudit::GetInstance().WriteEnd("DeleteAppkey", ret);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
+        LOGD("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
             userId, keyId.size());
     } else {
         LOGE("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",

@@ -319,28 +319,28 @@ bool ConvertStringToInt32(const std::string &context, int32_t &value)
 void IncreaseThreadPriority(const std::string &processName)
 {
     HiAudit::GetInstance().WriteStart("IncreaseThreadPriority", "processName=" + processName);
-    LOGI("IncreaseThreadPriority start");
+    LOGD("IncreaseThreadPriority start");
     std::unordered_map<std::string, std::string> mapPayLoad;
     mapPayLoad["pid"] = std::to_string(getpid()); // 提升优先级的进程id
     mapPayLoad[std::to_string(gettid())] = std::to_string(THREAD_QOS_HIGH_LEVEL); // 提升优先级的线程id
     mapPayLoad["bundleName"] = processName;
     uint32_t type = OHOS::ResourceSchedule::ResType::RES_TYPE_THREAD_QOS_CHANGE;
     OHOS::ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, mapPayLoad);
-    LOGI("IncreaseThreadPriority end");
+    LOGD("IncreaseThreadPriority end");
     HiAudit::GetInstance().WriteEnd("IncreaseThreadPriority", 0);
 }
 
 void DecreaseThreadPriority(const std::string &processName)
 {
     HiAudit::GetInstance().WriteStart("DecreaseThreadPriority", "processName=" + processName);
-    LOGI("DecreaseThreadPriority start");
+    LOGD("DecreaseThreadPriority start");
     std::unordered_map<std::string, std::string> mapPayLoad;
     mapPayLoad["pid"] = std::to_string(getpid()); // 提升优先级的进程id
     mapPayLoad[std::to_string(gettid())] = std::to_string(THREAD_QOS_LOW_LEVEL); // 提升优先级的线程id
     mapPayLoad["bundleName"] = processName;
     uint32_t type = OHOS::ResourceSchedule::ResType::RES_TYPE_THREAD_QOS_CHANGE;
     OHOS::ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, mapPayLoad);
-    LOGI("DecreaseThreadPriority end");
+    LOGD("DecreaseThreadPriority end");
     HiAudit::GetInstance().WriteEnd("DecreaseThreadPriority", 0);
 }
 

@@ -121,7 +121,7 @@ int32_t FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::stri
 
 int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
 {
-    LOGI("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: >>> ENTER <<<");
+    LOGD("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: >>> ENTER <<<");
     EncryptAsdpKey fskey;
     fskey.size = appKey.size;
     fskey.version = 0;
@@ -151,7 +151,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             LOGE("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: Failed to AddKey, errno %{public}d", errno);
         }
     }
-    LOGI("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: <<< EXIT SUCCESS <<<");
+    LOGD("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -197,14 +197,14 @@ int32_t FscryptKeyV1::UnlockUserScreen(const KeyBlob &authToken, uint32_t flag,
     uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
-    LOGI("[L5:FscryptKeyV1] UnlockUserScreen: >>> ENTER <<< flag=%{public}u, sdpClass=%{public}u", flag, sdpClass);
+    LOGD("[L5:FscryptKeyV1] UnlockUserScreen: >>> ENTER <<< flag=%{public}u, sdpClass=%{public}u", flag, sdpClass);
     int32_t ret = GenerateKeyDesc();
     if (ret != E_OK) {
         keyInfo_.key.Clear();
         LOGE("[L5:FscryptKeyV1] UnlockUserScreen: <<< EXIT FAILED <<< GenerateKeyDesc failed");
         return ret;
     }
-    LOGI("[L5:FscryptKeyV1] UnlockUserScreen: keyInfo empty: %{public}u", keyInfo_.key.IsEmpty());
+    LOGD("[L5:FscryptKeyV1] UnlockUserScreen: keyInfo empty: %{public}u", keyInfo_.key.IsEmpty());
     ret = fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, authToken);
     if (ret != E_OK) {
         keyInfo_.key.Clear();
@@ -351,7 +351,7 @@ int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool 
         isSupport = false;
         return E_OK;
     }
-    LOGI("[L5:FscryptKeyV1] DecryptClassE: Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
+    LOGD("[L5:FscryptKeyV1] DecryptClassE: Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
     ret = DoDecryptClassE(auth, eSecretFBE, decryptedKey, needSyncCandidate);
     if (ret != E_OK) {
@@ -464,7 +464,7 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
 
 int32_t FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
 {
-    LOGI("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: >>> ENTER <<< sdpClass=%{public}u", sdpClass);
+    LOGD("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: >>> ENTER <<< sdpClass=%{public}u", sdpClass);
     EncryptionKeySdp fskey;
     if (keyInfo_.key.size != sizeof(fskey.raw)) {
         LOGE("[L5:FscryptKeyV1] InstallEceSeceKeyToKeyring: <<< EXIT FAILED <<< Wrong key size=%{public}d",
@@ -662,7 +662,7 @@ int32_t FscryptKeyV1::GenerateKeyDesc()
 
 int32_t FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
 {
-    LOGI("[L5:FscryptKeyV1] GenerateAppKeyDesc: >>> ENTER <<<");
+    LOGD("[L5:FscryptKeyV1] GenerateAppKeyDesc: >>> ENTER <<<");
     if (appKey.IsEmpty()) {
         LOGE("[L5:FscryptKeyV1] GenerateAppKeyDesc: <<< EXIT FAILED <<< key is empty");
         return E_KEY_EMPTY_ERROR;
@@ -685,7 +685,7 @@ int32_t FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
         LOGE("[L5:FscryptKeyV1] GenerateAppKeyDesc: <<< EXIT FAILED <<< memcpy failed, err=%{public}d", err);
         return err;
     }
-    LOGE("[L5:FscryptKeyV1] GenerateAppKeyDesc: keyDescLen=%{public}u, <<< EXIT SUCCESS <<<", keyInfo_.keyDesc.size);
+    LOGD("[L5:FscryptKeyV1] GenerateAppKeyDesc: keyDescLen=%{public}u, <<< EXIT SUCCESS <<<", keyInfo_.keyDesc.size);
     return E_OK;
 }
 } // namespace StorageDaemon
