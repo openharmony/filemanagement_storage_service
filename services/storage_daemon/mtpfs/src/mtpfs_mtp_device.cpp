@@ -34,6 +34,8 @@ const uint32_t PTP_ID_INDEX = 200000000;
 constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
 constexpr uint64_t MAX_PLAUSIBLE_STORAGE_SIZE = 1ULL * 1024 * 1024 * 1024 * 1024 * 1024;
 constexpr int32_t EVENT_FAIL_WAIT_MS = 1000 * 20;
+constexpr int32_t ENUM_STORAGE_MAX_RETRIES = 3;
+constexpr int32_t ENUM_STORAGE_RETRY_INTERVAL_MS = 500;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
@@ -331,14 +333,20 @@ bool MtpFsDevice::EnumStorages()
 {
     LOGI("Start to enum mtp device storages.");
     std::unique_lock<std::mutex> lock(deviceMutex_);
-    LIBMTP_Clear_Errorstack(device_);
-    if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) < 0) {
-        LOGE("Could not retrieve device storage.");
+    for (int32_t attempt = 1; attempt <= ENUM_STORAGE_MAX_RETRIES; ++attempt) {
+        LIBMTP_Clear_Errorstack(device_);
+        if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) >= 0) {
+            LOGI("Enum mtp device storages success.");
+            return true;
+        }
+        LOGE("Could not retrieve device storage. Attempt %{public}d/%{public}d", attempt, ENUM_STORAGE_MAX_RETRIES);
         DumpLibMtpErrorStack();
-        return false;
+        if (attempt < ENUM_STORAGE_MAX_RETRIES) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(ENUM_STORAGE_RETRY_INTERVAL_MS));
+        }
     }
-    LOGI("Enum mtp device storages success.");
-    return true;
+    LOGI("Enum mtp device storages failed.");
+    return false;
 }
 
 const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
