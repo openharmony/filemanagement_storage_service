@@ -590,30 +590,6 @@ int32_t StorageManagerProvider::GetCurrentBundleStats(BundleStats &bundleStats, 
 #endif
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int32_t StorageManagerProvider::EraseAllUserEncryptedKeys()
 {
     StorageRadar::ReportFucBehavior("EraseAllUserEncryptedKeys", DEFAULT_USERID, "EraseAllUserEncryptedKeys Begin",
@@ -1725,19 +1701,6 @@ bool StorageManagerProvider::IsCalledByFileMgr()
     }
     return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 } // namespace StorageManager
 } // namespace OHOS

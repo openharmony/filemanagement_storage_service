@@ -167,14 +167,6 @@ int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
     return storageDaemon_->CompleteAddUser(userId);
 }
 
-
-
-
-
-
-
-
-
 int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
 {
     LOGD("enter");
@@ -939,19 +931,6 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
     }
     return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 } // namespace StorageManager
 } // namespace OHOS
