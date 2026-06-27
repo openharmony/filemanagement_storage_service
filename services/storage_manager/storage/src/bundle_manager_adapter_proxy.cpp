@@ -220,7 +220,7 @@ bool BundleManagerAdapterProxy::GetBundleStats(const std::string &bundleName,
         LOGE("fail to GetBundleStats from reply");
         return false;
     }
-    LOGI("end %{public}s", bundleName.c_str());
+    LOGD("end %{public}s", bundleName.c_str());
     return true;
 }
 
@@ -273,7 +273,7 @@ bool BundleManagerAdapterProxy::GetAllBundleStats(int32_t userId, std::vector<in
         LOGE("fail to GetAllBundleStats from reply");
         return false;
     }
-    LOGI("GetAllBundleStats end");
+    LOGD("GetAllBundleStats end");
     return true;
 }
 

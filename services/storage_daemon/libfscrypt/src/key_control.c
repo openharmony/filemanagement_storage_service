@@ -110,7 +110,7 @@ static int FsIoctl(const char *mnt, unsigned long cmd, void *arg)
         return errNo;
     }
     (void)close(fd);
-    LOGI("success");
+    LOGD("success");
     return 0;
 }
 

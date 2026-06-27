@@ -151,7 +151,7 @@ bool FBEX::IsFBEXSupported()
         return false;
     }
     bool result = versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0;
-    LOGI("[L7:FBEX] IsFBEXSupported: <<< EXIT %s <<<", result ? "SUCCESS" : "FAILED");
+    LOGD("[L7:FBEX] IsFBEXSupported: <<< EXIT %s <<<", result ? "SUCCESS" : "FAILED");
     return result;
 }
 
@@ -195,7 +195,7 @@ static inline int MemcpyFbeOptsEV1(FbeOptsEV1 &ops, const KeyBlob &authToken, ui
     int err = EOK;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("[L7:FBEX] MemcpyFbeOptsEV1: memcpy end for ev1, res is %{public}d", err);
+        LOGD("[L7:FBEX] MemcpyFbeOptsEV1: memcpy end for ev1, res is %{public}d", err);
     }
     err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, size);
     if (err != EOK) {
@@ -493,7 +493,7 @@ int FBEX::UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble)
 // for el3 & el4
 int FBEX::LockScreenToKernel(uint32_t userId)
 {
-    LOGI("[L7:FBEX] LockScreenToKernel: >>> ENTER <<< userId: %{public}d", userId);
+    LOGD("[L7:FBEX] LockScreenToKernel: >>> ENTER <<< userId: %{public}d", userId);
 
     int fd = open(FBEX_CMD_PATH, O_RDWR);
     if (fd < 0) {
@@ -509,7 +509,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("[L7:FBEX] LockScreenToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("[L7:FBEX] LockScreenToKernel: <<< EXIT %s <<<", ret == 0 ? "SUCCESS" : "FAILED");
+    LOGD("[L7:FBEX] LockScreenToKernel: <<< EXIT %s <<<", ret == 0 ? "SUCCESS" : "FAILED");
     return ret;
 }
 
@@ -557,7 +557,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
 // for el5
 int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
-    LOGI("[L7:FBEX] LockUece: >>> ENTER <<< userId: %{public}d", userIdDouble);
+    LOGD("[L7:FBEX] LockUece: >>> ENTER <<< userId: %{public}d", userIdDouble);
 
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
@@ -584,7 +584,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, const KeyBlob &authToken)
 {
-    LOGI("[L7:FBEX] UnlockScreenToKernel: >>> ENTER <<< userId: %{public}d, type: %{public}u", userId, type);
+    LOGD("[L7:FBEX] UnlockScreenToKernel: >>> ENTER <<< userId: %{public}d, type: %{public}u", userId, type);
     if (!CheckIvValid(iv, size)) {
         LOGE("[L7:FBEX] UnlockScreenToKernel: <<< EXIT FAILED <<< install key param invalid");
         std::string extraData = "size = " + std::to_string(size);
@@ -622,7 +622,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
         LOGE("[L7:FBEX] UnlockScreenToKernel: memcpy failed %{public}d", errops);
     }
     (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
-    LOGI("[L7:FBEX] UnlockScreenToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] UnlockScreenToKernel: <<< EXIT SUCCESS <<<");
     return ret;
 }
 
@@ -649,7 +649,7 @@ void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint3
 int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyBlob &eBuffer,
                               const KeyBlob &authToken, bool &isFbeSupport)
 {
-    LOGI("[L7:FBEX] ReadESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
+    LOGD("[L7:FBEX] ReadESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
         userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (eBuffer.IsEmpty() || !CheckPreconditions(userIdToFbe, status, eBuffer.data, eBuffer.size, isFbeSupport)) {
         std::string extraData = "status = " + std::to_string(status) + ", size = " + std::to_string(eBuffer.size);
@@ -694,7 +694,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
         return 0;
     }
     UnlockSendSecret(status, bufferSize, eBuffer.size, eBuffer.data, ops.eBuffer);
-    LOGI("[L7:FBEX] ReadESecretToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] ReadESecretToKernel: <<< EXIT SUCCESS <<<");
     return 0;
 }
 
@@ -712,13 +712,13 @@ int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length
         LOGE("[L7:FBEX] UnlockSendSecret: <<< EXIT FAILED <<< memcpy failed %{public}d", errBuffer);
         return 0;
     }
-    LOGI("[L7:FBEX] UnlockSendSecret: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] UnlockSendSecret: <<< EXIT SUCCESS <<<");
     return 0;
 }
 
 int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length)
 {
-    LOGI("[L7:FBEX] WriteESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
+    LOGD("[L7:FBEX] WriteESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
         userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (!CheckWriteBuffValid(eBuffer, length, status)) {
         LOGE("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<< write e secret param invalid");
@@ -759,11 +759,11 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
             + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
         StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
         close(fd);
-        LOGI("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<<");
+        LOGE("[L7:FBEX] WriteESecretToKernel: <<< EXIT FAILED <<<");
         return -errno;
     }
     close(fd);
-    LOGI("[L7:FBEX] WriteESecretToKernel: <<< EXIT SUCCESS <<<");
+    LOGD("[L7:FBEX] WriteESecretToKernel: <<< EXIT SUCCESS <<<");
     return 0;
 }
 

@@ -87,10 +87,10 @@ constexpr size_t MAX_MOUNT_DATA_LEN = 1024;
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
-    LOGI("[L1:StorageDaemonProvider] GetUserStatistics: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemonProvider] GetUserStatistics: >>> ENTER <<< userId=%{public}u", userId);
     auto it = opStatistics_.find(userId);
     if (it != opStatistics_.end()) {
-        LOGI("[L1:StorageDaemonProvider] GetUserStatistics: <<< EXIT SUCCESS <<< userId=%{public}u, found", userId);
+        LOGD("[L1:StorageDaemonProvider] GetUserStatistics: <<< EXIT SUCCESS <<< userId=%{public}u, found", userId);
         return it;
     }
     RadarStatisticInfo radarInfo = {0};
@@ -103,7 +103,7 @@ int32_t StorageDaemonProvider::CheckUserIdRange(int32_t userId)
         LOGE("[L1:StorageDaemonProvider] CheckUserIdRange: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return E_USERID_RANGE;
     }
-    LOGI("[L1:StorageDaemonProvider] CheckUserIdRange: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
+    LOGD("[L1:StorageDaemonProvider] CheckUserIdRange: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
 
@@ -199,7 +199,7 @@ int32_t StorageDaemonProvider::ValidateMountPath(const std::string &mountPath,
 
 void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInfoType type)
 {
-    LOGI("[L1:StorageDaemonProvider] SetUserStatistics: >>> ENTER <<< userId=%{public}u, type=%{public}d",
+    LOGD("[L1:StorageDaemonProvider] SetUserStatistics: >>> ENTER <<< userId=%{public}u, type=%{public}d",
         userId, static_cast<int32_t>(type));
     std::lock_guard<std::mutex> lock(mutexStats_);
     auto it = GetUserStatistics(userId);
@@ -247,7 +247,7 @@ void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInf
         default:
             break;
     }
-    LOGI("[L1:StorageDaemonProvider] SetUserStatistics: <<< EXIT SUCCESS <<< userId=%{public}u, type=%{public}d",
+    LOGD("[L1:StorageDaemonProvider] SetUserStatistics: <<< EXIT SUCCESS <<< userId=%{public}u, type=%{public}d",
         userId, static_cast<int32_t>(type));
 }
 
@@ -808,7 +808,7 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
 int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
     HiAudit::GetInstance().WriteStart("LockUserScreen", "userId: " + std::to_string(userId));
-    LOGI("[L1:StorageDaemonProvider] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemonProvider] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -823,7 +823,7 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
     StorageXCollie::CancelTimer(timerId);
     SetUserStatistics(userId, ret != E_OK ? KEY_UNLOAD_FAIL : KEY_UNLOAD_SUCCESS);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+        LOGD("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     } else {
         LOGE("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
             userId, ret);
@@ -838,7 +838,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     std::string message = "UnlockUserScreen Begin userId: " + std::to_string(userId)
         + " token size: " + std::to_string(token.size()) + " secret size: " + std::to_string(secret.size());
     HiAudit::GetInstance().WriteStart("UnlockUserScreen", message);
-    LOGI("[L1:StorageDaemonProvider] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
+    LOGD("[L1:StorageDaemonProvider] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::unique_lock<std::mutex> lock(mutex_);
@@ -867,7 +867,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
         return cbRet;
     }
 #endif
-    LOGI("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return ret;
 }
 
@@ -876,7 +876,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     std::string message = "userId: " + std::to_string(userId)
         + " lockScreenStatus: " + std::to_string(lockScreenStatus);
     HiAudit::GetInstance().WriteStart("GetLockScreenStatus", message);
-    LOGI("[L1:StorageDaemonProvider] GetLockScreenStatus: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemonProvider] GetLockScreenStatus: >>> ENTER <<< userId=%{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}d out of range",
@@ -892,7 +892,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     message = "lockScreenStatus: " + std::to_string(lockScreenStatus);
     HiAudit::GetInstance().WriteEnd("GetLockScreenStatus", ret, message);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u,"
+        LOGD("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u,"
             "status=%{public}d", userId, lockScreenStatus);
     } else {
         LOGE("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
@@ -918,7 +918,7 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
         + " keyId: " + GetAnonyString(keyId) + " needReSet: " + std::to_string(needReSet);
     HiAudit::GetInstance().WriteEnd("GenerateAppkey", ret, message);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
+        LOGD("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
             userId, keyId.size());
     } else {
         LOGE("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
@@ -942,7 +942,7 @@ int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &
     StorageXCollie::CancelTimer(timerId);
     HiAudit::GetInstance().WriteEnd("DeleteAppkey", ret);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
+        LOGD("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyIdLen=%{public}zu",
             userId, keyId.size());
     } else {
         LOGE("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
@@ -1611,7 +1611,7 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &v
 int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
     const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
-    LOGI("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: >>> ENTER <<<");
     HiAudit::GetInstance().WriteStart("RegisterUeceActivationCallback");
     if (ueceCallback == nullptr) {
         LOGE("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT FAILED <<< callback is nullptr");
@@ -1620,7 +1620,7 @@ int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
     int32_t ret = StorageDaemon::GetInstance().RegisterUeceActivationCallback(ueceCallback);
     HiAudit::GetInstance().WriteEnd("RegisterUeceActivationCallback", ret);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
+        LOGD("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
@@ -1629,12 +1629,12 @@ int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
 
 int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
-    LOGI("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: >>> ENTER <<<");
     HiAudit::GetInstance().WriteStart("UnregisterUeceActivationCallback");
     int32_t ret = StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
     HiAudit::GetInstance().WriteEnd("UnregisterUeceActivationCallback", ret);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
+        LOGD("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }

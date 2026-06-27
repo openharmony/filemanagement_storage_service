@@ -146,14 +146,14 @@ int32_t StorageManagerScan::Init()
 
 void StorageManagerScan::StartScan()
 {
-    LOGI("StorageManagerScan::StartScan called");
+    LOGD("StorageManagerScan::StartScan called");
     std::lock_guard<std::mutex> lock(scanMutex_);
     if (isScanRunning_.load()) {
         LOGI("StorageManagerScan::StartScan scan is already running");
         return;
     }
     if (!CheckScanPreconditions()) {
-        LOGI("StorageManagerScan::StartScan preconditions not met");
+        LOGD("StorageManagerScan::StartScan preconditions not met");
         return;
     }
     LaunchScanWorker();
@@ -161,12 +161,12 @@ void StorageManagerScan::StartScan()
 
 void StorageManagerScan::StopScan()
 {
-    LOGI("StorageManagerScan::StopScan called");
+    LOGD("StorageManagerScan::StopScan called");
 
     if (!isScanRunning_.load()) {
         return;
     }
-    LOGI("StorageManagerScan::StopScan terminate the scanning thread");
+    LOGD("StorageManagerScan::StopScan terminate the scanning thread");
     stopScanFlag_.store(true);
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t ret = sdCommunication.SetStopScanFlag(true);

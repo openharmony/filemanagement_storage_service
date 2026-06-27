@@ -515,7 +515,7 @@ int32_t FileCacheAdapter::SaveBundleData()
     int32_t result = SaveJsonToFile(bundleJsonFilePath_, jsonArray);
     if (result == E_OK) {
         bundleDirty_ = false;
-        LOGI("Saved %{public}zu bundle_ext_stats to JSON file", bundleExtStatsMap_.size());
+        LOGD("Saved %{public}zu bundle_ext_stats to JSON file", bundleExtStatsMap_.size());
     }
     return result;
 }

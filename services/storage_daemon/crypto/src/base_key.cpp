@@ -73,7 +73,7 @@ BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(ke
 
 static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
 {
-    LOGI("[L4:BaseKey] DoTempStore: >>> ENTER <<<");
+    LOGD("[L4:BaseKey] DoTempStore: >>> ENTER <<<");
     KeyBlob tempAad(sourceCtx.aad);
     KeyBlob tempNonce(sourceCtx.nonce);
     KeyBlob tempRndEnc(sourceCtx.rndEnc);
@@ -82,7 +82,7 @@ static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
     targetCtx.nonce = std::move(tempNonce);
     targetCtx.rndEnc = std::move(tempRndEnc);
     targetCtx.shield = std::move(tempShield);
-    LOGI("[L4:BaseKey] DoTempStore: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:BaseKey] DoTempStore: <<< EXIT SUCCESS <<<");
 }
 
 bool BaseKey::InitKey(bool needGenerateKey)
@@ -129,11 +129,11 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         StorageService::StorageRadar::ReportUserKeyResult("SaveKeyBlob", 0, E_KEY_BLOB_ERROR, "", "blob is empty");
         return false;
     }
-    LOGI("[L4:BaseKey] SaveKeyBlob: >>> ENTER <<< path=%{public}s, size=%{public}u", path.c_str(), blob.size);
+    LOGD("[L4:BaseKey] SaveKeyBlob: >>> ENTER <<< path=%{public}s, size=%{public}u", path.c_str(), blob.size);
     std::string errMsg = "";
     bool ret = WriteFileSync(path.c_str(), blob.data.get(), blob.size, errMsg);
     if (ret) {
-        LOGI("[L4:BaseKey] SaveKeyBlob: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
+        LOGD("[L4:BaseKey] SaveKeyBlob: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     } else {
         LOGE("[L4:BaseKey] SaveKeyBlob: <<< EXIT FAILED <<< path=%{public}s, WriteFileSync failed", path.c_str());
         StorageService::StorageRadar::ReportUserKeyResult("SaveKeyBlob", 0, E_SAVE_KEY_BLOB_ERROR, "",
@@ -154,7 +154,7 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, con
 
 bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
 {
-    LOGW("[L4:BaseKey] LoadKeyBlob: >>> ENTER <<< path=%{public}s, size=%{public}u", path.c_str(), size);
+    LOGD("[L4:BaseKey] LoadKeyBlob: >>> ENTER <<< path=%{public}s, size=%{public}u", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("[L4:BaseKey] LoadKeyBlob: <<< EXIT FAILED <<< path=%{public}s, open failed, errno=%{public}d",
@@ -586,7 +586,7 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool n
         StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, 0, "", "candidate is empty");
         auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth, needFixFiles);
         if (ret == 0) {
-            LOGI("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
+            LOGD("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
             return E_OK;
         }
         StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
@@ -740,7 +740,7 @@ int32_t BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 
 int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
 {
-    LOGI("[L4:BaseKey] DoRestoreKeyCeEceSece: >>> ENTER <<< path=%{public}s, keyType=%{public}u",
+    LOGD("[L4:BaseKey] DoRestoreKeyCeEceSece: >>> ENTER <<< path=%{public}s, keyType=%{public}u",
         path.c_str(), keyType);
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||
@@ -767,7 +767,7 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
         auto delay = StorageService::StorageRadar::ReportDuration("READ KEY FILE: FILE OPS", startTime);
         LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s", delay.c_str());
         auto ret = DecryptReal(auth, keyType, ctxNone);
-        LOGI("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT %s <<<", ret == E_OK ? "SUCCESS" : "FAILED");
+        LOGD("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT %s <<<", ret == E_OK ? "SUCCESS" : "FAILED");
         return ret;
     }
 
@@ -789,7 +789,7 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
             }
             ClearKeyContext(tempCtx);
         }
-        LOGI("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT SUCCESS <<<");
+        LOGD("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT SUCCESS <<<");
         return E_OK;
     }
     LOGE("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT FAILED <<< Invalid param");
@@ -807,7 +807,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 
     std::string encryptType;
     LoadStringFromFile(path + SUFFIX_NEED_UPDATE, encryptType);
-    LOGI("[L4:BaseKey] DoRestoreKey: encrypt type : %{public}s, keyInfo empty: %{public}u",
+    LOGD("[L4:BaseKey] DoRestoreKey: encrypt type : %{public}s, keyInfo empty: %{public}u",
         encryptType.c_str(), keyInfo_.key.IsEmpty());
 
     uint32_t keyType = GetTypeFromDir();
@@ -825,7 +825,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     LoadStringFromFile(path + SUFFIX_NEED_RESTORE, need_restore);
     uint32_t restore_version = static_cast<uint32_t>(std::atoi(need_restore.c_str()));
     UpdateVersion update_version = static_cast<UpdateVersion>(std::atoi(need_restore.c_str()));
-    LOGI("[L4:BaseKey] DoRestoreKey: NeedRestore Path is: %{public}s, restore_version: %{public}u",
+    LOGD("[L4:BaseKey] DoRestoreKey: NeedRestore Path is: %{public}s, restore_version: %{public}u",
          path.c_str(), restore_version);
     if (std::filesystem::exists(path + SUFFIX_NEED_RESTORE, errCode)) {
         if (restore_version < RESTORE_VERSION) {
@@ -836,7 +836,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
             ret = DoUpdateRestoreVx(auth, path, update_version);
         }
     }
-    LOGI("[L4:BaseKey] DoRestoreKey: end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
+    LOGD("[L4:BaseKey] DoRestoreKey: end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
     return ret;
 }
 
@@ -1218,11 +1218,11 @@ int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath
 int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                                 KeyBlob &decryptedKey)
 {
-    LOGI("[L4:BaseKey] DecryptKeyBlob: >>> ENTER <<< keyPath=%{public}s", keyPath.c_str());
+    LOGD("[L4:BaseKey] DecryptKeyBlob: >>> ENTER <<< keyPath=%{public}s", keyPath.c_str());
     KeyContext keyCtx;
     auto candidate = GetCandidateDir();
     std::string path = candidate.empty() ? keyPath : candidate;
-    LOGI("[L4:BaseKey] DecryptKeyBlob: Key path is exist : %{public}d", FileExists(path));
+    LOGD("[L4:BaseKey] DecryptKeyBlob: Key path is exist : %{public}d", FileExists(path));
 
     if (!LoadKeyBlob(keyCtx.shield, path + PATH_SHIELD)) {
         LOGE("[L4:BaseKey] DecryptKeyBlob: <<< EXIT FAILED <<< Load KeyBlob shield failed");
@@ -1236,7 +1236,7 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
 
     KeyInfo planKeyInfo = {.key = planKey};
     SplitKeyBlob(planKey, keyCtx.rndEnc, keyCtx.nonce, AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
-    LOGE("[L4:BaseKey] DecryptKeyBlob: decrypted size : %{public}d, nonce size : %{public}d",
+    LOGD("[L4:BaseKey] DecryptKeyBlob: decrypted size : %{public}d, nonce size : %{public}d",
         keyCtx.rndEnc.size, keyCtx.nonce.size);
 
     auto ret = HuksMaster::GetInstance().DecryptKey(keyCtx, auth, planKeyInfo, false);
@@ -1252,7 +1252,7 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     decryptedKey = std::move(planKeyInfo.key);
     planKeyInfo.key.Clear();
     ClearKeyContext(keyCtx);
-    LOGI("[L4:BaseKey] DecryptKeyBlob: <<< EXIT SUCCESS <<<");
+    LOGD("[L4:BaseKey] DecryptKeyBlob: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -1397,7 +1397,7 @@ uint32_t BaseKey::GetTypeFromDir()
             break;
         }
     }
-    LOGI("[L4:BaseKey] GetTypeFromDir: el string is %{public}s, parse type %{public}d", el.c_str(), type);
+    LOGD("[L4:BaseKey] GetTypeFromDir: el string is %{public}s, parse type %{public}d", el.c_str(), type);
     return type;
 }
 

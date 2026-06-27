@@ -40,7 +40,7 @@ DelayHandler::~DelayHandler()
 
 void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
 {
-    LOGI("[L4:DelayHandler] StartDelayTask: >>> ENTER <<< userId=%{public}u", userId_);
+    LOGD("[L4:DelayHandler] StartDelayTask: >>> ENTER <<< userId=%{public}u", userId_);
     CancelDelayTask();
     std::lock_guard<std::mutex> lock(handlerMutex_);
     if (el4Key == nullptr) {
@@ -59,7 +59,7 @@ void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
             DeactiveEl3El4El5();
         }, DEFAULT_CHECK_INTERVAL, true);
 
-    LOGI("[L4:DelayHandler] StartDelayTask: <<< EXIT SUCCESS <<< userId=%{public}u, curTime=%{public}s ms,"
+    LOGD("[L4:DelayHandler] StartDelayTask: <<< EXIT SUCCESS <<< userId=%{public}u, curTime=%{public}s ms,"
          "exeTime=%{public}s ms",
         userId_, curTime.c_str(), expExeTime.c_str());
 }
@@ -95,7 +95,7 @@ void DelayHandler::DeactiveEl3El4El5()
         return;
     }
     cancelled_ = false;
-    LOGW("[L4:DelayHandler] DeactiveEl3El4El5: <<< EXIT SUCCESS <<< userId=%{public}u", userId_);
+    LOGD("[L4:DelayHandler] DeactiveEl3El4El5: <<< EXIT SUCCESS <<< userId=%{public}u", userId_);
 }
 
 int64_t DelayHandler::GetTickCount()

@@ -1219,7 +1219,7 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     }
 #ifdef USER_CRYPTO_MANAGER
     StorageDaemon::MemoryReclaimManager::ScheduleReclaimCurrentProcess(StorageDaemon::LOCK_USER_SCREEN_DELAY_SECOND);
-    LOGI("UserId: %{public}u", userId);
+    LOGD("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
@@ -1286,7 +1286,7 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("UserId: %{public}u", userId);
+    LOGD("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
@@ -1307,7 +1307,7 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
     }
     lockScreenStatus = false;
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("UserId: %{public}u", userId);
+    LOGD("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
@@ -1358,7 +1358,7 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
         return E_PERMISSION_DENIED;
     }
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("keyId :  %{public}s", GetAnonyString(keyId).c_str());
+    LOGD("keyId :  %{public}s", GetAnonyString(keyId).c_str());
     std::vector<int32_t> ids;
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != 0 || ids.empty()) {
@@ -1367,7 +1367,7 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
         return ret;
     }
     int32_t userId = ids[0];
-    LOGI("UserId: %{public}u", userId);
+    LOGD("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
@@ -1953,7 +1953,7 @@ int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceA
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    LOGI("Enter RegisterUeceActivationCallback");
+    LOGD("Enter RegisterUeceActivationCallback");
     if (ueceCallback == nullptr) {
         LOGE("callback is nullptr");
         return E_PARAMS_NULLPTR_ERR;
@@ -1973,7 +1973,7 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    LOGI("Enter UnregisterUeceActivationCallback");
+    LOGD("Enter UnregisterUeceActivationCallback");
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t err = sdCommunication.UnregisterUeceActivationCallback();
     StorageRadar::ReportFucBehavior("UnregisterUeceActivationCallback", DEFAULT_USERID,
@@ -2063,7 +2063,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
         return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("SetExtBundleStats start");
+    LOGD("SetExtBundleStats start");
     int32_t ret = StorageStatusManager::GetInstance().SetExtBundleStats(userId, stats);
     StorageRadar::ReportFucBehavior("SetExtBundleStats", userId, "SetExtBundleStats End", ret);
     if (ret != E_OK) {

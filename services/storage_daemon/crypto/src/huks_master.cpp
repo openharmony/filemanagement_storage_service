@@ -516,13 +516,13 @@ static int AppendNonceAadTokenEx(KeyContext &ctx, const UserAuth &auth, HksParam
 
 static int AppendNewNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSet *paramSet, const bool isEncrypt)
 {
-    LOGI("[L8:HuksMaster] AppendNewNonceAadToken: append the secure access params when encrypt/decrypt");
+    LOGD("[L8:HuksMaster] AppendNewNonceAadToken: append the secure access params when encrypt/decrypt");
     if (isEncrypt) {
         ctx.nonce = HuksMaster::GenerateRandomKey(CRYPTO_HKS_NONCE_LEN);
         LOGI("[L8:HuksMaster] AppendNewNonceAadToken: Encrypt generate new nonce size: %{public}d", ctx.nonce.size);
     }
     ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
-    LOGI("[L8:HuksMaster] AppendNewNonceAadToken: secret/token is empty : %{public}d / %{public}d",
+    LOGD("[L8:HuksMaster] AppendNewNonceAadToken: secret/token is empty : %{public}d / %{public}d",
          auth.secret.IsEmpty(), auth.token.IsEmpty());
     if (auth.secret.IsEmpty() && auth.token.IsEmpty()) {
         LOGI("[L8:HuksMaster] AppendNewNonceAadToken: token & secret is empty, Only append nonce & aad!");
@@ -941,7 +941,7 @@ int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyI
 
 int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
 {
-    LOGI("[L8:HuksMaster] DecryptKey: >>> ENTER <<<");
+    LOGD("[L8:HuksMaster] DecryptKey: >>> ENTER <<<");
 #ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("[L8:HuksMaster] DecryptKey: <<< EXIT FAILED <<< bad shield input, size %{public}d", ctx.shield.size);
@@ -968,13 +968,13 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
     if (ret != E_OK) {
         LOGE("[L8:HuksMaster] DecryptKey: <<< EXIT FAILED <<< HuksHalTripleStage failed");
     } else {
-        LOGI("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
+        LOGD("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
     }
 
     HksFreeParamSet(&paramSet2);
     return ret;
 #endif
-    LOGI("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
+    LOGD("[L8:HuksMaster] DecryptKey: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -1007,13 +1007,13 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     if (ret != E_OK) {
         LOGE("[L8:HuksMaster] DecryptKeyEx: <<< EXIT FAILED <<< HuksHalTripleStage failed");
     } else {
-        LOGI("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
+        LOGD("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
     }
 
     HksFreeParamSet(&paramSet2);
     return ret;
 #endif
-    LOGI("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
+    LOGD("[L8:HuksMaster] DecryptKeyEx: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 

@@ -177,10 +177,10 @@ void StorageMonitorService::MonitorAndManageStorage()
 
     ParseStorageParameters(totalSize, totalInode);
     struct SizeInfo sizeInfo = {freeSize, totalSize, 0, 0};
-    LOGI("space clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
+    LOGD("space clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
          static_cast<long long>(thresholds["clean_l"]), static_cast<long long>(thresholds["clean_m"]),
          static_cast<long long>(thresholds["clean_h"]));
-    LOGI("Inode clean_l, size=%{public}" PRId64 ", clean_m, size=%{public}" PRId64 ", clean_h, size=%{public}" PRId64,
+    LOGD("Inode clean_l, size=%{public}" PRId64 ", clean_m, size=%{public}" PRId64 ", clean_h, size=%{public}" PRId64,
          inodeThresholds_["clean_l"], inodeThresholds_["clean_m"], inodeThresholds_["clean_h"]);
     if (freeSize < thresholds["clean_h"] || freeInode < inodeThresholds_["clean_h"]) {
         CheckAndCleanCache(freeSize, totalSize, freeInode, totalInode);
@@ -188,10 +188,10 @@ void StorageMonitorService::MonitorAndManageStorage()
         SendCommonEventToCleanCache(CLEAN_LEVEL_RICH, sizeInfo, true);
     }
 
-    LOGI("space notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
+    LOGD("space notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
         static_cast<long long>(thresholds["notify_l"]), static_cast<long long>(thresholds["notify_m"]),
         static_cast<long long>(thresholds["notify_h"]));
-    LOGI("Inode notify_l, size=%{public}" PRId64 ", notify_m, size=%{public}" PRId64 ", notify_h,size=%{public}" PRId64,
+    LOGD("Inode notify_l, size=%{public}" PRId64 ", notify_m, size=%{public}" PRId64 ", notify_h,size=%{public}" PRId64,
          inodeThresholds_["notify_l"], inodeThresholds_["notify_m"], inodeThresholds_["notify_h"]);
     if (freeSize < thresholds["notify_h"] || freeInode < inodeThresholds_["notify_h"]) {
         CheckAndEventNotify(freeSize, totalSize, freeInode, totalInode);
@@ -389,14 +389,14 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     } else {
         HandleEventAndClean(CLEAN_LEVEL_HIGH, sizeInfo);
         ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_HIGH, storageUsage);
-        LOGI("Device running is lower than high threshold");
+        LOGD("Device running is lower than high threshold");
     }
     cleanLowLevelTime_.store(CLEAN_LOW_LEVEL_TIME);
 }
 
 void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData)
 {
-    LOGI("storage monitor service report radar storage usage start");
+    LOGD("storage monitor service report radar storage usage start");
     StorageService::StorageRadar::ReportStorageUsage(stage, extraData);
 }
 

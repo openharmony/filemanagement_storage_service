@@ -74,7 +74,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
-    LOGE("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}lld, (/data)totalDataSize=%{public}lld,"
+    LOGD("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}lld, (/data)totalDataSize=%{public}lld,"
         " (/)totalRootSize=%{public}lld",
         static_cast<long long>(totalSize), static_cast<long long>(dataSize), static_cast<long long>(rootSize));
     return E_OK;
@@ -134,7 +134,7 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
     if (freeMetadata > 0) {
         freeSize += freeMetadata;
     }
-    LOGE("StorageTotalStatusService::GetFreeSize success, rawFreeSize=%{public}lld, freeMetaSize=%{public}lld, "
+    LOGD("StorageTotalStatusService::GetFreeSize success, rawFreeSize=%{public}lld, freeMetaSize=%{public}lld, "
         "freeSize=%{public}lld", static_cast<long long>(freeSize - freeMetadata),
         static_cast<long long>(freeMetadata), static_cast<long long>(freeSize));
     return E_OK;
@@ -148,7 +148,7 @@ int32_t StorageTotalStatusService::GetTotalInodes(int64_t &totalInodes)
         StorageRadar::ReportGetStorageStatus("GetTotalInodes", DEFAULT_USERID, ret, "setting");
         return E_GET_INODE_ERROR;
     }
-    LOGI("StorageTotalStatusService::GetTotalInodes success, (/data)totalInodes=%{public}lld",
+    LOGD("StorageTotalStatusService::GetTotalInodes success, (/data)totalInodes=%{public}lld",
         static_cast<long long>(totalInodes));
     return ret;
 }
@@ -161,7 +161,7 @@ int32_t StorageTotalStatusService::GetFreeInodes(int64_t &freeInodes)
         StorageRadar::ReportGetStorageStatus("GetFreeInodes", DEFAULT_USERID, ret, "setting");
         return E_GET_INODE_ERROR;
     }
-    LOGI("StorageTotalStatusService::GetFreeInodes success, (/data)freeInodes=%{public}lld",
+    LOGD("StorageTotalStatusService::GetFreeInodes success, (/data)freeInodes=%{public}lld",
         static_cast<long long>(freeInodes));
     return ret;
 }
@@ -239,7 +239,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
         typeStr = "used space";
     }
-    LOGI("StorageStatusManager::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
+    LOGD("StorageStatusManager::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
         path, typeStr.c_str(), static_cast<long long>(size));
     return E_OK;
 }
@@ -262,7 +262,7 @@ int32_t StorageTotalStatusService::GetInodeOfPath(const char *path, int32_t type
         inodeCnt = (int64_t)diskInfo.f_files - (int64_t)diskInfo.f_ffree;
         typeStr = "used inodes";
     }
-    LOGI("StorageStatusManager::GetInodeOfPath path is %{public}s, type is %{public}s, inodeCnt is %{public}lld.",
+    LOGD("StorageStatusManager::GetInodeOfPath path is %{public}s, type is %{public}s, inodeCnt is %{public}lld.",
         path, typeStr.c_str(), static_cast<long long>(inodeCnt));
     return E_OK;
 }

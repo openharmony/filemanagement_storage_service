@@ -1397,7 +1397,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemon::LockUserScreen(uint32_t userId)
 {
-    LOGI("[L1:StorageDaemon] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemon] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance().LockUserScreen(userId);
     if (ret != E_OK) {
@@ -1421,10 +1421,10 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         }
     }
     MemoryReclaimManager::ScheduleReclaimCurrentProcess(LOCK_USER_SCREEN_DELAY_SECOND);
-    LOGI("[L1:StorageDaemon] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemon] LockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return ret;
 #else
-    LOGI("[L1:StorageDaemon] LockUserScreen: <<< EXIT SUCCESS <<< not supported");
+    LOGD("[L1:StorageDaemon] LockUserScreen: <<< EXIT SUCCESS <<< not supported");
     return E_OK;
 #endif
 }
@@ -1433,7 +1433,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret)
 {
-    LOGI("[L1:StorageDaemon] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
+    LOGD("[L1:StorageDaemon] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority(); // set tid priority to 40
@@ -1459,21 +1459,21 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                 "ret=%{public}d", userId, result);
         }
     }
-    LOGI("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return ret;
 #else
-    LOGI("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT SUCCESS <<< not supported");
+    LOGD("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT SUCCESS <<< not supported");
     return E_OK;
 #endif
 }
 
 int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
-    LOGI("[L1:StorageDaemon] GetLockScreenStatus: >>> ENTER <<< userId=%{public}u", userId);
+    LOGD("[L1:StorageDaemon] GetLockScreenStatus: >>> ENTER <<< userId=%{public}u", userId);
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemon] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u, status=%{public}d",
+        LOGD("[L1:StorageDaemon] GetLockScreenStatus: <<< EXIT SUCCESS <<< userId=%{public}u, status=%{public}d",
             userId, lockScreenStatus);
     } else {
         LOGE("[L1:StorageDaemon] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
@@ -1488,7 +1488,7 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 
 int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
-    LOGI("[L1:StorageDaemon] GenerateAppkey: >>> ENTER <<< userId=%{public}u, hashId=%{public}u, needReSet=%{public}d",
+    LOGD("[L1:StorageDaemon] GenerateAppkey: >>> ENTER <<< userId=%{public}u, hashId=%{public}u, needReSet=%{public}d",
         userId, hashId, needReSet);
 #ifdef USER_CRYPTO_MANAGER
     int ret = KeyManager::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
@@ -1497,18 +1497,18 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::str
         StorageRadar::ReportUserKeyResult("GenerateAppKey", userId, ret, EL5,
             "not support uece / EL5key is nullptr or ENONET");
     }
-    LOGI("[L1:StorageDaemon] GenerateAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyId=%{public}s",
+    LOGD("[L1:StorageDaemon] GenerateAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyId=%{public}s",
         userId, GetAnonyString(keyId).c_str());
     return ret;
 #else
-    LOGI("[L1:StorageDaemon] GenerateAppkey: <<< EXIT SUCCESS <<< not supported");
+    LOGD("[L1:StorageDaemon] GenerateAppkey: <<< EXIT SUCCESS <<< not supported");
     return E_OK;
 #endif
 }
 
 int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
-    LOGI("[L1:StorageDaemon] DeleteAppkey: >>> ENTER <<< userId=%{public}u, keyIdLen=%{public}zu",
+    LOGD("[L1:StorageDaemon] DeleteAppkey: >>> ENTER <<< userId=%{public}u, keyIdLen=%{public}zu",
          userId, keyId.size());
 #ifdef USER_CRYPTO_MANAGER
     int ret = ret = KeyManager::GetInstance().DeleteAppkey(userId, keyId);
@@ -1518,11 +1518,11 @@ int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
             "EL5key is nullptr / Failed to delete AppKey2");
         return ret;
     }
-    LOGI("[L1:StorageDaemon] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyId=%{public}s",
+    LOGD("[L1:StorageDaemon] DeleteAppkey: <<< EXIT SUCCESS <<< userId=%{public}u, keyId=%{public}s",
         userId, GetAnonyString(keyId).c_str());
     return ret;
 #else
-    LOGI("[L1:StorageDaemon] DeleteAppkey: <<< EXIT SUCCESS <<< not supported");
+    LOGD("[L1:StorageDaemon] DeleteAppkey: <<< EXIT SUCCESS <<< not supported");
     return E_OK;
 #endif
 }
@@ -1701,12 +1701,12 @@ int32_t StorageDaemon::IsFileOccupied(const std::string &path, const std::vector
 
 void StorageDaemon::SetPriority()
 {
-    LOGI("[L1:StorageDaemon] SetPriority: >>> ENTER <<<");
+    LOGD("[L1:StorageDaemon] SetPriority: >>> ENTER <<<");
     int tid = syscall(SYS_gettid);
     if (setpriority(PRIO_PROCESS, tid, PRIORITY_LEVEL) != 0) {
         LOGE("[L1:StorageDaemon] SetPriority: <<< EXIT FAILED <<< failed to set priority");
     } else {
-        LOGW("[L1:StorageDaemon] SetPriority: <<< EXIT SUCCESS <<< tid=%{public}d", tid);
+        LOGD("[L1:StorageDaemon] SetPriority: <<< EXIT SUCCESS <<< tid=%{public}d", tid);
     }
 }
 
@@ -1746,16 +1746,16 @@ int32_t StorageDaemon::UpdateUserPublicDirPolicy(uint32_t userId)
 
 int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
-    LOGI("[L1:StorageDaemon] RegisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L1:StorageDaemon] RegisterUeceActivationCallback: >>> ENTER <<<");
 #ifdef EL5_FILEKEY_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = KeyManager::GetInstance().RegisterUeceActivationCallback(ueceCallback);
     auto delay = StorageService::StorageRadar::ReportDuration("RegisterUeceActivationCallback",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
-    LOGE("[L1:StorageDaemon] SD_DURATION: RegisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+    LOGD("[L1:StorageDaemon] SD_DURATION: RegisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
         ret, delay.c_str());
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemon] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
+        LOGD("[L1:StorageDaemon] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemon] RegisterUeceActivationCallback: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
@@ -1768,16 +1768,16 @@ int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUe
 
 int StorageDaemon::UnregisterUeceActivationCallback()
 {
-    LOGI("[L1:StorageDaemon] UnregisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L1:StorageDaemon] UnregisterUeceActivationCallback: >>> ENTER <<<");
 #ifdef EL5_FILEKEY_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = KeyManager::GetInstance().UnregisterUeceActivationCallback();
     auto delay = StorageService::StorageRadar::ReportDuration("UnregisterUeceActivationCallback",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
-    LOGE("[L1:StorageDaemon] SD_DURATION:UnregisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+    LOGD("[L1:StorageDaemon] SD_DURATION:UnregisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
         ret, delay.c_str());
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemon] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
+        LOGD("[L1:StorageDaemon] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemon] UnregisterUeceActivationCallback: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }

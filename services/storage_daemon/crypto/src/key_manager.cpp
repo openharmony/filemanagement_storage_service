@@ -422,7 +422,7 @@ bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
     if (userElKeys_.find(userId) != userElKeys_.end()) {
         if (userElKeys_[userId].find(type) != userElKeys_[userId].end()) {
-            LOGI("[L3:KeyManager] HasElkey: user %{public}u el %{public}u already exists", userId, type);
+            LOGD("[L3:KeyManager] HasElkey: user %{public}u el %{public}u already exists", userId, type);
             return true;
         }
     }
@@ -1602,7 +1602,7 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
 
 bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler)
 {
-    LOGI("[L3:KeyManager] GetUserDelayHandler: >>> ENTER <<< [userId=%{public}u]", userId);
+    LOGD("[L3:KeyManager] GetUserDelayHandler: >>> ENTER <<< [userId=%{public}u]", userId);
     auto iterTask = userLockScreenTask_.find(userId);
     if (iterTask == userLockScreenTask_.end()) {
         userLockScreenTask_[userId] = std::make_shared<DelayHandler>(userId);
@@ -1613,7 +1613,7 @@ bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandl
             userId);
         return false;
     }
-    LOGI("[L3:KeyManager] GetUserDelayHandler: <<< EXIT SUCCESS <<<");
+    LOGD("[L3:KeyManager] GetUserDelayHandler: <<< EXIT SUCCESS <<<");
     return true;
 }
 
@@ -1711,7 +1711,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
-    LOGI("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
+    LOGD("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
@@ -1752,7 +1752,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         return ret;
     }
     saveLockScreenStatus[user] = true;
-    LOGW("[L3:KeyManager] UnlockUserScreen: <<< EXIT SUCCESS <<< [retval=0, saveLockScreenStatus=%{public}d]",
+    LOGD("[L3:KeyManager] UnlockUserScreen: <<< EXIT SUCCESS <<< [retval=0, saveLockScreenStatus=%{public}d]",
          saveLockScreenStatus[user]);
     return 0;
 }
@@ -1761,7 +1761,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
                                   const std::vector<uint8_t> &token,
                                   const std::vector<uint8_t> &secret)
 {
-    LOGI("[L3:KeyManager] UnlockEceSece: >>> ENTER <<< [user=%{public}u]", user);
+    LOGD("[L3:KeyManager] UnlockEceSece: >>> ENTER <<< [user=%{public}u]", user);
     auto el4Key = GetUserElKey(user, EL4_KEY);
     if (el4Key == nullptr) {
         saveLockScreenStatus[user] = true;
@@ -1782,7 +1782,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
             "Unlock failed, user=" + std::to_string(user) + ", ret=" + std::to_string(ret));
         return E_UNLOCK_SCREEN_FAILED;
     }
-    LOGI("[L3:KeyManager] UnlockEceSece: <<< EXIT SUCCESS <<< [user=%{public}u, saveESecretStatus=%{public}d]",
+    LOGD("[L3:KeyManager] UnlockEceSece: <<< EXIT SUCCESS <<< [user=%{public}u, saveESecretStatus=%{public}d]",
         user, saveESecretStatus[user]);
     return E_OK;
 }
@@ -1791,7 +1791,7 @@ int32_t KeyManager::UnlockUece(uint32_t user,
                                const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &secret)
 {
-    LOGI("[L3:KeyManager] UnlockUece: >>> ENTER <<< [user=%{public}u]", user);
+    LOGD("[L3:KeyManager] UnlockUece: >>> ENTER <<< [user=%{public}u]", user);
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);
@@ -1803,18 +1803,18 @@ int32_t KeyManager::UnlockUece(uint32_t user,
             return ret;
         }
     }
-    LOGI("[L3:KeyManager] UnlockUece: <<< EXIT SUCCESS <<<");
+    LOGD("[L3:KeyManager] UnlockUece: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
 int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 {
     getLockStatusTime_[LOCK_STATUS_START] = StorageService::StorageRadar::RecordCurrentTime();
-    LOGI("[L3:KeyManager] GetLockScreenStatus: >>> ENTER <<< [user=%{public}u]", user);
+    LOGD("[L3:KeyManager] GetLockScreenStatus: >>> ENTER <<< [user=%{public}u]", user);
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto iter = saveLockScreenStatus.find(user);
     lockScreenStatus = (iter == saveLockScreenStatus.end()) ? false: iter->second;
-    LOGW("[L3:KeyManager] GetLockScreenStatus: <<< EXIT SUCCESS <<< [lockScreenStatus=%{public}d]", lockScreenStatus);
+    LOGD("[L3:KeyManager] GetLockScreenStatus: <<< EXIT SUCCESS <<< [lockScreenStatus=%{public}d]", lockScreenStatus);
     getLockStatusTime_[LOCK_STATUS_END] = StorageService::StorageRadar::RecordCurrentTime();
     return 0;
 }
@@ -1827,7 +1827,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
             "IsUeceSupport check failed");
         return -ENOTSUP;
     }
-    LOGI("[L3:KeyManager] GenerateAppkey: >>> ENTER <<< [userId=%{public}u, hashId=%{public}u, needReSet=%{public}d]",
+    LOGD("[L3:KeyManager] GenerateAppkey: >>> ENTER <<< [userId=%{public}u, hashId=%{public}u, needReSet=%{public}d]",
         userId, hashId, needReSet);
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (needReSet) {
@@ -1851,7 +1851,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
                 "GenerateAppkey failed, userId=KEY_RECOVERY_USER_ID, ret=" + std::to_string(ret));
             return E_EL5_GENERATE_APP_KEY_ERR;
         }
-        LOGI("[L3:KeyManager] GenerateAppkey: <<< EXIT SUCCESS <<< [retval=0]");
+        LOGD("[L3:KeyManager] GenerateAppkey: <<< EXIT SUCCESS <<< [retval=0]");
         return 0;
     }
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
@@ -1868,7 +1868,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
             "GenerateAppkey failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
         return E_EL5_GENERATE_APP_KEY_ERR;
     }
-    LOGI("[L3:KeyManager] GenerateAppkey: <<< EXIT SUCCESS <<< [retval=0]");
+    LOGD("[L3:KeyManager] GenerateAppkey: <<< EXIT SUCCESS <<< [retval=0]");
     return 0;
 }
 
@@ -1900,7 +1900,7 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
 
 int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
 {
-    LOGI("[L3:KeyManager] DeleteAppkey: >>> ENTER <<< [userId=%{public}u]", user);
+    LOGD("[L3:KeyManager] DeleteAppkey: >>> ENTER <<< [userId=%{public}u]", user);
     if (!IsUeceSupport()) {
         LOGI("[L3:KeyManager] DeleteAppkey: UECE not supported or encryption not enabled");
         StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, ENOTSUP,
@@ -1921,7 +1921,7 @@ int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
             "DeleteAppkey failed, userId=" + std::to_string(user) + ", keyId=" + keyId);
         return E_EL5_DELETE_APP_KEY_ERR;
     }
-    LOGI("[L3:KeyManager] DeleteAppkey: <<< EXIT SUCCESS <<< [retval=0]");
+    LOGD("[L3:KeyManager] DeleteAppkey: <<< EXIT SUCCESS <<< [retval=0]");
     return 0;
 }
 
@@ -2190,7 +2190,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 
 int KeyManager::LockUserScreen(uint32_t user)
 {
-    LOGI("[L3:KeyManager] LockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
+    LOGD("[L3:KeyManager] LockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::error_code errCode;
     if (!IsUserCeDecrypt(user) || std::filesystem::exists(GetNatoNeedRestorePath(user, EL4_KEY), errCode)) {
@@ -2239,7 +2239,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
 
     saveLockScreenStatus[user] = false;
-    LOGI("[L3:KeyManager] LockUserScreen: <<< EXIT SUCCESS <<< [retval=0, saveLockScreenStatus=%{public}d]",
+    LOGD("[L3:KeyManager] LockUserScreen: <<< EXIT SUCCESS <<< [retval=0, saveLockScreenStatus=%{public}d]",
         saveLockScreenStatus[user]);
     return 0;
 }
@@ -2495,7 +2495,7 @@ bool KeyManager::IsUeceSupport()
         return false;
     }
     close(fd);
-    LOGI("[L3:KeyManager] IsUeceSupport: <<< EXIT SUCCESS <<< [uece supported=true]");
+    LOGD("[L3:KeyManager] IsUeceSupport: <<< EXIT SUCCESS <<< [uece supported=true]");
     return true;
 }
 
@@ -2564,7 +2564,7 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
 
 int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
-    LOGI("[L3:KeyManager] GetFileEncryptStatus: >>> ENTER <<< [userId=%{public}u, needCheckDirMount=%{public}d]",
+    LOGD("[L3:KeyManager] GetFileEncryptStatus: >>> ENTER <<< [userId=%{public}u, needCheckDirMount=%{public}d]",
          userId, needCheckDirMount);
     isEncrypted = true;
     const char rootPath[] = "/data/app/el2/";
@@ -2594,13 +2594,13 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
     }
     free(path);
     int ret = remove((el2Path + EL2_ENCRYPT_TMP_FILE).c_str());
-    LOGE("[L3:KeyManager] GetFileEncryptStatus: remove ret=%{public}d", ret);
+    LOGD("[L3:KeyManager] GetFileEncryptStatus: remove ret=%{public}d", ret);
     if (needCheckDirMount && !MountManager::GetInstance().CheckMountFileByUser(userId)) {
         LOGI("[L3:KeyManager] GetFileEncryptStatus: virtual directory does not exist");
         return E_OK;
     }
     isEncrypted = false;
-    LOGI("[L3:KeyManager] GetFileEncryptStatus: <<< EXIT SUCCESS <<< [isEncrypted=false]");
+    LOGD("[L3:KeyManager] GetFileEncryptStatus: <<< EXIT SUCCESS <<< [isEncrypted=false]");
     return E_OK;
 }
 
@@ -2612,7 +2612,7 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
         LOGE("[L3:KeyManager] IsUserCeDecrypt: user %{public}d el2 not decrypted", userId);
         return false;
     }
-    LOGI("[L3:KeyManager] IsUserCeDecrypt: user %{public}d el2 decrypted", userId);
+    LOGD("[L3:KeyManager] IsUserCeDecrypt: user %{public}d el2 decrypted", userId);
     return true;
 }
 
@@ -2740,32 +2740,32 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
 #ifdef EL5_FILEKEY_MANAGER
 int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
 {
-    LOGI("[L3:KeyManager] RegisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L3:KeyManager] RegisterUeceActivationCallback: >>> ENTER <<<");
     std::lock_guard<std::mutex> lock(ueceMutex_);
     if (ueceCallback == nullptr) {
         LOGE("[L3:KeyManager] RegisterUeceActivationCallback: <<< EXIT FAILED <<< [callback is null]");
         return E_PARAMS_INVALID;
     }
     if (ueceCallback_ != nullptr) {
-        LOGI("[L3:KeyManager] RegisterUeceActivationCallback: El5FileMgr callback already registered, renewing");
+        LOGD("[L3:KeyManager] RegisterUeceActivationCallback: El5FileMgr callback already registered, renewing");
         ueceCallback_ = ueceCallback;
         return E_OK;
     }
     ueceCallback_ = ueceCallback;
-    LOGI("[L3:KeyManager] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<< [callback registered]");
+    LOGD("[L3:KeyManager] RegisterUeceActivationCallback: <<< EXIT SUCCESS <<< [callback registered]");
     return E_OK;
 }
 
 int KeyManager::UnregisterUeceActivationCallback()
 {
-    LOGI("[L3:KeyManager] UnregisterUeceActivationCallback: >>> ENTER <<<");
+    LOGD("[L3:KeyManager] UnregisterUeceActivationCallback: >>> ENTER <<<");
     std::lock_guard<std::mutex> lock(ueceMutex_);
     if (ueceCallback_ == nullptr) {
-        LOGI("[L3:KeyManager] UnregisterUeceActivationCallback: callback already unregistered");
+        LOGD("[L3:KeyManager] UnregisterUeceActivationCallback: callback already unregistered");
         return E_OK;
     }
     ueceCallback_ = nullptr;
-    LOGI("[L3:KeyManager] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<< [callback unregistered]");
+    LOGD("[L3:KeyManager] UnregisterUeceActivationCallback: <<< EXIT SUCCESS <<< [callback unregistered]");
     return E_OK;
 }
 #endif
@@ -2786,7 +2786,7 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     std::thread callbackThread ([this, userId, resultCode, needGetAllAppKey, p = std::move(promise)]() mutable {
         int32_t retValue = E_OK;
-        LOGI("[L3:KeyManager] NotifyUeceActivation: ready for callback, El5 activation result=%{public}d,"
+        LOGD("[L3:KeyManager] NotifyUeceActivation: ready for callback, El5 activation result=%{public}d,"
             "userId=%{public}u, needGetAllAppKey=%{public}d", resultCode, userId, needGetAllAppKey);
         std::lock_guard<std::mutex> lock(ueceMutex_);
         if (ueceCallback_ != nullptr) {
@@ -2808,18 +2808,18 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
 
     auto delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEYS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
-    LOGI("[L3:KeyManager] NotifyUeceActivation: SD_DURATION: UNLOCK USER APP KEYS CB: delay time=%{public}s,"
+    LOGD("[L3:KeyManager] NotifyUeceActivation: SD_DURATION: UNLOCK USER APP KEYS CB: delay time=%{public}s,"
         "isAllAppKey=%{public}d",
         delay.c_str(), needGetAllAppKey);
 
     int32_t ret = future.get();
-    LOGI("[L3:KeyManager] NotifyUeceActivation: unlock app keys ret=%{public}d", ret);
+    LOGD("[L3:KeyManager] NotifyUeceActivation: unlock app keys ret=%{public}d", ret);
     callbackThread.join();
     if (resultCode != E_OK || ret == E_PARAMS_INVALID) {
         LOGI("[L3:KeyManager] NotifyUeceActivation: <<< EXIT <<< [retval=E_OK]");
         return E_OK;
     }
-    LOGI("[L3:KeyManager] NotifyUeceActivation: <<< EXIT SUCCESS <<< [retval=%{public}d]", ret);
+    LOGD("[L3:KeyManager] NotifyUeceActivation: <<< EXIT SUCCESS <<< [retval=%{public}d]", ret);
     return ret;
 # else
     LOGD("[L3:KeyManager] NotifyUeceActivation: EL5_FILEKEY_MANAGER not supported");
