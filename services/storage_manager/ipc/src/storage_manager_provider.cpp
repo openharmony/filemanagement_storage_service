@@ -767,28 +767,6 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
 #endif
 }
 
-int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
-                                                 const std::vector<uint8_t> &token,
-                                                 const std::vector<uint8_t> &secret)
-{
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-        return E_PERMISSION_DENIED;
-    }
-#ifdef USER_CRYPTO_MANAGER
-    LOGI("UserId: %{public}u", userId);
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
-        LOGE("User ID out of range");
-        return err;
-    }
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    err = sdCommunication.UnlockUserScreen(userId, token, secret);
-    return err;
-#else
-    return E_OK;
-#endif
-}
-
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     StorageRadar::ReportFucBehavior("GetFileEncryptStatus", userId, "GetFileEncryptStatus Begin", E_OK);
@@ -835,6 +813,27 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
 #endif
 }
 
+int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
+                                                 const std::vector<uint8_t> &token,
+                                                 const std::vector<uint8_t> &secret)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UnlockUserScreen(userId, token, secret);
+    return err;
+#else
+    return E_OK;
+#endif
+}
 
 int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
