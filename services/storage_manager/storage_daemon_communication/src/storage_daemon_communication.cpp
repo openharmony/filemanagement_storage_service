@@ -277,23 +277,6 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
     return storageDaemon_->LockUserScreen(userId);
 }
 
-int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
-                                                     const std::vector<uint8_t> &token,
-                                                     const std::vector<uint8_t> &secret)
-{
-    LOGI("enter");
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->UnlockUserScreen(userId, token, secret);
-}
-
 int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     LOGD("enter");
@@ -324,6 +307,22 @@ int32_t StorageDaemonCommunication::GetUserNeedActiveStatus(uint32_t userId, boo
     return storageDaemon_->GetUserNeedActiveStatus(userId, needActive);
 }
 
+int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
+                                                     const std::vector<uint8_t> &token,
+                                                     const std::vector<uint8_t> &secret)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UnlockUserScreen(userId, token, secret);
+}
 
 int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
