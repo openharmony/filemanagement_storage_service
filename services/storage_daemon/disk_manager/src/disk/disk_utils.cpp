@@ -39,6 +39,7 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -96,30 +97,21 @@ static std::string TrimString(const std::string &str)
     return str.substr(start, end - start + 1);
 }
 
-static bool ParseKeyValuePair(const std::string &key, const std::string &value,
-                              BurnOptions &options)
+static bool ParseKeyValuePair(const std::string &key, const std::string &value, BurnOptions &options)
 {
+    if (value.empty()) {
+        LOGE("[L3:DiskUtils] ParseBurnOptions: %{public}s is empty.", key.c_str());
+        return false;
+    }
     if (key == "diskName") {
-        if (value.empty()) {
-            LOGE("[L3:DiskUtils] ParseBurnOptions: diskName is empty");
-            return false;
-        }
         options.diskName = value;
         return true;
     }
     if (key == "burnPath") {
-        if (value.empty()) {
-            LOGE("[L3:DiskUtils] ParseBurnOptions: burnPath is empty");
-            return false;
-        }
         options.burnPath = value;
         return true;
     }
     if (key == "fsType") {
-        if (value.empty()) {
-            LOGE("[L3:DiskUtils] ParseBurnOptions: fsType is empty");
-            return false;
-        }
         options.fsType = value;
         return true;
     }
@@ -129,6 +121,10 @@ static bool ParseKeyValuePair(const std::string &key, const std::string &value,
     }
     if (key == "isIncBurnSupport") {
         options.isIncBurnSupport = (value == "true" || value == "1");
+        return true;
+    }
+    if (key == "isVerifyBurn") {
+        options.isVerifyBurn = (value == "true" || value == "1");
         return true;
     }
     if (key == "burnSpeed") {
@@ -142,7 +138,6 @@ static bool ParseKeyValuePair(const std::string &key, const std::string &value,
         options.burnSpeed = static_cast<uint32_t>(speed);
         return true;
     }
-
     LOGW("[L3:DiskUtils] ParseBurnOptions: unknown key ignored: %{public}s", key.c_str());
     return true;
 }
@@ -183,9 +178,11 @@ int32_t ParseBurnOptions(const std::string &burnOptions, BurnOptions &parsedOpti
         return E_PARAMS_INVALID;
     }
     LOGI("[L3:DiskUtils] ParseBurnOptions: <<< EXIT SUCCESS <<< diskName=%{public}s, burnPath=%{public}s, "
-         "fsType=%{public}s, burnSpeed=%{public}u, isIsoImage=%{public}d, isIncBurnSupport=%{public}d",
+         "fsType=%{public}s, burnSpeed=%{public}u, isIsoImage=%{public}d, isIncBurnSupport=%{public}d, "
+         "isVerifyBurn=%{public}d",
          parsedOptions.diskName.c_str(), parsedOptions.burnPath.c_str(), parsedOptions.fsType.c_str(),
-         parsedOptions.burnSpeed, parsedOptions.isIsoImage, parsedOptions.isIncBurnSupport);
+         parsedOptions.burnSpeed, parsedOptions.isIsoImage, parsedOptions.isIncBurnSupport,
+         parsedOptions.isVerifyBurn);
     return E_OK;
 }
 
@@ -1275,6 +1272,186 @@ int32_t DiskUtils::CleanTempDirectory()
         return err;
     }
     LOGI("CleanTempDirectory: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
+std::vector<std::string> DiskUtils::SplitString(const std::string& str, char delimiter)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream iss(str);
+    while (std::getline(iss, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+std::string DiskUtils::GetRelativePath(const std::string& fullPath, const std::string& baseDir)
+{
+    if (baseDir.empty()) {
+        return fullPath;
+    }
+    size_t pos = fullPath.find(baseDir);
+    if (pos == 0) {
+        std::string relative = fullPath.substr(baseDir.size());
+        if (!relative.empty() && relative[0] == '/') {
+            return relative.substr(1);
+        }
+        return relative;
+    }
+    return fullPath;
+}
+
+std::vector<std::string> DiskUtils::MergeOutputLines(const std::vector<std::string>& output)
+{
+    std::vector<std::string> mergedLines;
+    std::string accumulatedLine;
+    for (const auto& line : output) {
+        if (line.empty()) {
+            if (!accumulatedLine.empty()) {
+                mergedLines.push_back(accumulatedLine);
+                accumulatedLine.clear();
+            }
+            continue;
+        }
+        size_t firstNonSpace = line.find_first_not_of(' ');
+        char firstChar = (firstNonSpace != std::string::npos) ? line[firstNonSpace] : ' ';
+        bool isContinuation = (firstChar != '-' && firstChar != 'd' &&
+            line.find("Directory listing of") == std::string::npos &&
+            line.find('[') == std::string::npos);
+        if (isContinuation) {
+            accumulatedLine = accumulatedLine.empty() ? line : accumulatedLine + " " + line;
+        } else {
+            if (!accumulatedLine.empty()) {
+                mergedLines.push_back(accumulatedLine);
+            }
+            accumulatedLine = line;
+        }
+    }
+    if (!accumulatedLine.empty()) {
+        mergedLines.push_back(accumulatedLine);
+    }
+    return mergedLines;
+}
+
+std::string DiskUtils::ParseDirectoryPath(const std::string& line)
+{
+    size_t start = line.find("Directory listing of");
+    if (start == std::string::npos) {
+        return "";
+    }
+    size_t pathStart = line.find('/', start);
+    if (pathStart == std::string::npos) {
+        return "";
+    }
+    size_t pathEnd = line.find_last_of('/');
+    if (pathEnd <= pathStart) {
+        return "";
+    }
+    return line.substr(pathStart, pathEnd - pathStart);
+}
+
+bool DiskUtils::IsFileEntry(const std::string& line, char& entryType)
+{
+    size_t firstNonSpace = line.find_first_not_of(' ');
+    if (firstNonSpace == std::string::npos) {
+        return false;
+    }
+    std::string trimmedLine = line.substr(firstNonSpace);
+    entryType = trimmedLine[0];
+    return (entryType == '-' || entryType == 'd');
+}
+
+std::string DiskUtils::ParseFileName(const std::string& trimmedLine)
+{
+    size_t bracketEnd = trimmedLine.rfind(']');
+    if (bracketEnd == std::string::npos) {
+        return "";
+    }
+    std::string name = trimmedLine.substr(bracketEnd + 1);
+    size_t nameStart = name.find_first_not_of(' ');
+    if (nameStart != std::string::npos) {
+        name = name.substr(nameStart);
+    }
+    size_t nameEnd = name.find_last_not_of(' ');
+    if (nameEnd != std::string::npos) {
+        name = name.substr(0, nameEnd + 1);
+    }
+    if (name.empty() || name == "." || name == "..") {
+        return "";
+    }
+    size_t semicolonPos = name.find(';');
+    if (semicolonPos != std::string::npos) {
+        name = name.substr(0, semicolonPos);
+    }
+    return name;
+}
+
+int32_t DiskUtils::GenerateChecksums(const std::string& dirPath, const std::string& checksumFilePath)
+{
+    LOGI("GenerateChecksums: generating MD5 for %{public}s", dirPath.c_str());
+    std::vector<std::string> cmd = {"find", dirPath, "-type", "f", "-exec", "md5sum", "{}", ";"};
+    std::vector<std::string> output;
+    int32_t err = ForkExec(cmd, &output);
+    if (err != E_OK) {
+        LOGE("GenerateChecksums: find/md5sum failed for %{public}s", dirPath.c_str());
+        return E_ERR;
+    }
+    std::string checksumContent;
+    for (const auto& s : output) {
+        checksumContent += s + "\n";
+    }
+    std::string errMsg;
+    if (!WriteFileSync(checksumFilePath.c_str(),
+                       reinterpret_cast<const uint8_t*>(checksumContent.c_str()),
+                       checksumContent.size(), errMsg)) {
+        LOGE("GenerateChecksums: write checksum failed: %{public}s", errMsg.c_str());
+        return E_ERR;
+    }
+    return E_OK;
+}
+
+std::map<std::string, std::string> DiskUtils::ParseChecksumFile(
+    const std::string& checksumContent, const std::string& basePath)
+{
+    std::map<std::string, std::string> checksumMap;
+    std::vector<std::string> lines = SplitString(checksumContent, '\n');
+    for (const auto& line : lines) {
+        if (line.empty()) {
+            continue;
+        }
+        size_t pos = line.find("  ");
+        if (pos != std::string::npos) {
+            std::string md5 = line.substr(0, pos);
+            std::string filePath = line.substr(pos + 2);
+            std::string relativePath = GetRelativePath(filePath, basePath);
+            checksumMap[relativePath] = md5;
+        }
+    }
+    return checksumMap;
+}
+
+int32_t DiskUtils::CompareChecksums(
+    const std::map<std::string, std::string>& sourceMap,
+    const std::map<std::string, std::string>& discMap)
+{
+    constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
+    LOGI("CompareChecksums: comparing, sourceFiles=%{public}zu, discFiles=%{public}zu",
+         sourceMap.size(), discMap.size());
+    for (const auto& pair : sourceMap) {
+        const std::string& filename = pair.first;
+        const std::string& sourceMd5 = pair.second;
+        auto it = discMap.find(filename);
+        if (it == discMap.end()) {
+            LOGE("CompareChecksums: file not found on disc: %{public}s", filename.c_str());
+            return E_VERIFY_BURN_DATA_FAILED;
+        }
+        if (sourceMd5 != it->second) {
+            LOGE("CompareChecksums: MD5 mismatch for file: %{public}s", filename.c_str());
+            return E_VERIFY_BURN_DATA_FAILED;
+        }
+    }
+    LOGI("CompareChecksums: checksum comparison passed");
     return E_OK;
 }
 } // namespace StorageDaemon

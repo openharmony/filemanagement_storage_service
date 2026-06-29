@@ -22,6 +22,9 @@
 
 #include <cerrno>
 #include <sys/mount.h>
+#include <map>
+#include <sstream>
+#include <thread>
 #include <vector>
 
 namespace OHOS {
@@ -30,6 +33,9 @@ constexpr int UID_FILE_MANAGER = 1006;
 constexpr const char* MNT_EXTERNAL_FILE_CONTEXT = "context=u:object_r:mnt_external_file:s0";
 constexpr const char* MID_PATH = "/data/local/burn_tmp/midFile.iso";
 constexpr const char* BURN_TMP_DIR = "/data/local/burn_tmp";
+constexpr const char* VERIFY_MOUNT_PATH = "/mnt/data/burn_verify_mount";
+constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
+constexpr mode_t DEFAULT_DIR_PERMISSIONS = 0755;
 
 int32_t UdfOperator::DoMount(const std::string& devPath,
                              const std::string& mountPath,
@@ -152,7 +158,7 @@ int32_t UdfOperator::PrepareIsoImage(const std::string &devPath,
         LOGI("PrepareIsoImage: burn_tmp directory exists, removing it");
         RmDirRecurse(BURN_TMP_DIR);
     }
-    int32_t err = MkDir(BURN_TMP_DIR, 0755);
+    int32_t err = MkDir(BURN_TMP_DIR, DEFAULT_DIR_PERMISSIONS);
     if (err != 0) {
         LOGE("PrepareIsoImage:<<< EXIT FAILED <<< Create burn_tmp directory failed for devPath: %{public}s",
              devPath.c_str());
@@ -203,13 +209,13 @@ int32_t UdfOperator::DoCDBurn(const std::string &devPath,
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
         if (isDiskEmpty) {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-eject", "-data", speedOpt, MID_PATH};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-multi", "-data", speedOpt, MID_PATH};
         } else {
-            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-eject", "-data", speedOpt, MID_PATH};
+            cmd = {"wodim", "-v", "dev=" + devPath, "-tao", "-multi", "-data", speedOpt, MID_PATH};
         }
     } else {
         cmd = {"wodim", "-v", "dev=" + devPath,
-               "-multi", "-eject", "-data", speedOpt, burnOptions.burnPath};
+               "-multi", "-data", speedOpt, burnOptions.burnPath};
     }
     err = ForkExec(cmd, &output);
     for (const auto& s : output) {
@@ -220,16 +226,12 @@ int32_t UdfOperator::DoCDBurn(const std::string &devPath,
         RmDirRecurse(BURN_TMP_DIR);
         return err;
     }
-    int32_t res = DiskUtils::CleanTempDirectory();
-    if (res != E_OK) {
-        LOGE("DoCDBurn: CleanTempDirectory failed, non-critical, res=%{public}d", res);
-    }
-    RmDirRecurse(BURN_TMP_DIR);
     LOGI("DoCDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
     return E_OK;
 }
 
 int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty)
+ 
 {
     LOGI("DoDVDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
     int32_t res = DiskUtils::CleanTempDirectory();
@@ -260,7 +262,7 @@ int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
         LOGE("DoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-
+ 
     res = DiskUtils::CleanTempDirectory();
     if (res != E_OK) {
         LOGE("DoDVDBurn: CleanTempDirectory exit failed, non-critical, res=%{public}d", res);
@@ -271,7 +273,7 @@ int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
 
 int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOptions)
 {
-    LOGI("Burn devPath = %{public}s", devPath.c_str());
+    LOGI("Burn devPath = %{public}s, isVerifyBurn = %{public}d", devPath.c_str(), burnOptions.isVerifyBurn);
     int32_t err = 0;
     bool isDiskEmpty = false;
     bool isBlankCD = false;
@@ -279,16 +281,16 @@ int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
     if (blankRet == E_OK && isBlankCD) {
         isDiskEmpty = true;
     }
-    std::string diskType = GetCDType(devPath);
     std::string incBurnAddr;
-    if (diskType.find("CD") != std::string::npos) {
-        if (!isDiskEmpty) {
-            err = GetIncBurnAddr("dev=" + devPath, incBurnAddr);
-            if (err != E_OK) {
-                LOGE("Burn:<<< EXIT FAILED <<< devPath=%{public}s", devPath.c_str());
-                return err;
-            }
+    if (!isDiskEmpty) {
+        err = GetIncBurnAddr("dev=" + devPath, incBurnAddr);
+        if (err != E_OK) {
+            LOGE("Burn:<<< EXIT FAILED <<< devPath=%{public}s", devPath.c_str());
+            return err;
         }
+    }
+    std::string diskType = GetCDType(devPath);
+    if (diskType.find("CD") != std::string::npos) {
         err = DoCDBurn(devPath, burnOptions, isDiskEmpty, incBurnAddr);
     } else {
         err = DoDVDBurn(devPath, burnOptions, isDiskEmpty);
@@ -297,8 +299,250 @@ int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
         LOGE("Burn:<<< EXIT FAILED <<< devPath:=%{public}s", devPath.c_str());
         return err;
     }
+
+    if (burnOptions.isVerifyBurn) {
+        LOGI("Burn: starting verify process for devPath=%{public}s", devPath.c_str());
+        err = DoVerifyBurnData(devPath, burnOptions, isDiskEmpty);
+        if (err != E_OK) {
+            LOGE("Burn: verify failed, err=%{public}d", err);
+            DiskUtils::EjectCD(devPath);
+            return E_VERIFY_BURN_DATA_FAILED;
+        }
+    }
+
+    LOGI("Burn: ejecting disc for devPath=%{public}s", devPath.c_str());
+    DiskUtils::EjectCD(devPath);
+    
     LOGI("Burn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
     return E_OK;
 }
+
+int32_t UdfOperator::PrepareVerifyMountPath()
+{
+    if (IsDir(VERIFY_MOUNT_PATH)) {
+        RmDirRecurse(VERIFY_MOUNT_PATH);
+    }
+    int32_t err = MkDir(VERIFY_MOUNT_PATH, DEFAULT_DIR_PERMISSIONS);
+    if (err != 0) {
+        LOGE("PrepareVerifyMountPath: create verify mount path failed");
+        return E_ERR;
+    }
+    return E_OK;
+}
+
+int32_t UdfOperator::ExecuteIsoInfoList(const std::string& isoPath,
+                                        std::vector<std::string>& mergedLines)
+{
+    LOGI("ExtractIsoFiles: listing files in source ISO");
+    std::vector<std::string> cmd = {"isoinfo", "-R", "-i", isoPath, "-l"};
+    std::vector<std::string> rawOutput;
+    int32_t err = ForkExec(cmd, &rawOutput);
+    if (err != E_OK) {
+        LOGE("ExtractIsoFiles: isoinfo list failed");
+        return E_ERR;
+    }
+    std::vector<std::string> output;
+    for (const auto& s : rawOutput) {
+        std::vector<std::string> lines = DiskUtils::SplitString(s, '\n');
+        output.insert(output.end(), lines.begin(), lines.end());
+    }
+    for (const auto& s : output) {
+        LOGI("ExtractIsoFiles isoinfo list output: %{public}s", s.c_str());
+    }
+    mergedLines = DiskUtils::MergeOutputLines(output);
+    for (const auto& s : mergedLines) {
+        LOGI("ExtractIsoFiles merged line: %{public}s", s.c_str());
+    }
+    return E_OK;
+}
+
+int32_t UdfOperator::ProcessMergedLine(const std::string& isoPath, const std::string& sourceDir,
+                                       const std::string& line, std::string& currentPath)
+{
+    LOGI("ExtractIsoFiles: processing line: %{public}s", line.c_str());
+    if (line.find("Directory listing of") != std::string::npos) {
+        currentPath = DiskUtils::ParseDirectoryPath(line);
+        LOGI("ExtractIsoFiles: currentPath changed to: %{public}s", currentPath.c_str());
+        return E_OK;
+    }
+    char entryType;
+    if (!DiskUtils::IsFileEntry(line, entryType)) {
+        return E_OK;
+    }
+    size_t firstNonSpace = line.find_first_not_of(' ');
+    std::string trimmedLine = line.substr(firstNonSpace);
+    std::string name = DiskUtils::ParseFileName(trimmedLine);
+    if (name.empty()) {
+        return E_OK;
+    }
+    LOGI("ExtractIsoFiles: name=%{public}s, type=%{public}c, path=%{public}s",
+         name.c_str(), entryType, currentPath.c_str());
+    std::string fullIsoPath = currentPath + "/" + name + ";1";
+    std::string fullOutputPath = sourceDir + currentPath + "/" + name;
+    if (entryType == 'd') {
+        LOGI("ExtractIsoFiles: creating directory: %{public}s", fullOutputPath.c_str());
+        return MkDir(fullOutputPath, DEFAULT_DIR_PERMISSIONS);
+    }
+    size_t lastSlash = fullOutputPath.find_last_of('/');
+    if (lastSlash != std::string::npos) {
+        std::string dirPart = fullOutputPath.substr(0, lastSlash);
+        if (!IsDir(dirPart)) {
+            LOGI("ExtractIsoFiles: creating intermediate dir: %{public}s", dirPart.c_str());
+            if (MkDir(dirPart, DEFAULT_DIR_PERMISSIONS) != E_OK) {
+                return E_ERR;
+            }
+        }
+    }
+    LOGI("ExtractIsoFiles: extracting file: %{public}s to %{public}s", fullIsoPath.c_str(), fullOutputPath.c_str());
+    std::string extractCmd = "isoinfo -R -i \"" + isoPath + "\" -x \"" + fullIsoPath +
+                             "\" > \"" + fullOutputPath + "\"";
+    std::vector<std::string> cmd = {"/bin/sh", "-c", extractCmd};
+    std::vector<std::string> extractOutput;
+    int32_t extractErr = ForkExec(cmd, &extractOutput);
+    for (const auto& s : extractOutput) {
+        LOGI("ExtractIsoFiles extract output: %{public}s", s.c_str());
+    }
+    if (extractErr != E_OK) {
+        LOGE("ExtractIsoFiles: extract failed for %{public}s", fullIsoPath.c_str());
+        return E_ERR;
+    }
+    return E_OK;
+}
+
+int32_t UdfOperator::ExtractIsoFiles(const std::string& isoPath,
+                                     const std::string& sourceDir)
+{
+    std::vector<std::string> mergedLines;
+    int32_t err = ExecuteIsoInfoList(isoPath, mergedLines);
+    if (err != E_OK) {
+        return err;
+    }
+    std::string currentPath;
+    for (const auto& line : mergedLines) {
+        err = ProcessMergedLine(isoPath, sourceDir, line, currentPath);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    return E_OK;
+}
+
+int32_t UdfOperator::PrepareSourceDirectory(const BurnOptions& burnOptions, std::string& sourceDir)
+{
+    if (burnOptions.isIsoImage) {
+        sourceDir = std::string(BURN_TMP_DIR) + "/source_extract";
+        if (IsDir(sourceDir)) {
+            RmDirRecurse(sourceDir);
+        }
+        int32_t err = MkDir(sourceDir, DEFAULT_DIR_PERMISSIONS);
+        if (err != E_OK) {
+            LOGE("DoVerifyBurnData: create source extract dir failed");
+            return E_ERR;
+        }
+        err = ExtractIsoFiles(burnOptions.burnPath, sourceDir);
+        if (err != E_OK) {
+            LOGE("DoVerifyBurnData: extract ISO files failed");
+            return err;
+        }
+    } else {
+        sourceDir = burnOptions.burnPath;
+    }
+    return E_OK;
+}
+
+int32_t UdfOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
+                                                 const std::string& sourceChecksumPath,
+                                                 const std::string& discChecksumPath)
+{
+    int32_t err = DiskUtils::GenerateChecksums(sourceDir, sourceChecksumPath);
+    if (err != E_OK) {
+        LOGE("DoVerifyBurnData: generate source checksums failed");
+        return err;
+    }
+    err = DiskUtils::GenerateChecksums(VERIFY_MOUNT_PATH, discChecksumPath);
+    if (err != E_OK) {
+        LOGE("DoVerifyBurnData: generate disc checksums failed");
+        return err;
+    }
+    err = Unmount(VERIFY_MOUNT_PATH, "udf", false);
+    if (err != E_OK) {
+        LOGE("DoVerifyBurnData: unmount failed, err=%{public}d", err);
+        return err;
+    }
+    std::string sourceChecksumContent = ReadFileContent(sourceChecksumPath);
+    if (sourceChecksumContent.empty()) {
+        LOGE("DoVerifyBurnData: read source checksum file failed");
+        return E_ERR;
+    }
+    std::string discChecksumContent = ReadFileContent(discChecksumPath);
+    if (discChecksumContent.empty()) {
+        LOGE("DoVerifyBurnData: read disc checksum file failed");
+        return E_ERR;
+    }
+    std::map<std::string, std::string> sourceMap = DiskUtils::ParseChecksumFile(sourceChecksumContent, sourceDir);
+    std::map<std::string, std::string> discMap = DiskUtils::ParseChecksumFile(discChecksumContent, VERIFY_MOUNT_PATH);
+    LOGI("LogChecksumMap: sourceMap contents:");
+    for (const auto& pair : sourceMap) {
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+    }
+    LOGI("LogChecksumMap: discMap contents:");
+    for (const auto& pair : discMap) {
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+    }
+    return DiskUtils::CompareChecksums(sourceMap, discMap);
+}
+
+int32_t UdfOperator::DoVerifyBurnData(const std::string &devPath, const BurnOptions &burnOptions,
+                                      bool isDiskEmpty)
+{
+    LOGI("DoVerifyBurnData: >>> ENTER <<< devPath=%{public}s, isIsoImage=%{public}d, isDiskEmpty=%{public}d",
+         devPath.c_str(), burnOptions.isIsoImage, isDiskEmpty);
+    if (!isDiskEmpty && !burnOptions.isIsoImage) {
+        LOGI("DoVerifyBurnData: incremental burn, verifying source files only");
+    }
+    int32_t err = PrepareVerifyMountPath();
+    if (err != E_OK) {
+        LOGE("DoVerifyBurnData: prepare mount path failed");
+        return err;
+    }
+    LOGI("DoVerifyBurnData: mounting disc to verify path");
+    err = Mount(devPath, VERIFY_MOUNT_PATH, 0, "");
+    if (err != E_OK) {
+        LOGE("DoVerifyBurnData: mount failed, err=%{public}d", err);
+        RmDirRecurse(VERIFY_MOUNT_PATH);
+        return err;
+    }
+    std::string sourceDir;
+    err = PrepareSourceDirectory(burnOptions, sourceDir);
+    if (err != E_OK) {
+        Unmount(VERIFY_MOUNT_PATH, "udf", false);
+        RmDirRecurse(VERIFY_MOUNT_PATH);
+        return err;
+    }
+    std::string sourceChecksumPath = std::string(BURN_TMP_DIR) + "/source_checksums.txt";
+    std::string discChecksumPath = std::string(BURN_TMP_DIR) + "/disc_checksums.txt";
+    if (!IsDir(BURN_TMP_DIR)) {
+        LOGI("DoVerifyBurnData: burn_tmp not dir, recreating");
+        RmDirRecurse(BURN_TMP_DIR);
+        err = MkDir(BURN_TMP_DIR, DEFAULT_DIR_PERMISSIONS);
+        if (err != E_OK) {
+            LOGE("DoVerifyBurnData: create burn_tmp failed, err=%{public}d", err);
+            Unmount(VERIFY_MOUNT_PATH, "udf", false);
+            RmDirRecurse(VERIFY_MOUNT_PATH);
+            return E_ERR;
+        }
+    }
+    LOGI("DoVerifyBurnData: BURN_TMP_DIR=%{public}s, sourceChecksumPath=%{public}s",
+         BURN_TMP_DIR, sourceChecksumPath.c_str());
+    err = GenerateAndCompareChecksums(sourceDir, sourceChecksumPath, discChecksumPath);
+    if (err != E_OK) {
+        RmDirRecurse(VERIFY_MOUNT_PATH);
+        return err;
+    }
+    RmDirRecurse(VERIFY_MOUNT_PATH);
+    LOGI("DoVerifyBurnData: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
