@@ -16,68 +16,6 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ROOT_DIR = "${storage_service_path}/services"
 
-ohos_unittest("external_volume_info_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_service/storage_daemon"
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "private=public",
-    "protected=public",
-  ]
-
-  include_dirs = [
-    "$ROOT_DIR/storage_daemon/include",
-    "$ROOT_DIR/common/include",
-    "$ROOT_DIR/storage_manager/include",
-    "${storage_daemon_path}/include",
-    "${storage_daemon_path}/include/mock",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
-
-  sources = [
-    "$ROOT_DIR/storage_daemon/mock/disk_utils_mock.cpp",
-    "$ROOT_DIR/storage_daemon/mock/library_func_mock.cpp",
-    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/test/external_volume_info_test.cpp",
-    "${storage_daemon_path}/mock/file_utils_mock.cpp",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_header",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "json:nlohmann_json_static",
-  ]
-
-  if (pc_ext4_enable) {
-    defines += [ "PC_EXT4_ENABLE" ]
-  }
-}
-
 ohos_unittest("process_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -102,11 +40,8 @@ ohos_unittest("process_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/process_test.cpp",
-    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
   ]
 
   deps = [
@@ -121,127 +56,11 @@ ohos_unittest("process_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "json:nlohmann_json_static",
-  ]
-}
-
-ohos_unittest("volume_info_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_service/storage_daemon"
-
-  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
-
-  include_dirs = [
-    "$ROOT_DIR/storage_daemon/include",
-    "$ROOT_DIR/storage_daemon/utils/test/common",
-    "$ROOT_DIR/common/include",
-    "$ROOT_DIR/storage_manager/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
-
-  sources = [
-    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
-    "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/test/volume_info_test.cpp",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_header",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "cJSON:cjson",
-    "hicollie:libhicollie",
-    "hisysevent:libhisysevent",
-    "json:nlohmann_json_static",
-  ]
-}
-
-ohos_unittest("volume_manager_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_service/storage_daemon"
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "private=public",
-    "protected=public",
-  ]
-
-  include_dirs = [
-    "$ROOT_DIR/storage_daemon/include",
-    "$ROOT_DIR/storage_daemon/include/volume",
-    "$ROOT_DIR/common/include",
-    "$ROOT_DIR/storage_manager/include",
-    "${storage_daemon_path}/include/mock",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
-
-  sources = [
-    "$ROOT_DIR/storage_daemon/mock/storage_manager_client_mock.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_manager.cpp",
-    "$ROOT_DIR/storage_daemon/volume/test/volume_manager_test.cpp",
-    "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
-    "${storage_daemon_path}/mock/file_utils_mock.cpp",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "cJSON:cjson",
-    "hicollie:libhicollie",
-    "hisysevent:libhisysevent",
     "json:nlohmann_json_static",
   ]
 }
 
 group("storage_daemon_volume_test") {
   testonly = true
-  deps = [
-    ":external_volume_info_test",
-    ":process_test",
-    ":volume_info_test",
-    ":volume_manager_test",
-    "external_volume_info:external_volume_info_other_test",
-  ]
+  deps = [ ":process_test" ]
 }

@@ -22,63 +22,6 @@ int32_t StorageManagerClient::GetClient()
     return 0;
 }
 
-int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info)
-{
-    if (IStorageManagerClientMock::iStorageManagerClientMock_ == nullptr) {
-        return -1;
-    }
-    return IStorageManagerClientMock::iStorageManagerClientMock_->NotifyVolumeCreated(info);
-}
-
-int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyEncryptVolumeStateChanged(std::shared_ptr<VolumeInfo> volumeInfo)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state)
-{
-    if (IStorageManagerClientMock::iStorageManagerClientMock_ == nullptr) {
-        return -1;
-    }
-    return IStorageManagerClientMock::iStorageManagerClientMock_->NotifyVolumeStateChanged(volId, state);
-}
-
-int32_t StorageManagerClient::NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> volumeInfo)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                               const std::string &uuid, const std::string &fsType)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const bool isBadRemove)
-{
-    return 0;
-}
-
-int32_t StorageManagerClient::IsUsbFuseByType(const std::string &fsType, bool &enabled)
-{
-    return 0;
-}
-
 int32_t StorageManagerClient::NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx)
 {
     return 0;

@@ -89,12 +89,6 @@ ohos_unittest("netlink_handler_test") {
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_handler.cpp",
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_listener.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_handler_test.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_manager.cpp",
-    "$ROOT_DIR/storage_manager/innerkits_impl/src/disk.cpp",
-    "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
   deps = [
@@ -189,12 +183,6 @@ ohos_unittest("netlink_manager_test") {
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_manager.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_manager_test.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_listener_mock.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
-    "$ROOT_DIR/storage_daemon/volume/src/volume_manager.cpp",
-    "$ROOT_DIR/storage_manager/innerkits_impl/src/disk.cpp",
-    "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
   deps = [

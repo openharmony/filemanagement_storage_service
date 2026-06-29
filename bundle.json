@@ -14,8 +14,8 @@
     "subsystem": "filemanagement",
     "syscap": [
       "SystemCapability.FileManagement.StorageService.SpatialStatistics",
-      "SystemCapability.FileManagement.StorageService.Volume",
-      "SystemCapability.FileManagement.StorageService.Encryption"
+      "SystemCapability.FileManagement.StorageService.Encryption",
+      "SystemCapability.FileManagement.StorageService.Volume"
     ],
     "features": [
       "storage_service_fstools",
@@ -125,9 +125,6 @@
               "ext_bundle_stats.h",
               "bundle_stats.h",
               "storage_stats.h",
-              "disk.h",
-              "volume_core.h",
-              "volume_external.h",
               "storage_service_errno.h",
               "storage_service_constants.h"
             ],

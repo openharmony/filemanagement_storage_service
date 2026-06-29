@@ -22,9 +22,6 @@
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "netlink/netlink_data.h"
-#include "partition_params.h"
-#include "partition_table_info.h"
-#include "format_params.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -36,18 +33,9 @@ public:
     void DestroyDisk(dev_t device);
     void ChangeDisk(dev_t device, NetlinkData *data);
     void HandleDiskEvent(NetlinkData *data);
-    int32_t HandlePartition(const std::string &diskId);
     void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
     void ReplayUevent();
     std::shared_ptr<DiskInfo> MatchConfig(NetlinkData *data);
-    int32_t HandleGetPartitionTable(const std::string &diskId,
-        OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    int32_t HandleCreatePartition(const std::string &diskId,
-        const OHOS::StorageManager::PartitionParams &partitionParams);
-    int32_t HandleDeletePartition(const std::string &diskId, uint32_t partitionNum);
-    int32_t HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
-        const OHOS::StorageManager::FormatParams &formatParams);
-    int32_t HandleEject(const std::string &diskId);
 
 private:
     DiskManager() = default;

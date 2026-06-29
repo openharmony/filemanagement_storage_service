@@ -34,7 +34,7 @@ std::shared_ptr<StorageDaemon::StorageDaemonProvider> storageDaemonProvider =
 
 bool StorageDaemonProviderCreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_UMOUNT);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_RECOVER_KEY);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteBuffer(data, size);

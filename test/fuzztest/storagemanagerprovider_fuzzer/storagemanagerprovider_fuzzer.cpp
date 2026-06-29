@@ -135,34 +135,6 @@ bool StopUserFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool UnmountFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_UNMOUNT);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool PartitionFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_PARTITION);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
 bool CreateShareFileFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_CREATE_SHARE_FILE);
@@ -180,20 +152,6 @@ bool CreateShareFileFuzzTest(const uint8_t *data, size_t size)
 bool DeleteShareFileFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_DELETE_SHARE_FILE);
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-    MessageOption option;
-
-    storageManagerProvider->OnRemoteRequest(code, datas, reply, option);
-    return true;
-}
-
-bool NotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
-{
-    uint32_t code = static_cast<uint32_t>(IStorageManagerIpcCode::COMMAND_NOTIFY_VOLUME_CREATED);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
     datas.WriteBuffer(data, size);
@@ -253,11 +211,8 @@ void FuzzerTest1(const uint8_t *data, size_t size)
     OHOS::StorageManager::RemoveUserFuzzTest(data, size);
     OHOS::StorageManager::PrepareStartUserFuzzTest(data, size);
     OHOS::StorageManager::StopUserFuzzTest(data, size);
-    OHOS::StorageManager::UnmountFuzzTest(data, size);
-    OHOS::StorageManager::PartitionFuzzTest(data, size);
     OHOS::StorageManager::CreateShareFileFuzzTest(data, size);
     OHOS::StorageManager::DeleteShareFileFuzzTest(data, size);
-    OHOS::StorageManager::NotifyVolumeCreatedFuzzTest(data, size);
 }
 
 void FuzzerTest2(const uint8_t *data, size_t size)

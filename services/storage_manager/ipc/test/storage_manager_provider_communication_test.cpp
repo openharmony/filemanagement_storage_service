@@ -20,7 +20,6 @@
 #include "accesstoken_kit.h"
 #include "bundle_manager_connector.h"
 #include "bundlemgr/bundle_mgr_interface.h"
-#include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -28,7 +27,6 @@
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
-#include "volume_core.h"
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>

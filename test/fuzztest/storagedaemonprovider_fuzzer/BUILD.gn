@@ -33,11 +33,15 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${target_gen_dir}",
   ]
   cflags = [
+    "-fno-lto",
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
+  ldflags = [ "-fno-lto" ]
+
+  configs = [ "${storage_service_path}/test/fuzztest:storage_daemon_fuzz_no_lto" ]
 
   sources = [
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
@@ -59,10 +63,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/user/src/system_mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/user/src/user_path_resolver.cpp",
-    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/process.cpp",
-    "${storage_daemon_path}/volume/src/volume_info.cpp",
-    "${storage_daemon_path}/volume/src/volume_manager.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/udf_operator.cpp",

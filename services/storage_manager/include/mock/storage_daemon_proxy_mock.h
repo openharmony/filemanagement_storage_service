@@ -18,7 +18,6 @@
 
 #include "iremote_proxy.h"
 #include "istorage_daemon.h"
-#include "burn_params.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -27,15 +26,7 @@ public:
     StorageDaemonProxy(const sptr<IRemoteObject> &impl);
     virtual int32_t Shutdown() override;
 
-    virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
-    virtual int32_t UMount(const std::string &volId) override;
-    virtual int32_t TryToFix(const std::string &volId, uint32_t flags) override;
-    virtual int32_t Check(const std::string &volId) override;
-    virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
-    virtual int32_t Partition(const std::string &diskId, int32_t type) override;
-    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
     virtual int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
-    virtual int32_t GetOddCapacity(const std::string& volumeId, int64_t &totalSize, int64_t &freeSize) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -110,7 +101,6 @@ public:
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &vec, int64_t &totalSize,
         const std::map<int32_t, std::string> &bundleNameAndUid, int32_t type) override;
-    virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
     virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
     virtual int32_t UnregisterUeceActivationCallback();
     virtual int32_t CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid) override;
@@ -151,28 +141,6 @@ public:
     virtual int32_t GetBlockInfoByType(const std::string &type, const std::string &diskId,
                                        std::string &blockInfos) override;
 
-    //disk crypt api
-    virtual int32_t Encrypt(const std::string &volumeId, const std::string &pazzword) override;
-    virtual int32_t GetCryptProgressById(const std::string &volumeId, int32_t &progress) override;
-    virtual int32_t GetCryptUuidById(const std::string &volumeId, std::string &uuid) override;
-    virtual int32_t BindRecoverKeyToPasswd(const std::string &volumeId,
-                                const std::string &pazzword,
-                                const std::string &recoverKey) override;
-    virtual int32_t UpdateCryptPasswd(const std::string &volumeId,
-                                    const std::string &pazzword,
-                                    const std::string &newPazzword) override;
-    virtual int32_t ResetCryptPasswd(const std::string &volumeId,
-                                    const std::string &recoverKey,
-                                    const std::string &newPazzword) override;
-    virtual int32_t VerifyCryptPasswd(const std::string &volumeId, const std::string &pazzword) override;
-    virtual int32_t Unlock(const std::string &volumeId, const std::string &pazzword) override;
-    virtual int32_t Decrypt(const std::string &volumeId, const std::string &pazzword) override;
-    // disk partition api
-    virtual int32_t GetPartitionTable(const std::string &diskId, PartitionTableInfo &partitionTableInfo) override;
-    virtual int32_t CreatePartition(const std::string &diskId, const PartitionParams &partitionParams) override;
-    virtual int32_t DeletePartition(const std::string &diskId, uint32_t partitionNum) override;
-    virtual int32_t FormatPartition(const std::string &diskId, uint32_t partitionNum,
-                                    const FormatParams &formatParams) override;
     virtual int32_t GetPartitionTableInfo(const std::string &devPath, std::string &execRet) override;
     virtual int32_t CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
                                     int64_t endSector, const std::string &typeCode) override;

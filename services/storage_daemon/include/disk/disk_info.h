@@ -21,10 +21,6 @@
 #include <string>
 #include <sys/types.h>
 
-#include "partition_params.h"
-#include "partition_table_info.h"
-#include "format_params.h"
-
 namespace OHOS {
 namespace StorageDaemon {
 class DiskInfo {
@@ -57,11 +53,6 @@ public:
     int ReadPartitionCD(const std::string &ejectStatus);
     int ReadPartitionUSB();
     int CreateVolume(dev_t dev, uint32_t partitionNum);
-    int Partition();
-    int32_t GetPartitionTable(OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    int32_t CreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams);
-    int32_t DeletePartition(uint32_t partitionNum);
-    int32_t FormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams);
     dev_t GetDevice() const;
     std::string GetDiskId() const;
     std::string GetDevPath() const;
@@ -73,7 +64,6 @@ public:
     std::string GetDiskName() const;
     bool GetRemovable() const;
     std::string GetExtraInfo() const;
-    int EjectDisk();
     std::list<std::string> GetVolumeIds() const;
 
 private:
@@ -95,10 +85,6 @@ private:
     std::vector<std::string> sgdiskLines_;
     std::map<uint32_t, std::string> vendorMap_;
     DiskType diskType_;
-    uint64_t totalSector_ {0};
-    uint64_t lastUsableSector_ {0};
-    uint32_t sectorSize_ {512};
-    uint32_t alignSector_ {2048};
     bool removable_ = true;
     std::string extraInfo_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
@@ -112,21 +98,6 @@ private:
     void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
     bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
     void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
-    bool ParsePartitionInfo(const std::string &context, OHOS::StorageManager::PartitionInfo &info);
-    bool SetTotalSector(std::vector<std::string> &content);
-    bool SetSectorSize(std::vector<std::string> &content);
-    bool SetAlignSector(std::vector<std::string> &content);
-    void SetPartitions(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    void SetTableType(std::vector<std::string> &content, OHOS::StorageManager::PartitionTableInfo &partitionTableInfo);
-    bool IsPartitionNumExists(uint32_t partitionNum);
-    int32_t ExecAsyncGetPartitionTable(std::vector<std::string> &output);
-    bool SetUsableSector(std::vector<std::string> &content);
-    bool IsOptionsValid(const OHOS::StorageManager::PartitionParams &partitionParams);
-    int32_t ExecAsyncCreatePartition(const OHOS::StorageManager::PartitionParams &partitionParams);
-    int32_t ExecAsyncDeletePartition(uint32_t partitionNum);
-    int32_t ExecAsyncFormatPartition(uint32_t partitionNum, const OHOS::StorageManager::FormatParams &formatParams);
-    std::vector<std::string> GetFormatCMD(const std::string &fsType, const std::string &devPath,
-                                          const std::string &volName);
     void SetExtraInfo();
 };
 } // STORAGE_DAEMON

@@ -15,6 +15,7 @@
 
 #include <climits>
 #include <cinttypes>
+#include <cstring>
 #include <fstream>
 #include <future>
 #include <libgen.h>
@@ -25,8 +26,10 @@
 #include "disk_manager/disk/disk_utils.h"
 
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
+#include <sys/xattr.h>
 #include <scsi/sg.h>
 #include <unistd.h>
 #include <linux/cdrom.h>
@@ -39,6 +42,10 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+
+constexpr int32_t MTP_QUERY_RESULT_LEN = 10;
+constexpr const char *MTP_PATH_PREFIX = "/mnt/data/external/mtp";
+#define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 
 constexpr const char *BLOCK_DEVICE_PREFIX = "/dev/block/";
 constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
@@ -1182,6 +1189,75 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
     if (ret != E_OK) {
         LOGI("GetCapacity: <<< EXIT FAILED <<<");
     }
+    return E_OK;
+}
+
+bool DiskUtils::IsMtpDeviceInUse(const std::string &diskPath)
+{
+    if (diskPath.rfind(MTP_PATH_PREFIX, 0) != 0) {
+        return false;
+    }
+
+    std::string key = "user.queryMtpIsInUse";
+    char value[MTP_QUERY_RESULT_LEN] = { 0 };
+    int32_t len = getxattr(diskPath.c_str(), key.c_str(), value, MTP_QUERY_RESULT_LEN);
+    if (len < 0) {
+        LOGE("[L3:DiskUtils] IsMtpDeviceInUse: Failed to getxattr for diskPath = %{public}s", diskPath.c_str());
+        return false;
+    }
+
+    if ("true" == std::string(value)) {
+        LOGI("[L3:DiskUtils] IsMtpDeviceInUse: MTP device in use for diskPath=%{public}s", diskPath.c_str());
+        return true;
+    }
+    return false;
+}
+
+int32_t DiskUtils::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    LOGI("[L3:DiskUtils] QueryUsbIsInUse: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+
+    isInUse = true;
+    if (diskPath.empty()) {
+        LOGE("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT FAILED <<< diskPath is empty");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    char realPath[PATH_MAX] = { 0 };
+    if (realpath(diskPath.c_str(), realPath) == nullptr) {
+        LOGE("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT FAILED <<< realpath failed, errno=%{public}d", errno);
+        return E_PARAMS_INVALID;
+    }
+    if (strncmp(realPath, diskPath.c_str(), diskPath.size()) != 0) {
+        LOGE("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT FAILED <<< path mismatch");
+        return E_PARAMS_INVALID;
+    }
+    if (IsMtpDeviceInUse(diskPath)) {
+        isInUse = true;
+        LOGI("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT SUCCESS <<< MTP device in use");
+        return E_OK;
+    }
+    int fd = open(realPath, O_RDONLY);
+    if (fd < 0) {
+        LOGE("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
+        return E_OPEN_FAILED;
+    }
+    int inUse = -1;
+    if (ioctl(fd, STORAGE_MANAGER_IOC_CHK_BUSY, &inUse) < 0) {
+        LOGE("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT FAILED <<< ioctl failed, errno=%{public}d", errno);
+        close(fd);
+        return E_IOCTL_FAILED;
+    }
+
+    if (inUse) {
+        LOGI("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT SUCCESS <<< inUse=%{public}d", inUse);
+        close(fd);
+        isInUse = true;
+        return E_OK;
+    }
+    LOGI("[L3:DiskUtils] QueryUsbIsInUse: usb not inUse");
+    isInUse = false;
+    close(fd);
+    LOGI("[L3:DiskUtils] QueryUsbIsInUse: <<< EXIT SUCCESS <<< not in use");
     return E_OK;
 }
 

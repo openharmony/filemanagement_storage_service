@@ -19,8 +19,6 @@
 #include "parameters.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
-#include "partition_info.h"
-#include "partition_table_info.h"
 
 namespace {
 using namespace std;
@@ -425,16 +423,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_00
  * @tc.level Level 1
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Mount_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string volumeId = "vol-2-1";
-    int32_t flag = 1;
-    int32_t result = sdCommunication.Mount(volumeId, flag);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Unmount_0000
@@ -445,15 +433,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
  * @tc.level Level 1
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Unmount_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string volumeId = "vol-2-2";
-    int32_t result = sdCommunication.Unmount(volumeId);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_TryToFix_0000
@@ -464,16 +443,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
  * @tc.level Level 1
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_TryToFix_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string volumeId = "vol-2-1";
-    int32_t flag = 1;
-    int32_t result = sdCommunication.TryToFix(volumeId, flag);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_TryToFix_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Check_0000
@@ -484,15 +453,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, tes
  * @tc.level Level 1
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Check_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string volumeId = "vol-2-3";
-    int32_t result = sdCommunication.Check(volumeId);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Partition_0000
@@ -503,16 +463,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
  * @tc.level Level 1
  * @tc.require: SR000GGOUT
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Partition_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string diskId = "disk-2-4";
-    int32_t type = 1;
-    int32_t result = sdCommunication.Partition(diskId, type);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Format_0000
@@ -523,16 +473,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    string volumeId = "vol-2-5";
-    string fsType = "fsType-1";
-    int32_t result = sdCommunication.Format(volumeId, fsType);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_SetVolumeDescription_0000
@@ -543,16 +483,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testi
  * @tc.level Level 1
  * @tc.require: AR000H09L6
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    string fsUuid = "uuid-1";
-    string description = "description-1";
-    int32_t result = sdCommunication.SetVolumeDescription(fsUuid, description);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_QueryUsbIsInUse_0000
@@ -563,16 +493,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
  * @tc.level Level 1
  * @tc.require: AR20250226995120
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryUsbIsInUse_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string diskPath = "/mnt/data/external/F573-04E1";
-    bool isInUse = true;
-    int32_t result = sdCommunication.QueryUsbIsInUse(diskPath, isInUse);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_QueryUsbIsInUse_0000 SUCCESS";
-}
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
@@ -932,19 +852,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile
  * @tc.level Level 1
  * @tc.require: issueI9G5A0
  */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountUsbFuse_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-usb-001";
-    int fuseFd = -1;
-    std::string fsUuid;
-    int32_t result = sdCommunication.MountUsbFuse(volumeId, fsUuid, fuseFd);
-    EXPECT_EQ(result, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000 SUCCESS";
-}
 
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_IsFileOccupied_0000
@@ -1017,271 +924,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ListUserdataDirInf
     int32_t ret = sdCommunication.ListUserdataDirInfo(scanDirs);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Encrypt_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Encrypt_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    string volumeId = "vol-2-5";
-    std::string pazzword = "testPasswd";
-    int32_t result = sdCommunication.Encrypt(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Encrypt_0000 SUCCESS";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptProgressById_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetCryptProgressById_0000 SUCCESS";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    string volumeId = "vol-2-5";
-    int32_t progress = 0;
-    int32_t result = sdCommunication.GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetCryptProgressById_0000 SUCCESS";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetCryptUuidById_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetCryptUuidById_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string uuid;
-    int32_t result = sdCommunication.GetCryptUuidById(volumeId, uuid);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetCryptUuidById_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_BindRecoverKeyToPasswd_0000,
-    testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_BindRecoverKeyToPasswd_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string pazzword = "testPasswd";
-    std::string recoverKey = "testRecoverKey";
-    int32_t result = sdCommunication.BindRecoverKeyToPasswd(volumeId, pazzword, recoverKey);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_BindRecoverKeyToPasswd_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateCryptPasswd_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateCryptPasswd_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string pazzword = "oldPasswd";
-    std::string newPazzword = "newPasswd";
-    int32_t result = sdCommunication.UpdateCryptPasswd(volumeId, pazzword, newPazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateCryptPasswd_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetCryptPasswd_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ResetCryptPasswd_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string recoverKey = "testRecoverKey";
-    std::string newPazzword = "newPasswd";
-    int32_t result = sdCommunication.ResetCryptPasswd(volumeId, recoverKey, newPazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ResetCryptPasswd_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_VerifyCryptPasswd_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_VerifyCryptPasswd_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string pazzword = "testPasswd";
-    int32_t result = sdCommunication.VerifyCryptPasswd(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_VerifyCryptPasswd_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unlock_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Unlock_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string pazzword = "testPasswd";
-    int32_t result = sdCommunication.Unlock(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unlock_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Decrypt_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Decrypt_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string volumeId = "vol-2-5";
-    std::string pazzword = "testPasswd";
-    int32_t result = sdCommunication.Decrypt(volumeId, pazzword);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Decrypt_0000";
-}
-
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOddCapacity_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOddCapacity_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    std::string volumeId = "test-volume";
-    int64_t totalSize = 0;
-    int64_t freeSize = 0;
-    int32_t result = sdCommunication.GetOddCapacity(volumeId, totalSize, freeSize);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOddCapacity_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_GetPartitionTable_0000
- * @tc.name: Daemon_communication_GetPartitionTable_0000
- * @tc.desc: Test function of GetPartitionTable interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetPartitionTable_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "disk-8-0";
-    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
-    int32_t ret = sdCommunication.GetPartitionTable(diskId, partitionTableInfo);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_GetPartitionTable_0001
- * @tc.name: Daemon_communication_GetPartitionTable_0001
- * @tc.desc: Test function of GetPartitionTable interface with empty diskId.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetPartitionTable_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetPartitionTable_0001";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "";
-    OHOS::StorageManager::PartitionTableInfo partitionTableInfo;
-    int32_t ret = sdCommunication.GetPartitionTable(diskId, partitionTableInfo);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetPartitionTable_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_CreatePartition_0000
- * @tc.name: Daemon_communication_FormatPartition_0001
- * @tc.desc: Test function of FormatPartition interface with empty fsType.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_FormatPartition_0001";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "disk-8-0";
-    uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatParams formatParams;
-    std::string fsType = "";
-    formatParams.SetFsType(fsType);
-
-    int32_t result = sdCommunication.FormatPartition(diskId, partitionNum, formatParams);
-    EXPECT_EQ(result, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_FormatPartition_0000
- * @tc.name: Daemon_communication_FormatPartition_0000
- * @tc.desc: Test function of FormatPartition interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_FormatPartition_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_FormatPartition_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "disk-8-0";
-    uint32_t partitionNum = 1;
-    OHOS::StorageManager::FormatParams formatParams;
-    std::string fsType = "hmfs";
-    formatParams.SetFsType(fsType);
-
-    int32_t result = sdCommunication.FormatPartition(diskId, partitionNum, formatParams);
-    EXPECT_EQ(result, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_FormatPartition_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_DeletePartition_0000
- * @tc.name: Daemon_communication_DeletePartition_0000
- * @tc.desc: Test function of DeletePartition interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeletePartition_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeletePartition_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "disk-8-0";
-    uint32_t partitionNum = 1;
-    int32_t result = sdCommunication.DeletePartition(diskId, partitionNum);
-    EXPECT_EQ(result, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeletePartition_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Daemon_communication_CreatePartition_0000
- * @tc.name: Daemon_communication_CreatePartition_0000
- * @tc.desc: Test function of CreatePartition interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreatePartition_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreatePartition_0000";
-    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-
-    std::string diskId = "disk-8-0";
-    OHOS::StorageManager::PartitionParams partitionParams;
-    partitionParams.SetPartitionNum(1);
-    partitionParams.SetStartSector(2048);
-    partitionParams.SetEndSector(4096);
-    partitionParams.SetTypeCode("0x07");
-
-    int32_t result = sdCommunication.CreatePartition(diskId, partitionParams);
-    EXPECT_EQ(result, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreatePartition_0000";
 }
 
 } // namespace

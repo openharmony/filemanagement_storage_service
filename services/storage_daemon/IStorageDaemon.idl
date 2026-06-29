@@ -14,11 +14,6 @@
  */
 rawdata OHOS.StorageManager.StorageFileRawData;
 sequenceable UserdataDirInfo..OHOS.StorageManager.UserdataDirInfo;
-sequenceable PartitionParams..OHOS.StorageManager.PartitionParams;
-sequenceable PartitionInfo..OHOS.StorageManager.PartitionInfo;
-sequenceable PartitionTableInfo..OHOS.StorageManager.PartitionTableInfo;
-sequenceable FormatParams..OHOS.StorageManager.FormatParams;
-sequenceable BurnParams..OHOS.StorageManager.BurnParams;
 import ../storage_manager/IUeceActivationCallback;
 sequenceable StatisticInfo..OHOS.StorageManager.NextDqBlk;
 sequenceable StatisticInfo..OHOS.StorageManager.DirSpaceInfo;
@@ -29,12 +24,6 @@ sequenceable StatisticInfo..OHOS.StorageManager.LargeDirInfo;
 
 interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 1] void Shutdown();
-     [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);
-     [ipccode 3] void UMount([in] String volId);
-     [ipccode 4] void Check([in] String volId);
-     [ipccode 5] void Format([in] String volId, [in] String fsType);
-     [ipccode 6] void Partition([in] String diskId, [in] int type);
-     [ipccode 7] void SetVolumeDescription([in] String volId, [in] String description);
      [ipccode 10] void StartUser([in] int userId);
      [ipccode 11] void StopUser([in] int userId);
      [ipccode 8] void PrepareUserDirs([in] int userId, [in] unsigned int flags);
@@ -88,11 +77,9 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                       [out] String[] outputList, [out] boolean isOccupy);
      [ipccode 49] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
      [ipccode 50] void UMountDisShareFile([in] int userId, [in] String networkId);
-     [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
      [ipccode 53] void QueryOccupiedSpaceForSa([out] UidSaInfo[] vec, [out] long totalSize,
          [in] OrderedMap<int, String> bundleNameAndUid, [in] int type);
-     [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
      [ipccode 55] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
      [ipccode 56] void UnregisterUeceActivationCallback();
      [ipccode 57] void CreateUserDir([in] String path, [in] unsigned int mode,
@@ -111,28 +98,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 71] void GetDirListSpaceByPaths([in] String[] paths, [in] int[] uids,
                                              [out] DirSpaceInfo[] resultDirs, [out] LargeFileInfo[] largeFiles,
                                              [out] LargeDirInfo[] largeDirs);
-     
-     //disk crypt api
-     [ipccode 72] void  Encrypt([in] String volumeId, [in] String pazzword);
-     [ipccode 73] void  GetCryptProgressById([in] String volumeId, [out] int progress);
-     [ipccode 74] void  GetCryptUuidById([in] String volumeId, [out] String uuid);
-     [ipccode 75] void  BindRecoverKeyToPasswd([in] String volumeId,
-                                             [in] String pazzword,
-                                             [in] String recoverKey);
-     [ipccode 76] void  UpdateCryptPasswd([in] String volumeId,
-                                        [in] String pazzword,
-                                        [in] String newPazzword);
-     [ipccode 77] void  ResetCryptPasswd([in] String volumeId,
-                                        [in] String recoverKey,
-                                        [in] String newPazzword);
-     [ipccode 78] void  VerifyCryptPasswd([in] String volumeId, [in] String pazzword);
-     [ipccode 79] void  Unlock([in] String volumeId, [in] String pazzword);
-     [ipccode 80] void  Decrypt([in] String volumeId, [in] String pazzword);
-     [ipccode 81] void  GetOddCapacity([in] String volumeUuid, [out] long totalSize, [out] long freeSize);
-     [ipccode 86] void  GetPartitionTable([in] String diskId, [out] PartitionTableInfo partitionTableInfo);
-     [ipccode 87] void  CreatePartition([in] String diskId, [in] PartitionParams partitionParams);
-     [ipccode 88] void  DeletePartition([in] String diskId, [in] unsigned int partitionNum);
-     [ipccode 89] void  FormatPartition([in] String diskId, [in] unsigned int partitionNum, [in] FormatParams formatParams);
      [ipccode 201] void CreateBlockDeviceNode([in] String devPath,
                                               [in] unsigned int mode,
                                               [in] int major,

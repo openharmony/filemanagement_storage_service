@@ -18,7 +18,7 @@
 #include <sys/sysmacros.h>
 #include <cinttypes>
 
-#include "ipc/storage_manager_client.h"
+#include "disk/disk_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
@@ -168,18 +168,13 @@ void DiskManager::DestroyDisk(dev_t device)
     int ret;
     std::lock_guard<std::mutex> lock(lock_);
     for (auto i = disk_.begin(); i != disk_.end();) {
-        if (*i != nullptr && (*i)->GetDevice() == device) {
+            if (*i != nullptr && (*i)->GetDevice() == device) {
             ret = (*i)->Destroy();
             if (ret != E_OK) {
                 LOGE("[L2:DiskManager] DestroyDisk: <<< EXIT FAILED <<< Destroy DiskInfo failed, err=%{public}d", ret);
                 return;
             }
 
-            StorageManagerClient client;
-            ret = client.NotifyDiskDestroyed((*i)->GetDiskId());
-            if (ret != E_OK) {
-                LOGI("[L2:DiskManager] DestroyDisk: Notify Disk Destroyed failed, err=%{public}d", ret);
-            }
             i = disk_.erase(i);
         } else {
             i++;
@@ -203,155 +198,6 @@ void DiskManager::ReplayUevent()
     LOGI("[L2:DiskManager] ReplayUevent: >>> ENTER <<<");
     TraverseDirUevent(sysBlockPath_, true);
     LOGI("[L2:DiskManager] ReplayUevent: <<< EXIT SUCCESS <<<");
-}
-
-int32_t DiskManager::HandlePartition(const std::string &diskId)
-{
-    LOGI("[L2:DiskManager] HandlePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    int32_t ret = E_NON_EXIST;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->Partition();
-            break;
-        }
-    }
-
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandlePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
-    } else {
-        LOGE("[L2:DiskManager] HandlePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
-}
-
-int32_t DiskManager::HandleGetPartitionTable(const std::string &diskId,
-    OHOS::StorageManager::PartitionTableInfo &partitionTableInfo)
-{
-    LOGI("[L2:DiskManager] HandleGetPartitionTable: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    int32_t ret = E_NON_EXIST;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->GetPartitionTable(partitionTableInfo);
-            break;
-        }
-    }
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandleGetPartitionTable: <<< EXIT SUCCESS <<< diskId=%{public}s, "
-             "partitionCount=%{public}u", diskId.c_str(), partitionTableInfo.GetPartitionCount());
-    } else {
-        LOGE("[L2:DiskManager] HandleGetPartitionTable: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
-}
-
-int32_t DiskManager::HandleCreatePartition(const std::string &diskId,
-    const OHOS::StorageManager::PartitionParams &partitionParams)
-{
-    LOGI("[L2:DiskManager] HandleCreatePartition: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    int32_t ret = E_NON_EXIST;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->CreatePartition(partitionParams);
-            break;
-        }
-    }
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandleCreatePartition: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
-    } else {
-        LOGE("[L2:DiskManager] HandleCreatePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
-}
-
-int32_t DiskManager::HandleDeletePartition(const std::string &diskId, uint32_t partitionNum)
-{
-    LOGI("[L2:DiskManager] HandleDeletePartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
-         diskId.c_str(), partitionNum);
-    int32_t ret = E_NON_EXIST;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->DeletePartition(partitionNum);
-            break;
-        }
-    }
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandleDeletePartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
-             diskId.c_str(), partitionNum);
-    } else {
-        LOGE("[L2:DiskManager] HandleDeletePartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
-}
-
-int32_t DiskManager::HandleFormatPartition(const std::string &diskId, uint32_t partitionNum,
-    const OHOS::StorageManager::FormatParams &formatParams)
-{
-    LOGI("[L2:DiskManager] HandleFormatPartition: >>> ENTER <<< diskId=%{public}s, partitionNum=%{public}u",
-         diskId.c_str(), partitionNum);
-    int32_t ret = E_NON_EXIST;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->FormatPartition(partitionNum, formatParams);
-            break;
-        }
-    }
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandleFormatPartition: <<< EXIT SUCCESS <<< diskId=%{public}s, partitionNum=%{public}u",
-             diskId.c_str(), partitionNum);
-    } else {
-        LOGE("[L2:DiskManager] HandleFormatPartition: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
-}
-
-int32_t DiskManager::HandleEject(const std::string &diskId)
-{
-    LOGI("[L2:DiskManager] HandleEject: >>> ENTER <<< diskId=%{public}s", diskId.c_str());
-    int32_t ret = E_NON_EXIST;
-    for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-
-        if ((*i)->GetDiskId() == diskId) {
-            ret = (*i)->EjectDisk();
-            break;
-        }
-    }
-
-    if (ret == E_OK) {
-        LOGI("[L2:DiskManager] HandleEject: <<< EXIT SUCCESS <<< diskId=%{public}s", diskId.c_str());
-    } else {
-        LOGE("[L2:DiskManager] HandleEject: <<< EXIT FAILED <<< diskId=%{public}s, err=%{public}d",
-             diskId.c_str(), ret);
-    }
-    return ret;
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

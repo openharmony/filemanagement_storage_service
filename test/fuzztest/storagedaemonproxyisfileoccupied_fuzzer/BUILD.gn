@@ -46,7 +46,10 @@ ohos_fuzztest("StorageDaemonProxyIsFileOccupiedFuzzTest") {
     "${storage_service_path}/test/fuzztest/storagedaemonproxyisfileoccupied_fuzzer/storagedaemonproxyisfileoccupied_fuzzer.cpp",
   ]
 
-  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
+  configs = [
+    "${storage_daemon_path}:storage_daemon_config",
+    "${storage_service_path}/test/fuzztest:storage_daemon_fuzz_no_lto",
+  ]
 
   external_deps = [
     "ability_base:base",

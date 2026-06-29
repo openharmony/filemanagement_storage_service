@@ -79,76 +79,6 @@ ohos_unittest("storage_total_status_service_test") {
   }
 }
 
-ohos_unittest("volume_storage_status_service_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
-  module_out_path = "storage_service/storage_service/storage_manager"
-
-  sources = [
-    "${storage_manager_path}/disk/src/disk_manager_service.cpp",
-    "${storage_manager_path}/disk/src/disk_notification.cpp",
-    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
-    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
-    "${storage_manager_path}/storage/src/storage_status_manager.cpp",
-    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
-    "${storage_manager_path}/scan/src/storage_manager_scan.cpp",
-    "${storage_manager_path}/volume/src/notification.cpp",
-    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
-    "${storage_manager_path}/volume/src/encrypted_volume_manager_service.cpp",
-    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
-    "volume_storage_status_service_test.cpp",
-  ]
-  include_dirs = [
-    "${storage_interface_path}/innerkits/storage_manager/native",
-    "${storage_service_common_path}/include",
-    "${storage_daemon_path}/include",
-    "${storage_manager_path}/include",
-    "${storage_manager_path}/include/utils",
-  ]
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-    "private = public",
-  ]
-
-  if (storage_service_external_storage_manager) {
-    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
-  }
-
-  deps = [ 
-    "${storage_daemon_path}:storage_daemon_header",
-    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-  ]
-
-  external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "eventhandler:libeventhandler",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "ipc:ipc_single",
-    "json:nlohmann_json_static",
-    "os_account:os_account_innerkits",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "security_guard:libsg_collect_sdk",
-    "cJSON:cjson",
-    "hicollie:libhicollie",
-    "hisysevent:libhisysevent",
-    "init:libbegetutil",
-  ]
-}
-
 ohos_unittest("storage_monitor_service_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -453,7 +383,6 @@ group("storage_manager_storage_test") {
     ":storage_datashare_status_service_test",
     ":storage_monitor_service_test",
     ":storage_total_status_service_test",
-    ":volume_storage_status_service_test",
     ":storage_status_manager_test",
     ":storage_quota_controller_test",
     ":bundle_manager_adapter_proxy_test",
