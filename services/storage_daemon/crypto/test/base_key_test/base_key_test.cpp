@@ -1120,7 +1120,8 @@ HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_001 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
-    elKey->keyContext_.shield.Clear();
+    std::string shieldPath = elKey->GetDir() + PATH_LATEST + PATH_SHIELD;
+    (void)unlink(shieldPath.c_str());
     EXPECT_FALSE(elKey->NeedUpgradeAuthType());
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_001 end";
 }
@@ -1130,9 +1131,13 @@ HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_002, TestSize.Level1)
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_002 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     HksParam param = { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN };
-    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    KeyBlob shield = BuildShieldParamSet({param});
+    std::string latestDir = elKey->GetDir() + PATH_LATEST;
+    std::string shieldPath = latestDir + PATH_SHIELD;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(latestDir));
+    EXPECT_TRUE(BaseKey::SaveKeyBlob(shield, shieldPath));
     EXPECT_TRUE(elKey->NeedUpgradeAuthType());
-    elKey->keyContext_.shield.Clear();
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(latestDir));
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_002 end";
 }
 
@@ -1141,9 +1146,13 @@ HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_003, TestSize.Level1)
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_003 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     HksParam param = { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 };
-    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    KeyBlob shield = BuildShieldParamSet({param});
+    std::string latestDir = elKey->GetDir() + PATH_LATEST;
+    std::string shieldPath = latestDir + PATH_SHIELD;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(latestDir));
+    EXPECT_TRUE(BaseKey::SaveKeyBlob(shield, shieldPath));
     EXPECT_FALSE(elKey->NeedUpgradeAuthType());
-    elKey->keyContext_.shield.Clear();
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(latestDir));
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_003 end";
 }
 
@@ -1152,9 +1161,13 @@ HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_004, TestSize.Level1)
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_004 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     HksParam param = { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE };
-    elKey->keyContext_.shield = BuildShieldParamSet({param});
+    KeyBlob shield = BuildShieldParamSet({param});
+    std::string latestDir = elKey->GetDir() + PATH_LATEST;
+    std::string shieldPath = latestDir + PATH_SHIELD;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(latestDir));
+    EXPECT_TRUE(BaseKey::SaveKeyBlob(shield, shieldPath));
     EXPECT_FALSE(elKey->NeedUpgradeAuthType());
-    elKey->keyContext_.shield.Clear();
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(latestDir));
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_004 end";
 }
 
@@ -1163,10 +1176,14 @@ HWTEST_F(BaseKeyTest, BaseKey_NeedUpgradeAuthType_005, TestSize.Level1)
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_005 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     std::vector<uint8_t> invalidData{0, 0, 0, 0};
-    elKey->keyContext_.shield.Alloc(invalidData.size());
-    std::copy(invalidData.begin(), invalidData.end(), elKey->keyContext_.shield.data.get());
+    KeyBlob shield(invalidData.size());
+    std::copy(invalidData.begin(), invalidData.end(), shield.data.get());
+    std::string latestDir = elKey->GetDir() + PATH_LATEST;
+    std::string shieldPath = latestDir + PATH_SHIELD;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(latestDir));
+    EXPECT_TRUE(BaseKey::SaveKeyBlob(shield, shieldPath));
     EXPECT_FALSE(elKey->NeedUpgradeAuthType());
-    elKey->keyContext_.shield.Clear();
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(latestDir));
     GTEST_LOG_(INFO) << "BaseKey_NeedUpgradeAuthType_005 end";
 }
 } // OHOS::StorageDaemon
