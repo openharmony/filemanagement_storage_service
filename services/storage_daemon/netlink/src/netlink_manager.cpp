@@ -39,7 +39,7 @@ int32_t NetlinkManager::Start()
     LOGI("[L2:NetlinkManager] Start: >>> ENTER <<<");
 
     struct sockaddr_nl addr;
-    int32_t bufferSize = 256 * ONE_KB;
+    int32_t bufferSize = 512 * ONE_KB;
     int32_t passCred = 1;
 
     (void)memset_s(&addr, sizeof(addr), 0, sizeof(addr));
