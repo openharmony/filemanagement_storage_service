@@ -41,6 +41,15 @@ public:
         modified_ = modified;
     }
 
+    bool IsPushing() const
+    {
+        return isPushing_;
+    }
+    void SetPushing(bool pushing = true)
+    {
+        isPushing_ = pushing;
+    }
+
     int RefCnt() const;
     void AddFileDescriptor(int fd);
     void RemoveFileDescriptor(int fd);
@@ -70,6 +79,7 @@ private:
     mutable std::mutex setMutex_;
     std::set<int> fileDescriptors_;
     bool modified_;
+    bool isPushing_ { false };
 };
 
 #endif // MTPFS_TYPE_TMP_FILE_H
