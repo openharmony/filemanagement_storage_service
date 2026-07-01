@@ -25,7 +25,7 @@ MtpFsTypeTmpFile::MtpFsTypeTmpFile(const std::string &pathDevice, const std::str
 }
 
 MtpFsTypeTmpFile::MtpFsTypeTmpFile(const MtpFsTypeTmpFile &copy) : pathDevice_(copy.pathDevice_),
-    pathTmp_(copy.pathTmp_), modified_(copy.modified_)
+    pathTmp_(copy.pathTmp_), modified_(copy.modified_), isPushing_(copy.isPushing_)
 {
     std::unique_lock<std::mutex> lock(setMutex_);
     fileDescriptors_ = copy.fileDescriptors_;
@@ -60,5 +60,6 @@ MtpFsTypeTmpFile &MtpFsTypeTmpFile::operator = (const MtpFsTypeTmpFile &rhs)
     pathTmp_ = rhs.pathTmp_;
     fileDescriptors_ = rhs.fileDescriptors_;
     modified_ = rhs.modified_;
+    isPushing_ = rhs.isPushing_;
     return *this;
 }

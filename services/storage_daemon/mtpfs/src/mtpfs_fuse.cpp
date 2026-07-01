@@ -1160,6 +1160,10 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
         return 0;
     }
 
+    if (tmpFile->IsPushing()) {
+        return 0;
+    }
+
     const bool modIf = tmpFile->IsModified();
     const std::string tmpPath = tmpFile->PathTmp();
     struct stat fileStat;
@@ -1174,6 +1178,8 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
         if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
+            tmpFile->SetModified(false);
+            tmpFile->SetPushing(true);
             return device_.FilePushAsync(tmpPath, stdPath);
         }
         int rval = device_.FilePush(tmpPath, stdPath);
@@ -1186,7 +1192,6 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
             tmpFilesPool_.RemoveFile(stdPath);
             return -rval;
         }
-        LOGI("FilePush to mtp device success");
     }
 
     device_.SetUploadRecord(stdPath, "success");

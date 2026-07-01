@@ -976,17 +976,24 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
 {
     const std::string dstBaseName(SmtpfsBaseName(dst));
     const MtpFsTypeDir *dirParent = ReadDirFetchContent(SmtpfsDirName(dst));
-    const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(dstBaseName) : nullptr;
     if (!dirParent) {
         LOGE("FilePush failed, can not fetch");
         StorageRadar::ReportMtpResult("FilePush::ReadDirFetchContent", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
         return -EINVAL;
     }
+
+    bool hasFileToRemove = false;
+    MtpFsTypeFile fileToRemoveSnapshot;
+    const MtpFsTypeFile *fileToRemovePtr = dirParent->File(dstBaseName);
+    if (fileToRemovePtr != nullptr) {
+        fileToRemoveSnapshot = *fileToRemovePtr;
+        hasFileToRemove = true;
+    }
     SetTransferValue(true);
-    if (fileToRemove && (!IsOpenHarmonyMtpDevice() || isPtp_)) {
-        LOGI("Start to delete mtp file, handle id = %{public}d.", fileToRemove->Id());
+    if (hasFileToRemove && (!IsOpenHarmonyMtpDevice() || isPtp_)) {
+        LOGI("Start to delete mtp file, handle id = %{public}d.", fileToRemoveSnapshot.Id());
         std::unique_lock<std::mutex> lock(deviceMutex_);
-        int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
+        int rval = LIBMTP_Delete_Object(device_, fileToRemoveSnapshot.Id());
         usleep(DELETE_OBJECT_DELAY_US);
         if (rval != 0) {
             LOGE("FilePush failed, can not upload");
@@ -996,7 +1003,8 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
             return -EINVAL;
         }
     }
-    int uploadRval = PerformUpload(src, dst, dirParent, fileToRemove, dstBaseName);
+    int uploadRval = PerformUpload(src, dst, dirParent,
+        hasFileToRemove ? &fileToRemoveSnapshot : nullptr, dstBaseName);
     SetTransferValue(false);
     LOGI("FilePush to mtp device end, uploadRval=%{public}d.", uploadRval);
     return uploadRval;
