@@ -1,0 +1,103 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+import("//foundation/filemanagement/storage_service/services/storage_space_manager/storage_space_manager.gni")
+
+config("storage_space_manager_config") {
+  include_dirs = [
+    "include",
+    "include/adapter",
+    "include/cache_clean_controller",
+    "include/common_event",
+    "include/ipc",
+    "include/storage",
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
+    "${storage_space_manager_path}/common/include",
+    "${storage_space_manager_path}/utils/include",
+    "${target_gen_dir}/foundation/filemanagement/storage_service/services/storage_space_manager/interfaces/innerkits",
+  ]
+
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+    "-O2",
+  ]
+}
+
+ohos_shared_library("storage_space_manager") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  sources = [
+    "src/adapter/bundle_manager_adapter_proxy.cpp",
+    "src/adapter/bundle_manager_connector.cpp",
+    "src/cache_clean_controller/cache_clean_controller.cpp",
+    "src/common_event/storage_common_event_subscriber.cpp",
+    "src/ipc/storage_space_manager_provider.cpp",
+    "src/storage/storage_total_status_service.cpp",
+    "../../utils/src/ipc_caller_auth.cpp",
+  ]
+
+  defines = [
+    "STORAGE_SPACE_MANAGER_LOG_TAG = \"StorageSpaceManager\"",
+    "LOG_DOMAIN = 0xD004302",
+  ]
+
+  configs = [
+    ":storage_space_manager_config",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_space_manager_path}/interfaces/innerkits:storage_space_manager_header",
+    "${storage_space_manager_path}/interfaces/innerkits:storage_space_manager_ipc_native",
+    "${storage_space_manager_path}/interfaces/innerkits:storage_space_manager_innerkits",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "ability_base:base",
+    "ability_base:want",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "json:nlohmann_json_static",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "memmgr:memmgrclient",
+  ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.resourceschedule_device_usage_statistics)) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
