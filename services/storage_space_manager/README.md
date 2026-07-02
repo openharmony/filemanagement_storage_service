@@ -32,7 +32,7 @@ Storage Space Manager Service (SA ID: 8650) is a system service that provides co
 │                              ↓                                │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │          Cache Clean Controller                        │    │
-│  │  - Bundle Ranking by Activity Level                   │    │
+│  │  - Bundle Ranking by Usage Level                   │    │
 │  │  - Intelligent Cache Cleaning                         │    │
 │  │  - Timestamp Management                               │    │
 │  └─────────────────────────────────────────────────────┘    │
@@ -62,7 +62,6 @@ Storage Space Manager Service (SA ID: 8650) is a system service that provides co
 
 ```text
 services/storage_space_manager/
-├── .clang-format                       # Code style configuration
 ├── BUILD.gn                            # Build configuration
 ├── LICENSE                             # License file
 ├── OAT.xml                             # Open-source compliance
@@ -166,7 +165,7 @@ Intelligent application cache cleaning with multi-dimensional analysis:
    ↓
 2. Filter by Bundle Type (exclude system apps, apps without bundle data)
    ↓
-3. Rank by Activity Level (DeviceUsageStats integration)
+3. Rank by usage Level (DeviceUsageStats integration)
    ↓
 4. Calculate Storage Quota (based on total storage & app rank)
    ↓
@@ -260,7 +259,7 @@ Flexible quota calculation based on device storage capacity:
 **Dependencies:**
 - Storage Daemon (for storage status queries)
 - Bundle Manager (for application information)
-- Device Usage Statistics (for app activity ranking)
+- Device Usage Statistics (for app usage ranking)
 
 ## Storage Space Manager Developer Guide
 
@@ -410,7 +409,7 @@ Target branch coverage: 80%+
 **v1.0 (2026-06-18)**
 - Initial release with core storage space management features
 - Storage query APIs (total/free/system size, inodes)
-- Bundle cache cleaning with activity-based ranking
+- Bundle cache cleaning with usage-based ranking
 - Configurable storage quota calculator
 - Timestamp management for cleaning operations
 

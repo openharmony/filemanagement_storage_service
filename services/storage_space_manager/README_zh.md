@@ -2,7 +2,7 @@
 
 ## 存储空间管理概述
 
-存储空间管理服务（SA ID: 8650）是 OpenHarmony 系统的系统服务，提供全面的存储空间管理能力。该服务监控设备存储使用情况，基于智能排名管理应用缓存清理，并为不同存储档位提供灵活的存储空间配额计算。
+存储空间管理服务（SA ID: 8650）是 OpenHarmony 系统的系统服务，提供存储空间管理能力。该服务监控设备存储使用情况，基于智能排名管理应用缓存清理，并为不同存储档位提供灵活的存储空间配额计算。
 
 ## 系统架构
 
@@ -62,7 +62,6 @@
 
 ```text
 services/storage_space_manager/
-├── .clang-format                       # 代码风格配置
 ├── BUILD.gn                            # 构建配置
 ├── LICENSE                             # 许可证文件
 ├── OAT.xml                             # 开源合规文件
@@ -134,7 +133,7 @@ services/storage_space_manager/
 └── utils/                              # 工具类
     ├── BUILD.gn
     ├── include/
-    │   ├── ipc_caller_auth.h                   # IPC 调用者认证
+    │   ├── ipc_caller_auth.h                   # IPC 调用者校验
     │   └── storage_space_manager_hilog.h        # 日志工具
     └── src/
         └── ipc_caller_auth.cpp
@@ -143,7 +142,7 @@ services/storage_space_manager/
 
 ### 1. 存储空间查询 API
 
-服务提供全面的存储空间信息：
+服务提供存储空间信息：
 
 - **GetTotalSize**：获取设备存储总容量（已舍入的值）
 - **GetSystemSize**：计算系统分区大小
@@ -415,7 +414,7 @@ kill -9 $(pidof storage_space_manager)
 - 清理操作的时间戳管理
 
 **v1.1 (当前版本)**
-- 添加全面的单元测试（100+ 测试用例）
+- 添加单元测试（100+ 测试用例）
 - 为所有公共 API 添加模糊测试
 - 增强错误处理，不使用 try-catch
 - 改进基于档位配置的配额计算
