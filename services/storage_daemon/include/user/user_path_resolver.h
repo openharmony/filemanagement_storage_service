@@ -77,6 +77,7 @@ public:
     static int32_t GetAppDataMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
     static int32_t GetHmdfsMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
     static int32_t GetSandboxMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList);
+    static int32_t GetAppDataMountStartupNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 
 private:
     template <typename T>

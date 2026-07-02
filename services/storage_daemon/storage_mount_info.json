@@ -1,37 +1,44 @@
 {
-    "appdata-mount": [
+    "appdata-mount-startup": [
         {
             "src-path": "/mnt/user/<userId>/nosharefs/docs",
             "dest-path": "/mnt/user/<userId>/nosharefs/docs",
-            "mount-flags": ["bind", "rec"],
-            "options": "before_startup"
+            "mount-flags": ["bind", "rec"]
         },
         {
             "dest-path": "/mnt/user/<userId>/nosharefs/docs",
-            "mount-flags": ["shared"],
-            "options": "before_startup"
+            "mount-flags": ["shared"]
         },
         {
             "src-path": "/mnt/user/<userId>/sharefs/docs",
             "dest-path": "/mnt/user/<userId>/sharefs/docs",
-            "mount-flags": ["bind", "rec"],
-            "options": "before_startup"
+            "mount-flags": ["bind", "rec"]
         },
         {
             "dest-path": "/mnt/user/<userId>/sharefs/docs",
-            "mount-flags": ["shared"],
-            "options": "before_startup"
+            "mount-flags": ["shared"]
         },
         {
             "src-path": "/data/app/el1/<userId>/base/",
             "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
             "mount-flags": ["bind", "rec"],
-            "options": "check_mounted,before_startup"
+            "options": "check_mounted"
         },
         {
             "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
-            "mount-flags": ["slave"],
-            "options": "before_startup"
+            "mount-flags": ["slave"]
+        }
+    ],
+    "appdata-mount": [
+        {
+            "src-path": "/data/app/el1/<userId>/base/",
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
+            "mount-flags": ["bind", "rec"],
+            "options": "check_mounted"
+        },
+        {
+            "dest-path": "/mnt/user/<userId>/nosharefs/appdata/el1/base",
+            "mount-flags": ["slave"]
         },
         {
             "src-path": "/data/app/el2/<userId>/base/",

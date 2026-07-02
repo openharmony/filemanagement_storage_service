@@ -66,6 +66,7 @@ constexpr const char *JSON_KEY_USER_SERVICE = "user_service";
 constexpr const char *JSON_KEY_APPDATA = "appdata";
 constexpr const char *JSON_KEY_VIRTUAL = "virtual";
 constexpr const char *JSON_KEY_APPDATA_MOUNT = "appdata-mount";
+constexpr const char *JSON_KEY_APPDATA_MOUNT_STARTUP = "appdata-mount-startup";
 constexpr const char *JSON_KEY_SANDBOX_MOUNT = "sandbox-mount";
 constexpr const char *JSON_KEY_HMDFS_MOUNT = "hmdfs-mount";
 
@@ -316,6 +317,11 @@ int32_t UserPathResolver::GetVirtualPath(int32_t userId, std::vector<DirInfo> &d
 int32_t UserPathResolver::GetAppDataMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
 {
     return GetMountNodeList(userId, {JSON_KEY_APPDATA_MOUNT}, mountNodeList);
+}
+
+int32_t UserPathResolver::GetAppDataMountStartupNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)
+{
+    return GetMountNodeList(userId, {JSON_KEY_APPDATA_MOUNT_STARTUP}, mountNodeList);
 }
 
 int32_t UserPathResolver::GetHmdfsMountNodeList(int32_t userId, std::vector<MountNodeInfo> &mountNodeList)

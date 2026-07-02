@@ -1008,18 +1008,18 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
 {
     LOGI("[L2:MountManager] MountAppdata: >>> ENTER <<< userId=%{public}d, beforeStartup=%{public}d",
         userId, beforeStartup);
-    InfoList<MountNodeInfo> appdataMountNodeList;
-    auto ret = UserPathResolver::GetAppDataMountNodeList(userId, appdataMountNodeList.data);
+    std::vector<MountNodeInfo> mountNodeList;
+    int32_t ret;
+    if (beforeStartup) {
+        ret = UserPathResolver::GetAppDataMountStartupNodeList(userId, mountNodeList);
+    } else {
+        ret = UserPathResolver::GetAppDataMountNodeList(userId, mountNodeList);
+    }
     if (ret != E_OK) {
-        LOGE("[L2:MountManager] MountAppdata: <<< EXIT FAILED <<< GetAppDataMountNodeList failed, ret=%{public}d", ret);
+        LOGE("[L2:MountManager] MountAppdata: <<< EXIT FAILED <<< get mount node failed, ret=%{public}d", ret);
         return ret;
     }
-    for (const auto &nodeInfo : appdataMountNodeList.data) {
-        const auto &options = nodeInfo.options;
-        bool isBeforeStartupMountNode = (options.find("before_startup") != options.end());
-        if (isBeforeStartupMountNode != beforeStartup) {
-            continue;
-        }
+    for (const auto &nodeInfo : mountNodeList) {
         if (nodeInfo.MountDir() != E_OK) {
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
