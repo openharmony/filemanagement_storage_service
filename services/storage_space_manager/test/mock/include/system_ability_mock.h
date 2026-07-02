@@ -1,0 +1,6 @@
+#ifndef OHOS_STORAGE_SPACE_MANAGER_SYSTEM_ABILITY_MOCK_H
+#define OHOS_STORAGE_SPACE_MANAGER_SYSTEM_ABILITY_MOCK_H
+
+extern bool g_mockSamgrReturnNull;
+
+#endif

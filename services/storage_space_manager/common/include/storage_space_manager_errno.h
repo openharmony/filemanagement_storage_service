@@ -18,7 +18,7 @@
 
 namespace OHOS {
 namespace StorageSpaceManager {
-// 与 storage_service 中其他目录的 SYS_CAP_TAG(13600000) 错开；
+// Offset from SYS_CAP_TAG(13600000) used by other directories in storage_service;
 constexpr int32_t STORAGE_SPACE_MANAGER_SYS_CAP_TAG = 13620000;
 
 // Error codes for storage space manager

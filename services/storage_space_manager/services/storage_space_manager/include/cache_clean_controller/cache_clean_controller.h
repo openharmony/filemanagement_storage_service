@@ -313,7 +313,8 @@ public:
     int32_t CleanSingleAppWithQuota(const CleanCacheInfo &cleanInfo,
                                       int32_t rank,
                                       const CleanResources &resources,
-                                      CleanStats &stats);
+                                      CleanStats &stats,
+                                      const std::unordered_map<std::string, int32_t> &systemAppCacheQuata);
 
     /**
      * @brief Perform cache cleaning for a single app.
@@ -376,6 +377,7 @@ private:
     bool quotaCalculatorSoLoaded_ = false;
     void *quotaCalculatorSoHandle_ = nullptr;
     std::shared_ptr<IQuotaCalculator> quotaCalculator_;
+    std::mutex loadQuotaMutex_;
     std::atomic<bool> stopCleanCacheFlag_{false};  // Stop clean cache flag
     std::atomic<bool> isCleanRunning_{false};       // Scan running flag
     std::ostringstream extraData_;

@@ -42,7 +42,6 @@ StorageSpaceManagerClient::~StorageSpaceManagerClient()
     ResetProxy();
 }
 
-// 快速路径：优先复用缓存；缓存为空则 CheckSystemAbility 探测已运行的 SA（不触发拉起）。
 sptr<IStorageSpaceManager> StorageSpaceManagerClient::GetProxy()
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -56,7 +55,7 @@ sptr<IStorageSpaceManager> StorageSpaceManagerClient::GetProxy()
     }
     auto object = samgr->CheckSystemAbility(STORAGE_SPACE_MANAGER_SA_ID);
     if (object == nullptr) {
-        return nullptr; // SA 尚未运行，交由调用方走 Load 路径
+        return nullptr;
     }
     storageSpaceManager_ = iface_cast<IStorageSpaceManager>(object);
     if (storageSpaceManager_ == nullptr) {
@@ -74,7 +73,6 @@ sptr<IStorageSpaceManager> StorageSpaceManagerClient::GetProxy()
     return storageSpaceManager_;
 }
 
-// 异步拉起 ondemand SA 进程，并在超时内等待 proxy 就绪。
 int32_t StorageSpaceManagerClient::LoadStorageSpaceManagerService()
 {
     sptr<StorageSpaceManagerLoadCallback> loadCallback =
@@ -159,7 +157,7 @@ void StorageSpaceManagerClient::SubscribeSsmSA()
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (statusListener_ != nullptr) {
-        return; // 已订阅
+        return;
     }
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
@@ -202,10 +200,9 @@ void StorageSpaceManagerClient::SystemAbilityStatusListener::OnRemoveSystemAbili
     LOGD("OnRemoveSystemAbility, systemAbilityId=%{public}d", systemAbilityId);
 }
 
-// 连接 SA：快速复用 -> 未运行则按需拉起。
 int32_t StorageSpaceManagerClient::Connect(sptr<IStorageSpaceManager> &proxy)
 {
-    SubscribeSsmSA(); // 确保已订阅 SA 状态（崩溃/重启后自动重连）
+    SubscribeSsmSA();
     sptr<IStorageSpaceManager> cached = GetProxy();
     if (cached != nullptr) {
         proxy = cached;
@@ -222,8 +219,6 @@ int32_t StorageSpaceManagerClient::Connect(sptr<IStorageSpaceManager> &proxy)
     }
     return E_OK;
 }
-
-/* ---------- Storage Space Query APIs ---------- */
 
 int32_t StorageSpaceManagerClient::GetTotalSize(int64_t &totalSize)
 {
@@ -279,8 +274,6 @@ int32_t StorageSpaceManagerClient::GetFreeInodes(int64_t &freeInodes)
     }
     return proxy->GetFreeInodes(freeInodes);
 }
-
-/* ---------- Bundle Cache Management APIs ---------- */
 
 int32_t StorageSpaceManagerClient::CleanBundleCache(int32_t userId)
 {

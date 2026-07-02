@@ -317,7 +317,12 @@ template<typename T>
 ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessageParcel &reply,
                                                                        std::vector<T> &parcelableInfos)
 {
-    size_t dataSize = static_cast<size_t>(reply.ReadInt32());
+    int32_t rawSize = reply.ReadInt32();
+    if (rawSize < 0) {
+        LOGE("Negative data size: %{public}d", rawSize);
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    size_t dataSize = static_cast<size_t>(rawSize);
     if (dataSize == 0) {
         LOGW("Parcel no data");
         return ERR_OK;
@@ -336,6 +341,9 @@ ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessagePa
             return ERR_APPEXECFWK_PARCEL_ERROR;
         }
     }
+
+    auto bufferDeleter = [](void *p) { free(p); };
+    std::unique_ptr<void, decltype(bufferDeleter)> bufferGuard(buffer, bufferDeleter);
 
     MessageParcel tempParcel;
     if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
@@ -400,8 +408,8 @@ ErrCode BundleManagerAdapterProxy::GetParcelInfoFromAshMem(MessageParcel &reply,
         LOGE("ashDataPtr is nullptr");
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
-    if ((ashMemSize == 0) || ashMemSize > static_cast<int32_t>(MAX_PARCEL_CAPACITY_OF_ASHMEM)) {
-        LOGE("failed due to wrong size");
+    if (ashMemSize <= 0 || ashMemSize > static_cast<int32_t>(MAX_PARCEL_CAPACITY_OF_ASHMEM)) {
+        LOGE("failed due to wrong size: %{public}d", ashMemSize);
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
     data = malloc(ashMemSize);

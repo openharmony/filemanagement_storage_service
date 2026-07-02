@@ -71,10 +71,10 @@ constexpr int32_t DEFAULT_TOP_COUNT = 20;
 constexpr uint64_t DISPLAY_MB_DIVISOR = 1000ULL * 1000;
 constexpr mode_t CONFIG_DIR_MODE = 0755;
 constexpr int32_t JSON_INDENT = 4;
-// 默认配额配置文件，当 GetQuotaByRank 失败时作为备用
-// 例如：size_lowerlimit_0_upperlimit_256 中的数字单位为GB
-//      档位的单位为MB，比如"top1-3": 750， 750是750MB
-// 格式与缓存清理配置文件中的 top_app_cache_config 一致
+// Default quota config, used as fallback when GetQuotaByRank fails
+// e.g., the number in size_lowerlimit_0_upperlimit_256 is in GB
+//       tier units are MB, e.g. "top1-3": 750 means 750MB
+// Format matches top_app_cache_config in the cache cleanup config file
 constexpr const char* DEFAULT_QUOTA_CONFIG = R"({
     "top_app_cache_config": {
         "size_lowerlimit_0_upperlimit_256": {
@@ -106,12 +106,12 @@ bool ParseStorageRangeKey(const std::string &key, StorageRangeInfo &info)
     if (upperPos == std::string::npos) {
         return false;
     }
-    info.lowerLimit = std::stoll(remaining.substr(0, upperPos));
+    info.lowerLimit = std::atoll(remaining.substr(0, upperPos).c_str());
     std::string upperStr = remaining.substr(upperPos + strlen(STORAGE_RANGE_SUFFIX));
     if (upperStr == MAX_LABEL) {
         info.upperLimit = -1;
     } else {
-        info.upperLimit = std::stoll(upperStr);
+        info.upperLimit = std::atoll(upperStr.c_str());
     }
     return true;
 }
@@ -137,8 +137,8 @@ bool MatchTierByRank(const std::string &tierName, int32_t tierQuota, int32_t ran
     if (dashPos == std::string::npos) {
         return false;
     }
-    int32_t lowerRank = std::stoi(rankRange.substr(0, dashPos));
-    int32_t upperRank = std::stoi(rankRange.substr(dashPos + 1));
+    int32_t lowerRank = std::atoi(rankRange.substr(0, dashPos).c_str());
+    int32_t upperRank = std::atoi(rankRange.substr(dashPos + 1).c_str());
     if (rank < lowerRank || rank > upperRank) {
         return false;
     }
@@ -184,35 +184,41 @@ CacheCleanController::~CacheCleanController()
 
 bool CacheCleanController::LoadQuotaCalculator()
 {
-    if (quotaCalculatorSoLoaded_ && quotaCalculator_ != nullptr) {
-        quotaCalculator_->Init();
-        return true;
-    }
-    quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE);
-    if (quotaCalculatorSoHandle_ == nullptr) {
+    {
+        std::lock_guard<std::mutex> lock(loadQuotaMutex_);
+        if (quotaCalculatorSoLoaded_ && quotaCalculator_ != nullptr) {
+            quotaCalculator_->Init();
+            return true;
+        }
+        if (quotaCalculatorSoLoaded_) {
+            LOGE("quotaCalculatorSoLoaded_ is true but quotaCalculator_ is null, reloading");
+        }
         quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE | RTLD_NOLOAD);
+        if (quotaCalculatorSoHandle_ == nullptr) {
+            quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE);
+        }
+        if (quotaCalculatorSoHandle_ == nullptr) {
+            LOGE("load quota calculator so failed.");
+            return false;
+        }
+        dlerror();
+        auto func = (CreateQuotaCalculatorFuncPtr)dlsym(quotaCalculatorSoHandle_, "CreateQuotaCalculatorObject");
+        if (dlerror() != nullptr || func == nullptr) {
+            dlclose(quotaCalculatorSoHandle_);
+            quotaCalculatorSoHandle_ = nullptr;
+            LOGE("Create object function is not exist.");
+            return false;
+        }
+        quotaCalculator_ = std::shared_ptr<IQuotaCalculator>(func());
+        if (quotaCalculator_ == nullptr) {
+            dlclose(quotaCalculatorSoHandle_);
+            quotaCalculatorSoHandle_ = nullptr;
+            LOGE("quota calculator instance is null.");
+            return false;
+        }
+        quotaCalculator_->Init();
+        quotaCalculatorSoLoaded_ = true;
     }
-    if (quotaCalculatorSoHandle_ == nullptr) {
-        LOGE("load quota calculator so failed.");
-        return false;
-    }
-    dlerror();
-    auto func = (CreateQuotaCalculatorFuncPtr)dlsym(quotaCalculatorSoHandle_, "CreateQuotaCalculatorObject");
-    if (dlerror() != nullptr || func == nullptr) {
-        dlclose(quotaCalculatorSoHandle_);
-        quotaCalculatorSoHandle_ = nullptr;
-        LOGE("Create object function is not exist.");
-        return false;
-    }
-    quotaCalculator_ = std::shared_ptr<IQuotaCalculator>(func());
-    if (quotaCalculator_ == nullptr) {
-        dlclose(quotaCalculatorSoHandle_);
-        quotaCalculatorSoHandle_ = nullptr;
-        LOGE("quota calculator instance is null.");
-        return false;
-    }
-    quotaCalculator_->Init();
-    quotaCalculatorSoLoaded_ = true;
     LOGI("Success.");
     return true;
 }
@@ -359,9 +365,11 @@ int32_t CacheCleanController::CleanRankBasedCache(const std::vector<CleanCacheIn
 {
     LOGI("Starting rank-based cleaning for %{public}zu apps", rankedCleanInfos.size());
 
+    std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
+
     for (size_t i = 0; i < rankedCleanInfos.size(); ++i) {
         if (stopCleanCacheFlag_.load()) {
-            LOGE("Cleanup conditions not met, stopCleanCacheFlag is false");
+            LOGE("Cleanup conditions not met, stopCleanCacheFlag is true");
             return E_OK;
         }
 
@@ -373,7 +381,8 @@ int32_t CacheCleanController::CleanRankBasedCache(const std::vector<CleanCacheIn
         }
 
         int32_t rank = static_cast<int32_t>(i + 1);
-        int32_t ret = CleanSingleAppWithQuota(rankedCleanInfos[i], rank, resources, stats);
+        int32_t ret = CleanSingleAppWithQuota(rankedCleanInfos[i], rank, resources, stats,
+            systemAppCacheQuata);
         if (ret != E_OK) {
             continue;
         }
@@ -383,7 +392,8 @@ int32_t CacheCleanController::CleanRankBasedCache(const std::vector<CleanCacheIn
 }
 
 int32_t CacheCleanController::CleanSingleAppWithQuota(const CleanCacheInfo &cleanInfo, int32_t rank,
-    const CleanResources &resources, CleanStats &stats)
+    const CleanResources &resources, CleanStats &stats,
+    const std::unordered_map<std::string, int32_t> &systemAppCacheQuata)
 {
     int32_t quotaMB = 0;
     int32_t ret = quotaCalculator_->GetQuotaByRank(rank, resources.totalStorage, quotaMB);
@@ -402,7 +412,6 @@ int32_t CacheCleanController::CleanSingleAppWithQuota(const CleanCacheInfo &clea
         stats.failedCount++;
         return E_INVALID_ARGUMENT;
     }
-    std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
     if (systemAppCacheQuata.find(cleanInfo.bundleName) != systemAppCacheQuata.end()) {
         quotaMB = systemAppCacheQuata.at(cleanInfo.bundleName);
     }
@@ -464,9 +473,11 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
     const CleanResources &resources, CleanStats &stats)
 {
     LOGI("Starting full cache clean for %{public}zu apps", cleanAllCacheInfos.size());
+    std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
+
     for (size_t i = 0; i < cleanAllCacheInfos.size(); ++i) {
         if (stopCleanCacheFlag_.load()) {
-            LOGE("Cleanup conditions not met, stopCleanCacheFlag is false");
+            LOGE("Cleanup conditions not met, stopCleanCacheFlag is true");
             return E_OK;
         }
         uint64_t beforeCleanedSize = 0;
@@ -475,7 +486,6 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
         // cacheThreshold=0 means clean all cache
         CleanCacheInfo cacheInfo = cleanAllCacheInfos[i];
         cacheInfo.cacheThreshold = 0;
-        std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
         if (systemAppCacheQuata.find(cacheInfo.bundleName) != systemAppCacheQuata.end()) {
             cacheInfo.cacheThreshold = systemAppCacheQuata.at(cacheInfo.bundleName);
         }
@@ -900,7 +910,7 @@ int32_t CacheCleanController::GetDefaultQuotaByRank(int32_t appRank, int64_t tot
         LOGE("Invalid app rank: %{public}d", appRank);
         return E_INVALID_ARGUMENT;
     }
-    nlohmann::json config = nlohmann::json::parse(DEFAULT_QUOTA_CONFIG);
+    static nlohmann::json config = nlohmann::json::parse(DEFAULT_QUOTA_CONFIG);
     nlohmann::json topAppConfig = config[TOP_APP_CACHE_CONFIG];
     int64_t totalGB = totalStorage / static_cast<int64_t>(GB_TO_BYTES);
     for (auto it = topAppConfig.begin(); it != topAppConfig.end(); ++it) {
