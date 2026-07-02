@@ -104,7 +104,7 @@ public:
     int32_t GetAllAppInfos(int32_t userId, std::vector<ApplicationInfo> &appInfos);
 
     /**
-     * @brief Rank applications by activity level.
+     * @brief Rank applications by usage level.
      * @param userId Indicates the user ID.
      * @param appInfos Input application infos to be ranked.
      * @param rankedCleanInfos Output ranked clean cache info.

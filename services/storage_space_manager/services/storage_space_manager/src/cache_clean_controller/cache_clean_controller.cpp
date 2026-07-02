@@ -188,8 +188,8 @@ bool CacheCleanController::LoadQuotaCalculator()
         quotaCalculator_->Init();
         return true;
     }
-    quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE); 
-    if (quotaCalculatorSoHandle_ == nullptr) { 
+    quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE);
+    if (quotaCalculatorSoHandle_ == nullptr) {
         quotaCalculatorSoHandle_ = dlopen(LIB_QUOTA_CALCULATOR_NAME, RTLD_NOW | RTLD_NODELETE | RTLD_NOLOAD);
     }
     if (quotaCalculatorSoHandle_ == nullptr) {
@@ -560,7 +560,7 @@ int32_t CacheCleanController::BundleActiveRank(int32_t userId, const std::vector
     std::vector<BundleActivePackageStats> topRankingStats;
     std::vector<BundleActivePackageStats> activeStats;
     ret = QueryBundleStatsForRanking(userId, topRankingHoursSpan, noUseHoursForCleanAll,
-                                       topRankingStats, activeStats);
+        topRankingStats, activeStats);
     if (ret != E_OK) {
         return ret;
     }
@@ -722,7 +722,7 @@ int32_t CacheCleanController::ProcessBundleActiveStats(std::vector<BundleActiveP
     FilterBundleStatsByAppType(topRankingStats, appInfos);
     FilterBundleStatsByAppType(activeStats, appInfos);
 
-    // Sort by activity level (most active first)
+    // Sort by usage level (most active first)
     SortBundleStatsByInFrontTime(topRankingStats);
     SortBundleStatsByInFrontTime(activeStats);
 
@@ -770,10 +770,9 @@ int32_t CacheCleanController::GetConfigAndValidate(int32_t &topRankingHoursSpan,
 {
     topRankingHoursSpan = quotaCalculator_->GetTopRankingHoursSpan();
     noUseHoursForCleanAll = quotaCalculator_->GetNoUseHoursForCleanAll();
-
     if (topRankingHoursSpan <= 0 || noUseHoursForCleanAll <= 0) {
         LOGE("Invalid hours span from config: topRankingHoursSpan=%{public}d, noUseHoursForCleanAll=%{public}d",
-             topRankingHoursSpan, noUseHoursForCleanAll);
+            topRankingHoursSpan, noUseHoursForCleanAll);
         return E_FAIL;
     }
     return E_OK;
@@ -837,7 +836,7 @@ void CacheCleanController::BuildCleanCacheInfos(const CleanCacheBuildParams &par
 {
     // Remove active apps from appInfos to get unused apps
     std::vector<ApplicationInfo> noUseAppInfos = RemoveAppsByStats(*params.appInfos,
-                                                                         params.bundleActiveStatsExceptNoUse);
+        params.bundleActiveStatsExceptNoUse);
     LOGI("Removed active apps, remaining: %{public}zu", noUseAppInfos.size());
 
     // Remove top-ranking from active stats
