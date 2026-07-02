@@ -43,12 +43,29 @@ public:
                      const std::string &incBurnAddr);
     int32_t DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty);
     int32_t Burn(const std::string &devPath, const BurnOptions &burnOptions) override;
+    int32_t DoVerifyBurnData(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty);
+
+    int32_t PrepareVerifyMountPath();
+
+    int32_t ExtractIsoFiles(const std::string& isoPath,
+                            const std::string& sourceDir);
 
 private:
     int32_t PrepareIsoImage(const std::string &devPath,
                             const BurnOptions &burnOptions,
                             bool isDiskEmpty,
                             const std::string &incBurnAddr);
+
+    int32_t ExecuteIsoInfoList(const std::string& isoPath,
+                               std::vector<std::string>& mergedLines);
+    int32_t ProcessMergedLine(const std::string& isoPath,
+                              const std::string& sourceDir,
+                              const std::string& line,
+                              std::string& currentPath);
+    int32_t PrepareSourceDirectory(const BurnOptions& burnOptions, std::string& sourceDir);
+    int32_t GenerateAndCompareChecksums(const std::string& sourceDir,
+                                        const std::string& sourceChecksumPath,
+                                        const std::string& discChecksumPath);
 };
 
 } // namespace StorageDaemon

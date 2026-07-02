@@ -33,8 +33,9 @@ struct BurnOptions {
     uint32_t burnSpeed;          // 刻录速度
     bool isIsoImage;             // 是否为ISO镜像文件
     bool isIncBurnSupport;       // 是否支持增量刻录
+    bool isVerifyBurn;           // 是否进行数据校验
     
-    BurnOptions() : burnSpeed(0), isIsoImage(false), isIncBurnSupport(false) {}
+    BurnOptions() : burnSpeed(0), isIsoImage(false), isIncBurnSupport(false), isVerifyBurn(false) {}
 };
 
 /**
@@ -81,6 +82,20 @@ public:
     static int32_t ExecAsyncGetPartitionTableInfo(const std::string &devPath, std::vector<std::string> &lines);
     static int32_t CleanTempDirectory();
     static int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+
+    // ISO/UDF file extraction helper methods
+    static std::vector<std::string> SplitString(const std::string& str, char delimiter);
+    static std::string GetRelativePath(const std::string& fullPath, const std::string& baseDir);
+    static std::vector<std::string> MergeOutputLines(const std::vector<std::string>& output);
+    static std::string ParseDirectoryPath(const std::string& line);
+    static bool IsFileEntry(const std::string& line, char& entryType);
+    static std::string ParseFileName(const std::string& trimmedLine);
+    static int32_t GenerateChecksums(const std::string& dirPath, const std::string& checksumFilePath);
+    static std::map<std::string, std::string> ParseChecksumFile(
+        const std::string& checksumContent, const std::string& basePath);
+    static int32_t CompareChecksums(
+        const std::map<std::string, std::string>& sourceMap,
+        const std::map<std::string, std::string>& discMap);
 
 private:
     static bool IsMtpDeviceInUse(const std::string &diskPath);
