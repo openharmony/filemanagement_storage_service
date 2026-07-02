@@ -168,7 +168,11 @@ std::string StorageStatusManager::GetCallingPkgName()
 {
     uint32_t pid = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::HapTokenInfo tokenInfo = Security::AccessToken::HapTokenInfo();
-    Security::AccessToken::AccessTokenKit::GetHapTokenInfo(pid, tokenInfo);
+    int32_t ret = Security::AccessToken::AccessTokenKit::GetHapTokenInfo(pid, tokenInfo);
+    if (ret != E_OK) {
+        LOGE("GetCallingPkgName: GetHapTokenInfo failed, pid=%{public}u, ret=%{public}d", pid, ret);
+        return "";
+    }
     return tokenInfo.bundleName;
 }
 

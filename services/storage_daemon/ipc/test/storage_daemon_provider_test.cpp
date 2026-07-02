@@ -595,7 +595,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUserAuth_001
 
 /**
  * @tc.name: StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_001
- * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function covers all branches.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
@@ -607,9 +607,21 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUseAuthWithR
     auto newSecret = GenerateTestVector(0x02, 32);
     uint64_t secureUid = 12345678901234;
     std::vector<std::vector<uint8_t>> plainText = {GenerateTestVector(0x03, 64), GenerateTestVector(0x04, 64)};
+
+    uint32_t invalidUserId = -1;
     int32_t ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
-                                                                           StorageTest::USER_ID1, plainText);
-    EXPECT_TRUE(ret == E_OK);
+                                                                           invalidUserId, plainText);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    EXPECT_CALL(*keyManagerMock_, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(E_OK));
+    ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+                                                                   StorageTest::USER_ID1, plainText);
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*keyManagerMock_, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(-1));
+    ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+                                                                   StorageTest::USER_ID1, plainText);
+    EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_001 end";
 }
 
@@ -1842,27 +1854,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetLockScreenStatu
     int32_t result = storageDaemonProviderTest_->GetLockScreenStatus(userId, lockStatus);
     EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetLockScreenStatus_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002
- * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto authToken = GenerateTestVector(0x01, 32);
-    auto newSecret = GenerateTestVector(0x02, 32);
-    uint64_t secureUid = 100;
-    uint32_t userid = -1;
-    std::vector<std::vector<uint8_t>> plainText = {GenerateTestVector(0x03, 64), GenerateTestVector(0x04, 64)};
-    int32_t ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
-                                                                           userid, plainText);
-    EXPECT_EQ(ret, E_USERID_RANGE);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_002 end";
 }
 
 /**

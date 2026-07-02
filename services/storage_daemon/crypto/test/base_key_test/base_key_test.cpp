@@ -894,8 +894,39 @@ HWTEST_F(BaseKeyTest, BaseKey_CombKeyCtx_001, TestSize.Level1)
 
     rndEnc.Alloc(1);
     keyOut.Alloc(1);
+    EXPECT_FALSE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+
+    keyOut.Alloc(3);
     EXPECT_TRUE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
     GTEST_LOG_(INFO) << "BaseKey_CombKeyCtx_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_CombKeyCtx_002
+ * @tc.desc: Verify the CombKeyCtx function covers all branches.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_CombKeyCtx_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyCtx_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob nonce;
+    KeyBlob rndEnc;
+    KeyBlob aad;
+    KeyBlob keyOut;
+
+    nonce.Alloc(12);  // GCM_NONCE_BYTES
+    rndEnc.Alloc(80); // typical rndEnc size
+    aad.Alloc(16);    // GCM_MAC_BYTES
+
+    keyOut.Alloc(12 + 80 + 16 - 1);
+    EXPECT_FALSE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+
+    keyOut.Alloc(12 + 80 + 16);
+    EXPECT_TRUE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyCtx_002 end";
 }
 
 /**
@@ -917,8 +948,42 @@ HWTEST_F(BaseKeyTest, BaseKey_SplitKeyCtx_001, TestSize.Level1)
     EXPECT_FALSE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
 
     nonce.Clear();
+    keyIn.Alloc(12);
     EXPECT_TRUE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
     GTEST_LOG_(INFO) << "BaseKey_SplitKeyCtx_001 end";
+}
+
+/**
+* @tc.name: BaseKey_SplitKeyCtx_002
+* @tc.desc: Verify the SplitKeyCtx function covers all branches.
+* @tc.type: FUNC
+* @tc.require: IAXJFK
+*/
+HWTEST_F(BaseKeyTest, BaseKey_SplitKeyCtx_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_SplitKeyCtx_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob keyIn;
+    KeyBlob nonce;
+    KeyBlob rndEnc;
+    KeyBlob aad;
+
+    EXPECT_FALSE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+
+    nonce.Alloc(12);
+    aad.Alloc(16);
+    keyIn.Alloc(20);
+    EXPECT_FALSE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+
+    keyIn.Alloc(12 + 80 + 16);  // GCM_NONCE_BYTES + rndEnc + GCM_MAC_BYTES
+    rndEnc.Alloc(80);           // typical rndEnc size
+
+    EXPECT_TRUE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+
+    keyIn.Alloc(12 + 16);  // only nonce + aad, no room for rndEnc
+    EXPECT_FALSE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+    GTEST_LOG_(INFO) << "BaseKey_SplitKeyCtx_002 end";
 }
 
 /**
