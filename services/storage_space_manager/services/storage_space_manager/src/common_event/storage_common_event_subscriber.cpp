@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "common_event/storage_common_event_subscriber.h"
+#include "cache_clean_controller/cache_clean_controller.h"
+#include "iservice_registry.h"
+#include "int_wrapper.h"
+#include "storage_space_manager_hilog.h"
+#include "system_ability_definition.h"
+#include "storage_space_manager_errno.h"
+
+namespace OHOS {
+namespace StorageSpaceManager {
+
+StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
+    : EventFwk::CommonEventSubscriber(info) {}
+
+void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
+{
+    LOGI("subscribe common event start");
+    if (subscriber_ == nullptr) {
+        EventFwk::MatchingSkills matchingSkills;
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
+        EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
+        subscriber_ = std::make_shared<StorageCommonEventSubscriber>(subscribeInfo);
+        if (!EventFwk::CommonEventManager::SubscribeCommonEvent(subscriber_)) {
+            subscriber_ = nullptr;
+            LOGE("subscribe common event failed.");
+            return;
+        }
+    }
+    LOGI("subscribe common event success");
+}
+
+void StorageCommonEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
+{
+    const AAFwk::Want& want = eventData.GetWant();
+    std::string action = want.GetAction();
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON) {
+        DelayedSingleton<CacheCleanController>::GetInstance()->SetStopCleanCacheFlag(true);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED) {
+        DelayedSingleton<CacheCleanController>::GetInstance()->SetStopCleanCacheFlag(true);
+    }
+}
+}  // namespace StorageSpaceManager
+}  // namespace OHOS
