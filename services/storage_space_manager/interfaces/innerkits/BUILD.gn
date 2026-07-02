@@ -1,0 +1,123 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/components/idl_tool/idl.gni")
+import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/services/storage_space_manager/storage_space_manager.gni")
+
+idl_gen_interface("storage_space_manager_interface_native") {
+  sources = [ "IStorageSpaceManager.idl" ]
+  log_tag = "StorageSpaceManager"
+  log_domainid = "0xD004302"
+  hitrace = "HITRACE_TAG_FILEMANAGEMENT"
+}
+
+config("storage_space_manager_idl_public_config") {
+  include_dirs = [
+    "include",
+    "${target_gen_dir}",
+  ]
+}
+
+ohos_source_set("storage_space_manager_ipc_native") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  output_values = get_target_outputs(":storage_space_manager_interface_native")
+  sources = []
+  sources += filter_include(output_values, [ "*.cpp" ])
+  public_configs = [ ":storage_space_manager_idl_public_config" ]
+  deps = [ ":storage_space_manager_interface_native" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_source_set("storage_space_manager_header") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  public_configs = [ ":storage_space_manager_idl_public_config" ]
+  deps = [ ":storage_space_manager_interface_native" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_shared_library("storage_space_manager_innerkits") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  sources = [
+    "src/storage_space_manager_client.cpp",
+    "src/callback/storage_space_manager_load_callback.cpp",
+  ]
+
+  defines = [
+    "STORAGE_SPACE_MANAGER_LOG_TAG = \"StorageSpaceManager\"",
+    "LOG_DOMAIN = 0xD004302",
+  ]
+
+  public_configs = [ ":storage_space_manager_idl_public_config" ]
+  configs = [
+    "${storage_space_manager_path}/common:storage_space_manager_common_include",
+    "${storage_space_manager_path}/utils:storage_space_manager_utils_include",
+  ]
+
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+
+  deps = [
+    ":storage_space_manager_header",
+    ":storage_space_manager_interface_native",
+    ":storage_space_manager_ipc_native",
+  ]
+
+  part_name = "storage_service"
+  innerapi_tags = [ "platformsdk" ]
+  subsystem_name = "filemanagement"
+  install_enable = true
+}
