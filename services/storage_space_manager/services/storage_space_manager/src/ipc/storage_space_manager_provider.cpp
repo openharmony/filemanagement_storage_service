@@ -55,7 +55,6 @@ void StorageSpaceManagerProvider::OnStart(const SystemAbilityOnDemandReason& sta
 {
     LOGI("OnStart reason=%{public}s", startReason.GetName().c_str());
 
-    // 注册依赖 SA 监听
     std::unordered_set<int32_t> deps = {
         BUNDLE_MGR_SERVICE_SYS_ABILITY_ID,
     };
@@ -116,7 +115,6 @@ void StorageSpaceManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, co
             return;
         }
     }
-    // 所有依赖 SA 就绪:Init → Publish → 延迟卸载 → 关键进程标记
     if (!Init()) {
         LOGE("Init failed");
         return;
@@ -223,8 +221,6 @@ void StorageSpaceManagerProvider::SubtractRunningIpcCount()
     runningIpcCount_.fetch_sub(1);
 }
 
-/* ---------- Storage Space Query APIs ---------- */
-
 int32_t StorageSpaceManagerProvider::GetTotalSize(int64_t &totalSize)
 {
     if (!serviceReady_.load(std::memory_order_acquire)) {
@@ -325,11 +321,8 @@ int32_t StorageSpaceManagerProvider::GetFreeInodes(int64_t &freeInodes)
     return ret;
 }
 
-/* ---------- Bundle Cache Management APIs ---------- */
-
 int32_t StorageSpaceManagerProvider::CleanBundleCache(int32_t userId)
 {
-    LOGE("libo 007");
     if (!serviceReady_.load(std::memory_order_acquire)) {
         LOGE("Service is not ready");
         return E_SERVICE_NOT_READY;
@@ -341,7 +334,6 @@ int32_t StorageSpaceManagerProvider::CleanBundleCache(int32_t userId)
     if (!ExitIdleState()) {
         return E_SERVICE_ON_IDLE;
     }
-    LOGE("libo 008");
     AddRunningIpcCount();
     int32_t ret = DelayedSingleton<CacheCleanController>::GetInstance()->CleanBundleCache(userId);
     SubtractRunningIpcCount();

@@ -15,6 +15,7 @@
 
 #include "common_event/storage_common_event_subscriber.h"
 #include "cache_clean_controller/cache_clean_controller.h"
+#include <mutex>
 #include "iservice_registry.h"
 #include "int_wrapper.h"
 #include "storage_space_manager_hilog.h"
@@ -30,6 +31,8 @@ StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::Commo
 void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
 {
     LOGI("subscribe common event start");
+    static std::mutex subscribeMutex;
+    std::lock_guard<std::mutex> lock(subscribeMutex);
     if (subscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);

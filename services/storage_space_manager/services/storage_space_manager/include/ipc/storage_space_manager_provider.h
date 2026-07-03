@@ -47,15 +47,12 @@ public:
     explicit StorageSpaceManagerProvider(int32_t saId = STORAGE_SPACE_MANAGER_SA_ID, bool runOnCreate = false);
     ~StorageSpaceManagerProvider() override = default;
 
-    /* ---------- SystemAbility 生命周期 ---------- */
     void OnStart(const SystemAbilityOnDemandReason& startReason) override;
     void OnStop() override;
-    // todo cancleidle需要在入口处调用
     void OnActive(const SystemAbilityOnDemandReason& activeReason) override;
     int32_t OnIdle(const SystemAbilityOnDemandReason& idleReason) override;
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
 
-    /* ---------- IPC 接口实现（IDL 生成的 stub 调用） ---------- */
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
@@ -63,33 +60,26 @@ public:
     int32_t GetFreeInodes(int64_t &freeInodes) override;
     int32_t CleanBundleCache(int32_t userId) override;
 
-    /* ---------- IPC 计数（Stub 层调用，用于 idle 判断） ---------- */
     void AddRunningIpcCount();
     void SubtractRunningIpcCount();
 
 private:
-    /* ---------- 初始化 ---------- */
     bool Init();
 
-    /* ---------- 延迟卸载 ---------- */
     int32_t CreateUnloadHandler();
     int32_t DestroyUnloadHandler();
     void DelayUnloadTask();
 
-    /* ---------- idle 判断 ---------- */
     bool IsReadyIntoIdle();
     bool ExitIdleState();
 
-    /* ---------- 状态 ---------- */
     std::atomic<bool> serviceReady_{false};
     std::atomic<bool> isStopped_{false};
     std::atomic<int32_t> runningIpcCount_{0};
 
-    /* ---------- 依赖 SA 监听 ---------- */
     std::mutex depSaIdsMtx_;
     std::unordered_set<int32_t> depSaIds_;
 
-    /* ---------- 延迟卸载 ---------- */
     std::mutex unloadMutex_;
     std::shared_ptr<AppExecFwk::EventHandler> unloadHandler_;
 };

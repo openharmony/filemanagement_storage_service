@@ -1,0 +1,289 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/services/storage_space_manager/storage_space_manager.gni")
+
+# 本目录下 ohos_unittest 共用：聚合 innerkits IDL 公开头、子系统 config、utils/mock 等；新增用例 configs 仅填本项即可。
+config("storage_space_manager_unittest_common") {
+  configs = [
+    "${storage_space_manager_path}/interfaces/innerkits:storage_space_manager_idl_public_config",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+    "${storage_space_manager_path}/common:storage_space_manager_common_include",
+    "${storage_space_manager_path}/utils:storage_space_manager_utils_include",
+    "${storage_space_manager_path}/test/mock:storage_space_manager_mock_include",
+  ]
+  defines = [
+    "STORAGE_SPACE_MANAGER_LOG_TAG = \"StorageSpaceManager\"",
+    "LOG_DOMAIN = 0xD004302",
+  ]
+  cflags = [
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+}
+
+group("storage_space_manager_ut") {
+  testonly = true
+  deps = [
+    ":cache_clean_controller_unittest",
+    ":storage_space_manager_provider_unittest",
+    ":storage_total_status_service_unittest",
+    ":storage_common_event_subscriber_unittest",
+    ":ipc_caller_auth_unittest",
+    ":storage_space_manager_client_unittest",
+    ":bundle_manager_connector_unittest",
+    ":bundle_manager_adapter_proxy_unittest",
+  ]
+}
+
+# IpcCallerAuth Unit Test (link-time mock for AccessTokenKit / IPCSkeleton)
+ohos_unittest("ipc_caller_auth_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/utils:storage_space_manager_utils_include",
+  ]
+
+  sources = [
+    "ipc_caller_auth_test.cpp",
+    "../../utils/src/ipc_caller_auth.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/test/mock:storage_space_manager_ipc_mock_sources",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+  ]
+}
+
+# StorageSpaceManagerClient Unit Test (link-time mock for SystemAbilityManagerClient)
+ohos_unittest("storage_space_manager_client_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+  ]
+
+  sources = [
+    "storage_space_manager_client_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/interfaces/innerkits:storage_space_manager_innerkits",
+    "${storage_space_manager_path}/test/mock:storage_space_manager_samgr_mock_sources",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "samgr:samgr_proxy",
+  ]
+}
+
+# CacheCleanController Unit Test
+ohos_unittest("cache_clean_controller_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "cache_clean_controller_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+  ]
+
+  defines = []
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.resourceschedule_device_usage_statistics)) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+}
+
+# StorageSpaceManagerProvider Unit Test
+ohos_unittest("storage_space_manager_provider_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "storage_space_manager_provider_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+    "${storage_space_manager_path}/test/mock:storage_space_manager_ipc_mock_sources",
+  ]
+
+  defines = []
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "json:nlohmann_json_static",
+    "safwk:system_ability_fwk",
+  ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.resourceschedule_device_usage_statistics)) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+}
+
+# StorageTotalStatusService Unit Test
+ohos_unittest("storage_total_status_service_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "storage_total_status_service_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog"
+  ]
+}
+
+# StorageCommonEventSubscriber Unit Test
+ohos_unittest("storage_common_event_subscriber_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "storage_common_event_subscriber_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "json:nlohmann_json_static"
+  ]
+}
+
+# BundleManagerConnector Unit Test
+ohos_unittest("bundle_manager_connector_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "bundle_manager_connector_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+  ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+  ]
+}
+
+# BundleManagerAdapterProxy Unit Test
+ohos_unittest("bundle_manager_adapter_proxy_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "bundle_manager_adapter_proxy_test.cpp",
+    "../../services/storage_space_manager/src/adapter/bundle_manager_adapter_proxy.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+    "${storage_space_manager_path}/test/mock:storage_space_manager_parcel_mock_sources",
+  ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+  ]
+}

@@ -36,7 +36,7 @@ public:
     static inline std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
 
 private:
-    std::atomic<uint8_t> deviceState_{0x00}; // 默认: 0x00 = 亮屏+断电
+    std::atomic<uint8_t> deviceState_{0x00}; // default: 0x00 = screen on + power connected
     std::atomic<int> batteryCapacity_{0};
 };
 

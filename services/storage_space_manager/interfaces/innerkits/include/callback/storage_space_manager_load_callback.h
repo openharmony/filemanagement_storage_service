@@ -28,9 +28,9 @@ class IRemoteObject;
 namespace OHOS {
 namespace StorageSpaceManager {
 
-// storage_space_manager SA 异步加载回调。
-// 由 SystemAbilityManager 在 LoadSystemAbility 完成后回调，
-// 把远端对象 / 加载失败结果回传给 StorageSpaceManagerClient。
+// Async load callback for storage_space_manager SA.
+// Called by SystemAbilityManager after LoadSystemAbility completes,
+// passes the remote object / load failure result back to StorageSpaceManagerClient.
 class StorageSpaceManagerLoadCallback : public SystemAbilityLoadCallbackStub {
 public:
     void OnLoadSystemAbilitySuccess(int32_t systemAbilityId,

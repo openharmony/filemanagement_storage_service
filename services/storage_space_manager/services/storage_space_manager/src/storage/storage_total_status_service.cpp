@@ -15,7 +15,9 @@
 
 #include "storage/storage_total_status_service.h"
 
+#include <climits>
 #include <cmath>
+#include "securec.h"
 #include <sys/statvfs.h>
 
 #include "storage_space_manager_errno.h"
@@ -28,6 +30,39 @@ namespace {
     constexpr int64_t ONE_GB = 1024 * 1024 * 1024;   // 1GB in bytes
     constexpr int64_t UNIT = 1024;               // Binary unit
     constexpr int64_t THRESHOLD = 100;           // Threshold for rounding
+
+    std::string AnonymizePath(const char *path)
+    {
+        if (path == nullptr) {
+            return "null";
+        }
+        std::string pathStr(path);
+        if (pathStr.empty()) {
+            return "empty";
+        }
+        size_t pos = pathStr.rfind('/');
+        if (pos == std::string::npos) {
+            return "****/" + pathStr;
+        }
+        if (pos == 0) {
+            return pathStr;
+        }
+        return "****" + pathStr.substr(pos);
+    }
+
+    int32_t CalcBlockProduct(int64_t blockSize, int64_t blockCount, int64_t &result, const char *tag)
+    {
+        if (blockSize <= 0 || blockCount < 0) {
+            LOGE("%{public}s: invalid block values", tag);
+            return E_IO_ERROR;
+        }
+        if (blockCount > 0 && blockSize > INT64_MAX / blockCount) {
+            LOGE("%{public}s: overflow detected", tag);
+            return E_IO_ERROR;
+        }
+        result = blockSize * blockCount;
+        return E_OK;
+    }
 }
 
 int64_t StorageTotalStatusService::GetRoundSize(int64_t size)
@@ -52,28 +87,46 @@ int64_t StorageTotalStatusService::GetRoundSize(int64_t size)
 
 int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type, int64_t &size)
 {
+    if (path == nullptr) {
+        LOGE("GetSizeOfPath: path is nullptr");
+        return E_INVALID_ARGUMENT;
+    }
+    std::string safePath = AnonymizePath(path);
+
     struct statvfs diskInfo;
+    if (memset_s(&diskInfo, sizeof(diskInfo), 0, sizeof(diskInfo)) != EOK) {
+        LOGE("GetSizeOfPath: memset_s failed for path: %{public}s", safePath.c_str());
+        return E_IO_ERROR;
+    }
     int ret = statvfs(path, &diskInfo);
     if (ret != 0) {
-        LOGE("Failed to statvfs for path: %{public}s, errno: %{public}d", path, errno);
+        LOGE("Failed to statvfs for path: %{public}s, errno: %{public}d", safePath.c_str(), errno);
         return E_STATVFS_FAILED;
     }
 
     std::string typeStr;
+    int32_t err;
     if (type == static_cast<int32_t>(StorageStatType::TOTAL)) {
-        size = static_cast<int64_t>(diskInfo.f_bsize) * static_cast<int64_t>(diskInfo.f_blocks);
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_bsize),
+            static_cast<int64_t>(diskInfo.f_blocks), size, "GetSizeOfPath: total space");
         typeStr = "total space";
     } else if (type == static_cast<int32_t>(StorageStatType::FREE)) {
-        size = static_cast<int64_t>(diskInfo.f_frsize) * static_cast<int64_t>(diskInfo.f_bavail);
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_frsize),
+            static_cast<int64_t>(diskInfo.f_bavail), size, "GetSizeOfPath: free space");
         typeStr = "free space";
     } else {
-        size = static_cast<int64_t>(diskInfo.f_bsize) *
-               (static_cast<int64_t>(diskInfo.f_blocks) - static_cast<int64_t>(diskInfo.f_bfree));
+        int64_t usedBlocks = static_cast<int64_t>(diskInfo.f_blocks) -
+                             static_cast<int64_t>(diskInfo.f_bfree);
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_bsize),
+            usedBlocks, size, "GetSizeOfPath: used space");
         typeStr = "used space";
+    }
+    if (err != E_OK) {
+        return err;
     }
 
     LOGI("GetSizeOfPath: path=%{public}s, type=%{public}s, size=%{public}lld",
-         path, typeStr.c_str(), static_cast<long long>(size));
+         safePath.c_str(), typeStr.c_str(), static_cast<long long>(size));
     return E_OK;
 }
 
@@ -139,10 +192,20 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 
 int32_t StorageTotalStatusService::GetInodeOfPath(const char *path, int32_t type, int64_t &inodeCnt)
 {
+    if (path == nullptr) {
+        LOGE("GetInodeOfPath: path is nullptr");
+        return E_INVALID_ARGUMENT;
+    }
+    std::string safePath = AnonymizePath(path);
+
     struct statvfs diskInfo;
+    if (memset_s(&diskInfo, sizeof(diskInfo), 0, sizeof(diskInfo)) != EOK) {
+        LOGE("GetInodeOfPath: memset_s failed for path: %{public}s", safePath.c_str());
+        return E_IO_ERROR;
+    }
     int ret = statvfs(path, &diskInfo);
     if (ret != 0) {
-        LOGE("Failed to statvfs for path: %{public}s, errno: %{public}d", path, errno);
+        LOGE("Failed to statvfs for path: %{public}s, errno: %{public}d", safePath.c_str(), errno);
         return E_STATVFS_FAILED;
     }
 
@@ -154,12 +217,18 @@ int32_t StorageTotalStatusService::GetInodeOfPath(const char *path, int32_t type
         inodeCnt = static_cast<int64_t>(diskInfo.f_ffree);
         typeStr = "free inodes";
     } else {
-        inodeCnt = static_cast<int64_t>(diskInfo.f_files) - static_cast<int64_t>(diskInfo.f_ffree);
+        int64_t totalFiles = static_cast<int64_t>(diskInfo.f_files);
+        int64_t freeFiles = static_cast<int64_t>(diskInfo.f_ffree);
+        if (totalFiles < 0 || freeFiles < 0 || totalFiles < freeFiles) {
+            LOGE("GetInodeOfPath: invalid inode values");
+            return E_IO_ERROR;
+        }
+        inodeCnt = totalFiles - freeFiles;
         typeStr = "used inodes";
     }
 
     LOGI("GetInodeOfPath: path=%{public}s, type=%{public}s, inodeCnt=%{public}lld",
-         path, typeStr.c_str(), static_cast<long long>(inodeCnt));
+         safePath.c_str(), typeStr.c_str(), static_cast<long long>(inodeCnt));
     return E_OK;
 }
 
