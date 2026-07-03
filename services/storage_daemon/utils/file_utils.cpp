@@ -47,7 +47,7 @@ constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG 
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
-constexpr int BUF_LEN = 1024;
+constexpr int BUF_LEN = 20480;
 constexpr int PIPE_FD_LEN = 2;
 constexpr int UUID_LENGTH = 36;
 constexpr int UUID_PREFIX_LENGTH = 4;
