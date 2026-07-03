@@ -478,6 +478,26 @@ HWTEST_F(UserPathResolverTest, UserPathResolverTest_GetAppDataMountNodeList_001,
     EXPECT_EQ(UserPathResolver::GetAppDataMountNodeList(userId_, dirInfoList), E_OK);
 }
 
+/**
+ * @tc.name: UserPathResolverTest_GetAppDataMountStartupNodeList_001
+ * @tc.desc: Verify the GetAppDataMountStartupNodeList.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(UserPathResolverTest, UserPathResolverTest_GetAppDataMountStartupNodeList_001, TestSize.Level1)
+{
+    std::vector<MountNodeInfo> mountNodeList;
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
+    EXPECT_EQ(UserPathResolver::GetAppDataMountStartupNodeList(userId_, mountNodeList), E_OPEN_JSON_FILE_ERROR);
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
+
+    CreateFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO, "{[]}");
+    EXPECT_EQ(UserPathResolver::GetAppDataMountStartupNodeList(userId_, mountNodeList), E_JSON_PARSE_ERROR);
+    DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
+
+    EXPECT_EQ(UserPathResolver::GetAppDataMountStartupNodeList(userId_, mountNodeList), E_OK);
+}
+
 } // Test
 } // STORAGE_DAEMON
 } // OHOS
