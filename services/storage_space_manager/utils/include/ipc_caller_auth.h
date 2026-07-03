@@ -37,7 +37,8 @@ inline const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORM
 
 /**
  * @class IpcCallerAuth
- * @brief Generic authentication & caller info reader based on current IPC thread context (IPCSkeleton + AccessTokenKit).
+ * @brief Generic authentication & caller info reader based on 
+ *     current IPC thread context (IPCSkeleton + AccessTokenKit).
  */
 class IpcCallerAuth {
 public:
