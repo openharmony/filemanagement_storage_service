@@ -41,14 +41,16 @@ public:
 
 CacheCleanController* CacheCleanControllerTest::controller_ = nullptr;
 std::string CacheCleanControllerTest::testConfigDir_ = "/data/service/el1/public/storage_space_manager";
-std::string CacheCleanControllerTest::testConfigFile_ = "/data/service/el1/public/storage_space_manager/cache_clean_config.json";
+std::string CacheCleanControllerTest::testConfigFile_ =
+    "/data/service/el1/public/storage_space_manager/cache_clean_config.json";
 
 void CacheCleanControllerTest::SetUpTestCase()
 {
     controller_ = DelayedSingleton<CacheCleanController>::GetInstance().get();
 
     // Create test directory
-    mkdir(testConfigDir_.c_str(), 0755);
+    constexpr int DIR_PERMISSION = 0755;
+    mkdir(testConfigDir_.c_str(), DIR_PERMISSION);
 }
 
 void CacheCleanControllerTest::TearDownTestCase()
@@ -847,7 +849,8 @@ HWTEST_F(CacheCleanControllerTest, WriteCleanInfoToExtra_Success_AppIndexNonZero
 /**
  * @tc.number: SUB_STORAGE_CacheCleanController_WriteCleanInfoToExtra_0003
  * @tc.name: WriteCleanInfoToExtra_Failure_AppIndexZero
- * @tc.desc: Test WriteCleanInfoToExtra with failure result and appIndex=0 (should not output appIndex/beforeSize/afterSize)
+ * @tc.desc: Test WriteCleanInfoToExtra with failure result and
+ *     appIndex=0 (should not output appIndex/beforeSize/afterSize)
  * @tc.size: SMALL
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -885,7 +888,8 @@ HWTEST_F(CacheCleanControllerTest, WriteCleanInfoToExtra_Failure_AppIndexZero, T
 /**
  * @tc.number: SUB_STORAGE_CacheCleanController_WriteCleanInfoToExtra_0004
  * @tc.name: WriteCleanInfoToExtra_Failure_AppIndexNonZero
- * @tc.desc: Test WriteCleanInfoToExtra with failure result and appIndex!=0 (should output appIndex but not beforeSize/afterSize)
+ * @tc.desc: Test WriteCleanInfoToExtra with failure result and
+ *     appIndex!=0 (should output appIndex but not beforeSize/afterSize)
  * @tc.size: SMALL
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -1284,7 +1288,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_TopBoundary_Rank11, Tes
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_TopBoundary_Rank11 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(11, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);

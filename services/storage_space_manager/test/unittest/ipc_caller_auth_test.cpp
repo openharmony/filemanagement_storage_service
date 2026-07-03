@@ -24,21 +24,29 @@ namespace StorageSpaceManager {
 using namespace testing;
 using namespace testing::ext;
 
+namespace {
+    constexpr uint32_t MOCK_TOKEN_ID = 12345;
+    constexpr int32_t MOCK_UID = 1000;
+    constexpr int32_t ACCESS_TOKEN_GRANTED = 0;
+    constexpr uint32_t TOKEN_TYPE_NATIVE = 1;
+    constexpr int32_t MOCK_RESULT_SUCCESS = 0;
+}
+
 class IpcCallerAuthTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
     void SetUp()
     {
-        g_mockCallingTokenId = 12345;
+        g_mockCallingTokenId = MOCK_TOKEN_ID;
         g_mockCallingFullTokenId = 0;
-        g_mockCallingUid = 1000;
-        g_mockVerifyAccessTokenResult = 0;
-        g_mockTokenTypeFlag = 1;
+        g_mockCallingUid = MOCK_UID;
+        g_mockVerifyAccessTokenResult = ACCESS_TOKEN_GRANTED;
+        g_mockTokenTypeFlag = TOKEN_TYPE_NATIVE;
         g_mockIsSystemApp = true;
-        g_mockGetNativeTokenInfoResult = 0;
+        g_mockGetNativeTokenInfoResult = MOCK_RESULT_SUCCESS;
         g_mockNativeProcessName = "mock_process";
-        g_mockGetHapTokenInfoResult = 0;
+        g_mockGetHapTokenInfoResult = MOCK_RESULT_SUCCESS;
         g_mockHapBundleName = "mock_bundle";
     }
     void TearDown() {}
