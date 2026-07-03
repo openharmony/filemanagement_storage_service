@@ -70,6 +70,7 @@ ohos_shared_library("storagestatistics") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "node:node_header_notice",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -131,6 +132,7 @@ ohos_shared_library("keymanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "node:node_header_notice",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
