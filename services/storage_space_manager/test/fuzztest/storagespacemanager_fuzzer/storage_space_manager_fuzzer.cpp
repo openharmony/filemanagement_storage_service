@@ -33,6 +33,49 @@ namespace StorageSpaceManager {
 
 static StorageSpaceManagerClient* g_client = nullptr;
 
+namespace {
+    constexpr uint32_t MAX_RAPID_CALLS = 100;
+    constexpr uint32_t MAX_ALTERNATING_ITERATIONS = 50;
+    constexpr uint32_t REPEAT_COUNT = 10;
+    constexpr uint32_t CLEAN_CALL_COUNT = 5;
+    constexpr uint32_t ALTERNATE_INTERVAL = 2;
+    constexpr uint32_t CLEAN_INTERVAL = 3;
+
+    enum class ApiChoice : int32_t {
+        GET_TOTAL_SIZE = 0,
+        GET_SYSTEM_SIZE,
+        GET_FREE_SIZE,
+        GET_TOTAL_INODES,
+        GET_FREE_INODES,
+        COUNT
+    };
+
+    enum class FuzzPattern : int32_t {
+        ALL_SIZE_APIS = 0,
+        ALL_INODE_APIS,
+        MIXED_APIS,
+        REPEAT_SAME_API,
+        ALL_CLEAN_BUNDLE_CACHE,
+        COUNT
+    };
+
+    enum class FuzzFunction : uint32_t {
+        GET_TOTAL_SIZE = 0,
+        GET_SYSTEM_SIZE,
+        GET_FREE_SIZE,
+        GET_TOTAL_INODES,
+        GET_FREE_INODES,
+        CLEAN_BUNDLE_CACHE,
+        INVALID_PARAMETERS,
+        RAPID_SEQUENTIAL_CALLS,
+        ALTERNATING_CALLS,
+        CONCURRENT_ACCESS,
+        BOUNDARY_VALUES,
+        RANDOM_DATA_PATTERNS,
+        COUNT
+    };
+}
+
 // Initialize StorageSpaceManager client
 bool InitializeClient()
 {
@@ -141,26 +184,27 @@ void FuzzRapidSequentialCalls(FuzzedDataProvider& provider)
         return;
     }
 
-    uint32_t callCount = provider.ConsumeIntegralInRange<uint32_t>(1, 100);
+    uint32_t callCount = provider.ConsumeIntegralInRange<uint32_t>(1, MAX_RAPID_CALLS);
 
     for (uint32_t i = 0; i < callCount; i++) {
         int64_t size = 0;
-        int32_t apiChoice = provider.ConsumeIntegralInRange<int32_t>(0, 4);
+        auto apiChoice = static_cast<ApiChoice>(provider.ConsumeIntegralInRange<int32_t>(
+            0, static_cast<int32_t>(ApiChoice::COUNT) - 1));
 
         switch (apiChoice) {
-            case 0:
+            case ApiChoice::GET_TOTAL_SIZE:
                 g_client->GetTotalSize(size);
                 break;
-            case 1:
+            case ApiChoice::GET_SYSTEM_SIZE:
                 g_client->GetSystemSize(size);
                 break;
-            case 2:
+            case ApiChoice::GET_FREE_SIZE:
                 g_client->GetFreeSize(size);
                 break;
-            case 3:
+            case ApiChoice::GET_TOTAL_INODES:
                 g_client->GetTotalInodes(size);
                 break;
-            case 4:
+            case ApiChoice::GET_FREE_INODES:
                 g_client->GetFreeInodes(size);
                 break;
             default:
@@ -176,19 +220,19 @@ void FuzzAlternatingCalls(FuzzedDataProvider& provider)
         return;
     }
 
-    uint32_t iterations = provider.ConsumeIntegralInRange<uint32_t>(1, 50);
+    uint32_t iterations = provider.ConsumeIntegralInRange<uint32_t>(1, MAX_ALTERNATING_ITERATIONS);
 
     for (uint32_t i = 0; i < iterations; i++) {
         int64_t size = 0;
 
         // Alternate between size and inode APIs
-        if (i % 2 == 0) {
+        if (i % ALTERNATE_INTERVAL == 0) {
             g_client->GetTotalSize(size);
         } else {
             g_client->GetTotalInodes(size);
         }
 
-        if (i % 3 == 0) {
+        if (i % CLEAN_INTERVAL == 0) {
             int32_t userId = provider.ConsumeIntegral<int32_t>();
             g_client->CleanBundleCache(userId);
         }
@@ -241,11 +285,11 @@ void FuzzRandomDataPatterns(FuzzedDataProvider& provider)
         return;
     }
 
-    uint32_t pattern = provider.ConsumeIntegral<uint32_t>();
+    auto fuzzPattern = static_cast<FuzzPattern>(provider.ConsumeIntegral<uint32_t>() %
+        static_cast<int32_t>(FuzzPattern::COUNT));
 
-    switch (pattern % 5) {
-        case 0:
-            // Pattern: All size APIs
+    switch (fuzzPattern) {
+        case FuzzPattern::ALL_SIZE_APIS:
             {
                 int64_t size = 0;
                 g_client->GetTotalSize(size);
@@ -253,16 +297,14 @@ void FuzzRandomDataPatterns(FuzzedDataProvider& provider)
                 g_client->GetFreeSize(size);
             }
             break;
-        case 1:
-            // Pattern: All inode APIs
+        case FuzzPattern::ALL_INODE_APIS:
             {
                 int64_t inodes = 0;
                 g_client->GetTotalInodes(inodes);
                 g_client->GetFreeInodes(inodes);
             }
             break;
-        case 2:
-            // Pattern: Mix of APIs
+        case FuzzPattern::MIXED_APIS:
             {
                 int64_t size = 0;
                 g_client->GetTotalSize(size);
@@ -271,19 +313,17 @@ void FuzzRandomDataPatterns(FuzzedDataProvider& provider)
                 g_client->GetFreeSize(size);
             }
             break;
-        case 3:
-            // Pattern: Repeat same API
+        case FuzzPattern::REPEAT_SAME_API:
             {
                 int64_t size = 0;
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < REPEAT_COUNT; i++) {
                     g_client->GetTotalSize(size);
                 }
             }
             break;
-        case 4:
-            // Pattern: All CleanBundleCache with different user IDs
+        case FuzzPattern::ALL_CLEAN_BUNDLE_CACHE:
             {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < CLEAN_CALL_COUNT; i++) {
                     int32_t userId = provider.ConsumeIntegral<int32_t>();
                     g_client->CleanBundleCache(userId);
                 }
@@ -306,43 +346,44 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     FuzzedDataProvider provider(data, size);
 
     // Choose a fuzz function based on the data
-    uint32_t fuzzFunction = provider.ConsumeIntegralInRange<uint32_t>(0, 11);
+    auto fuzzFunction = static_cast<FuzzFunction>(provider.ConsumeIntegralInRange<uint32_t>(
+        0, static_cast<uint32_t>(FuzzFunction::COUNT) - 1));
 
     switch (fuzzFunction) {
-        case 0:
+        case FuzzFunction::GET_TOTAL_SIZE:
             OHOS::StorageSpaceManager::FuzzGetTotalSize(provider);
             break;
-        case 1:
+        case FuzzFunction::GET_SYSTEM_SIZE:
             OHOS::StorageSpaceManager::FuzzGetSystemSize(provider);
             break;
-        case 2:
+        case FuzzFunction::GET_FREE_SIZE:
             OHOS::StorageSpaceManager::FuzzGetFreeSize(provider);
             break;
-        case 3:
+        case FuzzFunction::GET_TOTAL_INODES:
             OHOS::StorageSpaceManager::FuzzGetTotalInodes(provider);
             break;
-        case 4:
+        case FuzzFunction::GET_FREE_INODES:
             OHOS::StorageSpaceManager::FuzzGetFreeInodes(provider);
             break;
-        case 5:
+        case FuzzFunction::CLEAN_BUNDLE_CACHE:
             OHOS::StorageSpaceManager::FuzzCleanBundleCache(provider);
             break;
-        case 6:
+        case FuzzFunction::INVALID_PARAMETERS:
             OHOS::StorageSpaceManager::FuzzInvalidParameters(provider);
             break;
-        case 7:
+        case FuzzFunction::RAPID_SEQUENTIAL_CALLS:
             OHOS::StorageSpaceManager::FuzzRapidSequentialCalls(provider);
             break;
-        case 8:
+        case FuzzFunction::ALTERNATING_CALLS:
             OHOS::StorageSpaceManager::FuzzAlternatingCalls(provider);
             break;
-        case 9:
+        case FuzzFunction::CONCURRENT_ACCESS:
             OHOS::StorageSpaceManager::FuzzConcurrentAccess(provider);
             break;
-        case 10:
+        case FuzzFunction::BOUNDARY_VALUES:
             OHOS::StorageSpaceManager::FuzzBoundaryValues(provider);
             break;
-        case 11:
+        case FuzzFunction::RANDOM_DATA_PATTERNS:
             OHOS::StorageSpaceManager::FuzzRandomDataPatterns(provider);
             break;
         default:

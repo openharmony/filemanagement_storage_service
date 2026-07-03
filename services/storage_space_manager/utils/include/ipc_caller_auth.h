@@ -15,9 +15,10 @@
 
 /**
  * @file ipc_caller_auth.h
- * @brief IPC 侧调用方鉴权工具：封装 AccessTokenKit、IPCSkeleton 等通用能力。
+ * @brief IPC caller authentication utility: wraps AccessTokenKit, IPCSkeleton, etc.
  *
- * 不包含具体业务白名单（特定 UID、进程名、免检条件等），由调用方在业务层自行组合。
+ * Does not include business-specific whitelists (specific UIDs, process names,
+ * exemption conditions, etc.); callers compose those at the business layer.
  */
 
 #ifndef OHOS_FILEMANAGEMENT_STORAGE_SPACE_MANAGER_IPC_CALLER_AUTH_H
@@ -36,50 +37,51 @@ inline const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORM
 
 /**
  * @class IpcCallerAuth
- * @brief 基于当前 IPC 线程上下文（IPCSkeleton + AccessTokenKit）的通用鉴权与调用方信息读取。
+ * @brief Generic authentication & caller info reader based on current IPC thread context (IPCSkeleton + AccessTokenKit).
  */
 class IpcCallerAuth {
 public:
-    /** 校验当前 IPC 客户端是否持有指定声明权限（AccessTokenKit::VerifyAccessToken）。 */
+    /** Verify the current IPC client holds the specified declared permission (AccessTokenKit::VerifyAccessToken). */
     static bool VerifyCallerPermission(const std::string &permissionName);
 
     /**
-     * 先按业务回调判定是否为可信调用方；否时再走 VerifyCallerPermission。
-     * @param permissionName 待校验权限名。
-     * @param trustWithoutPermission 返回 true 则跳过令牌权限校验。
+     * First checks via business callback whether the caller is trusted;
+     * if not, falls back to VerifyCallerPermission.
+     * @param permissionName Permission name to verify.
+     * @param trustWithoutPermission If returns true, skips token permission check.
      */
     static bool VerifyCallerPermissionUnlessTrusted(const std::string &permissionName,
                                                     const std::function<bool()> &trustWithoutPermission);
 
-    /** 判断是否为系统应用：HAP 需系统应用，非 HAP（如原生 SA）视为 true。 */
+    /** Returns true if the caller is a system app (HAP must be system, non-HAP like native SA returns true). */
     static bool IsCallingSystemApp();
 
-    /** 比对原生调用方进程名与 UID，均与期望值一致返回 true（依赖 GetNativeTokenInfo）。 */
+    /** Compares native caller process name and UID, returns true only if both match (uses GetNativeTokenInfo). */
     static bool VerifyNativeCallerMatches(const std::string &expectedProcessName, int32_t expectedUid);
 
-    /** 返回当前 IPC 调用方 UID（IPCSkeleton::GetCallingUid）。 */
+    /** Returns the current IPC caller UID (IPCSkeleton::GetCallingUid). */
     static int32_t GetCallingUid();
 
-    /** 判断当前 IPC 调用方 UID 是否等于 expectedUid。 */
+    /** Returns true if the current IPC caller UID equals expectedUid. */
     static bool IsCallingUid(int32_t expectedUid);
 
-    /** 判断当前线程 IPC 令牌类型是否为 TOKEN_NATIVE。 */
+    /** Returns true if the current thread IPC token type is TOKEN_NATIVE. */
     static bool IsCallingNativeToken();
 
-    /** 判断当前线程 IPC 令牌类型是否为 TOKEN_HAP。 */
+    /** Returns true if the current thread IPC token type is TOKEN_HAP. */
     static bool IsCallingHapToken();
 
-    /** 按令牌类型读取调用方标识：原生为进程名，HAP 为 bundleName；其它或未取到为空串。 */
+    /** Reads caller identity by token type: process name for native, bundleName for HAP; empty string otherwise. */
     static std::string GetCallingBundleOrNativeProcessName();
 
-    /** 工具类禁止构造。 */
+    /** Utility class, construction prohibited. */
     IpcCallerAuth() = delete;
 
-    /** 工具类禁止析构。 */
+    /** Utility class, destruction prohibited. */
     ~IpcCallerAuth() = delete;
 };
 
-/** IpcCallerAuth 别名，语义为 IPC 侧鉴权相关静态方法集合。 */
+/** Alias for IpcCallerAuth, representing a collection of IPC-side authentication static methods. */
 using PermissionChecker = IpcCallerAuth;
 
 } // namespace StorageSpaceManager

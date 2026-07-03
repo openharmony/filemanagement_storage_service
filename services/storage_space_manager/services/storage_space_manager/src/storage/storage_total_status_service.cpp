@@ -49,6 +49,20 @@ namespace {
         }
         return "****" + pathStr.substr(pos);
     }
+
+    int32_t CalcBlockProduct(int64_t blockSize, int64_t blockCount, int64_t &result, const char *tag)
+    {
+        if (blockSize <= 0 || blockCount < 0) {
+            LOGE("%{public}s: invalid block values", tag);
+            return E_IO_ERROR;
+        }
+        if (blockCount > 0 && blockSize > INT64_MAX / blockCount) {
+            LOGE("%{public}s: overflow detected", tag);
+            return E_IO_ERROR;
+        }
+        result = blockSize * blockCount;
+        return E_OK;
+    }
 }
 
 int64_t StorageTotalStatusService::GetRoundSize(int64_t size)
@@ -91,46 +105,24 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     }
 
     std::string typeStr;
+    int32_t err;
     if (type == static_cast<int32_t>(StorageStatType::TOTAL)) {
-        int64_t blockSize = static_cast<int64_t>(diskInfo.f_bsize);
-        int64_t blockCount = static_cast<int64_t>(diskInfo.f_blocks);
-        if (blockSize <= 0 || blockCount < 0) {
-            LOGE("GetSizeOfPath: invalid block values for total space");
-            return E_IO_ERROR;
-        }
-        if (blockCount > 0 && blockSize > INT64_MAX / blockCount) {
-            LOGE("GetSizeOfPath: overflow detected for total space");
-            return E_IO_ERROR;
-        }
-        size = blockSize * blockCount;
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_bsize),
+            static_cast<int64_t>(diskInfo.f_blocks), size, "GetSizeOfPath: total space");
         typeStr = "total space";
     } else if (type == static_cast<int32_t>(StorageStatType::FREE)) {
-        int64_t fragSize = static_cast<int64_t>(diskInfo.f_frsize);
-        int64_t availBlocks = static_cast<int64_t>(diskInfo.f_bavail);
-        if (fragSize <= 0 || availBlocks < 0) {
-            LOGE("GetSizeOfPath: invalid block values for free space");
-            return E_IO_ERROR;
-        }
-        if (availBlocks > 0 && fragSize > INT64_MAX / availBlocks) {
-            LOGE("GetSizeOfPath: overflow detected for free space");
-            return E_IO_ERROR;
-        }
-        size = fragSize * availBlocks;
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_frsize),
+            static_cast<int64_t>(diskInfo.f_bavail), size, "GetSizeOfPath: free space");
         typeStr = "free space";
     } else {
-        int64_t blockSize = static_cast<int64_t>(diskInfo.f_bsize);
         int64_t usedBlocks = static_cast<int64_t>(diskInfo.f_blocks) -
                              static_cast<int64_t>(diskInfo.f_bfree);
-        if (blockSize <= 0 || usedBlocks < 0) {
-            LOGE("GetSizeOfPath: invalid block values for used space");
-            return E_IO_ERROR;
-        }
-        if (usedBlocks > 0 && usedBlocks > INT64_MAX / blockSize) {
-            LOGE("GetSizeOfPath: overflow detected for used space");
-            return E_IO_ERROR;
-        }
-        size = blockSize * usedBlocks;
+        err = CalcBlockProduct(static_cast<int64_t>(diskInfo.f_bsize),
+            usedBlocks, size, "GetSizeOfPath: used space");
         typeStr = "used space";
+    }
+    if (err != E_OK) {
+        return err;
     }
 
     LOGI("GetSizeOfPath: path=%{public}s, type=%{public}s, size=%{public}lld",
