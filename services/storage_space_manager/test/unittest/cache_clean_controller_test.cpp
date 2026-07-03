@@ -49,7 +49,7 @@ void CacheCleanControllerTest::SetUpTestCase()
     controller_ = DelayedSingleton<CacheCleanController>::GetInstance().get();
 
     // Create test directory
-    constexpr int DIR_PERMISSION = 0755;
+    constexpr int dirPermission = 0755;
     mkdir(testConfigDir_.c_str(), DIR_PERMISSION);
 }
 
@@ -937,7 +937,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_SmallStorage_Top1_3, Te
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_SmallStorage_Top1_3 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(1, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -959,7 +959,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_SmallStorage_Top4_10, T
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_SmallStorage_Top4_10 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(5, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -981,7 +981,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_SmallStorage_Top11_20, 
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_SmallStorage_Top11_20 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(15, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1003,7 +1003,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_SmallStorage_Default, T
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_SmallStorage_Default start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(30, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1025,7 +1025,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_LargeStorage_Top1_3, Te
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_LargeStorage_Top1_3 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(1, 500 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1047,7 +1047,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_LargeStorage_Top4_10, T
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_LargeStorage_Top4_10 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(8, 500 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1069,7 +1069,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_LargeStorage_Top11_20, 
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_LargeStorage_Top11_20 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(15, 500 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1091,7 +1091,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_LargeStorage_Default, T
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_LargeStorage_Default start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(30, 500 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1113,7 +1113,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_InvalidRank_Zero, TestS
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_InvalidRank_Zero start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = -1;
     int32_t ret = controller_->GetDefaultQuotaByRank(0, 128 * GB, quota);
     EXPECT_EQ(ret, E_INVALID_ARGUMENT);
@@ -1135,7 +1135,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_InvalidRank_Negative, T
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_InvalidRank_Negative start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = -1;
     int32_t ret = controller_->GetDefaultQuotaByRank(-1, 128 * GB, quota);
     EXPECT_EQ(ret, E_INVALID_ARGUMENT);
@@ -1157,7 +1157,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_Boundary_256GB, TestSiz
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_Boundary_256GB start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(1, 256 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1179,7 +1179,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_Boundary_257GB, TestSiz
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_Boundary_257GB start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(1, 257 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1222,7 +1222,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_TopBoundary_Rank3, Test
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_TopBoundary_Rank3 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(3, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1244,7 +1244,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_TopBoundary_Rank4, Test
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_TopBoundary_Rank4 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(4, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
@@ -1266,7 +1266,7 @@ HWTEST_F(CacheCleanControllerTest, GetDefaultQuotaByRank_TopBoundary_Rank10, Tes
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_GetDefaultQuotaByRank_TopBoundary_Rank10 start";
     ASSERT_NE(controller_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1024LL * 1024 * 1024;
     int32_t quota = 0;
     int32_t ret = controller_->GetDefaultQuotaByRank(10, 128 * GB, quota);
     EXPECT_EQ(ret, E_OK);
