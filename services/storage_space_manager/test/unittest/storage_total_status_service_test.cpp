@@ -265,13 +265,11 @@ HWTEST_F(StorageTotalStatusServiceTest, GetTotalSize_MultipleCalls, TestSize.Lev
     int32_t ret1 = service_->GetTotalSize(totalSize1);
     int32_t ret2 = service_->GetTotalSize(totalSize2);
     int32_t ret3 = service_->GetTotalSize(totalSize3);
-
-    // All should return same result
+    
     EXPECT_EQ(ret1, ret2);
     EXPECT_EQ(ret2, ret3);
 
     if (ret1 == E_OK) {
-        // Sizes should be similar (might vary slightly due to system activity)
         EXPECT_GT(totalSize1, 0);
         EXPECT_GT(totalSize2, 0);
         EXPECT_GT(totalSize3, 0);
