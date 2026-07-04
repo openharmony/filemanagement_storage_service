@@ -192,5 +192,133 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateTableVolume_001,
     diskInfo->CreateTableVolume(it, end, table, foundPart, device);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_CreateTableVolume_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_FilterOutput_Normal_001
+ * @tc.desc: Verify the FilterOutput function with complete input in a single chunk.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_FilterOutput_Normal_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_Normal_001 start";
+
+    std::string diskName = "sda";
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_NE(diskInfo, nullptr);
+
+    std::vector<std::string> output = {
+        "WARNING: before dump\n"
+        "DISK gpt 259:0 100\n"
+        "PART 1 0x0c00 2048 102400 system\n"
+        "PART 2 0x0c00 10240 204800 userdata\n"
+    };
+    std::vector<std::string> lines;
+    diskInfo->FilterOutput(lines, output);
+
+    EXPECT_EQ(lines.size(), 3);
+    EXPECT_EQ(std::find(lines.begin(), lines.end(), "WARNING: before dump"), lines.end());
+    EXPECT_NE(std::find(lines.begin(), lines.end(), "DISK gpt 259:0 100"), lines.end());
+    EXPECT_NE(std::find(lines.begin(), lines.end(), "PART 1 0x0c00 2048 102400 system"), lines.end());
+    EXPECT_NE(std::find(lines.begin(), lines.end(), "PART 2 0x0c00 10240 204800 userdata"), lines.end());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_Normal_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_FilterOutput_CrossChunkSplit_002
+ * @tc.desc: Verify FilterOutput stitches a line split across two chunks.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_FilterOutput_CrossChunkSplit_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_CrossChunkSplit_002 start";
+
+    std::string diskName = "sda";
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_NE(diskInfo, nullptr);
+
+    std::vector<std::string> output;
+    output.push_back("DISK gpt 259:0 100\nPART 1 0x0c00 2048 102400 system\nPART 2 0x0c00 10240 204800 user");
+    output.push_back("data\n");
+
+    std::vector<std::string> lines;
+    diskInfo->FilterOutput(lines, output);
+
+    auto userdataIt = std::find(lines.begin(), lines.end(), "PART 2 0x0c00 10240 204800 userdata");
+    EXPECT_NE(userdataIt, lines.end());
+    EXPECT_EQ(std::find(lines.begin(), lines.end(), "PART 2 0x0c00 10240 204800 user"), lines.end());
+    EXPECT_EQ(std::find(lines.begin(), lines.end(), "data"), lines.end());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_CrossChunkSplit_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_FilterOutput_NoDiskPrefix_003
+ * @tc.desc: Verify FilterOutput keeps lines empty when no DISK prefix line exists.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_FilterOutput_NoDiskPrefix_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_NoDiskPrefix_003 start";
+
+    std::string diskName = "sda";
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_NE(diskInfo, nullptr);
+
+    std::vector<std::string> output = {
+        "Partition table holds up to 128 entries\n"
+        "DISKTYPE gpt\n"
+        "Number  Start  End\n"
+    };
+    std::vector<std::string> lines;
+    diskInfo->FilterOutput(lines, output);
+
+    EXPECT_TRUE(lines.empty());
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_NoDiskPrefix_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoSupTest_FilterOutput_Deduplicate_004
+ * @tc.desc: Verify FilterOutput removes duplicate lines.
+ * @tc.type: FUNC
+ * @tc.require: IBCO84
+ */
+HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_FilterOutput_Deduplicate_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_Deduplicate_004 start";
+
+    std::string diskName = "sda";
+    std::string sysPath = "/devices/platform/test";
+    std::string devPath = "/dev/block/test";
+    dev_t device = makedev(8, 0);
+    auto diskInfo = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 0);
+    ASSERT_NE(diskInfo, nullptr);
+
+    std::vector<std::string> output = {
+        "DISK gpt\nPART 1 system\n",
+        "PART 1 system\n"
+    };
+    std::vector<std::string> lines;
+    diskInfo->FilterOutput(lines, output);
+
+    size_t partCount = std::count(lines.begin(), lines.end(), "PART 1 system");
+    EXPECT_EQ(partCount, 1);
+    EXPECT_EQ(lines.size(), 2);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_FilterOutput_Deduplicate_004 end";
+}
 }
 }
