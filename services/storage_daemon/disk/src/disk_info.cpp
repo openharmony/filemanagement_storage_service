@@ -394,12 +394,12 @@ int DiskInfo::ReadPartitionUSB()
 void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
 {
     LOGD("[L3:DiskInfo] FilterOutput: >>> ENTER <<<");
-    std::vector<std::string> tempInfo;
-    std::string bufToken = "\n";
+    std::string fullContent;
     for (auto &buf : output) {
-        auto split = SplitLine(buf, bufToken);
-        tempInfo.insert(tempInfo.end(), split.begin(), split.end());
+        fullContent += buf;
     }
+    std::string bufToken = "\n";
+    std::vector<std::string> tempInfo = SplitLine(fullContent, bufToken);
     int32_t count = static_cast<int32_t>(tempInfo.size());
     int32_t index = -1;
     for (int32_t i = 0; i < count; i++) {

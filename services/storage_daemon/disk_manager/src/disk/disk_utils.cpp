@@ -297,8 +297,14 @@ int32_t DiskUtils::ReadPartitionTable(const std::string& devPath,
         return res;
     }
 
+    std::string fullContent;
     for (const auto &line : lines) {
-        output += line;
+        fullContent += line;
+    }
+    std::istringstream iss(fullContent);
+    std::string oneLine;
+    while (std::getline(iss, oneLine)) {
+        output += oneLine;
         output += "\n";
     }
     struct stat st;
@@ -370,26 +376,16 @@ int32_t DiskUtils::GetPartitionTableInfo(const std::string &devPath, std::string
     if (ret != E_OK) {
         return ret;
     }
-    std::vector<std::string> fixedLines;
-    for (size_t i = 0; i < lines.size(); i++) {
-        std::string line = lines[i];
-        while (!line.empty() && line.back() != '\n' && i + 1 < lines.size()) {
-            std::string nextLine = lines[i + 1];
-            if (nextLine.empty() || std::isspace(nextLine[0]) || std::isdigit(nextLine[0])) {
-                line += nextLine;
-                i++;
-            } else {
-                break;
-            }
-        }
-        fixedLines.push_back(line);
+    std::string fullContent;
+    for (const auto &line : lines) {
+        fullContent += line;
     }
-    for (const auto &line : fixedLines) {
-        execRet += line;
-        if (!line.empty() && line.back() != '\n') {
-            execRet += "\n";
-        }
-        LOGI("partition line: %{public}s", line.c_str());
+    std::istringstream iss(fullContent);
+    std::string oneLine;
+    while (std::getline(iss, oneLine)) {
+        execRet += oneLine;
+        execRet += "\n";
+        LOGI("partition line: %{public}s", oneLine.c_str());
     }
     return E_OK;
 }
