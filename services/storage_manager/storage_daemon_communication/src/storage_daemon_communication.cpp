@@ -655,6 +655,34 @@ int32_t StorageDaemonCommunication::UMountFileMgrFuse(int32_t userId, const std:
     return storageDaemon_->UMountFileMgrFuse(userId, path);
 }
 
+int32_t StorageDaemonCommunication::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountDlpFuse(dstPath, fuseFd);
+}
+
+int32_t StorageDaemonCommunication::UMountDlpFuse(const std::string &dstPath)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountDlpFuse(dstPath);
+}
+
 int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

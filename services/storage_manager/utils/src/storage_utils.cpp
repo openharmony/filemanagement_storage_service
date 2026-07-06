@@ -74,6 +74,15 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
     return path.compare(0, prefix.length(), prefix) == 0;
 }
 
+bool IsPathStartWithDlp(const std::string &path)
+{
+    const std::string prefix = "/data/service/el1/public/dlp_permission_service";
+    if (path.size() <= prefix.size()) {
+        return false;
+    }
+    return path.compare(0, prefix.length(), prefix) == 0;
+}
+
 int GetCurrentUserId()
 {
     int uid = -1;

@@ -117,6 +117,22 @@ int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
     return IMountManagerMoc::mountManagerMoc->UMountFileMgrFuse(userId, path);
 }
 
+int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountDlpFuse(dstPath, fuseFd);
+}
+
+int32_t MountManager::UMountDlpFuse(const std::string &dstPath)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountDlpFuse(dstPath);
+}
+
 int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

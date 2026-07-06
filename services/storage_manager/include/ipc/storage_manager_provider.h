@@ -118,6 +118,9 @@ public:
     // file mgr fuse
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
+    // dlp fuse
+    int32_t MountDlpFuse(const std::string &dstPath, int32_t &fuseFd) override;
+    int32_t UMountDlpFuse(const std::string &dstPath) override;
     int32_t IsFileOccupied(const std::string &path,
                            const std::vector<std::string> &inputList,
                            std::vector<std::string> &outputList,

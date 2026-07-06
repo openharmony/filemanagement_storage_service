@@ -1256,6 +1256,42 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
+int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
+        LOGE("StorageManagerProvider::MountDlpFuse dstPath %{public}s is invalid or not start with dlp prefix",
+            dstPath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    fuseFd = -1;
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.MountDlpFuse(dstPath, fuseFd);
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, "MountDlpFuse End", err);
+    return err;
+}
+
+int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
+{
+    std::string message = "UMountDlpFuse Begin, dstPath:" + GetAnonyString(dstPath);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
+        LOGE("StorageManagerProvider::UMountDlpFuse dstPath %{public}s is invalid or not start with dlp prefix",
+            dstPath.c_str());
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.UMountDlpFuse(dstPath);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, "UMountDlpFuse End", err);
+    return err;
+}
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
                                                const std::vector<std::string> &inputList,
