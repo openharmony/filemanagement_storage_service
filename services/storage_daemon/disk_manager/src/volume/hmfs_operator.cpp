@@ -64,7 +64,7 @@ int32_t HmfsOperator::DoMount(const std::string& devPath,
     }
 
     if (mountFlags != MOUNT_FLAG_MIGRATION_RO) {
-        if (chmod(mountPath.c_str(), MOUNT_DIR_MODE) != 0) {
+        if (chmod(mountPath.c_str(), S_ISGID | MOUNT_DIR_MODE) != 0) {
             LOGE("HmfsOperator::DoMount chmod failed on %{public}s, errno=%{public}d",
                  mountPath.c_str(), errno);
         }
