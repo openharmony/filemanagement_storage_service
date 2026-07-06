@@ -1384,7 +1384,7 @@ static int Write(const char *path, const char *buf, size_t size, off_t offset,
         return -EIO;
     }
 
-    if (offset < 0 || size > static_cast<uint8_t>(SSIZE_MAX - offset)) {
+    if (offset < 0 || size > static_cast<size_t>(SSIZE_MAX - offset)) {
         LOGE("gphoto Write offset or size overflow, offset=%{public}lld size=%{public}zu",
             static_cast<long long>(offset), size);
         return -EINVAL;
