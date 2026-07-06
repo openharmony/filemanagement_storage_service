@@ -58,13 +58,13 @@ constexpr const char *KEY_CUST = "const.cust.custPath";
 constexpr const char *CUST_HWIT = "hwit";
 constexpr const char *IS_PTP_MODE = "user.isptpmode";
 constexpr const int32_t SYS_PARARMETER_SIZE = 256;
-constexpr int MIN_VALUE = 0;
-constexpr int MAX_VALUE = 255;
 #ifdef SUPPORT_OPEN_SOURCE_GPHOTO2_DEVICE
 constexpr int32_t SCANF_NUM = 2;
 constexpr int32_t ERROR_CODE_PARSE_FAILED = -1;
 constexpr int32_t ERROR_CODE_LIBUSB_INIT_FAILED = -2;
 constexpr int32_t ERROR_CODE_GET_DEVICE_LIST_FAILED = -3;
+constexpr int MIN_VALUE = 0;
+constexpr int MAX_VALUE = 255;
 #endif
 bool g_keepMonitoring = true;
 
