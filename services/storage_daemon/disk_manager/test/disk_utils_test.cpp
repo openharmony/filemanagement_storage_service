@@ -249,13 +249,29 @@ HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_Success, TestSize.Level1)
     int32_t maxVolume = 0;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("PART_ENTRY_NUMBER=1");
-            lines->push_back("PART_ENTRY_TYPE=0c00");
+            lines->push_back("DISK gpt 259:0 100\n");
+            lines->push_back("PART 1 0x0c00 2048 102400 userdata\n");
             return E_OK;
         }));
     int32_t ret = DiskUtils::ReadPartitionTable("/dev/block/ut_nonexistent_disk", output, maxVolume);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(output, "PART_ENTRY_NUMBER=1\nPART_ENTRY_TYPE=0c00\n");
+    EXPECT_EQ(output, "DISK gpt 259:0 100\nPART 1 0x0c00 2048 102400 userdata\n");
+    EXPECT_EQ(maxVolume, MAX_SCSI_VOLUMES);
+}
+
+HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_CrossChunkSplit, TestSize.Level1)
+{
+    std::string output;
+    int32_t maxVolume = 0;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("DISK gpt 259:0 100\nPART 1 0x0c00 2048 102400 user");
+            lines->push_back("data\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ReadPartitionTable("/dev/block/ut_nonexistent_disk", output, maxVolume);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(output, "DISK gpt 259:0 100\nPART 1 0x0c00 2048 102400 userdata\n");
     EXPECT_EQ(maxVolume, MAX_SCSI_VOLUMES);
 }
 
@@ -342,15 +358,14 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineMergeWithSpace, TestSize.Le
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB");
-            lines->push_back("Number  Start  End");
-            lines->push_back("  Size  Type");
+            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB\n");
+            lines->push_back("Number  Start  End  Size  Type\n");
             lines->push_back("1  2048  102400\n");
             return E_OK;
         }));
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_TRUE(execRet.find("Number  Start  End  Size  Type") != std::string::npos);
+    EXPECT_TRUE(execRet.find("Number  Start  End  Size  Type\n") != std::string::npos);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineMergeWithDigit, TestSize.Level1)
@@ -359,14 +374,16 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineMergeWithDigit, TestSize.Le
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Partition entry:");
-            lines->push_back("1 2048 102400");
+            lines->push_back("Partition entry:\n");
+            lines->push_back("1 2048 102400\n");
             lines->push_back("2 204800 409600\n");
             return E_OK;
         }));
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_TRUE(execRet.find("Partition entry:1 2048 102400") != std::string::npos);
+    EXPECT_TRUE(execRet.find("Partition entry:\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find("1 2048 102400\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find("2 204800 409600\n") != std::string::npos);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineNoMergeWithLetter, TestSize.Level1)
@@ -375,7 +392,7 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineNoMergeWithLetter, TestSize
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Number  Start  End");
+            lines->push_back("Number  Start  End\n");
             lines->push_back("Disk label: gpt\n");
             return E_OK;
         }));
@@ -391,15 +408,34 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_MultiLineMerge, TestSize.Level1
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Entry:");
-            lines->push_back(" start=2048");
-            lines->push_back(" end=102400");
+            lines->push_back("Entry:\n");
+            lines->push_back(" start=2048\n");
+            lines->push_back(" end=102400\n");
             lines->push_back(" type=ext4\n");
             return E_OK;
         }));
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_TRUE(execRet.find("Entry: start=2048 end=102400 type=ext4\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find("Entry:\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find(" start=2048\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find(" type=ext4\n") != std::string::npos);
+}
+
+HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_CrossChunkSplit, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::string execRet;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
+            lines->push_back("Disk /dev/block/uttestdisk: 100 GiB\n");
+            lines->push_back("Number  Start  End  user");
+            lines->push_back("data\n");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(execRet.find("Number  Start  End  userdata\n") != std::string::npos);
+    EXPECT_EQ(std::count(execRet.begin(), execRet.end(), '\n'), 2);
 }
 
 HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_LineEndsWithNewline, TestSize.Level1)
@@ -423,14 +459,14 @@ HWTEST_F(ExtDiskUtilsTest, GetPartitionTableInfo_EmptyLineHandling, TestSize.Lev
     std::string execRet;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *lines, int *) {
-            lines->push_back("Disk info:");
-            lines->push_back("");
+            lines->push_back("Disk info:\n");
+            lines->push_back("\n");
             lines->push_back("  extra data\n");
             return E_OK;
         }));
     int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_TRUE(execRet.find("Disk info:  extra data\n") != std::string::npos);
+    EXPECT_TRUE(execRet.find("Disk info:\n\n  extra data\n") != std::string::npos);
 }
 
 HWTEST_F(ExtDiskUtilsTest, CreatePartition_EmptyPath, TestSize.Level1)
