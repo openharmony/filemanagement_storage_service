@@ -1269,6 +1269,7 @@ int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t 
         LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< dstPath is invalid");
         return E_PARAMS_INVALID;
     }
+#ifdef PC_ENABLE
     fuseFd = -1;
     int32_t err = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
     message = " fuseFd: " + std::to_string(fuseFd);
@@ -1279,6 +1280,9 @@ int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t 
     }
     LOGI("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT SUCCESS <<< fuseFd=%{public}d", fuseFd);
     return E_OK;
+#endif
+    LOGI("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< not supported");
+    return E_NOT_SUPPORT;
 }
 
 int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
@@ -1289,6 +1293,7 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
         LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< dstPath is invalid");
         return E_PARAMS_INVALID;
     }
+#ifdef PC_ENABLE
     int32_t err = MountManager::GetInstance().UMountDlpFuse(dstPath);
     HiAudit::GetInstance().WriteEnd("UMountDlpFuse", err);
     if (err != E_OK) {
@@ -1297,6 +1302,9 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
     }
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT SUCCESS <<<");
     return err;
+#endif
+    LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< not supported");
+    return E_NOT_SUPPORT;
 }
 
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,

@@ -85,3 +85,9 @@ if ("${target_platform}" == "phone") {
 } else {
   phone_device_enable = false
 }
+
+if ("${target_platform}" == "pc") {
+  pc_enable = true
+} else {
+  pc_enable = false
+}

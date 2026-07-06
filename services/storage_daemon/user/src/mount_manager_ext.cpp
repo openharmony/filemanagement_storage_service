@@ -16,6 +16,7 @@
 #include "user/mount_manager.h"
 
 #include <iostream>
+#include <fcntl.h>
 #include <filesystem>
 #include <regex>
 #include <sys/stat.h>
