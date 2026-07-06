@@ -34,7 +34,6 @@ constexpr const char *EL2_BASE = "/data/storage/el2/base/";
 constexpr const char *MOUNT_SUFFIX = "_locked";
 constexpr const char *APP_EL1_PATH = "/data/app/el1";
 constexpr const char *FILE_MGR_ROOT_PATH = "/storage/Users/currentUser/";
-constexpr const char *DLP_FUSE_PATH_PREFIX = "/data/service/el1/public/dlp_permission_service/";
 constexpr const char *HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 constexpr const char *SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
 constexpr const char *UN_REACHABLE = "(unreachable)";
