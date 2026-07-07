@@ -63,6 +63,8 @@ constexpr int32_t SCANF_NUM = 2;
 constexpr int32_t ERROR_CODE_PARSE_FAILED = -1;
 constexpr int32_t ERROR_CODE_LIBUSB_INIT_FAILED = -2;
 constexpr int32_t ERROR_CODE_GET_DEVICE_LIST_FAILED = -3;
+constexpr int MIN_VALUE = 0;
+constexpr int MAX_VALUE = 255;
 #endif
 bool g_keepMonitoring = true;
 
@@ -738,8 +740,12 @@ static void GenerateGphotoDeviceInfo(MtpDeviceInfo& devInfo, const char* portPat
         LOGE("[L2:MtpDeviceMonitor]GenerateGphotoDeviceInfo:ParsePortPath failed.");
         return;
     }
-    devInfo.busLocation = bus;
-    devInfo.devNum = dev;
+    if (bus < MIN_VALUE || dev < MIN_VALUE || dev > MAX_VALUE) {
+        LOGE("ParsePortPath data is anomaly.");
+        return;
+    }
+    devInfo.busLocation = static_cast<uint32_t>(bus);
+    devInfo.devNum = static_cast<uint8_t>(dev);
 
     CameraText summary;
     int ret = gp_camera_get_summary(camera, &summary, context);

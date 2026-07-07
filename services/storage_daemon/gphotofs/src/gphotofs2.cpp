@@ -301,18 +301,18 @@ Dir *FindDir(const std::string &path, Context *ctx)
         LOGE("gphoto FindDir invalid path");
         return nullptr;
     }
-    int last;
+    size_t last;
     if (path[0] == '/') {
         last = 0;
     } else {
-        last = -1;
+        last = std::string::npos;
     }
 
     bool continueLoop = true;
     while (continueLoop) {
-        size_t next = path.find('/', last + 1);
+        size_t next = path.find('/', last != std::string::npos ? last + 1 : 0);
         if (next == std::string::npos) {
-            std::string name = path.substr(last + 1);
+            std::string name = path.substr(last != std::string::npos ? last + 1 : 0);
             if (name == "") {
                 return dir;
             }
@@ -320,7 +320,8 @@ Dir *FindDir(const std::string &path, Context *ctx)
             return dir;
         }
 
-        std::string name = path.substr(last + 1, next - last - 1);
+        size_t start = last != std::string::npos ? last + 1 : 0;
+        std::string name = path.substr(start, next - start);
         if (name == "") {
             last = next;
             continue;
@@ -1075,7 +1076,7 @@ static int Open(const char *path, struct fuse_file_info *fileInfo)
         return retThumb;
     }
 
-    int mode = fileInfo->flags & O_ACCMODE;
+    int mode = static_cast<uint8_t>(fileInfo->flags) & O_ACCMODE;
     if (g_readOnlyMode) {
         if (mode != O_RDONLY) {
             LOGE("Open: write access denied in read-only mode");
@@ -1383,7 +1384,7 @@ static int Write(const char *path, const char *buf, size_t size, off_t offset,
         return -EIO;
     }
 
-    if (offset < 0 || size > SSIZE_MAX - offset) {
+    if (offset < 0 || size > static_cast<size_t>(SSIZE_MAX - offset)) {
         LOGE("gphoto Write offset or size overflow, offset=%{public}lld size=%{public}zu",
             static_cast<long long>(offset), size);
         return -EINVAL;
