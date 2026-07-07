@@ -128,6 +128,7 @@ constexpr pid_t DFS_UID = 1009;
 constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t FOUNDATION_UID = 5523;
+constexpr pid_t DLP_UID = 3553;
 constexpr int32_t USER_ID = 100;
 constexpr int32_t MINUSERID = -1;
 constexpr int32_t MAXUSERID = 10739;
@@ -713,6 +714,55 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     EXPECT_NE(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDlpFuse_001
+ * @tc.desc: Verify the MountDlpFuse function with DLP_UID and valid path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DLP_UID);
+    MockVerifyAccessToken(0);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
+    int32_t fuseFd = -1;
+
+#ifdef PC_ENABLE
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_NE(ret, E_OK);
+#else
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDlpFuse_001
+ * @tc.desc: Verify the UMountDlpFuse function with DLP_UID and valid path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DLP_UID);
+    MockVerifyAccessToken(0);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
+
+#ifdef PC_ENABLE
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_NE(ret, E_OK);
+#else
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 end";
 }
 
 /**

@@ -255,6 +255,45 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_00
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountDlpFuse_001
+ * @tc.name: Daemon_communication_MountDlpFuse_001
+ * @tc.desc: Test function of MountDlpFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDlpFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountDlpFuse_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::string dstPath = "/data/dlp/test";
+    int32_t fuseFd = 0;
+    int32_t result = sdCommunication.MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDlpFuse_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDlpFuse_001
+ * @tc.name: Daemon_communication_UMountDlpFuse_001
+ * @tc.desc: Test function of UMountDlpFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDlpFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDlpFuse_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::string dstPath = "/data/dlp/test";
+    int32_t result = sdCommunication.UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDlpFuse_001 SUCCESS";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Daemon_communication_ResetSdProxy_001
  * @tc.name: Daemon_communication_ResetSdProxy_001
  * @tc.desc: Test function of ResetSdProxy interface for SUCCESS.

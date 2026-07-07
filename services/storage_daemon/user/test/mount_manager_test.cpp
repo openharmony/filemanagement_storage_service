@@ -489,6 +489,69 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_00
 }
 
 /**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDlpFuse_001
+ * @tc.desc: Verify the MountDlpFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDlpFuse_001 start";
+
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/testMountDlpFuse";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
+    int32_t fuseFd = -1;
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_MOUNT_DLP_FUSE);
+
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(dstPath);
+    ForceRemoveDirectory(dlpPath);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_UMountDlpFuse_001
+ * @tc.desc: Verify the UMountDlpFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDlpFuse_001 start";
+
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/testUMountDlpFuse";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
+    errno = ENOENT;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_OK);
+
+    errno = EINVAL;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_OK);
+
+    errno = EBUSY;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_UMOUNT_DLP_FUSE);
+
+    errno = 0;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(dstPath);
+    ForceRemoveDirectory(dlpPath);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDlpFuse_001 end";
+}
+
+/**
  * @tc.name: Storage_Daemon_MountManagerTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
  * @tc.type: FUNC

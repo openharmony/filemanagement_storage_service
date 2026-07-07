@@ -1408,6 +1408,166 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_MountDlpFuse_001
+ * @tc.desc: Verify the MountDlpFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
+    int32_t fuseFd = 0;
+#ifdef PC_ENABLE
+    EXPECT_CALL(*mountManagerMoc_, MountDlpFuse(_, _)).WillOnce(Return(E_OK));
+    int32_t result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, MountDlpFuse(_, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, -1);
+#else
+    int32_t result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDlpFuse_002
+ * @tc.desc: Verify the MountDlpFuse function when path not start with dlp prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/mnt/data/100/invalid_path";
+    int32_t fuseFd = -1;
+    int32_t result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service";
+    result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDlpFuse_003
+ * @tc.desc: Verify the MountDlpFuse function when path contains ../
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDlpFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/../test";
+    int32_t fuseFd = -1;
+    int32_t result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    dstPath = "../data/service/el1/public/dlp_credential_service/test";
+    result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDlpFuse_004
+ * @tc.desc: Verify the MountDlpFuse function when path ends with /..
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDlpFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/..";
+    int32_t fuseFd = -1;
+    int32_t result = storageDaemonProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDlpFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDlpFuse_001
+ * @tc.desc: Verify the UMountDlpFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
+#ifdef PC_ENABLE
+    EXPECT_CALL(*mountManagerMoc_, UMountDlpFuse(_)).WillOnce(Return(E_OK));
+    int32_t result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_OK);
+
+    EXPECT_CALL(*mountManagerMoc_, UMountDlpFuse(_)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, -1);
+#else
+    int32_t result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDlpFuse_002
+ * @tc.desc: Verify the UMountDlpFuse function when path not start with dlp prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/mnt/data/100/invalid_path";
+    int32_t result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service";
+    result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDlpFuse_003
+ * @tc.desc: Verify the UMountDlpFuse function when path contains ../
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDlpFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/../test";
+    int32_t result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    dstPath = "../data/service/el1/public/dlp_credential_service/test";
+    result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDlpFuse_004
+ * @tc.desc: Verify the UMountDlpFuse function when path ends with /..
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDlpFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_004 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/..";
+    int32_t result = storageDaemonProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDlpFuse_004 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
  * @tc.type: FUNC

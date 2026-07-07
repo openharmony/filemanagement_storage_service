@@ -386,7 +386,7 @@ std::string AnonymizePath(const std::string &path)
 
 bool IsPathStartWithDlp(const std::string &path)
 {
-    const std::string prefix = "/data/service/el1/public/dlp_permission_service";
+    const std::string prefix = "/data/service/el1/public/dlp_credential_service";
     if (path.size() <= prefix.size()) {
         return false;
     }

@@ -1263,7 +1263,7 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
 int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
     LOGI("[L1:StorageDaemonProvider] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
-    std::string message = "dstPath: " + GetAnonyString(dstPath) + " fuseFd: " + std::to_string(fuseFd);
+    std::string message = "dstPath: " + dstPath;
     HiAudit::GetInstance().WriteStart("MountDlpFuse", message);
     if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
         LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< dstPath is invalid");

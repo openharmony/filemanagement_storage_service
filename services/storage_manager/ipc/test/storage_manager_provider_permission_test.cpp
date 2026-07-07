@@ -1087,6 +1087,78 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_MountDlpFuse_002
+ * @tc.desc: Verify the MountDlpFuse function with valid path but uid not DLP_UID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDlpFuse_003
+ * @tc.desc: Verify the MountDlpFuse function with MockBundleMgr and uid not DLP_UID.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDlpFuse_002
+ * @tc.desc: Verify the UMountDlpFuse function with valid path but uid not DLP_UID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDlpFuse_003
+ * @tc.desc: Verify the UMountDlpFuse function with MockBundleMgr and uid not DLP_UID.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_003 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_IsFileOccupied_002
  * @tc.desc: Verify the IsFileOccupied function.
  * @tc.type: FUNC
