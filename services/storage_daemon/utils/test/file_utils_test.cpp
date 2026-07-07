@@ -1211,5 +1211,48 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ReadFileInParentDirs_006, TestSize.Level1)
     
     GTEST_LOG_(INFO) << "FileUtilsTest_ReadFileInParentDirs_006 end";
 }
+
+/**
+ * @tc.name: FileUtilsTest_CleanOrphanNode_001
+ * @tc.desc: Verify CleanOrphanNode function executes successfully and returns true.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CleanOrphanNode_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CleanOrphanNode_001 start";
+
+    // Test basic execution - function should return true on success
+    // CleanOrphanNode writes "1" to /proc/sys/vm/drop_encrypt_dentry
+    // which triggers kernel to clean up orphaned encrypted dentries
+    bool ret = CleanOrphanNode();
+    EXPECT_TRUE(ret);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_CleanOrphanNode_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CleanOrphanNode_002
+ * @tc.desc: Verify CleanOrphanNode function handles multiple calls gracefully.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CleanOrphanNode_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CleanOrphanNode_002 start";
+
+    // Test multiple consecutive calls to verify no side effects
+    // Calling CleanOrphanNode multiple times should be safe and consistently return true
+    bool ret = CleanOrphanNode();
+    EXPECT_TRUE(ret);
+
+    ret = CleanOrphanNode();
+    EXPECT_TRUE(ret);
+
+    ret = CleanOrphanNode();
+    EXPECT_TRUE(ret);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_CleanOrphanNode_002 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -52,7 +52,7 @@ extern const int32_t CLEAN_HIGH_TIME; // week
 extern const int32_t CLEAN_RICH_TIME; // week
 extern const int32_t ROOT_UID;
 extern const int32_t SYSTEM_UID;
-extern const int32_t FONDATION_UID;
+extern const int32_t FOUNDATION_UID;
 }
 
 namespace StorageDaemon {

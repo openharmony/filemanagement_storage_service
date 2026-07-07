@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "file_ex.h"
 #include "parameters.h"
 #include "securec.h"
 #include "storage_service_errno.h"
@@ -67,6 +68,8 @@ constexpr const char *PATH_INVALID_FLAG1 = "../";
 constexpr const char *PATH_INVALID_FLAG2 = "/..";
 constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
 constexpr char FILE_SEPARATOR_CHAR = '/';
+const std::string DROP_ENCRYPT_DENTRY_PATH = "/proc/sys/vm/drop_encrypt_dentry";
+const std::string DROP_ENCRYPT_DENTRY_VALUE = "1";
 
 struct RgmPathConfig {
     bool isImg = false;
@@ -1469,6 +1472,17 @@ bool GetRealPath(const std::string &path, std::string &realPath)
         return false;
     }
     realPath = std::string(resolvedPath);
+    return true;
+}
+
+bool CleanOrphanNode()
+{
+    LOGI("Clean orphan node start");
+    if (!SaveStringToFile(DROP_ENCRYPT_DENTRY_PATH, DROP_ENCRYPT_DENTRY_VALUE)) {
+        LOGE("Failed to clean orphan node, errno=%{public}d", errno);
+        return false;
+    }
+    LOGI("Clean orphan node success");
     return true;
 }
 } // namespace StorageDaemon
