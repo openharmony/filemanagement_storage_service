@@ -52,10 +52,7 @@ ohos_static_library("storage_daemon_umountdlpfuse_fuzztest") {
     "-O2",
   ]
 
-  configs = [
-    "${storage_daemon_path}:storage_daemon_config",
-    "${storage_service_path}/test/fuzztest:storage_daemon_fuzz_no_lto",
-  ]
+  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   deps = [
     "${storage_daemon_path}/crypto:libsdcrypto",
