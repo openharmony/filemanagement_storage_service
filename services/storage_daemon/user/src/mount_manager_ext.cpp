@@ -312,6 +312,7 @@ bool MountManager::RemoveDisSharePath(const std::string &dstPath, const std::str
 int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
     LOGI("[L2:MountManager] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
+    UMountDlpFuse(dstPath);
     fuseFd = open("/dev/fuse", O_RDWR);
     if (fuseFd < 0) {
         LOGE("[L2:MountManager] MountDlpFuse: <<< EXIT FAILED <<< open /dev/fuse fail, errno=%{public}d", errno);
