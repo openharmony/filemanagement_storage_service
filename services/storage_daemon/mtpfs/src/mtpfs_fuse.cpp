@@ -1452,7 +1452,10 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
 {
     LOGI("GetXAttr key=%{public}s", in);
     char *deviceName = device_.GetDeviceFriendlyName();
-    if (deviceName == nullptr) {
+    if (deviceName == nullptr || strlen(deviceName) == 0) {
+        if (deviceName != nullptr) {
+            free(deviceName);
+        }
         LOGE("GetDeviceFriendlyName from device fail");
         return -ENOENT;
     }
