@@ -324,11 +324,14 @@ int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
         "default_permissions,"
         "allow_other,"
         "user_id=0,group_id=0,"
+        "attr_timeout=0,"
+        "entry_timeout=0,"
+        "negative_timeout=0,"
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fuseFd);
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = Mount("/dev/fuse", dstPath.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    int ret = Mount("/dev/fuse", dstPath.c_str(), "fuse", MS_NOSUID | MS_NODEV, opt.c_str());
     if (ret) {
         LOGE("[L2:MountManager] MountDlpFuse: <<< EXIT FAILED <<< mount fuse failed, ret=%{public}d,"
             "errno=%{public}d", ret, errno);
