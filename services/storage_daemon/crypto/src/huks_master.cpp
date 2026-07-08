@@ -801,7 +801,7 @@ bool HuksMaster::IsSupportNewAuthType()
         LOGI("[L8:HuksMaster] IsSupportNewAuthType: GetHuksVersion failed, support=false");
         return false;
     }
-    bool support = (majorVer >= 1 && minorVer >= 2);
+    bool support = (majorVer > 1 || (majorVer == 1 && minorVer >= 2));
     LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);
     return support;
 }
