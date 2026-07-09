@@ -275,6 +275,23 @@ HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_CrossChunkSplit, TestSize.Level1)
     EXPECT_EQ(maxVolume, MAX_SCSI_VOLUMES);
 }
 
+HWTEST_F(ExtDiskUtilsTest, ReadPartitionTable_SkipCdDvdBd, TestSize.Level1)
+{
+    std::string path = "/dev/block/ut_cd_test_node_" + std::to_string(getpid());
+    dev_t dev = makedev(DISK_CD_MAJOR, 0);
+    mode_t mode = 0660 | S_IFBLK;
+    ASSERT_EQ(mknod(path.c_str(), mode, dev), 0);
+
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).Times(0);
+
+    std::string output;
+    int32_t maxVolume = -1;
+    int32_t ret = DiskUtils::ReadPartitionTable(path, output, maxVolume);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+
+    unlink(path.c_str());
+}
+
 HWTEST_F(ExtDiskUtilsTest, Partition_SuccessWithOutput, TestSize.Level1)
 {
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))

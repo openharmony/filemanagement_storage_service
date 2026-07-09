@@ -15,6 +15,7 @@
 
 #include <climits>
 #include <cinttypes>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <future>
@@ -130,12 +131,12 @@ static bool ParseKeyValuePair(const std::string &key, const std::string &value, 
     if (key == "burnSpeed") {
         char *endPtr = nullptr;
         errno = 0;
-        unsigned long speed = strtoul(value.c_str(), &endPtr, 10);
-        if (errno != 0 || endPtr == value.c_str() || *endPtr != '\0') {
+        double speed = strtod(value.c_str(), &endPtr);
+        if (errno != 0 || endPtr == value.c_str() || *endPtr != '\0' || speed < 0) {
             LOGE("[L3:DiskUtils] ParseBurnOptions: invalid burnSpeed: %{public}s", value.c_str());
             return false;
         }
-        options.burnSpeed = static_cast<uint32_t>(speed);
+        options.burnSpeed = value;
         return true;
     }
     LOGW("[L3:DiskUtils] ParseBurnOptions: unknown key ignored: %{public}s", key.c_str());
@@ -178,10 +179,10 @@ int32_t ParseBurnOptions(const std::string &burnOptions, BurnOptions &parsedOpti
         return E_PARAMS_INVALID;
     }
     LOGI("[L3:DiskUtils] ParseBurnOptions: <<< EXIT SUCCESS <<< diskName=%{public}s, burnPath=%{public}s, "
-         "fsType=%{public}s, burnSpeed=%{public}u, isIsoImage=%{public}d, isIncBurnSupport=%{public}d, "
+         "fsType=%{public}s, burnSpeed=%{public}s, isIsoImage=%{public}d, isIncBurnSupport=%{public}d, "
          "isVerifyBurn=%{public}d",
          parsedOptions.diskName.c_str(), parsedOptions.burnPath.c_str(), parsedOptions.fsType.c_str(),
-         parsedOptions.burnSpeed, parsedOptions.isIsoImage, parsedOptions.isIncBurnSupport,
+         parsedOptions.burnSpeed.c_str(), parsedOptions.isIsoImage, parsedOptions.isIncBurnSupport,
          parsedOptions.isVerifyBurn);
     return E_OK;
 }
@@ -283,6 +284,12 @@ int32_t DiskUtils::ReadPartitionTable(const std::string& devPath,
         LOGE("DiskUtils::ReadPartitionTable invalid devPath");
         return E_PARAMS_INVALID;
     }
+    struct stat st;
+    bool statOk = (stat(devPath.c_str(), &st) == 0);
+    if (statOk && major(st.st_rdev) == DISK_CD_MAJOR) {
+        LOGW("DiskUtils::ReadPartitionTable skip CD/DVD/BD device, devPath=%{public}s", devPath.c_str());
+        return E_NOT_SUPPORT;
+    }
     output.clear();
     maxVolume = 0;
     std::vector<std::string> cmd = {
@@ -307,8 +314,7 @@ int32_t DiskUtils::ReadPartitionTable(const std::string& devPath,
         output += oneLine;
         output += "\n";
     }
-    struct stat st;
-    if (stat(devPath.c_str(), &st) == 0) {
+    if (statOk) {
         maxVolume = GetMaxVolume(st.st_rdev);
     } else {
         maxVolume = MAX_SCSI_VOLUMES;
@@ -726,7 +732,7 @@ int IsCDBlank(const std::string &diskPath, bool &isCDBlank)
     std::string diskType = GetCDType(diskPath);
     if (discStatus == 0) {
         isCDBlank = true;
-    } else if (diskType == "DVD+RW" || diskType == "BD-RE") {
+    } else if (diskType == "DVD+RW" || diskType == "DVD-RW" || diskType == "BD-RE") {
         std::string fsType = GetBlkidData(diskPath, "TYPE");
         isCDBlank = fsType.empty();
         LOGI("IsCDBlank: %{public}s has filesystem=%{public}s", diskType.c_str(), fsType.c_str());
@@ -838,7 +844,7 @@ int32_t DiskUtils::Erase(const std::string &devPath)
     } else if (oddLabel == "DVD+RW") {
         cmd = {"dvd+rw-format", "-force", devPath};
     } else if (oddLabel == "DVD-RW") {
-        cmd = {"dvd+rw-format", "-blank=full", devPath};
+        cmd = {"dvd+rw-format", "-force=full", devPath};
     } else {
         cmd = {"dvd+rw-format", "-blank", devPath};
     }
@@ -1099,27 +1105,23 @@ int32_t DiskUtils::GetDiscCapacity(int cmdFd, const std::string& discType,
                                    int64_t &totalSize, int64_t &usedSize)
 {
     int err1 = E_OK;
-    int err2 = E_OK;
-    if (discType == "DVD-RW" || discType == "DVD-R" || discType == "DVD+R") {
+    if (discType == "DVD-R"  || discType == "DVD+R") {
         err1 = GetDvdTotalCapacity(cmdFd, totalSize);
-        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
-    } else if (discType == "DVD+RW") {
+    } else if (discType == "DVD+RW" || discType == "DVD-RW") {
         err1 = GetDvdPlusRwTotalCapacity(cmdFd, totalSize);
-        usedSize = totalSize;
-    } else if (discType == "CD-RW" || discType == "CD-R") {
+    } else if (discType == "CD-ROM" || discType == "CD-RW" || discType == "CD-R") {
         err1 = GetCdTotalCapacity(cmdFd, totalSize);
-        err2 = GetCdUsedCapacity(cmdFd, usedSize);
     } else if (discType == "BD-R" || discType == "BD-RE") {
         err1 = GetBdTotalCapacity(cmdFd, totalSize);
-        err2 = GetDvdUsedCapacity(cmdFd, usedSize);
     } else if (discType == "BD-ROM") {
         err1 = GetBdTotalCapacity(cmdFd, totalSize);
-        usedSize = totalSize;
     } else {
         totalSize = 0;
         usedSize = 0;
     }
-    if (err1 != E_OK || err2 != E_OK) {
+    usedSize = totalSize;
+    if (err1 != E_OK) {
+        LOGI("GetDiscCapacity failed, err1=%{public}d", err1);
         return E_ERR;
     }
     return E_OK;
@@ -1135,7 +1137,7 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     }
     
     usedSize = 0;
-    if (discType != "DVD+RW" && discType != "BD-R" && discType != "BD-RE") {
+    if (discType != "DVD+RW" && discType != "DVD-RW" && discType != "BD-R" && discType != "BD-RE") {
         return;
     }
     

@@ -199,12 +199,16 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
                               const std::string &incBurnAddr)
 {
     LOGI("BurnDoCDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    int32_t res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("BurnDoCDBurn: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
+    }
     int32_t err = PrepareIsoImage(devPath, burnOptions, isDiskEmpty, incBurnAddr);
     if (err != E_OK) {
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< PrepareIsoImage failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
-    std::string speedOpt = "-speed=" + std::to_string(burnOptions.burnSpeed);
+    std::string speedOpt = "-speed=" + burnOptions.burnSpeed;
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
@@ -225,6 +229,10 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
         RmDirRecurse(BURN_TMP_DIR);
         return err;
     }
+    res = DiskUtils::CleanTempDirectory();
+    if (res != E_OK) {
+        LOGE("BurnDoCDBurn: CleanTempDirectory exit failed, non-critical, res=%{public}d", res);
+    }
     LOGI("BurnDoCDBurn:<<< EXIT SUCCESS <<< devPath=%{public}s", devPath.c_str());
     return E_OK;
 }
@@ -237,7 +245,7 @@ int32_t IsoOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
         LOGE("BurnDoDVDBurn: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
     }
     int32_t err = 0;
-    std::string speedOpt = "-speed=" + std::to_string(burnOptions.burnSpeed);
+    std::string speedOpt = "-speed=" + burnOptions.burnSpeed;
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (!burnOptions.isIsoImage) {
@@ -279,16 +287,16 @@ int32_t IsoOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
     if (blankRet == E_OK && isBlankCD) {
         isDiskEmpty = true;
     }
-    std::string incBurnAddr;
-    if (!isDiskEmpty) {
-        err = GetIncBurnAddr("dev=" + devPath, incBurnAddr);
-        if (err != E_OK) {
-            LOGE("Burn:<<< EXIT FAILED <<< devPath=%{public}s", devPath.c_str());
-            return err;
-        }
-    }
     std::string diskType = GetCDType(devPath);
     if (diskType.find("CD") != std::string::npos) {
+    std::string incBurnAddr;
+        if (!isDiskEmpty) {
+            err = GetIncBurnAddr("dev=" + devPath, incBurnAddr);
+            if (err != E_OK) {
+                LOGE("Burn:<<< EXIT FAILED <<< devPath=%{public}s", devPath.c_str());
+                return err;
+            }
+        }
         err = DoCDBurn(devPath, burnOptions, isDiskEmpty, incBurnAddr);
     } else {
         err = DoDVDBurn(devPath, burnOptions, isDiskEmpty);

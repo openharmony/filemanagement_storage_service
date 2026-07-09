@@ -30,12 +30,12 @@ struct BurnOptions {
     std::string diskName;        // 光盘卷标名称
     std::string burnPath;        // 刻录源路径（文件或目录）
     std::string fsType;          // 文件系统类型（ISO9660, UDF等）
-    uint32_t burnSpeed;          // 刻录速度
+    std::string burnSpeed;       // 刻录速度（支持2.4等小数倍速，透传给刻录工具）
     bool isIsoImage;             // 是否为ISO镜像文件
     bool isIncBurnSupport;       // 是否支持增量刻录
     bool isVerifyBurn;           // 是否进行数据校验
-    
-    BurnOptions() : burnSpeed(0), isIsoImage(false), isIncBurnSupport(false), isVerifyBurn(false) {}
+
+    BurnOptions() : burnSpeed("1"), isIsoImage(false), isIncBurnSupport(false), isVerifyBurn(false) {}
 };
 
 /**
