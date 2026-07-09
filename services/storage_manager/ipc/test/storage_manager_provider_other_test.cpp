@@ -21,7 +21,6 @@
 #include "bundle_manager_connector.h"
 #include "bundle_mgr_client.h"
 #include "bundlemgr/bundle_mgr_interface.h"
-#include "directory_ex.h"
 #include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
@@ -728,10 +727,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(DLP_UID);
     MockVerifyAccessToken(0);
-    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
-    ForceCreateDirectory(dlpPath);
-    ForceCreateDirectory(dstPath);
     int32_t fuseFd = -1;
 #ifdef PC_USER_MANAGER
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
@@ -740,7 +736,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif
-    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 end";
 }
 
@@ -755,10 +750,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     SetCallingUid(DLP_UID);
     MockVerifyAccessToken(0);
-    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/test";
-    ForceCreateDirectory(dlpPath);
-    ForceCreateDirectory(dstPath);
 #ifdef PC_USER_MANAGER
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_NE(ret, E_OK);
@@ -766,7 +758,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_NOT_SUPPORT);
 #endif
-    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 end";
 }
 

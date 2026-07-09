@@ -19,7 +19,6 @@
 #include "disk.h"
 #include "ext_bundle_stats.h"
 #include "message_parcel.h"
-#include "directory_ex.h"
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "partition_info.h"
@@ -1099,7 +1098,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
 
 /**
  * @tc.name: StorageManagerProviderTest_MountDlpFuse_001
- * @tc.desc: Verify the MountDlpFuse function when IsDlpPathValid returns false.
+ * @tc.desc: Verify the MountDlpFuse function when IsFilePathInvalid or !IsPathStartWithDlp returns true.
  * @tc.type: FUNC
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001, TestSize.Level1)
@@ -1143,21 +1142,17 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
-    ForceCreateDirectory(dlpPath);
-    ForceCreateDirectory(dstPath);
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
-    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
 }
 
 /**
  * @tc.name: StorageManagerProviderTest_UMountDlpFuse_001
- * @tc.desc: Verify the UMountDlpFuse function when IsDlpPathValid returns false.
+ * @tc.desc: Verify the UMountDlpFuse function when IsFilePathInvalid or !IsPathStartWithDlp returns true.
  * @tc.type: FUNC
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_001, TestSize.Level1)
@@ -1195,13 +1190,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
-    ForceCreateDirectory(dlpPath);
-    ForceCreateDirectory(dstPath);
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
 }
 
