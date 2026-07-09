@@ -1270,7 +1270,7 @@ int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t 
 #ifdef PC_USER_MANAGER
     fuseFd = -1;
     int32_t err = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
-    HiAudit::GetInstance().WriteEnd("MountDlpFuse", "ret: " + std::to_string(err));
+    HiAudit::GetInstance().WriteEnd("MountDlpFuse", err);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
         return err;
@@ -1291,7 +1291,7 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
     }
 #ifdef PC_USER_MANAGER
     int32_t err = MountManager::GetInstance().UMountDlpFuse(dstPath);
-    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", "ret: " + std::to_string(err));
+    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", err);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
         return err;

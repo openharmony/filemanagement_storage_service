@@ -102,29 +102,18 @@ bool IsFilePathInvalid(const std::string &filePath)
     return false;
 }
 
-bool IsDlpPathValid(const std::string &dstPath)
+bool IsPathStartWithDlp(const std::string &dstPath)
 {
-    char resolvedPath[PATH_MAX] = { 0 };
-    if (dstPath.size() >= PATH_MAX || !realpath(dstPath.c_str(), resolvedPath)) {
-        LOGE("IsDlpPathValid: realpath failed for %{public}s", dstPath.c_str());
-        return false;
-    }
-    std::string realPath(resolvedPath);
-    if (realPath != dstPath) {
-        LOGE("IsDlpPathValid: realPath %{public}s differs from dstPath %{public}s", realPath.c_str(),
-             dstPath.c_str());
+    if (dstPath.empty()) {
+        LOGE("IsDlpPathValid: dstPath is empty");
         return false;
     }
     const std::string prefix = "/data/service/el1/public/dlp_credential_service/";
-    if (realPath.size() <= prefix.size()) {
-        return false;
-    }
-    if (realPath.compare(0, prefix.length(), prefix) != 0) {
-        LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", realPath.c_str());
+    if (dstPath.compare(0, prefix.length(), prefix) != 0) {
+        LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", dstPath.c_str());
         return false;
     }
     return true;
 }
-
 } // namespace STORAGE_Manager
 } // namespace OHOS

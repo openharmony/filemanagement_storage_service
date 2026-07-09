@@ -327,9 +327,6 @@ int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
         "default_permissions,"
         "allow_other,"
         "user_id=0,group_id=0,"
-        "attr_timeout=0,"
-        "entry_timeout=0,"
-        "negative_timeout=0,"
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fuseFd);

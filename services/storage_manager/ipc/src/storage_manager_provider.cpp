@@ -1262,7 +1262,7 @@ int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t
 {
     std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
     StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
-    if (!IsDlpPathValid(dstPath)) {
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -1287,7 +1287,7 @@ int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
 {
     std::string message = "UMountDlpFuse Begin, dstPath:" + GetAnonyString(dstPath);
     StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, message, E_OK);
-    if (!IsDlpPathValid(dstPath)) {
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
