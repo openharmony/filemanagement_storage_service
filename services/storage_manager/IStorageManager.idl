@@ -30,7 +30,7 @@ interface OHOS.StorageManager.IStorageManager {
                                     [in]  unsigned int statFlag);
     [ipccode 9] void GetSystemSize([out] long systemSize);
     [ipccode 10] void GetTotalSize([out] long totalSize);
-    [ipccode 11] void GetFreeSize([out] long freeSize);
+    [ipccode 11, customMsgOption flags=MessageOption::TF_IMAGE] void GetFreeSize([out] long freeSize);
     [ipccode 12] void GetUserStorageStats([out] StorageStats storageStats);
     [ipccode 13] void GetUserStorageStats([in] int userId, [out] StorageStats storageStats);
     [ipccode 14] void GetCurrentBundleStats([out] BundleStats bundleStats, [in] unsigned int statFlag);
