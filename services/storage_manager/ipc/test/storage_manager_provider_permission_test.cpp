@@ -20,6 +20,7 @@
 #include "accesstoken_kit.h"
 #include "bundle_manager_connector.h"
 #include "bundlemgr/bundle_mgr_interface.h"
+#include "directory_ex.h"
 #include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
@@ -1095,11 +1096,15 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
+    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
 }
 
@@ -1115,11 +1120,15 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_003
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     auto oldBundleMgrProxy = g_testBundleMgrProxy;
     g_testBundleMgrProxy = new MockBundleMgr();
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
+    ForceRemoveDirectory(dstPath);
     g_testBundleMgrProxy = oldBundleMgrProxy;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_003 end";
 }
@@ -1133,9 +1142,13 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
 }
 
@@ -1151,9 +1164,13 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     auto oldBundleMgrProxy = g_testBundleMgrProxy;
     g_testBundleMgrProxy = new MockBundleMgr();
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    ForceRemoveDirectory(dstPath);
     g_testBundleMgrProxy = oldBundleMgrProxy;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_003 end";
 }

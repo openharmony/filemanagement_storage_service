@@ -1261,9 +1261,7 @@ int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t
 {
     std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
     StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
-    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
-        LOGE("StorageManagerProvider::MountDlpFuse dstPath %{public}s is invalid or not start with dlp prefix",
-            dstPath.c_str());
+    if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -1274,7 +1272,7 @@ int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t
              IPCSkeleton::GetCallingUid(), DLP_UID);
         return E_PERMISSION_DENIED;
     }
-#ifdef PC_ENABLE
+#ifdef PC_USER_MANAGER
     fuseFd = -1;
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t err = sdCommunication.MountDlpFuse(dstPath, fuseFd);
@@ -1288,9 +1286,7 @@ int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
 {
     std::string message = "UMountDlpFuse Begin, dstPath:" + GetAnonyString(dstPath);
     StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, message, E_OK);
-    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
-        LOGE("StorageManagerProvider::UMountDlpFuse dstPath %{public}s is invalid or not start with dlp prefix",
-            dstPath.c_str());
+    if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -1301,7 +1297,7 @@ int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
              IPCSkeleton::GetCallingUid(), DLP_UID);
         return E_PERMISSION_DENIED;
     }
-#ifdef PC_ENABLE
+#ifdef PC_USER_MANAGER
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t err = sdCommunication.UMountDlpFuse(dstPath);
     StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, "UMountDlpFuse End", err);

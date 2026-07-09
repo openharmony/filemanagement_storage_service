@@ -1263,17 +1263,14 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
 int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
     LOGI("[L1:StorageDaemonProvider] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
-    std::string message = "dstPath: " + dstPath;
-    HiAudit::GetInstance().WriteStart("MountDlpFuse", message);
-    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
-        LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< dstPath is invalid");
+    HiAudit::GetInstance().WriteStart("MountDlpFuse", "dstPath: " + dstPath);
+    if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
-#ifdef PC_ENABLE
+#ifdef PC_USER_MANAGER
     fuseFd = -1;
     int32_t err = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
-    message = " fuseFd: " + std::to_string(fuseFd);
-    HiAudit::GetInstance().WriteEnd("MountDlpFuse", err);
+    HiAudit::GetInstance().WriteEnd("MountDlpFuse", "ret: " + std::to_string(err));
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
         return err;
@@ -1288,20 +1285,19 @@ int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t 
 int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
 {
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
-    HiAudit::GetInstance().WriteStart("UMountDlpFuse", dstPath);
-    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
-        LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< dstPath is invalid");
+    HiAudit::GetInstance().WriteStart("UMountDlpFuse", "dstPath: " + dstPath);
+    if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
-#ifdef PC_ENABLE
+#ifdef PC_USER_MANAGER
     int32_t err = MountManager::GetInstance().UMountDlpFuse(dstPath);
-    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", err);
+    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", "ret: " + std::to_string(err));
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
         return err;
     }
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT SUCCESS <<<");
-    return err;
+    return E_OK;
 #endif
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< not supported");
     return E_NOT_SUPPORT;

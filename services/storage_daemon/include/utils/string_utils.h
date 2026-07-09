@@ -45,7 +45,7 @@ bool ConvertStringToInt32(const std::string &context, int32_t &value);
 void IncreaseThreadPriority(const std::string &processName);
 void DecreaseThreadPriority(const std::string &processName);
 std::string AnonymizePath(const std::string &path);
-bool IsPathStartWithDlp(const std::string &path);
+bool IsDlpPathValid(const std::string &dstPath);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H

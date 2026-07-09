@@ -313,11 +313,14 @@ int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
     LOGI("[L2:MountManager] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
     UMountDlpFuse(dstPath);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     fuseFd = open("/dev/fuse", O_RDWR);
     if (fuseFd < 0) {
         LOGE("[L2:MountManager] MountDlpFuse: <<< EXIT FAILED <<< open /dev/fuse fail, errno=%{public}d", errno);
         return E_OPEN_FUSE;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("OPEN: DLP FUSE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, GLOBAL_USER_ID);
     LOGI("[L2:MountManager] MountDlpFuse: open fuse end.");
     string opt = StringPrintf("fd=%i,"
         "rootmode=40000,"
@@ -330,18 +333,18 @@ int32_t MountManager::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fuseFd);
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount("/dev/fuse", dstPath.c_str(), "fuse", MS_NOSUID | MS_NODEV, opt.c_str());
     if (ret) {
         LOGE("[L2:MountManager] MountDlpFuse: <<< EXIT FAILED <<< mount fuse failed, ret=%{public}d,"
-            "errno=%{public}d", ret, errno);
+            "errno=%{public}d, path=%{public}s", ret, errno, dstPath.c_str());
         close(fuseFd);
         std::string extraData = "dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("MountDlpFuse", GLOBAL_USER_ID, E_MOUNT_DLP_FUSE, extraData);
         return E_MOUNT_DLP_FUSE;
     }
-    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: DLP FUSE",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, GLOBAL_USER_ID);
+    delay = StorageService::StorageRadar::ReportDuration("MOUNT: DLP FUSE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, GLOBAL_USER_ID);
     LOGI("[L2:MountManager] MountDlpFuse: <<< EXIT SUCCESS <<< fuseFd=%{public}d", fuseFd);
     return E_OK;
 }
@@ -353,7 +356,7 @@ int32_t MountManager::UMountDlpFuse(const std::string &dstPath)
     int32_t ret = UMount2(dstPath, MNT_DETACH);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("[L2:MountManager] UMountDlpFuse: <<< EXIT FAILED <<< umount failed, ret=%{public}d,"
-            "errno=%{public}d", ret, errno);
+            "errno=%{public}d, %{public}s", ret, errno, dstPath.c_str());
         std::string extraData = "dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("UMountDlpFuse", GLOBAL_USER_ID, E_UMOUNT_DLP_FUSE, extraData);
         return E_UMOUNT_DLP_FUSE;

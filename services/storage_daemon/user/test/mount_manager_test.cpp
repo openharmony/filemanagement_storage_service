@@ -510,7 +510,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDlpFuse_001, Te
     ret = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(dstPath);
-    ForceRemoveDirectory(dlpPath);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDlpFuse_001 end";
 }
 
@@ -547,7 +546,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountDlpFuse_001, T
     ret = MountManager::GetInstance().UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(dstPath);
-    ForceRemoveDirectory(dlpPath);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountDlpFuse_001 end";
 }
 

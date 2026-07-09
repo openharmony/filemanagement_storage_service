@@ -147,10 +147,6 @@ ohos_executable("storage_daemon") {
     defines += [ "PC_EXT4_ENABLE" ]
   }
 
-  if (pc_enable) {
-    defines += [ "PC_ENABLE" ]
-  }
-
   if (car_device_enable) {
     defines += [ "CDC_STORAGE" ]
   }

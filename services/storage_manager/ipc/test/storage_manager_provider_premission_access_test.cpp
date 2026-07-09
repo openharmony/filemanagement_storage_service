@@ -17,6 +17,7 @@
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
+#include "directory_ex.h"
 #include "disk.h"
 #include "message_parcel.h"
 #include "mock/uece_activation_callback_mock.h"
@@ -212,12 +213,16 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     int32_t fuseFd = -1;
     g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
     auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
+    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
 }
 
@@ -247,10 +252,14 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_00
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dlpPath = "/data/service/el1/public/dlp_credential_service";
     std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    ForceCreateDirectory(dlpPath);
+    ForceCreateDirectory(dstPath);
     g_pStatus  = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
     auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    ForceRemoveDirectory(dstPath);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
 }
 

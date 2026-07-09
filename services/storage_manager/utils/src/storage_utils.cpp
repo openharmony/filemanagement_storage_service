@@ -17,6 +17,8 @@
 
 #include "ipc_skeleton.h"
 #include "storage_service_log.h"
+#include <climits>
+#include <cstdlib>
 
 namespace OHOS {
 namespace StorageManager {
@@ -74,15 +76,6 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
     return path.compare(0, prefix.length(), prefix) == 0;
 }
 
-bool IsPathStartWithDlp(const std::string &path)
-{
-    const std::string prefix = "/data/service/el1/public/dlp_credential_service";
-    if (path.size() <= prefix.size()) {
-        return false;
-    }
-    return path.compare(0, prefix.length(), prefix) == 0;
-}
-
 int GetCurrentUserId()
 {
     int uid = -1;
@@ -107,6 +100,30 @@ bool IsFilePathInvalid(const std::string &filePath)
         return true;
     }
     return false;
+}
+
+bool IsDlpPathValid(const std::string &dstPath)
+{
+    char resolvedPath[PATH_MAX] = { 0 };
+    if (dstPath.size() >= PATH_MAX || !realpath(dstPath.c_str(), resolvedPath)) {
+        LOGE("IsDlpPathValid: realpath failed for %{public}s", dstPath.c_str());
+        return false;
+    }
+    std::string realPath(resolvedPath);
+    if (realPath != dstPath) {
+        LOGE("IsDlpPathValid: realPath %{public}s differs from dstPath %{public}s", realPath.c_str(),
+             dstPath.c_str());
+        return false;
+    }
+    const std::string prefix = "/data/service/el1/public/dlp_credential_service/";
+    if (realPath.size() <= prefix.size()) {
+        return false;
+    }
+    if (realPath.compare(0, prefix.length(), prefix) != 0) {
+        LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", realPath.c_str());
+        return false;
+    }
+    return true;
 }
 
 } // namespace STORAGE_Manager
