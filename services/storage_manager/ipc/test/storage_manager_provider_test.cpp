@@ -1097,6 +1097,106 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_MountDlpFuse_001
+ * @tc.desc: Verify the MountDlpFuse function when IsFilePathInvalid or !IsPathStartWithDlp returns true.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/../test";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+
+    dstPath = "../data/service/el1/public/dlp_credential_service/test";
+    ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service/..";
+    ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+
+    dstPath = "/mnt/mtp/device/storage/usb";
+    ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service";
+    ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDlpFuse_002
+ * @tc.desc: Verify the MountDlpFuse function with valid dlp path but permission denied.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountDlpFuse(dstPath, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDlpFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDlpFuse_001
+ * @tc.desc: Verify the UMountDlpFuse function when IsFilePathInvalid or !IsPathStartWithDlp returns true.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/../test";
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath = "../data/service/el1/public/dlp_credential_service/test";
+    ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service/..";
+    ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath = "/mnt/mtp/device/storage/usb";
+    ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    dstPath = "/data/service/el1/public/dlp_credential_service";
+    ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDlpFuse_002
+ * @tc.desc: Verify the UMountDlpFuse function with valid dlp path but permission denied.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDlpFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string dstPath = "/data/service/el1/public/dlp_credential_service/sandbox";
+    auto ret = storageManagerProviderTest_->UMountDlpFuse(dstPath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDlpFuse_002 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
  * @tc.type: FUNC

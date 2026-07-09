@@ -64,6 +64,8 @@ public:
                                std::vector<ProcessInfo> &processKillInfos);
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
+    int32_t MountDlpFuse(const std::string &dstPath, int32_t &fuseFd);
+    int32_t UMountDlpFuse(const std::string &dstPath);
     int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy);
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);

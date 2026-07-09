@@ -231,6 +231,16 @@ int32_t StorageDaemonProxy::UMountFileMgrFuse(int32_t userId, const std::string 
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UMountDlpFuse(const std::string &dstPath)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

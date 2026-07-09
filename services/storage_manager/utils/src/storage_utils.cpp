@@ -17,6 +17,8 @@
 
 #include "ipc_skeleton.h"
 #include "storage_service_log.h"
+#include <climits>
+#include <cstdlib>
 
 namespace OHOS {
 namespace StorageManager {
@@ -100,5 +102,18 @@ bool IsFilePathInvalid(const std::string &filePath)
     return false;
 }
 
+bool IsPathStartWithDlp(const std::string &dstPath)
+{
+    if (dstPath.empty()) {
+        LOGE("IsDlpPathValid: dstPath is empty");
+        return false;
+    }
+    const std::string prefix = "/data/service/el1/public/dlp_credential_service/";
+    if (dstPath.compare(0, prefix.length(), prefix) != 0) {
+        LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", dstPath.c_str());
+        return false;
+    }
+    return true;
+}
 } // namespace STORAGE_Manager
 } // namespace OHOS

@@ -1260,6 +1260,49 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
     return err;
 }
 
+int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    LOGI("[L1:StorageDaemonProvider] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
+    HiAudit::GetInstance().WriteStart("MountDlpFuse", "dstPath: " + dstPath);
+    if (!IsDlpPathValid(dstPath)) {
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    fuseFd = -1;
+    int32_t err = MountManager::GetInstance().MountDlpFuse(dstPath, fuseFd);
+    HiAudit::GetInstance().WriteEnd("MountDlpFuse", err);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
+        return err;
+    }
+    LOGI("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT SUCCESS <<< fuseFd=%{public}d", fuseFd);
+    return E_OK;
+#endif
+    LOGI("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< not supported");
+    return E_NOT_SUPPORT;
+}
+
+int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
+{
+    LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
+    HiAudit::GetInstance().WriteStart("UMountDlpFuse", "dstPath: " + dstPath);
+    if (!IsDlpPathValid(dstPath)) {
+        return E_PARAMS_INVALID;
+    }
+#ifdef PC_USER_MANAGER
+    int32_t err = MountManager::GetInstance().UMountDlpFuse(dstPath);
+    HiAudit::GetInstance().WriteEnd("UMountDlpFuse", err);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< ret=%{public}d", err);
+        return err;
+    }
+    LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT SUCCESS <<<");
+    return E_OK;
+#endif
+    LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< not supported");
+    return E_NOT_SUPPORT;
+}
+
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               const std::vector<std::string> &inputList,
                                               std::vector<std::string> &outputList,

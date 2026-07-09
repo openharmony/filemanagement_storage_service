@@ -383,5 +383,28 @@ std::string AnonymizePath(const std::string &path)
 
     return dirPart + fileName;
 }
+
+bool IsDlpPathValid(const std::string &dstPath)
+{
+    std::string realPath;
+    if (!GetRealPath(dstPath, realPath)) {
+        LOGE("IsDlpPathValid: realpath failed for %{public}s", dstPath.c_str());
+        return false;
+    }
+    if (realPath != dstPath) {
+        LOGE("IsDlpPathValid: realPath %{public}s differs from dstPath %{public}s", realPath.c_str(),
+             dstPath.c_str());
+        return false;
+    }
+    const std::string prefix = "/data/service/el1/public/dlp_credential_service/";
+    if (realPath.size() <= prefix.size()) {
+        return false;
+    }
+    if (realPath.compare(0, prefix.length(), prefix) != 0) {
+        LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", realPath.c_str());
+        return false;
+    }
+    return true;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

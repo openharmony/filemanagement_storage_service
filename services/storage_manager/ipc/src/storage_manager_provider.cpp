@@ -65,6 +65,7 @@ constexpr pid_t AOCO_UID = 7558;
 constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
+constexpr pid_t DLP_UID = 3553;
 constexpr bool ENCRYPTED = true;
 constexpr uint32_t MOUNT_MAX_WAIT_TIME = 2;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
@@ -1255,6 +1256,55 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     err = sdCommunication.UMountFileMgrFuse(userId, path);
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
+}
+
+int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
+{
+    std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    if (IPCSkeleton::GetCallingUid() != DLP_UID) {
+        LOGE("MountDlpFuse permissionCheck error, calling uid now is %{public}d, should be DLP_UID: %{public}d",
+             IPCSkeleton::GetCallingUid(), DLP_UID);
+        return E_PERMISSION_DENIED;
+    }
+#ifdef PC_USER_MANAGER
+    fuseFd = -1;
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.MountDlpFuse(dstPath, fuseFd);
+    StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, "MountDlpFuse End", err);
+    return err;
+#endif
+    return E_NOT_SUPPORT;
+}
+
+int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
+{
+    std::string message = "UMountDlpFuse Begin, dstPath:" + GetAnonyString(dstPath);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, message, E_OK);
+    if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    if (IPCSkeleton::GetCallingUid() != DLP_UID) {
+        LOGE("UMountDlpFuse permissionCheck error, calling uid now is %{public}d, should be DLP_UID: %{public}d",
+             IPCSkeleton::GetCallingUid(), DLP_UID);
+        return E_PERMISSION_DENIED;
+    }
+#ifdef PC_USER_MANAGER
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t err = sdCommunication.UMountDlpFuse(dstPath);
+    StorageRadar::ReportFucBehavior("UMountDlpFuse", DEFAULT_USERID, "UMountDlpFuse End", err);
+    return err;
+#endif
+    return E_NOT_SUPPORT;
 }
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,

@@ -31,6 +31,7 @@ std::string GetAnonyString(const std::string &value);
 bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
 int GetCurrentUserId();
 bool IsFilePathInvalid(const std::string &filePath);
+bool IsPathStartWithDlp(const std::string &dstPath);
 } // namespace StorageManager
 } // namespace OHOS
 

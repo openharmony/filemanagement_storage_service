@@ -100,4 +100,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 91] void GetFreeInodes([out] long freeInodes);
     [ipccode 92] void GetCurrentBundleInodes([out] long curInodes);
     [ipccode 113] void UMountDisShareFile([in] String[] distributeDirs);
+    [ipccode 114] void MountDlpFuse([in] String dstPath, [out] FileDescriptor fuseFd);
+    [ipccode 115] void UMountDlpFuse([in] String dstPath);
 }

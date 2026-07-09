@@ -57,6 +57,8 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerprovidergetfreesizeofvolume_fuzzer:fuzztest",
     "storagemanagerprovidergettotalsizeofvolume_fuzzer:fuzztest",
     "storagemanagerproviderumountdissharefilevector_fuzzer:fuzztest",
+    "storagemanagerprovidermountdlpfuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountdlpfuse_fuzzer:fuzztest",
   ]
 }
 
@@ -88,6 +90,8 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonprovidercreateblockdevicenode_fuzzer:fuzztest",
     "storagedaemonproviderdestroyblockdevicenode_fuzzer:fuzztest",
     "storagedaemonprovidermountext_fuzzer:fuzztest",
+    "storagedaemonprovidermountdlpfuse_fuzzer:fuzztest",
+    "storagedaemonproviderumountdlpfuse_fuzzer:fuzztest",
   ]
 }
 
