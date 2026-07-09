@@ -1257,6 +1257,7 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
+
 int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
     std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
