@@ -1254,8 +1254,9 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return E_PARAMS_NULLPTR_ERR;
     }
 
-    UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
-    UserAuth auth_newSec = { userTokenSecret.token, userTokenSecret.newSecret, userTokenSecret.secureUid };
+    UserAuth auth = { .token = {}, .secret = userTokenSecret.oldSecret, .secureUid = userTokenSecret.secureUid };
+    UserAuth auth_newSec = { .token = userTokenSecret.token, .secret = userTokenSecret.newSecret,
+        .secureUid = userTokenSecret.secureUid };
     LOGW("[L3:KeyManager] UpdateCeEceSeceUserAuth: param status token=%{public}d, oldSec=%{public}d,"
         "newSec=%{public}d", userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());

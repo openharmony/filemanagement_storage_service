@@ -406,7 +406,8 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
             { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
             { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
             { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID,
+                .blob = { sizeof(auth.secureUid), reinterpret_cast<uint8_t *>(&auth.secureUid) } },
             { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
         };
         return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
@@ -416,7 +417,8 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
                 .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
             { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
             { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID,
+                .blob = { sizeof(auth.secureUid), reinterpret_cast<uint8_t *>(&auth.secureUid) } },
             { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
         };
         return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
