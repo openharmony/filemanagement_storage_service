@@ -1662,7 +1662,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         LOGE("[L3:KeyManager] ActiveElXUserKey: <<< EXIT FAILED <<< [failed to initialize el key]");
         return E_ELX_KEY_INIT_ERROR;
     }
-    UserAuth auth = { token, secret };
+    UserAuth auth = { .token = token, .secret = secret };
     auto keyResult = elKey->RestoreKey(auth);
     bool noKeyResult = (keyResult != E_OK) && (elKey->RestoreKey(NULL_KEY_AUTH) == E_OK);
     // key and no-key situation all failed, include upgrade situation, return err
