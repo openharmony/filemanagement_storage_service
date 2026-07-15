@@ -92,7 +92,8 @@
         "runtime_core",
         "json",
         "resource_schedule_service",
-        "disk_manager"
+        "disk_manager",
+        "taihe_ffi_gen"
       ]
     },
     "build": {
