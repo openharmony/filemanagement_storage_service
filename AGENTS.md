@@ -109,3 +109,4 @@ prebuilts/build-tools/linux-x86/bin/ninja -C out/rk3568 StorageDaemonProviderTes
 - EL2 密钥锁屏移除、解锁安装：锁屏时不可访问 EL2 加密数据，必须在解锁后才操作。
 - 用户隔离：不可用 userId=100 的密钥操作 userId=105 的目录，密钥和目录必须匹配。
 - IPC 死锁预防：不要在持有 Manager 锁时调用 Daemon IPC，先释放锁再发起 IPC。
+- 高危删除约束：挂载/卸载生命周期必须配套，禁止对同一源目录重复挂载后只卸载最新层——残留挂载层会使对挂载点目录的任何高危删除（递归删除、`RmDirRecurse`/`ForceRemoveDirectory`、`unlink`、`rmdir` 等可能误删源数据的操作）穿透到源数据导致数据丢失。删除挂载点目录前必须确认已逐层彻底卸载、无残留挂载层；否则禁止执行，需开发者手动确认。
