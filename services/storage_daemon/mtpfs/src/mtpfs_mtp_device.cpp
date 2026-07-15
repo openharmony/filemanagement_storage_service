@@ -19,6 +19,7 @@
 #include <thread>
 #include <unistd.h>
 #include <unordered_set>
+#include <securec.h>
 
 #include "mtpfs_fuse.h"
 #include "mtpfs_libmtp.h"
