@@ -81,6 +81,7 @@ constexpr uint8_t BLOCK_SIZE_BYTE_0 = 4;
 constexpr uint8_t BLOCK_SIZE_BYTE_1 = 5;
 constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
 constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
+constexpr int32_t FORMAT_PARTITION_TIMEOUT_S = 5 * 60;
 
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
@@ -558,7 +559,7 @@ int32_t DiskUtils::FormatPartition(const std::string &devPath, const std::string
             p.set_value(E_FORMAT_PARTITION_ERROR);
         }
     });
-    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+    if (future.wait_for(std::chrono::seconds(FORMAT_PARTITION_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskUtils] exec format partition: <<< EXIT FAILED <<< timed out");
         formatThread.detach();
         return E_FORMAT_PARTITION_TIMEOUT;
