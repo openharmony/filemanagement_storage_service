@@ -200,6 +200,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/disk_manager/src/volume/vfat_operator.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/volume_operator_factory.cpp",
     "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
+    "${storage_daemon_path}/volume/src/process.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
   ]
@@ -273,5 +274,6 @@ group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
     ":storage_daemon_test",
+    ":storage_daemon_provider_test",
   ]
 }
