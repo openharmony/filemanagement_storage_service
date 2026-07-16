@@ -224,9 +224,6 @@ enum StorageDaemonFunction {
     FUNC_MOUNT = 2,
     FUNC_UMOUNT = 3,
     FUNC_CHECK = 4,
-    FUNC_FORMAT = 5,
-    FUNC_PARTITION = 6,
-    FUNC_SET_VOLUME_DESCRIPTION = 7,
     FUNC_TRY_TO_FIX = 8,
     FUNC_QUERY_USB_IS_IN_USE = 9,
     
@@ -301,7 +298,7 @@ enum StorageDaemonFunction {
 };
 
 static const int IPC_CODES[] = {
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    1, 2, 3, 4, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
     21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
     31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -341,15 +338,6 @@ static void HandleBasicStorageOps(FuzzedDataProvider& provider,
         }
         default: break;
     }
-}
-
-static void HandleDiskFormatOps(FuzzedDataProvider& provider,
-                                OHOS::StorageDaemon::StorageDaemonProvider* providerObj,
-                                StorageDaemonFunction code)
-{
-    (void)provider;
-    (void)providerObj;
-    (void)code;
 }
 
 static void HandleDiskFixUsbOps(FuzzedDataProvider& provider,
@@ -900,7 +888,6 @@ static void DispatchStorageDaemonFunction(FuzzedDataProvider& provider,
         void (*handler)(FuzzedDataProvider&, StorageDaemonProvider*, StorageDaemonFunction);
     } ranges[] = {
         {FUNC_SHUTDOWN, FUNC_CHECK, HandleBasicStorageOps},
-        {FUNC_FORMAT, FUNC_SET_VOLUME_DESCRIPTION, HandleDiskFormatOps},
         {FUNC_TRY_TO_FIX, FUNC_QUERY_USB_IS_IN_USE, HandleDiskFixUsbOps},
         {FUNC_START_USER, FUNC_CREATE_USER_DIR, HandleUserDirOps},
         {FUNC_INIT_GLOBAL_KEY, FUNC_DELETE_USER_KEYS, HandleGlobalKeyOps},
