@@ -907,7 +907,9 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_MultipleDevices_001, Tes
     CreateDeviceDir("sdmock_b");
     CreateFileWithContent(mockSysPath + "/sdmock_b/removable", "1\n");
     CreateDeviceDir("sdmock_c");
+    LinkDeviceAsInternalSata("sdmock_c");
     CreateDeviceDir("nvme1n1");
+    LinkDeviceAsInternalNvme("nvme1n1");
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
