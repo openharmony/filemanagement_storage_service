@@ -22,6 +22,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
+#include <fnmatch.h>
 #include <fstream>
 #include <cerrno>
 #include <cinttypes>
@@ -75,6 +76,21 @@ const char NVME_LINK = 'n';
 constexpr size_t HD_DRIVEID_SIZE = 512;
 constexpr uint16_t RPM_ARRAY_INDEX = 11;
 constexpr size_t NVME_MIN_NAME_LEN = 7;
+
+namespace {
+// disk_config 内嵌 data 盘 sysPattern，前缀 /sys 以匹配 GetRealPath 返回值
+constexpr const char *INTERNAL_DATA_SATA_PATTERN = "/sys/devices/platform/bfa00000.sata/*";
+constexpr const char *INTERNAL_DATA_NVME_PATTERN = "/sys/devices/platform/a0000000.hi_pcie/*/nvme/nvme1/*";
+
+bool MatchInternalDataDiskPattern(const std::string &realPath)
+{
+    if (realPath.empty()) {
+        return false;
+    }
+    return fnmatch(INTERNAL_DATA_SATA_PATTERN, realPath.c_str(), 0) == 0 ||
+           fnmatch(INTERNAL_DATA_NVME_PATTERN, realPath.c_str(), 0) == 0;
+}
+} // namespace
 
 ScanDevice::ScanDevice(const std::string &sysBlockPath, const std::string &devBlockPath)
     : sysBlockPath(sysBlockPath), devBlockPath(DEV_PATH)
@@ -187,6 +203,9 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             isNeedCheckUfs = true;
         }
         if (isSDevice && !IsDataDisk(deviceName, isNeedCheckUfs, isRemovable)) {
+            continue;
+        }
+        if (!MatchInternalDataDiskPattern(GetRealPath(deviceName))) {
             continue;
         }
         BlockInfo blockInfo;
