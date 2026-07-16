@@ -206,6 +206,7 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             continue;
         }
         if (!MatchInternalDataDiskPattern(GetRealPath(deviceName))) {
+            LOGE("Ignore non-internal data disk: %{public}s", deviceName.c_str());
             continue;
         }
         BlockInfo blockInfo;
