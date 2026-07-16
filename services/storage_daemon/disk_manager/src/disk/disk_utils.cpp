@@ -1155,16 +1155,14 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     for (const auto& line : output) {
         std::smatch match;
         if (std::regex_search(line, match, pattern)) {
-            if (match.size() > 1) {
-                std::string subStr = match[1].str();
-                const char *ptr = subStr.c_str();
-                const char *end = ptr + subStr.size();
-                int64_t mediaInfoCapacity = 0;
-                auto result = std::from_chars(ptr, end, mediaInfoCapacity);
-                if (result.ec == std::errc() && result.ptr == end && mediaInfoCapacity > 0) {
-                    totalSize = mediaInfoCapacity;
-                    LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
-                }
+            std::string subStr = match[1].str();
+            const char *ptr = subStr.c_str();
+            const char *end = ptr + subStr.size();
+            int64_t mediaInfoCapacity = 0;
+            auto result = std::from_chars(ptr, end, mediaInfoCapacity);
+            if (result.ec == std::errc() && result.ptr == end && mediaInfoCapacity > 0) {
+                totalSize = mediaInfoCapacity;
+                LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
             }
             return;
         }
