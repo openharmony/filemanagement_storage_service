@@ -379,10 +379,14 @@ std::string ScanDevice::GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo
                  speedStr.c_str());
             continue;
         }
-        double speedValue = std::stod(speedStr);
-        if (speedValue > maxSpeed) {
-            maxSpeed = speedValue;
-            maxSpeedStr = speedStr;
+        char *endPtr = nullptr;
+        errno = 0;
+        double speedValue = std::strtod(speedStr.c_str(), &endPtr);
+        if (errno == 0 && endPtr != nullptr && endPtr != speedStr.c_str() && *endPtr == '\0') {
+            if (speedValue > maxSpeed) {
+                maxSpeed = speedValue;
+                maxSpeedStr = speedStr;
+            }
         }
     }
     LOGI("[L2:ScanDevice] GetMaxSpeedFromSpeedInfo: <<< EXIT SUCCESS <<< maxSpeedStr=%{public}s",

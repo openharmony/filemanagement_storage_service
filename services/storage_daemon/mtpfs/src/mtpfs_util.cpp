@@ -389,7 +389,8 @@ static bool UrlDecodeOnce(const std::string& in, std::string& out)
             int32_t h1 = HexVal(in[i + 1]);
             int32_t h2 = HexVal(in[i + 2]);
             if ((h1 >= 0) && (h2 >= 0)) {
-                out.push_back(static_cast<char>((h1 << HEX_RADIX_SHIFT_BITS) | h2));
+                out.push_back(
+                    static_cast<char>((static_cast<uint32_t>(h1) << HEX_RADIX_SHIFT_BITS) | static_cast<uint32_t>(h2)));
                 i += URL_ESCAPE_ENCODED_LEN;
                 continue;
             }

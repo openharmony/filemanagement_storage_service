@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <charconv>
 #include <climits>
 #include <cinttypes>
 #include <cstdlib>
@@ -133,7 +134,7 @@ static bool ParseKeyValuePair(const std::string &key, const std::string &value, 
         char *endPtr = nullptr;
         errno = 0;
         double speed = strtod(value.c_str(), &endPtr);
-        if (errno != 0 || endPtr == value.c_str() || *endPtr != '\0' || speed < 0) {
+        if (errno != 0 || endPtr == nullptr || endPtr == value.c_str() || *endPtr != '\0' || speed < 0) {
             LOGE("[L3:DiskUtils] ParseBurnOptions: invalid burnSpeed: %{public}s", value.c_str());
             return false;
         }
@@ -1154,10 +1155,18 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     for (const auto& line : output) {
         std::smatch match;
         if (std::regex_search(line, match, pattern)) {
-            int64_t mediaInfoCapacity = std::stoll(match[1].str());
-            if (mediaInfoCapacity > 0) {
-                totalSize = mediaInfoCapacity;
-                LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
+            if (match.size() > 1) {
+                std::string subStr = match[1].str();
+                const char *ptr = subStr.c_str();
+                const char *end = ptr + subStr.size();
+                int64_t mediaInfoCapacity = 0;
+                auto result = std::from_chars(ptr, end, mediaInfoCapacity);
+                if (result.ec == std::errc() && result.ptr == end) {
+                    if (mediaInfoCapacity > 0) {
+                        totalSize = mediaInfoCapacity;
+                        LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
+                    }
+                }
             }
             return;
         }
