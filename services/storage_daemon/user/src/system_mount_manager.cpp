@@ -121,7 +121,7 @@ int32_t SystemMountManager::CloudTwiceMount(int32_t userId)
         LOGI("path has mounted, %{public}s", cloudPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudPath);
-        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
+        if (mountRet != E_OK) {
             std::string extraData = "dstPath=" + cloudPath + ",kernelCode=" + to_string(mountRet);
             StorageRadar::ReportUserManager("CloudTwiceMount", userId, E_MOUNT_CLOUD_FUSE, extraData);
             ret = E_MOUNT_CLOUD_FUSE;
@@ -132,7 +132,7 @@ int32_t SystemMountManager::CloudTwiceMount(int32_t userId)
         LOGI("path has mounted, %{public}s", cloudMediaPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudMediaPath);
-        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
+        if (mountRet != E_OK) {
             std::string extraData = "dstPath=" + cloudMediaPath + ",kernelCode=" + to_string(mountRet);
             StorageRadar::ReportUserManager("CloudTwiceMount", userId, E_MOUNT_CLOUD, extraData);
             ret = E_MOUNT_CLOUD;
