@@ -1161,11 +1161,9 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
                 const char *end = ptr + subStr.size();
                 int64_t mediaInfoCapacity = 0;
                 auto result = std::from_chars(ptr, end, mediaInfoCapacity);
-                if (result.ec == std::errc() && result.ptr == end) {
-                    if (mediaInfoCapacity > 0) {
-                        totalSize = mediaInfoCapacity;
-                        LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
-                    }
+                if (result.ec == std::errc() && result.ptr == end && mediaInfoCapacity > 0) {
+                    totalSize = mediaInfoCapacity;
+                    LOGI("AdjustBlankDiscCapacity: DVD+RW capacity from mediainfo=%{public}" PRId64, totalSize);
                 }
             }
             return;
