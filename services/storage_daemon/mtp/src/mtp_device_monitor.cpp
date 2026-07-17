@@ -250,10 +250,24 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t
     std::vector<MtpDeviceInfo> devInfos;
 
     if (deviceType == DeviceType::CAMERA) {
-        MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
+        int32_t ret = MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
+        if (ret == E_OK) {
+            return;
+        }
+        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: camera failed, fallback to mobile, "
+            "bus=%{public}u, dev=%{public}u", busLocation, devNum);
+        devInfos.clear();
+        MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
         return;
     } else if (deviceType == DeviceType::MOBILE) {
-        MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
+        int32_t ret = MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
+        if (ret == E_OK) {
+            return;
+        }
+        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: mobile failed, fallback to camera, "
+            "bus=%{public}u, dev=%{public}u", busLocation, devNum);
+        devInfos.clear();
+        MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
         return;
     } else if (deviceType == DeviceType::UNKNOWN) {
         int32_t ret = MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
