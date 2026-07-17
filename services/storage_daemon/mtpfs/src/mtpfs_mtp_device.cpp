@@ -1315,13 +1315,33 @@ char *MtpFsDevice::GetDeviceFriendlyName()
 {
     std::unique_lock<std::mutex> lock(deviceMutex_);
     char *name = LIBMTP_Get_Friendlyname(device_);
-    if (name == nullptr) {
-        LOGI("get device name is null");
-        StorageRadar::ReportMtpResult("GetDeviceFriendlyName::LIBMTP_Get_Friendlyname", GetMainMtpErrorCode(), "NA");
-        DumpLibMtpErrorStack();
-        return nullptr;
+    if (name != nullptr && strlen(name) > 0) {
+        return name;
     }
-    return name;
+    if (name != nullptr) {
+        free(name);
+        name = nullptr;
+    }
+    name = LIBMTP_Get_Modelname(device_);
+    if (name != nullptr && strlen(name) > 0) {
+        return name;
+    }
+    if (name != nullptr) {
+        free(name);
+        name = nullptr;
+    }
+    name = LIBMTP_Get_Manufacturername(device_);
+    if (name != nullptr && strlen(name) > 0) {
+        return name;
+    }
+    if (name != nullptr) {
+        free(name);
+        name = nullptr;
+    }
+    LOGI("get device name is null");
+    StorageRadar::ReportMtpResult("GetDeviceFriendlyName::LIBMTP_Get_Friendlyname", GetMainMtpErrorCode(), "NA");
+    DumpLibMtpErrorStack();
+    return nullptr;
 }
 
 void MtpFsDevice::DumpLibMtpErrorStack()
