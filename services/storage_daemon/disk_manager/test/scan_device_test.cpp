@@ -44,6 +44,7 @@ public:
     void DeleteDeviceDir(const std::string &deviceName);
     void LinkDeviceAsInternalSata(const std::string &deviceName);
     void LinkDeviceAsInternalNvme(const std::string &deviceName);
+    void LinkDeviceAsInternalNvmeWithAbsoluteSysPath(const std::string &deviceName);
 
     std::string mockSysPath;
 };
@@ -129,6 +130,15 @@ void ScanDeviceTest::LinkDeviceAsInternalNvme(const std::string &deviceName)
     system(("rm -rf " + src).c_str());
     symlink(("../devices/platform/a0000000.hi_pcie/pci0000:00/0000:00:00.0/nvme/nvme1/block/" + deviceName).c_str(),
             src.c_str());
+}
+
+void ScanDeviceTest::LinkDeviceAsInternalNvmeWithAbsoluteSysPath(const std::string &deviceName)
+{
+    std::string devicePath = mockSysPath + "/" + deviceName;
+    std::string absLinkTarget =
+        "/sys/devices/platform/a0000000.hi_pcie/pci0001:00/0001:00:00.0/0001:01:00.0/nvme/nvme1/" + deviceName;
+    system(("rm -rf " + devicePath).c_str());
+    symlink(absLinkTarget.c_str(), devicePath.c_str());
 }
 
 /**
@@ -248,6 +258,25 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_008, TestSi
 
     DeleteDeviceDir("sdmock_b");
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetDataDisks_009
+ * @tc.desc: Test NVMe with absolute /sys/devices symlink is recognized as internal data disk
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_009 start";
+    CreateDeviceDir("nvme1n1");
+    LinkDeviceAsInternalNvmeWithAbsoluteSysPath("nvme1n1");
+
+    ScanDevice scanner(mockSysPath);
+    std::vector<BlockInfo> result = scanner.GetDataDisks();
+    EXPECT_EQ(result.size(), 1);
+
+    DeleteDeviceDir("nvme1n1");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_009 end";
 }
 
 /**
