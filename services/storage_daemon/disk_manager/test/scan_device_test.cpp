@@ -42,6 +42,8 @@ public:
     void CreateFileWithContent(const std::string &filePath, const std::string &content);
     void CreateDeviceDir(const std::string &deviceName);
     void DeleteDeviceDir(const std::string &deviceName);
+    void LinkDeviceAsInternalSata(const std::string &deviceName);
+    void LinkDeviceAsInternalNvme(const std::string &deviceName);
 
     std::string mockSysPath;
 };
@@ -103,6 +105,30 @@ void ScanDeviceTest::DeleteDeviceDir(const std::string &deviceName)
 {
     std::string devicePath = mockSysPath + "/" + deviceName;
     system(("rm -rf " + devicePath).c_str());
+}
+
+void ScanDeviceTest::LinkDeviceAsInternalSata(const std::string &deviceName)
+{
+    std::string src = mockSysPath + "/" + deviceName;
+    std::string nested = mockSysPath + "/devices/platform/bfa00000.sata/ata1/host0/target0:0:0/0:0:0:0/block/" +
+                         deviceName;
+    system(("mkdir -p " + nested).c_str());
+    system(("cp -a " + src + "/. " + nested + "/").c_str());
+    system(("rm -rf " + src).c_str());
+    symlink(("../devices/platform/bfa00000.sata/ata1/host0/target0:0:0/0:0:0:0/block/" + deviceName).c_str(),
+            src.c_str());
+}
+
+void ScanDeviceTest::LinkDeviceAsInternalNvme(const std::string &deviceName)
+{
+    std::string src = mockSysPath + "/" + deviceName;
+    std::string nested = mockSysPath +
+                         "/devices/platform/a0000000.hi_pcie/pci0000:00/0000:00:00.0/nvme/nvme1/block/" + deviceName;
+    system(("mkdir -p " + nested).c_str());
+    system(("cp -a " + src + "/. " + nested + "/").c_str());
+    system(("rm -rf " + src).c_str());
+    symlink(("../devices/platform/a0000000.hi_pcie/pci0000:00/0000:00:00.0/nvme/nvme1/block/" + deviceName).c_str(),
+            src.c_str());
 }
 
 /**
@@ -175,6 +201,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_006, TestSi
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_006 start";
 
     CreateDeviceDir("sdmock_a");
+    LinkDeviceAsInternalSata("sdmock_a");
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
@@ -193,6 +220,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_007, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_007 start";
     CreateDeviceDir("nvme1n1");
+    LinkDeviceAsInternalNvme("nvme1n1");
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
@@ -211,6 +239,7 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_008, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_008 start";
     CreateDeviceDir("sdmock_b");
+    LinkDeviceAsInternalSata("sdmock_b");
     CreateFileWithContent(mockSysPath + "/sdmock_b/size", "invalid_number\n");
 
     ScanDevice scanner(mockSysPath);
@@ -878,7 +907,9 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_MultipleDevices_001, Tes
     CreateDeviceDir("sdmock_b");
     CreateFileWithContent(mockSysPath + "/sdmock_b/removable", "1\n");
     CreateDeviceDir("sdmock_c");
+    LinkDeviceAsInternalSata("sdmock_c");
     CreateDeviceDir("nvme1n1");
+    LinkDeviceAsInternalNvme("nvme1n1");
 
     ScanDevice scanner(mockSysPath);
     std::vector<BlockInfo> result = scanner.GetDataDisks();
