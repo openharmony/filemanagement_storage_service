@@ -226,6 +226,7 @@ std::string ScanDevice::GetRealPath(const std::string &deviceName)
     char linkTarget[PATH_MAX] = {0};
     ssize_t len = readlink(modelPath.c_str(), linkTarget, sizeof(linkTarget) - 1);
     std::string linkTargetStr;
+    LOGI("linkTarget is %{public}s", linkTarget);
     if (len > 0) {
         linkTargetStr.assign(linkTarget, len);
         if (linkTargetStr.rfind("/sys/", 0) == 0) {
