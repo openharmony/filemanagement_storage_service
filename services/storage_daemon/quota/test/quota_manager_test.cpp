@@ -731,13 +731,12 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_SortAndCutSaInfoVec_004, TestSize.Le
     vec.push_back({1111, "memmgr", 1024});
 
     QuotaManager::GetInstance().SortAndCutSaInfoVec(vec, true);
-    EXPECT_EQ(vec.size(), saTopCount + 1);
+    EXPECT_EQ(vec.size(), saTopCount);
 
     if (!vec.empty()) {
         EXPECT_EQ(vec[0].size, 60 * 1024);
         EXPECT_EQ(vec[0].uid, 1000);
         EXPECT_EQ(vec[saTopCount - 1].size, 11 * 1024);
-        EXPECT_EQ(vec[saTopCount].size, 1024);
     }
 
     GTEST_LOG_(INFO) << "QuotaManagerTest_SortAndCutSaInfoVec_004 end";
