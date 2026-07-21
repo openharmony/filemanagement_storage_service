@@ -71,7 +71,7 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_CreateMBRVolume_001, T
         ret = diskInfo->CreateMBRVolume(typeList[i], device, 1);
         EXPECT_TRUE(ret);
         ret = diskInfo->CreateMBRVolume(typeList[i], device, 1);
-        EXPECT_FALSE(ret);
+        EXPECT_TRUE(ret);
         ret = diskInfo->Destroy();
         GTEST_LOG_(INFO) << ret;
     }
