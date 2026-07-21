@@ -412,7 +412,7 @@ int32_t DiskUtils::CreatePartition(const std::string &devPath, int32_t partition
         std::string partNum = std::to_string(partitionNum);
         std::string sector = partNum + ":" + std::to_string(startSector) + ":" + std::to_string(endSector);
         std::string code = partNum + ":" + typeCode;
-        std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, devPath};
+        std::vector<std::string> cmd = {SGDISK_PATH, "-n", sector, "-t", code, "-W", "always", devPath};
         std::vector<std::string> output;
         int32_t ret = ForkExec(cmd, &output);
         for (auto str : output) {
