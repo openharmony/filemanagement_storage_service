@@ -510,8 +510,15 @@ int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, st
         std::vector<std::string> temp;
         std::vector<std::string> cmd = {"sgdisk", "-p", devPath};
         int32_t res = ForkExec(cmd, &temp);
-        for (auto str : temp) {
+        std::string errorMsg;
+        for (const auto& str : temp) {
+            if (str.find("ERROR") != std::string::npos) {
+                errorMsg += str;
+            }
             LOGI("get partition output: %{public}s", str.c_str());
+        }
+        if (!errorMsg.empty()) {
+            StorageService::StorageRadar::ReportUserManager("GetPartition", 0, E_GET_PARTITION_ERROR, errorMsg);
         }
         p.set_value({res, std::move(temp)});
     });
