@@ -1107,5 +1107,123 @@ HWTEST_F(ExtDiskUtilsTest, CleanTempDirectory_003, TestSize.Level1)
     EXPECT_EQ(ret, E_ERR);
 }
 
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_ErrorAtStart, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("ERROR: invalid partition table");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 1u);
+    EXPECT_EQ(lines[0], "ERROR: invalid partition table");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_ErrorInMiddle, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Warning: ERROR found in partition data");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 1u);
+    EXPECT_EQ(lines[0], "Warning: ERROR found in partition data");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_ErrorAtEnd, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Disk read failed ERROR");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 1u);
+    EXPECT_EQ(lines[0], "Disk read failed ERROR");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_MultipleErrors, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("ERROR: partition 1 corrupt");
+            output->push_back("ERROR: partition 2 missing");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 2u);
+    EXPECT_EQ(lines[0], "ERROR: partition 1 corrupt");
+    EXPECT_EQ(lines[1], "ERROR: partition 2 missing");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_NoError, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Disk /dev/block/uttestdisk: 100 GiB");
+            output->push_back("Number  Start  End  Size  Type");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 2u);
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_LowercaseErrorNotMatched, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("error: lowercase should not match");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 1u);
+    EXPECT_EQ(lines[0], "error: lowercase should not match");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_MixedOutput, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("Disk /dev/block/uttestdisk: 100 GiB");
+            output->push_back("ERROR: partition table corrupt");
+            output->push_back("Number  Start  End  Size  Type");
+            return E_OK;
+        }));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(lines.size(), 3u);
+    EXPECT_EQ(lines[1], "ERROR: partition table corrupt");
+}
+
+HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_ForkExecFailed, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/uttestdisk";
+    std::vector<std::string> lines;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = DiskUtils::ExecAsyncGetPartitionTableInfo(devPath, lines);
+    EXPECT_EQ(ret, E_GET_PARTITION_ERROR);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
