@@ -19,6 +19,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <unistd.h>
+#include <filesystem>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <securec.h>
@@ -130,14 +131,12 @@ std::string GphotoDirName(const std::string &path)
     if (path.empty() || path.length() > PATH_MAX) {
         return "";
     }
-    char *str = strdup(path.c_str());
-    if (!str) {
+    std::filesystem::path fsPath(path);
+    std::filesystem::path parentPath = fsPath.parent_path();
+    if (parentPath.empty()) {
         return "";
     }
-    std::string result(dirname(str));
-    free(static_cast<void *>(str));
-    str = nullptr;
-    return result;
+    return parentPath.string();
 }
 
 std::string GphotoBaseName(const std::string &path)
@@ -145,14 +144,12 @@ std::string GphotoBaseName(const std::string &path)
     if (path.empty() || path.length() > PATH_MAX) {
         return "";
     }
-    char *str = strdup(path.c_str());
-    if (!str) {
+    std::filesystem::path fsPath(path);
+    std::filesystem::path fileName = fsPath.filename();
+    if (fileName.empty()) {
         return "";
     }
-    std::string result(basename(str));
-    free(static_cast<void *>(str));
-    str = nullptr;
-    return result;
+    return fileName.string();
 }
 
 std::string GphotoRealPath(const std::string &path)
