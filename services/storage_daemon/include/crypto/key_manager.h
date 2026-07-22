@@ -180,6 +180,10 @@ private:
     int32_t UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     bool IsWorkDirExist(std::string type, int32_t userId);
+#ifdef GLASSES_DEVICE
+    bool CheckLatestDirFilesExist(const std::string &latestDir);
+    bool IsLatestDirEmptyOrNotExist(const std::string &el1Dir, const std::string &backupEl1Dir);
+#endif
     int GenerateIntegrityDirs(int32_t userId, KeyType type);
     int CheckAndFixUserKeyDirectory(unsigned int user);
     int DoChangerPinCodeClassE(unsigned int user, std::shared_ptr<BaseKey> &el5Key);

@@ -122,6 +122,10 @@ ohos_static_library("libsdcrypto") {
     defines += [ "EL2_INACTIVE_SPECIAL_HANDLING" ]
   }
 
+  if (storage_service_glasses_device) {
+    defines += [ "GLASSES_DEVICE" ]
+  }
+
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 }

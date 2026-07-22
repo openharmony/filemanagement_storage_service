@@ -32,6 +32,7 @@
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/hi_audit.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -101,6 +102,44 @@ std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
     }
     return std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV1>(dir));
 }
+
+#ifdef GLASSES_DEVICE
+bool KeyManager::CheckLatestDirFilesExist(const std::string &latestDir)
+{
+    std::error_code errCode;
+    std::string shieldPath = latestDir + SHIELD_DIR;
+    std::string secDiscardPath = latestDir + SEC_DISCARD_DIR;
+    std::string encryptPath = latestDir + ENCRYPT_VERSION_DIR;
+    return std::filesystem::exists(shieldPath, errCode) &&
+           std::filesystem::exists(secDiscardPath, errCode) &&
+           std::filesystem::exists(encryptPath, errCode);
+}
+
+bool KeyManager::IsLatestDirEmptyOrNotExist(const std::string &el1Dir, const std::string &backupEl1Dir)
+{
+    std::error_code errCode;
+    std::string latestDir = el1Dir + "/latest";
+    std::string backupLatestDir = backupEl1Dir + "/latest";
+
+    bool el1DirExist = std::filesystem::exists(el1Dir, errCode);
+    if (!el1DirExist || std::filesystem::is_empty(el1Dir, errCode)) {
+        LOGI("[L3:KeyManager] el1Dir=%{public}s, el1DirExist=%{public}d, isEmpty=%{public}d, return true",
+             el1Dir.c_str(), el1DirExist, el1DirExist && std::filesystem::is_empty(el1Dir, errCode));
+        return true;
+    }
+
+    bool latestDirExist = std::filesystem::exists(latestDir, errCode);
+    if (!latestDirExist || std::filesystem::is_empty(latestDir, errCode)) {
+        LOGI("[L3:KeyManager] latestDir=%{public}s, latestDirExist=%{public}d, isEmpty=%{public}d, return true",
+             latestDir.c_str(), latestDirExist, latestDirExist && std::filesystem::is_empty(latestDir, errCode));
+        return true;
+    }
+
+    LOGI("[L3:KeyManager] el1Dir=%{public}s, latestDir=%{public}s, backupLatestDir=%{public}s, return false",
+         el1Dir.c_str(), latestDir.c_str(), backupLatestDir.c_str());
+    return false;
+}
+#endif
 
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
@@ -198,6 +237,79 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
     return 0;
 }
 
+#ifdef GLASSES_DEVICE
+int KeyManager::InitGlobalDeviceKey(void)
+{
+    LOGW("[L3:KeyManager] InitGlobalDeviceKey: >>> ENTER <<<");
+    int ret = InitFscryptPolicy();
+    if (ret < 0) {
+        LOGE("[L3:KeyManager] InitGlobalDeviceKey: <<< EXIT FAILED <<< [fscrypt initialization failed, fscrypt will"
+            "not be enabled]");
+        StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey::InitFscryptPolicy", 0, ret, "EL1", "");
+        return ret;
+    }
+
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (hasGlobalDeviceKey_ || globalEl1Key_ != nullptr) {
+        LOGI("[L3:KeyManager] InitGlobalDeviceKey: global device el1 already exists");
+        return 0;
+    }
+    ret = MkDir(STORAGE_DAEMON_DIR, S_IRWXU); // para.0700: root only
+    if (ret && errno != EEXIST) {
+        LOGE("[L3:KeyManager] InitGlobalDeviceKey: <<< EXIT FAILED <<< [failed to create storage daemon directory]");
+        StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey::MkDir", 0, ret, "EL1",
+            std::string("errno = ") + std::to_string(errno) + ", path = " + STORAGE_DAEMON_DIR);
+        return ret;
+    }
+    std::string el0Dir = std::string(DEVICE_EL1_DIR);
+    std::string el0bakDir = std::string(DEVICE_EL1_DIR) + BACKUP_NAME;
+    bool mainLatestExist = CheckLatestDirFilesExist(el0Dir);
+    bool backupLatestExist = CheckLatestDirFilesExist(el0bakDir);
+    /*
+        1. If the /sd/latest or /sd_bak/latest directory exists and the key structure is complete
+        (the shield, sec_discard, and encrypted files must exist at the same time),
+        the decryption process is performed.
+        -- This corresponds to the scenario where the device is restarted or upgraded normally, not the first startup.
+    */
+    if (mainLatestExist || backupLatestExist) {
+        LOGI("[L3:KeyManager] Found valid latest dir, mainLatestExist:%{public}d, backupLatestExist:%{public}d",
+            mainLatestExist, backupLatestExist);
+        UpgradeKeys({{0, DEVICE_EL1_DIR}});
+        return RestoreDeviceKey(DEVICE_EL1_DIR);
+    }
+    std::error_code errCode;
+    if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR)) {
+        HiAudit::GetInstance().WriteStart("EL0_KEY", "DEVICE_EL1_DIR is exist and not empty, try to create !");
+    }
+    /*
+        2. If the /sd or /sd/latest directory does not exist, or the directory exists but is empty,
+        the key creation process is performed.
+        -- This corresponds to the first startup after ROM flashing or factory data restoration,
+            including the scenario where the first startup is interrupted abnormally and the device is restarted again.
+    */
+    if (IsLatestDirEmptyOrNotExist(DEVICE_EL1_DIR, el0bakDir)) {
+        LOGI("[L3:KeyManager] InitGlobalDeviceKey: device el1 dir or latest dir does not exist or is empty.");
+        ret = MkDir(DEVICE_EL1_DIR, S_IRWXU);
+        if (ret && errno != EEXIST) {
+            LOGE("[L3:KeyManager] InitGlobalDeviceKey: <<< EXIT FAILED <<< failed to create device el1 key directory");
+            StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey::MkDir", 0, ret, "EL1",
+                std::string("errno = ") + std::to_string(errno) + ", path = " + DEVICE_EL1_DIR);
+            return ret;
+        }
+        return GenerateAndInstallDeviceKey(DEVICE_EL1_DIR);
+    }
+
+    LOGE("[L3:KeyManager] InitGlobalDeviceKey: <<< EXIT FAILED <<< [both latest dirs missing required files]");
+    StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey", 0, E_GLOBAL_KEY_INIT_ERROR, "EL1",
+        "both sd/latest and sd_bak/latest missing required files");
+    /*
+        3. If the /sd/latest and /sd_bak/latest directories exist but the key structure is incomplete,
+        an error is returned.
+        -- This corresponds to the startup scenario where the key is damaged.
+    */
+    return E_GLOBAL_KEY_INIT_ERROR;
+}
+#else
 int KeyManager::InitGlobalDeviceKey(void)
 {
     LOGW("[L3:KeyManager] InitGlobalDeviceKey: >>> ENTER <<<");
@@ -237,6 +349,7 @@ int KeyManager::InitGlobalDeviceKey(void)
 
     return GenerateAndInstallDeviceKey(DEVICE_EL1_DIR);
 }
+#endif
 
 int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type)
 {
@@ -573,6 +686,77 @@ int KeyManager::InitUserElkeyStorageDir(void)
     return 0;
 }
 
+#ifdef GLASSES_DEVICE
+int KeyManager::InitGlobalUserKeys(void)
+{
+    LOGW("[L3:KeyManager] InitGlobalUserKeys: >>> ENTER <<<");
+    if (!KeyCtrlHasFscryptSyspara()) {
+        LOGW("[L3:KeyManager] InitGlobalUserKeys: fscrypt syspara not found or encryption not enabled");
+        return 0;
+    }
+    int ret = InitUserElkeyStorageDir();
+    if (ret) {
+        LOGE("[L3:KeyManager] InitGlobalUserKeys: failed to initialize user el storage directory");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::InitUserElkeyStorageDir", GLOBAL_USER_ID,
+            ret, "EL1", "InitUserElkeyStorageDir failed");
+        return ret;
+    }
+
+    std::string globalUserEl1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string globalUserEl1BakPath = std::string(USER_EL1_DIR) + BACKUP_NAME + "/" + std::to_string(GLOBAL_USER_ID);
+    bool mainLatestExist = CheckLatestDirFilesExist(globalUserEl1Path);
+    bool backupLatestExist = CheckLatestDirFilesExist(globalUserEl1BakPath);
+    /*
+        1. If the latest dir of main or backup exists and the key structure is complete
+        (the shield, sec_discard, and encrypted files must exist at the same time),
+        the restore process is performed.
+        -- This corresponds to the scenario where the device is restarted or upgraded normally, not the first startup.
+    */
+    if (mainLatestExist || backupLatestExist) {
+        ret = RestoreUserKey(GLOBAL_USER_ID, globalUserEl1Path, NULL_KEY_AUTH, EL1_KEY);
+        if (ret != 0) {
+            LOGE("[L3:KeyManager] InitGlobalUserKeys: failed to restore el1 key");
+            StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::RestoreUserKey", GLOBAL_USER_ID,
+                ret, "EL1", "global user el1 path = " + globalUserEl1Path);
+            return ret;
+        }
+    } else if (IsLatestDirEmptyOrNotExist(globalUserEl1Path, globalUserEl1BakPath)) {
+        /*
+            2. If the el1 dir or latest dir does not exist, or the dir exists but is empty,
+            the key creation process is performed.
+            -- This corresponds to the first startup after ROM flashing or factory data restoration,
+                including the scenario where the first startup is interrupted abnormally and restarted again.
+        */
+        std::lock_guard<std::mutex> lock(keyMutex_);
+        ret = GenerateAndInstallUserKey(GLOBAL_USER_ID, globalUserEl1Path, NULL_KEY_AUTH, EL1_KEY);
+        if (ret != 0) {
+            LOGE("[L3:KeyManager] InitGlobalUserKeys: failed to generate el1 key");
+            StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::GenerateAndInstallUserKey", GLOBAL_USER_ID,
+                ret, "EL1", "global user el1 path = " + globalUserEl1Path);
+            return ret;
+        }
+    } else {
+        /*
+            3. If the latest dirs exist but the key structure is incomplete, an error is returned.
+            -- This corresponds to the startup scenario where the key is damaged.
+        */
+        LOGE("[L3:KeyManager] InitGlobalUserKeys: <<< EXIT FAILED <<< [both latest dirs missing required files]");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, E_ELX_KEY_INIT_ERROR, "EL1",
+            "both el1/latest and el1_bak/latest missing required files");
+        return E_ELX_KEY_INIT_ERROR;
+    }
+
+    ret = LoadAllUsersEl1Key();
+    if (ret) {
+        LOGE("[L3:KeyManager] InitGlobalUserKeys: failed to load all users el1 keys");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::LoadAllUsersEl1Key", GLOBAL_USER_ID,
+            ret, "EL1", "Load all users el1 failed");
+        return ret;
+    }
+    LOGW("[L3:KeyManager] InitGlobalUserKeys: <<< EXIT SUCCESS <<< [retval=0]");
+    return 0;
+}
+#else
 int KeyManager::InitGlobalUserKeys(void)
 {
     LOGW("[L3:KeyManager] InitGlobalUserKeys: >>> ENTER <<<");
@@ -618,6 +802,7 @@ int KeyManager::InitGlobalUserKeys(void)
     LOGW("[L3:KeyManager] InitGlobalUserKeys: <<< EXIT SUCCESS <<< [retval=0]");
     return 0;
 }
+#endif
 
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
