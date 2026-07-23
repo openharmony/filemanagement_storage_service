@@ -39,7 +39,7 @@ public:
     void TearDown();
 };
 
-void NetlinkManagerTest::TearDown(void)
+void StorageRadarTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
     std::this_thread::sleep_for(std::chrono::milliseconds(TIME_WAIT_FOR_MS));
