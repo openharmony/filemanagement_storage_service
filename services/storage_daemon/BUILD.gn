@@ -468,6 +468,7 @@ ohos_shared_library("storage_common_utils") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
+    "json:nlohmann_json_static",
     "openssl:libcrypto_shared",
     "zlib:shared_libz",
     "resource_schedule_service:ressched_client",
