@@ -27,6 +27,9 @@ namespace StorageService {
 namespace Test {
 using namespace testing;
 using namespace testing::ext;
+namespace {
+constexpr int32_t TIME_WAIT_FOR_MS { 50 };   
+} // namespace
 
 class StorageRadarTest : public testing::Test {
 public:
@@ -39,7 +42,7 @@ public:
 void NetlinkManagerTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(TIME_WAIT_FOR_MS));
 }
 
 /**

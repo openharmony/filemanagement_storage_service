@@ -28,6 +28,9 @@ namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
 using namespace std;
+namespace {
+constexpr int32_t TIME_WAIT_FOR_MS { 50 };   
+} // namespace
 
 class NetlinkManagerTest : public testing::Test {
 public:
@@ -50,7 +53,7 @@ void NetlinkManagerTest::TearDown(void)
     GTEST_LOG_(INFO) << "TearDown Start";
     NetlinkListenerRealMoc::netlinkListenerMoc = nullptr;
     netlinkListenerMoc_ = nullptr;
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(TIME_WAIT_FOR_MS));
 }
 
 /**
