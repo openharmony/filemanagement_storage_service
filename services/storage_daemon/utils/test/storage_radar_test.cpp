@@ -28,7 +28,7 @@ namespace Test {
 using namespace testing;
 using namespace testing::ext;
 namespace {
-constexpr int32_t TIME_WAIT_FOR_MS { 50 };   
+constexpr int32_t TIME_WAIT_FOR_MS { 50 };
 } // namespace
 
 class StorageRadarTest : public testing::Test {
