@@ -20,6 +20,7 @@
 #include <string>
 #include <chrono>
 #include <cstdint>
+#include <thread>
 
 namespace OHOS {
 namespace StorageService {
@@ -32,8 +33,14 @@ public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
     void SetUp() {};
-    void TearDown() {};
+    void TearDown();
 };
+
+void NetlinkManagerTest::TearDown(void)
+{
+    GTEST_LOG_(INFO) << "TearDown Start";
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+}
 
 /**
  * @tc.name: StorageRadarTest_ReportActiveUserKey_001
@@ -46,7 +53,9 @@ HWTEST_F(StorageRadarTest, StorageRadarTest_ReportActiveUserKey_001, TestSize.Le
     uint32_t userId = 100;
     int32_t ret = E_OK;
     std::string keyLevel = "EL2";
+    GTEST_LOG_(INFO) << "StorageRadarTest_ReportActiveUserKey_001 Start";
     EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportActiveUserKey(funcName, userId, ret, keyLevel));
+    GTEST_LOG_(INFO) << "StorageRadarTest_ReportActiveUserKey_001 end";
 }
 
 /**
