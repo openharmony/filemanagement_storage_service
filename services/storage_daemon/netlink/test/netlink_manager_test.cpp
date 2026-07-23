@@ -16,7 +16,6 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest.h>
 #include <memory>
-#include <thread>
 
 #include "netlink/netlink_manager.h"
 #include "netlink_listener_real_mock.h"
@@ -28,9 +27,6 @@ namespace StorageDaemon {
 using namespace testing;
 using namespace testing::ext;
 using namespace std;
-namespace {
-constexpr int32_t TIME_WAIT_FOR_MS { 50 };
-} // namespace
 
 class NetlinkManagerTest : public testing::Test {
 public:
@@ -44,16 +40,11 @@ public:
 void NetlinkManagerTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp Start";
-    netlinkListenerMoc_ = make_shared<NetlinkListenerRealMoc>();
-    NetlinkListenerRealMoc::netlinkListenerMoc = netlinkListenerMoc_;
 }
 
 void NetlinkManagerTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
-    NetlinkListenerRealMoc::netlinkListenerMoc = nullptr;
-    netlinkListenerMoc_ = nullptr;
-    std::this_thread::sleep_for(std::chrono::milliseconds(TIME_WAIT_FOR_MS));
 }
 
 /**
@@ -123,17 +114,17 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_StartStop_002, T
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 start";
 
     NetlinkManager &netlinkManager = NetlinkManager::Instance();
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 111";
+    netlinkListenerMoc_ = make_shared<NetlinkListenerRealMoc>();
+    NetlinkListenerRealMoc::netlinkListenerMoc = netlinkListenerMoc_;
     EXPECT_CALL(*netlinkListenerMoc_, StartListener).WillOnce(Return(-1));
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 222";
     auto startRet = netlinkManager.Start();
     EXPECT_TRUE(startRet == E_ERR);
 
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 333";
     EXPECT_CALL(*netlinkListenerMoc_, StopListener).WillOnce(Return(-1));
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 444";
     auto stopRet = netlinkManager.Stop();
     EXPECT_TRUE(stopRet == E_ERR);
+    NetlinkListenerRealMoc::netlinkListenerMoc = nullptr;
+    netlinkListenerMoc_ = nullptr;
     
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 end";
 }

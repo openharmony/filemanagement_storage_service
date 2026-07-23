@@ -57,7 +57,7 @@ HWTEST_F(StorageRadarTest, StorageRadarTest_ReportActiveUserKey_001, TestSize.Le
     int32_t ret = E_OK;
     std::string keyLevel = "EL2";
     GTEST_LOG_(INFO) << "StorageRadarTest_ReportActiveUserKey_001 Start";
-    EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportActiveUserKey(funcName, userId, ret, keyLevel));
+    ASSERT_NO_FATAL_FAILURE(StorageRadar::ReportActiveUserKey(funcName, userId, ret, keyLevel));
     GTEST_LOG_(INFO) << "StorageRadarTest_ReportActiveUserKey_001 end";
 }
 
