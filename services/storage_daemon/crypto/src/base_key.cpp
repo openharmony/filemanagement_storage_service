@@ -859,7 +859,7 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("[L4:BaseKey] DoUpdateRestore: Get secure uid form iam failed, use default value");
     }
-    ret = StoreKey({ auth.token, auth.secret, secureUid, userId });
+    ret = StoreKey({ auth.token, auth.secret, secureUid });
     if (ret != E_OK) {
         LOGE("[L4:BaseKey] DoUpdateRestore: <<< EXIT FAILED <<< Store old failed");
         return ret;

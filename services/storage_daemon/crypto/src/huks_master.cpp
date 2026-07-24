@@ -404,9 +404,9 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
     if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
         HksParam param[] = {
             { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
-            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
             { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
+            { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
             { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 }
         };
         return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
@@ -550,8 +550,7 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
     if (HuksMaster::GetInstance().IsSupportNewAuthType()) {
         HksParam addParam[] = {
             { .tag = HKS_TAG_USER_AUTH_TYPE_ATL, .uint32Param = HKS_USER_AUTH_ATL3 },
-            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_ALWAYS_VALID },
-            { .tag = HKS_TAG_SPECIFIC_USER_ID, .int32Param = static_cast<int32_t>(auth.userId) },
+            { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
             { .tag = HKS_TAG_NONCE,
               .blob =
                 { ctx.nonce.size, ctx.nonce.data.get() }
@@ -802,7 +801,7 @@ bool HuksMaster::IsSupportNewAuthType()
         LOGI("[L8:HuksMaster] IsSupportNewAuthType: GetHuksVersion failed, support=false");
         return false;
     }
-    bool support = (majorVer >= 1 && minorVer >= 2);
+    bool support = (majorVer > 1 || (majorVer == 1 && minorVer >= 2));
     LOGI("[L8:HuksMaster] IsSupportNewAuthType: support=%{public}d", support);
     return support;
 }

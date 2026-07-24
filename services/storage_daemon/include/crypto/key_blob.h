@@ -176,7 +176,6 @@ struct UserAuth {
     KeyBlob token;
     KeyBlob secret;
     uint64_t secureUid { 0 };
-    uint32_t userId { 0 };
 };
 } // namespace StorageDaemon
 } // namespace OHOS
