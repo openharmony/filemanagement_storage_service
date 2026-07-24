@@ -26,9 +26,6 @@ namespace StorageService {
 namespace Test {
 using namespace testing;
 using namespace testing::ext;
-namespace {
-constexpr int32_t TIME_WAIT_FOR_MS { 50 };
-} // namespace
 
 class StorageRadarTest : public testing::Test {
 public:
@@ -49,7 +46,7 @@ HWTEST_F(StorageRadarTest, StorageRadarTest_ReportActiveUserKey_001, TestSize.Le
     uint32_t userId = 100;
     int32_t ret = E_OK;
     std::string keyLevel = "EL2";
-    ASSERT_NO_FATAL_FAILURE(StorageRadar::ReportActiveUserKey(funcName, userId, ret, keyLevel));
+    EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportActiveUserKey(funcName, userId, ret, keyLevel));
 }
 
 /**
