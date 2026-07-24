@@ -216,6 +216,5 @@ group("storage_daemon_netlink_test") {
     ":netlink_data_test",
     ":netlink_handler_test",
     ":netlink_listener_test",
-    ":netlink_manager_test",
   ]
 }

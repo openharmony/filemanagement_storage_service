@@ -40,11 +40,15 @@ public:
 void NetlinkManagerTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp Start";
+    netlinkListenerMoc_ = make_shared<NetlinkListenerRealMoc>();
+    NetlinkListenerRealMoc::netlinkListenerMoc = netlinkListenerMoc_;
 }
 
 void NetlinkManagerTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
+    NetlinkListenerRealMoc::netlinkListenerMoc = nullptr;
+    netlinkListenerMoc_ = nullptr;
 }
 
 /**
@@ -92,11 +96,9 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_StartStop_001, T
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_001 start";
 
     NetlinkManager &netlinkManager = NetlinkManager::Instance();
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_001 111";
     auto startRet = netlinkManager.Start();
     EXPECT_TRUE(startRet == E_OK || startRet == E_ERR);
 
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_001 222";
     auto stopRet = netlinkManager.Stop();
     EXPECT_TRUE(stopRet == E_OK || stopRet == E_ERR);
 
@@ -114,8 +116,6 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_StartStop_002, T
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 start";
 
     NetlinkManager &netlinkManager = NetlinkManager::Instance();
-    netlinkListenerMoc_ = make_shared<NetlinkListenerRealMoc>();
-    NetlinkListenerRealMoc::netlinkListenerMoc = netlinkListenerMoc_;
     EXPECT_CALL(*netlinkListenerMoc_, StartListener).WillOnce(Return(-1));
     auto startRet = netlinkManager.Start();
     EXPECT_TRUE(startRet == E_ERR);
@@ -123,8 +123,6 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_StartStop_002, T
     EXPECT_CALL(*netlinkListenerMoc_, StopListener).WillOnce(Return(-1));
     auto stopRet = netlinkManager.Stop();
     EXPECT_TRUE(stopRet == E_ERR);
-    NetlinkListenerRealMoc::netlinkListenerMoc = nullptr;
-    netlinkListenerMoc_ = nullptr;
     
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 end";
 }

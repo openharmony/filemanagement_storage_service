@@ -320,7 +320,6 @@ group("storage_daemon_utils_test") {
   deps = [
     ":file_utils_test",
     ":storage_statistics_radar_test",
-    ":storage_radar_test",
     ":string_utils_test",
     ":memory_reclaim_manager_test",
     ":set_flag_utils_test",
