@@ -68,6 +68,11 @@ int32_t Ext4Operator::Format(const std::string& devPath)
 #ifdef PC_EXT4_ENABLE
     LOGI("Ext4Operator::Format devPath=%{public}s", devPath.c_str());
 
+    if (devPath.empty()) {
+        LOGE("Ext4Operator::Format devPath is empty");
+        return E_PARAMS_INVALID;
+    }
+
     std::vector<std::string> cmd = {
         "mke2fs",
         "-F",

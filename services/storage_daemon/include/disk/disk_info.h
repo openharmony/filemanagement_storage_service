@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_DAEMON_DISK_INFO_H
 
 #include <list>
-#include <map>
 #include <string>
 #include <sys/types.h>
 
@@ -34,71 +33,22 @@ public:
         UNKNOWN_DISK_TYPE = 255,
     };
 
-    enum class Table {
-        UNKNOWN,
-        MBR,
-        GPT,
-    };
-    enum DiskState {
-        MOUNTED,
-        REMOVED,
-    };
-
     DiskInfo(std::string &diskName, std::string &sysPath_, std::string &devPath_, dev_t device, int diskType);
     virtual ~DiskInfo();
-    int Create();
-    int Destroy();
-    void ReadMetadata();
-    int ReadPartition(const std::string &ejectStatus = "");
-    int ReadPartitionCD(const std::string &ejectStatus);
-    int ReadPartitionUSB();
-    int CreateVolume(dev_t dev, uint32_t partitionNum);
     dev_t GetDevice() const;
     std::string GetDiskId() const;
     std::string GetDevPath() const;
-    uint64_t GetTotalSize() const;
     std::string GetSysPath() const;
-    std::string GetDevVendor() const;
-    std::string GetProduct() const;
     int32_t GetDiskType() const;
     std::string GetDiskName() const;
-    bool GetRemovable() const;
-    std::string GetExtraInfo() const;
-    std::list<std::string> GetVolumeIds() const;
 
 private:
     std::string diskId_;
     std::string diskName_;
-    uint64_t totalSize_ {};
-    /* device vendor infomation */
-    std::string vendor_;
-    std::string product_;
-    std::string devnum_;
-    std::string busnum_;
     std::string sysPath_;
-    int status;
-    bool isUserdata;
-    std::string eventPath_;
     std::string devPath_;
     dev_t device_ {};
-    std::list<std::string> volumeId_;
-    std::vector<std::string> sgdiskLines_;
-    std::map<uint32_t, std::string> vendorMap_;
     DiskType diskType_;
-    bool removable_ = true;
-    std::string extraInfo_;
-    int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
-    bool CreateMBRVolume(int32_t type, dev_t dev, uint32_t partitionNum);
-    int32_t CreateUnknownTabVol();
-    dev_t ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata);
-    int32_t GetMaxMinor(int32_t major);
-    void CreateTableVolume(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
-                           Table table, bool &foundPart, dev_t partitionDev);
-    void UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
-    void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
-    bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
-    void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
-    void SetExtraInfo();
 };
 } // STORAGE_DAEMON
 } // OHOS

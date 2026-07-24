@@ -23,6 +23,7 @@
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -38,53 +39,6 @@ DiskManager::~DiskManager()
     LOGI("[L2:DiskManager] ~DiskManager: >>> ENTER <<<");
 }
 
-void DiskManager::HandleDiskEvent(NetlinkData *data)
-{
-    LOGI("[L2:DiskManager] HandleDiskEvent: >>> ENTER <<<");
-    if (data == nullptr) {
-        LOGE("[L2:DiskManager] HandleDiskEvent: <<< EXIT FAILED <<< data is nullptr");
-        return;
-    }
-    std::string devType = data->GetParam("DEVTYPE");
-    if (devType != "disk") {
-        LOGD("[L2:DiskManager] HandleDiskEvent: devType=%{public}s, not disk, skip", devType.c_str());
-        return;
-    }
-
-    unsigned int major = (unsigned int) std::atoi((data->GetParam("MAJOR")).c_str());
-    unsigned int minor = (unsigned int) std::atoi((data->GetParam("MINOR")).c_str());
-    dev_t device = makedev(major, minor);
-
-    switch (data->GetAction()) {
-        case NetlinkData::Actions::ADD: {
-            auto diskInfo = MatchConfig(data);
-            if (diskInfo == nullptr) {
-                LOGI("[L2:DiskManager] HandleDiskEvent: Can't match config, devPath=%{public}s",
-                     data->GetDevpath().c_str());
-            } else {
-                CreateDisk(diskInfo);
-                LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=ADD");
-            }
-            break;
-        }
-        case NetlinkData::Actions::CHANGE: {
-            ChangeDisk(device, data);
-            LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=CHANGE");
-            break;
-        }
-        case NetlinkData::Actions::REMOVE: {
-            DestroyDisk(device);
-            LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<< action=REMOVE");
-            break;
-        }
-        default: {
-            LOGW("[L2:DiskManager] HandleDiskEvent: unexpected event, action=%{public}d", data->GetAction());
-            break;
-        }
-    }
-    LOGI("[L2:DiskManager] HandleDiskEvent: <<< EXIT SUCCESS <<<");
-}
-
 std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
     LOGI("[L2:DiskManager] MatchConfig: >>> ENTER <<<");
@@ -95,8 +49,14 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     std::lock_guard<std::mutex> lock(lock_);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = (unsigned int) std::atoi((data->GetParam("MAJOR")).c_str());
-    unsigned int minor = (unsigned int) std::atoi((data->GetParam("MINOR")).c_str());
+    int32_t majorVal = 0, minorVal = 0;
+    if (!ConvertStringToInt32(data->GetParam("MAJOR"), majorVal) ||
+        !ConvertStringToInt32(data->GetParam("MINOR"), minorVal)) {
+        LOGE("[L2:DiskManager] MatchConfig: invalid MAJOR/MINOR");
+        return nullptr;
+    }
+    unsigned int major = static_cast<unsigned int>(majorVal);
+    unsigned int minor = static_cast<unsigned int>(minorVal);
     dev_t device = makedev(major, minor);
 
     for (auto config : diskConfig_) {
@@ -118,69 +78,6 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 
     LOGI("[L2:DiskManager] MatchConfig: <<< EXIT SUCCESS <<< No matching configuration found");
     return nullptr;
-}
-
-void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
-{
-    LOGI("[L2:DiskManager] CreateDisk: >>> ENTER <<<");
-    std::lock_guard<std::mutex> lock(lock_);
-    if (diskInfo == nullptr) {
-        LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< diskInfo is nullptr");
-        return;
-    }
-
-    int ret = diskInfo->Create();
-    if (ret != E_OK) {
-        LOGE("[L2:DiskManager] CreateDisk: <<< EXIT FAILED <<< Create DiskInfo failed, err=%{public}d", ret);
-        return;
-    }
-    disk_.push_back(diskInfo);
-    LOGI("[L2:DiskManager] CreateDisk: <<< EXIT SUCCESS <<<");
-}
-
-void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
-{
-    LOGI("[L2:DiskManager] ChangeDisk: >>> ENTER <<< device=%{public}" PRIu64, device);
-    {
-        std::lock_guard<std::mutex> lock(lock_);
-        for (auto &diskInfo : disk_) {
-            if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
-                diskInfo->ReadMetadata();
-                diskInfo->ReadPartition(data->GetEjectRequest());
-                LOGI("[L2:DiskManager] ChangeDisk: <<< EXIT SUCCESS <<< disk found and updated");
-                return;
-            }
-        }
-    }
-    auto diskInfo = MatchConfig(data);
-    if (diskInfo == nullptr) {
-        LOGI("[L2:DiskManager] ChangeDisk: Can't match config, devPath=%{public}s",
-             data->GetDevpath().c_str());
-    } else {
-        CreateDisk(diskInfo);
-        LOGI("[L2:DiskManager] ChangeDisk: <<< EXIT SUCCESS <<< new disk created");
-    }
-}
-
-void DiskManager::DestroyDisk(dev_t device)
-{
-    LOGI("[L2:DiskManager] DestroyDisk: >>> ENTER <<< device=%{public}" PRIu64, device);
-    int ret;
-    std::lock_guard<std::mutex> lock(lock_);
-    for (auto i = disk_.begin(); i != disk_.end();) {
-            if (*i != nullptr && (*i)->GetDevice() == device) {
-            ret = (*i)->Destroy();
-            if (ret != E_OK) {
-                LOGE("[L2:DiskManager] DestroyDisk: <<< EXIT FAILED <<< Destroy DiskInfo failed, err=%{public}d", ret);
-                return;
-            }
-
-            i = disk_.erase(i);
-        } else {
-            i++;
-        }
-    }
-    LOGI("[L2:DiskManager] DestroyDisk: <<< EXIT SUCCESS <<<");
 }
 
 void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)

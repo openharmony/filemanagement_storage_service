@@ -391,5 +391,41 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountImmediateReturn, TestSize.Lev
     rmdir(path.c_str());
 }
 
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataContainsUid0, TestSize.Level1)
+{
+    int32_t ret = op_->Mount("/dev/block/mock_dev", testDir_ + "/uid0_test", 0, "uid=0,other");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataContainsGid0, TestSize.Level1)
+{
+    int32_t ret = op_->Mount("/dev/block/mock_dev", testDir_ + "/gid0_test", 0, "gid=0,other");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataContainsSuid, TestSize.Level1)
+{
+    int32_t ret = op_->Mount("/dev/block/mock_dev", testDir_ + "/suid_test", 0, "suid,other");
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataValid, TestSize.Level1)
+{
+    std::string path = testDir_ + "/valid_data_test";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0, "uid=1006,gid=1006");
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataEmptyValid, TestSize.Level1)
+{
+    std::string path = testDir_ + "/empty_data_test";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0, "");
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
