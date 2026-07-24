@@ -49,7 +49,8 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     std::lock_guard<std::mutex> lock(lock_);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    int32_t majorVal = 0, minorVal = 0;
+    int32_t majorVal = 0;
+    int32_t minorVal = 0;
     if (!ConvertStringToInt32(data->GetParam("MAJOR"), majorVal) ||
         !ConvertStringToInt32(data->GetParam("MINOR"), minorVal)) {
         LOGE("[L2:DiskManager] MatchConfig: invalid MAJOR/MINOR");

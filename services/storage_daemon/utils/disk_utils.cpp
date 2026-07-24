@@ -511,10 +511,8 @@ std::string GetOpticalDriveType(const std::string &diskPath)
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< GetConfiguration not supported");
         return "";
     }
-    uint32_t dataLen = (static_cast<uint32_t>(buf[0]) << 24) |
-                       (static_cast<uint32_t>(buf[1]) << 16) |
-                       (static_cast<uint32_t>(buf[2]) << 8) |
-                       static_cast<uint32_t>(buf[3]);
+    uint32_t dataLen = (static_cast<uint32_t>(buf[0]) << 24) | (static_cast<uint32_t>(buf[1]) << 16) |
+                       (static_cast<uint32_t>(buf[2]) << 8) | static_cast<uint32_t>(buf[3]);
     if (dataLen < FEATURE_CODE_LENGTH || dataLen > MAX_BUF - FEATURE_CODE_LENGTH) {
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< Invalid data length=%{public}d",
              dataLen);

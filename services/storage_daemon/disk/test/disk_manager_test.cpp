@@ -143,7 +143,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
 
     DiskManager &diskManager = DiskManager::Instance();
 
-    static char DISK_EVENT_MSG[] = {
+    static char diskEventMsg[] = {
         "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0"
         "\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0"
         "\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0"
@@ -151,7 +151,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
     };
 
     auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(const_cast<char*>(DISK_EVENT_MSG));
+    data.get()->Decode(const_cast<char*>(diskEventMsg));
 
     auto diskInfo1 = diskManager.MatchConfig(data.get());
 
