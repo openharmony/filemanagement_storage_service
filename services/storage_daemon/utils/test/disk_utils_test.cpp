@@ -14,6 +14,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <sys/sysmacros.h>
 
 #include "mock/file_utils_mock.h"
 #include "mock/disk_func_mock.h"
@@ -657,6 +658,64 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetBlkidData_NormalPath, TestSize.Level1)
 {
     std::string result = GetBlkidData("/dev/block/sda1", "UUID");
     EXPECT_NE(result, "-evil");
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ConvertStringToInt32Fail, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "not_a_number";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ConvertStringToInt32Success, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "8";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), 8);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ScsiDevice, TestSize.Level1)
+{
+    dev_t scsiDev = makedev(8, 0);
+    EXPECT_EQ(GetMaxVolume(scsiDev), MAX_SCSI_VOLUMES);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ReadFileFail, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Return(false));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_IsFilePathInvalid, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    EXPECT_FALSE(IsAcceptableUuid("valid-uuid-1234"));
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_IsFilePathInvalidFalse, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(false));
+    EXPECT_TRUE(IsAcceptableUuid("valid-uuid-1234"));
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_Empty, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).Times(0);
+    EXPECT_FALSE(IsAcceptableUuid(""));
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_TooLong, TestSize.Level1)
+{
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).Times(0);
+    std::string longUuid(41, 'a');
+    EXPECT_FALSE(IsAcceptableUuid(longUuid));
 }
 } // STORAGE_DAEMON
 } // OHOS

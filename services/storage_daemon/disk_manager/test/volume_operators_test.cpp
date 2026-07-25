@@ -886,5 +886,81 @@ HWTEST_F(ExtOperatorTest, IsoOperator_DoDVDBurn_BurnPathStartsWithDash, TestSize
     options.burnPath = "-evil";
     EXPECT_EQ(op.DoDVDBurn("/dev/block/sr0", options, true), E_ERR);
 }
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_IsFilePathInvalidIsoPath, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_ShellMetacharIsoPath, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0;evil", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_IsFilePathInvalidSourceDir, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_))
+        .WillOnce(Return(false))
+        .WillOnce(Return(true));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_ShellMetacharSourceDir, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp$evil"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_ValidPathsForkExecFails, TestSize.Level1)
+{
+    IsoOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_IsFilePathInvalidIsoPath, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_ShellMetacharIsoPath, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0|evil", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_IsFilePathInvalidSourceDir, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_))
+        .WillOnce(Return(false))
+        .WillOnce(Return(true));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_ShellMetacharSourceDir, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp`cmd"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_ValidPathsForkExecFails, TestSize.Level1)
+{
+    UdfOperator op;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
+}
 } // namespace StorageDaemon
 } // namespace OHOS
