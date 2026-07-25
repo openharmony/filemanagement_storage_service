@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 
-#include "disk/disk_manager.h"
-
+#include <cerrno>
 #include <sys/sysmacros.h>
 #include <cinttypes>
+#include <cstdlib>
 
 #include "disk/disk_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
-#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -49,15 +48,22 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     std::lock_guard<std::mutex> lock(lock_);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    int32_t majorVal = 0;
-    int32_t minorVal = 0;
-    if (!ConvertStringToInt32(data->GetParam("MAJOR"), majorVal) ||
-        !ConvertStringToInt32(data->GetParam("MINOR"), minorVal)) {
-        LOGE("[L2:DiskManager] MatchConfig: invalid MAJOR/MINOR");
+    errno = 0;
+    char *endptr = nullptr;
+    std::string majorStr = data->GetParam("MAJOR");
+    long majorLong = strtol(majorStr.c_str(), &endptr, 10);
+    if (errno == ERANGE || endptr == majorStr.c_str() || *endptr != '\0' || majorLong < 0) {
+        LOGE("[L2:DiskManager] MatchConfig: invalid MAJOR='%{public}s'", majorStr.c_str());
         return nullptr;
     }
-    unsigned int major = static_cast<unsigned int>(majorVal);
-    unsigned int minor = static_cast<unsigned int>(minorVal);
+    std::string minorStr = data->GetParam("MINOR");
+    long minorLong = strtol(minorStr.c_str(), &endptr, 10);
+    if (errno == ERANGE || endptr == minorStr.c_str() || *endptr != '\0' || minorLong < 0) {
+        LOGE("[L2:DiskManager] MatchConfig: invalid MINOR='%{public}s'", minorStr.c_str());
+        return nullptr;
+    }
+    unsigned int major = static_cast<unsigned int>(majorLong);
+    unsigned int minor = static_cast<unsigned int>(minorLong);
     dev_t device = makedev(major, minor);
 
     for (auto config : diskConfig_) {

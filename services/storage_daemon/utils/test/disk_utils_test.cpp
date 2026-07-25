@@ -14,6 +14,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <climits>
 #include <sys/sysmacros.h>
 
 #include "mock/file_utils_mock.h"
@@ -660,17 +661,67 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetBlkidData_NormalPath, TestSize.Level1)
     EXPECT_NE(result, "-evil");
 }
 
-HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ConvertStringToInt32Fail, TestSize.Level1)
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolOverflow, TestSize.Level1)
 {
     dev_t mmcDev = makedev(179, 0);
     EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
-        *str = "not_a_number";
+        *str = "99999999999999999999999999";
         return true;
     }));
     EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
 }
 
-HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ConvertStringToInt32Success, TestSize.Level1)
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolNoDigits, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "abc";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolPartialDigits, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "8abc";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolZero, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "0";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolNegative, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = "-1";
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolBeyondIntMax, TestSize.Level1)
+{
+    dev_t mmcDev = makedev(179, 0);
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {
+        *str = std::to_string(static_cast<long>(INT_MAX) + 1);
+        return true;
+    }));
+    EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
+}
+
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_StrtolValid, TestSize.Level1)
 {
     dev_t mmcDev = makedev(179, 0);
     EXPECT_CALL(*fileUtilMoc_, ReadFile(_, _)).WillOnce(Invoke([](const std::string&, std::string* str) {

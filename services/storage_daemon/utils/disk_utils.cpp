@@ -14,6 +14,7 @@
  */
 
 #include <cerrno>
+#include <cstdlib>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -36,7 +37,6 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
-#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -118,12 +118,14 @@ int GetMaxVolume(dev_t device)
             LOGE("[L8:DiskUtils] GetMaxVolume: <<< EXIT FAILED <<< Get MmcMaxVolumes failed");
             return E_ERR;
         }
-        int32_t maxVolume = 0;
-        if (!ConvertStringToInt32(str, maxVolume)) {
-            LOGE("[L8:DiskUtils] GetMaxVolume: invalid maxVolume value");
+        errno = 0;
+        char *endptr = nullptr;
+        long result = strtol(str.c_str(), &endptr, 10);
+        if (errno == ERANGE || endptr == str.c_str() || *endptr != '\0' || result <= 0 || result > INT_MAX) {
+            LOGE("[L8:DiskUtils] GetMaxVolume: invalid value '%{public}s'", str.c_str());
             return E_ERR;
         }
-        return maxVolume;
+        return static_cast<int>(result);
     } else {
         LOGD("[L8:DiskUtils] GetMaxVolume: <<< EXIT SUCCESS <<< MAX_SCSI_VOLUMES");
         return MAX_SCSI_VOLUMES;

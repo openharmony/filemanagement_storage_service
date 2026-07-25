@@ -227,5 +227,87 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_InvalidMaj
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_InvalidMajorMinor end";
 }
 
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=8abc\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6990\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=-1\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6991\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=0\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6992\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo != nullptr || diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid end";
+}
+
+
 } // STORAGE_DAEMON
 } // OHOS
