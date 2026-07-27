@@ -264,6 +264,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidContainsSlash, TestSize.Level1)
         .WillOnce(Return("abc/def"))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
+    EXPECT_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillOnce(Return(false));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
 }
@@ -277,6 +278,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidTooLong, TestSize.Level1)
         .WillOnce(Return(longUuid))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
+    EXPECT_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillOnce(Return(false));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
 }
@@ -289,6 +291,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidIsDot, TestSize.Level1)
         .WillOnce(Return("."))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
+    EXPECT_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillOnce(Return(false));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
 }
@@ -301,6 +304,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_UuidIsDotDot, TestSize.Level1)
         .WillOnce(Return(".."))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
+    EXPECT_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillOnce(Return(false));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
 }
