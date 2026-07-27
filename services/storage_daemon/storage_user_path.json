@@ -642,6 +642,12 @@
             "mode": "0771",
             "uid": 1000,
             "gid": 1055
+        },
+        {
+            "path": "/data/service/el2/<userId>/pc_encryption_extension_service",
+            "mode": "0771",
+            "uid": 7075,
+            "gid": 7075
         }
       ],
       "el3": [
