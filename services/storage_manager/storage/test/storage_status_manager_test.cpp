@@ -42,6 +42,8 @@ std::string g_bundleName = "com.test.app";
 int32_t g_getBundleStatsRet = E_OK;
 int32_t accessTokenType = -1;
 int32_t g_callingUid = 20000000; // Default to userId = 100 (100 * 200000 = 20000000)
+uint32_t g_callingTokenId = 0;
+int32_t g_getHapTokenInfoRet = E_OK;
 std::vector<int64_t> g_mockBundleStats = {100, 200, 300, 400, 500}; // app, local, distributed, database, cache
 std::vector<int64_t> g_mockZeroUserBundleStats = {10, 20, 30, 40, 50};
 bool g_getAllBundleStatsRet = true;
@@ -96,6 +98,11 @@ pid_t IPCSkeleton::GetCallingUid()
 {
     return g_callingUid;
 }
+
+uint32_t IPCSkeleton::GetCallingTokenID()
+{
+    return g_callingTokenId;
+}
 }
 
 namespace OHOS::Security::AccessToken {
@@ -123,6 +130,15 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
     nativeTokenInfoRes.processName = "foundation";
     return 0;
 }
+
+int AccessTokenKit::GetHapTokenInfo(AccessTokenID tokenID, HapTokenInfo& hapTokenInfoRes)
+{
+    if (g_getHapTokenInfoRet != E_OK) {
+        return g_getHapTokenInfoRet;
+    }
+    hapTokenInfoRes.bundleName = "com.test.bundle";
+    return E_OK;
+}
 }
 
 class StorageStatusManagerTest : public testing::Test {
@@ -149,6 +165,7 @@ void StorageStatusManagerTest::TearDown()
     IStorageDaemonCommunicationMock::storageDaemonCommunication = nullptr;
     stss = nullptr;
     StorageTotalStatusServiceBase::stss = nullptr;
+    g_getHapTokenInfoRet = E_OK;
 }
 
 /**

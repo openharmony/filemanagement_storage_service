@@ -64,6 +64,9 @@ public:
     virtual int SetRecoverKey(const std::vector<uint8_t> &key) = 0;
     virtual std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type, bool isSave) = 0;
     virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) = 0;
+    virtual int UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+        const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
+        const std::vector<std::vector<uint8_t>> &plainText) = 0;
 #ifdef EL5_FILEKEY_MANAGER
     virtual int UnregisterUeceActivationCallback() = 0;
     virtual int RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback) = 0;
@@ -110,6 +113,8 @@ public:
     MOCK_METHOD(int, RegisterUeceActivationCallback, (const sptr<StorageManager::IUeceActivationCallback> &));
     MOCK_METHOD(std::shared_ptr<BaseKey>, GetUserElKey, (unsigned int, KeyType, bool));
     MOCK_METHOD(int32_t, ResetSecretWithRecoveryKey, (uint32_t, uint32_t, const std::vector<uint8_t> &));
+    MOCK_METHOD(int, UpdateUseAuthWithRecoveryKey, (const std::vector<uint8_t> &, const std::vector<uint8_t> &,
+        uint64_t, uint32_t, const std::vector<std::vector<uint8_t>> &));
 };
 }
 }

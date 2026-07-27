@@ -662,7 +662,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
         return ret;
     }
 
-    uint64_t secureUid = { 0 };
+    uint64_t secureUid = 0;
     if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthOld: Get secure uid form iam failed");
     }
@@ -1889,7 +1889,7 @@ int32_t StorageDaemon::DoStoreAndUpdate(uint32_t userId,
                                         bool needFixFiles)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    uint64_t secureUid = { 0 };
+    uint64_t secureUid = 0;
     if (!KeyManager::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("GetSecureUid failed, userId:%{public}u", userId);
     }

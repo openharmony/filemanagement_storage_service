@@ -67,7 +67,11 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
     const std::vector<std::vector<uint8_t>> &plainText)
 {
-    return E_OK;
+    if (KeyManagerMock::iKeyManagerMock_ == nullptr) {
+        return E_OK;
+    }
+    return KeyManagerMock::iKeyManagerMock_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
+                                                                          plainText);
 }
 
 

@@ -1325,6 +1325,14 @@ bool BaseKey::CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyB
             "Invalid param, can not combine !");
         return false;
     }
+    uint32_t totalSize = nonce.size + rndEnc.size + aad.size;
+    if (keyOut.size < totalSize || keyOut.data == nullptr) {
+        LOGE("[L4:BaseKey] CombKeyCtx: <<< EXIT FAILED <<< keyOut buffer too small, size=%{public}u, need=%{public}u",
+             keyOut.size, totalSize);
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::CombKeyCtx", 0, E_PARAMS_INVALID, "",
+            "keyOut buffer too small,size=" + std::to_string(keyOut.size) + ",need=" + std::to_string(totalSize));
+        return false;
+    }
     LOGE("[L4:BaseKey] CombKeyCtx: rndEncEnc: %{public}u", rndEnc.size);
     std::vector<uint8_t> nonceVct(nonce.data.get(), nonce.data.get() + nonce.size);
     std::vector<uint8_t> rndVct(rndEnc.data.get(), rndEnc.data.get() + rndEnc.size);
@@ -1342,16 +1350,33 @@ bool BaseKey::CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyB
 bool BaseKey::SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc, KeyBlob &aad)
 {
     LOGI("[L4:BaseKey] SplitKeyCtx: >>> ENTER <<<");
-    if (keyIn.size < (nonce.size + aad.size)) {
+    if (keyIn.IsEmpty()) {
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::SplitKeyCtx", 0, E_PARAMS_INVALID, "",
+            "keyIn is empty");
+        LOGE("[L4:BaseKey] SplitKeyCtx: <<< EXIT FAILED <<< Invalid keyIn is empty");
+        return false;
+    }
+    if (keyIn.size < nonce.size + aad.size) {
         StorageService::StorageRadar::ReportUserKeyResult("BaseKey::SplitKeyCtx", 0, E_PARAMS_INVALID, "",
             "Invalid param, can not split ! keyIn size=" + std::to_string(keyIn.size) + "nonce size:" +
             std::to_string(nonce.size) + "aad size:" + std::to_string(aad.size));
         LOGE("[L4:BaseKey] SplitKeyCtx: <<< EXIT FAILED <<< Invalid keyIn size is too small");
         return false;
     }
+    uint32_t rndEncSize = keyIn.size - nonce.size - aad.size;
+    if (rndEncSize == 0) {
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::SplitKeyCtx", 0, E_PARAMS_INVALID, "",
+            "Invalid param, rndEncSize is 0, keyIn only contains nonce and aad");
+        LOGE("[L4:BaseKey] SplitKeyCtx: <<< EXIT FAILED <<< Invalid rndEncSize is 0");
+        return false;
+    }
     std::vector<uint8_t> keyInVct(keyIn.data.get(), keyIn.data.get() + keyIn.size);
-    rndEnc.Alloc(keyIn.size - nonce.size - aad.size);
-
+    if (!rndEnc.Alloc(rndEncSize)) {
+        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::SplitKeyCtx", 0, E_PARAMS_INVALID, "",
+            "Alloc rndEnc failed, size=" + std::to_string(rndEncSize));
+        LOGE("[L4:BaseKey] SplitKeyCtx: <<< EXIT FAILED <<< Alloc rndEnc failed");
+        return false;
+    }
     std::copy(keyInVct.begin(), keyInVct.begin() + nonce.size, nonce.data.get());
     std::copy(keyInVct.begin() + nonce.size, keyInVct.begin() + nonce.size + rndEnc.size, rndEnc.data.get());
     std::copy(keyInVct.begin() + nonce.size + rndEnc.size, keyInVct.end(), aad.data.get());
