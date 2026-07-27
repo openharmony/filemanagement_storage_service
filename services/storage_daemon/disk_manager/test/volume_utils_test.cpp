@@ -63,6 +63,7 @@ void ExtVolumeUtilsTest::SetUp(void)
 {
     diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
     DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+    ON_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillByDefault(Return(true));
     fileUtilMoc_ = std::make_shared<FileUtilMoc>();
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
 }
@@ -114,6 +115,7 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_InvalidUuid, TestSize.Level1)
         .WillOnce(Return(""))
         .WillOnce(Return("vfat"))
         .WillOnce(Return("testlabel"));
+    EXPECT_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillOnce(Return(false));
     int32_t ret = VolumeUtils::ReadMetadata(testDevPath_, uuid, type, label);
     EXPECT_EQ(ret, E_READMETADATA);
 }
