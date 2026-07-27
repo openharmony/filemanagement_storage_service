@@ -155,4 +155,32 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetPartitionNum(), partitionNum);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
+
+HWTEST_F(VolumeExternalTest, Volume_external_GetFsTypeByStr_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_GetFsTypeByStr_0000";
+    VolumeExternal ve;
+    EXPECT_EQ(ve.GetFsTypeByStr("ntfs"), FsType::NTFS);
+    EXPECT_EQ(ve.GetFsTypeByStr("exfat"), FsType::EXFAT);
+    EXPECT_EQ(ve.GetFsTypeByStr("vfat"), FsType::VFAT);
+    EXPECT_EQ(ve.GetFsTypeByStr("hmfs"), FsType::HMFS);
+    EXPECT_EQ(ve.GetFsTypeByStr("f2fs"), FsType::F2FS);
+    EXPECT_EQ(ve.GetFsTypeByStr("mtp"), FsType::MTP);
+    EXPECT_EQ(ve.GetFsTypeByStr("udf"), FsType::UDF);
+    EXPECT_EQ(ve.GetFsTypeByStr("iso9660"), FsType::ISO9660);
+    EXPECT_EQ(ve.GetFsTypeByStr("ptp"), FsType::PTP);
+    EXPECT_EQ(ve.GetFsTypeByStr("ext4"), FsType::EXT4);
+    GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_GetFsTypeByStr_0000";
+}
+
+HWTEST_F(VolumeExternalTest, Volume_external_GetFsTypeByStr_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_GetFsTypeByStr_0001";
+    VolumeExternal ve;
+    EXPECT_EQ(ve.GetFsTypeByStr("unknown"), -1);
+    EXPECT_EQ(ve.GetFsTypeByStr(""), -1);
+    EXPECT_EQ(ve.GetFsTypeByStr("NTFS"), -1);
+    EXPECT_EQ(ve.GetFsTypeByStr("Ext4"), -1);
+    GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_GetFsTypeByStr_0001";
+}
 }

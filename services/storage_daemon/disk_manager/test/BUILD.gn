@@ -373,6 +373,108 @@ ohos_unittest("ext_volume_operators_test") {
   ]
 }
 
+ohos_unittest("ext_iso9660_operator_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk_manager/src/volume/iso9660_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/disk_manager/test/iso9660_operator_test.cpp",
+    "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/library_func_mock.cpp",
+  ]
+
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+}
+
+ohos_unittest("ext_udf_operator_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk_manager/src/volume/udf_operator.cpp",
+    "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/disk_manager/test/udf_operator_test.cpp",
+    "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/library_func_mock.cpp",
+  ]
+
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+}
+
 group("storage_daemon_ext_storage_test") {
   testonly = true
   deps = [
@@ -383,5 +485,7 @@ group("storage_daemon_ext_storage_test") {
     ":ext_volume_operator_factory_test",
     ":ext_ivolume_operator_test",
     ":ext_volume_operators_test",
+    ":ext_iso9660_operator_test",
+    ":ext_udf_operator_test",
   ]
 }

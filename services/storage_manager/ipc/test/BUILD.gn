@@ -542,5 +542,9 @@ group("storage_manager_ipc_test") {
   testonly = true
   deps = [
     ":storage_manager_provider_communication_test",
+    ":storage_manager_provider_other_test",
+    ":storage_manager_provider_permission_test",
+    ":storage_manager_provider_premission_access_test",
+    ":storage_manager_provider_test"
   ]
 }
