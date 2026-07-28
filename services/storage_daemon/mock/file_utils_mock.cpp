@@ -154,11 +154,6 @@ bool IsFilePathInvalid(const std::string &filePath)
     return IFileUtilMoc::fileUtilMoc->IsFilePathInvalid(filePath);
 }
 
-bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::string &errMsg)
-{
-    return IFileUtilMoc::fileUtilMoc->WriteFileSync(path, data, size, errMsg);
-}
-
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
 {
     return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, nullptr, exitStatus);

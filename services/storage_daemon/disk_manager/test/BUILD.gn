@@ -405,7 +405,9 @@ ohos_unittest("ext_iso9660_operator_test") {
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/iso9660_operator_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/disk_utils_ext_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/string_utils_mock.cpp",
     "$ROOT_DIR/mock/library_func_mock.cpp",
   ]
 
@@ -456,7 +458,9 @@ ohos_unittest("ext_udf_operator_test") {
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/udf_operator_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/disk_utils_ext_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
+    "$ROOT_DIR/mock/string_utils_mock.cpp",
     "$ROOT_DIR/mock/library_func_mock.cpp",
   ]
 

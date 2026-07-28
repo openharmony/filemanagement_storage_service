@@ -20,7 +20,6 @@
 #include "accesstoken_kit.h"
 #include "bundle_manager_connector.h"
 #include "bundlemgr/bundle_mgr_interface.h"
-#include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -30,7 +29,6 @@
 #include "mock/uece_activation_callback_mock.h"
 #include "mock/disk_manager_client_mock.h"
 #include "bundle_mgr_client.h"
-#include "volume_core.h"
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -137,18 +135,8 @@ void StorageManagerProviderTest::SetUp(void)
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
     dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
     DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
-    ON_CALL(*dmClientMock_, Mount(_)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, GetAllVolumes(_)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, GetVolumeByUuid(_, _)).WillByDefault(Return(E_NON_EXIST));
-    ON_CALL(*dmClientMock_, GetVolumeById(_, _)).WillByDefault(Return(E_NON_EXIST));
     ON_CALL(*dmClientMock_, GetFreeSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
     ON_CALL(*dmClientMock_, GetTotalSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, GetAllDisks(_)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, GetDiskById(_, _)).WillByDefault(Return(E_OK));
-    ON_CALL(*dmClientMock_, Partition(_, _)).WillByDefault(Return(E_OK));
 }
 
 void StorageManagerProviderTest::TearDown(void)
@@ -395,247 +383,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     auto ret = storageManagerProviderTest_->GetUserStorageStats(userId, storageStats);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStatsIpc_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeCreated_002
- * @tc.desc: Verify the NotifyVolumeCreated function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCreated_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    VolumeCore volumeCore;
-    auto ret = storageManagerProviderTest_->NotifyVolumeCreated(volumeCore);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_002
- * @tc.desc: Verify the NotifyVolumeMounted function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMounted_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    std::string fsType = "ext4";
-    std::string fsUuid = "testFsUuid";
-    std::string path = "/mnt/testVolume";
-    std::string description = "Test Volume";
-    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(
-        VolumeInfoStr{volumeId, fsType, fsUuid, path, description, false});
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_003
- * @tc.desc: Verify the NotifyVolumeMounted function when isDamaged is true.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMounted_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_003 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    std::string fsType = "ext4";
-    std::string fsUuid = "testFsUuid";
-    std::string path = "/mnt/testVolume";
-    std::string description = "Test Volume";
-    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(
-        VolumeInfoStr{volumeId, fsType, fsUuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_003 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_002
- * @tc.desc: Verify the NotifyVolumeStateChanged function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    uint32_t state = MOUNTED;
-    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_Mount_002
- * @tc.desc: Verify the Mount function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    auto ret = storageManagerProviderTest_->Mount(volumeId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_Unmount_002
- * @tc.desc: Verify the Unmount function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    auto ret = storageManagerProviderTest_->Unmount(volumeId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetAllVolumes_002
- * @tc.desc: Verify the GetAllVolumes function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllVolumes_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllVolumes_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::vector<VolumeExternal> volumes;
-    auto ret = storageManagerProviderTest_->GetAllVolumes(volumes);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllVolumes_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyDiskCreated_002
- * @tc.desc: Verify the NotifyDiskCreated function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskCreated_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskCreated_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    Disk disk;
-    auto ret = storageManagerProviderTest_->NotifyDiskCreated(disk);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskCreated_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyDiskDestroyed_002
- * @tc.desc: Verify the NotifyDiskDestroyed function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyDiskDestroyed_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskDestroyed_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string diskId = "testDiskId";
-    auto ret = storageManagerProviderTest_->NotifyDiskDestroyed(diskId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyDiskDestroyed_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_Partition_002
- * @tc.desc: Verify the Partition function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Partition_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Partition_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string diskId = "testDiskId";
-    int32_t type = 1;
-    auto ret = storageManagerProviderTest_->Partition(diskId, type);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Partition_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetAllDisks_002
- * @tc.desc: Verify the GetAllDisks function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllDisks_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllDisks_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::vector<Disk> disks;
-    auto ret = storageManagerProviderTest_->GetAllDisks(disks);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetAllDisks_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_SetVolumeDescription_002
- * @tc.desc: Verify the SetVolumeDescription function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetVolumeDescription_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetVolumeDescription_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string fsUuid = "testUuid";
-    std::string description = "Test Volume Description";
-    auto ret = storageManagerProviderTest_->SetVolumeDescription(fsUuid, description);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetVolumeDescription_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_Format_002
- * @tc.desc: Verify the Format function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Format_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Format_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    std::string fsType = "ext4";
-    auto ret = storageManagerProviderTest_->Format(volumeId, fsType);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Format_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_GetDiskById_002
- * @tc.desc: Verify the GetDiskById function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetDiskById_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetDiskById_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string diskId = "testDiskId";
-    Disk disk;
-    auto ret = storageManagerProviderTest_->GetDiskById(diskId, disk);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetDiskById_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_QueryUsbIsInUse_002
- * @tc.desc: Verify the QueryUsbIsInUse function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_QueryUsbIsInUse_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_QueryUsbIsInUse_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string diskPath = "/dev/sda1";
-    bool isInUse = false;
-    auto ret = storageManagerProviderTest_->QueryUsbIsInUse(diskPath, isInUse);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_QueryUsbIsInUse_002 end";
 }
 
 /**
@@ -973,41 +720,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
     auto ret = storageManagerProviderTest_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyMtpMounted_002
- * @tc.desc: Verify the NotifyMtpMounted function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string id = "mtpId";
-    std::string path = "/mnt/mtp";
-    std::string desc = "MTP Device";
-    std::string uuid = "1234-5678";
-    std::string fsType = "mtp";
-    auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid, fsType);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyMtpUnmounted_002
- * @tc.desc: Verify the NotifyMtpUnmounted function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmounted_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string id = "mtpId";
-    bool isBadRemove = false;
-    auto ret = storageManagerProviderTest_->NotifyMtpUnmounted(id, isBadRemove);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_002 end";
 }
 
 /**
@@ -1464,122 +1176,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
- * @tc.desc: Verify the NotifyVolumeDamaged function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(1009);
-    std::string volId = "vol-8-1";
-    std::string fsTypeStr = "ntfs";
-    std::string uuid = "uuid-1";
-    std::string path = "/";
-    std::string description = "My Disk";
-
-    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-
-    int32_t fsType = 1;
-    std::string diskId = "disk-1-6";
-    VolumeCore vc(volId, fsType, diskId);
-    storageManagerProviderTest_->NotifyVolumeCreated(vc);
-    ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-
-    int64_t sizeBytes = 1024;
-    int32_t diskType = 1;
-    bool removable = true;
-    std::list<std::string> volumeIds;
-    std::string extraInfo;
-    std::string vendor = "vendor-1";
-    std::string sysPath = path;
-    std::shared_ptr<Disk> result;
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
-    storageManagerProviderTest_->NotifyDiskCreated(disk);
-    ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_002
- * @tc.desc: Verify the NotifyVolumeDamaged function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(1009);
-    std::string volId = "vol-8-1";
-    std::string fsTypeStr = "ntfs";
-    std::string uuid = "uuid-1";
-    std::string path = "/";
-    std::string description = "My Disk";
-
-    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-
-    int32_t fsType = 1;
-    std::string diskId = "disk-1-6";
-    VolumeCore vc(volId, fsType, diskId);
-    storageManagerProviderTest_->NotifyVolumeCreated(vc);
-    ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-
-    int64_t sizeBytes = 1024;
-    int32_t diskType = 1;
-    bool removable = true;
-    std::list<std::string> volumeIds;
-    std::string extraInfo;
-    std::string vendor = "vendor-1";
-    std::string sysPath = path;
-    std::shared_ptr<Disk> result;
-    Disk disk(diskId, sizeBytes, diskType, removable, volumeIds, extraInfo, vendor, sysPath);
-    storageManagerProviderTest_->NotifyDiskCreated(disk);
-    ret = storageManagerProviderTest_->NotifyVolumeDamaged(
-        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_TryToFix_001
- * @tc.desc: Verify the TryToFix function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(1009);
-    std::string volId = "vol-8-1";
-    std::string fsTypeStr = "ntfs";
-    std::string uuid = "uuid-1";
-    std::string path = "/";
-    std::string description = "My Disk";
-
-    auto ret = storageManagerProviderTest_->TryToFix(volId);
-    EXPECT_EQ(ret, E_OK);
-
-    int32_t fsType = 1;
-    std::string diskId = "disk-1-6";
-    VolumeCore vc(volId, fsType, diskId);
-    storageManagerProviderTest_->NotifyVolumeCreated(vc);
-    ret = storageManagerProviderTest_->TryToFix(volId);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_RegisterUeceActivationCallback_001
  * @tc.desc: Verify the RegisterUeceActivationCallback function.
  * @tc.type: FUNC
@@ -1820,26 +1416,5 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_IsOsAccountExist
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_IsOsAccountExists_002 end";
 }
 
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Encrypt_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    std::string pazzword = "testPasswd";
-    auto ret = storageManagerProviderTest_->Encrypt(volumeId, pazzword);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Encrypt_002 end";
-}
-
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCryptProgressById_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_002 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    int32_t progress = 0;
-    auto ret = storageManagerProviderTest_->GetCryptProgressById(volumeId, progress);
-    EXPECT_EQ(ret, E_NOT_SUPPORT);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCryptProgressById_002 end";
-}
 }
 }
