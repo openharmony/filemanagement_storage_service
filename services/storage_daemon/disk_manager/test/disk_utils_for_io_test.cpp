@@ -151,8 +151,11 @@ HWTEST_F(DiskUtilsForIOTest, IsCDBlank_ReadCDDiscInfoFailed, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "IsCDBlank_ReadCDDiscInfoFailed start";
     g_realpathRet = -1;
-    bool isCDBlank = true;
-    EXPECT_EQ(IsCDBlank("/dev/sr0", isCDBlank), E_ERR);
+    bool isCDBlank = false;
+    EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return(""));
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return(""));
+    EXPECT_EQ(IsCDBlank("/dev/sr0", isCDBlank), E_OK);
+    EXPECT_TRUE(isCDBlank);
     g_realpathRet = 0;
     GTEST_LOG_(INFO) << "IsCDBlank_ReadCDDiscInfoFailed end";
 }

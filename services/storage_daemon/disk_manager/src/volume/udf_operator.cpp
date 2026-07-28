@@ -131,7 +131,8 @@ int32_t UdfOperator::CreateIsoImage(const std::string& devPath,
     }
 
     std::vector<std::string> output;
-    std::vector<std::string> cmd = {"genisoimage", "-V", "ISOIMAGE", "-udf", "-J", "-r", "-o", filePath, mountPath};
+    std::vector<std::string> cmd = {"genisoimage", "-V", "ISOIMAGE", "-udf", "-J", "-r", "-D", "-joliet-long",
+                                    "-input-charset", "utf-8", "-output-charset",  "utf-8", "-o", filePath, mountPath};
     int32_t err = ForkExec(cmd, &output);
     for (const auto& s : output) {
         LOGI("UdfOperator CreateIsoImage:s=%{public}s", s.c_str());
@@ -175,10 +176,12 @@ int32_t UdfOperator::PrepareIsoImage(const std::string &devPath,
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     if (isDiskEmpty) {
-        cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-o", MID_PATH, burnOptions.burnPath};
+        cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-D", "-joliet-long",
+               "-input-charset", "utf-8", "-output-charset", "utf-8", "-o", MID_PATH, burnOptions.burnPath};
     } else {
-        cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-C", incBurnAddr, "-M",
-                devPath, "-o", MID_PATH, burnOptions.burnPath};
+        cmd = {"genisoimage", "-V", burnOptions.diskName, "-udf", "-J", "-r", "-D", "-joliet-long",
+               "-input-charset", "utf-8", "-output-charset", "utf-8",
+               "-C", incBurnAddr, "-M", devPath, "-o", MID_PATH, burnOptions.burnPath};
     }
     err = ForkExec(cmd, &output);
     for (const auto& s : output) {
@@ -253,10 +256,10 @@ int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
     if (!burnOptions.isIsoImage) {
         if (isDiskEmpty) {
             cmd = {"growisofs", speedOpt, "-allow-limited-size", "-Z", devPath, "-udf",
-                   "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+                   "-J", "-r", "-D", "-joliet-long", "-V", burnOptions.diskName, burnOptions.burnPath};
         } else {
             cmd = {"growisofs", speedOpt, "-allow-limited-size", "-M", devPath, "-udf",
-                   "-J", "-r", "-V", burnOptions.diskName, burnOptions.burnPath};
+                   "-J", "-r", "-D", "-joliet-long", "-V", burnOptions.diskName, burnOptions.burnPath};
         }
     } else {
         std::string isoBurnPath = devPath + "=" + burnOptions.burnPath;
