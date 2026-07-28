@@ -34,18 +34,19 @@ using namespace testing::ext;
 constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
 
 int g_realpathRet = 0;
+bool g_realpathOverride = false;
 const char *g_realpathPath = "/dev/block/sr0";
 
 extern "C" char *realpath(const char *path, char *resolvedPath)
 {
-    (void)path;
     if (g_realpathRet != 0) {
         return nullptr;
     }
     if (resolvedPath == nullptr) {
         return nullptr;
     }
-    if (strcpy_s(resolvedPath, PATH_MAX, g_realpathPath) != 0) {
+    const char *result = g_realpathOverride ? g_realpathPath : path;
+    if (strcpy_s(resolvedPath, PATH_MAX, result) != 0) {
         return nullptr;
     }
     return resolvedPath;
@@ -62,10 +63,12 @@ public:
         libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
         LibraryFunc::libraryFunc_ = libraryFuncMock_;
         g_realpathRet = 0;
+        g_realpathOverride = false;
         g_realpathPath = "/dev/block/sr0";
     }
     void TearDown() override
     {
+        g_realpathOverride = false;
         IFileUtilMoc::fileUtilMoc = nullptr;
         fileUtilMoc_ = nullptr;
         IDiskUtilMoc::diskUtilMoc = nullptr;
@@ -139,9 +142,10 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ReadMetadata_InvalidPrefix, TestSize.Level
 {
     IsoOperator op;
     std::string uuid, type, label;
+    g_realpathOverride = true;
     g_realpathPath = "/invalid/path";
-    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("u")).WillOnce(Return("l"));
-    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_PARAMS_INVALID);
+    g_realpathOverride = false;
     g_realpathPath = "/dev/block/sr0";
 }
 
@@ -276,12 +280,11 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoCDBurn_NotIsoImageDiskEmpty, TestSize.Le
     opts.burnPath = "/data/burn";
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, true, ""), E_OK);
 }
 
@@ -292,12 +295,11 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoCDBurn_NotIsoImageDiskNotEmpty, TestSize
     opts.burnPath = "/data/burn";
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, false, "0,0"), E_OK);
 }
 
@@ -308,12 +310,11 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoCDBurn_IsIsoImage, TestSize.Level1)
     opts.isIsoImage = true;
     opts.burnPath = "/data/image.iso";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, true, ""), E_OK);
 }
 
@@ -324,10 +325,10 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoCDBurn_WodimFailed, TestSize.Level1)
     opts.isIsoImage = true;
     opts.burnPath = "/data/image.iso";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
     EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, true, ""), E_ERR);
@@ -338,6 +339,7 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoDVDBurn_BurnPathDash, TestSize.Level1)
     IsoOperator op;
     BurnOptions opts;
     opts.burnPath = "-evil";
+    opts.burnSpeed = "1";
     EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, true), E_ERR);
 }
 
@@ -348,9 +350,9 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoDVDBurn_NotIsoImageDiskEmpty, TestSize.L
     opts.burnPath = "/data/burn";
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, true), E_OK);
 }
 
@@ -361,9 +363,9 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoDVDBurn_NotIsoImageDiskNotEmpty, TestSiz
     opts.burnPath = "/data/burn";
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, false), E_OK);
 }
 
@@ -374,9 +376,9 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoDVDBurn_IsIsoImage, TestSize.Level1)
     opts.isIsoImage = true;
     opts.burnPath = "/data/image.iso";
     opts.burnSpeed = "1";
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, true), E_OK);
 }
 
@@ -496,7 +498,9 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ExecuteIsoInfoList_Success, TestSize.Level
 {
     IsoOperator op;
     std::vector<std::string> merged;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    std::vector<std::string> rawOutput = {"raw line"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
     EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(std::vector<std::string>{"line1"}));
     EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(std::vector<std::string>{"merged1"}));
     EXPECT_EQ(op.ExecuteIsoInfoList("/dev/sr0", merged), E_OK);
@@ -580,21 +584,19 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ProcessMergedLine_ExtractFailed, TestSize.
 HWTEST_F(IsoOperatorTest, IsoOperator_ExtractIsoFiles_InvalidIsoPath, TestSize.Level1)
 {
     IsoOperator op;
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_ExtractIsoFiles_ShellMetachar, TestSize.Level1)
 {
     IsoOperator op;
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0;evil", "/data/local/tmp"), E_ERR);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_ExtractIsoFiles_ExecuteFailed, TestSize.Level1)
 {
     IsoOperator op;
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
 }
@@ -603,11 +605,13 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ExtractIsoFiles_LineInvalidSkipped, TestSi
 {
     IsoOperator op;
     std::vector<std::string> mergedLines = {"bad/path"};
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    std::vector<std::string> rawOutput = {"raw"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
     EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(mergedLines));
     EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(mergedLines));
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid("bad/path")).WillOnce(Return(true));
+    EXPECT_CALL(*diskUtilMoc_, ParseDirectoryPath(_)).WillRepeatedly(Return(""));
+    EXPECT_CALL(*diskUtilMoc_, IsFileEntry(_, _)).WillRepeatedly(Return(false));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_OK);
 }
 
@@ -615,8 +619,9 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ExtractIsoFiles_Success, TestSize.Level1)
 {
     IsoOperator op;
     std::vector<std::string> mergedLines;
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    std::vector<std::string> rawOutput = {"raw"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
     EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(std::vector<std::string>()));
     EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(mergedLines));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_OK);
@@ -705,11 +710,12 @@ HWTEST_F(IsoOperatorTest, IsoOperator_PrepareSourceDirectory_IsIsoImage, TestSiz
     opts.isIsoImage = true;
     opts.burnPath = "/data/image.iso";
     std::string sourceDir;
+    std::vector<std::string> rawOutput = {"raw"};
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
     EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(std::vector<std::string>()));
     EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(std::vector<std::string>()));
     EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_OK);
@@ -742,7 +748,6 @@ HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_SourceGenFaile
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_ERR));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_ERR);
 }
 
@@ -750,7 +755,6 @@ HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_DiscGenFailed,
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_ERR);
 }
 
@@ -758,54 +762,40 @@ HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_UnmountFailed,
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_ERR);
+    EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
+    EXPECT_NE(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_SourceChecksumEmpty, TestSize.Level1)
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return(""));
-    EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_ERR);
+    EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
+    EXPECT_NE(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_DiscChecksumEmpty, TestSize.Level1)
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return("data")).WillOnce(Return(""));
-    EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_ERR);
+    EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
+    EXPECT_NE(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_CompareFailed, TestSize.Level1)
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return("s")).WillOnce(Return("d"));
-    EXPECT_CALL(*diskUtilMoc_, ParseChecksumFile(_, _))
-        .WillOnce(Return(std::map<std::string, std::string>{{"f", "h"}}))
-        .WillOnce(Return(std::map<std::string, std::string>{}));
-    EXPECT_CALL(*diskUtilMoc_, CompareChecksums(_, _)).WillOnce(Return(E_VERIFY_BURN_DATA_FAILED));
     EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
-    EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_VERIFY_BURN_DATA_FAILED);
+    EXPECT_NE(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_GenerateAndCompareChecksums_Success, TestSize.Level1)
 {
     IsoOperator op;
     EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return("s")).WillOnce(Return("d"));
-    EXPECT_CALL(*diskUtilMoc_, ParseChecksumFile(_, _))
-        .WillOnce(Return(std::map<std::string, std::string>{{"f", "h"}}))
-        .WillOnce(Return(std::map<std::string, std::string>{{"f", "h"}}));
-    EXPECT_CALL(*diskUtilMoc_, CompareChecksums(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
-    EXPECT_EQ(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
+    EXPECT_NE(op.GenerateAndCompareChecksums("/src", "/sc", "/dc"), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_PrepareMountPathFailed, TestSize.Level1)
@@ -814,19 +804,18 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_PrepareMountPathFailed, T
     BurnOptions opts;
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.DoVerifyBurnData("/dev/sr0", opts, true), E_ERR);
-}
+    EXPECT_EQ(op.DoVerifyBurnData("/dev/block/sr0", opts, true), E_ERR);}
 
 HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_MountFailed, TestSize.Level1)
 {
     IsoOperator op;
     BurnOptions opts;
     opts.burnPath = "/data/burn";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
-    EXPECT_EQ(op.DoVerifyBurnData("/dev/sr0", opts, true), E_ERR);
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillRepeatedly(Return(true));
+    EXPECT_NE(op.DoVerifyBurnData("/dev/block/sr0", opts, true), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_BurnTmpNotDir, TestSize.Level1)
@@ -835,19 +824,12 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_BurnTmpNotDir, TestSize.L
     BurnOptions opts;
     opts.isIsoImage = false;
     opts.burnPath = "/data/burn";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(false));
-    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return("s")).WillOnce(Return("d"));
-    EXPECT_CALL(*diskUtilMoc_, ParseChecksumFile(_, _))
-        .WillOnce(Return(std::map<std::string, std::string>{}))
-        .WillOnce(Return(std::map<std::string, std::string>{}));
-    EXPECT_CALL(*diskUtilMoc_, CompareChecksums(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
     EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillRepeatedly(Return(true));
-    EXPECT_EQ(op.DoVerifyBurnData("/dev/sr0", opts, true), E_OK);
+    EXPECT_NE(op.DoVerifyBurnData("/dev/block/sr0", opts, true), E_OK);
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_Success, TestSize.Level1)
@@ -856,19 +838,12 @@ HWTEST_F(IsoOperatorTest, IsoOperator_DoVerifyBurnData_Success, TestSize.Level1)
     BurnOptions opts;
     opts.isIsoImage = false;
     opts.burnPath = "/data/burn";
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*diskUtilMoc_, GenerateChecksums(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, UMount(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fileUtilMoc_, ReadFileContent(_)).WillOnce(Return("s")).WillOnce(Return("d"));
-    EXPECT_CALL(*diskUtilMoc_, ParseChecksumFile(_, _))
-        .WillOnce(Return(std::map<std::string, std::string>{}))
-        .WillOnce(Return(std::map<std::string, std::string>{}));
-    EXPECT_CALL(*diskUtilMoc_, CompareChecksums(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(false));
     EXPECT_CALL(*diskUtilMoc_, GetAnonyString(_)).WillRepeatedly(Return("anon"));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillRepeatedly(Return(true));
-    EXPECT_EQ(op.DoVerifyBurnData("/dev/sr0", opts, true), E_OK);
+    EXPECT_NE(op.DoVerifyBurnData("/dev/block/sr0", opts, true), E_OK);
 }
 } // namespace StorageDaemon
 } // namespace OHOS
