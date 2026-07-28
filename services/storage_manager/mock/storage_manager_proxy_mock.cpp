@@ -194,8 +194,6 @@ int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats, uin
     return E_OK;
 }
 
-
-
 int32_t StorageManagerProxy::CreateShareFile(const StorageFileRawData &uriList,
                                              uint32_t tokenId,
                                              uint32_t flag,
@@ -310,8 +308,6 @@ int32_t StorageManagerProxy::UpdateUserPublicDirPolicy(uint32_t userId)
 {
     return E_OK;
 }
-
-
 
 int32_t StorageManagerProxy::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback)
 {

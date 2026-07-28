@@ -46,7 +46,6 @@ public:
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string& type) override;
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
-
     int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath, uint32_t type) override;
     int32_t EraseAllUserEncryptedKeys() override;
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -79,7 +78,6 @@ public:
                              const std::vector<uint8_t> &secret) override;
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
-
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
     int32_t UnregisterUeceActivationCallback() override;
     int32_t CreateUserDir(const std::string &path, uint32_t mode, uint32_t uid, uint32_t gid) override;

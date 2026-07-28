@@ -21,6 +21,7 @@
 #include "bundle_manager_connector.h"
 #include "bundle_mgr_client.h"
 #include "bundlemgr/bundle_mgr_interface.h"
+#include "disk.h"
 #include "ext_bundle_stats.h"
 #include "ipc_skeleton.h"
 #include "message_parcel.h"
@@ -30,6 +31,7 @@
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
+#include "volume_core.h"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -148,8 +150,18 @@ void StorageManagerProviderTest::SetUp(void)
     storageManagerProviderTest_ = std::make_unique<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
     dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
     DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
+    ON_CALL(*dmClientMock_, Mount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllVolumes(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetVolumeByUuid(_, _)).WillByDefault(Return(E_NON_EXIST));
+    ON_CALL(*dmClientMock_, GetVolumeById(_, _)).WillByDefault(Return(E_NON_EXIST));
     ON_CALL(*dmClientMock_, GetFreeSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
     ON_CALL(*dmClientMock_, GetTotalSizeOfVolume(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetAllDisks(_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, GetDiskById(_, _)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Partition(_, _)).WillByDefault(Return(E_OK));
 }
 
 class MockBundleMgr : public AppExecFwk::IBundleMgr {
@@ -1612,5 +1624,398 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStats_004 end";
 }
 
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeCreated_001
+ * @tc.desc: Verify the NotifyVolumeCreated function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCreated_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    VolumeCore volumeCore;
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeCreated(volumeCore);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeCreated_002
+ * @tc.desc: Verify the NotifyVolumeCreated function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeCreated_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    VolumeCore volumeCore;
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeCreated(volumeCore);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeCreated_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_001
+ * @tc.desc: Verify the NotifyVolumeMounted function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMounted_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volumeId = "volumeId";
+    std::string fsTypeStr = "fsTypeStr";
+    std::string fsUuid = "fsUuid";
+    std::string path = "/mnt/mtp/external";
+    std::string description = "description";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(
+        VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeMounted_002
+ * @tc.desc: Verify the NotifyVolumeMounted function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMounted_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volumeId = "volumeId";
+    std::string fsTypeStr = "fsTypeStr";
+    std::string fsUuid = "fsUuid";
+    std::string path = "/mnt/mtp/external";
+    std::string description = "description";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(
+        VolumeInfoStr{volumeId, fsTypeStr, fsUuid, path, description, false});
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volId = "vol-1-2";
+    std::string fsTypeStr = "ntfs";
+    std::string uuid = "uuid-123456";
+    std::string path = "/TEST/mtp";
+    std::string description = "description";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_002
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volId = "vol-1-2-3";
+    std::string fsTypeStr = "ntfs";
+    std::string uuid = "uuid-11111";
+    std::string path = "/external/mtp";
+    std::string description = "description123";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_003
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_003 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volId = "vol-8-1-9-2-3";
+    std::string fsTypeStr = "exfat";
+    std::string uuid = "uuid-234";
+    std::string path = "/exfat";
+    std::string description = "exfatdescription";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_004
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_004 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volId = "vol-8-1-9-2-3";
+    std::string fsTypeStr = "exfat";
+    std::string uuid = "uuid-234";
+    std::string path = "/exfat";
+    std::string description = "exfatdescription";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_005
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_005 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volId = "vol-1-2";
+    std::string fsTypeStr = "vfat";
+    std::string uuid = "uuid";
+    std::string path = "/vfat";
+    std::string description = "vfatdescription";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_006
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_006 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volId = "vol-1-2-3-4";
+    std::string fsTypeStr = "vfat";
+    std::string uuid = "uuid-vfat";
+    std::string path = "/vfat/";
+    std::string description = "vfatdescription";
+
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(
+        VolumeInfoStr{volId, fsTypeStr, uuid, path, description, true});
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_006 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_001
+ * @tc.desc: Verify the NotifyVolumeStateChanged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volumeId = "volumeId";
+
+    uint32_t state = MOUNTED;
+    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    state = ENCRYPTING;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    state = ENCRYPTED_AND_LOCKED;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    state = ENCRYPTED_AND_UNLOCKED;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    state = DECRYPTING;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_002
+ * @tc.desc: Verify the NotifyVolumeStateChanged function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volumeId = "volumeId-123";
+
+    uint32_t state = MOUNTED;
+    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_OK);
+
+    state = ENCRYPTING;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_OK);
+
+    state = ENCRYPTED_AND_LOCKED;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_OK);
+
+    state = ENCRYPTED_AND_UNLOCKED;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_OK);
+
+    state = DECRYPTING;
+    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_Mount_001
+ * @tc.desc: Verify the Mount function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volumeId = "volumeId";
+
+    auto ret = storageManagerProviderTest_->Mount(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_Mount_002
+ * @tc.desc: Verify the Mount function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Mount_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volumeId = "volumeId";
+
+    auto ret = storageManagerProviderTest_->Mount(volumeId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Mount_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_Unmount_001
+ * @tc.desc: Verify the Unmount function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_001 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(DFS_UID);
+    MockVerifyAccessToken(-1);
+    std::string volumeId = "volumeId";
+
+    auto ret = storageManagerProviderTest_->Unmount(volumeId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_Unmount_002
+ * @tc.desc: Verify the Unmount function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_Unmount_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_002 start";
+
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    SetCallingUid(ACCOUNT_UID);
+    MockVerifyAccessToken(0);
+    std::string volumeId = "volumeId";
+
+    auto ret = storageManagerProviderTest_->Unmount(volumeId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_Unmount_002 end";
+}
 } // namespace StorageManager
 } // namespace OHOS

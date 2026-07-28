@@ -18,41 +18,6 @@
 namespace OHOS {
 namespace DiskManager {
 
-int32_t DiskManagerClient::Mount(const std::string &volumeId)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->Mount(volumeId);
-}
-
-int32_t DiskManagerClient::Unmount(const std::string &volumeId)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->Unmount(volumeId);
-}
-
-int32_t DiskManagerClient::Format(const std::string &volumeId, const std::string &fsType)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->Format(volumeId, fsType);
-}
-
-int32_t DiskManagerClient::SetVolumeDescription(const std::string &fsUuid, const std::string &description)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->SetVolumeDescription(fsUuid, description);
-}
-
-int32_t DiskManagerClient::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetAllVolumes(vecOfVol);
-}
-
-int32_t DiskManagerClient::GetVolumeByUuid(const std::string &uuid, VolumeExternal &vc)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetVolumeByUuid(uuid, vc);
-}
-
-int32_t DiskManagerClient::GetVolumeById(const std::string &volumeId, VolumeExternal &vc)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetVolumeById(volumeId, vc);
-}
-
 int32_t DiskManagerClient::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
 {
     return IDiskManagerClientMock::diskManagerClientMock->GetFreeSizeOfVolume(volumeUuid, freeSize);
@@ -61,21 +26,6 @@ int32_t DiskManagerClient::GetFreeSizeOfVolume(const std::string &volumeUuid, in
 int32_t DiskManagerClient::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
 {
     return IDiskManagerClientMock::diskManagerClientMock->GetTotalSizeOfVolume(volumeUuid, totalSize);
-}
-
-int32_t DiskManagerClient::GetAllDisks(std::vector<Disk> &vecOfDisk)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetAllDisks(vecOfDisk);
-}
-
-int32_t DiskManagerClient::GetDiskById(const std::string &diskId, Disk &disk)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->GetDiskById(diskId, disk);
-}
-
-int32_t DiskManagerClient::Partition(const std::string &diskId, int32_t type)
-{
-    return IDiskManagerClientMock::diskManagerClientMock->Partition(diskId, type);
 }
 
 } // DiskManager
