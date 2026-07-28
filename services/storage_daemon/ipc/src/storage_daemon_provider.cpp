@@ -361,6 +361,9 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
+    if (!CheckOtherUserId(userId)) {
+        return E_USERID_RANGE;
+    }
     HiAudit::GetInstance().WriteStart("StartUser", "userId: " + std::to_string(userId));
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     isNeedUpdateRadarFile_ = true;
