@@ -56,6 +56,10 @@ private:
 
     static int32_t EnsureMountPath(const std::string& mountPath);
     static int32_t RemoveMountPath(const std::string& mountPath);
+
+protected:
+    static bool IsMountDataInvalid(const std::string& mountData);
+    static bool IsShellMetacharPresent(const std::string& str);
 };
 
 } // namespace StorageDaemon

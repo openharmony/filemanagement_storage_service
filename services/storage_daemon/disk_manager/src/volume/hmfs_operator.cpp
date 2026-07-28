@@ -61,16 +61,17 @@ int32_t HmfsOperator::DoMount(const std::string& devPath,
             LOGE("HmfsOperator::DoMount mount failed, errno=%{public}d", errno);
             return E_HMFS_MOUNT;
         }
-    }
-
-    if (mountFlags != MOUNT_FLAG_MIGRATION_RO) {
         if (chmod(mountPath.c_str(), S_ISGID | MOUNT_DIR_MODE) != 0) {
             LOGE("HmfsOperator::DoMount chmod failed on %{public}s, errno=%{public}d",
                  mountPath.c_str(), errno);
+            umount2(mountPath.c_str(), MNT_DETACH);
+            return E_HMFS_MOUNT;
         }
         if (chown(mountPath.c_str(), ROOT_UID, FILE_MANAGER_GID) != 0) {
             LOGE("HmfsOperator::DoMount chown failed on %{public}s, errno=%{public}d",
                  mountPath.c_str(), errno);
+            umount2(mountPath.c_str(), MNT_DETACH);
+            return E_HMFS_MOUNT;
         }
     }
 

@@ -14,6 +14,7 @@
  */
 
 #include <cerrno>
+#include <cstdlib>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -41,7 +42,6 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
 using namespace OHOS::StorageService;
-constexpr int32_t NODE_PERM = 0660;
 constexpr int32_t MIN_UUID_LENGTH = 1;
 constexpr int32_t MAX_UUID_LENGTH = 40;
 constexpr int32_t DEF_TIMEOUT = 120000;
@@ -66,6 +66,7 @@ constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_HIGH = 7;
 constexpr int32_t CDB_ALLOCATION_LENGTH_LOW = 8;
 constexpr int32_t MAX_ALLOC_LEN = 0xFFFF;
+constexpr int32_t MAX_CDB_LEN = 16;
 constexpr int32_t READ_DISC_INFO_CDB_LEN = 10;
 constexpr int32_t GET_CONFIG_CDB_LEN = 10;
 constexpr int32_t GET_CONFIG_OPCODE = 0x46;
@@ -107,54 +108,6 @@ constexpr uint16_t ODD_LOGICAL_SECTOR_SIZE = 2048;
 constexpr uint8_t CD_SECTORS_PER_SECOND = 75;
 constexpr uint8_t SECONDS_PER_MINUTES = 60;
 
-int CreateDiskNode(const std::string &path, dev_t dev)
-{
-    LOGD("[L8:DiskUtils] CreateDiskNode: >>> ENTER <<< path=%{public}s", path.c_str());
-    if (mknod(path.c_str(), NODE_PERM | S_IFBLK, dev) < 0) {
-        LOGE("[L8:DiskUtils] CreateDiskNode: <<< EXIT FAILED <<< create disk node failed, errno=%{public}d", errno);
-        return E_ERR;
-    }
-    LOGD("[L8:DiskUtils] CreateDiskNode: <<< EXIT SUCCESS <<<");
-    return E_OK;
-}
-
-int DestroyDiskNode(const std::string &path)
-{
-    LOGD("[L8:DiskUtils] DestroyDiskNode: >>> ENTER <<< path=%{public}s", path.c_str());
-    if (TEMP_FAILURE_RETRY(unlink(path.c_str())) < 0) {
-        LOGE("[L8:DiskUtils] DestroyDiskNode: <<< EXIT FAILED <<< unlink failed, errno=%{public}d", errno);
-        return E_ERR;
-    }
-    LOGD("[L8:DiskUtils] DestroyDiskNode: <<< EXIT SUCCESS <<<");
-    return E_OK;
-}
-
-int GetDevSize(const std::string &path, uint64_t *size)
-{
-    LOGD("[L8:DiskUtils] GetDevSize: >>> ENTER <<< path=%{private}s", path.c_str());
-    FILE *f = fopen(path.c_str(), "r");
-    if (f == nullptr) {
-        LOGE("[L8:DiskUtils] GetDevSize: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
-        return E_ERR;
-    }
-    int fd = fileno(f);
-    if (fd < 0) {
-        LOGE("[L8:DiskUtils] GetDevSize: <<< EXIT FAILED <<< open failed, errno=%{public}d", errno);
-        (void)fclose(f);
-        return E_ERR;
-    }
-
-    if (ioctl(fd, BLKGETSIZE64, size)) {
-        LOGE("[L8:DiskUtils] GetDevSize: <<< EXIT FAILED <<< get device size failed, errno=%{public}d", errno);
-        (void)fclose(f);
-        return E_ERR;
-    }
-
-    (void)fclose(f);
-    LOGD("[L8:DiskUtils] GetDevSize: <<< EXIT SUCCESS <<< size=%{public}" PRIu64, *size);
-    return E_OK;
-}
-
 int GetMaxVolume(dev_t device)
 {
     LOGD("[L8:DiskUtils] GetMaxVolume: >>> ENTER <<<");
@@ -165,7 +118,14 @@ int GetMaxVolume(dev_t device)
             LOGE("[L8:DiskUtils] GetMaxVolume: <<< EXIT FAILED <<< Get MmcMaxVolumes failed");
             return E_ERR;
         }
-        return std::atoi(str.c_str());
+        errno = 0;
+        char *endptr = nullptr;
+        long result = strtol(str.c_str(), &endptr, 10);
+        if (errno == ERANGE || endptr == str.c_str() || *endptr != '\0' || result <= 0 || result > INT_MAX) {
+            LOGE("[L8:DiskUtils] GetMaxVolume: invalid value '%{public}s'", str.c_str());
+            return E_ERR;
+        }
+        return static_cast<int>(result);
     } else {
         LOGD("[L8:DiskUtils] GetMaxVolume: <<< EXIT SUCCESS <<< MAX_SCSI_VOLUMES");
         return MAX_SCSI_VOLUMES;
@@ -177,56 +137,24 @@ bool IsAcceptableUuid(const std::string &uuid)
     if (uuid.empty()) {
         return false;
     }
-    
-    static const std::string forbidden = "/\\";
-    if (uuid.find_first_of(forbidden) != std::string::npos) {
-        return false;
-    }
-
     if (uuid.length() < MIN_UUID_LENGTH || uuid.length() > MAX_UUID_LENGTH) {
         return false;
     }
-
-    if (uuid == "." || uuid == "..") {
+    if (IsFilePathInvalid(uuid)) {
+        LOGE("[L8:DiskUtils] IsAcceptableUuid: uuid contains invalid characters");
         return false;
     }
-
     return true;
-}
-
-int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string &type, std::string &label)
-{
-    LOGI("[L8:DiskUtils] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    uuid = GetBlkidData(devPath, "UUID");
-    type = GetBlkidData(devPath, "TYPE");
-    label = GetBlkidData(devPath, "LABEL");
-    LOGI("[L8:DiskUtils] ReadMetadata: fsUuid=%{public}s, fsType=%{public}s, fsLabel=%{public}s",
-        GetAnonyString(uuid).c_str(), type.c_str(), label.c_str());
-    if (type.empty() || !IsAcceptableUuid(uuid)) {
-        LOGE("[L8:DiskUtils] ReadMetadata: <<< EXIT FAILED <<< External volume ReadMetadata error");
-        return E_READMETADATA;
-    }
-    LOGI("[L8:DiskUtils] ReadMetadata: <<< EXIT SUCCESS <<<");
-    return E_OK;
-}
-
-int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid)
-{
-    LOGI("[L8:DiskUtils] ReadVolumeUuid: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    uuid = GetBlkidData(devPath, "UUID");
-    LOGI("[L8:DiskUtils] ReadVolumeUuid: fsUuid=%{public}s", GetAnonyString(uuid).c_str());
-    if (uuid.empty()) {
-        LOGE("[L8:DiskUtils] ReadVolumeUuid: <<< EXIT FAILED <<< External volume ReadMetadata error");
-        return E_READMETADATA;
-    }
-    LOGI("[L8:DiskUtils] ReadVolumeUuid: <<< EXIT SUCCESS <<<");
-    return E_OK;
 }
 
 std::string GetBlkidData(const std::string &devPath, const std::string &type)
 {
     LOGD("[L8:DiskUtils] GetBlkidData: >>> ENTER <<< devPath=%{public}s, type=%{public}s",
         devPath.c_str(), type.c_str());
+    if (!devPath.empty() && devPath[0] == '-') {
+        LOGE("[L8:DiskUtils] GetBlkidData: devPath starts with dash, possible argument injection");
+        return "";
+    }
     std::vector<std::string> cmd;
     cmd = {
         "blkid",
@@ -410,6 +338,14 @@ int SendScsiCmdByPath(const std::string &diskPath, uint8_t *cdb, int cdbLen, uin
 {
     LOGI("[L8:DiskUtils] SendScsiCmdByPath: >>> ENTER <<< diskPath=%{public}s, cdbLen=%{public}d, len=%{public}d",
         diskPath.c_str(), cdbLen, len);
+    if (cdb == nullptr || buf == nullptr) {
+        LOGE("[L8:DiskUtils] SendScsiCmdByPath: cdb or buf is nullptr");
+        return E_ERR;
+    }
+    if (cdbLen <= 0 || cdbLen > MAX_CDB_LEN || len < 0) {
+        LOGE("[L8:DiskUtils] SendScsiCmdByPath: invalid cdbLen=%{public}d or len=%{public}d", cdbLen, len);
+        return E_ERR;
+    }
     std::string cdbStr;
     for (int i = 0; i < cdbLen; i++) {
         cdbStr += (i > 0 ? "," : "") + std::to_string(cdb[i]);
@@ -577,7 +513,8 @@ std::string GetOpticalDriveType(const std::string &diskPath)
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< GetConfiguration not supported");
         return "";
     }
-    uint32_t dataLen = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    uint32_t dataLen = (static_cast<uint32_t>(buf[0]) << 24) | (static_cast<uint32_t>(buf[1]) << 16) |
+                       (static_cast<uint32_t>(buf[2]) << 8) | static_cast<uint32_t>(buf[3]);
     if (dataLen < FEATURE_CODE_LENGTH || dataLen > MAX_BUF - FEATURE_CODE_LENGTH) {
         LOGE("[L8:DiskUtils] GetOpticalDriveType: <<< EXIT FAILED <<< Invalid data length=%{public}d",
              dataLen);
@@ -666,26 +603,6 @@ int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteS
     LOGE("[L8:DiskUtils] GetOpticalDriveMaxWriteSpeed: <<< EXIT NO MATCH <<< No speed data found");
     return E_ERR;
 }
-int Eject(const std::string &devPath)
-{
-    LOGI("[L8:DiskUtils] Eject: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    std::vector<std::string> output;
-    std::vector<std::string> cmd = {
-        "eject",
-        "-s",
-        devPath
-    };
-    int res = ForkExec(cmd, &output);
-    for (auto str : output) {
-        LOGI("Eject output: %{public}s", str.c_str());
-    }
-    if (res != E_OK) {
-        LOGE("[L8:DiskUtils] Eject: <<< EXIT FAILED <<< ForkExec eject failed, err=%{public}d", res);
-        return res;
-    }
-    LOGI("[L8:DiskUtils] Eject: <<< EXIT SUCCESS <<<");
-    return E_OK;
-}
 
 int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
 {
@@ -715,6 +632,10 @@ int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
     actual_len = (int)(data_buf[0] << 8) | data_buf[1];
     actual_len += 2;
     LOGI("actual_len: %{public}d", actual_len);
+    if (actual_len > GET_CAPACITY_DATA_BUF_LEN) {
+        LOGE("actual_len=%{public}d exceeds buffer size", actual_len);
+        return E_ERR;
+    }
     cmd_buf[7] = (actual_len >> 8) & 0xff;
     cmd_buf[8] = actual_len & 0xff;
     ret = SendScsiCmd(fd, cmd_buf, cmd_len, data_buf, actual_len);
@@ -859,7 +780,17 @@ int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapcity)
                ((unsigned int)data_buf[5] << 16) |
                ((unsigned int)data_buf[6] << 8) |
                data_buf[7];
-    dvdUsedCapcity = static_cast<int64_t>(blk_cnt + 1) * blk_size;
+    int64_t blkCnt64 = static_cast<int64_t>(blk_cnt);
+    if (blkCnt64 > INT64_MAX - 1) {
+        LOGE("blk_cnt overflow");
+        return E_ERR;
+    }
+    int64_t blkSize64 = static_cast<int64_t>(blk_size);
+    if (blkSize64 != 0 && blkCnt64 + 1 > INT64_MAX / blkSize64) {
+        LOGE("capacity overflow");
+        return E_ERR;
+    }
+    dvdUsedCapcity = (blkCnt64 + 1) * blkSize64;
     LOGI("dvd used_capacity: %{public}u * %{public}u = %{public}" PRIu64, blk_cnt + 1, blk_size, dvdUsedCapcity);
     return E_OK;
 }
@@ -940,7 +871,13 @@ int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity)
             ((unsigned int)data_buf[BLOCK_SIZE_BYTE_1] << BYTE_SHIFT_16) |
             ((unsigned int)data_buf[BLOCK_SIZE_BYTE_2] << BYTE_SHIFT_8) |
             data_buf[BLOCK_SIZE_BYTE_3];
-    bdTotalCapacity = static_cast<int64_t>(blk_cnt + 1) * static_cast<int64_t>(blk_size);
+    int64_t blkCnt64 = static_cast<int64_t>(blk_cnt);
+    int64_t blkSize64 = static_cast<int64_t>(blk_size);
+    if (blkSize64 != 0 && blkCnt64 + 1 > INT64_MAX / blkSize64) {
+        LOGE("GetBdTotalCapacity: multiplication overflow");
+        return E_ERR;
+    }
+    bdTotalCapacity = (blkCnt64 + 1) * blkSize64;
     LOGI("bd total_capacity: %{public}u * %{public}u = %{public}" PRId64 " bytes",
         blk_cnt + 1, blk_size, bdTotalCapacity);
     return E_OK;

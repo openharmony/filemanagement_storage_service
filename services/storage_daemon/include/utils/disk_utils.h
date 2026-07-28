@@ -28,13 +28,8 @@ constexpr int DISC_STATUS_BYTE_INDEX = 2;
 constexpr int MAX_BUF = 4096;
 constexpr uint8_t DISC_STATUS_MASK = 0x03;
 
-int CreateDiskNode(const std::string &path, dev_t dev);
-int DestroyDiskNode(const std::string &path);
 bool IsAcceptableUuid(const std::string &uuid);
-int GetDevSize(const std::string &path, uint64_t *size);
 int GetMaxVolume(dev_t device);
-int32_t ReadMetadata(const std::string &path, std::string &uuid, std::string &type, std::string &label);
-int32_t ReadVolumeUuid(const std::string &devPath, std::string &uuid);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 std::string GetAnonyString(const std::string &value);
@@ -48,7 +43,6 @@ int SendScsiCmdByPath(const std::string &diskPath, uint8_t *cdb, int cdbLen, uin
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len);
 int ReadConfiguration(const std::string &diskPath, uint8_t *buf, int len);
 int IsBlankCD(const std::string &diskPath, bool &isBlankCD);
-int Eject(const std::string &devPath);
 int IsExistCD(const std::string &diskPath, bool &isExistCD);
 int GetCDStatus(const char *device, int &status);
 int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity);

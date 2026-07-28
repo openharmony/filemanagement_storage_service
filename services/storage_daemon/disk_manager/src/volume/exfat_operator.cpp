@@ -82,6 +82,11 @@ int32_t ExfatOperator::Format(const std::string& devPath)
 {
     LOGI("ExfatOperator::Format devPath=%{public}s", devPath.c_str());
 
+    if (devPath.empty()) {
+        LOGE("ExfatOperator::Format devPath is empty");
+        return E_PARAMS_INVALID;
+    }
+
     std::vector<std::string> cmd = {
         "mkfs.exfat",
         devPath

@@ -240,6 +240,10 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
 int32_t IsoOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &burnOptions, bool isDiskEmpty)
 {
     LOGI("BurnDoDVDBurn: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    if (!burnOptions.burnPath.empty() && burnOptions.burnPath[0] == '-') {
+        LOGE("BurnDoDVDBurn: burnPath starts with dash, possible argument injection");
+        return E_ERR;
+    }
     int32_t res = DiskUtils::CleanTempDirectory();
     if (res != E_OK) {
         LOGE("BurnDoDVDBurn: CleanTempDirectory entry failed, non-critical, res=%{public}d", res);
@@ -353,11 +357,11 @@ int32_t IsoOperator::ExecuteIsoInfoList(const std::string& isoPath,
         output.insert(output.end(), lines.begin(), lines.end());
     }
     for (const auto& s : output) {
-        LOGI("ExtractIsoFiles isoinfo list output: %{public}s", s.c_str());
+        LOGI("ExtractIsoFiles isoinfo list output: %{public}s", GetAnonyString(s).c_str());
     }
     mergedLines = DiskUtils::MergeOutputLines(output);
     for (const auto& s : mergedLines) {
-        LOGI("ExtractIsoFiles merged line: %{public}s", s.c_str());
+        LOGI("ExtractIsoFiles merged line: %{public}s", GetAnonyString(s).c_str());
     }
     return E_OK;
 }
@@ -418,6 +422,11 @@ int32_t IsoOperator::ProcessMergedLine(const std::string& isoPath, const std::st
 int32_t IsoOperator::ExtractIsoFiles(const std::string& isoPath,
                                      const std::string& sourceDir)
 {
+    if (IsFilePathInvalid(isoPath) || IsShellMetacharPresent(isoPath) ||
+        IsFilePathInvalid(sourceDir) || IsShellMetacharPresent(sourceDir)) {
+        LOGE("IsoOperator::ExtractIsoFiles path traversal or shell injection detected");
+        return E_ERR;
+    }
     std::vector<std::string> mergedLines;
     int32_t err = ExecuteIsoInfoList(isoPath, mergedLines);
     if (err != E_OK) {
@@ -425,6 +434,10 @@ int32_t IsoOperator::ExtractIsoFiles(const std::string& isoPath,
     }
     std::string currentPath;
     for (const auto& line : mergedLines) {
+        if (IsFilePathInvalid(line) || IsShellMetacharPresent(line)) {
+            LOGE("IsoOperator::ExtractIsoFiles line contains path traversal or shell metachar, skipped");
+            continue;
+        }
         err = ProcessMergedLine(isoPath, sourceDir, line, currentPath);
         if (err != E_OK) {
             return err;
@@ -492,7 +505,7 @@ void IsoOperator::LogChecksumMap(const std::string& mapName,
     LOGI("LogChecksumMap: %{public}s contents:", mapName.c_str());
     for (const auto& pair : map) {
         LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
-             pair.first.c_str(), pair.second.c_str());
+             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
     }
 }
 
@@ -553,11 +566,13 @@ int32_t IsoOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     int32_t err = DiskUtils::GenerateChecksums(sourceDir, sourceChecksumPath);
     if (err != E_OK) {
         LOGE("DoVerifyBurnData: generate source checksums failed");
+        Unmount(VERIFY_MOUNT_PATH, "iso9660", false);
         return err;
     }
     err = DiskUtils::GenerateChecksums(VERIFY_MOUNT_PATH, discChecksumPath);
     if (err != E_OK) {
         LOGE("DoVerifyBurnData: generate disc checksums failed");
+        Unmount(VERIFY_MOUNT_PATH, "iso9660", false);
         return err;
     }
     err = Unmount(VERIFY_MOUNT_PATH, "iso9660", false);
@@ -579,11 +594,13 @@ int32_t IsoOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     std::map<std::string, std::string> discMap = DiskUtils::ParseChecksumFile(discChecksumContent, VERIFY_MOUNT_PATH);
     LOGI("LogChecksumMap: sourceMap contents:");
     for (const auto& pair : sourceMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
+             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
     }
     LOGI("LogChecksumMap: discMap contents:");
     for (const auto& pair : discMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
+             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
     }
     return DiskUtils::CompareChecksums(sourceMap, discMap);
 }

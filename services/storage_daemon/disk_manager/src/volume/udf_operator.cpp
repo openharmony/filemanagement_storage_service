@@ -43,7 +43,7 @@ int32_t UdfOperator::DoMount(const std::string& devPath,
                              const std::string& mountData)
 {
     LOGI("UdfOperator::DoMount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), mountPath.c_str());
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
 
     int32_t cdStatus = 0;
     int32_t ret = DiskUtils::QueryCDStatus(devPath, cdStatus);
@@ -420,6 +420,11 @@ int32_t UdfOperator::ProcessMergedLine(const std::string& isoPath, const std::st
 int32_t UdfOperator::ExtractIsoFiles(const std::string& isoPath,
                                      const std::string& sourceDir)
 {
+    if (IsFilePathInvalid(isoPath) || IsShellMetacharPresent(isoPath) ||
+        IsFilePathInvalid(sourceDir) || IsShellMetacharPresent(sourceDir)) {
+        LOGE("UdfOperator::ExtractIsoFiles path traversal or shell injection detected");
+        return E_ERR;
+    }
     std::vector<std::string> mergedLines;
     int32_t err = ExecuteIsoInfoList(isoPath, mergedLines);
     if (err != E_OK) {
@@ -427,6 +432,10 @@ int32_t UdfOperator::ExtractIsoFiles(const std::string& isoPath,
     }
     std::string currentPath;
     for (const auto& line : mergedLines) {
+        if (IsFilePathInvalid(line) || IsShellMetacharPresent(line)) {
+            LOGE("UdfOperator::ExtractIsoFiles line contains path traversal or shell metachar, skipped");
+            continue;
+        }
         err = ProcessMergedLine(isoPath, sourceDir, line, currentPath);
         if (err != E_OK) {
             return err;
@@ -465,11 +474,13 @@ int32_t UdfOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     int32_t err = DiskUtils::GenerateChecksums(sourceDir, sourceChecksumPath);
     if (err != E_OK) {
         LOGE("DoVerifyBurnData: generate source checksums failed");
+        Unmount(VERIFY_MOUNT_PATH, "udf", false);
         return err;
     }
     err = DiskUtils::GenerateChecksums(VERIFY_MOUNT_PATH, discChecksumPath);
     if (err != E_OK) {
         LOGE("DoVerifyBurnData: generate disc checksums failed");
+        Unmount(VERIFY_MOUNT_PATH, "udf", false);
         return err;
     }
     err = Unmount(VERIFY_MOUNT_PATH, "udf", false);
@@ -491,11 +502,13 @@ int32_t UdfOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     std::map<std::string, std::string> discMap = DiskUtils::ParseChecksumFile(discChecksumContent, VERIFY_MOUNT_PATH);
     LOGI("LogChecksumMap: sourceMap contents:");
     for (const auto& pair : sourceMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
+             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
     }
     LOGI("LogChecksumMap: discMap contents:");
     for (const auto& pair : discMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]", pair.first.c_str(), pair.second.c_str());
+        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
+             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
     }
     return DiskUtils::CompareChecksums(sourceMap, discMap);
 }
