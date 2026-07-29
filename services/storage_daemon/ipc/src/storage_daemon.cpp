@@ -1796,7 +1796,7 @@ int32_t StorageDaemon::SetDirEncryptionPolicy(uint32_t userId, const std::string
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string extraData = "userId is:" + std::to_string(userId) + ", level is:" + std::to_string(level)
         + ", path is:" + dirPath;
-    if (level < EL1_SYS_KEY || level > EL4_USER_KEY) {
+    if (level < EL1_SYS_KEY || level > EL5_USER_KEY) {
         LOGE("[L1:StorageDaemon] SetDirEncryptionPolicy: <<< EXIT FAILED <<< level is wrong=%{public}u", level);
         StorageRadar::ReportCommonResult("SetDirEncryptionPolicy level is failed", userId, E_PARAMS_INVALID, extraData);
         LOGE("[L1:StorageDaemon] level is wrong, level is %{public}u", level);

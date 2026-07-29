@@ -20,6 +20,9 @@
 #include <cstdio>
 #include <fstream>
 
+#include "storage_service_constant.h"
+#include "storage_service_constants.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 namespace Test {
@@ -196,6 +199,122 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_SaveStringToFileSync_001, TestSize.Lev
     EXPECT_TRUE(SaveStringToFileSync(WRITE_FILE_SYNC_TEST_PATH, content, errMsg));
     EXPECT_EQ(std::remove(WRITE_FILE_SYNC_TEST_PATH.c_str()), 0);
     GTEST_LOG_(INFO) << "StringUtilsTest_SaveStringToFileSync_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckPkgNameRange_001
+ * @tc.desc: Verify CheckPkgNameRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckPkgNameRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckPkgNameRange_001 start";
+    EXPECT_TRUE(CheckPkgNameRange("com.example.app"));
+    EXPECT_TRUE(CheckPkgNameRange("a.b.c"));
+    EXPECT_TRUE(CheckPkgNameRange("A.B.C"));
+
+    EXPECT_FALSE(CheckPkgNameRange(""));
+    std::string longPkgName(129, 'a');
+    EXPECT_FALSE(CheckPkgNameRange(longPkgName));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckPkgNameRange_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckAppIndexRange_001
+ * @tc.desc: Verify CheckAppIndexRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckAppIndexRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckAppIndexRange_001 start";
+    EXPECT_TRUE(CheckPkgNameRange(0));
+    EXPECT_TRUE(CheckPkgNameRange(100));
+
+    EXPECT_FALSE(CheckPkgNameRange(-1));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckAppIndexRange_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckLevelRange_001
+ * @tc.desc: Verify CheckLevelRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckLevelRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckLevelRange_001 start";
+
+    EXPECT_TRUE(CheckLevelRange(StorageService::EL1_SYS_KEY));
+    EXPECT_TRUE(CheckLevelRange(StorageService::EL4_USER_KEY));
+    EXPECT_TRUE(CheckLevelRange((StorageService::EL1_SYS_KEY + StorageService::EL5_USER_KEY) / 2));
+
+    EXPECT_FALSE(CheckLevelRange(StorageService::EL1_SYS_KEY -1));
+    EXPECT_FALSE(CheckLevelRange(StorageService::EL5_USER_KEY + 1));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckLevelRange_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckInputListRange_001
+ * @tc.desc: Verify CheckInputListRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckInputListRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckInputListRange_001 start";
+    std::vector<std::string> validList = {"item1", "item2"};
+    EXPECT_TRUE(CheckInputListRange(validList));
+    EXPECT_TRUE(CheckInputListRange({"singleItem"}));
+
+    std::vector<std::string> emptyList;
+    EXPECT_FALSE(CheckInputListRange(emptyList));
+
+    std::vector<std::string> largeList(50001, "item");
+    EXPECT_FALSE(CheckInputListRange(largeList));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckInputListRange_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckLocalIdListRange_001
+ * @tc.desc: Verify CheckLocalIdListRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckLocalIdListRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckLocalIdListRange_001 start";
+    std::vector<int32_t> validList = {1, 2, 3};
+    EXPECT_TRUE(CheckLocalIdListRange(validList));
+    EXPECT_TRUE(CheckLocalIdListRange({100}));
+
+    std::vector<int32_t> emptyList;
+    EXPECT_FALSE(CheckLocalIdListRange(emptyList));
+
+    std::vector<int32_t> largeList(101, 1);
+    EXPECT_FALSE(CheckLocalIdListRange(largeList));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckLocalIdListRange_001 end";
+}
+
+/**
+ * @tc.name: StringUtilsTest_CheckIdRange_001
+ * @tc.desc: Verify CheckIdRange success and failure branches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StringUtilsTest, StringUtilsTest_CheckIdRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckIdRange_001 start";
+    EXPECT_TRUE(CheckIdRange("abc123"));
+    EXPECT_TRUE(CheckIdRange("ABC123"));
+    EXPECT_TRUE(CheckIdRange("123456"));
+    EXPECT_TRUE(CheckIdRange("a1b2c3d4e5f6g7h8i9j0"));
+    EXPECT_TRUE(CheckIdRange("A1B2C3D4E5F6G7H8I9J0"));
+    EXPECT_TRUE(CheckIdRange("aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456"));
+
+    EXPECT_FALSE(CheckIdRange(""));
+    EXPECT_FALSE(CheckIdRange("abc@123"));
+    EXPECT_FALSE(CheckIdRange("abc 123"));
+    EXPECT_FALSE(CheckIdRange("abc123!"));
+    
+    std::string longId(66, 'a');
+    EXPECT_FALSE(CheckIdRange(longId));
+    GTEST_LOG_(INFO) << "StringUtilsTest_CheckIdRange_001 end";
 }
 } // Test
 } // STORAGE_DAEMON

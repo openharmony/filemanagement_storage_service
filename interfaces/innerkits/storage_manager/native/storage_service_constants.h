@@ -24,6 +24,7 @@ enum EncryptionLevel {
     EL2_USER_KEY = 2,
     EL3_USER_KEY = 3,
     EL4_USER_KEY = 4,
+    EL5_USER_KEY = 5,
 };
 
 enum UserChangedEventType {
