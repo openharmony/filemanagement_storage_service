@@ -1058,7 +1058,7 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
     if (hksOut.dataLen > CRYPTO_KEY_SHIELD_MAX_SIZE) {
         LOGE("[L8:HuksMaster] UpgradeKey: dataLen %{public}u exceeds buffer capacity", hksOut.dataLen);
         StorageRadar::ReportUserKeyResult("UpgradeKey", 0, HKS_ERROR_INVALID_ARGUMENT, "",
-            "dataLen exceeds," + std::string(hksOut.dataLen));
+            "dataLen exceeds," + std::to_string(hksOut.dataLen));
         return false;
     }
     LOGI("[L8:HuksMaster] UpgradeKey: Shield upgraded successfully");

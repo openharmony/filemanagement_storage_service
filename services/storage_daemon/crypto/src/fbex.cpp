@@ -323,7 +323,8 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         int tmpErrno = errno;
-        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel::open", 0, -tmpErrno, "", "FBEX_UECE_PATH open failed");
+        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel::open", 0, -tmpErrno, "",
+            "FBEX_UECE_PATH open failed");
         LOGE("[L7:FBEX] InstallDoubleDeKeyToKernel: <<< EXIT FAILED <<< open fbex_cmd failed, errno: %{public}d",
             tmpErrno);
         return -tmpErrno;
@@ -790,7 +791,8 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     int tmpErrno = errno;
     if (ret != 0) {
-        LOGE("[L7:FBEX] WriteESecretToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, tmpErrno);
+        LOGE("[L7:FBEX] WriteESecretToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d",
+             ret, tmpErrno);
         std::string extraData = "ioctl cmd=FBEX_WRITE_CLASS_E, userIdSingle=" + std::to_string(ops.userIdSingle)
             + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(tmpErrno);
         StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
