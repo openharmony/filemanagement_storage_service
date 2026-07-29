@@ -716,6 +716,12 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     HiAudit::GetInstance().WriteStart("UnlockUserScreen", message);
     LOGD("[L1:StorageDaemonProvider] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
+    if (userId > StorageService::TOP_USER_ID) {
+        LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("LockUserScreen", userId, E_PARAMS_INVALID,
+                                                        "userId out of range");
+        return E_PARAMS_INVALID;
+    }
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::unique_lock<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
@@ -852,6 +858,10 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("[L1:StorageDaemonProvider] SetRecoverKey: >>> ENTER <<< keySize=%{public}zu", key.size());
+    if (key.empty()) {
+        LOGE("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT FAILED <<< key is empty");
+        return E_PARAMS_INVALID;
+    }
     int32_t ret = StorageDaemon::GetInstance().SetRecoverKey(key);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT SUCCESS <<<");

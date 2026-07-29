@@ -178,6 +178,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 
     auto ret = globalEl1Key_->RestoreKey(NULL_KEY_AUTH);
     if (ret != E_OK) {
+        globalEl1Key_->ClearKeyInfo();
         globalEl1Key_ = nullptr;
         LOGE("[L3:KeyManager] RestoreDeviceKey: <<< EXIT FAILED <<< [global security key restore failed]");
         std::string extraData = "RestoreKey ret = " + std::to_string(ret);
@@ -186,6 +187,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
     }
     ret = globalEl1Key_->ActiveKey({}, RETRIEVE_KEY);
     if (ret != E_OK) {
+        globalEl1Key_->ClearKeyInfo();
         globalEl1Key_ = nullptr;
         LOGE("[L3:KeyManager] RestoreDeviceKey: <<< EXIT FAILED <<< [global security key activation failed]");
         std::string extraData = "ActiveKey ret = " + std::to_string(ret);
@@ -223,7 +225,7 @@ int KeyManager::InitGlobalDeviceKey(void)
         return ret;
     }
     std::error_code errCode;
-    if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR)) {
+    if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR, errCode)) {
         UpgradeKeys({{0, DEVICE_EL1_DIR}});
         return RestoreDeviceKey(DEVICE_EL1_DIR);
     }
@@ -305,7 +307,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     saveESecretStatus[userId] = true;
     auto ret = elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY);
     if (ret != E_OK) {
-        if (elKey->ClearKey() != E_OK) {
+        if (!elKey->ClearKey()) {
             LOGW("[L3:KeyManager] GenerateAndInstallEl5Key: <<< EXIT FAILED <<< user %{public}u"
                 "ClearKey failed after AddClassE error", userId);
         }
@@ -954,7 +956,7 @@ int KeyManager::DeleteGlobalDeviceKey(const std::string &dir)
     LOGI("[L3:KeyManager] DeleteGlobalDeviceKey: >>> ENTER <<<");
     globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ != nullptr) {
-        if (globalEl1Key_->ClearKey() != E_OK) {
+        if (!globalEl1Key_->ClearKey()) {
             LOGW("[L3:KeyManager] DeleteGlobalDeviceKey:ClearKey failed in DeleteGlobalDeviceKey");
         }
         globalEl1Key_ = nullptr;
@@ -964,12 +966,12 @@ int KeyManager::DeleteGlobalDeviceKey(const std::string &dir)
     std::string backupDir = dir + BACKUP_NAME;
     globalEl1Key_ = GetBaseKey(backupDir);
     if (globalEl1Key_ != nullptr) {
-        if (globalEl1Key_->ClearKey() != E_OK) {
+        if (!globalEl1Key_->ClearKey()) {
             LOGW("[L3:KeyManager] DeleteGlobalDeviceKey:ClearKey failed for backup key in DeleteGlobalDeviceKey");
         }
         globalEl1Key_ = nullptr;
         hasGlobalDeviceKey_ = false;
-        LOGE("[L3:KeyManager] DeleteGlobalDeviceKey: global security backup key cleared");
+        LOGI("[L3:KeyManager] DeleteGlobalDeviceKey: global security backup key cleared");
     }
     LOGI("[L3:KeyManager] DeleteGlobalDeviceKey: <<< EXIT SUCCESS <<<");
     return E_OK;
@@ -1310,7 +1312,7 @@ int KeyManager::CheckNeedRestoreVersion(unsigned int user, KeyType type)
         restore_version == DEFAULT_NEED_RESTORE_UPDATE_VERSION && !IsAppCloneUser(user)) {
         LOGI("[L3:KeyManager] NEED_RESTORE path exist: %{public}s, errcode: %{public}d",
             need_restore_path.c_str(), errCode.value());
-        return type == EL5_KEY ? -ENONET : -EFAULT;
+        return type == EL5_KEY ? -ENOENT : -EFAULT;
     }
     return E_OK;
 }
@@ -1917,8 +1919,7 @@ int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
     }
     if (el5Key->DeleteAppkey(keyId) != E_OK) {
         LOGE("[L3:KeyManager] DeleteAppkey: <<< EXIT FAILED <<< [failed to delete app key]");
-        StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, E_EL5_DELETE_APP_KEY_ERR,
-            "DeleteAppkey failed, userId=" + std::to_string(user) + ", keyId=" + keyId);
+        StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, E_EL5_DELETE_APP_KEY_ERR, "DeleteAppkey failed");
         return E_EL5_DELETE_APP_KEY_ERR;
     }
     LOGD("[L3:KeyManager] DeleteAppkey: <<< EXIT SUCCESS <<< [retval=0]");
@@ -1978,7 +1979,6 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
 int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("[L3:KeyManager] SetRecoverKey: >>> ENTER <<< [key_len=%{public}zu]", key.size());
-    std::vector<KeyBlob> originIvs;
     if (RecoveryManager::GetInstance().SetRecoverKey(key) != E_OK) {
         LOGE("[L3:KeyManager] SetRecoverKey: <<< EXIT FAILED <<< [failed to set recovery key]");
         return E_SET_RECOVERY_KEY_ERR;
@@ -2107,8 +2107,8 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
 
         elxKey->SetOriginKey(originIvs[i]);
         i++;
-        auto ret = elxKey->StoreKey(NULL_KEY_AUTH);
-        if (ret != E_OK) {
+        auto storeRet = elxKey->StoreKey(NULL_KEY_AUTH);
+        if (storeRet != E_OK) {
             LOGE("[L3:KeyManager] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< [failed to store key]");
             return E_ELX_KEY_STORE_ERROR;
         }
@@ -2367,7 +2367,12 @@ int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxK
         return -ENOENT;
     }
     if (type >= EL1_KEY && type <= EL4_KEY) {
-        elxKeyPath = userElKeys_[user][type]->GetDir();
+        auto elKey = userElKeys_[user][type];
+        if (elKey == nullptr) {
+            LOGE("[L3:KeyManager] getElxKeyPath: elKey is nullptr, user=%{public}u, type=%{public}u", user, type);
+            return -ENOENT;
+        }
+        elxKeyPath = elKey->GetDir();
     }
     return E_OK;
 }
@@ -2535,12 +2540,13 @@ int KeyManager::IsUeceSupportWithErrno()
 {
     int fd = open(UECE_PATH, O_RDWR);
     if (fd < 0) {
-        if (errno == ENOENT) {
+        int32_t tmpErrno = errno;
+        if (tmpErrno == ENOENT) {
             LOGE("[L3:KeyManager] IsUeceSupportWithErrno: UECE not supported");
             return ENOENT;
         }
-        LOGE("[L3:KeyManager] IsUeceSupportWithErrno: failed to open UECE, errno=%{public}d", errno);
-        return errno;
+        LOGE("[L3:KeyManager] IsUeceSupportWithErrno: failed to open UECE, errno=%{public}d", tmpErrno);
+        return tmpErrno;
     }
     close(fd);
     LOGI("[L3:KeyManager] IsUeceSupportWithErrno: <<< EXIT SUCCESS <<< [retval=0, uece supported=true]");
@@ -2651,8 +2657,13 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
 
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
-        IamClient::GetInstance().GetSecureUid(userId, secureUid);
-        LOGE("[L3:KeyManager] TryToFixUserCeEceSeceKey: pin code exists, secure uid obtained");
+        if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
+            LOGE("[L3:KeyManager] TryToFixUserCeEceSeceKey: <<< EXIT FAILED <<< GetSecureUid failed");
+            StorageRadar::ReportUpdateUserAuth("TryToFixUserCeEceSeceKey::GetSecureUid",
+                userId, E_TRY_TO_FIX_USER_KEY_ERR, std::to_string(keyType), "get secure uid failed");
+            return E_TRY_TO_FIX_USER_KEY_ERR;
+        }
+        LOGI("[L3:KeyManager] TryToFixUserCeEceSeceKey: pin code exists, secure uid obtained");
     }
     UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
@@ -2692,8 +2703,13 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
 
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
-        IamClient::GetInstance().GetSecureUid(userId, secureUid);
-        LOGE("Pin code is exist, get secure uid.");
+        if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
+            LOGE("[L3:KeyManager] TryToFixUeceKey: <<< EXIT FAILED <<< GetSecureUid failed");
+            StorageRadar::ReportUpdateUserAuth("TryToFixUeceKey::GetSecureUid", userId,
+                E_TRY_TO_FIX_USER_KEY_ERR, "EL5", "get secure uid failed");
+            return E_TRY_TO_FIX_USER_KEY_ERR;
+        }
+        LOGI("[L3:KeyManager] TryToFixUeceKey: pin code exists, secure uid obtained");
     }
     UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
     UserTokenSecret tokenSecret = { .token = token, .oldSecret = { }, .newSecret = secret, .secureUid = secureUid};
@@ -2705,8 +2721,9 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
     }
     ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
     if (ret != E_OK) {
-        LOGE("try to fix elx key context failed !");
-        StorageRadar::ReportUpdateUserAuth("TryToFixUeceKey::UpdateCeEceSeceKeyContext", userId, ret, "EL5", "");
+        LOGE("try to fix elx key context failed, ret=%{public}d", ret);
+        std::string extraData = "try to fix elx key context failed";
+        StorageRadar::ReportUpdateUserAuth("TryToFixUeceKey::UpdateCeEceSeceKeyContext", userId, ret, "EL5", extraData);
         return ret;
     }
     return E_OK;

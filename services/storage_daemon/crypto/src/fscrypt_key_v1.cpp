@@ -357,27 +357,64 @@ int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool 
     if (ret != E_OK) {
         LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< DecryptKeyBlob failed");
         eSecretFBE.Clear();
-        std::string extraData =
-            "cmd=DoDecryptClassE,ret=" + std::to_string(ret);
+        std::string extraData = "cmd=DoDecryptClassE,ret=" + std::to_string(ret);
         StorageRadar::ReportKeyRingResult("DecryptClassE::DoDecryptClassE", ret, extraData);
         return ret;
     }
-    keyInfo_.key.Alloc(eSecretFBE.size);
-    auto err = memcpy_s(keyInfo_.key.data.get(), keyInfo_.key.size, eSecretFBE.data.get(), eSecretFBE.size);
-    if (err != 0) {
-        LOGE("[L5:FscryptKeyV1] DecryptClassE: memcpy_s failed ret: %{public}d", err);
-    }
-    eSecretFBE.Clear();
-    LOGD("[L5:FscryptKeyV1] DecryptClassE: Decrypt end");
-    ret = fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size);
+    ret = SaveClassEKey(eSecretFBE);
     if (ret != E_OK) {
-        LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< WriteClassE failed");
+        LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< SaveClassEKey failed");
         return ret;
     }
-    GenerateKeyDesc();
+    LOGD("[L5:FscryptKeyV1] DecryptClassE: Decrypt end");
+    ret = WriteClassEAndGenDesc(decryptedKey);
+    if (ret != E_OK) {
+        LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< WriteClassEAndGenDesc failed");
+        return ret;
+    }
     keyInfo_.key.Clear();
     decryptedKey.Clear();
     LOGD("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT SUCCESS <<< userId=%{public}u", user);
+    return E_OK;
+}
+
+int32_t FscryptKeyV1::SaveClassEKey(KeyBlob &eSecretFBE)
+{
+    keyInfo_.key.Alloc(eSecretFBE.size);
+    auto err = memcpy_s(keyInfo_.key.data.get(), keyInfo_.key.size, eSecretFBE.data.get(), eSecretFBE.size);
+    eSecretFBE.Clear();
+    if (err != 0) {
+        LOGE("[L5:FscryptKeyV1] SaveClassEKey: <<< EXIT FAILED <<< memcpy_s failed, err=%{public}d", err);
+        std::string extraData = "memcpy failed,ret=" + std::to_string(err);
+        StorageRadar::ReportKeyRingResult("DecryptClassE::memcpy_s", E_MEMORY_OPERATION_ERR, extraData);
+        return E_MEMORY_OPERATION_ERR;
+    }
+    if (keyInfo_.key.IsEmpty()) {
+        LOGE("[L5:FscryptKeyV1] SaveClassEKey: <<< EXIT FAILED <<< key is empty after copy");
+        std::string extraData = "key empty after copy";
+        StorageRadar::ReportKeyRingResult("DecryptClassE::KeyEmpty", E_KEY_EMPTY_ERROR, extraData);
+        return E_KEY_EMPTY_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t FscryptKeyV1::WriteClassEAndGenDesc(KeyBlob &decryptedKey)
+{
+    auto ret = fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size);
+    if (ret != E_OK) {
+        LOGE("[L5:FscryptKeyV1] WriteClassEAndGenDesc: <<< EXIT FAILED <<< WriteClassE failed");
+        return ret;
+    }
+    ret = GenerateKeyDesc();
+    if (ret != E_OK) {
+        keyInfo_.key.Clear();
+        decryptedKey.Clear();
+        LOGE("[L5:FscryptKeyV1] WriteClassEAndGenDesc: <<< EXIT FAILED <<< GenerateKeyDesc failed,"
+             "ret=%{public}d", ret);
+        std::string extraData = "GenerateKeyDesc failed,ret=" + std::to_string(ret);
+        StorageRadar::ReportKeyRingResult("DecryptClassE::GenerateKeyDesc", E_MEMORY_OPERATION_ERR, extraData);
+        return ret;
+    }
     return E_OK;
 }
 
