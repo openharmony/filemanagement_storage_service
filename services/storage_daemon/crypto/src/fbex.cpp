@@ -556,7 +556,8 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
     auto fbeRet = ioctl(fd, FBEX_ADD_APPKEY2, &ops);
     int tmpErrno = errno;
     if (fbeRet != 0) {
-        LOGE("[L7:FBEX] GenerateAppkey: ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, tmpErrno);
+        LOGE("[L7:FBEX] GenerateAppkey: ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d",
+             fbeRet, tmpErrno);
         close(fd);
         LOGI("[L7:FBEX] GenerateAppkey: <<< EXIT FAILED <<<");
         return -tmpErrno;
@@ -637,7 +638,8 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     int tmpErrno = errno;
     if (ret != 0) {
-        LOGE("[L7:FBEX] UnlockScreenToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, tmpErrno);
+        LOGE("[L7:FBEX] UnlockScreenToKernel: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d",
+             ret, tmpErrno);
         std::string extraData = "ioctl cmd=FBEX_IOC_UNLOCK_SCREEN, errno=" + std::to_string(tmpErrno);
         StorageRadar::ReportFbexResult("UnlockScreenToKernel", userId, ret, std::to_string(type), extraData);
         close(fd);
