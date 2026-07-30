@@ -58,6 +58,36 @@ void SysparamStaticTest::TearDown(void)
 
 /**
  * @tc.name: SysParam_SysParamTest_001
+ * @tc.desc: Verify the GetFscryptParameter.
+ * @tc.type: FUNC
+ * @tc.require: IAUK5E
+ */
+HWTEST_F(SysparamStaticTest, SysParam_SysParamTest_GetFscryptParameter_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "SysParam_SysParamTest_GetFscryptParameter_001 start";
+    char value[MAX_LEN];
+    unsigned int len = MAX_LEN - 1;
+    std::string FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
+    // Test key is null
+    EXPECT_EQ(GetFscryptParameter(NULL, "default", value, &len), -EINVAL);
+    // Test key&value is null
+    EXPECT_EQ(GetFscryptParameter(NULL, "default", NULL, &len), -EINVAL);
+    // Test key&len is null
+    EXPECT_EQ(GetFscryptParameter(NULL, "default", value, NULL), -EINVAL);
+    // Test key&valuve&len is null
+    EXPECT_EQ(GetFscryptParameter(NULL, "default", NULL, NULL), -EINVAL);
+    // Test value&len is null
+    EXPECT_EQ(GetFscryptParameter(FSCRYPT_POLICY_KEY.c_str(), "default", NULL, NULL), -EINVAL);
+    // Test value is null
+    EXPECT_EQ(GetFscryptParameter(FSCRYPT_POLICY_KEY.c_str(), "default", NULL, &len), -EINVAL);
+    // Test len is null
+    EXPECT_EQ(GetFscryptParameter(FSCRYPT_POLICY_KEY.c_str(), "default", value, NULL), -EINVAL);
+
+    GTEST_LOG_(INFO) << "SysParam_SysParamTest_GetFscryptParameter_001 end";
+}
+
+/**
+ * @tc.name: SysParam_SysParamTest_001
  * @tc.desc: Verify the SetFscryptParameter.
  * @tc.type: FUNC
  * @tc.require: IAUK5E
