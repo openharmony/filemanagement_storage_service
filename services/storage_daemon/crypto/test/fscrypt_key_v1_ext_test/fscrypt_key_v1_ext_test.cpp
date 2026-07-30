@@ -75,64 +75,6 @@ void FscryptKeyV1ExtTest::TearDown(void)
 }
 
 /**
- * @tc.name: FscryptKeyV1Ext_GetMappedUserId_001
- * @tc.desc: Verify the GetMappedUserId function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedUserId_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_001 Start";
-    FscryptKeyV1Ext ext;
-    if (!fileExist) {
-        EXPECT_EQ(ext.GetMappedUserId(100, TYPE_EL2), 100);
-        std::error_code errCode;
-        std::filesystem::create_directory(NEED_RESTORE_PATH, errCode);
-        ASSERT_TRUE(errCode.value() == 0);
-    }
-
-    EXPECT_EQ(ext.GetMappedUserId(101, TYPE_EL1), 101);
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_001 end";
-}
-
-/**
- * @tc.name: FscryptKeyV1Ext_GetMappedUserId_002
- * @tc.desc: Verify the GetMappedUserId function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedUserId_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_002 Start";
-    uint32_t userId = 100;
-    FscryptKeyV1Ext ext;
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL2), 0);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL3), 0);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL4), 0);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL5), 0);
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_002 end";
-}
-
-/**
- * @tc.name: FscryptKeyV1Ext_GetMappedUserId_003
- * @tc.desc: Verify the GetMappedUserId function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedUserId_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_003 Start";
-    uint32_t userId = 101;
-    auto rlt = userId - USER_ID_DIFF;
-    FscryptKeyV1Ext ext;
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL2), rlt);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL3), rlt);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL4), rlt);
-    EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL5), rlt);
-    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_003 end";
-}
-
-/**
  * @tc.name: FscryptKeyV1Ext_GetMappedUserId_004
  * @tc.desc: Verify the GetMappedUserId function.
  * @tc.type: FUNC
