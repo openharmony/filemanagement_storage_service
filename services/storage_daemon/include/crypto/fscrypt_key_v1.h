@@ -59,8 +59,6 @@ private:
     int32_t GenerateAppKeyDesc(KeyBlob appKey);
     int32_t DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
                          bool needSyncCandidate = true);
-    int32_t SaveClassEKey(KeyBlob &eSecretFBE);
-    int32_t WriteClassEAndGenDesc(KeyBlob &decryptedKey);
     FscryptKeyV1Ext fscryptV1Ext;
 };
 } // namespace StorageDaemon

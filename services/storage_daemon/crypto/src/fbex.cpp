@@ -300,6 +300,8 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
     auto errops = memcpy_s(iv.data.get(), iv.size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
         LOGE("[L7:FBEX] InstallKeyToKernel: memcpy failed %{public}d", errops);
+        (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
+        return errops;
     }
     (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
     delay = StorageService::StorageRadar::ReportDuration("FBEX: INSTALL KEY TO KERNEL",
@@ -559,7 +561,6 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         LOGE("[L7:FBEX] GenerateAppkey: ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d",
              fbeRet, tmpErrno);
         close(fd);
-        LOGI("[L7:FBEX] GenerateAppkey: <<< EXIT FAILED <<<");
         return -tmpErrno;
     }
 
@@ -568,7 +569,6 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         LOGE("[L7:FBEX] GenerateAppkey: memcpy failed %{public}d", err);
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
-        LOGI("[L7:FBEX] GenerateAppkey: <<< EXIT FAILED <<<");
         return err;
     }
     close(fd);
@@ -644,7 +644,6 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
         StorageRadar::ReportFbexResult("UnlockScreenToKernel", userId, ret, std::to_string(type), extraData);
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
-        LOGI("[L7:FBEX] UnlockScreenToKernel: <<< EXIT FAILED <<<");
         return ret;
     }
     close(fd);
@@ -652,6 +651,8 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
         LOGE("[L7:FBEX] UnlockScreenToKernel: memcpy failed %{public}d", errops);
+        (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
+        return errops;
     }
     (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
     LOGD("[L7:FBEX] UnlockScreenToKernel: <<< EXIT SUCCESS <<<");

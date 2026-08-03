@@ -73,9 +73,7 @@ int32_t KeyCryptoUtils::CheckAccountExists(unsigned int userId, bool &isOsAccoun
     LOGI("[L8:KeyCryptoUtils] CheckAccountExists: <<< EXIT SUCCESS <<< userId=%{public}u, isExists=%{public}d",
         userId, isOsAccountExists);
 #else
-    isOsAccountExists = true;
-    LOGI("[L8:KeyCryptoUtils] CheckAccountExists: <<< EXIT SUCCESS <<< SCREENLOCK_MANAGER not enabled, "
-         "treat as not exists");
+    LOGI("[L8:KeyCryptoUtils] CheckAccountExists: <<< EXIT SUCCESS <<< SCREENLOCK_MANAGER not enabled");
 #endif
     return 0;
 }

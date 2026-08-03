@@ -194,6 +194,12 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_001, TestSize.Level1)
     EXPECT_FALSE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
 
     keyPath = "/data/test";
+    keyCtx.nonce.Alloc(nonceVct.size());
+    std::copy(nonceVct.begin(), nonceVct.end(), keyCtx.nonce.data.get());
+    keyCtx.rndEnc.Alloc(rndEncVct.size());
+    std::copy(rndEncVct.begin(), rndEncVct.end(), keyCtx.rndEnc.data.get());
+    keyCtx.aad.Alloc(aadVct.size());
+    std::copy(aadVct.begin(), aadVct.end(), keyCtx.aad.data.get());
     EXPECT_TRUE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
     EXPECT_TRUE(keyCtx.nonce.IsEmpty());
     EXPECT_TRUE(keyCtx.rndEnc.IsEmpty());
@@ -459,7 +465,7 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     std::string path = "/data/test/test1";
     EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
 
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_SHIELD_OPERATION_ERROR);
 
@@ -509,7 +515,7 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_001, TestSize.Level1)
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
     ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
@@ -519,7 +525,7 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_001, TestSize.Level1)
     EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_ERR);
 
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
@@ -712,8 +718,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DoStoreKey_001, TestSize.Level1)
 
     elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
     EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
-    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(true));
-    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_VERSION_ERROR);
+    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_MKDIR_ERROR);
 
     EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(true));
@@ -721,14 +726,14 @@ HWTEST_F(BaseKeyTest, BaseKey_DoStoreKey_001, TestSize.Level1)
 
     elKey->dir_ = "";
     elKey->keyInfo_.version = FSCRYPT_INVALID;
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
     EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
     EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_PARAMS_INVALID);
 
     elKey->dir_ = "el1/100";
-    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
     EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));

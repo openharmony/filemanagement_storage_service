@@ -2721,8 +2721,9 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
     }
     ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
     if (ret != E_OK) {
-        LOGE("try to fix elx key context failed, ret=%{public}d", ret);
-        std::string extraData = "try to fix elx key context failed";
+        LOGE("[L3:KeyManager] TryToFixUeceKey: <<< EXIT FAILED <<< UpdateCeEceSeceKeyContext failed,"
+             "ret=%{public}d", ret);
+        std::string extraData = "UpdateCeEceSeceKeyContext failed";
         StorageRadar::ReportUpdateUserAuth("TryToFixUeceKey::UpdateCeEceSeceKeyContext", userId, ret, "EL5", extraData);
         return ret;
     }
