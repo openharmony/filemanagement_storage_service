@@ -2661,9 +2661,9 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
             LOGE("[L3:KeyManager] TryToFixUserCeEceSeceKey: <<< EXIT FAILED <<< GetSecureUid failed");
             StorageRadar::ReportUpdateUserAuth("TryToFixUserCeEceSeceKey::GetSecureUid",
                 userId, E_TRY_TO_FIX_USER_KEY_ERR, std::to_string(keyType), "get secure uid failed");
-            return E_TRY_TO_FIX_USER_KEY_ERR;
+        } else {
+            LOGI("[L3:KeyManager] TryToFixUserCeEceSeceKey: pin code exists, secure uid obtained");
         }
-        LOGI("[L3:KeyManager] TryToFixUserCeEceSeceKey: pin code exists, secure uid obtained");
     }
     UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
@@ -2707,9 +2707,9 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
             LOGE("[L3:KeyManager] TryToFixUeceKey: <<< EXIT FAILED <<< GetSecureUid failed");
             StorageRadar::ReportUpdateUserAuth("TryToFixUeceKey::GetSecureUid", userId,
                 E_TRY_TO_FIX_USER_KEY_ERR, "EL5", "get secure uid failed");
-            return E_TRY_TO_FIX_USER_KEY_ERR;
+        } else {
+            LOGI("[L3:KeyManager] TryToFixUeceKey: pin code exists, secure uid obtained");
         }
-        LOGI("[L3:KeyManager] TryToFixUeceKey: pin code exists, secure uid obtained");
     }
     UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
     UserTokenSecret tokenSecret = { .token = token, .oldSecret = { }, .newSecret = secret, .secureUid = secureUid};
