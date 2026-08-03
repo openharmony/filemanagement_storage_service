@@ -541,9 +541,9 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
     if (fd < 0) {
         int tmpErrno = errno;
         if (tmpErrno == ENOENT) {
-            LOGE("[L7:FBEX] GenerateAppkey: fbex_uece does not exist, fbe not support this command!");
+            LOGE("[L7:FBEX] GenerateAppkey: <<< EXIT SUCCESS <<< fbex_uece does not exist,"
+                 "fbe not support this command!");
             appKey.reset(nullptr);
-            LOGI("[L7:FBEX] GenerateAppkey: <<< EXIT SUCCESS <<<");
             return 0;
         }
         std::string extraData = "userIdDouble=" + std::to_string(userIdToFbe.userIds[DOUBLE_ID_INDEX]);
