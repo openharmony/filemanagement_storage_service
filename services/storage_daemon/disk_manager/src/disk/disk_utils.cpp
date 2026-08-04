@@ -737,7 +737,6 @@ int IsCDBlank(const std::string &diskPath, bool &isCDBlank)
         std::string fsType = GetBlkidData(diskPath, "TYPE");
         isCDBlank = fsType.empty();
         LOGI("IsCDBlank: %{public}s has filesystem=%{public}s", diskType.c_str(), fsType.c_str());
-        
         return E_OK;
     }
 
