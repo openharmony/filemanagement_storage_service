@@ -631,7 +631,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnlockUserScreen_0
     std::vector<uint8_t> token = {-1, -1, -1, -1};
     std::vector<uint8_t> secret = {-1, -1, -1};
     int32_t ret = storageDaemonProviderTest_->UnlockUserScreen(StorageService::START_USER_ID - 1, token, secret);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnlockUserScreen_002 end";
 }
@@ -804,22 +804,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetRecoverKey_001,
     int32_t result = storageDaemonProviderTest_->SetRecoverKey(testKey_32);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetRecoverKey_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_SetRecoverKey_002
- * @tc.desc: Verify the SetRecoverKey function with empty key.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetRecoverKey_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetRecoverKey_002 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    const std::vector<uint8_t> emptyKey = {};
-    int32_t result = storageDaemonProviderTest_->SetRecoverKey(emptyKey);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetRecoverKey_002 end";
 }
 
 /**

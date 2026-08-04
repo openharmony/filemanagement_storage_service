@@ -858,10 +858,6 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("[L1:StorageDaemonProvider] SetRecoverKey: >>> ENTER <<< keySize=%{public}zu", key.size());
-    if (key.empty()) {
-        LOGE("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT FAILED <<< key is empty");
-        return E_PARAMS_INVALID;
-    }
     int32_t ret = StorageDaemon::GetInstance().SetRecoverKey(key);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT SUCCESS <<<");

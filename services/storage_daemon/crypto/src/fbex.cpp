@@ -542,7 +542,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         int tmpErrno = errno;
         if (tmpErrno == ENOENT) {
             LOGE("[L7:FBEX] GenerateAppkey: <<< EXIT SUCCESS <<< fbex_uece does not exist,"
-                 "fbe not support this command!");
+                "fbe not support this command!");
             appKey.reset(nullptr);
             return 0;
         }
