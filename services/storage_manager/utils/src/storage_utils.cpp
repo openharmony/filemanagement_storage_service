@@ -115,5 +115,66 @@ bool IsPathStartWithDlp(const std::string &dstPath)
     }
     return true;
 }
+
+bool CheckPkgNameRange(const std::string &pkgName)
+{
+    if (pkgName.empty()) {
+        LOGE("CheckPkgNameRange pkgName is empty");
+        return false;
+    }
+    constexpr size_t PKG_NAME_LEN = 128;
+    if (pkgName.length() > PKG_NAME_LEN) {
+        LOGE("CheckPkgNameRange pkgName is invalid");
+        return false;
+    }
+    return true;
+}
+
+bool CheckAppIndexRange(int32_t appIndex)
+{
+    if (appIndex < 0) {
+        LOGE("CheckAppIndexRange appIndex is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckLevelRange(uint32_t level)
+{
+    if ((level < StorageService::EL1_SYS_KEY) || (level > StorageService::EL5_USER_KEY)) {
+        LOGE("CheckLevelRange level is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckInputListRange(const std::vector<std::string> &inputList)
+{
+    if (inputList.empty()) {
+        LOGE("CheckInputListRange inputList is empty");
+        return false;
+    }
+    constexpr size_t INPUT_LIST_LEN = 50000;
+    if (inputList.size() > INPUT_LIST_LEN) {
+        LOGE("CheckInputListRange inputList is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckIdRange(const std::string &id)
+{
+    if (id.empty()) {
+        LOGE("CheckIdRange id is empty");
+        return false;
+    }
+    std::string idPattern = R"([0-9a-zA-Z]{1,65})";
+    std::regex idRegex(idPattern);
+    if (!std::regex_match(id, idRegex)) {
+        LOGE("CheckIdRange id is invalid");
+        return false;
+    }
+    return true;
+}
 } // namespace STORAGE_Manager
 } // namespace OHOS
