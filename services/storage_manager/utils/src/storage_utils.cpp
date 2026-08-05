@@ -15,10 +15,14 @@
 
 #include "utils/storage_utils.h"
 
-#include "ipc_skeleton.h"
-#include "storage_service_log.h"
 #include <climits>
 #include <cstdlib>
+#include <regex>
+
+#include "ipc_skeleton.h"
+#include "storage_service_log.h"
+#include "storage_service_constant.h"
+#include "storage_service_constants.h"
 
 namespace OHOS {
 namespace StorageManager {

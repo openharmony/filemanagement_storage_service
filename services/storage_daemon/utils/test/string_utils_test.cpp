@@ -202,39 +202,6 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_SaveStringToFileSync_001, TestSize.Lev
 }
 
 /**
- * @tc.name: StringUtilsTest_CheckPkgNameRange_001
- * @tc.desc: Verify CheckPkgNameRange success and failure branches.
- * @tc.type: FUNC
- */
-HWTEST_F(StringUtilsTest, StringUtilsTest_CheckPkgNameRange_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StringUtilsTest_CheckPkgNameRange_001 start";
-    EXPECT_TRUE(CheckPkgNameRange("com.example.app"));
-    EXPECT_TRUE(CheckPkgNameRange("a.b.c"));
-    EXPECT_TRUE(CheckPkgNameRange("A.B.C"));
-
-    EXPECT_FALSE(CheckPkgNameRange(""));
-    std::string longPkgName(129, 'a');
-    EXPECT_FALSE(CheckPkgNameRange(longPkgName));
-    GTEST_LOG_(INFO) << "StringUtilsTest_CheckPkgNameRange_001 end";
-}
-
-/**
- * @tc.name: StringUtilsTest_CheckAppIndexRange_001
- * @tc.desc: Verify CheckAppIndexRange success and failure branches.
- * @tc.type: FUNC
- */
-HWTEST_F(StringUtilsTest, StringUtilsTest_CheckAppIndexRange_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StringUtilsTest_CheckAppIndexRange_001 start";
-    EXPECT_TRUE(CheckPkgNameRange(0));
-    EXPECT_TRUE(CheckPkgNameRange(100));
-
-    EXPECT_FALSE(CheckPkgNameRange(-1));
-    GTEST_LOG_(INFO) << "StringUtilsTest_CheckAppIndexRange_001 end";
-}
-
-/**
  * @tc.name: StringUtilsTest_CheckLevelRange_001
  * @tc.desc: Verify CheckLevelRange success and failure branches.
  * @tc.type: FUNC

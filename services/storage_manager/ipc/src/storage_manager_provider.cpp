@@ -365,7 +365,6 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
     if (!CheckAppIndexRange(appIndex)) {
         LOGE("StorageManagerProvider::GetBundleStats appIndex is out of range");
         return E_PARAMS_INVALID;
-
     }
     int32_t err = StorageStatusManager::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);

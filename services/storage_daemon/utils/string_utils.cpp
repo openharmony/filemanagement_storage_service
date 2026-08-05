@@ -408,29 +408,6 @@ bool IsDlpPathValid(const std::string &dstPath)
     return true;
 }
 
-bool CheckPkgNameRange(const std::string &pkgName)
-{
-    if (pkgName.empty()) {
-        LOGE("CheckPkgNameRange pkgName is empty");
-        return false;
-    }
-    constexpr size_t PKG_NAME_LEN = 128;
-    if (pkgName.length() > PKG_NAME_LEN) {
-        LOGE("CheckPkgNameRange pkgName is invalid");
-        return false;
-    }
-    return true;
-}
-
-bool CheckAppIndexRange(int32_t appIndex)
-{
-    if (appIndex < 0) {
-        LOGE("CheckAppIndexRange appIndex is out of range");
-        return false;
-    }
-    return true;
-}
-
 bool CheckLevelRange(uint32_t level)
 {
     if ((level < StorageService::EL1_SYS_KEY) || (level > StorageService::EL5_USER_KEY)) {
