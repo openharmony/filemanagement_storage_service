@@ -432,7 +432,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EraseAllUserEncryp
     EXPECT_TRUE(ret == E_PARAMS_INVALID);
     std::vector<int32_t> validList = {100};
     ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys(validList);
-    EXPECT_TRUE(ret != E_OK);
+    EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(*keyManagerMock_, EraseAllUserEncryptedKeys(_)).WillOnce(Return(-1));
     ret = storageDaemonProviderTest_->EraseAllUserEncryptedKeys(validList);

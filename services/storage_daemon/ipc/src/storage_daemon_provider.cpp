@@ -343,7 +343,7 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 {
     LOGI("[L1:StorageDaemonProvider] QueryUsbIsInUse: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
     auto uid = IPCSkeleton::GetCallingUid();
-    if (uid != DISK_MANAGER_UID || uid != STORAGE_MANAGER_UID) {
+    if (uid != DISK_MANAGER_UID && uid != STORAGE_MANAGER_UID) {
         LOGE("[L1:StorageDaemonProvider] QueryUsbIsInUse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
