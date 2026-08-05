@@ -194,6 +194,12 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_001, TestSize.Level1)
     EXPECT_FALSE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
 
     keyPath = "/data/test";
+    keyCtx.nonce.Alloc(nonceVct.size());
+    std::copy(nonceVct.begin(), nonceVct.end(), keyCtx.nonce.data.get());
+    keyCtx.rndEnc.Alloc(rndEncVct.size());
+    std::copy(rndEncVct.begin(), rndEncVct.end(), keyCtx.rndEnc.data.get());
+    keyCtx.aad.Alloc(aadVct.size());
+    std::copy(aadVct.begin(), aadVct.end(), keyCtx.aad.data.get());
     EXPECT_TRUE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
     EXPECT_TRUE(keyCtx.nonce.IsEmpty());
     EXPECT_TRUE(keyCtx.rndEnc.IsEmpty());

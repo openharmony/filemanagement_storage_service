@@ -388,10 +388,13 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
     KeyBlob storeKey(keyCtx.nonce.size + keyCtx.rndEnc.size + keyCtx.aad.size);
     if (!CombKeyCtx(keyCtx.nonce, keyCtx.rndEnc, keyCtx.aad, storeKey)) {
         LOGE("[L4:BaseKey] SaveAndCleanKeyBuff: CombKeyCtx failed");
+        ClearKeyContext(keyCtx);
         return false;
     }
 
     if (!SaveKeyBlob(storeKey, keyPath + PATH_ENCRYPTED)) {
+        storeKey.Clear();
+        ClearKeyContext(keyCtx);
         return false;
     }
 
@@ -485,7 +488,7 @@ int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
     std::string latestPathBak = dir_ + PATH_LATEST_BACKUP;
     if (IsDir(latestPath)) { // rename latest to latest_backup
         OHOS::ForceRemoveDirectory(latestPathBak);
-        LOGE("[L4:BaseKey] UpdateOrRollbackKey: rename candidate to latest fail, errno=%{public}d", errno);
+        LOGI("[L4:BaseKey] UpdateOrRollbackKey: rename latest_backup start");
         if (rename(latestPath.c_str(), latestPathBak.c_str()) != 0) {
             LOGE("[L4:BaseKey] UpdateOrRollbackKey: restore the latest_backup fail, errno:%{public}d", errno);
             return E_RENAME_FILE_ERROR;
@@ -498,9 +501,9 @@ int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
         LOGI("[L4:BaseKey] UpdateOrRollbackKey: rename the latest success, candidate %{public}s ", candidate.c_str());
         return E_OK;
     }
-    LOGE("[L4:BaseKey] UpdateOrRollbackKey: rename the latest fail, errno:%{public}d", errno);
+    LOGI("[L4:BaseKey] UpdateOrRollbackKey: rename backup_latest start");
     if (rename(latestPathBak.c_str(), latestPath.c_str()) != 0) {
-        LOGE("[L4:BaseKey] DoLatestBackUp: backup the latest fail, errno:%{public}d", errno);
+        LOGE("[L4:BaseKey] DoLatestBackUp: rename the backup_latest fail, errno:%{public}d", errno);
         return E_RENAME_FILE_ERROR;
     }
     LOGI("[L4:BaseKey] DoLatestBackUp: backup the latest success");
@@ -857,7 +860,9 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
     uint32_t userId = GetIdFromDir();
     if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
-        LOGE("[L4:BaseKey] DoUpdateRestore: Get secure uid form iam failed, use default value");
+        LOGE("[L4:BaseKey] DoUpdateRestore: <<< EXIT FAILED <<< Get secure uid from iam failed, use default value");
+        StorageService::StorageRadar::ReportUserKeyResult("DoUpdateRestore::GetSecureUid", userId,
+            E_ELX_KEY_STORE_ERROR, "", "GetSecureUid failed");
     }
     ret = StoreKey({ auth.token, auth.secret, secureUid });
     if (ret != E_OK) {
@@ -872,6 +877,7 @@ int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPat
     LOGI("[L4:BaseKey] DoUpdateRestore: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
+
 int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath, UpdateVersion update_version)
 {
     LOGI("[L4:BaseKey] DoUpdateRestoreVx: >>> ENTER <<< keyPath=%{public}s, version=%{public}u",
@@ -1190,6 +1196,7 @@ int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     LOGW("[L4:BaseKey] EncryptKeyBlob: key path is exist : %{public}d", FileExists(keyPath));
     if (HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) != HKS_SUCCESS ||
         !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {
+        keyCtx.shield.Clear();
         LOGE("[L4:BaseKey] EncryptKeyBlob: <<< EXIT FAILED <<< GenerateKey and save shield failed");
         return E_SHIELD_OPERATION_ERROR;
     }
