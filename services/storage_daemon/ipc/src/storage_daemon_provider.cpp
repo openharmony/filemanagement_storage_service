@@ -1588,7 +1588,8 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
         userId, rkType);
     auto uid = IPCSkeleton::GetCallingUid();
     if (uid != STORAGE_MANAGER_UID) {
-        LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
         return E_PERMISSION_DENIED;
     }
     int32_t err = CheckUserIdRange(userId);
@@ -1788,7 +1789,8 @@ int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
     LOGI("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: >>> ENTER <<< userId=%{public}u", userId);
     auto uid = IPCSkeleton::GetCallingUid();
     if (uid != STORAGE_MANAGER_UID) {
-        LOGE("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        LOGE("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
         return E_PERMISSION_DENIED;
     }
     int32_t ret = CheckUserIdRange(userId);

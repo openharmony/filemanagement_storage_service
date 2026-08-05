@@ -26,10 +26,12 @@
 
 namespace OHOS {
 namespace StorageManager {
-    constexpr const char *PATH_INVALID_FLAG1 = "../";
-    constexpr const char *PATH_INVALID_FLAG2 = "/..";
-    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
-    constexpr char FILE_SEPARATOR_CHAR = '/';
+constexpr const char *PATH_INVALID_FLAG1 = "../";
+constexpr const char *PATH_INVALID_FLAG2 = "/..";
+constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+constexpr char FILE_SEPARATOR_CHAR = '/';
+constexpr size_t INPUT_LIST_LEN = 50000;
+constexpr size_t PKG_NAME_LEN = 128;
 int64_t GetRoundSize(int64_t size)
 {
     int64_t val = 1;
@@ -126,7 +128,6 @@ bool CheckPkgNameRange(const std::string &pkgName)
         LOGE("CheckPkgNameRange pkgName is empty");
         return false;
     }
-    constexpr size_t PKG_NAME_LEN = 128;
     if (pkgName.length() > PKG_NAME_LEN) {
         LOGE("CheckPkgNameRange pkgName is invalid");
         return false;
@@ -158,7 +159,6 @@ bool CheckInputListRange(const std::vector<std::string> &inputList)
         LOGE("CheckInputListRange inputList is empty");
         return false;
     }
-    constexpr size_t INPUT_LIST_LEN = 50000;
     if (inputList.size() > INPUT_LIST_LEN) {
         LOGE("CheckInputListRange inputList is out of range");
         return false;

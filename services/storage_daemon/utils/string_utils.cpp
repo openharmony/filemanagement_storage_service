@@ -42,6 +42,8 @@ static constexpr const char *APP_EL1_PATH = "/data/app/el1";
 static constexpr int32_t TWO_CHARACTER = 2;
 static constexpr int32_t FOUR_CHARACTER = 4;
 static constexpr int32_t FIVE_CHARACTER = 5;
+constexpr size_t LOCAL_ID_LIST_LEN = 100;
+constexpr size_t INPUT_LIST_LEN = 50000;
 std::string StringPrintf(const char *format, ...)
 {
     va_list ap;
@@ -423,7 +425,6 @@ bool CheckInputListRange(const std::vector<std::string> &inputList)
         LOGE("CheckInputListRange inputList is empty");
         return false;
     }
-    constexpr size_t INPUT_LIST_LEN = 50000;
     if (inputList.size() > INPUT_LIST_LEN) {
         LOGE("CheckInputListRange inputList is out of range");
         return false;
@@ -437,7 +438,6 @@ bool CheckLocalIdListRange(const std::vector<int32_t> &localList)
         LOGE("CheckLocalIdListRange localList is empty");
         return false;
     }
-    constexpr size_t LOCAL_ID_LIST_LEN = 100;
     if (localList.size() > LOCAL_ID_LIST_LEN) {
         LOGE("CheckLocalIdListRange localList is out of range");
         return false;
