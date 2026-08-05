@@ -879,10 +879,6 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
         StorageDaemon::DecreaseThreadPriority("storage_manager");
         return E_PERMISSION_DENIED;
     }
-    if (keyId.empty()) {
-        LOGE("StorageManagerProvider::GenerateAppkey keyId is empty");
-        return E_PARAMS_INVALID;
-    }
 #ifdef USER_CRYPTO_MANAGER
     LOGI("hashId: %{public}u", hashId);
     int32_t err = CheckUserIdRange(userId);

@@ -910,10 +910,6 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
         LOGE("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
     }
-    if (keyId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT FAILED <<< keyId is invalid");
-        return E_PARAMS_INVALID;
-    }
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = StorageDaemon::GetInstance().GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageXCollie::CancelTimer(timerId);

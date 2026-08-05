@@ -723,9 +723,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateAppkey_001
     bool needreset = false;
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t result = storageDaemonProviderTest_->GenerateAppkey(StorageTest::USER_ID1, hashId, keyId, needreset);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-    keyId = "1";
-    result = storageDaemonProviderTest_->GenerateAppkey(StorageTest::USER_ID1, hashId, keyId, needreset);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateAppkey_001 end";
 }
