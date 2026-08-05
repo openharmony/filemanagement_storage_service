@@ -581,10 +581,12 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             uint32_t userId,
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
+    HiAudit::GetInstance().WriteStart("UpdateUseAuthWithRecoveryKey", "userId: " + std::to_string(userId));
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}d out of"
             "range", userId);
+        HiAudit::GetInstance().WriteEnd("UpdateUseAuthWithRecoveryKey", err);
         return err;
     }
     err = StorageDaemon::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
@@ -595,6 +597,7 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
         LOGE("[L1:StorageDaemonProvider] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}u,"
             "ret=%{public}d", userId, err);
     }
+    HiAudit::GetInstance().WriteEnd("UpdateUseAuthWithRecoveryKey", err);
     return err;
 }
 
@@ -832,11 +835,14 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
+    HiAudit::GetInstance().WriteStart("CreateRecoverKey",
+        "userId: " + std::to_string(userId) + " userType: " + std::to_string(userType));
     LOGI("[L1:StorageDaemonProvider] CreateRecoverKey: >>> ENTER <<< userId=%{public}u, userType=%{public}u",
          userId, userType);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] CreateRecoverKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        HiAudit::GetInstance().WriteEnd("CreateRecoverKey", err);
         return err;
     }
     int32_t ret = StorageDaemon::GetInstance().CreateRecoverKey(userId, userType, token, secret);
@@ -846,11 +852,13 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
         LOGE("[L1:StorageDaemonProvider] CreateRecoverKey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d",
             userId, ret);
     }
+    HiAudit::GetInstance().WriteEnd("CreateRecoverKey", ret);
     return ret;
 }
 
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
+    HiAudit::GetInstance().WriteStart("SetRecoverKey");
     LOGI("[L1:StorageDaemonProvider] SetRecoverKey: >>> ENTER <<< keySize=%{public}zu", key.size());
     int32_t ret = StorageDaemon::GetInstance().SetRecoverKey(key);
     if (ret == E_OK) {
@@ -858,6 +866,7 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     } else {
         LOGE("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    HiAudit::GetInstance().WriteEnd("SetRecoverKey", ret);
     return ret;
 }
 
@@ -1002,6 +1011,8 @@ int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
                                               const std::string &bundleDataDirPath,
                                               int32_t limitSizeMb)
 {
+    HiAudit::GetInstance().WriteStart("SetBundleQuota",
+        "uid: " + std::to_string(uid) + " limitSizeMb: " + std::to_string(limitSizeMb));
     LOGI("[L1:StorageDaemonProvider] SetBundleQuota: >>> ENTER <<< uid=%{public}d, bundleDataDirPath=%{public}s,"
         "limitSizeMb=%{public}d", uid, bundleDataDirPath.c_str(), limitSizeMb);
     int32_t ret = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
@@ -1011,11 +1022,13 @@ int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
         LOGE("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT FAILED <<< uid=%{public}d, ret=%{public}d",
             uid, ret);
     }
+    HiAudit::GetInstance().WriteEnd("SetBundleQuota", ret);
     return ret;
 }
 
 int32_t StorageDaemonProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
 {
+    HiAudit::GetInstance().WriteStart("ListUserdataDirInfo");
     LOGI("[L1:StorageDaemonProvider] ListUserdataDirInfo: >>> ENTER <<<");
     int32_t ret = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     if (ret == E_OK) {
@@ -1023,11 +1036,14 @@ int32_t StorageDaemonProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> 
     } else {
         LOGE("[L1:StorageDaemonProvider] ListUserdataDirInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    HiAudit::GetInstance().WriteEnd("ListUserdataDirInfo", ret);
     return ret;
 }
 
 int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
+    HiAudit::GetInstance().WriteStart("GetOccupiedSpace",
+        "idType: " + std::to_string(idType) + " id: " + std::to_string(id));
     LOGI("[L1:StorageDaemonProvider] GetOccupiedSpace: >>> ENTER <<< idType=%{public}d, id=%{public}d", idType, id);
     size = 0;
     int32_t ret = QuotaManager::GetInstance().GetOccupiedSpace(idType, id, size);
@@ -1037,6 +1053,7 @@ int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int6
     } else {
         LOGE("[L1:StorageDaemonProvider] GetOccupiedSpace: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    HiAudit::GetInstance().WriteEnd("GetOccupiedSpace", ret);
     return ret;
 }
 
@@ -1308,10 +1325,12 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               std::vector<std::string> &outputList,
                                               bool &isOccupy)
 {
+    HiAudit::GetInstance().WriteStart("IsFileOccupied", "path: " + path);
     LOGI("[L1:StorageDaemonProvider] IsFileOccupied: >>> ENTER <<< path=%{public}s, inputList.size=%{public}zu",
         path.c_str(), inputList.size());
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] IsFileOccupied: <<< EXIT FAILED <<< path is invalid");
+        HiAudit::GetInstance().WriteEnd("IsFileOccupied", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
     isOccupy = false;
@@ -1322,6 +1341,7 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
     } else {
         LOGE("[L1:StorageDaemonProvider] IsFileOccupied: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    HiAudit::GetInstance().WriteEnd("IsFileOccupied", ret);
     return ret;
 }
 
@@ -1329,12 +1349,15 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
                                                           uint32_t rkType,
                                                           const std::vector<uint8_t> &key)
 {
+    HiAudit::GetInstance().WriteStart("ResetSecretWithRecoveryKey",
+        "userId: " + std::to_string(userId) + " rkType: " + std::to_string(rkType));
     LOGI("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: >>> ENTER <<< userId=%{public}u, rkType=%{public}u",
         userId, rkType);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}d out of"
             "range", userId);
+        HiAudit::GetInstance().WriteEnd("ResetSecretWithRecoveryKey", err);
         return err;
     }
     int32_t ret = StorageDaemon::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
@@ -1344,6 +1367,7 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
         LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}u,"
             "ret=%{public}d", userId, ret);
     }
+    HiAudit::GetInstance().WriteEnd("ResetSecretWithRecoveryKey", ret);
     return ret;
 }
 
@@ -1522,7 +1546,9 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &v
 {
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: >>> ENTER <<< bundleNameAndUid.size=%{public}zu",
         bundleNameAndUid.size());
+    HiAudit::GetInstance().WriteStart("QueryOccupiedSpaceForSa", "type: " + std::to_string(type));
     QuotaManager::GetInstance().GetUidStorageStats(vec, totalSize, bundleNameAndUid, type);
+    HiAudit::GetInstance().WriteEnd("QueryOccupiedSpaceForSa", E_OK);
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -1585,6 +1611,7 @@ int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mod
 int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
     std::vector<NextDqBlk> &dqBlks)
 {
+    HiAudit::GetInstance().WriteStart("GetDqBlkSpacesByUids", "uids.size: " + std::to_string(uids.size()));
     LOGI("[L1:StorageDaemonProvider] GetDqBlkSpacesByUids: >>> ENTER <<< uids.size=%{public}zu", uids.size());
     int32_t ret = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
     if (ret == E_OK) {
@@ -1593,22 +1620,30 @@ int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &
     } else {
         LOGE("[L1:StorageDaemonProvider] GetDqBlkSpacesByUids: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    HiAudit::GetInstance().WriteEnd("GetDqBlkSpacesByUids", ret);
     return ret;
 }
 
 int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
     std::vector<DirSpaceInfo> &outDirs)
 {
+    HiAudit::GetInstance().WriteStart("GetDirListSpace", "inDirs.size: " + std::to_string(inDirs.size()));
     LOGI("[L1:StorageDaemonProvider] GetDirListSpace: >>> ENTER <<< inDirs.size=%{public}zu", inDirs.size());
     outDirs = inDirs;
-    return QuotaManager::GetInstance().GetDirListSpace(outDirs);
+    int32_t ret = QuotaManager::GetInstance().GetDirListSpace(outDirs);
+    HiAudit::GetInstance().WriteEnd("GetDirListSpace", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
     const std::vector<int32_t> &uids, std::vector<DirSpaceInfo> &resultDirs,
     std::vector<LargeFileInfo> &largeFiles, std::vector<LargeDirInfo> &largeDirs)
 {
-    return QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
+    HiAudit::GetInstance().WriteStart("GetDirListSpaceByPaths",
+        "paths.size: " + std::to_string(paths.size()) + " uids.size: " + std::to_string(uids.size()));
+    int32_t ret = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
+    HiAudit::GetInstance().WriteEnd("GetDirListSpaceByPaths", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
@@ -1621,27 +1656,38 @@ int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
 
 int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 {
+    HiAudit::GetInstance().WriteStart("GetAncoSizeData");
     LOGI("[L1:StorageDaemonProvider] GetAncoSizeData: >>> ENTER <<<");
     QuotaManager::GetInstance().GetAncoSizeData(outExtraData);
     LOGI("[L1:StorageDaemonProvider] GetAncoSizeData: <<< EXIT SUCCESS <<<");
+    HiAudit::GetInstance().WriteEnd("GetAncoSizeData", E_OK);
     return E_OK;
 }
 
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
 {
+    HiAudit::GetInstance().WriteStart("GetDataSizeByPath", "path: " + path);
     LOGI("[L1:StorageDaemonProvider] GetDataSizeByPath: >>> ENTER <<< path=%{public}s", path.c_str());
-    return QuotaManager::GetInstance().GetFileData(path, size);
+    int32_t ret = QuotaManager::GetInstance().GetFileData(path, size);
+    HiAudit::GetInstance().WriteEnd("GetDataSizeByPath", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::GetSystemDataSize(int64_t &otherUidSizeSum)
 {
-    return QuotaManager::GetInstance().GetSystemDataSize(otherUidSizeSum);
+    HiAudit::GetInstance().WriteStart("GetSystemDataSize");
+    int32_t ret = QuotaManager::GetInstance().GetSystemDataSize(otherUidSizeSum);
+    HiAudit::GetInstance().WriteEnd("GetSystemDataSize", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
 {
+    HiAudit::GetInstance().WriteStart("GetRmgResourceSize", "rgmName: " + rgmName);
     LOGI("[L1:StorageDaemonProvider] GetRmgResourceSize: >>> ENTER <<< rgmName=%{public}s", rgmName.c_str());
-    return OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
+    int32_t ret = OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
+    HiAudit::GetInstance().WriteEnd("GetRmgResourceSize", ret);
+    return ret;
 }
 
 int32_t StorageDaemonProvider::CreateBlockDeviceNode(const std::string &devPath,
@@ -2088,11 +2134,13 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
                                                   std::string &blockInfos)
 {
 #ifdef DISK_MANAGER
+    HiAudit::GetInstance().WriteStart("GetBlockInfoByType", "type: " + type + " diskId: " + diskId);
     LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< diskId=%{public}s, type=%{public}s",
          diskId.c_str(), type.c_str());
 
     if (type.empty() || type.size() > MAX_TYPE_LEN) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
+        HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
 
@@ -2107,8 +2155,11 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
 
     blockInfos = BlockInfo::SerializeVector(disks);
     LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT SUCCESS <<< count=%{public}zu", disks.size());
+    HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_OK);
     return E_OK;
 #else
+    HiAudit::GetInstance().WriteStart("GetBlockInfoByType", "type: " + type + " diskId: " + diskId);
+    HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_NOT_SUPPORT);
     return E_NOT_SUPPORT;
 #endif
 }

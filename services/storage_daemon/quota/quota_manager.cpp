@@ -35,6 +35,7 @@
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/hi_audit.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -103,7 +104,6 @@ static bool InitialiseQuotaMounts()
             }
         }
     }
-
     LOGD("[L2:QuotaManager] InitialiseQuotaMounts: <<< EXIT SUCCESS <<<");
     return true;
 }
@@ -227,8 +227,11 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
         return E_OPEN_JSON_FILE_ERROR;
     }
 
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("QuotaManager::GetFileData while");
     std::string line;
     while (std::getline(infile, line)) {
+        CheckAndReportOverLoop("QuotaManager::GetFileData", loopCount);
         if (line.empty()) {
             continue;
         }
@@ -249,6 +252,7 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
             size += listNum;
         }
     }
+    HiAudit::GetInstance().WriteEnd("QuotaManager::GetFileData", 0);
     LOGD("[L2:QuotaManager] GetFileData: <<< EXIT SUCCESS <<< size=%{public}lld",
         static_cast<long long>(size));
     return E_OK;
@@ -368,8 +372,11 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<UidSa
         return E_OPEN_JSON_FILE_ERROR;
     }
 
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("QuotaManager::ParseConfigFile while");
     std::string line;
     while (getline(infile, line)) {
+        CheckAndReportOverLoop("QuotaManager::ParseConfigFile", loopCount);
         if (line == "") {
             continue;
         }
@@ -379,6 +386,7 @@ int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<UidSa
         }
     }
     infile.close();
+    HiAudit::GetInstance().WriteEnd("QuotaManager::ParseConfigFile", 0);
     LOGI("[L2:QuotaManager] ParseConfigFile: <<< EXIT SUCCESS <<< entries=%{public}zu", vec.size());
     return E_OK;
 }
@@ -1030,7 +1038,9 @@ int32_t QuotaManager::ScanSinglePath(const std::string &path, const std::vector<
     std::map<std::string, int64_t> &dirSizeMap)
 {
     std::vector<int64_t> blks(uids.size(), 0);
+    HiAudit::GetInstance().WriteStart("QuotaManager::ScanSinglePath AddBlksRecurseMultiUids while");
     int32_t ret = AddBlksRecurseMultiUids(path, blks, uids, largeFiles, dirSizeMap);
+    HiAudit::GetInstance().WriteEnd("QuotaManager::ScanSinglePath AddBlksRecurseMultiUids while", ret);
     if (ret != E_OK) {
         LOGW("ScanSinglePath failed for %{public}s, ret=%{public}d", path.c_str(), ret);
         return ret;
@@ -1254,7 +1264,6 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
     }
 
     closedir(dir);
-
     if (dirInfo.totalSize_ >= BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB) {
         scanDirs.push_back(dirInfo);
         std::string sizeStr = HumanReadableSize(dirInfo.totalSize_);

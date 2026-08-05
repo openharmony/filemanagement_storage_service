@@ -61,6 +61,11 @@ std::string VolumeCore::GetId() const
     return id_;
 }
 
+void VolumeCore::SetId(const std::string volId)
+{
+    id_ = volId;
+}
+
 int VolumeCore::GetType() const
 {
     return type_;

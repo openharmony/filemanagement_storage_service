@@ -58,10 +58,7 @@ private:
     void CleanFile(const std::string &path);
     void CheckAndCopyFiles(const std::string &from, const std::string &to);
     int32_t CheckAndCopyOneFile(const std::string &from, const std::string &to);
-    bool ReadFileToString(const std::string &filePath, std::string &content);
     bool GetRealPath(const std::string &path, std::string &realPath);
-    bool WriteStringToFd(int fd, const std::string &content);
-    bool WriteStringToFile(const std::string &payload, const std::string &fileName);
     int32_t CompareFile(const std::string &fileA, const std::string fileB);
     int32_t GetAttr(const std::string &path, struct FileAttr &attr);
     int32_t SetAttr(const std::string &path, struct FileAttr &attr);

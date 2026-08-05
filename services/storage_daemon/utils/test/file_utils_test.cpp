@@ -1254,5 +1254,186 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_CleanOrphanNode_002, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "FileUtilsTest_CleanOrphanNode_002 end";
 }
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_TwoParams_001
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount) increments loopCount when <= 3000.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_TwoParams_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_001 start";
+    uint32_t loopCount = 0;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 1u);
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 2u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_TwoParams_002
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount) stops incrementing when > 3000.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_TwoParams_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_002 start";
+    uint32_t loopCount = 3000;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 3001u);
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 3001u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_TwoParams_003
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount) reports radar at loopCount == 1000.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_TwoParams_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_003 start";
+    uint32_t loopCount = 999;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 1000u);
+    loopCount = 1000;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 1001u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_003 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_TwoParams_004
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount) reports radar at loopCount == 2000.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_TwoParams_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_004 start";
+    uint32_t loopCount = 1999;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 2000u);
+    loopCount = 2000;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 2001u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_004 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_TwoParams_005
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount) does not report radar at normal count.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_TwoParams_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_005 start";
+    uint32_t loopCount = 500;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 501u);
+    loopCount = 1500;
+    CheckAndReportOverLoop("TestFunc", loopCount);
+    EXPECT_EQ(loopCount, 1501u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_TwoParams_005 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_ThreeParams_001
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount, maxCount) increments when <= 3*maxCount.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_001 start";
+    uint32_t loopCount = 0;
+    uint32_t maxCount = 100;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 1u);
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 2u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_ThreeParams_002
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount, maxCount) stops incrementing when > 3*maxCount.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_002 start";
+    uint32_t maxCount = 100;
+    uint32_t loopCount = 3 * maxCount;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 301u);
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 301u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_002 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_ThreeParams_003
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount, maxCount) reports radar at loopCount == maxCount.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_003 start";
+    uint32_t maxCount = 100;
+    uint32_t loopCount = 99;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 100u);
+    loopCount = 100;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 101u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_003 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_ThreeParams_004
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount, maxCount) reports radar at loopCount == 2*maxCount.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_004 start";
+    uint32_t maxCount = 100;
+    uint32_t loopCount = 199;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 200u);
+    loopCount = 200;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 201u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_004 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005
+ * @tc.desc: Verify CheckAndReportOverLoop(funcName, loopCount, maxCount) does not report radar at normal count.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005 start";
+    uint32_t maxCount = 100;
+    uint32_t loopCount = 50;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 51u);
+    loopCount = 150;
+    CheckAndReportOverLoop("TestFunc", loopCount, maxCount);
+    EXPECT_EQ(loopCount, 151u);
+    GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

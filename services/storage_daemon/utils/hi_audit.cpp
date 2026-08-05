@@ -20,7 +20,7 @@
 #include <iomanip>
 #include <sstream>
 #include <unistd.h>
-
+#include <sys/syscall.h>
 #include "storage_service_log.h"
 #include "zip_utils.h"
 
@@ -132,13 +132,17 @@ void HiAudit::Write(const AuditLog& auditLog)
 
 void HiAudit::WriteStart(const std::string &funcName, const std::string &extend)
 {
-    AuditLog auditLog = {false, 1, HIAUDIT_SUCC, HIAUDIT_OP_TYPE, funcName, "START", extend};
+    int tid = syscall(SYS_gettid);
+    AuditLog auditLog = {false, 1, HIAUDIT_SUCC, HIAUDIT_OP_TYPE, funcName, "START, tid = " + std::to_string(tid),
+                         extend};
     Write(auditLog);
 }
 
 void HiAudit::WriteEnd(const std::string &funcName, int32_t ret, const std::string &extend)
 {
-    AuditLog auditLog = {false, 1, HIAUDIT_SUCC, HIAUDIT_OP_TYPE, funcName, "SUCCESS", extend};
+    int tid = syscall(SYS_gettid);
+    AuditLog auditLog = {false, 1, HIAUDIT_SUCC, HIAUDIT_OP_TYPE, funcName, "SUCCESS, tid = " + std::to_string(tid),
+                         extend};
     auditLog.cause = (ret == HIAUDIT_E_OK) ? HIAUDIT_SUCC : std::to_string(ret);
     auditLog.operationStatus = (ret == HIAUDIT_E_OK) ? HIAUDIT_STATUS_SUCC : HIAUDIT_STATUS_FAIL;
     Write(auditLog);

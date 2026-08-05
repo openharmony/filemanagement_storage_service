@@ -19,9 +19,12 @@
 #include <fcntl.h>
 #include <thread>
 
+#include "file_ex.h"
+#include "utils/hi_audit.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "unique_fd.h"
+#include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 
 namespace OHOS {
@@ -49,9 +52,11 @@ void KeyBackup::CreateBackup(const std::string &from, const std::string &to, boo
 
     if (access(to.c_str(), 0) == 0) {
         if (removeOld) {
+            HiAudit::GetInstance().WriteStart("KeyBackup::CreateBackup RemoveNode while");
             if (RemoveNode(to) != 0) {
                 LOGE("[L4:KeyBackup] CreateBackup: <<< EXIT FAILED <<< failed to remove to=%{public}s", to.c_str());
             }
+            HiAudit::GetInstance().WriteEnd("KeyBackup::CreateBackup RemoveNode while", 0);
         }
     } else {
         int32_t ret = MkdirParentWithRetry(to, DEFAULT_DIR_PERM);
@@ -60,7 +65,9 @@ void KeyBackup::CreateBackup(const std::string &from, const std::string &to, boo
             return;
         }
     }
+    HiAudit::GetInstance().WriteStart("KeyBackup::CreateBackup CheckAndCopyFiles while");
     CheckAndCopyFiles(from, to);
+    HiAudit::GetInstance().WriteEnd("KeyBackup::CreateBackup CheckAndCopyFiles while", 0);
     LOGD("[L4:KeyBackup] CreateBackup: <<< EXIT SUCCESS <<<");
 }
 
@@ -133,7 +140,11 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     GetBackupDir(keyDir, backupDir);
     if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST) == E_OK) {
         if (needFixFiles) {
-            std::thread fixFileThread([this, keyDir, backupDir]() { CheckAndFixFiles(keyDir, backupDir); });
+            std::thread fixFileThread([this, keyDir, backupDir]() {
+                HiAudit::GetInstance().WriteStart("KeyBackup::TryRestoreKey CheckAndFixFiles fixFileThread");
+                CheckAndFixFiles(keyDir, backupDir);
+                HiAudit::GetInstance().WriteEnd("KeyBackup::TryRestoreKey CheckAndFixFiles fixFileThread", 0);
+            });
             fixFileThread.detach();
         }
         LOGD("[L4:KeyBackup] TryRestoreKey: <<< EXIT SUCCESS <<< Restore by main key success");
@@ -224,7 +235,9 @@ void KeyBackup::ListAndCheckDir(std::string &origDir)
             LOGE("[L4:KeyBackup] ListAndCheckDir: <<< EXIT FAILED <<< MkdirParent failed");
             return;
         }
+        HiAudit::GetInstance().WriteStart("KeyBackup::ListAndCheckDir CheckAndCopyFiles while");
         CheckAndCopyFiles(backupDir, origDir);
+        HiAudit::GetInstance().WriteEnd("KeyBackup::ListAndCheckDir CheckAndCopyFiles while", 0);
     }
     LOGD("[L4:KeyBackup] ListAndCheckDir: <<< EXIT SUCCESS <<<");
     return;
@@ -255,7 +268,9 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     diffNum = fileList.size();
     uint32_t loopNum = GetLoopMaxNum(diffNum);
     if (loopNum == INVALID_LOOP_NUM) {
+        HiAudit::GetInstance().WriteStart("KeyBackup::DoResotreKeyMix RemoveNode one while");
         RemoveNode(tempKeyDir);
+        HiAudit::GetInstance().WriteEnd("KeyBackup::DoResotreKeyMix RemoveNode one while", E_ERR);
         LOGE("[L4:KeyBackup] DoResotreKeyMix: <<< EXIT FAILED <<< loopNum is invalid");
         return E_ERR;
     }
@@ -269,19 +284,25 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         }
         if (baseKey == nullptr) {
             LOGE("[L4:KeyBackup] DoResotreKeyMix: <<< EXIT FAILED <<< basekey is nullptr");
+            HiAudit::GetInstance().WriteStart("KeyBackup::DoResotreKeyMix RemoveNode two while");
             RemoveNode(tempKeyDir);
+            HiAudit::GetInstance().WriteEnd("KeyBackup::DoResotreKeyMix RemoveNode two while", E_ERR);
             return E_ERR;
         }
         if (baseKey->DoRestoreKey(auth, tempKeyDir) == E_OK) {
             LOGI("[L4:KeyBackup] DoResotreKeyMix: mix key files decrypt succ, fix orig and backup");
             CheckAndFixFiles(tempKeyDir, origKeyDir);
             CheckAndFixFiles(tempKeyDir, backupKeyDir);
+            HiAudit::GetInstance().WriteStart("KeyBackup::DoResotreKeyMix RemoveNode three while");
             RemoveNode(tempKeyDir);
+            HiAudit::GetInstance().WriteEnd("KeyBackup::DoResotreKeyMix RemoveNode three while", E_OK);
             LOGI("[L4:KeyBackup] DoResotreKeyMix: <<< EXIT SUCCESS <<<");
             return E_OK;
         }
     }
+    HiAudit::GetInstance().WriteStart("KeyBackup::DoResotreKeyMix RemoveNode four while");
     RemoveNode(tempKeyDir);
+    HiAudit::GetInstance().WriteEnd("KeyBackup::DoResotreKeyMix RemoveNode four while", E_ERR);
     LOGE("[L4:KeyBackup] DoResotreKeyMix: <<< EXIT FAILED <<< all attempts failed");
     return E_ERR;
 }
@@ -297,20 +318,28 @@ int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &ba
         return -1;
     }
     struct dirent *de = nullptr;
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("KeyBackup::GetFileList First while");
     while ((de = readdir(dir)) != nullptr) {
+        CheckAndReportOverLoop("KeyBackup::GetFileList First", loopCount);
         AddOrigFileToList(std::string(de->d_name), origDir, fileList);
     }
     closedir(dir);
 
+    HiAudit::GetInstance().WriteEnd("KeyBackup::GetFileList while First", 0);
     dir = opendir(backDir.c_str());
     if (dir == nullptr) {
         LOGE("[L4:KeyBackup] GetFileList: <<< EXIT FAILED <<< fail to open backDir=%{public}s", backDir.c_str());
         return -1;
     }
+    uint32_t loopCount2 = 0;
+    HiAudit::GetInstance().WriteStart("KeyBackup::GetFileList Second while");
     while ((de = readdir(dir)) != nullptr) {
+        CheckAndReportOverLoop("KeyBackup::GetFileList Second", loopCount2);
         AddBackupFileToList(std::string(de->d_name), backDir, fileList);
     }
     closedir(dir);
+    HiAudit::GetInstance().WriteStart("KeyBackup::GetFileList while Second");
     dir = nullptr;
 
     diffNum = GetDiffFilesNum(fileList);
@@ -412,7 +441,9 @@ int32_t KeyBackup::CopySameFilesToTempDir(const std::string &backupDir, std::str
         if (iter->isSame || iter->backFile.empty()) {
             ret = CheckAndCopyOneFile(iter->origFile, tempDir + "/" + iter->baseName);
             if (ret != 0) {
+                HiAudit::GetInstance().WriteStart("KeyBackup::CopySameFilesToTempDir RemoveNode one while");
                 RemoveNode(tempDir);
+                HiAudit::GetInstance().WriteEnd("KeyBackup::CopySameFilesToTempDir RemoveNode one while", -1);
                 LOGE("[L4:KeyBackup] CopySameFilesToTempDir: <<< EXIT FAILED <<< CheckAndCopyOneFile failed");
                 return -1;
             }
@@ -420,7 +451,9 @@ int32_t KeyBackup::CopySameFilesToTempDir(const std::string &backupDir, std::str
         } else if (iter->origFile.empty()) {
             ret = CheckAndCopyOneFile(iter->backFile, tempDir + "/" + iter->baseName);
             if (ret != 0) {
+                HiAudit::GetInstance().WriteStart("KeyBackup::CopySameFilesToTempDir RemoveNode two while");
                 RemoveNode(tempDir);
+                HiAudit::GetInstance().WriteEnd("KeyBackup::CopySameFilesToTempDir RemoveNode two while", -1);
                 LOGE("[L4:KeyBackup] CopySameFilesToTempDir: <<< EXIT FAILED <<< CheckAndCopyOneFile failed");
                 return -1;
             }
@@ -439,7 +472,9 @@ int32_t KeyBackup::CreateTempDirForMixFiles(const std::string &backupDir, std::s
     std::string parentDir = backupDir.substr(0, pos);
     tempDir = parentDir + "/temp";
 
+    HiAudit::GetInstance().WriteStart("KeyBackup::CreateTempDirForMixFiles RemoveNode while");
     RemoveNode(tempDir);
+    HiAudit::GetInstance().WriteEnd("KeyBackup::CreateTempDirForMixFiles RemoveNode while", 0);
     int32_t ret = HandleCopyDir(backupDir, tempDir);
     if (ret != 0) {
         LOGE("[L4:KeyBackup] CreateTempDirForMixFiles: <<< EXIT FAILED <<< ret=%{public}d, tempDir=%{public}s",
@@ -544,8 +579,11 @@ int32_t KeyBackup::MkdirParent(const std::string &pathName, mode_t mode)
 {
     LOGI("[L4:KeyBackup] MkdirParent: >>> ENTER <<< pathName=%{public}s", pathName.c_str());
     std::string::size_type pos = 0;
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("KeyBackup::MkdirParent while");
     pos = pathName.find("/", pos + 1);
     while (pos != std::string::npos) {
+        CheckAndReportOverLoop("KeyBackup::MkdirParent", loopCount);
         std::string dirName = pathName.substr(0, pos);
         if (access(dirName.c_str(), F_OK) != 0) {
             if (mkdir(dirName.c_str(), mode) < 0) {
@@ -557,6 +595,7 @@ int32_t KeyBackup::MkdirParent(const std::string &pathName, mode_t mode)
         pos = pathName.find("/", pos + 1);
     }
 
+    HiAudit::GetInstance().WriteEnd("KeyBackup::MkdirParent", 0);
     LOGI("[L4:KeyBackup] MkdirParent: <<< EXIT SUCCESS <<<");
     return 0;
 }
@@ -668,14 +707,14 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
     LOGD("[L4:KeyBackup] CheckAndCopyOneFile: >>> ENTER <<< srcFile=%{public}s, dstFile=%{public}s",
          srcFile.c_str(), dstFile.c_str());
     std::string srcData;
-    if (!ReadFileToString(srcFile, srcData)) {
+    if (!LoadStringFromFile(srcFile, srcData)) {
         LOGE("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT FAILED <<< failed to read srcFile=%{public}s",
              srcFile.c_str());
         return -1;
     }
 
     std::string dstData;
-    if (!ReadFileToString(dstFile, dstData)) {
+    if (!LoadStringFromFile(dstFile, dstData)) {
         LOGE("[L4:KeyBackup] CheckAndCopyOneFile: failed to read dstFile=%{public}s", dstFile.c_str());
     }
 
@@ -684,7 +723,7 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
         return 0;
     }
 
-    if (!WriteStringToFile(srcData, dstFile)) {
+    if (!SaveStringToFile(dstFile, srcData)) {
         LOGE("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT FAILED <<< failed to write dstFile=%{public}s",
              dstFile.c_str());
         return -1;
@@ -701,45 +740,6 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
     return 0;
 }
 
-bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &content)
-{
-    std::string realPath;
-    if (!GetRealPath(filePath, realPath)) {
-        return false;
-    }
-    FILE *f = fopen(realPath.c_str(), "r");
-    if (f == nullptr) {
-        LOGE("[L4:KeyBackup] ReadFileToString: %{public}s realpath failed", realPath.c_str());
-        return false;
-    }
-    int fd = fileno(f);
-    if (fd < 0) {
-        LOGE("[L4:KeyBackup] ReadFileToString: %{public}s realpath failed", realPath.c_str());
-        (void)fclose(f);
-        return false;
-    }
-    struct stat sb {};
-    if (fstat(fd, &sb) != -1 && sb.st_size > 0) {
-        content.resize(sb.st_size);
-    }
-
-    ssize_t remaining = sb.st_size;
-    bool readStatus = true;
-    char* p = const_cast<char*>(content.data());
-
-    while (remaining > 0) {
-        ssize_t n = read(fd, p, remaining);
-        if (n < 0) {
-            readStatus = false;
-            break;
-        }
-        p += n;
-        remaining -= n;
-    }
-    (void)fclose(f);
-    return readStatus;
-}
-
 bool KeyBackup::GetRealPath(const std::string &path, std::string &realPath)
 {
     char resolvedPath[PATH_MAX] = { 0 };
@@ -751,64 +751,16 @@ bool KeyBackup::GetRealPath(const std::string &path, std::string &realPath)
     return true;
 }
 
-bool KeyBackup::WriteStringToFd(int fd, const std::string &content)
-{
-    const char *p = content.data();
-    size_t remaining = content.size();
-    while (remaining > 0) {
-        ssize_t n = write(fd, p, remaining);
-        if (n == -1) {
-            return false;
-        }
-        p += n;
-        remaining -= n;
-    }
-    return true;
-}
-
-bool KeyBackup::WriteStringToFile(const std::string &payload, const std::string &fileName)
-{
-    UniqueFd fd(open(fileName.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC | O_CLOEXEC, DEFAULT_WRITE_FILE_PERM));
-    if (fd < 0) {
-        LOGE("[L4:KeyBackup] WriteStringToFile: <<< EXIT FAILED <<< open file failed, fileName=%{public}s",
-             fileName.c_str());
-        return false;
-    }
-    if (!WriteStringToFd(fd, payload)) {
-        LOGE("[L4:KeyBackup] WriteStringToFile: <<< EXIT FAILED <<< failed to write file, fileName=%{public}s",
-             fileName.c_str());
-        unlink(fileName.c_str());
-        return false;
-    }
-
-    auto ret = fsync(fd);
-    if (ret == -1) {
-        if (errno == EROFS || errno == EINVAL) {
-            LOGE("[L4:KeyBackup] WriteStringToFile: file system does not support sync, fileName=%{public}s",
-                 fileName.c_str());
-        } else {
-            std::string extraData = "fileName=" + fileName;
-            StorageService::StorageRadar::ReportUserManager("KeyBackup::WriteStringToFile::fsync", 0, ret, extraData);
-            LOGE("[L4:KeyBackup] WriteStringToFile: <<< EXIT FAILED <<< sync failed, fileName=%{public}s",
-                 fileName.c_str());
-            unlink(fileName.c_str());
-            return false;
-        }
-    }
-    LOGI("[L4:KeyBackup] WriteStringToFile: <<< EXIT SUCCESS <<< fileName=%{public}s", fileName.c_str());
-    return true;
-}
-
 int32_t KeyBackup::CompareFile(const std::string &fileA, const std::string fileB)
 {
     std::string dataA;
-    if (!ReadFileToString(fileA, dataA)) {
+    if (!LoadStringFromFile(fileA, dataA)) {
         LOGE("[L4:KeyBackup] CompareFile: <<< EXIT FAILED <<< failed to read from fileA=%{public}s", fileA.c_str());
         return -1;
     }
 
     std::string dataB;
-    if (!ReadFileToString(fileB, dataB)) {
+    if (!LoadStringFromFile(fileB, dataB)) {
         LOGE("[L4:KeyBackup] CompareFile: <<< EXIT FAILED <<< failed to read from fileB=%{public}s", fileB.c_str());
         return -1;
     }
