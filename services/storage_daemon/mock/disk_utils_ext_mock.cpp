@@ -146,5 +146,46 @@ std::string GenerateRandomUuid(const std::string &diskPath, const std::string &n
     return IDiskUtilMoc::diskUtilMoc->GenerateRandomUuid(diskPath, namespaceUuid);
 }
 
+std::string GetOpticalDriveNode(const std::string &devPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return "";
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetOpticalDriveNode(devPath);
+}
+
+int64_t DiskUtils::GetDiscCapacity(int cmdFd, const std::string &discType)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetDiscCapacity(cmdFd, discType);
+}
+
+void DiskUtils::AdjustBlankDiscCapacity(const std::string &devPath, const std::string &discType,
+                                        int64_t &totalSize, int64_t &usedSize)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return;
+    }
+    IDiskUtilMoc::diskUtilMoc->AdjustBlankDiscCapacity(devPath, discType, totalSize, usedSize);
+}
+
+int64_t DiskUtils::GetUsedSizeFromSysfs(const std::string &devPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return -1;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetUsedSizeFromSysfs(devPath);
+}
+
+int32_t DiskUtils::GetCapacity(const std::string &devPath, int64_t &totalSize, int64_t &freeSize)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return E_ERR;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetCapacity(devPath, totalSize, freeSize);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

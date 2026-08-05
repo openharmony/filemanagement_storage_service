@@ -115,5 +115,36 @@ std::string GetOddDriverType(const std::string &sysPath)
     return IDiskUtilMoc::diskUtilMoc->GetOddDriverType(sysPath);
 }
 
+int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetDvdTotalCapacity(fd, dvdTotalCapacity);
+}
+
+int GetCdTotalCapacity(int fd, int64_t &cdTotalCapacity)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetCdTotalCapacity(fd, cdTotalCapacity);
+}
+
+int GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetDvdPlusRwTotalCapacity(fd, dvdTotalCapacity);
+}
+
+int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return 0;
+    }
+    return IDiskUtilMoc::diskUtilMoc->GetBdTotalCapacity(fd, bdTotalCapacity);
+}
 }
 }

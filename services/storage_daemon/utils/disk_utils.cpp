@@ -469,6 +469,9 @@ std::string DiskType2Str(uint8_t diskType)
         case 0x13: // DVD-RW restricted overwrite
         case 0x14: // DVD-RW sequential
             return "DVD-RW";
+        case 0x15: // DVD-R/DL sequential
+        case 0x16: // DVD-R/DL layer jump
+            return "DVD-R/DL";
         case 0x1A:
             return "DVD+RW";
         case 0x1B: // DVD+R
@@ -476,6 +479,10 @@ std::string DiskType2Str(uint8_t diskType)
             return "DVD+R";
         case 0x1D: // DVD+RW dual layer
             return "DVD+RW";
+        case 0x2A: // DVD+RW/DL
+              return "DVD+RW/DL";
+        case 0x2B: // DVD+R/DL
+              return "DVD+R/DL";
         case 0x40:
             return "BD-ROM";
         case 0x41:

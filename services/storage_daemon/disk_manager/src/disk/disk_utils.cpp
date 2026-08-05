@@ -13,11 +13,13 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <charconv>
 #include <climits>
 #include <cinttypes>
 #include <cstdlib>
 #include <cstring>
+#include <dirent.h>
 #include <fstream>
 #include <future>
 #include <libgen.h>
@@ -787,6 +789,10 @@ int32_t DiskUtils::QueryCDStatus(const std::string &devPath, int32_t &status)
 int32_t DiskUtils::EjectCD(const std::string &devPath)
 {
     LOGI("EjectCD: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    std::string driveNode = GetOpticalDriveNode(devPath);
+    if (!driveNode.empty()) {
+        return Eject(driveNode);
+    }
     std::vector<std::string> output;
     std::vector<std::string> cmd = {
         "eject",
@@ -1003,6 +1009,50 @@ int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr)
     return err;
 }
 
+std::string GetOpticalDriveNode(const std::string &devPath)
+{
+    LOGI("GetOpticalDriveNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    std::string volName = devPath.substr(devPath.find_last_of('/') + 1);
+    size_t dashPos = volName.find('-');
+    if (dashPos == std::string::npos || dashPos + 1 >= volName.size()) {
+        LOGI("GetOpticalDriveNode: no dash in volName=%{public}s, return empty", volName.c_str());
+        return "";
+    }
+    std::string majorMinor = volName.substr(dashPos + 1);
+    std::replace(majorMinor.begin(), majorMinor.end(), '-', ':');
+    LOGI("GetOpticalDriveNode: devPath=%{public}s, majorMinor=%{public}s", devPath.c_str(), majorMinor.c_str());
+ 
+    std::string result;
+    DIR *dir = opendir("/sys/block");
+    if (dir == nullptr) {
+        LOGE("GetOpticalDriveNode: opendir /sys/block failed, errno=%{public}d", errno);
+        return result;
+    }
+    struct dirent *entry = nullptr;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+        std::string devFile = std::string("/sys/block/") + entry->d_name + "/dev";
+        std::ifstream ifs(devFile);
+        if (!ifs.is_open()) {
+            continue;
+        }
+        std::string content;
+        std::getline(ifs, content);
+        ifs.close();
+        content.erase(std::remove_if(content.begin(), content.end(),
+            [](char c) { return std::isspace(static_cast<unsigned char>(c)); }), content.end());
+        if (content == majorMinor) {
+            result = entry->d_name;
+            break;
+        }
+    }
+    closedir(dir);
+    LOGI("GetOpticalDriveNode: blockDev=%{public}s", result.c_str());
+    return result;
+}
+
 static int32_t GetLatestProgressFromFile(const char* filePath, int32_t &progress)
 {
     progress = 0;
@@ -1113,30 +1163,24 @@ static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
     return E_OK;
 }
 
-int32_t DiskUtils::GetDiscCapacity(int cmdFd, const std::string& discType,
-                                   int64_t &totalSize, int64_t &usedSize)
+int64_t DiskUtils::GetDiscCapacity(int cmdFd, const std::string& discType)
 {
-    int err1 = E_OK;
-    if (discType == "DVD-R"  || discType == "DVD+R") {
-        err1 = GetDvdTotalCapacity(cmdFd, totalSize);
+    int64_t totalSize = 0;
+    int ret = E_OK;
+    if (discType == "DVD-R" || discType == "DVD+R") {
+        ret = GetDvdTotalCapacity(cmdFd, totalSize);
     } else if (discType == "DVD+RW" || discType == "DVD-RW") {
-        err1 = GetDvdPlusRwTotalCapacity(cmdFd, totalSize);
-    } else if (discType == "CD-ROM" || discType == "CD-RW" || discType == "CD-R") {
-        err1 = GetCdTotalCapacity(cmdFd, totalSize);
-    } else if (discType == "BD-R" || discType == "BD-RE") {
-        err1 = GetBdTotalCapacity(cmdFd, totalSize);
-    } else if (discType == "BD-ROM") {
-        err1 = GetBdTotalCapacity(cmdFd, totalSize);
-    } else {
-        totalSize = 0;
-        usedSize = 0;
+        ret = GetDvdPlusRwTotalCapacity(cmdFd, totalSize);
+    } else if (discType.find("CD") == 0) {
+        ret = GetCdTotalCapacity(cmdFd, totalSize);
+    } else if (discType.find("BD") == 0) {
+        ret = GetBdTotalCapacity(cmdFd, totalSize);
     }
-    usedSize = totalSize;
-    if (err1 != E_OK) {
-        LOGI("GetDiscCapacity failed, err1=%{public}d", err1);
-        return E_ERR;
+    if (ret != E_OK) {
+        LOGI("GetDiscCapacity failed, ret=%{public}d", ret);
+        return 0;
     }
-    return E_OK;
+    return totalSize;
 }
 
 void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::string& discType,
@@ -1149,7 +1193,7 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     }
     
     usedSize = 0;
-    if (discType != "DVD+RW" && discType != "DVD-RW" && discType != "BD-R" && discType != "BD-RE") {
+    if (discType.find("DVD") != 0 && discType.find("BD") != 0) {
         return;
     }
     
@@ -1179,6 +1223,28 @@ void DiskUtils::AdjustBlankDiscCapacity(const std::string& devPath, const std::s
     }
 }
 
+int64_t DiskUtils::GetUsedSizeFromSysfs(const std::string &devPath)
+{
+    std::string driveNode = GetOpticalDriveNode(devPath);
+    if (driveNode.empty()) {
+        LOGE("GetUsedSizeFromSysfs: GetOpticalDriveNode failed for devPath=%{public}s", devPath.c_str());
+        return -1;
+    }
+    std::string sizePath = "/sys/block/" + driveNode + "/size";
+    std::ifstream ifs(sizePath);
+    if (!ifs.is_open()) {
+        LOGE("GetUsedSizeFromSysfs: open %{public}s failed, errno=%{public}d", sizePath.c_str(), errno);
+        return -1;
+    }
+    int64_t sectorCount = 0;
+    ifs >> sectorCount;
+    ifs.close();
+    int64_t usedSize = sectorCount * 512;
+    LOGI("GetUsedSizeFromSysfs: sizePath=%{public}s, sectorCount=%{public}" PRId64
+         ", usedSize=%{public}" PRId64, sizePath.c_str(), sectorCount, usedSize);
+    return usedSize;
+}
+
 int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
 {
     LOGI("GetCapacity: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
@@ -1189,17 +1255,15 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
     }
     std::string discType = GetCDType(devPath);
     LOGI("label is %{public}s", discType.c_str());
-    int64_t usedSize = 0;
-    int32_t ret = GetDiscCapacity(cmdFd, discType, totalSize, usedSize);
+    totalSize = GetDiscCapacity(cmdFd, discType);
     close(cmdFd);
-
+    int64_t usedSize = GetUsedSizeFromSysfs(devPath);
+    if (usedSize < 0) {
+        usedSize = totalSize;
+    }
     AdjustBlankDiscCapacity(devPath, discType, totalSize, usedSize);
     LOGI("GetCapacity totalsize is %{public}" PRId64 ", usedsize is %{public}" PRId64, totalSize, usedSize);
     freeSize = (usedSize > totalSize) ? 0 : totalSize - usedSize;
-
-    if (ret != E_OK) {
-        LOGI("GetCapacity: <<< EXIT FAILED <<<");
-    }
     return E_OK;
 }
 
