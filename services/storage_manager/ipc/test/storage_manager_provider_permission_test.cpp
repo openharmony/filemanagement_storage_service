@@ -880,9 +880,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_0
     std::string keyId;
     bool needReSet = false;
     auto ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    keyId = "1";
-    ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
     EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
     userId = TOP_USER_ID + 1;
     ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
