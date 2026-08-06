@@ -15,17 +15,23 @@
 
 #include "utils/storage_utils.h"
 
-#include "ipc_skeleton.h"
-#include "storage_service_log.h"
 #include <climits>
 #include <cstdlib>
+#include <regex>
+
+#include "ipc_skeleton.h"
+#include "storage_service_log.h"
+#include "storage_service_constant.h"
+#include "storage_service_constants.h"
 
 namespace OHOS {
 namespace StorageManager {
-    constexpr const char *PATH_INVALID_FLAG1 = "../";
-    constexpr const char *PATH_INVALID_FLAG2 = "/..";
-    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
-    constexpr char FILE_SEPARATOR_CHAR = '/';
+constexpr const char *PATH_INVALID_FLAG1 = "../";
+constexpr const char *PATH_INVALID_FLAG2 = "/..";
+constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+constexpr char FILE_SEPARATOR_CHAR = '/';
+constexpr size_t INPUT_LIST_LEN = 50000;
+constexpr size_t PKG_NAME_LEN = 128;
 int64_t GetRoundSize(int64_t size)
 {
     int64_t val = 1;
@@ -111,6 +117,65 @@ bool IsPathStartWithDlp(const std::string &dstPath)
     const std::string prefix = "/data/service/el1/public/dlp_credential_service/";
     if (dstPath.compare(0, prefix.length(), prefix) != 0) {
         LOGE("IsDlpPathValid: path %{public}s does not start with dlp prefix", dstPath.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool CheckPkgNameRange(const std::string &pkgName)
+{
+    if (pkgName.empty()) {
+        LOGE("CheckPkgNameRange pkgName is empty");
+        return false;
+    }
+    if (pkgName.length() > PKG_NAME_LEN) {
+        LOGE("CheckPkgNameRange pkgName is invalid");
+        return false;
+    }
+    return true;
+}
+
+bool CheckAppIndexRange(int32_t appIndex)
+{
+    if (appIndex < 0) {
+        LOGE("CheckAppIndexRange appIndex is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckLevelRange(uint32_t level)
+{
+    if ((level < StorageService::EL1_SYS_KEY) || (level > StorageService::EL5_USER_KEY)) {
+        LOGE("CheckLevelRange level is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckInputListRange(const std::vector<std::string> &inputList)
+{
+    if (inputList.empty()) {
+        LOGE("CheckInputListRange inputList is empty");
+        return false;
+    }
+    if (inputList.size() > INPUT_LIST_LEN) {
+        LOGE("CheckInputListRange inputList is out of range");
+        return false;
+    }
+    return true;
+}
+
+bool CheckIdRange(const std::string &id)
+{
+    if (id.empty()) {
+        LOGE("CheckIdRange id is empty");
+        return false;
+    }
+    std::string idPattern = R"([0-9a-zA-Z]{1,65})";
+    std::regex idRegex(idPattern);
+    if (!std::regex_match(id, idRegex)) {
+        LOGE("CheckIdRange id is invalid");
         return false;
     }
     return true;

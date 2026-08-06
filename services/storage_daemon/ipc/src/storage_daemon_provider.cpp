@@ -43,6 +43,7 @@
 #include "file_ex.h"
 #include "file_sharing/file_sharing.h"
 #include "hi_audit.h"
+#include "ipc_skeleton.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -76,6 +77,8 @@ constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
+constexpr pid_t STORAGE_MANAGER_UID = 1090;
+constexpr pid_t DISK_MANAGER_UID = 1091;
 
 #ifdef DISK_MANAGER
 constexpr size_t MAX_TYPE_LEN = 64;
@@ -339,6 +342,11 @@ int32_t StorageDaemonProvider::Shutdown()
 int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 {
     LOGI("[L1:StorageDaemonProvider] QueryUsbIsInUse: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID && uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] QueryUsbIsInUse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(diskPath)) {
         LOGE("[L1:StorageDaemonProvider] QueryUsbIsInUse: <<< EXIT FAILED <<< diskPath is invalid");
         return E_PARAMS_INVALID;
@@ -361,11 +369,21 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] StartUser: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] StartUser: <<< EXIT FAILED <<< userId is invalid");
+        return ret;
+    }
     HiAudit::GetInstance().WriteStart("StartUser", "userId: " + std::to_string(userId));
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance().SetPriority();  // set tid priority to 40
-    int32_t ret = UserManager::GetInstance().StartUser(userId);
+    ret = UserManager::GetInstance().StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("[L1:StorageDaemonProvider] StartUser: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d",
             userId, ret);
@@ -383,14 +401,19 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
     HiAudit::GetInstance().WriteStart("StopUser", "userId: " + std::to_string(userId));
-    int32_t err = CheckUserIdRange(userId);
-    if (err != E_OK) {
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] StopUser: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
         LOGE("StorageDaemon::StopUser userId %{public}d out of range", userId);
-        StorageService::StorageRadar::ReportUserManager("StopUser", userId, err, "userId out of range");
-        return err;
+        StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "userId out of range");
+        return ret;
     }
     isNeedUpdateRadarFile_ = true;
-    int32_t ret = UserManager::GetInstance().StopUser(userId);
+    ret = UserManager::GetInstance().StopUser(userId);
     LOGE("[L1:StorageDaemonProvider] StopUser end, ret is %{public}d.", ret);
     if (ret != E_OK) {
         StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "StopUser failed");
@@ -410,6 +433,11 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     std::string message = "userId: " + std::to_string(userId) + " flags: " + std::to_string(flags);
     HiAudit::GetInstance().WriteStart("PrepareUserDirs", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] PrepareUserDirs: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     message = "PrepareUserDirs Begin, flags: " + to_string(flags);
     StorageRadar::ReportFucBehavior("PrepareUserDirs", userId, message, E_OK);
     int32_t error = CheckUserIdRange(userId);
@@ -438,6 +466,11 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     std::string message = "DestroyUserDirs Begin, flags: " + to_string(flags);
     StorageRadar::ReportFucBehavior("DestroyUserDirs", userId, message, E_OK);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] DestroyUserDirs: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     message = "`userId: " + std::to_string(userId) + " flags: " + std::to_string(flags);
     HiAudit::GetInstance().WriteStart("DestroyUserDirs", message);
     int32_t error = CheckUserIdRange(userId);
@@ -467,12 +500,26 @@ int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std
     std::string message = "userId: " + std::to_string(userId) + " dirPath: "
         + GetAnonyString(dirPath) + " level: " + std::to_string(level);
     HiAudit::GetInstance().WriteStart("SetDirEncryptionPolicy", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] SetDirEncryptionPolicy: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] SetDirEncryptionPolicy: <<< EXIT FAILED <<< userId is invalid");
+        return ret;
+    }
     if (IsFilePathInvalid(dirPath)) {
         LOGE("[L1:StorageDaemonProvider] SetDirEncryptionPolicy: <<< EXIT FAILED <<< dirPath is invalid");
         return E_PARAMS_INVALID;
     }
+    if (!CheckLevelRange(level)) {
+        LOGE("[L1:StorageDaemonProvider] SetDirEncryptionPolicy: <<< EXIT FAILED <<< level is invalid");
+        return E_PARAMS_INVALID;
+    }
     int timerId = StorageXCollie::SetTimer("storage:SetDirEncryptionPolicy", LOCAL_TIME_OUT_SECONDS);
-    int32_t ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
+    ret = StorageDaemon::GetInstance().SetDirEncryptionPolicy(userId, dirPath, level);
     StorageXCollie::CancelTimer(timerId);
     HiAudit::GetInstance().WriteEnd("SetDirEncryptionPolicy", ret);
     if (ret == E_OK) {
@@ -488,7 +535,17 @@ int32_t StorageDaemonProvider::SetDirEncryptionPolicy(uint32_t userId, const std
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
     HiAudit::GetInstance().WriteStart("CompleteAddUser", "userId: " + std::to_string(userId));
-    int32_t err = StorageDaemon::GetInstance().CompleteAddUser(userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CompleteAddUser: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] CompleteAddUser: <<< EXIT FAILED <<< userId is invalid");
+        return err;
+    }
+    err = StorageDaemon::GetInstance().CompleteAddUser(userId);
     HiAudit::GetInstance().WriteEnd("CompleteAddUser", err);
     if (err == E_OK) {
         LOGI("[L1:StorageDaemonProvider] CompleteAddUser: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
@@ -540,6 +597,16 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 int32_t StorageDaemonProvider::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdList)
 {
     HiAudit::GetInstance().WriteStart("EraseAllUserEncryptedKeys");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] EraseAllUserEncryptedKeys: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
+        return E_PERMISSION_DENIED;
+    }
+    if (!CheckLocalIdListRange(localIdList)) {
+        LOGE("[L1:StorageDaemonProvider] EraseAllUserEncryptedKeys: <<< EXIT FAILED <<< localIdList is invalid");
+        return E_PARAMS_INVALID;
+    }
     int32_t ret = StorageDaemon::GetInstance().EraseAllUserEncryptedKeys(localIdList);
     HiAudit::GetInstance().WriteEnd("EraseAllUserEncryptedKeys", ret);
     if (ret == E_OK) {
@@ -561,9 +628,19 @@ int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
         + " oldSecret size: " + std::to_string(oldSecret.size())
         + " newSecret size: " + std::to_string(newSecret.size());
     HiAudit::GetInstance().WriteStart("UpdateUserAuth", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UpdateUserAuth: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] UpdateUserAuth: <<< EXIT FAILED <<< userId is invalid");
+        return err;
+    }
     int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int err =  StorageDaemon::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    err =  StorageDaemon::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     StorageXCollie::CancelTimer(timerId);
     HiAudit::GetInstance().WriteEnd("UpdateUserAuth", err);
     if (err == E_OK) {
@@ -582,6 +659,12 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
     HiAudit::GetInstance().WriteStart("UpdateUseAuthWithRecoveryKey", "userId: " + std::to_string(userId));
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UpdateUseAuthWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}d out of"
@@ -608,6 +691,11 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     std::string message = "userId: " + std::to_string(userId)
         + " token size: " + std::to_string(token.size()) + " secret size: " + std::to_string(secret.size());
     HiAudit::GetInstance().WriteStart("ActiveUserKey", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ActiveUserKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t error = CheckUserIdRange(userId);
     if (error != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ActiveUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -636,6 +724,11 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 {
     HiAudit::GetInstance().WriteStart("InactiveUserKey", "userId: " + std::to_string(userId));
     LOGI("[L1:StorageDaemonProvider] InactiveUserKey: >>> ENTER <<< userId=%{public}u", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] InactiveUserKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] InactiveUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -663,6 +756,11 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
     std::string message = "userId: " + std::to_string(userId)
         + " needRemoveTmpKey: " + std::to_string(needRemoveTmpKey);
     HiAudit::GetInstance().WriteStart("UpdateKeyContext", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UpdateKeyContext: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageDaemon::UpdateKeyContext userId %{public}d out of range", userId);
@@ -688,6 +786,11 @@ int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
     HiAudit::GetInstance().WriteStart("LockUserScreen", "userId: " + std::to_string(userId));
     LOGD("[L1:StorageDaemonProvider] LockUserScreen: >>> ENTER <<< userId=%{public}u", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -719,16 +822,22 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     HiAudit::GetInstance().WriteStart("UnlockUserScreen", message);
     LOGD("[L1:StorageDaemonProvider] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
-    if (userId > StorageService::TOP_USER_ID) {
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         StorageService::StorageRadar::ReportUserManager("UnlockUserScreen", userId, E_PARAMS_INVALID,
             "userId out of range");
-        return E_PARAMS_INVALID;
+        return ret;
     }
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::unique_lock<std::mutex> lock(mutex_);
     isNeedUpdateRadarFile_ = true;
-    int ret = StorageDaemon::GetInstance().UnlockUserScreen(userId, token, secret);
+    ret = StorageDaemon::GetInstance().UnlockUserScreen(userId, token, secret);
     HiAudit::GetInstance().WriteEnd("UnlockUserScreen", ret);
     StorageXCollie::CancelTimer(timerId);
     SetUserStatistics(userId, ret != E_OK ? KEY_LOAD_FAIL : KEY_LOAD_SUCCESS);
@@ -762,6 +871,11 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
         + " lockScreenStatus: " + std::to_string(lockScreenStatus);
     HiAudit::GetInstance().WriteStart("GetLockScreenStatus", message);
     LOGD("[L1:StorageDaemonProvider] GetLockScreenStatus: >>> ENTER <<< userId=%{public}u", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GetLockScreenStatus: <<< EXIT FAILED <<< userId=%{public}d out of range",
@@ -791,6 +905,11 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
     std::string message = "userId: " + std::to_string(userId) + " hashId:"
         + std::to_string(hashId) + " keyId:" + GetAnonyString(keyId) + " needReSet:" + std::to_string(needReSet);
     HiAudit::GetInstance().WriteStart("GenerateAppkey", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GenerateAppkey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -816,10 +935,19 @@ int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &
 {
     std::string message = "userId: " + std::to_string(userId) + " keyId:" + GetAnonyString(keyId);
     HiAudit::GetInstance().WriteStart("DeleteAppkey", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
+    }
+    if (keyId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] DeleteAppkey: <<< EXIT FAILED <<< keyId is invalid");
+        return E_PARAMS_INVALID;
     }
     int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -845,6 +973,11 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
         "userId: " + std::to_string(userId) + " userType: " + std::to_string(userType));
     LOGI("[L1:StorageDaemonProvider] CreateRecoverKey: >>> ENTER <<< userId=%{public}u, userType=%{public}u",
          userId, userType);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreateRecoverKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] CreateRecoverKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -866,6 +999,11 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     HiAudit::GetInstance().WriteStart("SetRecoverKey");
     LOGI("[L1:StorageDaemonProvider] SetRecoverKey: >>> ENTER <<< keySize=%{public}zu", key.size());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = StorageDaemon::GetInstance().SetRecoverKey(key);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] SetRecoverKey: <<< EXIT SUCCESS <<<");
@@ -931,6 +1069,11 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     std::string message = "tokenId: " + GetAnonyString(std::to_string(tokenId)) + " flag:"
         + std::to_string(flag) + " rawData size: " + std::to_string(rawData.size);
     HiAudit::GetInstance().WriteStart("CreateShareFile", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreateShareFile: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     funcResult.clear();
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
@@ -975,6 +1118,11 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFi
     HiAudit::GetInstance().WriteStart("DeleteShareFile", message);
     LOGI("[L1:StorageDaemonProvider] DeleteShareFile: >>> ENTER <<< tokenId=%{public}u, rawData.size=%{public}u",
         tokenId, rawData.size);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] DeleteShareFile: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::vector<std::string> uriList;
     int32_t ret = RawDataToStringVec(rawData, uriList);
     if (ret != E_OK) {
@@ -1021,6 +1169,15 @@ int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
         "uid: " + std::to_string(uid) + " limitSizeMb: " + std::to_string(limitSizeMb));
     LOGI("[L1:StorageDaemonProvider] SetBundleQuota: >>> ENTER <<< uid=%{public}d, bundleDataDirPath=%{public}s,"
         "limitSizeMb=%{public}d", uid, bundleDataDirPath.c_str(), limitSizeMb);
+    auto callUid = IPCSkeleton::GetCallingUid();
+    if (callUid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT FAILED <<< uid=%{public}d is invalid", callUid);
+        return E_PERMISSION_DENIED;
+    }
+    if (bundleDataDirPath.empty()) {
+        LOGE("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT FAILED <<< bundleDataDirPath is invalid");
+        return E_PARAMS_INVALID;
+    }
     int32_t ret = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT SUCCESS <<< uid=%{public}d", uid);
@@ -1036,6 +1193,11 @@ int32_t StorageDaemonProvider::ListUserdataDirInfo(std::vector<UserdataDirInfo> 
 {
     HiAudit::GetInstance().WriteStart("ListUserdataDirInfo");
     LOGI("[L1:StorageDaemonProvider] ListUserdataDirInfo: >>> ENTER <<<");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ListUserdataDirInfo: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = QuotaManager::GetInstance().ListUserdataDirInfo(scanDirs);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] ListUserdataDirInfo: <<< EXIT SUCCESS <<< count=%{public}zu", scanDirs.size());
@@ -1051,6 +1213,11 @@ int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int6
     HiAudit::GetInstance().WriteStart("GetOccupiedSpace",
         "idType: " + std::to_string(idType) + " id: " + std::to_string(id));
     LOGI("[L1:StorageDaemonProvider] GetOccupiedSpace: >>> ENTER <<< idType=%{public}d, id=%{public}d", idType, id);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetOccupiedSpace: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     size = 0;
     int32_t ret = QuotaManager::GetInstance().GetOccupiedSpace(idType, id, size);
     if (ret == E_OK) {
@@ -1073,6 +1240,11 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
     std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
         + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
     HiAudit::GetInstance().WriteStart("MountDfsDocs", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountDfsDocs: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(relativePath)) {
         LOGE("[L1:StorageDaemonProvider] MountDfsDocs: <<< EXIT FAILED <<< relativePath is invalid");
         return E_PARAMS_INVALID;
@@ -1081,6 +1253,14 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountDfsDocs: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
+    }
+    if (!CheckIdRange(networkId)) {
+        LOGE("[L1:StorageDaemonProvider] MountDfsDocs: <<< EXIT FAILED <<< networkId is invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckIdRange(deviceId)) {
+        LOGE("[L1:StorageDaemonProvider] MountDfsDocs: <<< EXIT FAILED <<< deviceId is invalid");
+        return E_PARAMS_INVALID;
     }
     err = MountManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
     HiAudit::GetInstance().WriteEnd("MountDfsDocs", err);
@@ -1103,6 +1283,11 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
     std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
         + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
     HiAudit::GetInstance().WriteStart("UMountDfsDocs", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountDfsDocs: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(relativePath)) {
         LOGE("[L1:StorageDaemonProvider] UMountDfsDocs: <<< EXIT FAILED <<< relativePath is invalid");
         return E_PARAMS_INVALID;
@@ -1111,6 +1296,14 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountDfsDocs: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
+    }
+    if (!CheckIdRange(networkId)) {
+        LOGE("[L1:StorageDaemonProvider] UMountDfsDocs: <<< EXIT FAILED <<< networkId is invalid");
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckIdRange(deviceId)) {
+        LOGE("[L1:StorageDaemonProvider] UMountDfsDocs: <<< EXIT FAILED <<< deviceId is invalid");
+        return E_PARAMS_INVALID;
     }
     err = MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
     HiAudit::GetInstance().WriteEnd("UMountDfsDocs", err);
@@ -1127,10 +1320,20 @@ int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEnc
 {
     LOGI("[L1:StorageDaemonProvider] GetFileEncryptStatus: >>> ENTER <<< userId=%{public}u,"
         "needCheckDirMount=%{public}d", userId, needCheckDirMount);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetFileEncryptStatus: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] GetFileEncryptStatus: <<< EXIT FAILED <<< userId is invalid");
+        return ret;
+    }
     isEncrypted = true;
     int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    ret = StorageDaemon::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     StorageXCollie::CancelTimer(timerId);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] GetFileEncryptStatus: <<< EXIT SUCCESS <<< userId=%{public}u,"
@@ -1147,6 +1350,11 @@ int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &ne
     LOGI("[L1:StorageDaemonProvider] GetUserNeedActiveStatus: >>> ENTER <<< userId=%{public}u", userId);
     std::string message = "userId: " + std::to_string(userId) + " needActive: " + std::to_string(needActive);
     HiAudit::GetInstance().WriteStart("GetUserNeedActiveStatus", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetUserNeedActiveStatus: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GetUserNeedActiveStatus: <<< EXIT FAILED <<< userId=%{public}d out of range",
@@ -1175,6 +1383,11 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
     std::string message = "userId: " + std::to_string(userId) + " devFd: " + std::to_string(devFd);
     HiAudit::GetInstance().WriteStart("MountMediaFuse", message);
     LOGI("[L1:StorageDaemonProvider] MountMediaFuse: >>> ENTER <<< userId=%{public}d", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountMediaFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountMediaFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -1201,6 +1414,11 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 {
     HiAudit::GetInstance().WriteStart("UMountMediaFuse", "userId: " + std::to_string(userId));
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountMediaFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountMediaFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
@@ -1229,6 +1447,11 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
     std::string message = "userId: " + std::to_string(userId) + " path: "
         + GetAnonyString(path) + " fuseFd: " + std::to_string(fuseFd);
     HiAudit::GetInstance().WriteStart("MountFileMgrFuse", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path is invalid");
         return E_PARAMS_INVALID;
@@ -1260,6 +1483,11 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
         userId, path.c_str());
     std::string message = "userId: " + std::to_string(userId) + " path: " + GetAnonyString(path);
     HiAudit::GetInstance().WriteStart("UMountFileMgrFuse", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path is invalid");
         return E_PARAMS_INVALID;
@@ -1287,6 +1515,11 @@ int32_t StorageDaemonProvider::MountDlpFuse(const std::string &dstPath, int32_t 
 {
     LOGI("[L1:StorageDaemonProvider] MountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
     HiAudit::GetInstance().WriteStart("MountDlpFuse", "dstPath: " + dstPath);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountDlpFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
@@ -1309,6 +1542,11 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
 {
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: >>> ENTER <<< dstPath=%{public}s", dstPath.c_str());
     HiAudit::GetInstance().WriteStart("UMountDlpFuse", "dstPath: " + dstPath);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (!IsDlpPathValid(dstPath)) {
         return E_PARAMS_INVALID;
     }
@@ -1334,9 +1572,18 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
     HiAudit::GetInstance().WriteStart("IsFileOccupied", "path: " + path);
     LOGI("[L1:StorageDaemonProvider] IsFileOccupied: >>> ENTER <<< path=%{public}s, inputList.size=%{public}zu",
         path.c_str(), inputList.size());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] IsFileOccupied: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] IsFileOccupied: <<< EXIT FAILED <<< path is invalid");
         HiAudit::GetInstance().WriteEnd("IsFileOccupied", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
+    if (!CheckInputListRange(inputList)) {
+        LOGE("[L1:StorageDaemonProvider] IsFileOccupied: <<< EXIT FAILED <<< inputList is invalid");
         return E_PARAMS_INVALID;
     }
     isOccupy = false;
@@ -1359,6 +1606,12 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
         "userId: " + std::to_string(userId) + " rkType: " + std::to_string(rkType));
     LOGI("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: >>> ENTER <<< userId=%{public}u, rkType=%{public}u",
         userId, rkType);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< userId=%{public}d out of"
@@ -1410,6 +1663,11 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
         userId, shareFiles.size());
     std::string message = "userId: " + std::to_string(userId);
     HiAudit::GetInstance().WriteStart("MountDisShareFile", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (CheckUserIdRange(userId) != E_OK) {
         StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_USERID_RANGE, userId, "userId invalid");
         return E_USERID_RANGE;
@@ -1446,6 +1704,11 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
          userId, networkId.c_str());
     std::string message = "userId: " + std::to_string(userId) + " networkId: " + GetAnonyString(networkId);
     HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (CheckUserIdRange(userId) != E_OK) {
         StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_USERID_RANGE, userId,
             "userId invalid");
@@ -1483,6 +1746,11 @@ int32_t StorageDaemonProvider::UMountDisShareFile(const std::vector<std::string>
          distributeDirs.size());
     std::string message = "distributeDirs size: " + std::to_string(distributeDirs.size());
     HiAudit::GetInstance().WriteStart("UMountDisShareFile", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     if (distributeDirs.empty()) {
         LOGE("[L1:StorageDaemonProvider] UMountDisShareFile: <<< EXIT FAILED <<< distributeDirs empty");
         StorageService::StorageRadar::ReportCommonResult("UMountDisShareFile", E_PARAMS_INVALID,
@@ -1516,6 +1784,11 @@ int32_t StorageDaemonProvider::UMountDisShareFile(const std::vector<std::string>
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 {
     LOGI("[L1:StorageDaemonProvider] InactiveUserPublicDirKey: >>> ENTER <<< userId=%{public}u", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] InactiveUserPublicDirKey: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] InactiveUserPublicDirKey: <<< EXIT FAILED <<< userId=%{public}d out of range",
@@ -1536,8 +1809,19 @@ int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
 int32_t StorageDaemonProvider::UpdateUserPublicDirPolicy(uint32_t userId)
 {
     LOGI("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: >>> ENTER <<< userId=%{public}u", userId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = CheckUserIdRange(userId);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: <<< EXIT FAILED <<< userId is invalid");
+        return ret;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = StorageDaemon::GetInstance().UpdateUserPublicDirPolicy(userId);
+    ret = StorageDaemon::GetInstance().UpdateUserPublicDirPolicy(userId);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] UpdateUserPublicDirPolicy: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     } else {
@@ -1553,6 +1837,11 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa(std::vector<UidSaInfo> &v
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: >>> ENTER <<< bundleNameAndUid.size=%{public}zu",
         bundleNameAndUid.size());
     HiAudit::GetInstance().WriteStart("QueryOccupiedSpaceForSa", "type: " + std::to_string(type));
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     QuotaManager::GetInstance().GetUidStorageStats(vec, totalSize, bundleNameAndUid, type);
     HiAudit::GetInstance().WriteEnd("QueryOccupiedSpaceForSa", E_OK);
     LOGI("[L1:StorageDaemonProvider] QueryOccupiedSpaceForSa: <<< EXIT SUCCESS <<<");
@@ -1564,6 +1853,12 @@ int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
 {
     LOGD("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: >>> ENTER <<<");
     HiAudit::GetInstance().WriteStart("RegisterUeceActivationCallback");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT FAILED <<< uid=%{public}d is invalid",
+            uid);
+        return E_PERMISSION_DENIED;
+    }
     if (ueceCallback == nullptr) {
         LOGE("[L1:StorageDaemonProvider] RegisterUeceActivationCallback: <<< EXIT FAILED <<< callback is nullptr");
         return E_PARAMS_NULLPTR_ERR;
@@ -1582,6 +1877,12 @@ int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
 {
     LOGD("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: >>> ENTER <<<");
     HiAudit::GetInstance().WriteStart("UnregisterUeceActivationCallback");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UnregisterUeceActivationCallback: <<< EXIT FAILED <<< "
+            "uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = StorageDaemon::GetInstance().UnregisterUeceActivationCallback();
     HiAudit::GetInstance().WriteEnd("UnregisterUeceActivationCallback", ret);
     if (ret == E_OK) {
@@ -1599,6 +1900,11 @@ int32_t StorageDaemonProvider::CreateUserDir(const std::string &path, mode_t mod
     std::string message = "path: " + GetAnonyString(path) + " mode: " + std::to_string(mode)
         + " uid: " + std::to_string(uid) + " gid: " + std::to_string(gid);
     HiAudit::GetInstance().WriteStart("CreateUserDir", message);
+    auto callUid = IPCSkeleton::GetCallingUid();
+    if (callUid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreateUserDir: <<< EXIT FAILED <<< uid=%{public}d is invalid", callUid);
+        return E_PERMISSION_DENIED;
+    }
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] CreateUserDir: <<< EXIT FAILED <<< path is invalid");
         return E_PARAMS_INVALID;
@@ -1619,6 +1925,11 @@ int32_t StorageDaemonProvider::GetDqBlkSpacesByUids(const std::vector<int32_t> &
 {
     HiAudit::GetInstance().WriteStart("GetDqBlkSpacesByUids", "uids.size: " + std::to_string(uids.size()));
     LOGI("[L1:StorageDaemonProvider] GetDqBlkSpacesByUids: >>> ENTER <<< uids.size=%{public}zu", uids.size());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetDqBlkSpacesByUids: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = QuotaManager::GetInstance().GetDqBlkSpacesByUids(uids, dqBlks);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] GetDqBlkSpacesByUids: <<< EXIT SUCCESS <<< dqBlks.size=%{public}zu",
@@ -1635,6 +1946,11 @@ int32_t StorageDaemonProvider::GetDirListSpace(const std::vector<DirSpaceInfo> &
 {
     HiAudit::GetInstance().WriteStart("GetDirListSpace", "inDirs.size: " + std::to_string(inDirs.size()));
     LOGI("[L1:StorageDaemonProvider] GetDirListSpace: >>> ENTER <<< inDirs.size=%{public}zu", inDirs.size());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetDirListSpace: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     outDirs = inDirs;
     int32_t ret = QuotaManager::GetInstance().GetDirListSpace(outDirs);
     HiAudit::GetInstance().WriteEnd("GetDirListSpace", ret);
@@ -1647,6 +1963,11 @@ int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::str
 {
     HiAudit::GetInstance().WriteStart("GetDirListSpaceByPaths",
         "paths.size: " + std::to_string(paths.size()) + " uids.size: " + std::to_string(uids.size()));
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetDirListSpaceByPaths: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = QuotaManager::GetInstance().GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
     HiAudit::GetInstance().WriteEnd("GetDirListSpaceByPaths", ret);
     return ret;
@@ -1655,6 +1976,11 @@ int32_t StorageDaemonProvider::GetDirListSpaceByPaths(const std::vector<std::str
 int32_t StorageDaemonProvider::SetStopScanFlag(bool stop)
 {
     LOGI("[L1:StorageDaemonProvider] SetStopScanFlag: >>> ENTER <<< stop=%{public}d", stop);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] SetStopScanFlag: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     QuotaManager::GetInstance().SetStopScanFlag(stop);
     LOGI("[L1:StorageDaemonProvider] SetStopScanFlag: <<< EXIT SUCCESS <<< stop=%{public}d", stop);
     return E_OK;
@@ -1664,6 +1990,11 @@ int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 {
     HiAudit::GetInstance().WriteStart("GetAncoSizeData");
     LOGI("[L1:StorageDaemonProvider] GetAncoSizeData: >>> ENTER <<<");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetAncoSizeData: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     QuotaManager::GetInstance().GetAncoSizeData(outExtraData);
     LOGI("[L1:StorageDaemonProvider] GetAncoSizeData: <<< EXIT SUCCESS <<<");
     HiAudit::GetInstance().WriteEnd("GetAncoSizeData", E_OK);
@@ -1674,6 +2005,11 @@ int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_
 {
     HiAudit::GetInstance().WriteStart("GetDataSizeByPath", "path: " + path);
     LOGI("[L1:StorageDaemonProvider] GetDataSizeByPath: >>> ENTER <<< path=%{public}s", path.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetDataSizeByPath: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = QuotaManager::GetInstance().GetFileData(path, size);
     HiAudit::GetInstance().WriteEnd("GetDataSizeByPath", ret);
     return ret;
@@ -1682,6 +2018,11 @@ int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_
 int32_t StorageDaemonProvider::GetSystemDataSize(int64_t &otherUidSizeSum)
 {
     HiAudit::GetInstance().WriteStart("GetSystemDataSize");
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetSystemDataSize: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = QuotaManager::GetInstance().GetSystemDataSize(otherUidSizeSum);
     HiAudit::GetInstance().WriteEnd("GetSystemDataSize", ret);
     return ret;
@@ -1691,6 +2032,11 @@ int32_t StorageDaemonProvider::GetRmgResourceSize(const std::string &rgmName, ui
 {
     HiAudit::GetInstance().WriteStart("GetRmgResourceSize", "rgmName: " + rgmName);
     LOGI("[L1:StorageDaemonProvider] GetRmgResourceSize: >>> ENTER <<< rgmName=%{public}s", rgmName.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetRmgResourceSize: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     int32_t ret = OHOS::StorageDaemon::GetRmgResourceSize(rgmName, totalSize);
     HiAudit::GetInstance().WriteEnd("GetRmgResourceSize", ret);
     return ret;
@@ -1705,6 +2051,11 @@ int32_t StorageDaemonProvider::CreateBlockDeviceNode(const std::string &devPath,
     LOGI("[L1:StorageDaemonProvider] CreateBlockDeviceNode: >>> ENTER <<< devPath=%{public}s, "
          "mode=0%{public}o, major=%{public}d, minor=%{public}d",
          devPath.c_str(), mode, majorId, minorId);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreateBlockDeviceNode: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -1737,6 +2088,11 @@ int32_t StorageDaemonProvider::DestroyBlockDeviceNode(const std::string &devPath
 {
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] DestroyBlockDeviceNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] DestroyBlockDeviceNode: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -1763,6 +2119,11 @@ int32_t StorageDaemonProvider::ReadPartitionTable(const std::string &devPath,
 {
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] ReadPartitionTable: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ReadPartitionTable: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -1793,6 +2154,11 @@ int32_t StorageDaemonProvider::Mount(const std::string &devPath,
     LOGI("[L1:StorageDaemonProvider] Mount: >>> ENTER <<< devPath=%{public}s, mountPath=%{public}s, "
          "fsType=%{public}s, mountFlags=%{public}" PRIu64,
         devPath.c_str(), mountPath.c_str(), fsType.c_str(), mountFlags);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedDevPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedDevPath);
     if (ret != E_OK) {
@@ -1841,10 +2207,19 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Unmount: >>> ENTER <<< mountPath=%{public}s, fsType=%{public}s, force=%{public}d",
         mountPath.c_str(), fsType.c_str(), force);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Unmount: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedMountPath;
     int32_t ret = ValidateMountPath(mountPath, verifiedMountPath);
     if (ret != E_OK) {
         return ret;
+    }
+    if (fsType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Unmount: fsType is empty");
+        return E_PARAMS_INVALID;
     }
 
     auto op = VolumeOperatorFactory::GetGenericOperator();
@@ -1871,7 +2246,18 @@ int32_t StorageDaemonProvider::QueryCDStatus(const std::string &devPath, int32_t
 {
     LOGI("[L1:StorageDaemonProvider] QueryCDStatus: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
 #ifdef DISK_MANAGER
-    int32_t ret = DiskUtils::QueryCDStatus(devPath, status);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
+    }
+    ret = DiskUtils::QueryCDStatus(verifiedPath, status);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] QueryCDStatus: <<< EXIT FAILED <<< ret=%{public}d", ret);
         return ret;
@@ -1889,7 +2275,18 @@ int32_t StorageDaemonProvider::EjectCD(const std::string &devPath)
 {
     LOGI("[L1:StorageDaemonProvider] EjectCD: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
 #ifdef DISK_MANAGER
-    int32_t ret = DiskUtils::EjectCD(devPath);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] EjectCD: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] EjectCD: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
+    }
+    ret = DiskUtils::EjectCD(verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] EjectCD: <<< EXIT FAILED <<< ret=%{public}d", ret);
         return ret;
@@ -1909,6 +2306,11 @@ int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] FormatVolume: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s",
         devPath.c_str(), fsType.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -1946,6 +2348,11 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Check: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s, autoFix=%{public}d",
         devPath.c_str(), fsType.c_str(), autoFix);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Check: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -1993,6 +2400,11 @@ int32_t StorageDaemonProvider::Repair(const std::string &devPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Repair: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s",
         devPath.c_str(), fsType.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Repair: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -2030,6 +2442,11 @@ int32_t StorageDaemonProvider::SetLabel(const std::string &devPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] SetLabel: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s, label=%{public}s",
         devPath.c_str(), fsType.c_str(), label.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] SetLabel: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -2067,6 +2484,11 @@ int32_t StorageDaemonProvider::ReadMetadata(const std::string &devPath,
 {
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] ReadMetadata: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ReadMetadata: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -2092,6 +2514,11 @@ int32_t StorageDaemonProvider::MountFuseDevice(const std::string &mountPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] MountFuseDevice: >>> ENTER <<< mountPath=%{public}s",
         mountPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountFuseDevice: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedMountPath;
     int32_t ret = ValidateMountPath(mountPath, verifiedMountPath);
     if (ret != E_OK) {
@@ -2117,10 +2544,19 @@ int32_t StorageDaemonProvider::Partition(const std::string &diskPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Partition: >>> ENTER <<< diskPath=%{public}s, type=%{public}s",
         diskPath.c_str(), partitionType.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Partition: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(diskPath, verifiedPath);
     if (ret != E_OK) {
         return ret;
+    }
+    if (partitionType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Partition: <<< EXIT FAILED <<< partitionType is invalid");
+        return E_PARAMS_INVALID;
     }
 
     ret = DiskUtils::Partition(verifiedPath, partitionType);
@@ -2143,10 +2579,19 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
     HiAudit::GetInstance().WriteStart("GetBlockInfoByType", "type: " + type + " diskId: " + diskId);
     LOGI("[L1:StorageDaemonProvider] GetBlockInfoByType: >>> ENTER <<< diskId=%{public}s, type=%{public}s",
          diskId.c_str(), type.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
 
     if (type.empty() || type.size() > MAX_TYPE_LEN) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
+    if (diskId.empty()) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT FAILED <<< diskId is invalid");
         return E_PARAMS_INVALID;
     }
 
@@ -2172,13 +2617,20 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
 
 int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath, std::string &execRet)
 {
-    if (devPath.empty()) {
-        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< invalid params");
-        return E_PARAMS_INVALID;
-    }
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    int32_t ret = DiskUtils::GetPartitionTableInfo(devPath, execRet);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
+    }
+    ret = DiskUtils::GetPartitionTableInfo(verifiedPath, execRet);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<");
     } else {
@@ -2194,9 +2646,17 @@ int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath,
 int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32_t partitionNum, int64_t startSector,
                                                int64_t endSector, const std::string &typeCode)
 {
-    if (devPath.empty()) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath empty");
-        return E_PARAMS_INVALID;
+#ifdef DISK_MANAGER
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
     }
     if (partitionNum <= 0) {
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< partitionNum invalid");
@@ -2210,10 +2670,9 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< typeCode empty");
         return E_PARAMS_INVALID;
     }
-#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
-         devPath.c_str(), partitionNum);
-    int32_t ret = DiskUtils::CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
+         verifiedPath.c_str(), partitionNum);
+    ret = DiskUtils::CreatePartition(verifiedPath, partitionNum, startSector, endSector, typeCode);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT SUCCESS <<<");
     } else {
@@ -2229,9 +2688,17 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
 int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, const std::string &diskId,
                                                    int32_t partitionNum)
 {
-    if (devPath.empty()) {
-        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath empty");
-        return E_PARAMS_INVALID;
+#ifdef DISK_MANAGER
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
     }
     if (diskId.empty()) {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< diskId empty");
@@ -2241,10 +2708,9 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, c
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< partitionNum invalid");
         return E_PARAMS_INVALID;
     }
-#ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, diskId=%{public}s,"
-         "partitionNum=%{public}d", devPath.c_str(), diskId.c_str(), partitionNum);
-    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, diskId, partitionNum);
+         "partitionNum=%{public}d", verifiedPath.c_str(), diskId.c_str(), partitionNum);
+    ret = DiskUtils::DeletePartitionInfo(verifiedPath, diskId, partitionNum);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT SUCCESS <<<");
     } else {
@@ -2260,18 +2726,29 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, c
 int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const std::string &fsType,
                                                const std::string &volumeName, bool quickFormat)
 {
-    if (devPath.empty()) {
-        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< devPath empty");
-        return E_PARAMS_INVALID;
+#ifdef DISK_MANAGER
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedPath;
+    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
         return E_PARAMS_INVALID;
     }
-#ifdef DISK_MANAGER
+    if (volumeName.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< volumeName empty");
+        return E_PARAMS_INVALID;
+    }
     LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
-         ", volumeName=%{public}s", devPath.c_str(), fsType.c_str(), volumeName.c_str());
-    int32_t ret = DiskUtils::FormatPartition(devPath, fsType, volumeName, quickFormat);
+         ", volumeName=%{public}s", verifiedPath.c_str(), fsType.c_str(), volumeName.c_str());
+    ret = DiskUtils::FormatPartition(verifiedPath, fsType, volumeName, quickFormat);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<<");
     } else {
@@ -2289,6 +2766,11 @@ int32_t StorageDaemonProvider::Erase(const std::string &devPath)
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Erase: >>> ENTER <<< devPath=%{public}s",
         devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Erase: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -2313,6 +2795,15 @@ int32_t StorageDaemonProvider::Eject(const std::string &devName)
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Eject: >>> ENTER <<< devName=%{public}s",
         devName.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    if (devName.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< devName is invalid");
+        return E_PARAMS_INVALID;
+    }
 
     int32_t ret = DiskUtils::Eject(devName);
     if (ret != E_OK) {
@@ -2336,6 +2827,11 @@ int32_t StorageDaemonProvider::CreateIsoImage(const std::string &devPath,
     LOGI("[L1:StorageDaemonProvider] CreateIsoImage: >>> ENTER <<< devPath=%{public}s, filePath=%{public}s, "
          "fsType=%{public}s, mountPath=%{public}s",
          devPath.c_str(), filePath.c_str(), fsType.c_str(), mountPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedDevPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedDevPath);
     if (ret != E_OK) {
@@ -2382,10 +2878,19 @@ int32_t StorageDaemonProvider::Burn(const std::string &devPath,
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] Burn: >>> ENTER <<< devPath=%{public}s, burnOptions=%{public}s",
         devPath.c_str(), burnOptions.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
         return ret;
+    }
+    if (fsType.empty()) {
+        LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<< fsType is empty");
+        return E_PARAMS_INVALID;
     }
     BurnOptions parsedOptions;
     ret = ParseBurnOptions(burnOptions, parsedOptions);
@@ -2421,6 +2926,11 @@ int32_t StorageDaemonProvider::GetVolumeOpProcess(const std::string &volumeId, i
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] GetVolumeOpProcess: >>> ENTER <<< volumeId=%{public}s",
         volumeId.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetVolumeOpProcess: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath("/dev/block/" + volumeId, verifiedPath);
     if (ret != E_OK) {
@@ -2445,6 +2955,11 @@ int32_t StorageDaemonProvider::VerifyBurnData(const std::string &devPath, int32_
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] VerifyBurnData: >>> ENTER <<< devPath=%{public}s",
         devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] VerifyBurnData: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
@@ -2469,6 +2984,11 @@ int32_t StorageDaemonProvider::GetCapacity(const std::string &devPath, int64_t &
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] GetCapacity: >>> ENTER <<< devPath=%{public}s",
         devPath.c_str());
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] GetCapacity: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
