@@ -41,7 +41,7 @@ bool CheckExtFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     FuzzedDataProvider fdp(data, size);
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CHECK_IN_STRING_IN_STRING_IN_BOOLEAN);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CHECK);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));

@@ -12,12 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "storagedaemonproviderreadpartitiontable_fuzzer.h"
+#include "storagedaemonproviderburn_fuzzer.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "fuzzer/FuzzedDataProvider.h"
 #include "message_parcel.h"
@@ -33,15 +34,17 @@ static const int32_t MAX_PATH_LENGTH = 64;
 std::shared_ptr<StorageDaemonProvider> storageDaemonProvider =
     std::make_shared<StorageDaemonProvider>();
 
-bool ReadPartitionTableFuzzTest(const uint8_t *data, size_t size)
+bool BurnFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size == 0)) {
         return false;
     }
     FuzzedDataProvider fdp(data, size);
-    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_READ_PARTITION_TABLE);
+    uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_BURN);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
+    datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
     datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
     datas.RewindRead(0);
     MessageParcel reply;
@@ -56,6 +59,6 @@ bool ReadPartitionTableFuzzTest(const uint8_t *data, size_t size)
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    OHOS::ReadPartitionTableFuzzTest(data, size);
+    OHOS::BurnFuzzTest(data, size);
     return 0;
 }
