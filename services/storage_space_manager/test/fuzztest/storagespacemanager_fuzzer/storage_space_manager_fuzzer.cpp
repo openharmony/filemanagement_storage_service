@@ -92,8 +92,11 @@ void FuzzGetTotalSize(FuzzedDataProvider& provider)
         return;
     }
 
-    int64_t totalSize = 0;
-    g_client->GetTotalSize(totalSize);
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t totalSize = 0;
+        g_client->GetTotalSize(totalSize);
+    }
 }
 
 // Fuzz GetSystemSize API
@@ -103,8 +106,11 @@ void FuzzGetSystemSize(FuzzedDataProvider& provider)
         return;
     }
 
-    int64_t systemSize = 0;
-    g_client->GetSystemSize(systemSize);
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t systemSize = 0;
+        g_client->GetSystemSize(systemSize);
+    }
 }
 
 // Fuzz GetFreeSize API
@@ -114,8 +120,11 @@ void FuzzGetFreeSize(FuzzedDataProvider& provider)
         return;
     }
 
-    int64_t freeSize = 0;
-    g_client->GetFreeSize(freeSize);
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t freeSize = 0;
+        g_client->GetFreeSize(freeSize);
+    }
 }
 
 // Fuzz GetTotalInodes API
@@ -125,8 +134,11 @@ void FuzzGetTotalInodes(FuzzedDataProvider& provider)
         return;
     }
 
-    int64_t totalInodes = 0;
-    g_client->GetTotalInodes(totalInodes);
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t totalInodes = 0;
+        g_client->GetTotalInodes(totalInodes);
+    }
 }
 
 // Fuzz GetFreeInodes API
@@ -136,8 +148,11 @@ void FuzzGetFreeInodes(FuzzedDataProvider& provider)
         return;
     }
 
-    int64_t freeInodes = 0;
-    g_client->GetFreeInodes(freeInodes);
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t freeInodes = 0;
+        g_client->GetFreeInodes(freeInodes);
+    }
 }
 
 // Fuzz CleanBundleCache API with various userId values
@@ -246,19 +261,21 @@ void FuzzConcurrentAccess(FuzzedDataProvider& provider)
         return;
     }
 
-    // Simulate concurrent access by calling multiple APIs
-    int64_t totalSize = 0;
-    int64_t systemSize = 0;
-    int64_t freeSize = 0;
-    int64_t totalInodes = 0;
-    int64_t freeInodes = 0;
+    // Simulate concurrent access by calling multiple APIs with fuzz-driven repeat count
+    uint32_t repeatCount = provider.ConsumeIntegralInRange<uint32_t>(1, REPEAT_COUNT);
+    for (uint32_t i = 0; i < repeatCount; i++) {
+        int64_t totalSize = 0;
+        int64_t systemSize = 0;
+        int64_t freeSize = 0;
+        int64_t totalInodes = 0;
+        int64_t freeInodes = 0;
 
-    // Call all APIs
-    g_client->GetTotalSize(totalSize);
-    g_client->GetSystemSize(systemSize);
-    g_client->GetFreeSize(freeSize);
-    g_client->GetTotalInodes(totalInodes);
-    g_client->GetFreeInodes(freeInodes);
+        g_client->GetTotalSize(totalSize);
+        g_client->GetSystemSize(systemSize);
+        g_client->GetFreeSize(freeSize);
+        g_client->GetTotalInodes(totalInodes);
+        g_client->GetFreeInodes(freeInodes);
+    }
 }
 
 // Fuzz with boundary values
@@ -268,12 +285,10 @@ void FuzzBoundaryValues(FuzzedDataProvider& provider)
         return;
     }
 
-    // Test boundary userId values
-    std::vector<int32_t> boundaryUserIds = {
-        0, 100, 101, 102, 999, INT32_MAX, INT32_MIN, -1, -100
-    };
-
-    for (int32_t testUserId : boundaryUserIds) {
+    // Test boundary userId values from fuzz data
+    uint32_t count = provider.ConsumeIntegralInRange<uint32_t>(1, CLEAN_CALL_COUNT);
+    for (uint32_t i = 0; i < count; i++) {
+        int32_t testUserId = provider.ConsumeIntegral<int32_t>();
         g_client->CleanBundleCache(testUserId);
     }
 }
