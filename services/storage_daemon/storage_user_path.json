@@ -815,6 +815,18 @@
             "mode": "02771",
             "uid": 1006,
             "gid": 1006
+        },
+        {
+            "path": "/mnt/data/<userId>/media_fuse",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
+        },
+        {
+            "path": "/mnt/data/<userId>/media_fuse/Photo",
+            "mode": "0711",
+            "uid": 1008,
+            "gid": 1008
         }
     ],
     "virtual": [
@@ -866,18 +878,6 @@
             "mode": "0711",
             "uid": 1009,
             "gid": 1009
-        },
-        {
-            "path": "/mnt/data/<userId>/media_fuse",
-            "mode": "0711",
-            "uid": 1008,
-            "gid": 1008
-        },
-        {
-            "path": "/mnt/data/<userId>/media_fuse/Photo",
-            "mode": "0711",
-            "uid": 1008,
-            "gid": 1008
         },
         {
             "path": "/mnt/data/<userId>/hmdfs",
