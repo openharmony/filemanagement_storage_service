@@ -699,11 +699,12 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnlockUserScreen_0
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnlockUserScreen_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnlockUserScreen_003 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::vector<uint8_t> token = {0x01, 0x02, 0x03};
     std::vector<uint8_t> secret = {0xAA, 0xBB, 0xCC};
     int32_t result = storageDaemonProviderTest_->UnlockUserScreen(StorageService::TOP_USER_ID + 1, token, secret);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnlockUserScreen_003 end";
 }
 
