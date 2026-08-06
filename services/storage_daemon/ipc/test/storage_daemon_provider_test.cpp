@@ -46,7 +46,7 @@ void SetCallingUid(int32_t uid)
 }
 
 namespace OHOS {
-#ifdef CONFIG_IPC_SINGLE;
+#ifdef CONFIG_IPC_SINGLE
 using namespace IPC_SINGLE;
 #endif
 
@@ -1196,16 +1196,16 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_001,
     int32_t result =
         storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
     EXPECT_EQ(result, E_PARAMS_INVALID);
-    std::string networkId = "a1b2c3d4e5f6g7h8i9j0";
-    std::string deviceId = "abc@123";
+    networkId = "a1b2c3d4e5f6g7h8i9j0";
+    deviceId = "abc@123";
     result = storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
     EXPECT_EQ(result, E_PARAMS_INVALID);
-    std::string networkId = "abc@123";
-    std::string deviceId = "a1b2c3d4e5f6g7h8i9j0";
+    networkId = "abc@123";
+    deviceId = "a1b2c3d4e5f6g7h8i9j0";
     result = storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
     EXPECT_EQ(result, E_PARAMS_INVALID);
-    std::string networkId = "a1b2c3d4e5f6g7h8i9j0";
-    std::string deviceId = "a1b2c3d4e5f6g7h8i9j0";
+    networkId = "a1b2c3d4e5f6g7h8i9j0";
+    deviceId = "a1b2c3d4e5f6g7h8i9j0";
     result = storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath, networkId, deviceId);
     EXPECT_EQ(result, E_OK);
 
