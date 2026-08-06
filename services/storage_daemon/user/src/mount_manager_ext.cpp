@@ -26,6 +26,7 @@
 #include "user/mount_constant.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/storage_radar.h"
+#include "utils/hi_audit.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -39,6 +40,7 @@ const string PROC_MOUNTS = "/proc/mounts";
 const string REMOTE_SHARE_PATH_DIR = "/.remote_share";
 static constexpr int SHARE_FILE_0771 = 0771;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
+constexpr uint32_t MAX_PROC_MOUNTS_LOOP_COUNT = 50000;
 
 void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::string &path,
     std::set<std::string> &occupyFiles)
@@ -197,7 +199,10 @@ int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::l
         return E_UMOUNT_PROC_MOUNTS_OPEN;
     }
     std::string tmpLine;
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("MountManager::FindMountsByNetworkId while");
     while (std::getline(inputStream, tmpLine)) {
+        CheckAndReportOverLoop("MountManager::FindMountsByNetworkId", loopCount, MAX_PROC_MOUNTS_LOOP_COUNT);
         if (tmpLine.empty()) {
             continue;
         }
@@ -211,6 +216,7 @@ int32_t MountManager::FindMountsByNetworkId(const std::string &networkId, std::l
             mounts.push_front(dst);
         }
     }
+    HiAudit::GetInstance().WriteEnd("MountManager::FindMountsByNetworkId", E_OK);
     LOGI("[L2:MountManager] FindMountsByNetworkId: <<< EXIT SUCCESS <<< mounts.size()=%{public}zu", mounts.size());
     return E_OK;
 }
@@ -226,7 +232,10 @@ int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &n
         return E_UMOUNT_PROC_MOUNTS_OPEN;
     }
     std::string tmpLine;
+    uint32_t loopCount = 0;
+    HiAudit::GetInstance().WriteStart("MountManager::FilterNotMountedPath while");
     while (std::getline(inputStream, tmpLine)) {
+        CheckAndReportOverLoop("MountManager::FilterNotMountedPath", loopCount, MAX_PROC_MOUNTS_LOOP_COUNT);
         if (tmpLine.empty()) {
             continue;
         }
@@ -240,6 +249,7 @@ int32_t MountManager::FilterNotMountedPath(std::map<std::string, std::string> &n
             notMountPaths.erase(dst);
         }
     }
+    HiAudit::GetInstance().WriteEnd("MountManager::FilterNotMountedPath", E_OK);
     LOGI("[L2:MountManager] FilterNotMountedPath: <<< EXIT SUCCESS <<< remaining paths=%{public}zu",
         notMountPaths.size());
     return E_OK;

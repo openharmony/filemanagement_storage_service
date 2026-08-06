@@ -158,5 +158,15 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
 {
     return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, nullptr, exitStatus);
 }
+
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount)
+{
+    loopCount++;
+}
+
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount)
+{
+    loopCount++;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

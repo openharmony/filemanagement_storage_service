@@ -92,6 +92,8 @@ bool IsFilePathInvalid(const std::string &filePath);
 bool GetRealPath(const std::string &path, std::string &realPath);
 std::string MaskSensitiveInfo(const std::string &input);
 bool CleanOrphanNode();
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount);
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount);
 } // namespace StorageDaemon
 } // namespace OHOS
 

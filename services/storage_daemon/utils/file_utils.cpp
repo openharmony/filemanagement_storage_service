@@ -33,6 +33,7 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/storage_radar.h"
+#include "utils/hi_audit.h"
 #ifdef USE_LIBRESTORECON
 #include "policycoreutils.h"
 #endif
@@ -70,6 +71,11 @@ constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
 constexpr char FILE_SEPARATOR_CHAR = '/';
 const std::string DROP_ENCRYPT_DENTRY_PATH = "/proc/sys/vm/drop_encrypt_dentry";
 const std::string DROP_ENCRYPT_DENTRY_VALUE = "1";
+constexpr uint32_t OVER_LOOP_FIRST_ALERT_THRESHOLD = 1000;
+constexpr uint32_t OVER_LOOP_SECOND_ALERT_THRESHOLD = 2000;
+constexpr uint32_t OVER_LOOP_COUNT_GROW_CAP = 3000;
+constexpr uint32_t OVER_LOOP_ALERT_HALF_MAX_MULTIPLE = 2;
+constexpr uint32_t OVER_LOOP_COUNT_GROW_CAP_MULTIPLE = 3;
 
 struct RgmPathConfig {
     bool isImg = false;
@@ -1484,6 +1490,28 @@ bool CleanOrphanNode()
     }
     LOGI("Clean orphan node success");
     return true;
+}
+
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount)
+{
+    if (loopCount <= OVER_LOOP_COUNT_GROW_CAP) {
+        loopCount++;
+    }
+    if (loopCount == OVER_LOOP_FIRST_ALERT_THRESHOLD || loopCount == OVER_LOOP_SECOND_ALERT_THRESHOLD) {
+        StorageRadar::ReportUserKeyResult("ReportOverLoopCount for function: " + funcName,
+            DEFAULT_USERID, E_OK, "ELx", "");
+    }
+}
+
+void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount)
+{
+    if (loopCount <= OVER_LOOP_COUNT_GROW_CAP_MULTIPLE * maxCount) {
+        loopCount++;
+    }
+    if (loopCount == maxCount || loopCount == OVER_LOOP_ALERT_HALF_MAX_MULTIPLE * maxCount) {
+        StorageRadar::ReportUserKeyResult("ReportOverLoopCount for function: " + funcName,
+            DEFAULT_USERID, E_OK, "ELx", "");
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS

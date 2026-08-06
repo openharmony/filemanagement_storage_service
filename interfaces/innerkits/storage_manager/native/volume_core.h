@@ -73,6 +73,7 @@ public:
                const std::string &fsType, const std::string &extraInfo = "", uint32_t partitionNum = 0);
 
     std::string GetId() const;
+    void SetId(const std::string volId);
     int32_t GetType() const;
     std::string GetDiskId() const;
     int32_t GetState() const;

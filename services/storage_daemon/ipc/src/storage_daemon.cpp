@@ -15,6 +15,7 @@
 
 #include "ipc/storage_daemon.h"
 #include "file_ex.h"
+#include "utils/hi_audit.h"
 #include "utils/memory_reclaim_manager.h"
 #include "utils/storage_radar.h"
 #include "utils/set_flag_utils.h"
@@ -1034,10 +1035,20 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
             "ActiveUserKey4Update/4Single failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
         return ret;
     }
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
+    std::thread([this, userId]() {
+        pthread_setname_np(pthread_self(), "active_user_key_restorecon");
+        HiAudit::GetInstance().WriteStart("ActiveUserKey RestoreconElX", "userId: " + std::to_string(userId));
+        RestoreconElX(userId);
+        HiAudit::GetInstance().WriteEnd("ActiveUserKey RestoreconElX", 0);
+    }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     UserManager::GetInstance().CheckDirsFromVec(userId);
-    std::thread([this]() { CleanOrphanNode(); }).detach();
+    std::thread([this, userId]() {
+        pthread_setname_np(pthread_self(), "clean_orphan_node");
+        HiAudit::GetInstance().WriteStart("ActiveUserKey CleanOrphanNode", "userId: " + std::to_string(userId));
+        CleanOrphanNode();
+        HiAudit::GetInstance().WriteEnd("ActiveUserKey CleanOrphanNode", 0);
+    }).detach();
 
 #ifdef USER_CRYPTO_MANAGER
     int32_t result = KeyManagerExt::GetInstance().ActiveUserKey(userId, token, secret);

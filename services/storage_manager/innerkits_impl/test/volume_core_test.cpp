@@ -55,6 +55,18 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Get_0000";
 }
 
+HWTEST_F(VolumeCoreTest, Volume_core_SetId_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_SetId_0000";
+    std::string id = "100";
+    VolumeCore volumecore(id, 2, "100", UNMOUNTED);
+    EXPECT_EQ(volumecore.GetId(), id);
+    std::string newId = "999";
+    volumecore.SetId(newId);
+    EXPECT_EQ(volumecore.GetId(), newId);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_SetId_0000";
+}
+
 HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Marshalling_0000";
