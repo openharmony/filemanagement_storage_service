@@ -826,7 +826,9 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     }
     int32_t ret = CheckUserIdRange(userId);
     if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId is invalid");
+        LOGE("[L1:StorageDaemonProvider] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        StorageService::StorageRadar::ReportUserManager("UnlockUserScreen", userId, E_PARAMS_INVALID,
+            "userId out of range");
         return ret;
     }
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
