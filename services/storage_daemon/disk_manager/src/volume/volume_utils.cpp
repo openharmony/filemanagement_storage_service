@@ -148,6 +148,7 @@ int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
         return ret;
     }
 
+    fuseFd = -1;
     fuseFd = open("/dev/fuse", O_RDWR);
     if (fuseFd < 0) {
         LOGE("VolumeUtils::MountFuseDevice open /dev/fuse failed, errno=%{public}d", errno);

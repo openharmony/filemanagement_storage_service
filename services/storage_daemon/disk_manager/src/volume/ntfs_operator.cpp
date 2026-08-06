@@ -39,7 +39,7 @@ static std::string GetNtfsLabelFallback(const std::string& devPath)
     std::vector<std::string> output;
     int32_t ret = ForkExec(cmd, &output);
     for (auto str : output) {
-        LOGI("NtfsOperator::GetNtfsLabelFallback output: %{public}s", str.c_str());
+        LOGI("NtfsOperator::GetNtfsLabelFallback output: %{public}s", GetAnonyString(str).c_str());
     }
     if (ret != E_OK) {
         LOGW("NtfsOperator::GetNtfsLabelFallback ForkExec failed, ret=%{public}d", ret);

@@ -15,7 +15,6 @@
 
 #include <fstream>
 #include <gtest/gtest.h>
-#include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
 #include "disk_info_test_mock.h"
@@ -31,12 +30,6 @@ using namespace testing::ext;
 
 const int CONFIG_PARAM_NUM = 6;
 static constexpr const char* CONFIG_PATH = "/system/etc/storage_daemon/disk_config";
-static const char DISK_EVENT_MSG[] = {
-    "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0"
-    "\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0"
-    "\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0"
-    "\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"
-};
 
 class DiskManagerTest : public testing::Test {
 public:
@@ -97,242 +90,6 @@ void DiskManagerTest::SetUp()
     infile.close();
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_CreateDisk_001
- * @tc.desc: Verify the CreateDisk function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_001 start";
-
-    DiskManager &diskManager = DiskManager::Instance();
-
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(const_cast<char*>(DISK_EVENT_MSG));
-    auto diskInfo = diskManager.MatchConfig(data.get());
-    EXPECT_TRUE(diskInfo == nullptr);
-    diskManager.CreateDisk(diskInfo);
-    EXPECT_EQ(0, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_CreateDisk_002
- * @tc.desc: Verify the CreateDisk function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_002 start";
-
-    DiskManager &diskManager = DiskManager::Instance();
-    std::shared_ptr<DiskInfo> diskInfo = nullptr;
-
-    diskManager.CreateDisk(diskInfo);
-    EXPECT_EQ(0, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_DestroyDisk_001
- * @tc.desc: Verify the DestroyDisk function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_001 start";
-
-    DiskManager &diskManager = DiskManager::Instance();
-
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    unsigned int major = (unsigned int) std::atoi(data.get()->GetParam("MAJOR").c_str());
-    unsigned int minor = (unsigned int) std::atoi(data.get()->GetParam("MINOR").c_str());
-    dev_t device = makedev(major, minor);
-    diskManager.DestroyDisk(device);
-    EXPECT_EQ(0, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_DestroyDisk_002
- * @tc.desc: Verify the DestroyDisk function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_002 start";
-
-    DiskManager diskManager;
-
-    std::shared_ptr<DiskInfo> disk = nullptr;
-    unsigned int minor = 13;
-    unsigned int major = 34;
-    std::string sysPath = "/";
-    std::string devPath = "/";
-    dev_t device = makedev(major, minor);
-    std::string diskName = "sda";
-    std::shared_ptr<DiskInfo> disk2 = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 1);
-
-    minor = 10;
-    major = 20;
-    dev_t device2 = makedev(major, minor);
-    std::shared_ptr<DiskInfo> disk3 = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device2, 1);
-    diskManager.disk_.clear();
-    diskManager.disk_.push_back(disk);
-    diskManager.disk_.push_back(disk2);
-    diskManager.disk_.push_back(disk3);
-    diskManager.DestroyDisk(device2);
-    EXPECT_EQ(2, diskManager.disk_.size());
-    auto it = diskManager.disk_.begin();
-    EXPECT_EQ(*it, disk);
-    ++it;
-    EXPECT_EQ(*it, disk2);
-    diskManager.disk_.clear();
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_ChangeDisk_001
- * @tc.desc: Verify the ChangeDisk function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ChangeDisk_001 start";
-
-    DiskManager diskManager;
-
-    unsigned int major = 13;
-    unsigned int minor = 34;
-    std::string sysPath = "/";
-    std::string devPath = "/";
-    dev_t device = makedev(major, minor);
-    std::string diskName = "sda";
-    std::shared_ptr<DiskInfo> disk = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 1);
-    diskManager.disk_.push_back(disk);
-
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVNAME=sda\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto nlData = std::make_unique<NetlinkData>();
-    nlData->Decode(msg);
-    NetlinkData *data = nlData.get();
-    diskManager.ChangeDisk(device, data);
-    EXPECT_EQ(1, diskManager.disk_.size());
-    EXPECT_EQ(diskManager.disk_.front(), disk);
-    diskManager.disk_.clear();
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ChangeDisk_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_HandleDiskEvent_001
- * @tc.desc: Verify the HandleDiskEvent function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_001 start";
-
-    DiskManager diskManager;
-
-    size_t originalSize = diskManager.disk_.size();
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(msg);
-
-    diskManager.HandleDiskEvent(data.get());
-    EXPECT_EQ(originalSize, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_HandleDiskEvent_002
- * @tc.desc: Verify the HandleDiskEvent function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_002 start";
-
-    DiskManager diskManager;
-
-    size_t originalSize = diskManager.disk_.size();
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVNAME=sda\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(msg);
-
-    diskManager.HandleDiskEvent(data.get());
-    EXPECT_EQ(originalSize, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_HandleDiskEvent_003
- * @tc.desc: Verify the HandleDiskEvent function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_003 start";
-
-    DiskManager diskManager;
-
-    unsigned int major = 13;
-    unsigned int minor = 34;
-    std::string sysPath = "/";
-    std::string devPath = "/";
-    dev_t device = makedev(major, minor);
-    std::string diskName = "sda";
-    std::shared_ptr<DiskInfo> disk = std::make_shared<DiskInfo>(diskName, sysPath, devPath, device, 1);
-    diskManager.disk_.push_back(disk);
-
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0\
-                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
-                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
-                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(msg);
-
-    diskManager.HandleDiskEvent(data.get());
-    EXPECT_EQ(0, diskManager.disk_.size());
-
-    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_003 end";
-}
-
-/**
- * @tc.name: Storage_Service_DiskManagerTest_AddDiskConfig_001
- * @tc.desc: Verify the AddDiskConfig function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_AddDiskConfig_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_AddDiskConfig_001 start";
@@ -349,12 +106,6 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_AddDiskConfig_001, Tes
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_AddDiskConfig_001 end";
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_ReplayUevent_001
- * @tc.desc: Verify the ReplayUevent function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ReplayUevent_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ReplayUevent_001 start";
@@ -368,12 +119,6 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ReplayUevent_001, Test
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ReplayUevent_001 end";
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_001
- * @tc.desc: Verify the MatchConfig function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_001 start";
@@ -392,20 +137,21 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_001, TestS
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_001 end";
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_002
- * @tc.desc: Verify the MatchConfig function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_002 start";
 
     DiskManager &diskManager = DiskManager::Instance();
 
+    static char diskEventMsg[] = {
+        "add@/class/input/input9/mouse2\0ACTION=add\0DEVNAME=sda\0DEVTYPE=disk\0"
+        "\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0"
+        "\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0"
+        "\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"
+    };
+
     auto data = std::make_unique<NetlinkData>();
-    data.get()->Decode(const_cast<char*>(DISK_EVENT_MSG));
+    data.get()->Decode(const_cast<char*>(diskEventMsg));
 
     auto diskInfo1 = diskManager.MatchConfig(data.get());
 
@@ -414,12 +160,6 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_002 end";
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_003
- * @tc.desc: Verify the MatchConfig function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_003 start";
@@ -431,12 +171,6 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_003, TestS
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_003 end";
 }
 
-/**
- * @tc.name: Storage_Service_DiskManagerTest_MatchConfig_004
- * @tc.desc: Verify the MatchConfig function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_004, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_004 start";
@@ -463,6 +197,187 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_004, TestS
     ASSERT_TRUE(diskInfo != nullptr);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_004 end";
+}
+
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_InvalidMajorMinor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_InvalidMajorMinor start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=abc\0"
+        "MINOR=xyz\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6989\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_InvalidMajorMinor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=8abc\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6990\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_PartialDigitsMajor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=-1\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6991\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMajor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid start";
+
+    DiskManager &diskManager = DiskManager::Instance();
+
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=0\0"
+        "MINOR=0\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6992\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo != nullptr || diskInfo == nullptr);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_ZeroMajorValid end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_InvalidMinor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_InvalidMinor start";
+    DiskManager &diskManager = DiskManager::Instance();
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=8\0"
+        "MINOR=abc\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6993\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_InvalidMinor end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_MinorPartialDigits, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_MinorPartialDigits start";
+    DiskManager &diskManager = DiskManager::Instance();
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=8\0"
+        "MINOR=0abc\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6994\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_MinorPartialDigits end";
+}
+
+HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_NegativeMinor, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMinor start";
+    DiskManager &diskManager = DiskManager::Instance();
+    char msg[1024] = {
+        "add@/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/"
+        "xhci-hcd.1/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "ACTION=add\0"
+        "DEVPATH=/devices/platform/hiusb/hiusb_port/hiusb-port1/ea200000.hiusbc/xhci-hcd.1/"
+        "usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/block/sr0\0"
+        "SUBSYSTEM=block\0"
+        "MAJOR=8\0"
+        "MINOR=-1\0"
+        "DEVNAME=sr0\0"
+        "DEVTYPE=disk\0"
+        "SEQNUM=6995\0"
+    };
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    auto diskInfo = diskManager.MatchConfig(data.get());
+    EXPECT_TRUE(diskInfo == nullptr);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_NegativeMinor end";
 }
 
 

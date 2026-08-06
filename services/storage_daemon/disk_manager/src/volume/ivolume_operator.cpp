@@ -133,8 +133,8 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         LOGE("IVolumeOperator::Mount invalid mountPath, len=%{public}zu", mountPath.length());
         return E_PARAMS_INVALID;
     }
-    if (IsFilePathInvalid(mountPath)) {
-        LOGE("IVolumeOperator::Mount mountPath contains invalid path segments");
+    if (IsFilePathInvalid(mountPath) || IsMountDataInvalid(mountData)) {
+        LOGE("IVolumeOperator::Mount mountPath or mountData contains invalid content");
         return E_PARAMS_INVALID;
     }
     if (mountPath.find(MOUNT_PATH_PREFIX) != 0) {
@@ -150,7 +150,7 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
 
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread mountThread([this, &devPath, &mountPath, mountFlags, &mountData,
+    std::thread mountThread([this, devPath, mountPath, mountFlags, mountData,
                              p = std::move(promise)]() mutable {
         p.set_value(DoMount(devPath, mountPath, mountFlags, mountData));
     });
@@ -254,6 +254,26 @@ int32_t IVolumeOperator::Burn(const std::string &devPath, const BurnOptions &bur
 {
     LOGI("IVolumeOperator::Burn devPath=%{public}s", devPath.c_str());
     return E_NOT_SUPPORT;
+}
+
+bool IVolumeOperator::IsMountDataInvalid(const std::string& mountData)
+{
+    if (mountData.empty()) {
+        return false;
+    }
+    if (mountData.find("uid=0") != std::string::npos ||
+        mountData.find("gid=0") != std::string::npos ||
+        mountData.find("suid") != std::string::npos) {
+        LOGE("IsMountDataInvalid: mountData contains dangerous options");
+        return true;
+    }
+    return false;
+}
+
+bool IVolumeOperator::IsShellMetacharPresent(const std::string& str)
+{
+    static const std::string shellChars = "\"$`\\;|&!(){}<>\n";
+    return str.find_first_of(shellChars) != std::string::npos;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

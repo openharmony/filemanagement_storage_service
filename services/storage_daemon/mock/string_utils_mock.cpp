@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,21 +13,14 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "file_utils_mock.h"
 
-#include "disk/disk_info.h"
-
+using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
-using namespace testing::ext;
-
-class DiskInfoSupTest : public testing::Test {
-public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
-};
+bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::string &errMsg)
+{
+    return IFileUtilMoc::fileUtilMoc->WriteFileSync(path, data, size, errMsg);
 }
-}
+} // namespace StorageDaemon
+} // namespace OHOS
