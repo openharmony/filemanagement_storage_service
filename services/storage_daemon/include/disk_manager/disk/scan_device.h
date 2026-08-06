@@ -71,6 +71,8 @@ private:
     std::string GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo);
     nlohmann::json ParseWodimPrcapOutput(const std::vector<std::string> &output);
     nlohmann::json GetSpeedInfo(const std::string &devPath, const std::string &discType, std::string &maxWriteSpeed);
+    std::string GetScsiGenericDevPath(const std::string &devName);
+    std::string GetOpticalDriveTypeByScsiGeneric(const std::string &devName);
 
     std::string sysBlockPath;
     std::string devBlockPath;

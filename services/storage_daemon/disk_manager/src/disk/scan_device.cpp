@@ -270,7 +270,7 @@ std::vector<BlockInfo> ScanDevice::GetExternalDisks(const std::string &devName, 
         dev_t dev = st.st_rdev;
         if (major(dev) == DISK_CD_MAJOR) {
             nlohmann::json extraInfoJson;
-            std::string driveType = GetOpticalDriveType(devPath);
+            std::string driveType = GetOpticalDriveTypeByScsiGeneric(devName);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
             extraInfoJson["DRIVE_TYPE"] = driveType;
@@ -528,7 +528,7 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
         dev_t dev = st.st_rdev;
         if (major(dev) == DISK_CD_MAJOR) {
             nlohmann::json extraInfoJson;
-            std::string driveType = GetOpticalDriveType(devPath);
+            std::string driveType = GetOpticalDriveTypeByScsiGeneric(deviceName);
             std::string discType = GetCDType(devPath);
             std::string oddDriveType = GetOddDriverType(realPath);
             extraInfoJson["DRIVE_TYPE"] = driveType;
@@ -960,6 +960,52 @@ std::string ScanDevice::GetFwVersion(const std::string &deviceName)
     std::string content = ReadFileContent(modelPath);
     LOGI("GetFwVersion content: %{public}s", content.c_str());
     return content;
+}
+
+
+std::string ScanDevice::GetScsiGenericDevPath(const std::string &devName)
+{
+    std::string scsiGenericPath = sysBlockPath + SPLIT_STRING + devName + "/device/scsi_generic";
+    LOGI("GetScsiGenericDevPath: scsiGenericPath=%{public}s", scsiGenericPath.c_str());
+    DIR *dir = opendir(scsiGenericPath.c_str());
+    if (!dir) {
+        LOGE("GetScsiGenericDevPath: opendir failed for %{public}s, errno=%{public}d", scsiGenericPath.c_str(), errno);
+        return "";
+    }
+    std::string sgName;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name = entry->d_name;
+        if (name == "." || name == "..") {
+            continue;
+        }
+        if (name.find("sg") == 0) {
+            sgName = name;
+            break;
+        }
+    }
+    closedir(dir);
+    if (sgName.empty()) {
+        LOGE("GetScsiGenericDevPath: no sg node found under %{public}s", scsiGenericPath.c_str());
+        return "";
+    }
+    std::string devPath = std::string(DEV_NODE) + SPLIT_STRING + sgName;
+    LOGI("GetScsiGenericDevPath: found sg node=%{public}s, devPath=%{public}s", sgName.c_str(), devPath.c_str());
+    return devPath;
+}
+
+std::string ScanDevice::GetOpticalDriveTypeByScsiGeneric(const std::string &devName)
+{
+    LOGI("GetOpticalDriveTypeByScsiGeneric: >>> ENTER <<< devName=%{public}s", devName.c_str());
+    std::string devPath = GetScsiGenericDevPath(devName);
+    if (devPath.empty()) {
+        LOGE("GetOpticalDriveTypeByScsiGeneric: <<< EXIT FAILED <<< failed to get sg devPath for %{public}s",
+             devName.c_str());
+        return "";
+    }
+    std::string driveType = GetOpticalDriveType(devPath);
+    LOGI("GetOpticalDriveTypeByScsiGeneric: <<< EXIT SUCCESS <<< driveType=%{public}s", driveType.c_str());
+    return driveType;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

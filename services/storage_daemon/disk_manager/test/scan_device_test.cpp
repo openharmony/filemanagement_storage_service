@@ -1676,5 +1676,126 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetPort_005, TestSize.Le
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetPort_005 end";
 }
 
+// ==================== GetScsiGenericDevPath & GetOpticalDriveTypeByScsiGeneric Tests ====================
+// GetScsiGenericDevPath branches (8 edges):
+//   B1: !dir == true  (opendir failed) → return ""
+//   B2: !dir == false (opendir succeeded) → enter readdir loop
+//   B3: name == "." || name == ".." == true → continue
+//   B4: name == "." || name == ".." == false → check sg prefix
+//   B5: name.find("sg") == 0 == true → set sgName and break
+//   B6: name.find("sg") == 0 == false → continue loop
+//   B7: sgName.empty() == true → return ""
+//   B8: sgName.empty() == false → return "/dev/<sgName>"
+//
+// GetOpticalDriveTypeByScsiGeneric branches (2 edges):
+//   B9:  devPath.empty() == true → return ""
+//   B10: devPath.empty() == false → call GetOpticalDriveType(devPath)
+//
+// GetOpticalDriveType (called internally) branches testable without ioctl mock:
+//   B11: ReadConfiguration fails → return ""
+//   B12-B14: require ioctl mock, not available in this target → board-level verification
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_001
+ * @tc.desc: Test GetScsiGenericDevPath when scsi_generic directory does not exist (opendir fails),
+ *           and with nonexistent device. Also verifies GetOpticalDriveTypeByScsiGeneric returns
+ *           empty when GetScsiGenericDevPath returns empty.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_001 start";
+    CreateDirectory(mockSysPath);
+
+    ScanDevice scanner(mockSysPath);
+
+    // Case 1: nonexistent device → opendir fails
+    // Covers: B1 (!dir == true)
+    EXPECT_TRUE(scanner.GetScsiGenericDevPath("nonexistent").empty());
+
+    // Case 2: device exists but no scsi_generic subdirectory → opendir fails
+    // Covers: B1 (!dir == true)
+    CreateDirectory(mockSysPath + "/sr0");
+    CreateDirectory(mockSysPath + "/sr0/device");
+    EXPECT_TRUE(scanner.GetScsiGenericDevPath("sr0").empty());
+
+    // Case 3: GetOpticalDriveTypeByScsiGeneric returns empty when no scsi_generic
+    // Covers: B9 (devPath.empty() == true)
+    EXPECT_TRUE(scanner.GetOpticalDriveTypeByScsiGeneric("sr0").empty());
+
+    system(("rm -rf " + mockSysPath + "/sr0").c_str());
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_002
+ * @tc.desc: Test GetScsiGenericDevPath when scsi_generic dir exists but has no sg entries
+ *           (empty dir and non-sg entries), and with valid sg entry found.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_002 start";
+    CreateDirectory(mockSysPath);
+    std::string devDir = mockSysPath + "/sr0/device";
+    CreateDirectory(mockSysPath + "/sr0");
+    CreateDirectory(devDir);
+    std::string sgDir = devDir + "/scsi_generic";
+
+    ScanDevice scanner(mockSysPath);
+
+    // Case 1: scsi_generic exists but empty → only "." and ".." entries, sgName remains empty
+    // Covers: B2 (opendir ok), B3 (dot entries skipped), B7 (sgName empty)
+    CreateDirectory(sgDir);
+    EXPECT_TRUE(scanner.GetScsiGenericDevPath("sr0").empty());
+
+    // Case 2: scsi_generic contains non-sg entries → B6 (name.find("sg") != 0), then B7
+    CreateFileWithContent(sgDir + "/other", "");
+    CreateFileWithContent(sgDir + "/notsg1", "");
+    EXPECT_TRUE(scanner.GetScsiGenericDevPath("sr0").empty());
+
+    // Case 3: scsi_generic contains a valid sg entry → B5, B8
+    CreateFileWithContent(sgDir + "/sg1", "");
+    std::string result = scanner.GetScsiGenericDevPath("sr0");
+    EXPECT_EQ(result, "/dev/sg1");
+
+    // Case 4: GetOpticalDriveTypeByScsiGeneric with sg path → B10 (devPath not empty)
+    // GetOpticalDriveType("/dev/sg1") calls ReadConfiguration → fails without real device → returns ""
+    // Covers: B10, B11 (ReadConfiguration fails)
+    std::string driveType = scanner.GetOpticalDriveTypeByScsiGeneric("sr0");
+    EXPECT_TRUE(driveType.empty());
+
+    system(("rm -rf " + mockSysPath + "/sr0").c_str());
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_003
+ * @tc.desc: Test GetScsiGenericDevPath with mixed entries (dot, non-sg, sg) verifying all branch paths.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_003 start";
+    CreateDirectory(mockSysPath);
+    std::string devDir = mockSysPath + "/sr0/device";
+    CreateDirectory(mockSysPath + "/sr0");
+    CreateDirectory(devDir);
+    std::string sgDir = devDir + "/scsi_generic";
+    CreateDirectory(sgDir);
+
+    ScanDevice scanner(mockSysPath);
+
+    // Mix of non-sg and sg entries → covers B3 (dots), B4+B6 (non-sg skipped), B4+B5 (sg found), B8
+    CreateFileWithContent(sgDir + "/misc_file", "");
+    CreateFileWithContent(sgDir + "/sg2", "");
+    std::string result = scanner.GetScsiGenericDevPath("sr0");
+    // Either sg2 is found or misc_file is encountered first; sg2 must be found eventually
+    EXPECT_TRUE(result.find("/dev/sg") == 0);
+
+    system(("rm -rf " + mockSysPath + "/sr0").c_str());
+    GTEST_LOG_(INFO) << "GetScsiGenericDevPath_003 end";
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

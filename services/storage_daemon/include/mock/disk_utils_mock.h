@@ -44,6 +44,8 @@ public:
     virtual int GetCdUsedCapacity(int fd, int64_t &cdUsedCapacity) = 0;
     virtual int GetDvdTotalCapacity(int fd, int64_t &dvdTotalCapacity) = 0;
     virtual int GetDvdUsedCapacity(int fd, int64_t &dvdUsedCapacity) = 0;
+    virtual int GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity) = 0;
+    virtual int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity) = 0;
     virtual int GetDvdConfiguration(int fd, int &dvdMedia) = 0;
     virtual std::string GetScsiBusNum(const std::string &sysPath) = 0;
     virtual std::string GetOddDriverType(const std::string &sysPath) = 0;
@@ -64,6 +66,12 @@ public:
         const std::map<std::string, std::string> &discMap) = 0;
     virtual int IsCDBlank(const std::string &diskPath, bool &isCDBlank) = 0;
     virtual int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr) = 0;
+    virtual std::string GetOpticalDriveNode(const std::string &devPath) = 0;
+    virtual int64_t GetDiscCapacity(int cmdFd, const std::string &discType) = 0;
+    virtual void AdjustBlankDiscCapacity(const std::string &devPath, const std::string &discType,
+                                         int64_t &totalSize, int64_t &usedSize) = 0;
+    virtual int64_t GetUsedSizeFromSysfs(const std::string &devPath) = 0;
+    virtual int32_t GetCapacity(const std::string &devPath, int64_t &totalSize, int64_t &freeSize) = 0;
     virtual std::string GenerateRandomUuid(const std::string &diskPath, const std::string &ns) = 0;
 public:
     static inline std::shared_ptr<IDiskUtilMoc> diskUtilMoc = nullptr;
@@ -86,6 +94,8 @@ public:
     MOCK_METHOD2(GetCdUsedCapacity, int(int fd, int64_t &cdUsedCapacity));
     MOCK_METHOD2(GetDvdTotalCapacity, int(int fd, int64_t &dvdTotalCapacity));
     MOCK_METHOD2(GetDvdUsedCapacity, int(int fd, int64_t &dvdUsedCapacity));
+    MOCK_METHOD2(GetDvdPlusRwTotalCapacity, int(int fd, int64_t &dvdTotalCapacity));
+    MOCK_METHOD2(GetBdTotalCapacity, int(int fd, int64_t &bdTotalCapacity));
     MOCK_METHOD2(GetDvdConfiguration, int(int fd, int &dvdMedia));
     MOCK_METHOD1(GetScsiBusNum, std::string(const std::string &sysPath));
     MOCK_METHOD1(GetOddDriverType, std::string(const std::string &sysPath));
@@ -106,6 +116,12 @@ public:
         const std::map<std::string, std::string> &discMap));
     MOCK_METHOD2(IsCDBlank, int(const std::string &diskPath, bool &isCDBlank));
     MOCK_METHOD2(GetIncBurnAddr, int32_t(const std::string &devPath, std::string &incBurnAddr));
+    MOCK_METHOD1(GetOpticalDriveNode, std::string(const std::string &devPath));
+    MOCK_METHOD2(GetDiscCapacity, int64_t(int cmdFd, const std::string &discType));
+    MOCK_METHOD4(AdjustBlankDiscCapacity, void(const std::string &devPath, const std::string &discType,
+                                               int64_t &totalSize, int64_t &usedSize));
+    MOCK_METHOD1(GetUsedSizeFromSysfs, int64_t(const std::string &devPath));
+    MOCK_METHOD3(GetCapacity, int32_t(const std::string &devPath, int64_t &totalSize, int64_t &freeSize));
     MOCK_METHOD2(GenerateRandomUuid, std::string(const std::string &diskPath, const std::string &ns));
 };
 }

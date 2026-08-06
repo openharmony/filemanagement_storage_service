@@ -310,7 +310,6 @@ int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
         LOGE("Burn:<<< EXIT FAILED <<< devPath:=%{public}s", devPath.c_str());
         return err;
     }
-
     if (burnOptions.isVerifyBurn) {
         LOGI("Burn: starting verify process for devPath=%{public}s", devPath.c_str());
         err = DoVerifyBurnData(devPath, burnOptions, isDiskEmpty);
