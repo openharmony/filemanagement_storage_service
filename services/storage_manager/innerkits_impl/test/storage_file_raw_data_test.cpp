@@ -269,4 +269,32 @@ HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_MultipleCopies_0003, test
     GTEST_LOG_(INFO) << "Storage_File_Raw_Data_MultipleCopies_0003 end";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_FILE_RAW_DATA_RawDataCpy_NonMalloc_0001
+ * @tc.name: Storage_File_Raw_Data_RawDataCpy_NonMalloc_0001
+ * @tc.desc: Test RawDataCpy when existing data is non-malloc (isMalloc=false).
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(StorageFileRawDataTest, Storage_File_Raw_Data_RawDataCpy_NonMalloc_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_NonMalloc_0001 start";
+
+    StorageFileRawData storage;
+    storage.ownedData = std::string("owned_buffer_data");
+    storage.data = storage.ownedData.data();
+    storage.size = storage.ownedData.size();
+    EXPECT_FALSE(storage.isMalloc);
+
+    char newData[20] = "new_scan_data";
+    storage.size = sizeof(newData);
+    EXPECT_EQ(storage.RawDataCpy(newData), ERR_NONE);
+    EXPECT_NE(storage.data, nullptr);
+    EXPECT_TRUE(storage.isMalloc);
+    EXPECT_NE(storage.data, storage.ownedData.data());
+
+    GTEST_LOG_(INFO) << "Storage_File_Raw_Data_RawDataCpy_NonMalloc_0001 end";
+}
 }

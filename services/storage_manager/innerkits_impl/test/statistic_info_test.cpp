@@ -434,6 +434,25 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_UidSaInfo_Roundtrip_001, TestSize.
 }
 
 /**
+ * @tc.name: StatisticInfoTest_UidSaInfo_DefaultInit_001
+ * @tc.desc: Test UidSaInfo default-constructed members are zero-initialized.
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StatisticInfoTest, StatisticInfoTest_UidSaInfo_DefaultInit_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StatisticInfoTest_UidSaInfo_DefaultInit_001 start";
+
+    UidSaInfo uidSaInfo;
+    EXPECT_EQ(uidSaInfo.uid, 0);
+    EXPECT_EQ(uidSaInfo.size, 0);
+    EXPECT_EQ(uidSaInfo.iNodes, 0);
+    EXPECT_TRUE(uidSaInfo.saName.empty());
+
+    GTEST_LOG_(INFO) << "StatisticInfoTest_UidSaInfo_DefaultInit_001 end";
+}
+
+/**
  * @tc.name: StatisticInfoTest_AllAppVec_001
  * @tc.desc: Test AllAppVec structure.
  * @tc.type: FUNC

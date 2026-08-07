@@ -308,7 +308,8 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_SendUserLockStatusToAppSpawn_
 /**
 * @tc.number: SUB_STORAGE_Account_Subscriber_MountCryptoPathAgain_0000
 * @tc.name: Account_Subscriber_MountCryptoPathAgain_0000
-* @tc.desc: Test MountCryptoPathAgain function
+* @tc.desc: Test MountCryptoPathAgain returns E_APPSPAWN_SECOND_MOUNT on appspawn failure,
+*           and E_OK/E_PUBLISH_COMM_EVENT depending on PublishCommonEvent result
 * @tc.size: MEDIUM
 * @tc.type: FUNC
 * @tc.level Level 1
@@ -318,17 +319,22 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_MountCryptoPathAgain_0000, Te
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_MountCryptoPathAgain_0000-begin";
     int32_t userId = 100;
-    g_ret = E_OK;
-    int32_t ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(ret, E_OK);
 
+    // appspawn returns non-OK non-timeout error -> E_APPSPAWN_SECOND_MOUNT
+    g_ret = E_MOUNT_AGAIN_FAILED;
+    int32_t ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, E_APPSPAWN_SECOND_MOUNT);
+
+    // appspawn succeeds -> publish event, result depends on PublishCommonEvent
+    g_ret = E_OK;
+    ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
+    EXPECT_TRUE(ret == E_OK || ret == E_PUBLISH_COMM_EVENT);
+
+    // appspawn timeout tolerated -> publish event, result depends on PublishCommonEvent
     g_ret = APPSPAWN_TIMEOUT;
     ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(ret, g_ret);
+    EXPECT_TRUE(ret == E_OK || ret == E_PUBLISH_COMM_EVENT);
 
-    g_ret = E_MOUNT_AGAIN_FAILED;
-    ret = AccountSubscriber::GetInstance().MountCryptoPathAgain(userId);
-    EXPECT_EQ(ret, g_ret);
     GTEST_LOG_(INFO) << "Account_Subscriber_MountCryptoPathAgain_0000 end";
 }
 } // namespace StorageManager

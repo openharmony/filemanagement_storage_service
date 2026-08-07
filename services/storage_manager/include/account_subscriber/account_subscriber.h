@@ -41,7 +41,7 @@ private:
     AccountSubscriber &operator=(const AccountSubscriber &) = delete;
 
     int32_t MountCryptoPathAgain(int32_t userId);
-    void SendSecondMountedEvent(int32_t userId);
+    bool SendSecondMountedEvent(int32_t userId);
 
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;

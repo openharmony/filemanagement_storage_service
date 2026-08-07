@@ -134,6 +134,7 @@ public:
 private:
     StorageDaemonCommunication();
     ~StorageDaemonCommunication();
+    sptr<OHOS::StorageDaemon::IStorageDaemon> GetStorageDaemon();
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
     std::mutex mutex_;

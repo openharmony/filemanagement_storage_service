@@ -15,6 +15,8 @@
 
 #include <sys/resource.h>
 #include <sys/syscall.h>
+#include <climits>
+#include <cstdlib>
 
 #include "utils/storage_radar.h"
 #include <nlohmann/json.hpp>
@@ -310,6 +312,7 @@ int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
 
 int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
 {
+    freeSize = 0;
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -324,12 +327,13 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
 int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
 {
+    totalSize = 0;
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
@@ -344,7 +348,7 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -582,7 +586,7 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -677,8 +681,8 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     err = sdCommunication.UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
     StorageRadar::ReportFucBehavior("UpdateUseAuthWithRecoveryKey", userId, "UpdateUseAuthWithRecoveryKey End", err);
     return err;
-    #else
-        return E_OK;
+#else
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -871,14 +875,13 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
 
 int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
     StorageDaemon::IncreaseThreadPriority("storage_manager");
     std::string message = "GenerateAppkey Begin, hashId: " + GetAnonyString(std::to_string(hashId)) +
                           ", keyId: " + GetAnonyString(keyId) + ", needReSet:" + std::to_string(needReSet);
     StorageRadar::ReportFucBehavior("GenerateAppkey", userId, message, E_OK);
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-        StorageDaemon::DecreaseThreadPriority("storage_manager");
-        return E_PERMISSION_DENIED;
-    }
 #ifdef USER_CRYPTO_MANAGER
     LOGI("hashId: %{public}u", hashId);
     int32_t err = CheckUserIdRange(userId);
@@ -1265,15 +1268,24 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         LOGE("StorageDaemon::MountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
-        return E_PARAMS_INVALID;
-    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("MountFileMgrFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
+        return E_PARAMS_INVALID;
+    }
+    std::string resolvedPath(realPath);
+    if (!IsPathStartWithFileMgr(userId, resolvedPath)) {
+        return E_PARAMS_INVALID;
+    }
     fuseFd = -1;
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    err = sdCommunication.MountFileMgrFuse(userId, path, fuseFd);
+    err = sdCommunication.MountFileMgrFuse(userId, resolvedPath, fuseFd);
     StorageRadar::ReportFucBehavior("MountFileMgrFuse", userId, "MountFileMgrFuse End", err);
     return err;
 }
@@ -1287,21 +1299,30 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
         LOGE("StorageDaemon::UMountFileMgrFuse userId %{public}d out of range", userId);
         return err;
     }
-    if (IsFilePathInvalid(path) || !IsPathStartWithFileMgr(userId, path)) {
-        return E_PARAMS_INVALID;
-    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || !IsCalledByFileMgr()) {
         return E_PERMISSION_DENIED;
     }
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("UMountFileMgrFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
+        return E_PARAMS_INVALID;
+    }
+    std::string resolvedPath(realPath);
+    if (!IsPathStartWithFileMgr(userId, resolvedPath)) {
+        return E_PARAMS_INVALID;
+    }
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    err = sdCommunication.UMountFileMgrFuse(userId, path);
+    err = sdCommunication.UMountFileMgrFuse(userId, resolvedPath);
     StorageRadar::ReportFucBehavior("UMountFileMgrFuse", userId, "UMountFileMgrFuse End", err);
     return err;
 }
 
 int32_t StorageManagerProvider::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
 {
-    std::string message = "MountDlpFuse Begin, dstPath:" + dstPath;
+    std::string message = "MountDlpFuse Begin, dstPath:" + GetAnonyString(dstPath);
     StorageRadar::ReportFucBehavior("MountDlpFuse", DEFAULT_USERID, message, E_OK);
     if (IsFilePathInvalid(dstPath) || !IsPathStartWithDlp(dstPath)) {
         return E_PARAMS_INVALID;
@@ -1415,6 +1436,14 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
         return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
+        if (item.first.empty() || item.second.empty()) {
+            LOGE("shareFiles key or value is empty");
+            return E_PARAMS_INVALID;
+        }
+        if (item.first.size() > PATH_MAX || item.second.size() > PATH_MAX) {
+            LOGE("shareFiles key or value exceeds PATH_MAX");
+            return E_PARAMS_INVALID;
+        }
         if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
             LOGE("shareFiles is invalid");
             return E_PARAMS_INVALID;
@@ -1651,7 +1680,8 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
         LOGE("StorageManagerProvider::SetExtBundleStats userId %{public}d out of range", userId);
         return ret;
     }
-    if (stats.businessSize_ >= INT64_MAX || stats.businessName_.empty()) {
+    if (stats.businessSize_ >= INT64_MAX || stats.businessName_.empty() ||
+        stats.businessName_.size() > PATH_MAX) {
         LOGE("invalid params, userId: %{public}d, size: %{public}lld, name: %{public}s", userId,
             static_cast<long long>(stats.businessSize_), stats.businessName_.c_str());
         return E_PARAMS_INVALID;

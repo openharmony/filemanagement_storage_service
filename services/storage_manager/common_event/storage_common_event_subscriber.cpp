@@ -40,6 +40,7 @@ StorageCommonEventSubscriber::StorageCommonEventSubscriber(const EventFwk::Commo
 void StorageCommonEventSubscriber::SubscribeCommonEvent(void)
 {
     LOGI("subscribe common event start");
+    std::lock_guard<std::mutex> lock(subscriberMutex_);
     if (subscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);

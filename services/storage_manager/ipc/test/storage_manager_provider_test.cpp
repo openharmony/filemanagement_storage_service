@@ -201,6 +201,40 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVo
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_GetFreeSizeOfVolume_002
+ * @tc.desc: Verify out-param freeSize is zero-initialized on permission denied.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetFreeSizeOfVolume_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeSizeOfVolume_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volumeUuid = "test-volume-uuid";
+    int64_t freeSize = -1;
+    auto ret = storageManagerProviderTest_->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(freeSize, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetFreeSizeOfVolume_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_GetTotalSizeOfVolume_002
+ * @tc.desc: Verify out-param totalSize is zero-initialized on permission denied.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVolume_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    const std::string volumeUuid = "test_volume_uuid";
+    int64_t totalSize = -1;
+    auto ret = storageManagerProviderTest_->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(totalSize, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_002 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_GetBundleStats_001
  * @tc.desc: Verify the GetBundleStats function.
  * @tc.type: FUNC
@@ -761,6 +795,25 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_0
 }
 
 /**
+ * @tc.name: StorageManagerProviderTest_GenerateAppkey_003
+ * @tc.desc: Verify permission denied returns E_PERMISSION_DENIED and keyId unchanged.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GenerateAppkey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateAppkey_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    uint32_t hashId = 99999;
+    uint32_t userId = 1001;
+    std::string keyId;
+    bool needReSet = false;
+    auto ret = storageManagerProviderTest_->GenerateAppkey(hashId, userId, keyId, needReSet);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_TRUE(keyId.empty());
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GenerateAppkey_003 end";
+}
+
+/**
  * @tc.name: StorageManagerProviderTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey function.
  * @tc.type: FUNC
@@ -1008,24 +1061,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_001
- * @tc.desc: Verify the MountFileMgrFuse function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    int32_t userId = 1001;
-    std::string path = "/mnt/mtp/device/storage/usb";
-    int32_t fuseFd = -1;
-    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(fuseFd, -1);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_003
  * @tc.desc: Verify the MountFileMgrFuse function.
  * @tc.type: FUNC
@@ -1042,41 +1077,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     EXPECT_EQ(fuseFd, -1);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_003 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_004
- * @tc.desc: Verify the MountFileMgrFuse function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_004 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    int32_t userId = 1001;
-    std::string path = "/mnt/mtp";
-    int32_t fuseFd = -1;
-    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(fuseFd, -1);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_004 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_001
- * @tc.desc: Verify the UMountFileMgrFuse function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    int32_t userId = 1001;
-    std::string path = "/mnt/mtp/device/storage/usb";
-    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
 }
 
 /**
@@ -2199,5 +2199,114 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_FormatPartition_
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_FormatPartition_005 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDfsDocs_InvalidRelativePath_004
+ * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID when relativePath contains path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_InvalidRelativePath_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidRelativePath_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "../evil";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidRelativePath_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDfsDocs_InvalidNetworkId_005
+ * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID when networkId contains non-alnum char.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_InvalidNetworkId_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidNetworkId_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "ab/cd";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidNetworkId_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDfsDocs_InvalidDeviceId_006
+ * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID when deviceId contains non-alnum char.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_InvalidDeviceId_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidDeviceId_006 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "network123";
+    std::string deviceId = "x!y";
+    auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_InvalidDeviceId_006 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDfsDocs_InvalidRelativePath_004
+ * @tc.desc: Verify UMountDfsDocs returns E_PARAMS_INVALID when relativePath contains path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_InvalidRelativePath_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidRelativePath_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "../evil";
+    std::string networkId = "network123";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidRelativePath_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDfsDocs_InvalidNetworkId_005
+ * @tc.desc: Verify UMountDfsDocs returns E_PARAMS_INVALID when networkId contains non-alnum char.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_InvalidNetworkId_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidNetworkId_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "ab/cd";
+    std::string deviceId = "device123";
+    auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidNetworkId_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountDfsDocs_InvalidDeviceId_006
+ * @tc.desc: Verify UMountDfsDocs returns E_PARAMS_INVALID when deviceId contains non-alnum char.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_InvalidDeviceId_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidDeviceId_006 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = 1001;
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
+    std::string networkId = "network123";
+    std::string deviceId = "x!y";
+    auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_InvalidDeviceId_006 end";
+}
+
 } // namespace StorageManager
 } // namespace OHOS
