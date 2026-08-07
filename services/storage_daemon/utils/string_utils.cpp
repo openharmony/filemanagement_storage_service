@@ -119,7 +119,7 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::stri
 
     long len = write(fd, data, size);
     if (len < 0) {
-        errMsg = "fd == -1, errno" + std::to_string(errno);
+        errMsg = "write failed, errno" + std::to_string(errno);
         LOGE("[L8:StringUtils] WriteFileSync: <<< EXIT FAILED <<< write failed, errno=%{public}d", errno);
         (void)fclose(f);
         return false;

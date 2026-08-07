@@ -135,9 +135,10 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
     if (ret) {
         LOGD("[L4:BaseKey] SaveKeyBlob: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     } else {
-        LOGE("[L4:BaseKey] SaveKeyBlob: <<< EXIT FAILED <<< path=%{public}s, WriteFileSync failed", path.c_str());
+        LOGE("[L4:BaseKey] SaveKeyBlob: <<< EXIT FAILED <<< path=%{public}s, WriteFileSync failed, errMsg=%{public}s",
+            path.c_str(), errMsg.c_str());
         StorageService::StorageRadar::ReportUserKeyResult("SaveKeyBlob", 0, E_SAVE_KEY_BLOB_ERROR, "",
-            "WriteFileSync failed, path=" + path);
+            "WriteFileSync failed, path=" + path + ", errMsg=" + errMsg);
     }
     return ret;
 }
