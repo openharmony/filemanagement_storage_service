@@ -141,9 +141,12 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST) == E_OK) {
         if (needFixFiles) {
             std::thread fixFileThread([this, keyDir, backupDir]() {
+                LOGI("[L4:KeyBackup] fixFileThread: START, keyDir=%{public}s, backupDir=%{public}s",
+                    keyDir.c_str(), backupDir.c_str());
                 HiAudit::GetInstance().WriteStart("KeyBackup::TryRestoreKey CheckAndFixFiles fixFileThread");
                 CheckAndFixFiles(keyDir, backupDir);
                 HiAudit::GetInstance().WriteEnd("KeyBackup::TryRestoreKey CheckAndFixFiles fixFileThread", 0);
+                LOGI("[L4:KeyBackup] fixFileThread: END, keyDir=%{public}s", keyDir.c_str());
             });
             fixFileThread.detach();
         }
