@@ -547,6 +547,18 @@ std::string StorageRadar::ReportDuration(const std::string &funcName, int64_t st
     std::string tag = TAG_PREFIX + std::to_string(delay_threshold) + TAG_UNIT_SUFFIX;
     std::string extraData = ret + tag;
     WriteBehaviorEvent(funcName, std::to_string(userId), 0, extraData);
+    RadarParameter parRes = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = static_cast<int32_t>(userId),
+        .funcName = funcName,
+        .bizScene = BizScene::STORAGE_START,
+        .bizStage = BizStage::BIZ_STAGE_SA_START,
+        .keyElxLevel = "NA",
+        .errorCode = E_OK,
+        .extraData = extraData,
+        .toCallPkg = ""
+    };
+    WriteAuditLog(parRes);
     return ret;
 }
 
