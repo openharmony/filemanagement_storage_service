@@ -146,6 +146,7 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
 {
     if (!GenerateKeyBlob(blob, size)) {
+        LOGE("[L4:BaseKey] GenerateAndSaveKeyBlob: <<< EXIT FAILED <<< GenerateKeyBlob failed");
         StorageService::StorageRadar::ReportUserKeyResult("GenerateAndSaveKeyBlob", 0,
             E_KEY_BLOB_ERROR, "", "GenerateKeyBlob failed");
         return false;
@@ -394,6 +395,8 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
     }
 
     if (!SaveKeyBlob(storeKey, keyPath + PATH_ENCRYPTED)) {
+        LOGE("[L4:BaseKey] SaveAndCleanKeyBuff: <<< EXIT FAILED <<< SaveKeyBlob storeKey failed, path=%{public}s",
+            keyPath.c_str());
         storeKey.Clear();
         ClearKeyContext(keyCtx);
         return false;
@@ -422,6 +425,7 @@ int32_t BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &path
         }
     } else {
         if (!LoadKeyBlob(keyCtx.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {  // needcheck is update
+            LOGE("[L4:BaseKey] LoadAndSaveShield: <<< EXIT FAILED <<< LoadKeyBlob shield failed");
             keyCtx.rndEnc.Clear();
             return E_LOAD_KEY_BLOB_ERROR;
         }
@@ -434,6 +438,8 @@ int32_t BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &path
     }
 #endif
     if (!SaveKeyBlob(keyCtx.shield,  pathShield)) {
+        LOGE("[L4:BaseKey] LoadAndSaveShield: <<< EXIT FAILED <<< SaveKeyBlob shield failed, path=%{public}s",
+            pathShield.c_str());
         return E_SAVE_KEY_BLOB_ERROR;
     }
     return E_OK;
