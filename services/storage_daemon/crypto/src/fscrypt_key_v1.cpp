@@ -465,8 +465,8 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
         key_serial_t ks =
             KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
-            // Addkey failed, need to process the error
-            LOGE("[L5:FscryptKeyV1] InstallKeyToKeyring: Failed to AddKey into keyring, errno %{public}d", errno);
+            LOGE("[L5:FscryptKeyV1] InstallKeyToKeyring: AddKey FAILED, keyref=%{public}s, errno=%{public}d",
+                keyref.c_str(), errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
