@@ -117,7 +117,10 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                 [in] String fsType,
                                 [in] boolean force);
      [ipccode 206] void FormatVolume([in] String devPath,
-                                     [in] String fsType);
+                                     [in] String fsType,
+                                     [in] String diskPath,
+                                     [in] String partitionType,
+                                     [in] int partitionNum);
      [ipccode 207] void Check([in] String devPath,
                               [in] String fsType,
                               [in] boolean autoFix);

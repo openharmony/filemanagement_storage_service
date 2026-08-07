@@ -112,12 +112,12 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_DoMount, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, ExfatOperator_Format, TestSize.Level1)
 {
     ExfatOperator op;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 HWTEST_F(ExtOperatorTest, ExfatOperator_Check, TestSize.Level1)
@@ -205,12 +205,12 @@ HWTEST_F(ExtOperatorTest, VfatOperator_DoMount, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, VfatOperator_Format, TestSize.Level1)
 {
     VfatOperator op;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_EmptyDevPath, TestSize.Level1)
@@ -256,28 +256,28 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_MigrationRO_Failed, TestSize.Leve
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_EmptyDevPath, TestSize.Level1)
 {
     HmfsOperator op;
-    EXPECT_EQ(op.Format(""), E_PARAMS_INVALID);
+    EXPECT_EQ(op.Format("", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_Success, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_ENoChild, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Format_Failed, TestSize.Level1)
 {
     HmfsOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 HWTEST_F(ExtOperatorTest, HmfsOperator_Check_EmptyDevPath, TestSize.Level1)
@@ -509,22 +509,22 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_DoMount_MountFailed, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Success, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_ENoChild, TestSize.Level1)
 {
     Ext4Operator op;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Failed, TestSize.Level1)
 {
     Ext4Operator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 /**
@@ -576,7 +576,7 @@ HWTEST_F(ExtOperatorTest, VfatOperator_Format_Failed, TestSize.Level1)
 {
     VfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 /**
@@ -661,7 +661,7 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format_Failed, TestSize.Level1)
 {
     ExfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_ERR);
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
 /**
@@ -673,8 +673,8 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format_Failed, TestSize.Level1)
 HWTEST_F(ExtOperatorTest, ExfatOperator_Format_NoChild, TestSize.Level1)
 {
     ExfatOperator op;
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD));
-    EXPECT_EQ(op.Format("/dev/block/mock_dev"), E_OK);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_NO_CHILD)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, UdfOperator_ReadMetadata_EmptyDevPath, TestSize.Level1)
@@ -869,14 +869,14 @@ HWTEST_F(ExtOperatorTest, HmfsOperator_DoMount_ChownFailed_Rollback, TestSize.Le
 HWTEST_F(ExtOperatorTest, ExfatOperator_Format_EmptyDevPath, TestSize.Level1)
 {
     ExfatOperator op;
-    EXPECT_EQ(op.Format(""), E_PARAMS_INVALID);
+    EXPECT_EQ(op.Format("", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, Ext4Operator_Format_EmptyDevPath, TestSize.Level1)
 {
     Ext4Operator op;
     g_getParameter = "tobbasic/cn";
-    EXPECT_EQ(op.Format(""), E_PARAMS_INVALID);
+    EXPECT_EQ(op.Format("", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
 }
 
 HWTEST_F(ExtOperatorTest, IsoOperator_DoDVDBurn_BurnPathStartsWithDash, TestSize.Level1)
@@ -1109,6 +1109,90 @@ HWTEST_F(ExtOperatorTest, UdfOperator_DoDVDBurn_IsIsoImage, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.DoDVDBurn("/dev/block/sr0", options, true), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, ExfatOperator_FixTypeIdentifier_Mbr, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "mbr", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, ExfatOperator_FixTypeIdentifier_Gpt, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, ExfatOperator_FixTypeIdentifier_UnknownType, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "unknown", 1), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, ExfatOperator_FixTypeIdentifier_ForkExecFailed, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, Ext4Operator_FixTypeIdentifier_Mbr, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "mbr", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, Ext4Operator_FixTypeIdentifier_Gpt, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, Ext4Operator_FixTypeIdentifier_UnknownType, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "unknown", 1), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, Ext4Operator_FixTypeIdentifier_ForkExecFailed, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_FixTypeIdentifier_Mbr, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "mbr", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_FixTypeIdentifier_Gpt, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_FixTypeIdentifier_UnknownType, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "unknown", 1), E_NOT_SUPPORT);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_FixTypeIdentifier_ForkExecFailed, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

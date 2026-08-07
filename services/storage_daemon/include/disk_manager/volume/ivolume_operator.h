@@ -38,7 +38,10 @@ public:
                                   std::string& type,
                                   std::string& label);
 
-    virtual int32_t Format(const std::string& devPath) { return E_NOT_SUPPORT; }
+    virtual int32_t Format(const std::string& devPath,
+                           const std::string& diskPath,
+                           const std::string& partitionType,
+                           const int32_t partitionNum) { return E_NOT_SUPPORT; }
     virtual int32_t Check(const std::string& devPath) { return E_OK; }
     virtual int32_t Repair(const std::string& devPath) { return E_NOT_SUPPORT; }
     virtual int32_t SetLabel(const std::string& devPath,

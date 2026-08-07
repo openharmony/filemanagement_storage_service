@@ -29,7 +29,10 @@ public:
     int32_t DoMount(const std::string &devPath, const std::string &mountPath,
                     unsigned long mountFlags, const std::string &mountData) override;
 
-    int32_t Format(const std::string &devPath) override;
+    int32_t Format(const std::string& devPath,
+                   const std::string& diskPath,
+                   const std::string& partitionType,
+                   const int32_t partitionNum) override;
 
     int32_t Check(const std::string &devPath) override;
 
