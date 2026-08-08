@@ -2288,9 +2288,11 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatVolume_001, 
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
 #ifdef EXTERNAL_STORAGE_MANAGER
     EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
-    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume(
+        "/dev/block/ut_test_dev", "", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
     EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "ext4", "/dev/disk", "gpt", 1), E_OK);
-    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "unknown", "/dev/disk", "gpt", 1), E_OK);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume(
+        "/dev/block/ut_test_dev", "unknown", "/dev/disk", "gpt", 1), E_OK);
     storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat", "/dev/disk", "gpt", 1);
 #else
     EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4", "/dev/disk", "gpt", 1), E_NOT_SUPPORT);
