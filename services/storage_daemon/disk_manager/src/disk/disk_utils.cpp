@@ -85,6 +85,7 @@ constexpr uint8_t BLOCK_SIZE_BYTE_1 = 5;
 constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
 constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 constexpr int32_t FORMAT_PARTITION_TIMEOUT_S = 5 * 60;
+constexpr int32_t PARTITION_HMFS_VALID = 2;
 
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
@@ -809,6 +810,7 @@ int32_t DiskUtils::EjectCD(const std::string &devPath)
     LOGI("EjectCD: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
+
 int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
 {
     std::vector<std::string> clearCmd = {
@@ -817,13 +819,19 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
         diskPath
     };
     std::vector<std::string> output;
-    int32_t ret = ForkExec(clearCmd, &output);
+    int exitStatus = 0;
+    int32_t ret = ForkExec(clearCmd, &output, &exitStatus);
     for (auto &str : output) {
         LOGI("DiskUtils::PartitionHmfs clear: %{public}s", str.c_str());
     }
     if (ret != E_OK) {
-        LOGE("DiskUtils::PartitionHmfs sgdisk clear failed, ret=%{public}d", ret);
-        return ret;
+        if (exitStatus == PARTITION_HMFS_VALID) {
+            LOGI("DiskUtils::PartitionHmfs sgdisk clear exitStatus=2, treat as success");
+        } else {
+            LOGE("DiskUtils::PartitionHmfs sgdisk clear failed, ret=%{public}d, errno=%{public}d,"
+                 "exitStatus=%{public}d", ret, errno, exitStatus);
+            return ret;
+        }
     }
 
     output.clear();

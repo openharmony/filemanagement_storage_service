@@ -165,6 +165,7 @@ public:
     virtual int32_t GetVolumeOpProcess(const std::string &devPath, int32_t &progressPct) override;
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
+    virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

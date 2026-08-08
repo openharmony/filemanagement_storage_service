@@ -3007,5 +3007,31 @@ int32_t StorageDaemonProvider::GetCapacity(const std::string &devPath, int64_t &
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t &size)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] GetDiskSize: >>> ENTER <<< devName=%{public}s", devName.c_str());
+
+    if (devName.empty() || IsFilePathInvalid(devName)) {
+        LOGE("[L1:StorageDaemonProvider] GetDiskSize: invalid devName");
+        return E_PARAMS_INVALID;
+    }
+
+    ScanDevice scanDevice;
+    size = 0;
+    size = scanDevice.GetDiskSize(devName);
+    if (size == 0) {
+        LOGE("[L1:StorageDaemonProvider] GetDiskSize: failed to get size for %{public}s", devName.c_str());
+        return E_ERR;
+    }
+
+    LOGI("[L1:StorageDaemonProvider] GetDiskSize: <<< EXIT SUCCESS <<< size=%{public}" PRIu64, size);
+    return E_OK;
+#else
+    LOGI("[L1:StorageDaemonProvider] GetDiskSize: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

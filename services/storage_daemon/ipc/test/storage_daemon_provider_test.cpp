@@ -2498,6 +2498,30 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ReadMetadata_001, 
 #endif
 }
 
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDiskSize_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint64_t size = 0;
+#ifdef DISK_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("", size), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("../sda", size), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("/..", size), E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("", size), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDiskSize_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint64_t size = 0;
+#ifdef DISK_MANAGER
+    EXPECT_NE(storageDaemonProviderTest_->GetDiskSize("/dev/block/ut_test_dev", size), E_OK);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("/dev/block/ut_test_dev", size), E_NOT_SUPPORT);
+#endif
+}
+
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateBlockDevicePath_001, TestSize.Level1)
 {
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
