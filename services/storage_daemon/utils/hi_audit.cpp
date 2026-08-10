@@ -216,9 +216,9 @@ void HiAudit::WriteToFile(const std::string& content)
         return;
     }
     size_t len = content.length();
-    size_t ret = write(writeFd_, content.c_str(), len);
-    if (ret != len) {
-        LOGE("write failed, len: %{public}zd, ret: %{public}zd, errno: %{public}d.", len, ret, errno);
+    int ret = write(writeFd_, content.c_str(), len);
+    if (ret < 0 || ret != len) {
+        LOGE("write failed, len: %{public}zd, ret: %{public}d, errno: %{public}d.", len, ret, errno);
     }
     len = (ret > 0) ? ret : 0;
     writeLogSize_ = writeLogSize_ + len;
