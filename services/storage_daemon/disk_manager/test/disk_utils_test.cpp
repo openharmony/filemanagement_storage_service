@@ -1309,10 +1309,12 @@ HWTEST_F(ExtDiskUtilsTest, GetUsedSizeFromSysfs_Success, TestSize.Level1)
 HWTEST_F(ExtDiskUtilsTest, GetDiscCapacity_AllTypesSuccess, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "GetDiscCapacity_AllTypesSuccess start";
-    // B1: DVD-R -> GetDvdTotalCapacity (external linkage, mock redirect works)
+    // B1: DVD-R & DVD-ROM -> GetDvdTotalCapacity (same source branch)
     EXPECT_CALL(*diskUtilMoc_, GetDvdTotalCapacity(_, _))
+        .WillOnce(Invoke([](int, int64_t &cap) { cap = 4700372992L; return E_OK; }))
         .WillOnce(Invoke([](int, int64_t &cap) { cap = 4700372992L; return E_OK; }));
     EXPECT_EQ(DiskUtils::GetDiscCapacity(0, "DVD-R"), 4700372992L);
+    EXPECT_EQ(DiskUtils::GetDiscCapacity(0, "DVD-ROM"), 4700372992L);
 
     // B2: DVD+RW -> GetDvdPlusRwTotalCapacity
     // Note: GetDvdPlusRwTotalCapacity is a STATIC function in disk_utils.cpp,
@@ -1540,7 +1542,7 @@ HWTEST_F(ExtDiskUtilsTest, AdjustBlankDiscCapacity_BlankDvd_FallbackPath, TestSi
     int64_t usedSize = 1000000L;
     g_ioctlRet = -1; // ReadCDDiscInfo fails -> fallback path
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return("DVD+RW"));
-    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("")); // empty -> isCDBlank=true
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("")); // empty -> IsCDBlank returns true
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             output->push_back("  unformatted:   2295104*2048=4702922752");
@@ -1581,8 +1583,8 @@ HWTEST_F(ExtDiskUtilsTest, GetCapacity_SuccessWithUsedSizeEqualToTotal, TestSize
     int64_t totalSize = 0;
     int64_t freeSize = 0;
     // Use DVD-R which calls GetDvdTotalCapacity (external linkage, mock works)
-    // GetCDType is called TWICE: once by GetCapacity (line 1282) and once by
-    // IsCDBlank (line 735, called via AdjustBlankDiscCapacity)
+    // GetCDType is called TWICE: once by GetCapacity (line 1245) and once by
+    // IsCDBlank (line 732, called via AdjustBlankDiscCapacity)
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_))
         .WillOnce(Return("DVD-R"))
         .WillOnce(Return("DVD-R"));
@@ -1642,7 +1644,7 @@ HWTEST_F(ExtDiskUtilsTest, GetCapacity_BlankDiscUsedSizeZero, TestSize.Level1)
         .WillOnce(Return("DVD-R"));
     EXPECT_CALL(*diskUtilMoc_, GetDvdTotalCapacity(_, _))
         .WillOnce(Invoke([](int, int64_t &cap) { cap = 4700372992L; return E_OK; }));
-    // AdjustBlankDiscCapacity -> IsCDBlank: isCDBlank=true (ioctl succeeds, discStatus=0)
+    // AdjustBlankDiscCapacity -> IsCDBlank returns true (ioctl succeeds, discStatus=0)
     g_ioctlRet = 0;
     g_ioctlInfo = SG_INFO_OK;
     // Since blank, usedSize reset to 0, ForkExec for mediainfo

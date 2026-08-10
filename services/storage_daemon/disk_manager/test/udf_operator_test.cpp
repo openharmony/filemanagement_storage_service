@@ -394,7 +394,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_Burn_BlankCD_CDType_VerifyFalse, TestSize.
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
     bool blank = true;
-    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_, _)).WillOnce(DoAll(SetArgReferee<1>(blank), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_)).WillOnce(Return(blank));
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return("CDROM"));
     EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
         .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
@@ -410,7 +410,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_Burn_NotBlankCD_GetIncBurnAddrFailed, Test
     UdfOperator op;
     BurnOptions opts;
     bool blank = false;
-    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_, _)).WillOnce(DoAll(SetArgReferee<1>(blank), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_)).WillOnce(Return(blank));
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return("CDROM"));
     EXPECT_CALL(*diskUtilMoc_, GetIncBurnAddr(_, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.Burn("/dev/sr0", opts), E_ERR);
@@ -425,7 +425,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_Burn_DVDType_Success, TestSize.Level1)
     opts.diskName = "MYDISC";
     opts.burnSpeed = "1";
     bool blank = true;
-    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_, _)).WillOnce(DoAll(SetArgReferee<1>(blank), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_)).WillOnce(Return(blank));
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return("DVDROM"));
     EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
@@ -442,7 +442,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_Burn_VerifyTrueFailed, TestSize.Level1)
     opts.burnPath = "/data/burn";
     opts.burnSpeed = "1";
     bool blank = true;
-    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_, _)).WillOnce(DoAll(SetArgReferee<1>(blank), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, IsCDBlank(_)).WillOnce(Return(blank));
     EXPECT_CALL(*diskUtilMoc_, GetCDType(_)).WillOnce(Return("DVDROM"));
     EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));

@@ -64,7 +64,7 @@ public:
     virtual int32_t CompareChecksums(
         const std::map<std::string, std::string> &sourceMap,
         const std::map<std::string, std::string> &discMap) = 0;
-    virtual int IsCDBlank(const std::string &diskPath, bool &isCDBlank) = 0;
+    virtual bool IsCDBlank(const std::string &diskPath) = 0;
     virtual int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr) = 0;
     virtual std::string GetOpticalDriveNode(const std::string &devPath) = 0;
     virtual int64_t GetDiscCapacity(int cmdFd, const std::string &discType) = 0;
@@ -114,7 +114,7 @@ public:
     MOCK_METHOD2(CompareChecksums, int32_t(
         const std::map<std::string, std::string> &sourceMap,
         const std::map<std::string, std::string> &discMap));
-    MOCK_METHOD2(IsCDBlank, int(const std::string &diskPath, bool &isCDBlank));
+    MOCK_METHOD1(IsCDBlank, bool(const std::string &diskPath));
     MOCK_METHOD2(GetIncBurnAddr, int32_t(const std::string &devPath, std::string &incBurnAddr));
     MOCK_METHOD1(GetOpticalDriveNode, std::string(const std::string &devPath));
     MOCK_METHOD2(GetDiscCapacity, int64_t(int cmdFd, const std::string &discType));

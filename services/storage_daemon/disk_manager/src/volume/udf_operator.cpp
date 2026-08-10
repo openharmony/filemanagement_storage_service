@@ -286,12 +286,7 @@ int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
 {
     LOGI("Burn devPath = %{public}s, isVerifyBurn = %{public}d", devPath.c_str(), burnOptions.isVerifyBurn);
     int32_t err = 0;
-    bool isDiskEmpty = false;
-    bool isBlankCD = false;
-    int blankRet = IsCDBlank(devPath, isBlankCD);
-    if (blankRet == E_OK && isBlankCD) {
-        isDiskEmpty = true;
-    }
+    bool isDiskEmpty = IsCDBlank(devPath);
     std::string diskType = GetCDType(devPath);
     if (diskType.find("CD") != std::string::npos) {
         std::string incBurnAddr;

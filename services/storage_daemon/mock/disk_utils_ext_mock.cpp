@@ -122,12 +122,12 @@ int32_t DiskUtils::CompareChecksums(
     return IDiskUtilMoc::diskUtilMoc->CompareChecksums(sourceMap, discMap);
 }
 
-int IsCDBlank(const std::string &diskPath, bool &isCDBlank)
+bool IsCDBlank(const std::string &diskPath)
 {
     if (IDiskUtilMoc::diskUtilMoc == nullptr) {
-        return E_ERR;
+        return false;
     }
-    return IDiskUtilMoc::diskUtilMoc->IsCDBlank(diskPath, isCDBlank);
+    return IDiskUtilMoc::diskUtilMoc->IsCDBlank(diskPath);
 }
 
 int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr)
