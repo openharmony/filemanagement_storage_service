@@ -85,3 +85,9 @@ if ("${target_platform}" == "phone") {
 } else {
   phone_device_enable = false
 }
+
+if ("${target_platform}" == "glasses") {
+  storage_service_glasses_device = true
+} else {
+  storage_service_glasses_device = false
+}
