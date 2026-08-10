@@ -41,8 +41,7 @@ bool DiskUtilsCdStatusFuzzTest(const uint8_t *data, size_t size)
     bool isCDExist = false;
     IsCDExist(diskPath, isCDExist);
 
-    bool isCDBlank = false;
-    IsCDBlank(diskPath, isCDBlank);
+    IsCDBlank(diskPath);
     return true;
 }
 } // namespace OHOS
