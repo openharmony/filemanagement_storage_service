@@ -212,6 +212,10 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
 {
     LOGI("[L2:MountManager] CheckPathValid: >>> ENTER <<< bundleName=%{public}s, userId=%{public}u",
         bundleNameStr.c_str(), userId);
+    if (bundleNameStr.empty() || IsFilePathInvalid(bundleNameStr)) {
+        LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< invalid bundleNameStr");
+        return false;
+    }
     string completePath =
         SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
     if (!IsDir(completePath)) {
@@ -220,7 +224,8 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
         return false;
     }
 
-    if (!std::filesystem::is_empty(completePath)) {
+    std::error_code ec;
+    if (!std::filesystem::is_empty(completePath, ec)) {
         LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< directory has been mounted, path=%{public}s",
             completePath.c_str());
         return false;
@@ -235,6 +240,10 @@ void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNode
 {
     LOGI("[L2:MountManager] MountSandboxPath: >>> ENTER <<< userId=%{public}u, bundleName=%{public}s",
         userId, bundleName.c_str());
+    if (bundleName.empty() || IsFilePathInvalid(bundleName)) {
+        LOGE("[L2:MountManager] MountSandboxPath: <<< EXIT FAILED <<< invalid bundleName");
+        return;
+    }
     std::string sanboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
     for (size_t i = 0; i < sandboxMountNodeInfo.size(); ++i) {
         const auto& nodeInfo = sandboxMountNodeInfo[i];
@@ -243,8 +252,12 @@ void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNode
         ReplaceAndCount(srcPath, PACKAGE_NAME_FLAG, bundleName);
         auto ret = nodeInfo.MountDir(srcPath, dstPath);
         if (ret != E_OK && ret != E_NON_EXIST) {
-            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
+            int savedErrno = errno;
+            LOGW("[L2:MountManager] MountSandboxPath: MountDir failed, ret=%{public}d, dstPath=%{public}s",
+                ret, nodeInfo.dstPath.c_str());
+            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("MountSandboxPath", userId, E_MOUNT_SANDBOX, extraData);
+            return;
         }
     }
     LOGI("[L2:MountManager] MountSandboxPath: <<< EXIT SUCCESS <<< userId=%{public}u, bundleName=%{public}s",
@@ -452,9 +465,10 @@ int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
     for (const std::string &path: list) {
         LOGD("[L2:MountManager] UMountByListWithDetach: umount path %{public}s", path.c_str());
         int32_t res = UMount2(path, MNT_DETACH);
-        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-            LOGE("[L2:MountManager] UMountByListWithDetach: failed to unmount path, errno=%{public}d", errno);
-            result = errno;
+        int savedErrno = errno;
+        if (res != E_OK && savedErrno != ENOENT && savedErrno != EINVAL) {
+            LOGE("[L2:MountManager] UMountByListWithDetach: failed to unmount path, errno=%{public}d", savedErrno);
+            result = savedErrno;
         }
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT LIST WITH DETACH",
@@ -513,7 +527,12 @@ static void ClearRedundantResources(int32_t userId)
         return;
     }
 
-    filesystem::directory_iterator bundleNameList(rootDir);
+    filesystem::directory_iterator bundleNameList(rootDir, errCode);
+    if (errCode) {
+        LOGE("ClearRedundantResources: iterate failed, rootDir=%{public}s, errno=%{public}d",
+            sharePath.c_str(), errCode.value());
+        return;
+    }
     for (const auto &bundleName : bundleNameList) {
         RmExistDir(bundleName.path().generic_string() + "/r");
         RmExistDir(bundleName.path().generic_string() + "/rw");
@@ -532,7 +551,6 @@ int32_t MountManager::MountByUser(int32_t userId)
     std::thread thread([userId]() { ClearRedundantResources(userId); });
     thread.detach();
     CreateVirtualDirs(userId);
-
     int32_t mountHmdfsRes = MountFileSystem(userId);
     if (mountHmdfsRes != E_OK) {
         LOGE("[L2:MountManager] MountByUser: <<< EXIT FAILED <<< MountFileSystem failed, ret=%{public}d",
@@ -552,8 +570,16 @@ int32_t MountManager::MountFileSystem(int32_t userId)
         LOGE("[L2:MountManager] MountFileSystem: <<< EXIT FAILED <<< MountHmdfs failed, ret=%{public}d", ret);
         return ret;
     }
-    MountSharefs(userId);
-    MountAppdata(userId, false);
+    auto sharefsRet = MountSharefs(userId);
+    if (sharefsRet != E_OK) {
+        LOGW("[L2:MountManager] MountFileSystem: MountSharefs failed, ret=%{public}d", sharefsRet);
+        return sharefsRet;
+    }
+    auto appdataRet = MountAppdata(userId, false);
+    if (appdataRet != E_OK) {
+        LOGW("[L2:MountManager] MountFileSystem: MountAppdata failed, ret=%{public}d", appdataRet);
+        return appdataRet;
+    }
     LOGI("[L2:MountManager] MountFileSystem: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
@@ -666,7 +692,10 @@ int32_t MountManager::UmountByUser(int32_t userId)
     LOGI("[L2:MountManager] UmountByUser: umount cloud mount point start.");
     int32_t cloudUMount = SystemMountManager::GetInstance().UMountCloudByUserId(userId);
     res = (cloudUMount != E_OK) ? cloudUMount : res;
-    UMountMediaFuse(userId);
+    int32_t mediaFuseRet = UMountMediaFuse(userId);
+    if (mediaFuseRet != E_OK) {
+        LOGW("[L2:MountManager] UmountByUser: UMountMediaFuse failed, ret=%{public}d", mediaFuseRet);
+    }
     FindSaFd(userId);
     LOGI("[L2:MountManager] UmountByUser: <<< EXIT SUCCESS <<< userId=%{public}d, res=%{public}d", userId, res);
     return res;
@@ -827,8 +856,10 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         return ret;
     }
     for (const auto &dirInfo : dirInfoList.data) {
-        if (dirInfo.MakeDir() != E_OK) {
-            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(errno);
+        int32_t mkRet = dirInfo.MakeDir();
+        if (mkRet != E_OK) {
+            int savedErrno = errno;
+            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
             ret = E_CREATE_DIR_VIRTUAL;
         }
@@ -842,6 +873,14 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
 {
     LOGI("[L2:MountManager] MountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s",
         userId, relativePath.c_str());
+    if (deviceId.empty() || IsFilePathInvalid(deviceId)) {
+        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< invalid deviceId");
+        return E_PARAMS_INVALID;
+    }
+    if (networkId.empty() || IsFilePathInvalid(networkId)) {
+        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< invalid networkId");
+        return E_PARAMS_INVALID;
+    }
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
     if (!PrepareDir(dstPath, MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER)) {
         LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< PrepareDir failed");
@@ -858,8 +897,9 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< mount bind failed, errno=%{public}d", errno);
+    int32_t savedErrno = errno;
+    if (ret != 0 && savedErrno != EEXIST && savedErrno != EBUSY) {
+        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< mount bind failed, errno=%{public}d", savedErrno);
         return E_USER_MOUNT_ERR;
     }
     auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
@@ -885,7 +925,8 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT DFS DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("[L2:MountManager] UMountDfsDocs: SD_DURATION: delayTime=%{public}s", delay.c_str());
-    if (!filesystem::is_empty(dstPath)) {
+    std::error_code isEmptyEc;
+    if (!filesystem::is_empty(dstPath, isEmptyEc)) {
         LOGE("[L2:MountManager] UMountDfsDocs: <<< EXIT FAILED <<< Failed to umount");
         return E_NOT_EMPTY_TO_UMOUNT;
     }
@@ -954,7 +995,12 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
     if (!DirExist(path)) {
         return;
     }
-    for (const auto &entry : filesystem::directory_iterator(path)) {
+    std::error_code iterEc;
+    for (const auto &entry : filesystem::directory_iterator(path, iterEc)) {
+        if (iterEc) {
+            LOGE("[L2:MountManager] GetAllUserId: directory_iterator failed, errno=%{public}d", iterEc.value());
+            return;
+        }
         if (!entry.is_directory()) {
             continue;
         }
@@ -999,7 +1045,11 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
             return E_CREATE_DIR_APPDATA;
         }
     }
-    MountAppdata(userId, true);
+    ret = MountAppdata(userId, true);
+    if (ret != E_OK) {
+        LOGW("[L2:MountManager] PrepareAppdataDirByUserId: MountAppdata failed, ret=%{public}d", ret);
+        return ret;
+    }
     LOGI("[L2:MountManager] PrepareAppdataDirByUserId: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
@@ -1021,8 +1071,12 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
     }
     for (const auto &nodeInfo : mountNodeList) {
         if (nodeInfo.MountDir() != E_OK) {
-            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
+            int savedErrno = errno;
+            LOGW("[L2:MountManager] MountAppdata: MountDir failed, dstPath=%{public}s",
+                nodeInfo.dstPath.c_str());
+            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
+            return E_MOUNT_BIND_AND_REC;
         }
     }
     LOGI("[L2:MountManager] MountAppdata: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
@@ -1040,10 +1094,20 @@ int32_t MountManager::PrepareAppdataDir(int32_t userId)
             return E_OK;
         }
         for (const int32_t &item: userIds) {
-            PrepareAppdataDirByUserId(item);
+            auto ret = PrepareAppdataDirByUserId(item);
+            if (ret != E_OK) {
+                LOGW("[L2:MountManager] PrepareAppdataDir: PrepareAppdataDirByUserId failed, "
+                    "userId=%{public}d, ret=%{public}d", item, ret);
+                return ret;
+            }
         }
     } else {
-        PrepareAppdataDirByUserId(userId);
+        auto ret = PrepareAppdataDirByUserId(userId);
+        if (ret != E_OK) {
+        LOGW("[L2:MountManager] PrepareAppdataDir: PrepareAppdataDirByUserId failed, "
+            "userId=%{public}d, ret=%{public}d", userId, ret);
+        return ret;
+        }
     }
     LOGI("[L2:MountManager] PrepareAppdataDir: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
@@ -1057,7 +1121,10 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", errno);
+        int savedErrno = errno;
+        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", savedErrno);
+        StorageService::StorageRadar::ReportUserManager("UmountMntUserTmpfs::appdata", userId,
+            E_UMOUNT_MEDIA_FUSE, "dstPath=" + path + ",kernelCode=" + to_string(savedErrno));
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -1067,7 +1134,10 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", errno);
+        int savedErrno = errno;
+        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", savedErrno);
+        StorageService::StorageRadar::ReportUserManager("UmountMntUserTmpfs::otherAppdata", userId,
+            E_UMOUNT_MEDIA_FUSE, "dstPath=" + path + ",kernelCode=" + to_string(savedErrno));
     }
     delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT OTHER TEMP CUR APPDATA",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -1382,7 +1452,14 @@ int32_t MountManager::InitSecondMountBundleName(uint32_t userId)
             errCode.value());
         return E_ERR;
     }
-    filesystem::directory_iterator bundleNameList(sandboxRootDir);
+    filesystem::directory_iterator bundleNameList(sandboxRootDir, errCode);
+    if (errCode) {
+        std::string extraData = "iterate sandbox dir failed,kernelCode=" + to_string(errCode.value());
+        StorageRadar::ReportUserManager("InitSecondMountBundleName_iterate", userId, E_ERR, extraData);
+        LOGE("[L2:MountManager] InitSecondMountBundleName: <<< EXIT FAILED <<< iterate failed, errno=%{public}d",
+            errCode.value());
+        return E_ERR;
+    }
     std::vector<std::string> bundles;
     std::string bundleSuffix = MOUNT_SUFFIX;
     for (const auto &bundle : bundleNameList) {

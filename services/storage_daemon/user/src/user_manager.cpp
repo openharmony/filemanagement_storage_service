@@ -59,7 +59,13 @@ int32_t UserManager::StartUser(int32_t userId)
     }
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
         IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
-    CreateServiceDirs(userId, flags);
+    int32_t ret = CreateServiceDirs(userId, flags);
+    if (ret != E_OK) {
+        LOGW("[L2:UserManager] StartUser: CreateServiceDirs failed, userId=%{public}d, ret=%{public}d",
+            userId, ret);
+        StorageRadar::ReportUserManager("StartUser", userId, ret, "CreateServiceDirs failed");
+        return ret;
+    }
     return MountManager::GetInstance().MountByUser(userId);
 }
 
@@ -234,6 +240,13 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 void UserManager::CheckDirsFromVec(int32_t userId)
 {
     LOGI("[L2:UserManager] CheckDirsFromVec: >>> ENTER <<< userId=%{public}d", userId);
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L2:UserManager] CheckDirsFromVec: <<< EXIT FAILED <<< userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("CheckDirsFromVec", userId, err, "userId out of range");
+        return;
+    }
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
     IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
 
@@ -330,7 +343,10 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
     StorageManagerClient client;
     auto ret = client.NotifyCreateBundleDataDirWithEl(userId, elx);
     if (ret != E_OK) {
-        StorageRadar::ReportUserManager("CreateElxBundleDataDir", ret, userId, std::to_string(elx));
+        LOGE("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT FAILED <<< userId=%{public}u, elx=%{public}d,"
+            "ret=%{public}d", userId, elx, ret);
+        StorageRadar::ReportUserManager("CreateElxBundleDataDir", userId, ret, std::to_string(elx));
+        return;
     }
     LOGI("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT SUCCESS <<< userId=%{public}u, elx=%{public}d",
         userId, elx);
@@ -351,6 +367,14 @@ int32_t UserManager::CheckUserIdRange(int32_t userId)
 int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
 {
     LOGI("[L2:UserManager] RestoreconSystemServiceDirs: >>> ENTER <<< userId=%{public}d", userId);
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L2:UserManager] RestoreconSystemServiceDirs: <<< EXIT FAILED <<< userId %{public}d out of range",
+            userId);
+        StorageRadar::ReportUserManager("RestoreconSystemServiceDirs", userId, err, "userId out of range");
+        return err;
+    }
 #ifdef USE_LIBRESTORECON
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
         IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
@@ -367,7 +391,14 @@ int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
             continue;
         }
         auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-        RestoreconRecurse(dirInfo.path.c_str());
+        int32_t rc = RestoreconRecurse(dirInfo.path.c_str());
+        if (rc != E_OK) {
+            LOGE("[L2:UserManager] RestoreconSystemServiceDirs: RestoreconRecurse failed, path=%{public}s,"
+                "ret=%{public}d", dirInfo.path.c_str(), rc);
+            StorageRadar::ReportUserManager("RestoreconSystemServiceDirs", userId, rc,
+                "path=" + dirInfo.path);
+            return rc;
+        }
         auto delay = StorageService::StorageRadar::ReportDuration("RestoreconRecurse", startTime,
             StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USER_ID);
         LOGI("delay = %{public}s, path = %{public}s ", delay.c_str(), dirInfo.path.c_str());

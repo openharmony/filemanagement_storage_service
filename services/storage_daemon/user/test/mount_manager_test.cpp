@@ -1375,5 +1375,42 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Le
 
     GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_CheckPathValid_002
+ * @tc.desc: Verify CheckPathValid returns false with path traversal bundleName.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_002 start";
+    std::string bundleNameStr = "../../etc";
+    uint32_t userId = 888;
+    auto ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
+    EXPECT_FALSE(ret);
+
+    bundleNameStr = "";
+    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
+    EXPECT_FALSE(ret);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_002 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountDfsDocs_002
+ * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID with path traversal deviceId.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDfsDocs_002 start";
+    std::string relativePath = "/documents";
+    std::string networkId = "network-123";
+    std::string deviceId = "../evil";
+    auto ret = MountManager::GetInstance().MountDfsDocs(100, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDfsDocs_002 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

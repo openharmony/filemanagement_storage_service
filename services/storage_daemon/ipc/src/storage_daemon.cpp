@@ -243,6 +243,10 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 {
     LOGI("[L1:StorageDaemon] RestoreUserKey: >>> ENTER <<< userId=%{public}d, flags=%{public}u", userId, flags);
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
+        LOGE("[L1:StorageDaemon] RestoreUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        return E_USERID_RANGE;
+    }
     if (!IsNeedRestorePathExist(userId, true)) {
         LOGE("[L1:StorageDaemon] RestoreUserKey: <<< EXIT FAILED <<< need_restore file is not existed");
         return -EEXIST;
@@ -394,6 +398,10 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
         LOGE("[L1:StorageDaemon] CompleteAddUser: <<< EXIT SUCCESS <<< app clone user, userId=%{public}d", userId);
         return E_OK;
     }
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
+        LOGE("[L1:StorageDaemon] CompleteAddUser: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
+        return E_USERID_RANGE;
+    }
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
@@ -500,7 +508,15 @@ int32_t StorageDaemon::EraseAllUserEncryptedKeys(const std::vector<int32_t> &loc
 {
     LOGI("[L1:StorageDaemon] EraseAllUserEncryptedKeys: >>> ENTER <<< count=%{public}zu", localIdList.size());
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(localIdList);
+    std::vector<int32_t> validIdList;
+    for (auto id : localIdList) {
+        if (id < StorageService::START_USER_ID || id > StorageService::MAX_USER_ID) {
+            LOGE("[L1:StorageDaemon] EraseAllUserEncryptedKeys: invalid userId=%{public}d out of range, skip", id);
+            continue;
+        }
+        validIdList.push_back(id);
+    }
+    int32_t ret = KeyManager::GetInstance().EraseAllUserEncryptedKeys(validIdList);
     LOGI("[L1:StorageDaemon] EraseAllUserEncryptedKeys result, ret: %{public}d", ret);
     StorageRadar::ReportUserKeyResult("StorageDaemon::EraseAllUserEncryptedKeys", DEFAULT_USERID, ret, "ELx", "");
     if (ret == E_OK) {
@@ -522,6 +538,11 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 {
     LOGI("[L1:StorageDaemon] UpdateUserAuth: >>> ENTER <<< userId=%{public}u, secureUid=%{public}s",
         userId, GetAnonyString(std::to_string(secureUid)).c_str());
+    if (userId < static_cast<uint32_t>(StorageService::START_USER_ID) ||
+        userId > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
+        LOGE("[L1:StorageDaemon] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u out of range", userId);
+        return E_USERID_RANGE;
+    }
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
@@ -595,7 +616,11 @@ std::string StorageDaemon::GetNeedRestoreVersion(uint32_t userId, KeyType type)
     LOGI("[L1:StorageDaemon] GetNeedRestoreVersion: >>> ENTER <<< userId=%{public}u, type=%{public}u", userId, type);
     std::string need_restore_path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     std::string need_restore_version;
-    OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
+    bool isRead = OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
+    if (!isRead) {
+        LOGE("[L1:StorageDaemon] GetNeedRestoreVersion: LoadStringFromFile failed, path=%{public}s",
+            need_restore_path.c_str());
+    }
     LOGI("[L1:StorageDaemon] GetNeedRestoreVersion: <<< EXIT SUCCESS <<< version=%{public}s",
         need_restore_version.c_str());
     return need_restore_version;
@@ -609,6 +634,10 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
     int32_t ret = E_OK;
     std::string need_restore_version = GetNeedRestoreVersion(userId, type);
     int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE);
+    if (need_restore_version.empty()) {
+        LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuth: need_restore_version is empty, userId=%{public}u",
+            userId);
+    }
     if (std::atoi(need_restore_version.c_str()) <= OLD_UPDATE_VERSION_MAXLIMIT) {
         LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuth: Old DOUBLE_2_SINGLE");
         ret = PrepareUserDirsAndUpdateUserAuthOld(userId, type, token, secret);
@@ -723,6 +752,10 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         return ret;
     }
     std::string needRestorePath = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    if (needRestoreVersion.empty()) {
+        LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: needRestoreVersion is empty, userId=%{public}u",
+            userId);
+    }
     uint32_t new_need_restore = static_cast<uint32_t>(std::atoi(needRestoreVersion.c_str()) + 1);
     std::string errMsg = "";
     if (new_need_restore == UpdateVersion::UPDATE_V4 &&
@@ -876,7 +909,9 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId,
         return ret;
     }
     std::string keyUeceDir = std::string(UECE_DIR) + "/" + std::to_string(userId);
-    if ((flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
+    std::error_code isEmptyEc;
+    if ((flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) &&
+        !std::filesystem::is_empty(keyUeceDir, isEmptyEc) && !isEmptyEc) {
         LOGE("[L1:StorageDaemon] GenerateKeyAndPrepareUserDirs: <<< EXIT SUCCESS <<< uece already exist,"
             "userId=%{public}u", userId);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -1269,6 +1304,11 @@ void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isCl
     LOGI("[L1:StorageDaemon] ClearNatoRestoreKey: >>> ENTER <<< userId=%{public}u, type=%{public}u,"
         "isClearAll=%{public}d", userId, type, isClearAll);
     std::string natoKey = KeyManager::GetInstance().GetNatoNeedRestorePath(userId, type);
+    if (natoKey.empty()) {
+        LOGE("[L1:StorageDaemon] ClearNatoRestoreKey: <<< EXIT FAILED <<< natoKey is empty, userId=%{public}u,"
+            "type=%{public}u", userId, type);
+        return;
+    }
 
     if (!isClearAll) {
         LOGI("[L1:StorageDaemon] ClearNatoRestoreKey: <<< EXIT SUCCESS <<< cleared latest only, userId=%{public}u,"
@@ -1291,15 +1331,16 @@ void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isCl
     // Delete all 6 key files
     ClearKeyDirInfo(natoKey);
 
-    if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR)) {
+    std::error_code isEmptyEc;
+    if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR, isEmptyEc) && !isEmptyEc) {
         ClearKeyDir(std::string(NATO_EL2_DIR));
         ClearKeyDir(std::string(NATO_EL2_DIR) + "_bak");
     }
-    if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR)) {
+    if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR, isEmptyEc) && !isEmptyEc) {
         ClearKeyDir(std::string(NATO_EL3_DIR));
         ClearKeyDir(std::string(NATO_EL3_DIR) + "_bak");
     }
-    if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR)) {
+    if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR, isEmptyEc) && !isEmptyEc) {
         ClearKeyDir(std::string(NATO_EL4_DIR));
         ClearKeyDir(std::string(NATO_EL4_DIR) + "_bak");
     }
@@ -1447,6 +1488,11 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 {
     LOGD("[L1:StorageDaemon] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
+    if (userId < static_cast<uint32_t>(StorageService::START_USER_ID) ||
+        userId > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
+        LOGE("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", userId);
+        return E_USERID_RANGE;
+    }
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority(); // set tid priority to 40
     int32_t ret = KeyManager::GetInstance().UnlockUserScreen(userId, token, secret);
@@ -1523,7 +1569,7 @@ int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
     LOGD("[L1:StorageDaemon] DeleteAppkey: >>> ENTER <<< userId=%{public}u, keyIdLen=%{public}zu",
          userId, keyId.size());
 #ifdef USER_CRYPTO_MANAGER
-    int ret = ret = KeyManager::GetInstance().DeleteAppkey(userId, keyId);
+    int ret = KeyManager::GetInstance().DeleteAppkey(userId, keyId);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] DeleteAppkey: <<< EXIT FAILED <<< userId=%{public}u, ret=%{public}d", userId, ret);
         StorageRadar::ReportUserKeyResult("DeleteAppKey", userId, ret, EL5,
@@ -1890,6 +1936,10 @@ int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
         LOGE("[L1:StorageDaemon] IsDirPathSupport: <<< EXIT FAILED <<< dir is not permission");
         return E_PARAMS_INVALID;
     }
+    if (IsFilePathInvalid(dirPath)) {
+        LOGE("[L1:StorageDaemon] IsDirPathSupport: <<< EXIT FAILED <<< path contains traversal sequence");
+        return E_PARAMS_INVALID;
+    }
     return E_OK;
 }
 
@@ -1969,7 +2019,10 @@ void StorageDaemon::UpgradeEl5AuthType(uint32_t userId, const std::vector<uint8_
     auto el5Key = KeyManager::GetInstance().GetUserElKey(userId, EL5_KEY, false);
     if (el5Key != nullptr && el5Key->NeedUpgradeAuthType()) {
         uint64_t secureUid = 0;
-        KeyManager::GetInstance().GetSecureUid(userId, secureUid);
+    if (!KeyManager::GetInstance().GetSecureUid(userId, secureUid)) {
+        LOGE("[L1:StorageDaemon] DoStoreAndUpdate: GetSecureUid failed, userId=%{public}u", userId);
+        return E_ERR;
+    }
 
         UserTokenSecret userTokenSecretDelete = {token, secret, {}, secureUid};
         int ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretDelete, EL5_KEY);

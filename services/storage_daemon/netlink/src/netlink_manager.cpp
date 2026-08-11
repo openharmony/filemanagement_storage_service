@@ -76,6 +76,9 @@ int32_t NetlinkManager::Start()
     if (nlHandler_->Start() != E_OK) {
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< NetlinkHandler::Start failed");
         (void)close(socketFd_);
+        socketFd_ = -1;
+        delete nlHandler_;
+        nlHandler_ = nullptr;
         return E_ERR;
     }
 

@@ -1331,7 +1331,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_0
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_001 start";
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "";
+    std::string path = "/mnt/data/301/userExternal/testMountFileMgrFuse";
     int32_t fuseFd = 0;
     testing::internal::CaptureStderr();
     int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
@@ -1354,7 +1354,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_001 start";
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string path = "";
+    std::string path = "/mnt/data/301/userExternal/testUMountFileMgrFuse";
     int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
     EXPECT_EQ(result, E_OK);
 
@@ -2829,5 +2829,140 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_EjectCD_002, TestS
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_EjectCD_002 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CompleteAddUser_002
+ * @tc.desc: Verify CompleteAddUser returns E_USERID_RANGE with invalid userId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CompleteAddUser_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CompleteAddUser_002 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    auto ret = storageDaemonProviderTest_->CompleteAddUser(StorageService::START_USER_ID - 1);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CompleteAddUser_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UpdateUserAuth_002
+ * @tc.desc: Verify UpdateUserAuth returns E_USERID_RANGE with invalid userId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUserAuth_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUserAuth_002 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint64_t secureUid = 0;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
+    auto ret = storageDaemonProviderTest_->UpdateUserAuth(StorageService::START_USER_ID - 1, secureUid,
+        token, oldSecret, newSecret);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUserAuth_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDfsDocs_004
+ * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID with path traversal deviceId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDfsDocs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/documents";
+    std::string networkId = "network123";
+    std::string deviceId = "../evil";
+    int32_t result = storageDaemonProviderTest_->MountDfsDocs(StorageTest::USER_ID1, relativePath,
+        networkId, deviceId);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDfsDocs_004
+ * @tc.desc: Verify UMountDfsDocs returns E_PARAMS_INVALID with path traversal deviceId.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string relativePath = "/documents";
+    std::string networkId = "network123";
+    std::string deviceId = "../evil";
+    int32_t result = storageDaemonProviderTest_->UMountDfsDocs(StorageTest::USER_ID1, relativePath,
+        networkId, deviceId);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_ResetSecretWithRecoveryKey_003
+ * @tc.desc: Verify ResetSecretWithRecoveryKey returns E_PARAMS_INVALID with empty key.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRecoveryKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_003 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint32_t rkType = 1;
+    std::vector<uint8_t> emptyKey;
+    int32_t result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(StorageTest::USER_ID1,
+        rkType, emptyKey);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreateIsoImage_001
+ * @tc.desc: Verify CreateIsoImage returns E_PARAMS_INVALID with empty filePath.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateIsoImage_001 start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/ut_test_dev";
+    std::string filePath = "";
+    std::string fsType = "iso9660";
+    std::string mountPath = "/mnt/cdrom";
+    auto ret = storageDaemonProviderTest_->CreateIsoImage(devPath, filePath, fsType, mountPath);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateIsoImage_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_Burn_001
+ * @tc.desc: Verify Burn returns E_PARAMS_INVALID with fsType mismatch.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Burn_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string devPath = "/dev/block/ut_test_dev";
+    std::string burnOptions = "fsType=iso9660\nburnPath=/data/burn\ndiskName=MYDISC";
+    std::string fsType = "udf";
+    auto ret = storageDaemonProviderTest_->Burn(devPath, burnOptions, fsType);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 end";
+}
 } // namespace StorageDaemon
-} // namespace OHOS
+} // namespace OHOS

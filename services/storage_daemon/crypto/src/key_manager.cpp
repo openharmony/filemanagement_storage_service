@@ -1121,6 +1121,10 @@ int KeyManager::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdLis
         LOGI("[L3:KeyManager] EraseAllUserEncryptedKeys: localIdList is empty");
     }
     for (const auto &localId : localIdList) {
+        if (localId < StorageService::START_USER_ID || localId > StorageService::MAX_USER_ID) {
+            LOGE("[L3:KeyManager] EraseAllUserEncryptedKeys: invalid userId=%{public}d out of range, skip", localId);
+            continue;
+        }
         LOGI("[L3:KeyManager] EraseAllUserEncryptedKeys: deleting keys for user=%{public}d", localId);
         int32_t ret = DeleteUserKeys(localId);
         if (ret != E_OK) {
@@ -1234,6 +1238,11 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
         user, userTokenSecret.token.size(), userTokenSecret.oldSecret.size(),
         userTokenSecret.newSecret.size(), userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
+    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
+        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
+        LOGE("[L3:KeyManager] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
+        return E_USERID_RANGE;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = UpdateESecret(user, userTokenSecret);
     if (ret != 0) {
@@ -1778,7 +1787,8 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
         return -ENOENT;
     }
 
-    if (IsDir(keyDir) && std::filesystem::is_empty(keyDir)) {
+    std::error_code isEmptyEc;
+    if (IsDir(keyDir) && std::filesystem::is_empty(keyDir, isEmptyEc) && !isEmptyEc) {
         OHOS::ForceRemoveDirectory(keyDir);
         LOGE("[L3:KeyManager] CheckAndDeleteEmptyEl5Directory: removed empty el5 key directory for user %{public}u",
             user);
@@ -1899,6 +1909,11 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGD("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
+    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
+        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
+        LOGE("[L3:KeyManager] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
+        return E_USERID_RANGE;
+    }
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
@@ -2376,6 +2391,11 @@ int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("[L3:KeyManager] LockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
+    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
+        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
+        LOGE("[L3:KeyManager] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
+        return E_USERID_RANGE;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::error_code errCode;
     if (!IsUserCeDecrypt(user) || std::filesystem::exists(GetNatoNeedRestorePath(user, EL4_KEY), errCode)) {
@@ -2620,10 +2640,12 @@ int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
             ret = UpdateCeEceSeceKeyContext(userId, keyType);
         }
     }
-    if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
-        LOGE("Basekey update EL5 newest context failed");
+    if (ret != 0) {
+        LOGE("Basekey update EL5 newest context failed, ret=%{public}d", ret);
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, strKeyType, "");
-        return ret;
+        if (userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID) {
+            return ret;
+        }
     }
     LOGI("Basekey update key context success");
     return 0;

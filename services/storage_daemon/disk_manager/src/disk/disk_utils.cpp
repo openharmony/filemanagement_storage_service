@@ -220,6 +220,11 @@ static bool IsValidBlockDevicePath(const std::string& devPath)
             return false;
         }
     } else {
+        std::string resolvedPath(realPath);
+        if (resolvedPath.find(BLOCK_DEVICE_PREFIX) != 0) {
+            LOGE("Invalid device path: resolved path escapes /dev/block/");
+            return false;
+        }
         struct stat st;
         if (stat(devPath.c_str(), &st) == 0 && !S_ISBLK(st.st_mode)) {
             LOGE("Invalid device path: not a block device");
@@ -442,6 +447,10 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, const std::st
 {
     if (!IsValidBlockDevicePath(devPath)) {
         LOGE("DiskUtils::DeletePartitionInfo invalid devPath");
+        return E_PARAMS_INVALID;
+    }
+    if (!IsValidBlockDevicePath(std::string(BLOCK_DEVICE_PREFIX) + diskId)) {
+        LOGE("DiskUtils::DeletePartitionInfo invalid diskId");
         return E_PARAMS_INVALID;
     }
     LOGI("damage partition start");
@@ -922,6 +931,10 @@ int32_t ValidateBurnOptions(const BurnOptions &options)
          options.diskName.c_str(), options.burnPath.c_str(), options.fsType.c_str());
     if (options.diskName.empty()) {
         LOGE("[L3:DiskUtils] ValidateBurnOptions: diskName is empty");
+        return E_PARAMS_INVALID;
+    }
+    if (options.burnPath.empty() || IsFilePathInvalid(options.burnPath)) {
+        LOGE("[L3:DiskUtils] ValidateBurnOptions: invalid burnPath");
         return E_PARAMS_INVALID;
     }
     struct stat st;
