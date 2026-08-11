@@ -160,7 +160,11 @@ group("storage_daemon_provider_stub__fuzztest") {
     "storagedaemonprovideronremoterequest_fuzzer:fuzztest",
     "storagedaemonproviderstubupdateuserauth_fuzzer:fuzztest",
     "storagedaemonproviderupdateuserauthwithrecoverykey_fuzzer:fuzztest",
-    "storagedaemonproviderstubactiveuserkey_fuzzer:fuzztest"
+    "storagedaemonproviderstubactiveuserkey_fuzzer:fuzztest",
+    "storagedaemonstubcreateiso_fuzzer:fuzztest",
+    "storagedaemonstubinitglobal_fuzzer:fuzztest",
+    "storagedaemonstubqueryoccupied_fuzzer:fuzztest",
+    "storagedaemonstubupdateuser_fuzzer:fuzztest",
   ]
 }
 
