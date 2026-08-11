@@ -488,5 +488,10 @@ int32_t StorageDaemonProxy::GetCapacity(const std::string& devPath, int64_t &tot
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::GetDiskSize(const std::string &devName, uint64_t &size)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS
