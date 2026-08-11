@@ -30,6 +30,7 @@
 #include <linux/hdreg.h>
 #include <regex>
 #include <algorithm>
+#include <string>
 #include <unordered_set>
 #include <sstream>
 #include <cctype>
@@ -52,6 +53,7 @@ constexpr const char *NVME0_STRING = "nvme0";
 constexpr const char *SIZE_NODE = "/size";
 constexpr const char *DEV_PATH = "/dev/block";
 constexpr const char *DEV_NODE = "/dev";
+constexpr const char *ROTATIONAL_NODE = "/queue/rotational";
 constexpr const char *MODEL_NODE = "/device/model";
 constexpr const char *VENDOR_NODE = "/device/vendor";
 constexpr const char *UEVENT_NODE = "/uevent";
@@ -545,6 +547,7 @@ int ScanDevice::GetBlockInfo(const std::string &deviceName, const bool isNvmeDev
     }
     blockInfo.interfaceType = GetInterfaceType(deviceName);
     blockInfo.rpm = GetDiskRpm(deviceName, isNvmeDevice);
+    blockInfo.rotational = GetRotational(deviceName);
     blockInfo.serialNumber = GetSerialNumber(deviceName, isNvmeDevice);
     blockInfo.diskId = GetDiskId(deviceName, isNvmeDevice);
     std::string pciePath = GetPciePath(deviceName);
@@ -705,6 +708,22 @@ uint32_t ScanDevice::GetDiskRpm(const std::string &deviceName, const bool isNvme
         return 0;
     }
     return static_cast<uint32_t>(hdId.words206_254[RPM_ARRAY_INDEX]);
+}
+
+int32_t ScanDevice::GetRotational(const std::string &deviceName)
+{
+    std::string rotationalPath = sysBlockPath + SPLIT_STRING + deviceName + ROTATIONAL_NODE;
+    std::string content;
+    if (ReadSysfsNode(rotationalPath, content)) {
+        LOGI("GetRotational content success: %{public}s", content.c_str());
+        unsigned long long result = 0;
+        if (ParseStringToUlongLong(content, result)) {
+            return static_cast<int32_t>(result);
+        }
+        LOGE("GetRotational: failed to parse value from %{public}s", content.c_str());
+    }
+    LOGE("GetRotational failed");
+    return -1;
 }
 
 std::string ScanDevice::GetSataSerialNumber(int fd)

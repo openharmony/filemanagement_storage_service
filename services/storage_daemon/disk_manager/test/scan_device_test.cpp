@@ -807,6 +807,76 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ReadSysfsNode_NoWhitespa
 }
 
 /**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetRotational_001
+ * @tc.desc: Test GetRotational with valid rotational=0 (SSD)
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetRotational_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_001 start";
+    CreateDeviceDir("sdmock_a");
+
+    ScanDevice scanner(mockSysPath);
+    int32_t rotational = scanner.GetRotational("sdmock_a");
+    EXPECT_EQ(rotational, 0);
+
+    DeleteDeviceDir("sdmock_a");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetRotational_002
+ * @tc.desc: Test GetRotational with valid rotational=1 (HDD)
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetRotational_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_002 start";
+    CreateDeviceDir("sdmock_a");
+    CreateFileWithContent(mockSysPath + "/sdmock_a/queue/rotational", "1\n");
+
+    ScanDevice scanner(mockSysPath);
+    int32_t rotational = scanner.GetRotational("sdmock_a");
+    EXPECT_EQ(rotational, 1);
+
+    DeleteDeviceDir("sdmock_a");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetRotational_003
+ * @tc.desc: Test GetRotational with invalid content returns -1
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetRotational_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_003 start";
+    CreateDeviceDir("sdmock_a");
+    CreateFileWithContent(mockSysPath + "/sdmock_a/queue/rotational", "invalid\n");
+
+    ScanDevice scanner(mockSysPath);
+    int32_t rotational = scanner.GetRotational("sdmock_a");
+    EXPECT_EQ(rotational, -1);
+
+    DeleteDeviceDir("sdmock_a");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetRotational_004
+ * @tc.desc: Test GetRotational with nonexistent device returns -1
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetRotational_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_004 start";
+    ScanDevice scanner(mockSysPath);
+    int32_t rotational = scanner.GetRotational("nonexistent");
+    EXPECT_EQ(rotational, -1);
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetRotational_004 end";
+}
+
+/**
  * @tc.name: Storage_Service_ScanDeviceTest_GetDiskRpm_001
  * @tc.desc: Test getting disk RPM with nonexistent device
  * @tc.type: FUNC
