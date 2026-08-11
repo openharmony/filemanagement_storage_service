@@ -19,6 +19,7 @@
 #include "storage_space_manager_stub.h"
 #include "system_ability.h"
 #include "system_ability_definition.h"
+#include "clean_record_datashare_stub.h"
 
 #include <atomic>
 #include <memory>
@@ -49,6 +50,7 @@ public:
 
     void OnStart(const SystemAbilityOnDemandReason& startReason) override;
     void OnStop() override;
+    int32_t OnExtension(const std::string& extension, MessageParcel& data, MessageParcel& reply) override;
     void OnActive(const SystemAbilityOnDemandReason& activeReason) override;
     int32_t OnIdle(const SystemAbilityOnDemandReason& idleReason) override;
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
@@ -59,6 +61,7 @@ public:
     int32_t GetTotalInodes(int64_t &totalInodes) override;
     int32_t GetFreeInodes(int64_t &freeInodes) override;
     int32_t CleanBundleCache(int32_t userId) override;
+    int32_t GetDataShareService(const std::string &uri, sptr<IRemoteObject> &remoteObject) override;
 
     void AddRunningIpcCount();
     void SubtractRunningIpcCount();
@@ -82,6 +85,7 @@ private:
 
     std::mutex unloadMutex_;
     std::shared_ptr<AppExecFwk::EventHandler> unloadHandler_;
+    sptr<CleanRecordDataShareStub> dataShareService_ = nullptr;
 };
 
 } // namespace StorageSpaceManager

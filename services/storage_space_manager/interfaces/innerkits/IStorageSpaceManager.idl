@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+sequenceable OHOS.IRemoteObject;
 
 interface OHOS.StorageSpaceManager.IStorageSpaceManager {
     /* ---------- Storage Space Query APIs ---------- */
@@ -23,4 +24,5 @@ interface OHOS.StorageSpaceManager.IStorageSpaceManager {
 
     /* ---------- Bundle Cache Management APIs ---------- */
     [ipccode 6, oneway] void CleanBundleCache([in] int userId);
+    [ipccode 7] void GetDataShareService([in] String uri, [out] IRemoteObject remoteObject);
 }

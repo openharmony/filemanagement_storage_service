@@ -51,7 +51,9 @@ ohos_shared_library("storage_space_manager") {
   sources = [
     "src/adapter/bundle_manager_adapter_proxy.cpp",
     "src/adapter/bundle_manager_connector.cpp",
+    "src/adapter/clean_record_datashare_stub.cpp",
     "src/cache_clean_controller/cache_clean_controller.cpp",
+    "src/cache_clean_controller/clean_record_store.cpp",
     "src/common_event/storage_common_event_subscriber.cpp",
     "src/ipc/storage_space_manager_provider.cpp",
     "src/storage/storage_total_status_service.cpp",
@@ -82,14 +84,20 @@ ohos_shared_library("storage_space_manager") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "init:libbegetutil",
+    "ipc:ipc_core",
     "ipc:ipc_single",
     "json:nlohmann_json_static",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "memmgr:memmgrclient",
+    "relational_store:native_rdb",
+    "relational_store:rdb_data_share_adapter",
   ]
 
   if (defined(global_parts_info) && defined(global_parts_info.resourceschedule_device_usage_statistics)) {

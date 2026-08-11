@@ -19,6 +19,7 @@
 #include <system_ability_definition.h>
 
 #include "cache_clean_controller.h"
+#include "clean_record_store.h"
 #include "common_event/storage_common_event_subscriber.h"
 #include "ipc_caller_auth.h"
 #include "storage/storage_total_status_service.h"
@@ -41,6 +42,7 @@ const std::string UNLOAD_TASK_ID = "unload_ssm_svr";
 constexpr int32_t DELAY_UNLOAD_TIME = 180000; // 180s
 constexpr int32_t SA_READY_INTO_IDLE = 0;
 constexpr int32_t SA_REFUSE_INTO_IDLE = -1;
+constexpr int32_t IPC_CODE_GET_DATA_SHARE_SERVICE = 7;
 }
 
 REGISTER_SYSTEM_ABILITY_BY_ID(StorageSpaceManagerProvider, STORAGE_SPACE_MANAGER_SA_ID, false);
@@ -72,12 +74,30 @@ void StorageSpaceManagerProvider::OnStop()
     LOGI("OnStop called");
     isStopped_ = true;
     serviceReady_.store(false, std::memory_order_release);
+    DelayedSingleton<CleanRecordStore>::GetInstance()->Close();
     
     DestroyUnloadHandler();
 
     Memory::MemMgrClient::GetInstance().SetCritical(getpid(), false, STORAGE_SPACE_MANAGER_SA_ID);
     Memory::MemMgrClient::GetInstance().NotifyProcessStatus(getpid(), 1, 0, STORAGE_SPACE_MANAGER_SA_ID);
     LOGI("OnStop done");
+}
+
+int32_t StorageSpaceManagerProvider::OnExtension(const std::string& extension, MessageParcel& data,
+    MessageParcel& reply)
+{
+    LOGI("OnExtension extension: %{public}s", extension.c_str());
+    if (extension == "datashare_connection") {
+        if (!reply.WriteInterfaceToken(u"OHOS.StorageSpaceManager.IStorageSpaceManager")) {
+            LOGE("token write failed");
+            return E_FAIL;
+        }
+        if (!reply.WriteUint32(IPC_CODE_GET_DATA_SHARE_SERVICE)) {
+            LOGE("code write failed");
+            return E_FAIL;
+        }
+    }
+    return E_OK;
 }
 
 void StorageSpaceManagerProvider::OnActive(const SystemAbilityOnDemandReason& activeReason)
@@ -134,6 +154,7 @@ void StorageSpaceManagerProvider::OnAddSystemAbility(int32_t systemAbilityId, co
 bool StorageSpaceManagerProvider::Init()
 {
     LOGI("Init begin");
+    DelayedSingleton<CleanRecordStore>::GetInstance()->Init();
     serviceReady_.store(true, std::memory_order_release);
     LOGI("Init success");
     return true;
@@ -338,6 +359,32 @@ int32_t StorageSpaceManagerProvider::CleanBundleCache(int32_t userId)
     int32_t ret = DelayedSingleton<CacheCleanController>::GetInstance()->CleanBundleCache(userId);
     SubtractRunningIpcCount();
     return ret;
+}
+
+int32_t StorageSpaceManagerProvider::GetDataShareService(const std::string &uri, sptr<IRemoteObject> &remoteObject)
+{
+    remoteObject = nullptr;
+    if (!serviceReady_.load(std::memory_order_acquire)) {
+        LOGE("Service is not ready");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!ExitIdleState()) {
+        return E_SERVICE_ON_IDLE;
+    }
+
+    AddRunningIpcCount();
+    LOGI("Get datashare");
+    if (dataShareService_ == nullptr) {
+        dataShareService_ = new CleanRecordDataShareStub();
+    }
+    auto tokenId = IPCSkeleton::GetCallingTokenID();
+    if (dataShareService_->VerifyPermissionAndUri(uri, tokenId)) {
+        remoteObject = dataShareService_->AsObject();
+        SubtractRunningIpcCount();
+        return E_OK;
+    }
+    SubtractRunningIpcCount();
+    return E_PERMISSION_DENIED;
 }
 
 } // namespace StorageSpaceManager

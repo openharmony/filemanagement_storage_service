@@ -45,6 +45,8 @@ group("storage_space_manager_ut") {
     ":storage_space_manager_client_unittest",
     ":bundle_manager_connector_unittest",
     ":bundle_manager_adapter_proxy_unittest",
+    ":clean_record_store_unittest",
+    ":clean_record_datashare_stub_unittest",
   ]
 }
 
@@ -161,6 +163,9 @@ ohos_unittest("storage_space_manager_provider_unittest") {
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -285,5 +290,67 @@ ohos_unittest("bundle_manager_adapter_proxy_unittest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
+  ]
+}
+
+# CleanRecordStore Unit Test
+ohos_unittest("clean_record_store_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "clean_record_store_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "relational_store:native_rdb",
+  ]
+}
+
+# CleanRecordDataShareStub Unit Test
+ohos_unittest("clean_record_datashare_stub_unittest") {
+  module_out_path = "storage_service/storage_service/storage_space_manager"
+
+  configs = [
+    ":storage_space_manager_unittest_common",
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager_config",
+  ]
+
+  sources = [
+    "clean_record_datashare_stub_test.cpp",
+  ]
+
+  deps = [
+    "${storage_space_manager_path}/services/storage_space_manager:storage_space_manager",
+    "${storage_space_manager_path}/test/mock:storage_space_manager_ipc_mock_sources",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "json:nlohmann_json_static",
+    "relational_store:native_rdb",
   ]
 }

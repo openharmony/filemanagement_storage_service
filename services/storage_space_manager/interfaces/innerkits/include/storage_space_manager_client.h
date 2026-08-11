@@ -45,6 +45,7 @@ public:
     int32_t GetFreeInodes(int64_t &freeInodes);
 
     int32_t CleanBundleCache(int32_t userId);
+    int32_t GetDataShareService(const std::string &uri, sptr<IRemoteObject> &remoteObject);
 
     void LoadSystemAbilitySuccess(const sptr<IRemoteObject> &remoteObject);
     void LoadSystemAbilityFail();
