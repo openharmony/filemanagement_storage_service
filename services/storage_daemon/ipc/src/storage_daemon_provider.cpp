@@ -2590,10 +2590,6 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-    if (diskId.empty()) {
-        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: <<< EXIT FAILED <<< diskId is invalid");
-        return E_PARAMS_INVALID;
-    }
 
     std::vector<BlockInfo> disks;
     ScanDevice scanDevice;
