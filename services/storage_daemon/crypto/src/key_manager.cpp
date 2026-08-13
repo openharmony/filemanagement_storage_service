@@ -2621,12 +2621,10 @@ int KeyManager::UpdateKeyContextByKeyType(uint32_t userId, KeyType keyType)
             ret = UpdateCeEceSeceKeyContext(userId, keyType);
         }
     }
-    if (ret != 0) {
-        LOGE("Basekey update EL5 newest context failed, ret=%{public}d", ret);
+    if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
+        LOGE("Basekey update EL5 newest context failed");
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, strKeyType, "");
-        if (userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID) {
-            return ret;
-        }
+        return ret;
     }
     LOGI("Basekey update key context success");
     return 0;
