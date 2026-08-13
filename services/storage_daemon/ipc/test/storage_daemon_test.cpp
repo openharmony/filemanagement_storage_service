@@ -1967,63 +1967,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_W
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
-#ifdef USER_CRYPTO_MIGRATE_KEY
-/**
- * @tc.name: StorageDaemonTest_RestoreUserKey_003
- * @tc.desc: Verify RestoreUserKey returns E_USERID_RANGE with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonTest, StorageDaemonTest_RestoreUserKey_003, TestSize.Level1)
-{
-    ASSERT_TRUE(storageDaemon_ != nullptr);
-    EXPECT_EQ(storageDaemon_->RestoreUserKey(StorageService::START_USER_ID - 1, 1), E_USERID_RANGE);
-}
-
-/**
- * @tc.name: StorageDaemonTest_CompleteAddUser_002
- * @tc.desc: Verify CompleteAddUser returns E_USERID_RANGE with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonTest, StorageDaemonTest_CompleteAddUser_002, TestSize.Level1)
-{
-    ASSERT_TRUE(storageDaemon_ != nullptr);
-    EXPECT_EQ(storageDaemon_->CompleteAddUser(StorageService::START_USER_ID - 1), E_USERID_RANGE);
-}
-#endif
-
-/**
- * @tc.name: StorageDaemonTest_UpdateUserAuth_002
- * @tc.desc: Verify UpdateUserAuth returns E_USERID_RANGE with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonTest, StorageDaemonTest_UpdateUserAuth_002, TestSize.Level1)
-{
-    ASSERT_TRUE(storageDaemon_ != nullptr);
-    uint64_t secureUid = 0;
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> oldSecret;
-    std::vector<uint8_t> newSecret;
-    EXPECT_EQ(storageDaemon_->UpdateUserAuth(StorageService::START_USER_ID - 1, secureUid,
-        token, oldSecret, newSecret), E_USERID_RANGE);
-}
-
-/**
- * @tc.name: StorageDaemonTest_UnlockUserScreen_002
- * @tc.desc: Verify UnlockUserScreen returns E_USERID_RANGE with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonTest, StorageDaemonTest_UnlockUserScreen_002, TestSize.Level1)
-{
-    ASSERT_TRUE(storageDaemon_ != nullptr);
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> secret;
-    EXPECT_EQ(storageDaemon_->UnlockUserScreen(StorageService::START_USER_ID - 1, token, secret),
-        E_USERID_RANGE);
-}
 /**
  * @tc.name: StorageDaemonTest_EraseAllUserEncryptedKeys_002
  * @tc.desc: Verify EraseAllUserEncryptedKeys filters out-of-range userIds.

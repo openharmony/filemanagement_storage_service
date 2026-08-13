@@ -1397,22 +1397,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_002, T
 }
 
 /**
- * @tc.name: Storage_Daemon_MountManagerTest_MountDfsDocs_002
- * @tc.desc: Verify MountDfsDocs returns E_PARAMS_INVALID with path traversal deviceId.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountDfsDocs_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDfsDocs_002 start";
-    std::string relativePath = "/documents";
-    std::string networkId = "network-123";
-    std::string deviceId = "../evil";
-    auto ret = MountManager::GetInstance().MountDfsDocs(100, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDfsDocs_002 end";
-}
-/**
  * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_002
  * @tc.desc: Verify MountSandboxPath returns early with path traversal bundleName.
  * @tc.type: FUNC

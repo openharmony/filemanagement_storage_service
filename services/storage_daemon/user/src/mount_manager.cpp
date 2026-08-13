@@ -873,14 +873,6 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
 {
     LOGI("[L2:MountManager] MountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s",
         userId, relativePath.c_str());
-    if (deviceId.empty() || IsFilePathInvalid(deviceId)) {
-        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< invalid deviceId");
-        return E_PARAMS_INVALID;
-    }
-    if (networkId.empty() || IsFilePathInvalid(networkId)) {
-        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< invalid networkId");
-        return E_PARAMS_INVALID;
-    }
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
     if (!PrepareDir(dstPath, MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER)) {
         LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< PrepareDir failed");

@@ -1121,10 +1121,6 @@ int KeyManager::EraseAllUserEncryptedKeys(const std::vector<int32_t> &localIdLis
         LOGI("[L3:KeyManager] EraseAllUserEncryptedKeys: localIdList is empty");
     }
     for (const auto &localId : localIdList) {
-        if (localId < StorageService::START_USER_ID || localId > StorageService::MAX_USER_ID) {
-            LOGE("[L3:KeyManager] EraseAllUserEncryptedKeys: invalid userId=%{public}d out of range, skip", localId);
-            continue;
-        }
         LOGI("[L3:KeyManager] EraseAllUserEncryptedKeys: deleting keys for user=%{public}d", localId);
         int32_t ret = DeleteUserKeys(localId);
         if (ret != E_OK) {
@@ -1238,11 +1234,6 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
         user, userTokenSecret.token.size(), userTokenSecret.oldSecret.size(),
         userTokenSecret.newSecret.size(), userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
-    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
-        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
-        LOGE("[L3:KeyManager] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
-        return E_USERID_RANGE;
-    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = UpdateESecret(user, userTokenSecret);
     if (ret != 0) {
@@ -1909,11 +1900,6 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGD("[L3:KeyManager] UnlockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
-    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
-        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
-        LOGE("[L3:KeyManager] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
-        return E_USERID_RANGE;
-    }
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
@@ -2391,11 +2377,6 @@ int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("[L3:KeyManager] LockUserScreen: >>> ENTER <<< [user=%{public}u]", user);
-    if (user < static_cast<uint32_t>(StorageService::START_USER_ID) ||
-        user > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
-        LOGE("[L3:KeyManager] LockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", user);
-        return E_USERID_RANGE;
-    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::error_code errCode;
     if (!IsUserCeDecrypt(user) || std::filesystem::exists(GetNatoNeedRestorePath(user, EL4_KEY), errCode)) {

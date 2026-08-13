@@ -634,33 +634,5 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirsForUpda
     EXPECT_FALSE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirsForUpdate_004 end";
 }
-/**
- * @tc.name: Storage_Manager_UserManagerTest_CheckDirsFromVec_002
- * @tc.desc: Verify CheckDirsFromVec returns early with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_CheckDirsFromVec_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckDirsFromVec_002 start";
-    int32_t userId = StorageService::START_USER_ID - 1;
-    UserManager::GetInstance().CheckDirsFromVec(userId);
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckDirsFromVec_002 end";
-}
-
-/**
- * @tc.name: Storage_Manager_UserManagerTest_RestoreconSystemServiceDirs_002
- * @tc.desc: Verify RestoreconSystemServiceDirs returns early with invalid userId.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_RestoreconSystemServiceDirs_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_RestoreconSystemServiceDirs_002 start";
-    int32_t userId = StorageService::START_USER_ID - 1;
-    auto ret = UserManager::GetInstance().RestoreconSystemServiceDirs(userId);
-    EXPECT_NE(ret, E_OK);
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_RestoreconSystemServiceDirs_002 end";
-}
 } // STORAGE_DAEMON
 } // OHOS

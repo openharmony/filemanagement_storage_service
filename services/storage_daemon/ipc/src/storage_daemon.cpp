@@ -243,10 +243,6 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 {
     LOGI("[L1:StorageDaemon] RestoreUserKey: >>> ENTER <<< userId=%{public}d, flags=%{public}u", userId, flags);
-    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
-        LOGE("[L1:StorageDaemon] RestoreUserKey: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
-        return E_USERID_RANGE;
-    }
     if (!IsNeedRestorePathExist(userId, true)) {
         LOGE("[L1:StorageDaemon] RestoreUserKey: <<< EXIT FAILED <<< need_restore file is not existed");
         return -EEXIST;
@@ -398,10 +394,6 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
         LOGE("[L1:StorageDaemon] CompleteAddUser: <<< EXIT SUCCESS <<< app clone user, userId=%{public}d", userId);
         return E_OK;
     }
-    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
-        LOGE("[L1:StorageDaemon] CompleteAddUser: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
-        return E_USERID_RANGE;
-    }
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
@@ -538,11 +530,6 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 {
     LOGI("[L1:StorageDaemon] UpdateUserAuth: >>> ENTER <<< userId=%{public}u, secureUid=%{public}s",
         userId, GetAnonyString(std::to_string(secureUid)).c_str());
-    if (userId < static_cast<uint32_t>(StorageService::START_USER_ID) ||
-        userId > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
-        LOGE("[L1:StorageDaemon] UpdateUserAuth: <<< EXIT FAILED <<< userId=%{public}u out of range", userId);
-        return E_USERID_RANGE;
-    }
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
@@ -1488,11 +1475,6 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 {
     LOGD("[L1:StorageDaemon] UnlockUserScreen: >>> ENTER <<< userId=%{public}u, tokenEmpty=%{public}d,"
         "secretEmpty=%{public}d", userId, token.empty(), secret.empty());
-    if (userId < static_cast<uint32_t>(StorageService::START_USER_ID) ||
-        userId > static_cast<uint32_t>(StorageService::MAX_USER_ID)) {
-        LOGE("[L1:StorageDaemon] UnlockUserScreen: <<< EXIT FAILED <<< userId=%{public}u out of range", userId);
-        return E_USERID_RANGE;
-    }
 #ifdef USER_CRYPTO_MANAGER
     (void)SetPriority(); // set tid priority to 40
     int32_t ret = KeyManager::GetInstance().UnlockUserScreen(userId, token, secret);
