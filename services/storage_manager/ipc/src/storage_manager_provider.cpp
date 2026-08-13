@@ -1649,7 +1649,7 @@ int32_t StorageManagerProvider::SetExtBundleStats(uint32_t userId, const ExtBund
     int32_t ret = CheckUserIdRange(userId);
     if (ret != E_OK) {
         LOGE("StorageManagerProvider::SetExtBundleStats userId %{public}d out of range", userId);
-        return ret;
+        return E_PARAMS_INVALID;
     }
     if (stats.businessSize_ >= INT64_MAX || stats.businessName_.empty()) {
         LOGE("invalid params, userId: %{public}d, size: %{public}lld, name: %{public}s", userId,
@@ -1684,7 +1684,7 @@ int32_t StorageManagerProvider::GetExtBundleStats(uint32_t userId, ExtBundleStat
     int32_t ret = CheckUserIdRange(userId);
     if (ret != E_OK) {
         LOGE("StorageManagerProvider::GetExtBundleStats userId %{public}d out of range", userId);
-        return ret;
+        return E_PARAMS_INVALID;
     }
     if (stats.businessName_.empty()) {
         LOGE("invalid params, userId: %{public}d, name: %{public}s", userId, stats.businessName_.c_str());
@@ -1718,7 +1718,7 @@ int32_t StorageManagerProvider::GetAllExtBundleStats(uint32_t userId, std::vecto
     int32_t ret = CheckUserIdRange(userId);
     if (ret != E_OK) {
         LOGE("StorageManagerProvider::GetAllExtBundleStats userId %{public}d out of range", userId);
-        return ret;
+        return E_PARAMS_INVALID;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("GetAllExtBundleStats start");

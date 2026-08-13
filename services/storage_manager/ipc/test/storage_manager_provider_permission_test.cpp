@@ -1661,10 +1661,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
     extBundleStats.businessSize_ = 0;
     g_testCallingUid = 7558;
     auto ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = INT32_MAX;
     ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
     extBundleStats.businessSize_ = INT64_MAX;
     ret = storageManagerProviderTest_->SetExtBundleStats(userId, extBundleStats);
@@ -1699,10 +1699,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetExtBundleStat
     extBundleStats.businessSize_ = 0;
     g_testCallingUid = 7558;
     auto ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = INT32_MAX;
     ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
     extBundleStats.businessName_ = "";
     ret = storageManagerProviderTest_->GetExtBundleStats(userId, extBundleStats);
@@ -1730,10 +1730,10 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetAllExtBundleS
     g_testCallingUid = 7558;
     std::vector<ExtBundleStats> bundleStats;
     auto ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = INT32_MAX;
     ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
-    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
     userId = 1;
     ret = storageManagerProviderTest_->GetAllExtBundleStats(userId, bundleStats);
     EXPECT_EQ(ret, E_OK);
