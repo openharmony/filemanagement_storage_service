@@ -224,6 +224,12 @@
           "mode": "0755",
           "uid": 1015,
           "gid": 1015
+        },
+        {
+            "path": "/data/service/el1/<userId>/fhsmgr",
+            "mode": "0711",
+            "uid": 1076,
+            "gid": 1076
         }
       ],
       "el2": [
