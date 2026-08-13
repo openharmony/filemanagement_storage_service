@@ -603,11 +603,7 @@ std::string StorageDaemon::GetNeedRestoreVersion(uint32_t userId, KeyType type)
     LOGI("[L1:StorageDaemon] GetNeedRestoreVersion: >>> ENTER <<< userId=%{public}u, type=%{public}u", userId, type);
     std::string need_restore_path = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     std::string need_restore_version;
-    bool isRead = OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
-    if (!isRead) {
-        LOGE("[L1:StorageDaemon] GetNeedRestoreVersion: LoadStringFromFile failed, path=%{public}s",
-            need_restore_path.c_str());
-    }
+    OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
     LOGI("[L1:StorageDaemon] GetNeedRestoreVersion: <<< EXIT SUCCESS <<< version=%{public}s",
         need_restore_version.c_str());
     return need_restore_version;
