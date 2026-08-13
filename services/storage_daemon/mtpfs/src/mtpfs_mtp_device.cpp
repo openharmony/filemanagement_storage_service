@@ -161,6 +161,12 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
                 MtpFileSystem::GetInstance().HandleRemove(handleId);
             }
             break;
+        case LIBMTP_EVENT_OBJECT_INFO_CHANGED:
+            LOGI("Received event LIBMTP_EVENT_OBJECT_INFO_CHANGED, param=%{public}u", param);
+            if (!isTransferring_.load()) {
+                MtpFileSystem::GetInstance().HandleObjectInfoChanged(param);
+            }
+            break;
         case LIBMTP_EVENT_NONE:
             LOGI("Received event LIBMTP_EVENT_NONE.");
             break;
@@ -1451,6 +1457,12 @@ void MtpFsDevice::HandleRemoveEvent(uint32_t handleId)
     if (file != nullptr) {
         LIBMTP_destroy_file_t(file);
     }
+}
+
+void MtpFsDevice::HandleObjectInfoChangedEvent(uint32_t handleId)
+{
+    LOGI("HandleObjectInfoChangedEvent HandleID=%{public}u", handleId);
+    HandleRemoveEvent(handleId);
 }
 
 bool MtpFsDevice::UpdateFileNameByFd(const MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file)

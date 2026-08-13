@@ -112,6 +112,7 @@ public:
     int GetXAttr(const char *path, const char *in, char *out, size_t size);
     int GetThumbAttr(const std::string &path, struct stat *buf);
     void HandleRemove(uint32_t handleId);
+    void HandleObjectInfoChanged(uint32_t handleId);
     void InitCurrentUidAndCacheMap();
     bool IsCurrentUserReadOnly();
     void SetCurrentUid(int32_t uid);
