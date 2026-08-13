@@ -1412,5 +1412,20 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountDfsDocs_002, Tes
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountDfsDocs_002 end";
 }
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_002
+ * @tc.desc: Verify MountSandboxPath returns early with path traversal bundleName.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 start";
+    uint32_t userId = 888;
+    std::string bundleName = "../../etc";
+    std::vector<MountNodeInfo> mountNodeInfoList;
+    MountManager::GetInstance().MountSandboxPath(userId, mountNodeInfoList, bundleName);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

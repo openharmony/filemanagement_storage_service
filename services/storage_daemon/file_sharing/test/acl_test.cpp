@@ -347,5 +347,21 @@ HWTEST_F(AclTest, acl_deserialize_insert_failed_test, TestSize.Level1)
     int rc = acl.DeSerialize(raw, rawSize);
     EXPECT_EQ(rc, 0);
 }
+
+/**
+ * @tc.name: acl_deserialize_oversize_test
+ * @tc.desc: Verify DeSerialize returns error with size exceeding BUF_MAX_SIZE.
+ * @tc.type: FUNC
+ */
+HWTEST_F(AclTest, acl_deserialize_oversize_test, TestSize.Level1)
+{
+    Acl acl;
+    size_t oversize = Acl::BUF_MAX_SIZE + 1;
+    char *buf = static_cast<char *>(calloc(oversize, 1));
+    ASSERT_NE(buf, nullptr);
+    int rc = acl.DeSerialize(buf, oversize);
+    EXPECT_NE(rc, 0);
+    free(buf);
+}
 }
 
