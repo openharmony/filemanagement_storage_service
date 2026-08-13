@@ -49,6 +49,7 @@ public:
     int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec);
     int32_t GetSystemDataSize(int64_t &systemDataSize);
     int32_t GetMetaDataSize(int64_t &metaDataSize);
+    std::string GetCallingBundleName();
 private:
     StorageStatusManager();
     ~StorageStatusManager();
@@ -62,7 +63,6 @@ private:
     int32_t GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats, bool isSchedule = false);
     int32_t GetBundleName(uint32_t userId, const std::string &businessName, std::string &dbBundleName);
     int32_t InsertOrUpdateExtBundleStats(uint32_t userId, const ExtBundleStats &stats, std::string callingBundleName);
-    std::string GetCallingBundleName();
     std::mutex extBundleMtx_;
 };
 } // StorageManager
