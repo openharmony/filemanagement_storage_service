@@ -30,11 +30,19 @@ public:
                     const std::string& mountPath,
                     unsigned long mountFlags,
                     const std::string& mountData) override;
-    int32_t Format(const std::string& devPath) override;
+    int32_t Format(const std::string& devPath,
+                   const std::string& diskPath,
+                   const std::string& partitionType,
+                   const int32_t partitionNum) override;
     int32_t Check(const std::string& devPath) override;
     int32_t Repair(const std::string& devPath) override;
     int32_t SetLabel(const std::string& devPath,
                      const std::string& label) override;
+
+private:
+    int32_t FixTypeIdentifier(const std::string& diskPath,
+                              const std::string& partitionType,
+                              const int32_t partitionNum);
 };
 
 } // namespace StorageDaemon

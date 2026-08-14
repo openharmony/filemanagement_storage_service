@@ -79,7 +79,10 @@ int32_t HmfsOperator::DoMount(const std::string& devPath,
     return E_OK;
 }
 
-int32_t HmfsOperator::Format(const std::string& devPath)
+int32_t HmfsOperator::Format(const std::string& devPath,
+                             const std::string& diskPath,
+                             const std::string& partitionType,
+                             const int32_t partitionNum)
 {
     LOGI("HmfsOperator::Format devPath=%{public}s", devPath.c_str());
 

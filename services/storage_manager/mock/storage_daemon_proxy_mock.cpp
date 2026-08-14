@@ -382,7 +382,9 @@ int32_t StorageDaemonProxy::Unmount(const std::string &mountPath,
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::FormatVolume(const std::string &devPath, const std::string &fsType)
+int32_t StorageDaemonProxy::FormatVolume(const std::string &devPath, const std::string &fsType,
+                                         const std::string &diskPath, const std::string &partitionType,
+                                         const int32_t partitionNum)
 {
     return E_OK;
 }

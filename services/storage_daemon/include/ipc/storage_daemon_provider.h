@@ -159,7 +159,10 @@ public:
                             const std::string &fsType,
                             bool force) override;
     virtual int32_t FormatVolume(const std::string &devPath,
-                                 const std::string &fsType) override;
+                                 const std::string &fsType,
+                                 const std::string &diskPath,
+                                 const std::string &partitionType,
+                                 const int32_t partitionNum) override;
     virtual int32_t Check(const std::string &devPath,
                           const std::string &fsType,
                           bool autoFix) override;

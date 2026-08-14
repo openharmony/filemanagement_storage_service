@@ -51,7 +51,10 @@ int32_t VfatOperator::DoMount(const std::string& devPath,
     return E_OK;
 }
 
-int32_t VfatOperator::Format(const std::string& devPath)
+int32_t VfatOperator::Format(const std::string& devPath,
+                             const std::string& diskPath,
+                             const std::string& partitionType,
+                             const int32_t partitionNum)
 {
     LOGI("VfatOperator::Format devPath=%{public}s", devPath.c_str());
 
@@ -72,13 +75,50 @@ int32_t VfatOperator::Format(const std::string& devPath)
         err = E_OK;
     }
 
-    if (err == E_OK) {
-        LOGI("VfatOperator::Format success");
-    } else {
+    if (err != E_OK) {
         LOGE("VfatOperator::Format failed, err=%{public}d", err);
+        return err;
     }
 
-    return err;
+    err = FixTypeIdentifier(diskPath, partitionType, partitionNum);
+    if (err != E_OK) {
+        LOGE("VfatOperator::Format FixTypeIdentifier failed, err=%{public}d", err);
+        return err;
+    }
+    LOGI("VfatOperator::Format success");
+    return E_OK;
+}
+
+int32_t VfatOperator::FixTypeIdentifier(const std::string& diskPath,
+                                        const std::string& partitionType,
+                                        const int32_t partitionNum)
+{
+    LOGI("VfatOperator::FixTypeIdentifier diskPath=%{public}s, partitionType=%{public}s, partitionNum=%{public}d",
+         diskPath.c_str(), partitionType.c_str(), partitionNum);
+    std::string typeIdentifier;
+    std::vector<std::string> cmd;
+    if (partitionType == "mbr") {
+        typeIdentifier = std::to_string(partitionNum) + ":" + "0x0c";
+        cmd = {"ohos_fixparts", "-t", typeIdentifier, diskPath};
+    } else if (partitionType == "gpt") {
+        typeIdentifier = std::to_string(partitionNum) + ":" + "0x0700";
+        cmd = {"sgdisk", "-t", typeIdentifier, diskPath};
+    } else {
+        LOGE("VfatOperator::FixTypeIdentifier failed, unknown partitionType=%{public}s", partitionType.c_str());
+        return E_NOT_SUPPORT;
+    }
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(cmd, &output);
+
+    for (auto& str : output) {
+        LOGI("VfatOperator::FixTypeIdentifier output: %{public}s", GetAnonyString(str).c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("VfatOperator::FixTypeIdentifier failed, ret=%{public}d", ret);
+        return ret;
+    }
+    LOGI("VfatOperator::FixTypeIdentifier success");
+    return E_OK;
 }
 
 } // namespace StorageDaemon

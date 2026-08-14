@@ -31,7 +31,8 @@ public:
     MOCK_METHOD5(Mount, int32_t(const std::string &, const std::string &, const std::string &, uint64_t,
                                  const std::string &));
     MOCK_METHOD3(Unmount, int32_t(const std::string &, const std::string &, bool));
-    MOCK_METHOD2(FormatVolume, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD5(FormatVolume, int32_t(const std::string &, const std::string &,
+                                       const std::string &, const std::string &, const int32_t));
     MOCK_METHOD3(Check, int32_t(const std::string &, const std::string &, bool));
     MOCK_METHOD2(Repair, int32_t(const std::string &, const std::string &));
     MOCK_METHOD3(SetLabel, int32_t(const std::string &, const std::string &, const std::string &));

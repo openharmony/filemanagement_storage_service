@@ -2301,7 +2301,10 @@ int32_t StorageDaemonProvider::EjectCD(const std::string &devPath)
 }
 
 int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
-                                            const std::string &fsType)
+                                            const std::string &fsType,
+                                            const std::string &diskPath,
+                                            const std::string &partitionType,
+                                            const int32_t partitionNum)
 {
 #ifdef DISK_MANAGER
     LOGI("[L1:StorageDaemonProvider] FormatVolume: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s",
@@ -2316,6 +2319,12 @@ int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
     if (ret != E_OK) {
         return ret;
     }
+    std::string verifiedDiskPath;
+    ret = ValidateBlockDevicePath(diskPath, verifiedDiskPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] FormatVolume: invalid diskPath=%{public}s", GetAnonyString(diskPath).c_str());
+        return ret;
+    }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatVolume: fsType is empty");
         return E_PARAMS_INVALID;
@@ -2327,7 +2336,7 @@ int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
         return E_NOT_SUPPORT;
     }
 
-    ret = op->Format(verifiedPath);
+    ret = op->Format(verifiedPath, verifiedDiskPath, partitionType, partitionNum);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT FAILED <<< ret=%{public}d", ret);
         StorageService::StorageRadar::ReportVolumeOperation("Operator::Format", ret);
