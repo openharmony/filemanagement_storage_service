@@ -73,6 +73,12 @@ int32_t StorageDaemonCommunication::Connect()
     return E_OK;
 }
 
+sptr<OHOS::StorageDaemon::IStorageDaemon> StorageDaemonCommunication::GetStorageDaemon()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return storageDaemon_;
+}
+
 int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonCommunication::PrepareAddUser start");
@@ -83,14 +89,15 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flag
         StorageRadar::ReportUserManager("PrepareAddUser::Connect", userId, err, extraData);
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareAddUser",
             userId, E_SERVICE_IS_NULLPTR, extraData);
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->PrepareUserDirs(userId, flags);
+    return proxy->PrepareUserDirs(userId, flags);
 }
 
 int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
@@ -103,14 +110,15 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("RemoveUser::Connect", userId, err, extraData);
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("StorageDaemonCommunication::RemoveUser",
             userId, E_SERVICE_IS_NULLPTR, extraData);
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DestroyUserDirs(userId, flags);
+    return proxy->DestroyUserDirs(userId, flags);
 }
 
 int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
@@ -123,13 +131,14 @@ int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
             userId, err, "");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareStartUser",
             userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->StartUser(userId);
+    return proxy->StartUser(userId);
 }
 
 int32_t StorageDaemonCommunication::StopUser(int32_t userId)
@@ -141,12 +150,13 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
         StorageRadar::ReportUserManager("StorageDaemonCommunication::StopUser::Connect", userId, err, "");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         StorageRadar::ReportUserManager("StorageDaemonCommunication::StopUser", userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->StopUser(userId);
+    return proxy->StopUser(userId);
 }
 
 int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
@@ -158,13 +168,14 @@ int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
         StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser::Connect", userId, err, "");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
         StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser",
             userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->CompleteAddUser(userId);
+    return proxy->CompleteAddUser(userId);
 }
 
 int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
@@ -175,7 +186,8 @@ int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
@@ -190,7 +202,7 @@ int32_t StorageDaemonCommunication::EraseAllUserEncryptedKeys()
         LOGI("Collecting key info for user: %{public}u", info.GetLocalId());
         localIdList.push_back(info.GetLocalId());
     }
-    return storageDaemon_->EraseAllUserEncryptedKeys(localIdList);
+    return proxy->EraseAllUserEncryptedKeys(localIdList);
 }
 
 int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -204,11 +216,12 @@ int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t sec
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    return proxy->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
 int32_t StorageDaemonCommunication::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
@@ -223,11 +236,12 @@ int32_t StorageDaemonCommunication::UpdateUseAuthWithRecoveryKey(const std::vect
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    return proxy->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
 }
 
 int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
@@ -240,11 +254,12 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->ActiveUserKey(userId, token, secret);
+    return proxy->ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
@@ -255,11 +270,12 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->InactiveUserKey(userId);
+    return proxy->InactiveUserKey(userId);
 }
 
 int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
@@ -270,11 +286,12 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->LockUserScreen(userId);
+    return proxy->LockUserScreen(userId);
 }
 
 int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
@@ -285,11 +302,12 @@ int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    return proxy->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
 int32_t StorageDaemonCommunication::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
@@ -300,11 +318,12 @@ int32_t StorageDaemonCommunication::GetUserNeedActiveStatus(uint32_t userId, boo
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetUserNeedActiveStatus(userId, needActive);
+    return proxy->GetUserNeedActiveStatus(userId, needActive);
 }
 
 int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
@@ -317,11 +336,12 @@ int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UnlockUserScreen(userId, token, secret);
+    return proxy->UnlockUserScreen(userId, token, secret);
 }
 
 int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
@@ -332,11 +352,12 @@ int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &l
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetLockScreenStatus(userId, lockScreenStatus);
+    return proxy->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
 int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
@@ -347,11 +368,12 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId, bool needR
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UpdateKeyContext(userId, needRemoveTmpKey);
+    return proxy->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int32_t StorageDaemonCommunication::ResetSdProxy()
@@ -410,13 +432,14 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFi
         LOGE("Connect failed");
         return std::vector<int32_t>{err};
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
     std::vector<int32_t> funcResult;
 
-    storageDaemon_->CreateShareFile(rawData, tokenId, flag, funcResult);
+    proxy->CreateShareFile(rawData, tokenId, flag, funcResult);
     LOGI("StorageDaemonCommunication::CreateShareFile end. result is %{public}zu", funcResult.size());
     return funcResult;
 }
@@ -429,11 +452,12 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const Stor
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DeleteShareFile(tokenId, rawData);
+    return proxy->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageDaemonCommunication::SetBundleQuota(int32_t uid,
@@ -445,11 +469,12 @@ int32_t StorageDaemonCommunication::SetBundleQuota(int32_t uid,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    return proxy->SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageDaemonCommunication::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)
@@ -460,11 +485,12 @@ int32_t StorageDaemonCommunication::ListUserdataDirInfo(std::vector<UserdataDirI
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->ListUserdataDirInfo(scanDirs);
+    return proxy->ListUserdataDirInfo(scanDirs);
 }
 
 int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
@@ -475,11 +501,12 @@ int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetOccupiedSpace(idType, id, size);
+    return proxy->GetOccupiedSpace(idType, id, size);
 }
 
 int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
@@ -489,11 +516,12 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t has
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GenerateAppkey(userId, hashId, keyId, needReSet);
+    return proxy->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
 int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string &keyId)
@@ -503,11 +531,12 @@ int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::str
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DeleteAppkey(userId, keyId);
+    return proxy->DeleteAppkey(userId, keyId);
 }
 
 int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
@@ -521,11 +550,12 @@ int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
+    return proxy->CreateRecoverKey(userId, userType, token, secret);
 }
 
 int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &key)
@@ -536,11 +566,12 @@ int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &ke
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetRecoverKey(key);
+    return proxy->SetRecoverKey(key);
 }
 
 int32_t StorageDaemonCommunication::ResetSecretWithRecoveryKey(uint32_t userId,
@@ -552,11 +583,12 @@ int32_t StorageDaemonCommunication::ResetSecretWithRecoveryKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return proxy->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
 int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -568,11 +600,12 @@ int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::stri
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    return proxy->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -584,11 +617,12 @@ int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::str
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    return proxy->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemonCommunication::MountMediaFuse(int32_t userId, int32_t &devFd)
@@ -599,11 +633,12 @@ int32_t StorageDaemonCommunication::MountMediaFuse(int32_t userId, int32_t &devF
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->MountMediaFuse(userId, devFd);
+    return proxy->MountMediaFuse(userId, devFd);
 #else
     return E_OK;
 #endif
@@ -617,11 +652,12 @@ int32_t StorageDaemonCommunication::UMountMediaFuse(int32_t userId)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountMediaFuse(userId);
+    return proxy->UMountMediaFuse(userId);
 #else
     return E_OK;
 #endif
@@ -634,11 +670,12 @@ int32_t StorageDaemonCommunication::MountFileMgrFuse(int32_t userId, const std::
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->MountFileMgrFuse(userId, path, fuseFd);
+    return proxy->MountFileMgrFuse(userId, path, fuseFd);
 }
 
 int32_t StorageDaemonCommunication::UMountFileMgrFuse(int32_t userId, const std::string &path)
@@ -648,11 +685,12 @@ int32_t StorageDaemonCommunication::UMountFileMgrFuse(int32_t userId, const std:
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountFileMgrFuse(userId, path);
+    return proxy->UMountFileMgrFuse(userId, path);
 }
 
 int32_t StorageDaemonCommunication::MountDlpFuse(const std::string &dstPath, int32_t &fuseFd)
@@ -662,11 +700,12 @@ int32_t StorageDaemonCommunication::MountDlpFuse(const std::string &dstPath, int
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->MountDlpFuse(dstPath, fuseFd);
+    return proxy->MountDlpFuse(dstPath, fuseFd);
 }
 
 int32_t StorageDaemonCommunication::UMountDlpFuse(const std::string &dstPath)
@@ -676,11 +715,12 @@ int32_t StorageDaemonCommunication::UMountDlpFuse(const std::string &dstPath)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountDlpFuse(dstPath);
+    return proxy->UMountDlpFuse(dstPath);
 }
 
 int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
@@ -691,11 +731,12 @@ int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, cons
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->IsFileOccupied(path, inputList, outputList, isOccupy);
+    return proxy->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
 int32_t StorageDaemonCommunication::MountDisShareFile(int32_t userId,
@@ -706,11 +747,12 @@ int32_t StorageDaemonCommunication::MountDisShareFile(int32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->MountDisShareFile(userId, shareFiles);
+    return proxy->MountDisShareFile(userId, shareFiles);
 }
 
 int32_t StorageDaemonCommunication::UMountDisShareFile(int32_t userId, const std::string &networkId)
@@ -720,11 +762,12 @@ int32_t StorageDaemonCommunication::UMountDisShareFile(int32_t userId, const std
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountDisShareFile(userId, networkId);
+    return proxy->UMountDisShareFile(userId, networkId);
 }
 
 int32_t StorageDaemonCommunication::UMountDisShareFile(const std::vector<std::string> &distributeDirs)
@@ -734,11 +777,12 @@ int32_t StorageDaemonCommunication::UMountDisShareFile(const std::vector<std::st
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UMountDisShareFile(distributeDirs);
+    return proxy->UMountDisShareFile(distributeDirs);
 }
 
 int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
@@ -748,11 +792,12 @@ int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
         LOGE("StorageDaemonCommunication::InactiveUserPublicDirKey connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->InactiveUserPublicDirKey(userId);
+    return proxy->InactiveUserPublicDirKey(userId);
 }
 
 int32_t StorageDaemonCommunication::UpdateUserPublicDirPolicy(uint32_t userId)
@@ -762,11 +807,12 @@ int32_t StorageDaemonCommunication::UpdateUserPublicDirPolicy(uint32_t userId)
         LOGE("StorageDaemonCommunication::UpdateUserPublicDirPolicy connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UpdateUserPublicDirPolicy(userId);
+    return proxy->UpdateUserPublicDirPolicy(userId);
 }
 
 
@@ -778,11 +824,12 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa(std::vector<UidSaInf
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
+    return proxy->QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
 }
 
 int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
@@ -793,11 +840,12 @@ int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->RegisterUeceActivationCallback(ueceCallback);
+    return proxy->RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
@@ -807,11 +855,12 @@ int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UnregisterUeceActivationCallback();
+    return proxy->UnregisterUeceActivationCallback();
 }
 
 int32_t StorageDaemonCommunication::CreateUserDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
@@ -821,11 +870,12 @@ int32_t StorageDaemonCommunication::CreateUserDir(const std::string &path, mode_
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->CreateUserDir(path, mode, uid, gid);
+    return proxy->CreateUserDir(path, mode, uid, gid);
 }
 
 int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
@@ -836,11 +886,12 @@ int32_t StorageDaemonCommunication::SetDirEncryptionPolicy(uint32_t userId,
         LOGE("StorageDaemonCommunication::SetDirEncryptionPolicy Connect failed, userId:%{public}u", userId);
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::SetDirEncryptionPolicy Connect service nullptr, userId:%{public}u", userId);
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);
+    return proxy->SetDirEncryptionPolicy(userId, dirPath, level);
 }
 
 int32_t StorageDaemonCommunication::GetDqBlkSpacesByUids(const std::vector<int32_t> &uids,
@@ -851,11 +902,12 @@ int32_t StorageDaemonCommunication::GetDqBlkSpacesByUids(const std::vector<int32
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetDqBlkSpacesByUids(uids, dqBlks);
+    return proxy->GetDqBlkSpacesByUids(uids, dqBlks);
 }
 
 int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceInfo> &inDirs,
@@ -866,11 +918,12 @@ int32_t StorageDaemonCommunication::GetDirListSpace(const std::vector<DirSpaceIn
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetDirListSpace(inDirs, outDirs);
+    return proxy->GetDirListSpace(inDirs, outDirs);
 }
 
 int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std::string> &paths,
@@ -882,11 +935,12 @@ int32_t StorageDaemonCommunication::GetDirListSpaceByPaths(const std::vector<std
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
+    return proxy->GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
 }
 
 int32_t StorageDaemonCommunication::SetStopScanFlag(bool stop)
@@ -896,11 +950,12 @@ int32_t StorageDaemonCommunication::SetStopScanFlag(bool stop)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->SetStopScanFlag(stop);
+    return proxy->SetStopScanFlag(stop);
 }
 
 int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)
@@ -910,11 +965,12 @@ int32_t StorageDaemonCommunication::GetAncoSizeData(std::string &outExtraData)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetAncoSizeData(outExtraData);
+    return proxy->GetAncoSizeData(outExtraData);
 }
 
 int32_t StorageDaemonCommunication::GetDataSizeByPath(const std::string &path, int64_t &size)
@@ -924,11 +980,12 @@ int32_t StorageDaemonCommunication::GetDataSizeByPath(const std::string &path, i
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::GetDataSizeByPath service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetDataSizeByPath(path, size);
+    return proxy->GetDataSizeByPath(path, size);
 }
 
 int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
@@ -938,11 +995,12 @@ int32_t StorageDaemonCommunication::GetRmgResourceSize(const std::string &rgmNam
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::GetRmgResourceSize service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetRmgResourceSize(rgmName, totalSize);
+    return proxy->GetRmgResourceSize(rgmName, totalSize);
 }
 
 int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
@@ -952,11 +1010,12 @@ int32_t StorageDaemonCommunication::GetSystemDataSize(int64_t &otherUidSizeSum)
         LOGE("Connect failed");
         return err;
     }
-    if (storageDaemon_ == nullptr) {
+    auto proxy = GetStorageDaemon();
+    if (proxy == nullptr) {
         LOGE("StorageDaemonCommunication::GetSystemDataSize service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetSystemDataSize(otherUidSizeSum);
+    return proxy->GetSystemDataSize(otherUidSizeSum);
 }
 
 } // namespace StorageManager

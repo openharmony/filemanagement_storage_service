@@ -17,6 +17,7 @@
 
 #include <sstream>
 #include <string>
+#include <ctime>
 
 #include "cJSON.h"
 #include "common_event_manager.h"
@@ -681,7 +682,8 @@ void StorageMonitorService::HapAndSaStatisticsThd()
 {
     // 当前时间是0:00 || 8:00: || 16:00 打印
     std::time_t now = std::time(nullptr);
-    std::tm *localTime = std::localtime(&now);
+    std::tm localTimeBuf{};
+    std::tm *localTime = localtime_r(&now, &localTimeBuf);
     if (localTime == nullptr) {
         LOGE("cur time parse failed, errno is %{public}d.", errno);
         return;

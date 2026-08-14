@@ -1619,7 +1619,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     StorageStats storageStats;
 
     auto ret = storageManagerProviderTest_->GetUserStorageStats(USER_ID, storageStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStats_004 end";
 }

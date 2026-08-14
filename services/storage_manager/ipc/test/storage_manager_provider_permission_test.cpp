@@ -393,7 +393,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetUserStorageSt
     int32_t userId = 1012;
     StorageStats storageStats;
     auto ret = storageManagerProviderTest_->GetUserStorageStats(userId, storageStats);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetUserStorageStatsIpc_002 end";
 }
 

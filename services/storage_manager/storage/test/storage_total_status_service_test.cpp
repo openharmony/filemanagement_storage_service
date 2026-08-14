@@ -342,6 +342,26 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetInodeOfPath_0000
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_total_status_service_GetInodeOfPath_0001
+ * @tc.name: Storage_total_status_service_GetInodeOfPath_0001
+ * @tc.desc: Test GetInodeOfPath with nullptr path.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetInodeOfPath_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetInodeOfPath_0001";
+    StorageTotalStatusService& service = StorageTotalStatusService::GetInstance();
+    int32_t type = static_cast<int32_t>(StorageStatType::TOTAL);
+    int64_t inodeCnt = 0;
+    int32_t result = service.GetInodeOfPath(nullptr, type, inodeCnt);
+    EXPECT_EQ(result, E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetInodeOfPath_0001";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_total_status_service_GetUsedInodes_0000
  * @tc.name: Storage_total_status_service_GetUsedInodes_0000
  * @tc.desc: Test function of GetUsedInodesinterface for SUCCESS.

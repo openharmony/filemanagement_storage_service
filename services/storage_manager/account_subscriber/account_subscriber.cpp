@@ -41,7 +41,7 @@ AccountSubscriber &AccountSubscriber::GetInstance()
     return instance;
 }
 
-void AccountSubscriber::SendSecondMountedEvent(int32_t userId)
+bool AccountSubscriber::SendSecondMountedEvent(int32_t userId)
 {
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
@@ -49,8 +49,7 @@ void AccountSubscriber::SendSecondMountedEvent(int32_t userId)
     want.SetAction("usual.event.SECOND_MOUNTED");
     want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };
-    EventFwk::CommonEventManager::PublishCommonEvent(commonData);
-    LOGI("Send usual.event.SECOND_MOUNTED event success, userId=%{public}d", userId);
+    return EventFwk::CommonEventManager::PublishCommonEvent(commonData);
 }
 
 int32_t AccountSubscriber::SendUserLockStatusToAppSpawn(int32_t userId, bool lockStatus, uint32_t timeSec)
@@ -78,16 +77,21 @@ int32_t AccountSubscriber::MountCryptoPathAgain(int32_t userId)
         "MountCryptoPathAgain Begin", E_OK);
     int32_t err = SendUserLockStatusToAppSpawn(userId, DECRYPTED, MOUNT_MAX_WAIT_TIME);
     if (err != E_OK && err != APPSPAWN_TIMEOUT) {
-        LOGI("MountCryptoPathAgain failed, userId:%{public}d, err:%{public}d", userId, err);
-        StorageRadar::ReportUserManager("AccountSubscriber::MountCryptoPathAgain",
-            userId, err, "SendUserLockStatusToAppSpawn called failed");
-        return err;
+        LOGE("MountCryptoPathAgain failed, userId:%{public}d, err:%{public}d", userId, err);
+        StorageRadar::ReportUserManager("AccountSubscriber::MountCryptoPathAgain", userId, E_APPSPAWN_SECOND_MOUNT,
+            "SendUserLockStatusToAppSpawn called failed, appspawn ret:" + std::to_string(err));
+        return E_APPSPAWN_SECOND_MOUNT;
     }
-    SendSecondMountedEvent(userId);
+    bool publishRet = SendSecondMountedEvent(userId);
+    if (!publishRet) {
+        LOGE("Send usual.event.SECOND_MOUNTED event failed, userId=%{public}d", userId);
+        StorageRadar::ReportUserManager("AccountSubscriber::MountCryptoPathAgain",
+            userId, E_PUBLISH_COMM_EVENT, "Publish Common event SECOND_MOUNTED failed");
+        return E_PUBLISH_COMM_EVENT;
+    }
     LOGI("MountCryptoPathAgain success, userId=%{public}d, err=%{public}d", userId, err);
-    StorageService::StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId,
-        "MountCryptoPathAgain End", E_OK);
-    return err;
+    StorageService::StorageRadar::ReportFucBehavior("MountCryptoPathAgain", userId, "MountCryptoPathAgain End", E_OK);
+    return E_OK;
 }
 
 void AccountSubscriber::ResetUserEventRecord(int32_t userId)
