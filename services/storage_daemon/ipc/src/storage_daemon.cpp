@@ -735,10 +735,6 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         return ret;
     }
     std::string needRestorePath = KeyManager::GetInstance().GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
-    if (needRestoreVersion.empty()) {
-        LOGW("[L1:StorageDaemon] PrepareUserDirsAndUpdateUserAuthVx: needRestoreVersion is empty, userId=%{public}u",
-            userId);
-    }
     uint32_t new_need_restore = static_cast<uint32_t>(std::atoi(needRestoreVersion.c_str()) + 1);
     std::string errMsg = "";
     if (new_need_restore == UpdateVersion::UPDATE_V4 &&
