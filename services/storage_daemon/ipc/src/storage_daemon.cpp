@@ -1989,10 +1989,7 @@ void StorageDaemon::UpgradeEl5AuthType(uint32_t userId, const std::vector<uint8_
     auto el5Key = KeyManager::GetInstance().GetUserElKey(userId, EL5_KEY, false);
     if (el5Key != nullptr && el5Key->NeedUpgradeAuthType()) {
         uint64_t secureUid = 0;
-        if (!KeyManager::GetInstance().GetSecureUid(userId, secureUid)) {
-            LOGE("[L1:StorageDaemon] UpgradeEl5AuthType: GetSecureUid failed, userId=%{public}u", userId);
-            return;
-        }
+        KeyManager::GetInstance().GetSecureUid(userId, secureUid);
 
         UserTokenSecret userTokenSecretDelete = {token, secret, {}, secureUid};
         int ret = KeyManager::GetInstance().UpdateUserAuthByKeyType(userId, userTokenSecretDelete, EL5_KEY);
