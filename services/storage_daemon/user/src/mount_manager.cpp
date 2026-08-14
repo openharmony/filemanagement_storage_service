@@ -666,10 +666,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
     LOGI("[L2:MountManager] UmountByUser: umount cloud mount point start.");
     int32_t cloudUMount = SystemMountManager::GetInstance().UMountCloudByUserId(userId);
     res = (cloudUMount != E_OK) ? cloudUMount : res;
-    int32_t mediaFuseRet = UMountMediaFuse(userId);
-    if (mediaFuseRet != E_OK) {
-        LOGW("[L2:MountManager] UmountByUser: UMountMediaFuse failed, ret=%{public}d", mediaFuseRet);
-    }
+    UMountMediaFuse(userId);
     FindSaFd(userId);
     LOGI("[L2:MountManager] UmountByUser: <<< EXIT SUCCESS <<< userId=%{public}d, res=%{public}d", userId, res);
     return res;
