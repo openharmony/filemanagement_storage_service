@@ -102,6 +102,7 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderdeletepartitioninfo_fuzzer:fuzztest",
     "storagedaemonproviderumountdissharefileext_fuzzer:fuzztest",
     "storagedaemonprovidergetcapacity_fuzzer:fuzztest",
+    "storagedaemonprovidergetdisksize_fuzzer:fuzztest",
     "storagedaemonproviderejectcd_fuzzer:fuzztest",
     "storagedaemonproviderquerycdstatus_fuzzer:fuzztest",
     "storagedaemonprovidererase_fuzzer:fuzztest",
