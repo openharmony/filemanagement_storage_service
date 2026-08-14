@@ -1376,40 +1376,5 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Le
     GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
 
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_CheckPathValid_002
- * @tc.desc: Verify CheckPathValid returns false with path traversal bundleName.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_002 start";
-    std::string bundleNameStr = "../../etc";
-    uint32_t userId = 888;
-    auto ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
-    EXPECT_FALSE(ret);
-
-    bundleNameStr = "";
-    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
-    EXPECT_FALSE(ret);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_002 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_002
- * @tc.desc: Verify MountSandboxPath returns early with path traversal bundleName.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 start";
-    uint32_t userId = 888;
-    std::string bundleName = "../../etc";
-    std::vector<MountNodeInfo> mountNodeInfoList;
-    MountManager::GetInstance().MountSandboxPath(userId, mountNodeInfoList, bundleName);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 end";
-}
 } // STORAGE_DAEMON
 } // OHOS

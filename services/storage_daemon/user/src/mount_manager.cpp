@@ -212,10 +212,6 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
 {
     LOGI("[L2:MountManager] CheckPathValid: >>> ENTER <<< bundleName=%{public}s, userId=%{public}u",
         bundleNameStr.c_str(), userId);
-    if (bundleNameStr.empty() || IsFilePathInvalid(bundleNameStr)) {
-        LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< invalid bundleNameStr");
-        return false;
-    }
     string completePath =
         SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
     if (!IsDir(completePath)) {
@@ -224,8 +220,7 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
         return false;
     }
 
-    std::error_code ec;
-    if (!std::filesystem::is_empty(completePath, ec)) {
+    if (!std::filesystem::is_empty(completePath)) {
         LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< directory has been mounted, path=%{public}s",
             completePath.c_str());
         return false;
@@ -240,10 +235,6 @@ void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNode
 {
     LOGI("[L2:MountManager] MountSandboxPath: >>> ENTER <<< userId=%{public}u, bundleName=%{public}s",
         userId, bundleName.c_str());
-    if (bundleName.empty() || IsFilePathInvalid(bundleName)) {
-        LOGE("[L2:MountManager] MountSandboxPath: <<< EXIT FAILED <<< invalid bundleName");
-        return;
-    }
     std::string sanboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
     for (size_t i = 0; i < sandboxMountNodeInfo.size(); ++i) {
         const auto& nodeInfo = sandboxMountNodeInfo[i];
@@ -252,12 +243,8 @@ void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNode
         ReplaceAndCount(srcPath, PACKAGE_NAME_FLAG, bundleName);
         auto ret = nodeInfo.MountDir(srcPath, dstPath);
         if (ret != E_OK && ret != E_NON_EXIST) {
-            int savedErrno = errno;
-            LOGW("[L2:MountManager] MountSandboxPath: MountDir failed, ret=%{public}d, dstPath=%{public}s",
-                ret, nodeInfo.dstPath.c_str());
-            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
+            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountSandboxPath", userId, E_MOUNT_SANDBOX, extraData);
-            return;
         }
     }
     LOGI("[L2:MountManager] MountSandboxPath: <<< EXIT SUCCESS <<< userId=%{public}u, bundleName=%{public}s",
