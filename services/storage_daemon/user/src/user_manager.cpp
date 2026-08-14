@@ -59,13 +59,7 @@ int32_t UserManager::StartUser(int32_t userId)
     }
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
         IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
-    int32_t ret = CreateServiceDirs(userId, flags);
-    if (ret != E_OK) {
-        LOGW("[L2:UserManager] StartUser: CreateServiceDirs failed, userId=%{public}d, ret=%{public}d",
-            userId, ret);
-        StorageRadar::ReportUserManager("StartUser", userId, ret, "CreateServiceDirs failed");
-        return ret;
-    }
+    CreateServiceDirs(userId, flags);
     return MountManager::GetInstance().MountByUser(userId);
 }
 
@@ -377,14 +371,7 @@ int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
             continue;
         }
         auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-        int32_t rc = RestoreconRecurse(dirInfo.path.c_str());
-        if (rc != E_OK) {
-            LOGE("[L2:UserManager] RestoreconSystemServiceDirs: RestoreconRecurse failed, path=%{public}s,"
-                "ret=%{public}d", dirInfo.path.c_str(), rc);
-            StorageRadar::ReportUserManager("RestoreconSystemServiceDirs", userId, rc,
-                "path=" + dirInfo.path);
-            return rc;
-        }
+        RestoreconRecurse(dirInfo.path.c_str());
         auto delay = StorageService::StorageRadar::ReportDuration("RestoreconRecurse", startTime,
             StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USER_ID);
         LOGI("delay = %{public}s, path = %{public}s ", delay.c_str(), dirInfo.path.c_str());
