@@ -514,12 +514,7 @@ static void ClearRedundantResources(int32_t userId)
         return;
     }
 
-    filesystem::directory_iterator bundleNameList(rootDir, errCode);
-    if (errCode) {
-        LOGE("ClearRedundantResources: iterate failed, rootDir=%{public}s, errno=%{public}d",
-            sharePath.c_str(), errCode.value());
-        return;
-    }
+    filesystem::directory_iterator bundleNameList(rootDir);
     for (const auto &bundleName : bundleNameList) {
         RmExistDir(bundleName.path().generic_string() + "/r");
         RmExistDir(bundleName.path().generic_string() + "/rw");
