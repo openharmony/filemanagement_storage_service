@@ -15,7 +15,7 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_static_library("storagedaemonprovider_erase_fuzztest") {
+ohos_static_library("storagedaemonprovider_verifyburndata_fuzztest") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -128,9 +128,9 @@ ohos_static_library("storagedaemonprovider_erase_fuzztest") {
   part_name = "storage_service"
 }
 
-ohos_fuzztest("StorageDaemonProviderEraseFuzzTest") {
+ohos_fuzztest("StorageDaemonProviderVerifyBurnDataFuzzTest") {
   module_out_path = "storage_service/storage_service"
-  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonprovidererase_fuzzer"
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonproviderverifyburndata_fuzzer"
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
@@ -149,7 +149,7 @@ ohos_fuzztest("StorageDaemonProviderEraseFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "${storage_service_path}/test/fuzztest/storagedaemonprovidererase_fuzzer/storagedaemonprovidererase_fuzzer.cpp",
+    "${storage_service_path}/test/fuzztest/storagedaemonproviderverifyburndata_fuzzer/storagedaemonproviderverifyburndata_fuzzer.cpp",
   ]
 
   defines = [
@@ -157,7 +157,7 @@ ohos_fuzztest("StorageDaemonProviderEraseFuzzTest") {
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
-    ":storagedaemonprovider_erase_fuzztest",
+    ":storagedaemonprovider_verifyburndata_fuzztest",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
@@ -198,5 +198,5 @@ ohos_fuzztest("StorageDaemonProviderEraseFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageDaemonProviderEraseFuzzTest" ]
+  deps = [ ":StorageDaemonProviderVerifyBurnDataFuzzTest" ]
 }
