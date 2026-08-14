@@ -46,7 +46,7 @@ namespace StorageDaemon {
 constexpr int32_t SLEEP_TIME = 1;
 constexpr int32_t MTP_VAL_LEN = 6;
 constexpr int32_t MTP_TRUE_LEN = 5;
-constexpr int32_t DETECT_CNT = 4;
+constexpr int32_t DETECT_CNT = 10;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int USB_CLASS_IMAGE = 6;
@@ -289,22 +289,23 @@ void MtpDeviceMonitor::MonitorDevice()
     int32_t cnt = DETECT_CNT;
     while (cnt > 0) {
         bool hasMtp = false;
-        if (HasMTPDevice(hasMtp) != E_OK) {
+        int32_t ret = HasMTPDevice(hasMtp);
+        if (ret != E_OK) {
             cnt--;
-            sleep(SLEEP_TIME);
+            if (cnt > 0) {
+                sleep(SLEEP_TIME);
+            }
             continue;
         }
         if (hasMtp) {
             MountMtpDeviceByBroadcast(DeviceType::UNKNOWN, 0, 0);
-            break;
         }
-        cnt--;
-        sleep(SLEEP_TIME);
+        break;
     }
     RegisterMTPParamListener();
     while (g_keepMonitoring) {
-        sleep(SLEEP_TIME);
         UsbEventSubscriber::SubscribeCommonEvent();
+        sleep(SLEEP_TIME);
     }
     RemoveMTPParamListener();
     LOGI("[L2:MtpDeviceMonitor] MonitorDevice: <<< EXIT SUCCESS <<< monitor thread ended");
