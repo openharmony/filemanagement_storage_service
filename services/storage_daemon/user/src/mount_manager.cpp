@@ -552,16 +552,8 @@ int32_t MountManager::MountFileSystem(int32_t userId)
         LOGE("[L2:MountManager] MountFileSystem: <<< EXIT FAILED <<< MountHmdfs failed, ret=%{public}d", ret);
         return ret;
     }
-    auto sharefsRet = MountSharefs(userId);
-    if (sharefsRet != E_OK) {
-        LOGW("[L2:MountManager] MountFileSystem: MountSharefs failed, ret=%{public}d", sharefsRet);
-        return sharefsRet;
-    }
-    auto appdataRet = MountAppdata(userId, false);
-    if (appdataRet != E_OK) {
-        LOGW("[L2:MountManager] MountFileSystem: MountAppdata failed, ret=%{public}d", appdataRet);
-        return appdataRet;
-    }
+    MountSharefs(userId);
+    MountAppdata(userId, false);
     LOGI("[L2:MountManager] MountFileSystem: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
