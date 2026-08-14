@@ -340,7 +340,6 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
         LOGE("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT FAILED <<< userId=%{public}u, elx=%{public}d,"
             "ret=%{public}d", userId, elx, ret);
         StorageRadar::ReportUserManager("CreateElxBundleDataDir", userId, ret, std::to_string(elx));
-        return;
     }
     LOGI("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT SUCCESS <<< userId=%{public}u, elx=%{public}d",
         userId, elx);
