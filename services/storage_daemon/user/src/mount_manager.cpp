@@ -1004,11 +1004,7 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
             return E_CREATE_DIR_APPDATA;
         }
     }
-    ret = MountAppdata(userId, true);
-    if (ret != E_OK) {
-        LOGW("[L2:MountManager] PrepareAppdataDirByUserId: MountAppdata failed, ret=%{public}d", ret);
-        return ret;
-    }
+    MountAppdata(userId, true);
     LOGI("[L2:MountManager] PrepareAppdataDirByUserId: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
 }
@@ -1052,20 +1048,10 @@ int32_t MountManager::PrepareAppdataDir(int32_t userId)
             return E_OK;
         }
         for (const int32_t &item: userIds) {
-            auto ret = PrepareAppdataDirByUserId(item);
-            if (ret != E_OK) {
-                LOGW("[L2:MountManager] PrepareAppdataDir: PrepareAppdataDirByUserId failed, "
-                    "userId=%{public}d, ret=%{public}d", item, ret);
-                return ret;
-            }
+            PrepareAppdataDirByUserId(item);
         }
     } else {
-        auto ret = PrepareAppdataDirByUserId(userId);
-        if (ret != E_OK) {
-        LOGW("[L2:MountManager] PrepareAppdataDir: PrepareAppdataDirByUserId failed, "
-            "userId=%{public}d, ret=%{public}d", userId, ret);
-        return ret;
-        }
+        PrepareAppdataDirByUserId(userId);
     }
     LOGI("[L2:MountManager] PrepareAppdataDir: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;

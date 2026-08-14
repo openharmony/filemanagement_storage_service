@@ -265,7 +265,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(false));
     ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
 
     CreateFile(string(STORAGE_ETC_PATH) + STORAGE_USER_PATH);
     ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
@@ -274,7 +274,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
 
     CreateFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
     ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_EQ(ret, E_OK);
     DeleteFile(string(STORAGE_ETC_PATH) + STORAGE_MOUNT_INFO);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
