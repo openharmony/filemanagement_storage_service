@@ -1035,7 +1035,6 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
                 nodeInfo.dstPath.c_str());
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
-            return E_MOUNT_BIND_AND_REC;
         }
     }
     LOGI("[L2:MountManager] MountAppdata: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
