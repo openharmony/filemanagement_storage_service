@@ -960,10 +960,6 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
     }
     std::error_code iterEc;
     for (const auto &entry : filesystem::directory_iterator(path, iterEc)) {
-        if (iterEc) {
-            LOGE("[L2:MountManager] GetAllUserId: directory_iterator failed, errno=%{public}d", iterEc.value());
-            return;
-        }
         if (!entry.is_directory()) {
             continue;
         }
