@@ -1396,14 +1396,7 @@ int32_t MountManager::InitSecondMountBundleName(uint32_t userId)
             errCode.value());
         return E_ERR;
     }
-    filesystem::directory_iterator bundleNameList(sandboxRootDir, errCode);
-    if (errCode) {
-        std::string extraData = "iterate sandbox dir failed,kernelCode=" + to_string(errCode.value());
-        StorageRadar::ReportUserManager("InitSecondMountBundleName_iterate", userId, E_ERR, extraData);
-        LOGE("[L2:MountManager] InitSecondMountBundleName: <<< EXIT FAILED <<< iterate failed, errno=%{public}d",
-            errCode.value());
-        return E_ERR;
-    }
+    filesystem::directory_iterator bundleNameList(sandboxRootDir);
     std::vector<std::string> bundles;
     std::string bundleSuffix = MOUNT_SUFFIX;
     for (const auto &bundle : bundleNameList) {
