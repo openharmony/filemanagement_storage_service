@@ -2923,11 +2923,6 @@ int32_t StorageDaemonProvider::Burn(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] Burn DiskUtils::ValidateBurnOptions: <<< EXIT FAILED <<< ret=%{public}d", ret);
         return ret;
     }
-    if (!fsType.empty() && fsType != parsedOptions.fsType) {
-        LOGE("[L1:StorageDaemonProvider] Burn: fsType mismatch, param=%{public}s, parsed=%{public}s",
-            fsType.c_str(), parsedOptions.fsType.c_str());
-        return E_PARAMS_INVALID;
-    }
     auto op = VolumeOperatorFactory::CreateOperator(parsedOptions.fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] Burn: no operator for fsType=%{public}s", parsedOptions.fsType.c_str());

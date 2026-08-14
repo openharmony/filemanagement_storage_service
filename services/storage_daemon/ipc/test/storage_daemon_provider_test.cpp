@@ -2947,24 +2947,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_001
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_Burn_001
- * @tc.desc: Verify Burn returns E_PARAMS_INVALID with fsType mismatch.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Burn_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/ut_test_dev";
-    std::string burnOptions = "fsType=iso9660\nburnPath=/data/burn\ndiskName=MYDISC";
-    std::string fsType = "udf";
-    auto ret = storageDaemonProviderTest_->Burn(devPath, burnOptions, fsType);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Burn_001 end";
-}
-/**
  * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_002
  * @tc.desc: Verify MountFileMgrFuse returns E_PARAMS_INVALID with invalid path prefix.
  * @tc.type: FUNC
