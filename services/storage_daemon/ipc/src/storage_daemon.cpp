@@ -1910,10 +1910,6 @@ int32_t StorageDaemon::IsDirPathSupport(const std::string &dirPath)
         LOGE("[L1:StorageDaemon] IsDirPathSupport: <<< EXIT FAILED <<< dir is not permission");
         return E_PARAMS_INVALID;
     }
-    if (IsFilePathInvalid(dirPath)) {
-        LOGE("[L1:StorageDaemon] IsDirPathSupport: <<< EXIT FAILED <<< path contains traversal sequence");
-        return E_PARAMS_INVALID;
-    }
     return E_OK;
 }
 

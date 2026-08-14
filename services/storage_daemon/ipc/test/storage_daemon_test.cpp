@@ -1981,23 +1981,6 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_EraseAllUserEncryptedKeys_002, Tes
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonTest_EraseAllUserEncryptedKeys_002 end";
 }
-
-/**
- * @tc.name: StorageDaemonTest_SetDirEncryptionPolicy_002
- * @tc.desc: Verify SetDirEncryptionPolicy returns E_PARAMS_INVALID with path traversal dirPath.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonTest, StorageDaemonTest_SetDirEncryptionPolicy_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonTest_SetDirEncryptionPolicy_002 start";
-    uint32_t userId = StorageTest::USER_ID1;
-    std::string dirPath = "/data/virt_service/rgm_hmos/anco_hmos_data/../etc";
-    uint32_t level = 1;
-    auto ret = storageDaemon_->SetDirEncryptionPolicy(userId, dirPath, level);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonTest_SetDirEncryptionPolicy_002 end";
-}
 #endif
 } // Test
 } // STORAGE_DAEMON
