@@ -1375,6 +1375,5 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Le
 
     GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
-
 } // STORAGE_DAEMON
 } // OHOS
