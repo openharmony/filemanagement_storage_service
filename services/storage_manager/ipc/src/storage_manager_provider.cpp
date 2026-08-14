@@ -552,7 +552,8 @@ int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGD("StorageManagerProvider::GetUserStorageStats start");
+    std::string bundleName = StorageStatusManager::GetInstance().GetCallingBundleName();
+    LOGE("StorageManagerProvider::GetUserStorageStats start,  %{public}s", bundleName.c_str());
     int32_t err = StorageStatusManager::GetInstance().GetUserStorageStats(storageStats);
     StorageRadar::ReportFucBehavior("GetUserStorageStats", DEFAULT_USERID, "GetUserStorageStats End", err);
     if (err != E_OK) {
@@ -572,7 +573,8 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGD("StorageManagerProvider::GetUserStorageStats start");
+    std::string bundleName = StorageStatusManager::GetInstance().GetCallingBundleName();
+    LOGE("StorageManagerProvider::GetUserStorageStats start, %{public}d, %{public}s", userId, bundleName.c_str());
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");
@@ -1087,7 +1089,8 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
         return E_PERMISSION_DENIED;
     }
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManagerProvider::GetUserStorageStatsByType start");
+    std::string bundleName = StorageStatusManager::GetInstance().GetCallingBundleName();
+    LOGE("StorageManagerProvider::GetUserStorageStatsByType start,  %{public}s", bundleName.c_str());
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("StorageManagerProvider::GetUserStorageStatsByType userId is out of range");
