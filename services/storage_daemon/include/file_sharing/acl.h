@@ -139,9 +139,9 @@ private:
     char *buf = nullptr;
     unsigned maskDemand = 0;
     constexpr static size_t ENTRIES_MAX_NUM = 100; // just heuristic
+    constexpr static size_t BUF_MAX_SIZE = sizeof(AclXattrHeader) + sizeof(AclXattrEntry) * ENTRIES_MAX_NUM;
     ACL_PERM ReCalcMaskPerm();
 public:
-    static constexpr size_t BUF_MAX_SIZE = sizeof(AclXattrHeader) + sizeof(AclXattrEntry) * ENTRIES_MAX_NUM;
     bool IsEmpty();
     bool IsValid();
     int InsertEntry(const AclXattrEntry &entry);

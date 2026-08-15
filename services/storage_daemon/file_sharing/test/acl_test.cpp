@@ -356,7 +356,7 @@ HWTEST_F(AclTest, acl_deserialize_insert_failed_test, TestSize.Level1)
 HWTEST_F(AclTest, acl_deserialize_oversize_test, TestSize.Level1)
 {
     Acl acl;
-    size_t oversize = Acl::BUF_MAX_SIZE + 1;
+    size_t oversize = sizeof(AclXattrHeader) + sizeof(AclXattrEntry) * 101;
     char *buf = static_cast<char *>(calloc(oversize, 1));
     ASSERT_NE(buf, nullptr);
     int rc = acl.DeSerialize(buf, oversize);
