@@ -2947,38 +2947,38 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateIsoImage_001
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_002
+ * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_003
  * @tc.desc: Verify MountFileMgrFuse returns E_PARAMS_INVALID with invalid path prefix.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_002, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_002 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_003 start";
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t fuseFd = -1;
     std::string path = "/data/invalid_path";
     auto ret = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_002 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_003 end";
 }
 
 /**
- * @tc.name: StorageDaemonProviderTest_UMountFileMgrFuse_002
+ * @tc.name: StorageDaemonProviderTest_UMountFileMgrFuse_003
  * @tc.desc: Verify UMountFileMgrFuse returns E_PARAMS_INVALID with invalid path prefix.
  * @tc.type: FUNC
  * @tc.require: AR000H09L6
  */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_002, TestSize.Level1)
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_002 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_003 start";
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string path = "/data/invalid_path";
     auto ret = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_002 end";
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_003 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS
