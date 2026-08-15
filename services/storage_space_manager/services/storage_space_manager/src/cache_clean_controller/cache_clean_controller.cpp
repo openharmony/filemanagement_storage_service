@@ -20,6 +20,7 @@
 #include "storage_space_manager_client.h"
 #include "storage/storage_total_status_service.h"
 #include "utils/storage_radar.h"
+#include "cache_clean_controller/clean_record_store.h"
 
 #include <algorithm>
 #include <chrono>
@@ -71,6 +72,7 @@ constexpr int32_t DEFAULT_TOP_COUNT = 20;
 constexpr uint64_t DISPLAY_MB_DIVISOR = 1000ULL * 1000;
 constexpr mode_t CONFIG_DIR_MODE = 0755;
 constexpr int32_t JSON_INDENT = 4;
+constexpr uint64_t RECORD_DATA_AGING_TIME = 180LL * 24 * 60 * 60 * 1000;
 // Default quota config, used as fallback when GetQuotaByRank fails
 // e.g., the number in size_lowerlimit_0_upperlimit_256 is in GB
 //       tier units are MB, e.g. "top1-3": 750 means 750MB
@@ -342,6 +344,13 @@ int32_t CacheCleanController::ExecuteCacheCleaning(const std::vector<CleanCacheI
     extraData_ << "{endTimeStamp:" << timeStamp << "}" << std::endl;
     PrintOverLongLog(extraData_.str());
     StorageService::StorageRadar::ReportStorageStatusRadar("cacheCleanResult", extraData_.str());
+    DelayedSingleton<CleanRecordStore>::GetInstance()->Delete(timeStamp - RECORD_DATA_AGING_TIME);
+    NativeRdb::ValuesBucket values;
+    values.PutLong("clean_time", timeStamp);
+    values.PutLong("freed_size", stats.cleanBefore - stats.cleanAfter);
+    values.PutLong("clean_before", stats.cleanBefore);
+    values.PutLong("clean_after", stats.cleanAfter);
+    DelayedSingleton<CleanRecordStore>::GetInstance()->Insert(values);
 
     return E_OK;
 }
