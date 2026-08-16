@@ -59,6 +59,8 @@ private:
 
     static int32_t EnsureMountPath(const std::string& mountPath);
     static int32_t RemoveMountPath(const std::string& mountPath);
+    static int32_t ValidateMountRequest(const std::string& devPath, const std::string& mountPath,
+                                        const std::string& mountData);
 
 protected:
     static bool IsMountDataInvalid(const std::string& mountData);

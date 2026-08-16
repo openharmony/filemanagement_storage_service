@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021-2026 Huawei Device Co., Ltd.
- * Licensed under the Apache License,2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -14,15 +14,13 @@
  */
 
 #include "utils/file_utils.h"
+#include "utils/volume_op_diag.h"
 
 #include <cstdint>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
 #include <regex>
-#include <string>
-#include <sstream>
-#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -65,10 +63,6 @@ const std::string CONTAINER_LINUX = "rgm_linux";
 const std::string VM_LINUX = "rgm_openEuler";
 const std::string EL_RGM_MANAGER_PATH = "/data/service/el1/public/vm_manager";
 const std::string RGM_MANAGER_PATH = RGM_MANAGER_PATH_DEF;
-constexpr const char *PATH_INVALID_FLAG1 = "../";
-constexpr const char *PATH_INVALID_FLAG2 = "/..";
-constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
-constexpr char FILE_SEPARATOR_CHAR = '/';
 const std::string DROP_ENCRYPT_DENTRY_PATH = "/proc/sys/vm/drop_encrypt_dentry";
 const std::string DROP_ENCRYPT_DENTRY_VALUE = "1";
 constexpr uint32_t OVER_LOOP_FIRST_ALERT_THRESHOLD = 1000;
@@ -262,7 +256,7 @@ bool MkDirRecurse(const std::string& path, mode_t mode)
 int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
     LOGI("[L8:FileUtils] PrepareDirSimple: >>> ENTER <<< path=%{public}s", path.c_str());
-    if (MkDir(path, mode) != 0) {
+    if (MkDir(path, mode)) {
         if (errno == EEXIST) {
             LOGE("[L8:FileUtils] PrepareDirSimple: path already exists, path=%{public}s", path.c_str());
             return E_CREATE_USER_DIR_EXIST;
@@ -270,12 +264,12 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
         LOGE("[L8:FileUtils] PrepareDirSimple: <<< EXIT FAILED <<< mkdir failed, errno=%{public}d", errno);
         return E_MKDIR_ERROR;
     }
-    if (ChMod(path, mode) != 0) {
+    if (ChMod(path, mode)) {
         LOGE("[L8:FileUtils] PrepareDirSimple: <<< EXIT FAILED <<< chmod failed, errno=%{public}d", errno);
         return E_CHMOD_ERROR;
     }
 
-    if (ChOwn(path, uid, gid) != 0) {
+    if (ChOwn(path, uid, gid)) {
         LOGE("[L8:FileUtils] PrepareDirSimple: <<< EXIT FAILED <<< chown failed, errno=%{public}d", errno);
         return E_CHOWN_ERROR;
     }
@@ -287,7 +281,6 @@ int32_t PrepareDirSimple(const std::string &path, mode_t mode, uid_t uid, gid_t 
     }
     return ret;
 #endif
-    LOGI("[L8:FileUtils] PrepareDirSimple: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     return E_OK;
 }
 
@@ -308,8 +301,8 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
             return false;
         }
         if (((st.st_mode & ALL_PERMS) != mode) && ChMod(path, mode)) {
-                LOGE("[L8:FileUtils] PrepareDir: <<< EXIT FAILED <<< chmod failed, errno=%{public}d, uid=%{public}d,"
-                    "gid=%{public}d", errno, st.st_uid, st.st_gid);
+            LOGE("[L8:FileUtils] PrepareDir: <<< EXIT FAILED <<< chmod failed, errno=%{public}d, uid=%{public}d,"
+                "gid=%{public}d", errno, st.st_uid, st.st_gid);
             std::string extraData = "path=" + path + ",uid=" + to_string(st.st_uid) +
               ",gid=" + to_string(st.st_gid) + ",mode=" + to_string(st.st_mode) + ",errno=" + to_string(errno);
             StorageRadar::ReportUserManager("PrepareDir", DEFAULT_USERID, E_PREPARE_DIR, extraData);
@@ -331,29 +324,24 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
             }
             return false;
         }
-        LOGI("[L8:FileUtils] PrepareDir: <<< EXIT SUCCESS <<< dir already exists, path=%{public}s", path.c_str());
         return true;
     }
     mode_t mask = umask(0);
-    if (MkDir(path, mode) != 0) {
+    if (MkDir(path, mode)) {
         LOGE("[L8:FileUtils] PrepareDir: <<< EXIT FAILED <<< mkdir failed, errno=%{public}d", errno);
         umask(mask);
         return false;
     }
     umask(mask);
-    if (ChMod(path, mode) != 0) {
+    if (ChMod(path, mode)) {
         LOGE("[L8:FileUtils] PrepareDir: <<< EXIT FAILED <<< chmod failed, errno=%{public}d", errno);
         return false;
     }
-    if (ChOwn(path, uid, gid) != 0) {
+    if (ChOwn(path, uid, gid)) {
         LOGE("[L8:FileUtils] PrepareDir: <<< EXIT FAILED <<< chown failed, errno=%{public}d", errno);
         return false;
     }
-    bool ret = RestoreconDir(path);
-    if (ret) {
-        LOGI("[L8:FileUtils] PrepareDir: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
-    }
-    return ret;
+    return RestoreconDir(path);
 }
 
 bool RmDirRecurse(const std::string &path)
@@ -365,7 +353,8 @@ bool RmDirRecurse(const std::string &path)
             LOGD("[L8:FileUtils] RmDirRecurse: <<< EXIT SUCCESS <<< path not exist");
             return true;
         }
-        LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< open dir failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< open dir %{public}s failed, errno=%{public}d",
+            path.c_str(), errno);
         return false;
     }
 
@@ -376,13 +365,15 @@ bool RmDirRecurse(const std::string &path)
             }
 
             if (!RmDirRecurse(path + "/" + ent->d_name)) {
-                LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< RmDirRecurse failed, errno=%{public}d", errno);
+                LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< RmDirRecurse %{public}s failed,"
+                    "errno=%{public}d", path.c_str(), errno);
                 (void)closedir(dir);
                 return false;
             }
         } else {
             if (unlink((path + "/" + ent->d_name).c_str())) {
-                LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< unlink failed, errno=%{public}d", errno);
+                LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< unlink file %{public}s failed, errno=%{public}d",
+                    ent->d_name, errno);
                 (void)closedir(dir);
                 return false;
             }
@@ -391,16 +382,15 @@ bool RmDirRecurse(const std::string &path)
 
     (void)closedir(dir);
     if (rmdir(path.c_str())) {
-        LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< rmdir failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] RmDirRecurse: <<< EXIT FAILED <<< rmdir dir %{public}s failed, errno=%{public}d",
+            path.c_str(), errno);
         return false;
     }
-    LOGD("[L8:FileUtils] RmDirRecurse: <<< EXIT SUCCESS <<<");
     return true;
 }
 
 void TravelChmod(const std::string &path, mode_t mode)
 {
-    LOGD("[L8:FileUtils] TravelChmod: >>> ENTER <<< path=%{public}s", path.c_str());
     struct stat st;
     DIR *d = nullptr;
     struct dirent *dp = nullptr;
@@ -430,7 +420,6 @@ void TravelChmod(const std::string &path, mode_t mode)
         }
     }
     (void)closedir(d);
-    LOGD("[L8:FileUtils] TravelChmod: <<< EXIT SUCCESS <<<");
 }
 
 bool StringToUint32(const std::string &str, uint32_t &num)
@@ -453,7 +442,6 @@ bool StringToUint32(const std::string &str, uint32_t &num)
         return false;
     }
     num = static_cast<uint32_t>(value);
-    LOGD("[L8:FileUtils] StringToUint32: <<< EXIT SUCCESS <<<");
     return true;
 }
 
@@ -473,7 +461,6 @@ bool StringToBool(const std::string &str, bool &result)
         return false;
     }
 
-    LOGD("[L8:FileUtils] StringToBool: <<< EXIT SUCCESS <<< result=%{public}d", result);
     return true;
 }
 
@@ -485,13 +472,14 @@ void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
     struct stat st;
     int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
     if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
-        LOGE("[L8:FileUtils] GetSubDirs: <<< EXIT FAILED <<< path is not dir");
+        LOGE("[L8:FileUtils] GetSubDirs: <<< EXIT FAILED <<< path is not dir, path=%{public}s", path.c_str());
         return;
     }
 
     DIR *dir = opendir(path.c_str());
     if (!dir) {
-        LOGE("[L8:FileUtils] GetSubDirs: <<< EXIT FAILED <<< open dir failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] GetSubDirs: <<< EXIT FAILED <<< open dir failed, errno=%{public}d,"
+            "path=%{public}s", errno, path.c_str());
         return;
     }
 
@@ -505,22 +493,21 @@ void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
     }
 
     (void)closedir(dir);
-    LOGD("[L8:FileUtils] GetSubDirs: <<< EXIT SUCCESS <<< dirCount=%{public}zu", dirList.size());
 }
 
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
 {
-    LOGD("[L8:FileUtils] ReadDigitDir: >>> ENTER <<< path=%{public}s", path.c_str());
     struct stat st;
     int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
     if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
-        LOGE("[L8:FileUtils] ReadDigitDir: <<< EXIT FAILED <<< path is not dir");
+        LOGE("[L8:FileUtils] ReadDigitDir: <<< EXIT FAILED <<< path is not dir, path=%{public}s", path.c_str());
         return;
     }
 
     DIR *dir = opendir(path.c_str());
     if (!dir) {
-        LOGE("[L8:FileUtils] ReadDigitDir: <<< EXIT FAILED <<< open dir failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] ReadDigitDir: <<< EXIT FAILED <<< open dir failed, errno=%{public}d"
+            ", path=%{public}s", errno, path.c_str());
         return;
     }
 
@@ -544,22 +531,21 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
     }
 
     (void)closedir(dir);
-    LOGD("[L8:FileUtils] ReadDigitDir: <<< EXIT SUCCESS <<< dirCount=%{public}zu", dirInfo.size());
 }
 
 void OpenSubFile(const std::string &path, std::vector<std::string>  &file)
 {
-    LOGD("[L8:FileUtils] OpenSubFile: >>> ENTER <<< path=%{public}s", path.c_str());
     struct stat st;
     int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
     if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
-        LOGI("[L8:FileUtils] OpenSubFile: path is not dir");
+        LOGI("[L8:FileUtils] OpenSubFile: path is not dir, path=%{public}s", path.c_str());
         return;
     }
 
     DIR *dir = opendir(path.c_str());
     if (!dir) {
-        LOGI("[L8:FileUtils] OpenSubFile: open dir failed, errno=%{public}d", errno);
+        LOGI("[L8:FileUtils] OpenSubFile: open dir failed, errno=%{public}d,"
+            "path=%{public}s", errno, path.c_str());
         return;
     }
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
@@ -590,13 +576,15 @@ bool ReadFile(const std::string &path, std::string *str)
 
     std::string rpath(PATH_MAX + 1, '\0');
     if ((path.length() > PATH_MAX) || (realpath(path.c_str(), rpath.data()) == nullptr)) {
-        LOGE("[L8:FileUtils] ReadFile: <<< EXIT FAILED <<< realpath failed");
+        LOGE("[L8:FileUtils] ReadFile: <<< EXIT FAILED <<< realpath failed, "
+            "path=%{public}s", path.c_str());
         return false;
     }
 
     infile.open(rpath.c_str());
     if (!infile) {
-        LOGE("[L8:FileUtils] ReadFile: <<< EXIT FAILED <<< Cannot open file");
+        LOGE("[L8:FileUtils] ReadFile: <<< EXIT FAILED <<< Cannot open file,"
+            "path=%{public}s", path.c_str());
         return false;
     }
 
@@ -611,13 +599,7 @@ bool ReadFile(const std::string &path, std::string *str)
     }
 
     infile.close();
-    bool ret = cnt == 0 ? false : true;
-    if (ret) {
-        LOGD("[L8:FileUtils] ReadFile: <<< EXIT SUCCESS <<<");
-    } else {
-        LOGE("[L8:FileUtils] ReadFile: <<< EXIT FAILED <<< file is empty");
-    }
-    return ret;
+    return cnt == 0 ? false : true;
 }
 
 std::string ReadFileContent(const std::string &path)
@@ -756,28 +738,55 @@ static int CheckChildProcessExitStatus(pid_t pid, int &status, int *exitStatus)
     return E_OK;
 }
 
+static int32_t ResolveForkExecExitCode(int32_t ret, int status, int *exitStatus)
+{
+    if (ret == E_NO_CHILD) {
+        return errno;
+    }
+    if (ret == E_WIFEXITED) {
+        return -1;
+    }
+    if (exitStatus != nullptr) {
+        return *exitStatus;
+    }
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    }
+    return -1;
+}
+
+static void ReportForkExecDiagIfNeeded(const std::vector<std::string> &cmd, int32_t ret, int32_t exitCode,
+                                       const std::vector<std::string> *output)
+{
+    VolumeOpDiagReportToolFailure(cmd, ret, exitCode, output);
+}
+
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
-    LOGD("[L8:FileUtils] ForkExec: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
     int pipeFd[PIPE_FD_LEN];
     pid_t pid;
     int status;
     auto args = FormatCmd(cmd);
     if (pipe(pipeFd) < 0) {
-        LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< create pipe failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< create pipe failed,"
+            "errno=%{public}d, cmd=%{public}s", errno, cmd.empty() ? "" : cmd[0].c_str());
+        ClosePipe(pipeFd, PIPE_FD_LEN);
+        ReportForkExecDiagIfNeeded(cmd, E_CREATE_PIPE, errno, output);
         return E_CREATE_PIPE;
     }
     pid = fork();
     if (pid == -1) {
         LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< fork failed, errno=%{public}d", errno);
         ClosePipe(pipeFd, PIPE_FD_LEN);
+        ReportForkExecDiagIfNeeded(cmd, E_FORK, errno, output);
         return E_FORK;
     } else if (pid == 0) {
         if (RedirectStdToPipe(pipeFd, PIPE_FD_LEN)) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
-        LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< execvp failed, errno=%{public}d", errno);
+        LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< execvp failed, errno=%{public}d,"
+            "cmd=%{public}s", errno, cmd.empty() ? "" : cmd[0].c_str());
         _exit(1);
     } else {
         (void)close(pipeFd[1]);
@@ -785,42 +794,50 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         (void)close(pipeFd[0]);
         int ret = CheckChildProcessExitStatus(pid, status, exitStatus);
         if (ret != E_OK) {
+            ReportForkExecDiagIfNeeded(cmd, ret, ResolveForkExecExitCode(ret, status, exitStatus), output);
             return ret;
         }
     }
-    LOGD("[L8:FileUtils] ForkExec: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
-int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
+int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus, std::vector<std::string> *output)
 {
+    int pipe_fd[PIPE_FD_LEN];
     LOGD("[L8:FileUtils] ForkExecWithExit: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
-    int pipeFd[2];
     pid_t pid;
-    int status;
+    int status = 0;
     auto args = FormatCmd(cmd);
-    if (pipe(pipeFd) < 0) {
+
+    if (pipe(pipe_fd) < 0) {
         LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< create pipe failed");
+        ReportForkExecDiagIfNeeded(cmd, E_CREATE_PIPE, errno, output);
         return E_CREATE_PIPE;
     }
+
     pid = fork();
     if (pid == -1) {
         LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< fork failed");
-        ClosePipe(pipeFd, PIPE_FD_LEN);
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ReportForkExecDiagIfNeeded(cmd, E_FORK, errno, output);
         return E_FORK;
     } else if (pid == 0) {
-        (void)close(pipeFd[0]);
-        if (dup2(pipeFd[1], STDOUT_FILENO) == -1) {
+        (void)close(pipe_fd[0]);
+        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
             LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< dup2 failed");
             _exit(1);
         }
-        (void)close(pipeFd[1]);
+        (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< execvp failed, errno=%{public}d", errno);
         _exit(1);
     } else {
-        (void)close(pipeFd[1]);
-        (void)close(pipeFd[0]);
+        (void)close(pipe_fd[1]);
+        if (output != nullptr) {
+            ReadPipeOutputForExec(pipe_fd[0], output, cmd.empty() ? "" : cmd[0]);
+        }
+        (void)close(pipe_fd[0]);
+
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             LOGE("[L8:FileUtils] ForkExecWithExit: Process exits %{public}d", errno);
@@ -839,76 +856,7 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus)
             return E_WEXITSTATUS;
         }
     }
-    return E_OK;
-}
-
-static void WriteInputToPipe(int pipeFd, std::vector<std::string> &input)
-{
-    for (const auto& line : input) {
-        write(pipeFd, line.c_str(), line.size());
-        write(pipeFd, "\n", 1);
-    }
-}
-
-static void ReadPipeOutput(int pipeFd, std::vector<std::string> &output)
-{
-    LOGI("[L8:FileUtils] ReadPipeOutput: start!!!");
-    char buf[BUF_LEN] = { 0 };
-    (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
-    output.clear();
-    while (read(pipeFd, buf, BUF_LEN - 1) > 0) {
-        if (strstr(buf, "[2k") != nullptr) {
-            break;
-        }
-        LOGI("[L8:FileUtils] ReadPipeOutput: get result %{public}s", buf);
-        output.push_back(buf);
-    }
-    LOGI("[L8:FileUtils] ReadPipeOutput: ReadPipeOutput end!!!");
-}
-
-int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output,
-                        std::vector<std::string> *input)
-{
-    int inPipe[PIPE_FD_LEN];
-    int outPipe[PIPE_FD_LEN];
-    pid_t pid;
-    auto args = FormatCmd(cmd);
-    if (pipe(inPipe) < 0) {
-        LOGE("[L8:FileUtils] ForkExecInteractive: creat pipe failed, errno is %{public}d.", errno);
-        return E_CREATE_PIPE;
-    }
-    if (pipe(outPipe) < 0) {
-        LOGE("[L8:FileUtils] ForkExecInteractive: creat pipe failed, errno is %{public}d.", errno);
-        ClosePipe(inPipe, PIPE_FD_LEN);
-        return E_CREATE_PIPE;
-    }
-    pid = fork();
-    if (pid == -1) {
-        LOGE("[L8:FileUtils] ForkExecInteractive: fork failed, errno is %{public}d.", errno);
-        return E_FORK;
-    } else if (pid == 0) {
-        (void)close(inPipe[1]);
-        (void)close(outPipe[0]);
-        dup2(inPipe[0], STDIN_FILENO);
-        dup2(outPipe[1], STDOUT_FILENO);
-        dup2(outPipe[1], STDERR_FILENO);
-        execvp(args[0], const_cast<char **>(args.data()));
-        LOGE("[L8:FileUtils] ForkExecInteractive: execvp failed errno: %{public}d", errno);
-        _exit(1);
-    } else {
-        (void)close(inPipe[0]);
-        (void)close(outPipe[1]);
-        if (input) {
-            WriteInputToPipe(inPipe[1], *input);
-        }
-        (void)close(inPipe[1]);
-
-        if (output) {
-            ReadPipeOutput(outPipe[0], *output);
-        }
-        (void)close(outPipe[0]);
-    }
-    LOGI("[L8:FileUtils] ForkExecInteractive: ForkExecInteractive end.");
+    LOGD("[L8:FileUtils] ForkExecWithExit: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 
@@ -924,33 +872,33 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
     }
 }
 
-static void WritePidToPipe(int pipeFd[PIPE_FD_LEN], size_t len)
+static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
 {
-    if (pipeFd == nullptr || len < PIPE_FD_LEN) {
-        LOGE("write pipe param is invalid.");
+    if (pipe_fd == nullptr || len < PIPE_FD_LEN) {
+        LOGE("[L8:FileUtils] WritePidToPipe: pipe param is invalid.");
         return;
     }
-    (void)close(pipeFd[0]);
+    (void)close(pipe_fd[0]);
     int send_pid = (int)getpid();
-    if (write(pipeFd[1], &send_pid, sizeof(int)) == -1) {
+    if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
         LOGE("[L8:FileUtils] WritePidToPipe: <<< EXIT FAILED <<< write pipe failed, errno=%{public}d", errno);
         _exit(1);
     }
-    (void)close(pipeFd[1]);
+    (void)close(pipe_fd[1]);
 }
 
-static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipeFd[2])
+static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
 {
-    (void)close(pipeFd[1]);
+    (void)close(pipe_fd[1]);
     int recv_pid;
-    while (read(pipeFd[0], &recv_pid, sizeof(int)) > 0) {
+    while (read(pipe_fd[0], &recv_pid, sizeof(int)) > 0) {
         LOGI("[L8:FileUtils] ReadPidFromPipe: read child pid=%{public}d", recv_pid);
     }
-    (void)close(pipeFd[0]);
+    (void)close(pipe_fd[0]);
     ReportExecutorPidEvent(cmd, recv_pid);
 }
 
-static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
+static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len, std::vector<std::string> *output)
 {
     if (logpipe == nullptr || len < PIPE_FD_LEN) {
         LOGE("[L8:FileUtils] ReadLogFromPipe: <<< EXIT FAILED <<< param is invalid");
@@ -962,6 +910,9 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
         char line[BUF_LEN];
         while (fgets(line, sizeof(line), fp)) {
             LOGE("[L8:FileUtils] ReadLogFromPipe: exec mount log lerrno=%{public}d", errno);
+            if (output != nullptr) {
+                output->emplace_back(line);
+            }
         }
         fclose(fp);
         return;
@@ -972,33 +923,35 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
-    LOGD("[L8:FileUtils] ExtStorageMountForkExec: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
-    int pipeFd[PIPE_FD_LEN];
+    int pipe_fd[PIPE_FD_LEN];
     int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
     pid_t pid;
     int status;
     auto args = FormatCmd(cmd);
 
-    if (pipe(pipeFd) < 0) {
+    if (pipe(pipe_fd) < 0) {
         LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< create pipe failed, errno=%{public}d", errno);
+        ReportForkExecDiagIfNeeded(cmd, E_ERR, errno, nullptr);
         return E_ERR;
     }
 
     if (pipe(pipe_log_fd) < 0) {
         LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< create pipe for log failed,"
             "errno=%{public}d", errno);
-        ClosePipe(pipeFd, PIPE_FD_LEN);
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ReportForkExecDiagIfNeeded(cmd, E_ERR, errno, nullptr);
         return E_ERR;
     }
 
     pid = fork();
     if (pid == -1) {
         LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< fork failed, errno=%{public}d", errno);
-        ClosePipe(pipeFd, PIPE_FD_LEN);
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
         ClosePipe(pipe_log_fd, PIPE_FD_LEN);
+        ReportForkExecDiagIfNeeded(cmd, E_ERR, errno, nullptr);
         return E_ERR;
     } else if (pid == 0) {
-        WritePidToPipe(pipeFd, PIPE_FD_LEN);
+        WritePidToPipe(pipe_fd, PIPE_FD_LEN);
         if (RedirectStdToPipe(pipe_log_fd, PIPE_FD_LEN)) {
             _exit(1);
         }
@@ -1006,33 +959,35 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
         LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< execvp failed, errno=%{public}d", errno);
         _exit(1);
     } else {
-        ReadPidFromPipe(cmd, pipeFd);
-        ReadLogFromPipe(pipe_log_fd, PIPE_FD_LEN);
+        ReadPidFromPipe(cmd, pipe_fd);
+        std::vector<std::string> mountLog;
+        ReadLogFromPipe(pipe_log_fd, PIPE_FD_LEN, &mountLog);
 
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< ECHILD");
+            ReportForkExecDiagIfNeeded(cmd, E_NO_CHILD, errno, &mountLog);
             return E_NO_CHILD;
         }
         if (!WIFEXITED(status)) {
             LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< Process exits abnormally");
+            ReportForkExecDiagIfNeeded(cmd, E_ERR, -1, &mountLog);
             return E_ERR;
         }
         int tempExitStatus = WEXITSTATUS(status);
         GetExitStatus(exitStatus, tempExitStatus);
         if (tempExitStatus != 0) {
             LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< Process exited with error");
+            ReportForkExecDiagIfNeeded(cmd, E_ERR, tempExitStatus, &mountLog);
             return E_ERR;
         }
     }
-    LOGD("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
 #endif
 
 void TraverseDirUevent(const std::string &path, bool flag)
 {
-    LOGD("[L8:FileUtils] TraverseDirUevent: >>> ENTER <<< path=%{public}s", path.c_str());
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
         return;
@@ -1059,7 +1014,6 @@ void TraverseDirUevent(const std::string &path, bool flag)
     }
 
     (void)closedir(dir);
-    LOGD("[L8:FileUtils] TraverseDirUevent: <<< EXIT SUCCESS <<<");
 }
 
 bool IsPathMounted(std::string &path)
@@ -1088,7 +1042,6 @@ bool IsPathMounted(std::string &path)
         }
     }
     inputStream.close();
-    LOGD("[L8:FileUtils] IsPathMounted: <<< EXIT SUCCESS <<< path is not mounted");
     return false;
 }
 
@@ -1097,15 +1050,12 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
     std::vector<std::string> result;
     str += pattern;
     size_t size = str.size();
-    size_t i = 0;
-    while (i < size) {
+    for (size_t i = 0; i < size; i++) {
         size_t pos = str.find(pattern, i);
         if (pos < size) {
             std::string s = str.substr(i, pos - i);
             result.push_back(s);
-            i = pos + pattern.size();
-        } else {
-            break;
+            i = pos + pattern.size() - 1;
         }
     }
     return result;
@@ -1113,7 +1063,6 @@ std::vector<std::string> Split(std::string str, const std::string &pattern)
 
 void DeleteFile(const std::string &path)
 {
-    LOGD("[L8:FileUtils] DeleteFile: >>> ENTER <<< path=%{public}s", path.c_str());
     DIR *dir = nullptr;
     struct dirent *dirinfo = nullptr;
     struct stat statbuf;
@@ -1140,7 +1089,7 @@ void DeleteFile(const std::string &path)
         }
         closedir(dir);
     }
-    LOGD("[L8:FileUtils] DeleteFile: <<< EXIT SUCCESS <<<");
+    return;
 }
 
 bool IsTempFolder(const std::string &path, const std::string &sub)
@@ -1158,7 +1107,6 @@ bool IsTempFolder(const std::string &path, const std::string &sub)
 
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
 {
-    LOGI("[L8:FileUtils] KillProcess: >>> ENTER <<< processCount=%{public}zu", processList.size());
     if (processList.empty()) {
         return;
     }
@@ -1180,7 +1128,6 @@ void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<Proces
             killFailList.push_back(item);
         }
     }
-    LOGI("[L8:FileUtils] KillProcess: <<< EXIT SUCCESS <<<");
 }
 
 bool IsProcessAlive(int pid)
@@ -1217,25 +1164,18 @@ bool RestoreconDir(const std::string &path)
         return false;
     }
 #endif
-    LOGD("[L8:FileUtils] RestoreconDir: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     return true;
 }
 
 int32_t GetRmgResourceSize(const std::string &rgmName, uint64_t &totalSize)
 {
-    LOGI("[L8:FileUtils] GetRmgResourceSize: >>> ENTER <<< rgmName=%{public}s", rgmName.c_str());
     if (!IsValidRgmName(rgmName)) {
-        LOGE("[L8:FileUtils] GetRmgResourceSize: <<< EXIT FAILED <<< rgm name invalid");
+        LOGE("[L8:FileUtils] GetRmgResourceSize: <<< EXIT FAILED <<< rgm name %{public}s invalid", rgmName.c_str());
         return E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID;
     }
     std::vector<std::string> ignorePaths;
     ignorePaths.clear();
-    int32_t ret = StatisticsFilesTotalSize(rgmConfigs.at(rgmName).mgrPath, ignorePaths, totalSize);
-    if (ret == E_OK) {
-        LOGI("[L8:FileUtils] GetRmgResourceSize: <<< EXIT SUCCESS <<< totalSize=%{public}llu",
-            static_cast<unsigned long long>(totalSize));
-    }
-    return ret;
+    return StatisticsFilesTotalSize(rgmConfigs.at(rgmName).mgrPath, ignorePaths, totalSize);
 }
 
 int32_t GetRmgDataSize(const std::string &rgmName, const std::string &path,
@@ -1244,7 +1184,8 @@ int32_t GetRmgDataSize(const std::string &rgmName, const std::string &path,
     LOGI("[L8:FileUtils] GetRmgDataSize: >>> ENTER <<< rgmName=%{public}s, path=%{public}s",
          rgmName.c_str(), path.c_str());
     if (!IsValidRgmName(rgmName)) {
-        LOGE("[L8:FileUtils] GetRmgDataSize: <<< EXIT FAILED <<< rgm name invalid");
+        LOGE("[L8:FileUtils] GetRmgDataSize: <<< EXIT FAILED <<< rgm name invalid, rgmName=%{public}s, path=%{public}s",
+            rgmName.c_str(), path.c_str());
         return E_CONTAINERPLUGIN_UTILS_RGM_NAME_INVALID;
     }
 
@@ -1262,12 +1203,7 @@ int32_t GetRmgDataSize(const std::string &rgmName, const std::string &path,
         LOGE("[L8:FileUtils] GetRmgDataSize: <<< EXIT FAILED <<< path invalid");
         return E_CONTAINERPLUGIN_UTILS_REMOVE_PATH_INVALID;
     }
-    int32_t ret = StatisticsFilesTotalSize(realPath, innerIgnorePaths, totalSize);
-    if (ret == E_OK) {
-        LOGI("[L8:FileUtils] GetRmgDataSize: <<< EXIT SUCCESS <<< totalSize=%{public}llu",
-            static_cast<unsigned long long>(totalSize));
-    }
-    return ret;
+    return StatisticsFilesTotalSize(realPath, innerIgnorePaths, totalSize);
 }
 
 bool IsValidRgmName(const std::string &rgmName)
@@ -1307,9 +1243,8 @@ bool IsValidBusinessPath(const string &path, const string &userId)
 int32_t StatisticsFilesTotalSize(const string &dirPath, const vector<string> &ignorePaths,
     uint64_t &totalSize)
 {
-    LOGD("[L8:FileUtils] StatisticsFilesTotalSize: >>> ENTER <<< dirPath=%{private}s", dirPath.c_str());
     if (!IsFileExist(dirPath)) {
-        LOGD("[L8:FileUtils] StatisticsFilesTotalSize: <<< EXIT SUCCESS <<< path not exist");
+        LOGE("[L8:FileUtils] StatisticsFilesTotalSize: <<< EXIT SUCCESS <<< path not exist");
         return E_OK;
     }
     if (!IsValidBusinessPath(dirPath)) {
@@ -1337,8 +1272,6 @@ int32_t StatisticsFilesTotalSize(const string &dirPath, const vector<string> &ig
         }
         dirTraverseQue.pop();
     }
-    LOGD("[L8:FileUtils] StatisticsFilesTotalSize: <<< EXIT SUCCESS <<< totalSize=%{public}llu",
-        static_cast<unsigned long long>(totalSize));
     return ret;
 }
 
@@ -1454,17 +1387,21 @@ uint64_t GetFileSize(const string &filename)
 
 bool IsFilePathInvalid(const std::string &filePath)
 {
+    constexpr const char *PATH_INVALID_FLAG1 = "../";
+    constexpr const char *PATH_INVALID_FLAG2 = "/..";
+    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+    constexpr char FILE_SEPARATOR_CHAR = '/';
     size_t pos = filePath.find(PATH_INVALID_FLAG1);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("[L8:FileUtils] IsFilePathInvalid: Relative path is not allowed, path contain ../");
+            LOGE("Relative path is not allowed, path contain ../");
             return true;
         }
         pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
     }
     pos = filePath.rfind(PATH_INVALID_FLAG2);
     if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
-        LOGE("[L8:FileUtils] IsFilePathInvalid: Relative path is not allowed, path tail is /..");
+        LOGE("Relative path is not allowed, path tail is /..");
         return true;
     }
     return false;
