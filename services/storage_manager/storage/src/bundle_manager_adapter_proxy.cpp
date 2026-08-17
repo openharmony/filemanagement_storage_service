@@ -31,6 +31,10 @@ constexpr size_t MAX_IPC_REWDATA_SIZE = 120 * 1024 * 1024;           // max ipc 
             return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
         }                                                                                                 \
         size_t readAbleDataSize = (parcel).GetReadableBytes();                                            \
+        if ((readContainerSize) < 0) {                                                                    \
+            LOGE("Failed to read container, negative size: %{public}d", static_cast<int32_t>(readContainerSize)); \
+            return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
+        }                                                                                                 \
         size_t readSize = static_cast<size_t>(readContainerSize);                                         \
         if ((readSize > readAbleDataSize) || ((val)->max_size() < readSize)) {                            \
             LOGE("Failed to read container, readSize = %{public}zu, readAbleDataSize = %{public}zu",      \
@@ -317,7 +321,12 @@ template<typename T>
 ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessageParcel &reply,
                                                                        std::vector<T> &parcelableInfos)
 {
-    size_t dataSize = static_cast<size_t>(reply.ReadInt32());
+    int32_t rawDataSize = reply.ReadInt32();
+    if (rawDataSize < 0) {
+        LOGE("Negative data size: %{public}d", rawDataSize);
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
+    size_t dataSize = static_cast<size_t>(rawDataSize);
     if (dataSize == 0) {
         LOGW("Parcel no data");
         return ERR_OK;
@@ -396,13 +405,13 @@ ErrCode BundleManagerAdapterProxy::GetParcelInfoFromAshMem(MessageParcel &reply,
     }
     int32_t ashMemSize = ashMem->GetAshmemSize();
     int32_t offset = 0;
+    if (ashMemSize <= 0 || ashMemSize > static_cast<int32_t>(MAX_PARCEL_CAPACITY_OF_ASHMEM)) {
+        LOGE("failed due to wrong size, ashMemSize=%{public}d", ashMemSize);
+        return ERR_APPEXECFWK_PARCEL_ERROR;
+    }
     const void *ashDataPtr = ashMem->ReadFromAshmem(ashMemSize, offset);
     if (ashDataPtr == nullptr) {
         LOGE("ashDataPtr is nullptr");
-        return ERR_APPEXECFWK_PARCEL_ERROR;
-    }
-    if ((ashMemSize == 0) || ashMemSize > static_cast<int32_t>(MAX_PARCEL_CAPACITY_OF_ASHMEM)) {
-        LOGE("failed due to wrong size");
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
     data = malloc(ashMemSize);

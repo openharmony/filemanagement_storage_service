@@ -17,6 +17,7 @@
 
 #include <string>
 #include <atomic>
+#include <mutex>
 
 #include "common_event_manager.h"
 #include "common_event_support.h"
@@ -40,6 +41,7 @@ public:
     static void SubscribeCommonEvent(void);
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
     static inline std::shared_ptr<StorageCommonEventSubscriber> subscriber_ = nullptr;
+    static inline std::mutex subscriberMutex_;
 
 private:
     void UpdateDeviceState(DeviceState state, bool set);

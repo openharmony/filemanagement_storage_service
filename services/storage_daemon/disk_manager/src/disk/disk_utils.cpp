@@ -44,9 +44,11 @@
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/volume_op_diag.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+
 
 constexpr int32_t MTP_QUERY_RESULT_LEN = 10;
 constexpr const char *MTP_PATH_PREFIX = "/mnt/data/external/mtp";
@@ -85,6 +87,7 @@ constexpr uint8_t BLOCK_SIZE_BYTE_1 = 5;
 constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
 constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 constexpr int32_t FORMAT_PARTITION_TIMEOUT_S = 5 * 60;
+constexpr int32_t PARTITION_HMFS_VALID = 2;
 
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
@@ -414,8 +417,10 @@ int32_t DiskUtils::CreatePartition(const std::string &devPath, int32_t partition
     }
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread partitionThread([devPath, partitionNum, startSector, endSector, typeCode,
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread partitionThread([devPath, partitionNum, startSector, endSector, typeCode, diagCtx,
                                  p = std::move(promise)]() mutable {
+        VolumeOpDiagAttachContext(diagCtx);
         LOGI("[L3:DiskUtils] exec create partition");
         std::string partNum = std::to_string(partitionNum);
         std::string sector = partNum + ":" + std::to_string(startSector) + ":" + std::to_string(endSector);
@@ -458,7 +463,9 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, const std::st
     LOGI("damage partition end, delete partition start");
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread partitionThread([diskId, partitionNum, p = std::move(promise)]() mutable {
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread partitionThread([diskId, partitionNum, diagCtx, p = std::move(promise)]() mutable {
+        VolumeOpDiagAttachContext(diagCtx);
         LOGI("[L3:DiskUtils] exec delete partition");
         std::vector<std::string> cmd = {SGDISK_PATH, "-d", std::to_string(partitionNum), "/dev/block/" + diskId};
         std::vector<std::string> output;
@@ -487,7 +494,9 @@ int32_t DiskUtils::ExecAsyncDamagePartition(const std::string &devPath, int32_t 
 {
     std::promise<int32_t> promise;
     std::future<int32_t> future = promise.get_future();
-    std::thread partitionThread([devPath, partitionNum, p = std::move(promise)]() mutable {
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread partitionThread([devPath, partitionNum, diagCtx, p = std::move(promise)]() mutable {
+        VolumeOpDiagAttachContext(diagCtx);
         LOGI("[L3:DiskUtils] exec damage partition");
         std::string of = "of=" + devPath + std::to_string(partitionNum);
         std::vector<std::string> cmd = {"dd", "if=/dev/zero", of, "bs=1M", "count=1"};
@@ -517,7 +526,9 @@ int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, st
 {
     std::promise<std::pair<int32_t, std::vector<std::string>>> promise;
     std::future<std::pair<int32_t, std::vector<std::string>>> future = promise.get_future();
-    std::thread partitionThread([devPath, p = std::move(promise)]() mutable {
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread partitionThread([devPath, diagCtx, p = std::move(promise)]() mutable {
+        VolumeOpDiagAttachContext(diagCtx);
         LOGI("[L3:DiskUtils] exec get partition");
         std::vector<std::string> temp;
         std::vector<std::string> cmd = {"sgdisk", "-p", devPath};
@@ -551,6 +562,13 @@ int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, st
     return E_OK;
 }
 
+namespace {
+struct FormatPartitionThreadResult {
+    int32_t ret = 0;
+    std::vector<VolumeOpDiagToolEntry> toolEntries;
+};
+} // namespace
+
 int32_t DiskUtils::FormatPartition(const std::string &devPath, const std::string &fsType,
                                    const std::string &volumeName, bool quickFormat)
 {
@@ -562,29 +580,35 @@ int32_t DiskUtils::FormatPartition(const std::string &devPath, const std::string
         LOGE("DiskUtils::FormatPartitionInfo unsupported fsType=%{public}s", fsType.c_str());
         return E_FORMAT_PARTITION_NOT_SUPPORT;
     }
-    std::promise<int32_t> promise;
-    std::future<int32_t> future = promise.get_future();
-    std::thread formatThread([devPath, fsType, volumeName, p = std::move(promise)]() mutable {
+    std::promise<FormatPartitionThreadResult> promise;
+    std::future<FormatPartitionThreadResult> future = promise.get_future();
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread formatThread([devPath, fsType, volumeName, diagCtx, p = std::move(promise)]() mutable {
+        VolumeOpDiagAttachContext(diagCtx);
+        FormatPartitionThreadResult result;
         LOGI("[L3:DiskUtils] exec format partition");
-        std::vector<std::string> cmd = GetFormatCMD(fsType, devPath, volumeName);
+        std::vector<std::string> cmd = DiskUtils::GetFormatCMD(fsType, devPath, volumeName);
         if (!cmd.empty()) {
             std::vector<std::string> output;
-            int32_t ret = ForkExec(cmd, &output);
+            result.ret = ForkExec(cmd, &output);
             for (auto str : output) {
                 LOGI("format partition output: %{public}s", str.c_str());
             }
-            p.set_value(ret);
         } else {
-            p.set_value(E_FORMAT_PARTITION_ERROR);
+            result.ret = E_FORMAT_PARTITION_ERROR;
         }
+        result.toolEntries = VolumeOpDiagTakeToolEntries();
+        p.set_value(std::move(result));
     });
     if (future.wait_for(std::chrono::seconds(FORMAT_PARTITION_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskUtils] exec format partition: <<< EXIT FAILED <<< timed out");
         formatThread.detach();
         return E_FORMAT_PARTITION_TIMEOUT;
     }
-    int32_t ret = future.get();
+    FormatPartitionThreadResult formatResult = future.get();
     formatThread.join();
+    VolumeOpDiagMergeToolEntries(formatResult.toolEntries);
+    int32_t ret = formatResult.ret;
     if (ret != E_OK) {
         LOGE("[L3:DiskUtils] FormatPartitionInfo: <<< EXIT FAILED <<< format partition failed, err=%{public}d", ret);
         return E_FORMAT_PARTITION_ERROR;
@@ -810,6 +834,7 @@ int32_t DiskUtils::EjectCD(const std::string &devPath)
     LOGI("EjectCD: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
+
 int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
 {
     std::vector<std::string> clearCmd = {
@@ -818,13 +843,19 @@ int32_t DiskUtils::PartitionHmfs(const std::string& diskPath)
         diskPath
     };
     std::vector<std::string> output;
-    int32_t ret = ForkExec(clearCmd, &output);
+    int exitStatus = 0;
+    int32_t ret = ForkExec(clearCmd, &output, &exitStatus);
     for (auto &str : output) {
         LOGI("DiskUtils::PartitionHmfs clear: %{public}s", str.c_str());
     }
     if (ret != E_OK) {
-        LOGE("DiskUtils::PartitionHmfs sgdisk clear failed, ret=%{public}d", ret);
-        return ret;
+        if (exitStatus == PARTITION_HMFS_VALID) {
+            LOGI("DiskUtils::PartitionHmfs sgdisk clear exitStatus=2, treat as success");
+        } else {
+            LOGE("DiskUtils::PartitionHmfs sgdisk clear failed, ret=%{public}d, errno=%{public}d,"
+                 "exitStatus=%{public}d", ret, errno, exitStatus);
+            return ret;
+        }
     }
 
     output.clear();

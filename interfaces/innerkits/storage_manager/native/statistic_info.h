@@ -91,10 +91,10 @@ class UidSaInfo : public Parcelable {
 public:
     UidSaInfo() = default;
 
-    int32_t uid;
+    int32_t uid = 0;
     std::string saName;
-    int64_t size;
-    uint64_t iNodes;
+    int64_t size = 0;
+    uint64_t iNodes = 0;
 
     UidSaInfo(int32_t uid, const std::string& saName, int64_t size, uint64_t iNodes = 0)
         : uid(uid), saName(saName), size(size), iNodes(iNodes) {}

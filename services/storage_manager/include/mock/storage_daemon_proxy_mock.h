@@ -131,7 +131,9 @@ public:
                           const std::string &mountData) override;
     virtual int32_t Unmount(const std::string &mountPath,
                             const std::string &fsType, bool force) override;
-    virtual int32_t FormatVolume(const std::string &devPath, const std::string &fsType) override;
+    virtual int32_t FormatVolume(const std::string &devPath, const std::string &fsType,
+                                 const std::string &diskPath, const std::string &partitionType,
+                                 const int32_t partitionNum) override;
     virtual int32_t Check(const std::string &devPath, const std::string &fsType, bool autoFix) override;
     virtual int32_t Repair(const std::string &devPath, const std::string &fsType) override;
     virtual int32_t SetLabel(const std::string &devPath, const std::string &fsType,
@@ -165,6 +167,7 @@ public:
     virtual int32_t GetVolumeOpProcess(const std::string &devPath, int32_t &progressPct) override;
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
+    virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

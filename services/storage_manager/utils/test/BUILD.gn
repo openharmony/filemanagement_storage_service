@@ -69,9 +69,49 @@ ohos_unittest("file_cache_adapter_test") {
   ]
 }
 
+ohos_unittest("storage_utils_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
+    "storage_utils_test.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
+    "${storage_manager_path}/common/include/",
+    "${storage_manager_path}/include/utils/",
+    "${storage_service_common_path}/include/",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "private=public",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+}
+
 group("storage_manager_utils_test") {
   testonly = true
   deps = [
     ":file_cache_adapter_test",
+    ":storage_utils_test",
   ]
 }

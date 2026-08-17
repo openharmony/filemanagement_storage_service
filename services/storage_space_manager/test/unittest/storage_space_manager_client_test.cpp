@@ -132,5 +132,29 @@ HWTEST_F(StorageSpaceManagerClientTest, CleanBundleCache_ConnectFails, TestSize.
     EXPECT_EQ(client->CleanBundleCache(100), E_SA_IS_NULLPTR);
 }
 
+/* ---------- GetDataShareService ---------- */
+
+/**
+ * @tc.number: SUB_STORAGE_Client_GetDataShareService_0001
+ * @tc.name: GetDataShareService_BasicFunction
+ * @tc.desc: Test GetDataShareService basic function returns E_FAIL
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageSpaceManagerClientTest, GetDataShareService_BasicFunction, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = client->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_EQ(ret, E_FAIL);
+    EXPECT_EQ(remoteObject, nullptr);
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

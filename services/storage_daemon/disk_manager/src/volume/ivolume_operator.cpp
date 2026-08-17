@@ -29,6 +29,7 @@
 #include "storage_service_errno.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/volume_op_diag.h"
 #include "volume/process.h"
 
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
@@ -112,14 +113,16 @@ int32_t IVolumeOperator::ReadMetadata(const std::string& devPath,
     return E_OK;
 }
 
-int32_t IVolumeOperator::Mount(const std::string& devPath,
-                               const std::string& mountPath,
-                               unsigned long mountFlags,
-                               const std::string& mountData)
-{
-    LOGI("IVolumeOperator::Mount devPath=%{public}s, mountPath=%{public}s",
-         devPath.c_str(), GetAnonyString(mountPath).c_str());
+namespace {
+struct MountThreadResult {
+    int32_t ret = 0;
+    std::vector<VolumeOpDiagToolEntry> toolEntries;
+};
+} // namespace
 
+int32_t IVolumeOperator::ValidateMountRequest(const std::string& devPath, const std::string& mountPath,
+                                              const std::string& mountData)
+{
     if (devPath.empty() || devPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Mount invalid devPath");
         return E_PARAMS_INVALID;
@@ -128,7 +131,6 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         LOGE("IVolumeOperator::Mount invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
-
     if (mountPath.empty() || mountPath.length() >= PATH_MAX) {
         LOGE("IVolumeOperator::Mount invalid mountPath, len=%{public}zu", mountPath.length());
         return E_PARAMS_INVALID;
@@ -141,18 +143,38 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         LOGE("IVolumeOperator::Mount invalid mountPath prefix");
         return E_PARAMS_INVALID;
     }
+    return E_OK;
+}
 
-    int32_t ret = EnsureMountPath(mountPath);
+int32_t IVolumeOperator::Mount(const std::string& devPath,
+                               const std::string& mountPath,
+                               unsigned long mountFlags,
+                               const std::string& mountData)
+{
+    LOGI("IVolumeOperator::Mount devPath=%{public}s, mountPath=%{public}s",
+         devPath.c_str(), GetAnonyString(mountPath).c_str());
+
+    int32_t ret = ValidateMountRequest(devPath, mountPath, mountData);
+    if (ret != E_OK) {
+        return ret;
+    }
+
+    ret = EnsureMountPath(mountPath);
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount EnsureMountPath failed, ret=%{public}d", ret);
         return ret;
     }
 
-    std::promise<int32_t> promise;
-    std::future<int32_t> future = promise.get_future();
-    std::thread mountThread([this, devPath, mountPath, mountFlags, mountData,
+    std::promise<MountThreadResult> promise;
+    std::future<MountThreadResult> future = promise.get_future();
+    const VolumeOpDiagContext diagCtx = VolumeOpDiagCaptureContext();
+    std::thread mountThread([this, devPath, mountPath, mountFlags, mountData, diagCtx,
                              p = std::move(promise)]() mutable {
-        p.set_value(DoMount(devPath, mountPath, mountFlags, mountData));
+        VolumeOpDiagAttachContext(diagCtx);
+        MountThreadResult result;
+        result.ret = DoMount(devPath, mountPath, mountFlags, mountData);
+        result.toolEntries = VolumeOpDiagTakeToolEntries();
+        p.set_value(std::move(result));
     });
 
     if (future.wait_for(std::chrono::seconds(WAIT_MOUNT_TIMEOUT_S)) == std::future_status::timeout) {
@@ -162,8 +184,10 @@ int32_t IVolumeOperator::Mount(const std::string& devPath,
         return E_TIMEOUT_MOUNT;
     }
 
-    ret = future.get();
+    MountThreadResult mountResult = future.get();
     mountThread.join();
+    VolumeOpDiagMergeToolEntries(mountResult.toolEntries);
+    ret = mountResult.ret;
     if (ret != E_OK) {
         LOGE("IVolumeOperator::Mount DoMount failed, ret=%{public}d", ret);
         RemoveMountPath(mountPath);

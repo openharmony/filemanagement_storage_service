@@ -38,7 +38,10 @@ public:
                                   std::string& type,
                                   std::string& label);
 
-    virtual int32_t Format(const std::string& devPath) { return E_NOT_SUPPORT; }
+    virtual int32_t Format(const std::string& devPath,
+                           const std::string& diskPath,
+                           const std::string& partitionType,
+                           const int32_t partitionNum) { return E_NOT_SUPPORT; }
     virtual int32_t Check(const std::string& devPath) { return E_OK; }
     virtual int32_t Repair(const std::string& devPath) { return E_NOT_SUPPORT; }
     virtual int32_t SetLabel(const std::string& devPath,
@@ -56,6 +59,8 @@ private:
 
     static int32_t EnsureMountPath(const std::string& mountPath);
     static int32_t RemoveMountPath(const std::string& mountPath);
+    static int32_t ValidateMountRequest(const std::string& devPath, const std::string& mountPath,
+                                        const std::string& mountData);
 
 protected:
     static bool IsMountDataInvalid(const std::string& mountData);

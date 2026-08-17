@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +17,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <string>
 
+#include "fuzzer/FuzzedDataProvider.h"
 #include "message_parcel.h"
-#include "storage_daemon.h"
 #include "storage_daemon_provider.h"
 #include "storage_daemon_stub.h"
 
@@ -27,15 +28,21 @@ using namespace OHOS::StorageDaemon;
 
 namespace OHOS {
 
-std::shared_ptr<StorageDaemon::StorageDaemonProvider> storageDaemonProvider =
-    std::make_shared<StorageDaemon::StorageDaemonProvider>();
+static const int32_t MAX_PATH_LENGTH = 64;
+
+std::shared_ptr<StorageDaemonProvider> storageDaemonProvider =
+    std::make_shared<StorageDaemonProvider>();
 
 bool ReadPartitionTableFuzzTest(const uint8_t *data, size_t size)
 {
+    if ((data == nullptr) || (size == 0)) {
+        return false;
+    }
+    FuzzedDataProvider fdp(data, size);
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_READ_PARTITION_TABLE);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
+    datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
@@ -43,6 +50,7 @@ bool ReadPartitionTableFuzzTest(const uint8_t *data, size_t size)
     storageDaemonProvider->OnRemoteRequest(code, datas, reply, option);
     return true;
 }
+
 } // namespace OHOS
 
 /* Fuzzer entry point */

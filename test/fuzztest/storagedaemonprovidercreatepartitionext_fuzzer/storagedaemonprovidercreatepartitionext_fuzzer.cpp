@@ -42,7 +42,7 @@ bool CreatePartitionExtFuzzTest(const uint8_t *data, size_t size)
     }
     FuzzedDataProvider fdp(data, size);
     uint32_t code = static_cast<uint32_t>(
-        IStorageDaemonIpcCode::COMMAND_CREATE_PARTITION_IN_STRING_IN_INT_IN_LONG_IN_LONG_IN_STRING);
+        IStorageDaemonIpcCode::COMMAND_CREATE_PARTITION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));

@@ -1478,6 +1478,11 @@ void MtpFileSystem::HandleRemove(uint32_t handleId)
     std::thread([this, handleId]() { device_.HandleRemoveEvent(handleId); }).detach();
 }
 
+void MtpFileSystem::HandleObjectInfoChanged(uint32_t handleId)
+{
+    std::thread([this, handleId]() { device_.HandleObjectInfoChangedEvent(handleId); }).detach();
+}
+
 MtpFsTmpFilesPool* MtpFileSystem::GetTempFilesPool()
 {
     return &tmpFilesPool_;

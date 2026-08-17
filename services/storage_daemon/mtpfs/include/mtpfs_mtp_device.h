@@ -106,6 +106,7 @@ public:
     void FreeAllObjectHandles();
     int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
     void HandleRemoveEvent(uint32_t handleId);
+    void HandleObjectInfoChangedEvent(uint32_t handleId);
     static int AddRemovingFile(const std::string &path);
     static int EraseRemovingFile(const std::string &path);
     static bool IsFileRemoving(const std::string &path);

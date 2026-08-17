@@ -286,5 +286,12 @@ int32_t StorageSpaceManagerClient::CleanBundleCache(int32_t userId)
     return proxy->CleanBundleCache(userId);
 }
 
+int32_t StorageSpaceManagerClient::GetDataShareService(const std::string &uri, sptr<IRemoteObject> &remoteObject)
+{
+    LOGI("GetDataShareService uri=%{public}s", uri.c_str());
+    remoteObject = nullptr;
+    return E_FAIL;
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

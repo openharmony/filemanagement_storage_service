@@ -382,7 +382,9 @@ int32_t StorageDaemonProxy::Unmount(const std::string &mountPath,
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::FormatVolume(const std::string &devPath, const std::string &fsType)
+int32_t StorageDaemonProxy::FormatVolume(const std::string &devPath, const std::string &fsType,
+                                         const std::string &diskPath, const std::string &partitionType,
+                                         const int32_t partitionNum)
 {
     return E_OK;
 }
@@ -485,6 +487,11 @@ int32_t StorageDaemonProxy::VerifyBurnData(const std::string &devPath, int32_t v
 }
 
 int32_t StorageDaemonProxy::GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetDiskSize(const std::string &devName, uint64_t &size)
 {
     return E_OK;
 }

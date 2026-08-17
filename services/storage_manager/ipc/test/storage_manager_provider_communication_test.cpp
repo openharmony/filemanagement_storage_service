@@ -27,6 +27,8 @@
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
 #include "mock/uece_activation_callback_mock.h"
+#include "directory_ex.h"
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -67,6 +69,7 @@ int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& n
 pid_t g_testCallingUid = 5523;
 pid_t g_testUpdateServiceUid = 6666;
 bool g_returnUpdateService = false;
+const uint32_t TOP_USER_ID = 10738;
 namespace OHOS {
 pid_t IPCSkeleton::GetCallingUid()
 {
@@ -87,6 +90,7 @@ namespace OHOS {
 namespace StorageManager {
 using namespace testing;
 using namespace testing::ext;
+constexpr pid_t ACCOUNT_UID = 3058;
 class StorageManagerProviderTest : public testing::Test {
 public:
     static void SetUpTestCase(void){};
@@ -100,7 +104,7 @@ class MockBundleMgr : public AppExecFwk::IBundleMgr {
 public:
     bool GetBundleNameForUid(const int uid, std::string &bundleName) override
     {
-        bundleName = "com.example.fake";
+        bundleName = "com.ohos.filemanager";
         return true;
     }
     sptr<IRemoteObject> AsObject() override { return nullptr; }
@@ -519,6 +523,294 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetCurrentBundle
     auto ret = storageManagerProviderTest_->GetCurrentBundleInodes(curInodes);
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetCurrentBundleInodes_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_EmptyValue_002
+ * @tc.desc: Verify MountDisShareFile returns E_PARAMS_INVALID when shareFiles value is empty.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_EmptyValue_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_EmptyValue_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uid(1009);
+    int32_t userId = 1001;
+    std::map<std::string, std::string> shareFiles = {{"key", ""}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_EmptyValue_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_OversizeKey_003
+ * @tc.desc: Verify MountDisShareFile returns E_PARAMS_INVALID when shareFiles key exceeds PATH_MAX.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_OversizeKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_OversizeKey_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uid(1009);
+    int32_t userId = 1001;
+    std::map<std::string, std::string> shareFiles = {{std::string(PATH_MAX + 1, 'a'), "v"}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_OversizeKey_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_EmptyKey_004
+ * @tc.desc: Verify MountDisShareFile returns E_PARAMS_INVALID when shareFiles key is empty.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_EmptyKey_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_EmptyKey_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uid(1009);
+    int32_t userId = 1001;
+    std::map<std::string, std::string> shareFiles = {{"", "/data/sharefile"}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_EmptyKey_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_OversizeValue_005
+ * @tc.desc: Verify MountDisShareFile returns E_PARAMS_INVALID when shareFiles value exceeds PATH_MAX.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_OversizeValue_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_OversizeValue_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uid(1009);
+    int32_t userId = 1001;
+    std::map<std::string, std::string> shareFiles = {{"/data/sharefile", std::string(PATH_MAX + 1, 'b')}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_OversizeValue_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountDisShareFile_ValidSize_006
+ * @tc.desc: Verify MountDisShareFile passes size check when both key and value are within PATH_MAX.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDisShareFile_ValidSize_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_ValidSize_006 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uid(1009);
+    int32_t userId = 1001;
+    std::map<std::string, std::string> shareFiles = {{"/data/share1", "/data/share2"}};
+    auto ret = storageManagerProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDisShareFile_ValidSize_006 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_InvalidPath_002
+ * @tc.desc: Verify MountFileMgrFuse returns E_PARAMS_INVALID when path contains path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_InvalidPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_InvalidPath_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "../evil";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_InvalidPath_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_RealpathFail_003
+ * @tc.desc: Verify MountFileMgrFuse returns E_PARAMS_INVALID when realpath fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_RealpathFail_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_RealpathFail_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/userExternal/nonexistent_file_for_test";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_RealpathFail_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountFileMgrFuse_InvalidPrefix_004
+ * @tc.desc: Verify MountFileMgrFuse returns E_PARAMS_INVALID when path does not match FileMgr prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse_InvalidPrefix_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_InvalidPrefix_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "/data/test/test1";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    OHOS::ForceRemoveDirectory(path);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_InvalidPrefix_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_InvalidPath_002
+ * @tc.desc: Verify UMountFileMgrFuse returns E_PARAMS_INVALID when path contains path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_InvalidPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_InvalidPath_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "../evil";
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_InvalidPath_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_RealpathFail_003
+ * @tc.desc: Verify UMountFileMgrFuse returns E_PARAMS_INVALID when realpath fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_RealpathFail_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_RealpathFail_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/userExternal/nonexistent_file_for_test";
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_RealpathFail_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountFileMgrFuse_InvalidPrefix_004
+ * @tc.desc: Verify UMountFileMgrFuse returns E_PARAMS_INVALID when path does not match FileMgr prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFuse_InvalidPrefix_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_InvalidPrefix_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(ACCOUNT_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgr();
+    int32_t userId = 100;
+    std::string path = "/data/test/test1";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    OHOS::ForceRemoveDirectory(path);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_InvalidPrefix_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_InvalidUserId_002
+ * @tc.desc: Verify SetExtBundleStats returns E_PARAMS_INVALID when userId exceeds TOP_USER_ID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_InvalidUserId_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_InvalidUserId_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats stats;
+    stats.businessName_ = "test";
+    stats.businessSize_ = 1;
+    stats.showFlag_ = true;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(TOP_USER_ID + 1, stats);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_InvalidUserId_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_OversizeBusinessSize_003
+ * @tc.desc: Verify SetExtBundleStats returns E_PARAMS_INVALID when businessSize_ >= INT64_MAX.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_OversizeBusinessSize_003,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_OversizeBusinessSize_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats stats;
+    stats.businessName_ = "test";
+    stats.businessSize_ = INT64_MAX;
+    stats.showFlag_ = true;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(100, stats);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_OversizeBusinessSize_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_EmptyName_004
+ * @tc.desc: Verify SetExtBundleStats returns E_PARAMS_INVALID when businessName_ is empty.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_EmptyName_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_EmptyName_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats stats;
+    stats.businessName_ = "";
+    stats.businessSize_ = 1;
+    stats.showFlag_ = true;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(100, stats);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_EmptyName_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_SetExtBundleStats_OversizeName_005
+ * @tc.desc: Verify SetExtBundleStats returns E_PARAMS_INVALID when businessName_ exceeds PATH_MAX.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStats_OversizeName_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_OversizeName_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ExtBundleStats stats;
+    stats.businessName_ = std::string(PATH_MAX + 1, 'a');
+    stats.businessSize_ = 1;
+    stats.showFlag_ = true;
+    auto ret = storageManagerProviderTest_->SetExtBundleStats(100, stats);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_OversizeName_005 end";
 }
 }
 }

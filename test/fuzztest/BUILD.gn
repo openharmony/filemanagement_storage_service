@@ -102,10 +102,19 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderdeletepartitioninfo_fuzzer:fuzztest",
     "storagedaemonproviderumountdissharefileext_fuzzer:fuzztest",
     "storagedaemonprovidergetcapacity_fuzzer:fuzztest",
+    "storagedaemonprovidergetdisksize_fuzzer:fuzztest",
     "storagedaemonproviderejectcd_fuzzer:fuzztest",
     "storagedaemonproviderquerycdstatus_fuzzer:fuzztest",
     "storagedaemonprovidererase_fuzzer:fuzztest",
     "storagedaemonprovidereject_fuzzer:fuzztest",
+    "storagedaemonproviderreadpartitiontable_fuzzer:fuzztest",
+    "storagedaemonproviderpartitionext_fuzzer:fuzztest",
+    "storagedaemonprovidercreatepartitionext_fuzzer:fuzztest",
+    "storagedaemonproviderformatpartitionext_fuzzer:fuzztest",
+    "storagedaemonprovidergetvolumeopprocess_fuzzer:fuzztest",
+    "storagedaemonproviderverifyburndata_fuzzer:fuzztest",
+    "storagedaemonproviderburn_fuzzer:fuzztest",
+    "storagedaemonproviderqueryusbisinuse_fuzzer:fuzztest",
   ]
 }
 

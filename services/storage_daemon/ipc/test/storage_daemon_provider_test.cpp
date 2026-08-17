@@ -2432,13 +2432,28 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatVolume_001, 
     SetCallingUid(DISK_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4"), E_PARAMS_INVALID);
-    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", ""), E_PARAMS_INVALID);
-    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "ext4"), E_OK);
-    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "unknown"), E_OK);
-    storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat");
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume(
+        "/dev/block/ut_test_dev", "", "/dev/disk", "gpt", 1), E_PARAMS_INVALID);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "ext4", "/dev/disk", "gpt", 1), E_OK);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume(
+        "/dev/block/ut_test_dev", "unknown", "/dev/disk", "gpt", 1), E_OK);
+    storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat", "/dev/disk", "gpt", 1);
 #else
-    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("", "ext4", "/dev/disk", "gpt", 1), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatVolume_InvalidDiskPath, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat", "../etc/passwd", "gpt", 1),
+              E_OK);
+    EXPECT_NE(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat", "", "gpt", 1), E_OK);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("/dev/block/ut_test_dev", "vfat", "../etc/passwd", "gpt", 1),
+              E_NOT_SUPPORT);
 #endif
 }
 
@@ -2495,6 +2510,30 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ReadMetadata_001, 
         "/dev/block/ut_test_dev", uuid, type, label), E_OK);
 #else
     EXPECT_EQ(storageDaemonProviderTest_->ReadMetadata("", uuid, type, label), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDiskSize_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint64_t size = 0;
+#ifdef DISK_MANAGER
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("", size), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("../sda", size), E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("/..", size), E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("", size), E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetDiskSize_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    uint64_t size = 0;
+#ifdef DISK_MANAGER
+    EXPECT_NE(storageDaemonProviderTest_->GetDiskSize("/dev/block/ut_test_dev", size), E_OK);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->GetDiskSize("/dev/block/ut_test_dev", size), E_NOT_SUPPORT);
 #endif
 }
 

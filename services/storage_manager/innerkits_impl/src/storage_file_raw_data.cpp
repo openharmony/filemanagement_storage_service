@@ -32,8 +32,9 @@ int32_t StorageFileRawData::RawDataCpy(const void* readdata)
         free(newData);
         return ERR_INVALID_DATA;
     }
-    if (data != nullptr) {
+    if (data != nullptr && isMalloc) {
         free(const_cast<void*>(data));
+        isMalloc = false;
         data = nullptr;
     }
     data = newData;

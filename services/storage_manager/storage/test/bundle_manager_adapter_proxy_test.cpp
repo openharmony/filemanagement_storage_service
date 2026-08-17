@@ -809,4 +809,36 @@ HWTEST_F(BundleManagerAdapterProxyTest, GetBundleInodeCount_0001, TestSize.Level
 
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0001 End";
 }
+
+/**
+ * @tc.name: InnerGetVectorFromParcelIntelligent_0005
+ * @tc.desc: Test InnerGetVectorFromParcelIntelligent with negative data size
+ * @tc.type: FUNC
+ * @tc.require: I7TDJK
+ */
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_0005, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "InnerGetVectorFromParcelIntelligent_0005 Start";
+
+    MessageParcel reply;
+    std::vector<BundleInfo> parcelableInfos;
+
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(-1));
+
+    auto ret = proxy_->InnerGetVectorFromParcelIntelligent(reply, parcelableInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    GTEST_LOG_(INFO) << "InnerGetVectorFromParcelIntelligent_0005 End";
+}
+
+/**
+ * NOTE: GetParcelInfoFromAshMem ashMemSize<=0 and ashMemSize>MAX_PARCEL_CAPACITY_OF_ASHMEM
+ * branches (bundle_manager_adapter_proxy.cpp:408) are NOT covered here.
+ * MessageParcelMock (services/storage_manager/include/mock/message_parcel_mock.h) does not
+ * declare ReadAshmem(), so reply.ReadAshmem() calls the real MessageParcel::ReadAshmem()
+ * which returns nullptr on the empty test parcel. Without a mockable Ashmem object we
+ * cannot inject an Ashmem with a controlled GetAshmemSize() to reach the size<=0 or
+ * size>MAX branches. The existing InnerGetVectorFromParcelIntelligent_0002 only reaches
+ * the ashMem==nullptr branch (:397).
+ */
 } // namespace OHOS::StorageManager::Test

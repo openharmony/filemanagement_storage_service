@@ -63,7 +63,10 @@ int32_t Ext4Operator::DoMount(const std::string& devPath,
 #endif
 }
 
-int32_t Ext4Operator::Format(const std::string& devPath)
+int32_t Ext4Operator::Format(const std::string& devPath,
+                             const std::string& diskPath,
+                             const std::string& partitionType,
+                             const int32_t partitionNum)
 {
 #ifdef PC_EXT4_ENABLE
     LOGI("Ext4Operator::Format devPath=%{public}s", devPath.c_str());
@@ -92,16 +95,53 @@ int32_t Ext4Operator::Format(const std::string& devPath)
         err = E_OK;
     }
 
-    if (err == E_OK) {
-        LOGI("Ext4Operator::Format success");
-    } else {
+    if (err != E_OK) {
         LOGE("Ext4Operator::Format failed, err=%{public}d", err);
+        return err;
     }
 
-    return err;
+    err = FixTypeIdentifier(diskPath, partitionType, partitionNum);
+    if (err != E_OK) {
+        LOGE("Ext4Operator::Format FixTypeIdentifier failed, err=%{public}d", err);
+        return err;
+    }
+    LOGI("Ext4Operator::Format success");
+    return E_OK;
 #else
     return E_NOT_SUPPORT;
 #endif
+}
+
+int32_t Ext4Operator::FixTypeIdentifier(const std::string& diskPath,
+                                        const std::string& partitionType,
+                                        const int32_t partitionNum)
+{
+    LOGI("Ext4Operator::FixTypeIdentifier diskPath=%{public}s, partitionType=%{public}s, partitionNum=%{public}d",
+         diskPath.c_str(), partitionType.c_str(), partitionNum);
+    std::string typeIdentifier;
+    std::vector<std::string> cmd;
+    if (partitionType == "mbr") {
+        typeIdentifier = std::to_string(partitionNum) + ":" + "0x83";
+        cmd = {"ohos_fixparts", "-t", typeIdentifier, diskPath};
+    } else if (partitionType == "gpt") {
+        typeIdentifier = std::to_string(partitionNum) + ":" + "0x8300";
+        cmd = {"sgdisk", "-t", typeIdentifier, diskPath};
+    } else {
+        LOGE("Ext4Operator::FixTypeIdentifier failed, unknown partitionType=%{public}s", partitionType.c_str());
+        return E_NOT_SUPPORT;
+    }
+    std::vector<std::string> output;
+    int32_t ret = ForkExec(cmd, &output);
+
+    for (auto& str : output) {
+        LOGI("Ext4Operator::FixTypeIdentifier output: %{public}s", GetAnonyString(str).c_str());
+    }
+    if (ret != E_OK) {
+        LOGE("Ext4Operator::FixTypeIdentifier failed, ret=%{public}d", ret);
+        return ret;
+    }
+    LOGI("Ext4Operator::FixTypeIdentifier success");
+    return E_OK;
 }
 
 } // namespace StorageDaemon

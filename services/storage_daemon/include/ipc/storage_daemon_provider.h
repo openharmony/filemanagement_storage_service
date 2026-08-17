@@ -159,7 +159,10 @@ public:
                             const std::string &fsType,
                             bool force) override;
     virtual int32_t FormatVolume(const std::string &devPath,
-                                 const std::string &fsType) override;
+                                 const std::string &fsType,
+                                 const std::string &diskPath,
+                                 const std::string &partitionType,
+                                 const int32_t partitionNum) override;
     virtual int32_t Check(const std::string &devPath,
                           const std::string &fsType,
                           bool autoFix) override;
@@ -197,6 +200,7 @@ public:
     virtual int32_t GetVolumeOpProcess(const std::string &devPath, int32_t &progressPct) override;
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
+    virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
@@ -225,6 +229,12 @@ private:
     void SetUserStatistics(uint32_t userId, RadarStatisticInfoType type);
     static int32_t ValidateBlockDevicePath(const std::string &devPath, std::string &verifiedPath);
     static int32_t ValidateMountPath(const std::string &mountPath, std::string &verifiedPath);
+    static int32_t CheckMountRequest(const std::string &devPath, const std::string &mountPath,
+                                     const std::string &fsType, const std::string &mountData,
+                                     std::string &verifiedDevPath, std::string &verifiedMountPath);
+    static int32_t CheckCreatePartitionRequest(const std::string &devPath, int32_t partitionNum,
+                                               int64_t startSector, int64_t endSector,
+                                               const std::string &typeCode, std::string &verifiedPath);
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // namespace StorageDaemon

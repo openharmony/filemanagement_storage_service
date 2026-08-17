@@ -246,6 +246,10 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
 
 int32_t StorageTotalStatusService::GetInodeOfPath(const char *path, int32_t type, int64_t &inodeCnt)
 {
+    if (path == nullptr) {
+        LOGE("GetInodeOfPath path is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
     struct statvfs diskInfo;
     int ret = statvfs(path, &diskInfo);
     if (ret != E_OK) {

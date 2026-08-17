@@ -965,4 +965,379 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ListUserdataDirInf
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ListUserdataDirInfo_001 SUCCESS";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UpdateUseAuthWithRecoveryKey_001
+ * @tc.name: Daemon_communication_UpdateUseAuthWithRecoveryKey_001
+ * @tc.desc: Test function of UpdateUseAuthWithRecoveryKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithRecoveryKey_001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin "
+                        "Daemon_communication_UpdateUseAuthWithRecoveryKey_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 0;
+    uint32_t userId = 100;
+    std::vector<std::vector<uint8_t>> plainText;
+    int32_t result = sdCommunication.UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end "
+                        "Daemon_communication_UpdateUseAuthWithRecoveryKey_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetFileEncryptStatus_001
+ * @tc.name: Daemon_communication_GetFileEncryptStatus_001
+ * @tc.desc: Test function of GetFileEncryptStatus interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStatus_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetFileEncryptStatus_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    uint32_t userId = 100;
+    bool isEncrypted = false;
+    bool needCheckDirMount = false;
+    int32_t result = sdCommunication.GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetFileEncryptStatus_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetUserNeedActiveStatus_001
+ * @tc.name: Daemon_communication_GetUserNeedActiveStatus_001
+ * @tc.desc: Test function of GetUserNeedActiveStatus interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveStatus_001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetUserNeedActiveStatus_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    uint32_t userId = 100;
+    bool needActive = false;
+    int32_t result = sdCommunication.GetUserNeedActiveStatus(userId, needActive);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetUserNeedActiveStatus_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetOccupiedSpace_001
+ * @tc.name: Daemon_communication_GetOccupiedSpace_001
+ * @tc.desc: Test function of GetOccupiedSpace interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetOccupiedSpace_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetOccupiedSpace_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t idType = 0;
+    int32_t id = 100;
+    int64_t size = 0;
+    int32_t result = sdCommunication.GetOccupiedSpace(idType, id, size);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetOccupiedSpace_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountFileMgrFuse_001
+ * @tc.name: Daemon_communication_MountFileMgrFuse_001
+ * @tc.desc: Test function of MountFileMgrFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountFileMgrFuse_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/userExternal/sub";
+    int32_t fuseFd = -1;
+    int32_t result = sdCommunication.MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountFileMgrFuse_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountFileMgrFuse_001
+ * @tc.name: Daemon_communication_UMountFileMgrFuse_001
+ * @tc.desc: Test function of UMountFileMgrFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountFileMgrFuse_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/userExternal/sub";
+    int32_t result = sdCommunication.UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountFileMgrFuse_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_QueryOccupiedSpaceForSa_001
+ * @tc.name: Daemon_communication_QueryOccupiedSpaceForSa_001
+ * @tc.desc: Test function of QueryOccupiedSpaceForSa interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpaceForSa_001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryOccupiedSpaceForSa_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::vector<UidSaInfo> vec;
+    int64_t totalSize = 0;
+    std::map<int32_t, std::string> bundleNameAndUid;
+    int32_t type = 0;
+    int32_t result = sdCommunication.QueryOccupiedSpaceForSa(vec, totalSize, bundleNameAndUid, type);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_QueryOccupiedSpaceForSa_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_RegisterUeceActivationCallback_001
+ * @tc.name: Daemon_communication_RegisterUeceActivationCallback_001
+ * @tc.desc: Test function of RegisterUeceActivationCallback interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActivationCallback_001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin "
+                        "Daemon_communication_RegisterUeceActivationCallback_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    sptr<IUeceActivationCallback> ueceCallback = nullptr;
+    int32_t result = sdCommunication.RegisterUeceActivationCallback(ueceCallback);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end "
+                        "Daemon_communication_RegisterUeceActivationCallback_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UnregisterUeceActivationCallback_001
+ * @tc.name: Daemon_communication_UnregisterUeceActivationCallback_001
+ * @tc.desc: Test function of UnregisterUeceActivationCallback interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActivationCallback_001,
+    testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin "
+                        "Daemon_communication_UnregisterUeceActivationCallback_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t result = sdCommunication.UnregisterUeceActivationCallback();
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end "
+                        "Daemon_communication_UnregisterUeceActivationCallback_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CreateUserDir_001
+ * @tc.name: Daemon_communication_CreateUserDir_001
+ * @tc.desc: Test function of CreateUserDir interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateUserDir_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateUserDir_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::string path = "/data/test";
+    mode_t mode = 0771;
+    uid_t uid = 100;
+    gid_t gid = 100;
+    int32_t result = sdCommunication.CreateUserDir(path, mode, uid, gid);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateUserDir_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDqBlkSpacesByUids_001
+ * @tc.name: Daemon_communication_GetDqBlkSpacesByUids_001
+ * @tc.desc: Test function of GetDqBlkSpacesByUids interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDqBlkSpacesByUids_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDqBlkSpacesByUids_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::vector<int32_t> uids;
+    std::vector<NextDqBlk> dqBlks;
+    int32_t result = sdCommunication.GetDqBlkSpacesByUids(uids, dqBlks);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDqBlkSpacesByUids_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDirListSpace_001
+ * @tc.name: Daemon_communication_GetDirListSpace_001
+ * @tc.desc: Test function of GetDirListSpace interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDirListSpace_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDirListSpace_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::vector<DirSpaceInfo> inDirs;
+    std::vector<DirSpaceInfo> outDirs;
+    int32_t result = sdCommunication.GetDirListSpace(inDirs, outDirs);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDirListSpace_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetDirListSpaceByPaths_001
+ * @tc.name: Daemon_communication_GetDirListSpaceByPaths_001
+ * @tc.desc: Test function of GetDirListSpaceByPaths interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetDirListSpaceByPaths_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetDirListSpaceByPaths_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::vector<std::string> paths;
+    std::vector<int32_t> uids;
+    std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    int32_t result = sdCommunication.GetDirListSpaceByPaths(paths, uids, resultDirs, largeFiles, largeDirs);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetDirListSpaceByPaths_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetStopScanFlag_001
+ * @tc.name: Daemon_communication_SetStopScanFlag_001
+ * @tc.desc: Test function of SetStopScanFlag interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetStopScanFlag_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetStopScanFlag_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    bool stop = false;
+    int32_t result = sdCommunication.SetStopScanFlag(stop);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetStopScanFlag_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetAncoSizeData_001
+ * @tc.name: Daemon_communication_GetAncoSizeData_001
+ * @tc.desc: Test function of GetAncoSizeData interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetAncoSizeData_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetAncoSizeData_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::string outExtraData;
+    int32_t result = sdCommunication.GetAncoSizeData(outExtraData);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetAncoSizeData_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetRmgResourceSize_001
+ * @tc.name: Daemon_communication_GetRmgResourceSize_001
+ * @tc.desc: Test function of GetRmgResourceSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetRmgResourceSize_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetRmgResourceSize_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    std::string rgmName = "test";
+    uint64_t totalSize = 0;
+    int32_t result = sdCommunication.GetRmgResourceSize(rgmName, totalSize);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetRmgResourceSize_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetSystemDataSize_001
+ * @tc.name: Daemon_communication_GetSystemDataSize_001
+ * @tc.desc: Test function of GetSystemDataSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetSystemDataSize_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetSystemDataSize_001 SUCCESS";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int64_t otherUidSizeSum = 0;
+    int32_t result = sdCommunication.GetSystemDataSize(otherUidSizeSum);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetSystemDataSize_001 SUCCESS";
+}
+
 } // namespace

@@ -35,13 +35,13 @@ public:
 
     std::vector<BlockInfo> GetDataDisks();
     std::vector<BlockInfo> GetExternalDisks(const std::string &devName, const std::string &diskId);
+    uint64_t GetDiskSize(const std::string &deviceName);
 
 private:
     int GetBlockInfo(const std::string &deviceName, const bool isNvmeDevice, BlockInfo &blockInfo);
     bool ReadSysfsNode(const std::string &path, std::string &content);
     bool ReadRemovableNode(const std::string &deviceName, bool &isRemovable);
     bool IsDataDisk(const std::string &deviceName, const bool isNeedCheckUfs, const bool isRemovable);
-    uint64_t GetDiskSize(const std::string &deviceName);
     std::string GetVendor(const std::string &deviceName);
     std::string GetModel(const std::string &deviceName);
     std::string GetInterfaceType(const std::string &deviceName);
