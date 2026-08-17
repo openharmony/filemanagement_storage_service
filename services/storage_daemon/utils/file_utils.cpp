@@ -766,7 +766,6 @@ static void ReportForkExecDiagIfNeeded(const std::vector<std::string> &cmd, int3
 
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
-    LOGD("[L8:FileUtils] ForkExec: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
     if (cmd.empty()) {
         LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< cmd is empty");
         return E_PARAMS_INVALID;
@@ -935,7 +934,6 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len, std::vector<st
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
-    LOGD("[L8:FileUtils] ExtStorageMountForkExec: >>> ENTER <<< cmd=%{public}s", cmd.empty() ? "" : cmd[0].c_str());
     if (cmd.empty()) {
         LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< cmd is empty");
         return E_PARAMS_INVALID;
