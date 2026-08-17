@@ -987,7 +987,6 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
             }
             LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< "
                 "waitpid failed, errno=%{public}d", errno);
-            ReportForkExecDiagIfNeeded(cmd, E_SYS_KERNEL_ERR, errno, &mountLog);
             return E_SYS_KERNEL_ERR;
         }
         if (!WIFEXITED(status)) {
