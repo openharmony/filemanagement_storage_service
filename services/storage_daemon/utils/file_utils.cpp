@@ -980,14 +980,15 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 
         pid_t waitRet = waitpid(pid, &status, 0);
         if (waitRet == -1) {
-            if (errno == ECHILD) {
+            int savedErrno = errno;
+            if (savedErrno == ECHILD) {
                 LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< ECHILD");
-                ReportForkExecDiagIfNeeded(cmd, E_NO_CHILD, errno, &mountLog);
+                ReportForkExecDiagIfNeeded(cmd, E_NO_CHILD, savedErrno, &mountLog);
                 return E_NO_CHILD;
             }
             LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< "
-                "waitpid failed, errno=%{public}d", errno);
-            ReportForkExecDiagIfNeeded(cmd, E_SYS_KERNEL_ERR, errno, &mountLog);
+                "waitpid failed, errno=%{public}d", savedErrno);
+            ReportForkExecDiagIfNeeded(cmd, E_SYS_KERNEL_ERR, savedErrno, &mountLog);
             return E_SYS_KERNEL_ERR;
         }
         if (!WIFEXITED(status)) {
