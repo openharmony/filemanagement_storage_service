@@ -761,6 +761,22 @@ static void ReportForkExecDiagIfNeeded(const std::vector<std::string> &cmd, int3
     VolumeOpDiagReportToolFailure(cmd, ret, exitCode, output);
 }
 
+static void RedirectChildStd(int pipeFd[PIPE_FD_LEN], bool captureAll)
+{
+    if (captureAll) {
+        if (RedirectStdToPipe(pipeFd, PIPE_FD_LEN) != E_OK) {
+            _exit(1);
+        }
+        return;
+    }
+    (void)close(pipeFd[0]);
+    if (dup2(pipeFd[1], STDOUT_FILENO) == -1) {
+        LOGE("[L8:FileUtils] RedirectChildStd: <<< EXIT FAILED <<< dup2 failed");
+        _exit(1);
+    }
+    (void)close(pipeFd[1]);
+}
+
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     int pipeFd[PIPE_FD_LEN];
@@ -822,12 +838,7 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus, std::vector
         ReportForkExecDiagIfNeeded(cmd, E_FORK, errno, output);
         return E_FORK;
     } else if (pid == 0) {
-        (void)close(pipe_fd[0]);
-        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
-            LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< dup2 failed");
-            _exit(1);
-        }
-        (void)close(pipe_fd[1]);
+        RedirectChildStd(pipe_fd, output != nullptr);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< execvp failed, errno=%{public}d", errno);
         _exit(1);

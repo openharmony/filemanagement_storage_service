@@ -481,6 +481,47 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_003, TestSize.Level1)
 }
 
 /**
+ * @tc.name: FileUtilsTest_ForkExecWithExit_004
+ * @tc.desc: Capture stderr when output is provided.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_004 start";
+    std::vector<std::string> cmd = {"ls", "/no_such_dir_fork_exec_stderr"};
+    std::vector<std::string> output;
+    int res = 0;
+    EXPECT_EQ(ForkExecWithExit(cmd, &res, &output), E_WEXITSTATUS);
+    std::string text;
+    for (const auto &chunk : output) {
+        text += chunk;
+    }
+    EXPECT_FALSE(text.empty());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_004 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecWithExit_005
+ * @tc.desc: ForkExecWithExit success path captures stdout when output is set.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_005 start";
+    std::vector<std::string> cmd = {"ls", "/data"};
+    std::vector<std::string> output;
+    int res = -1;
+    int ret = ForkExecWithExit(cmd, &res, &output);
+    if (ret == E_OK) {
+        EXPECT_EQ(res, 0);
+        EXPECT_FALSE(output.empty());
+    } else {
+        EXPECT_EQ(ret, E_WEXITSTATUS);
+    }
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_005 end";
+}
+
+/**
  * @tc.name: FileUtilsTest_ForkExec_001
  * @tc.desc: Verify the ForkExec function.
  * @tc.type: FUNC

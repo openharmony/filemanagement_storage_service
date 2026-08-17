@@ -153,10 +153,10 @@ void FinishOpDiag(int32_t ret)
 {
     if (ret != E_OK) {
         const VolumeOpDiagContext ctx = VolumeOpDiagCaptureContext();
-        VolumeOpDiagFlushFailureReport(ret);
         if (ShouldRunFsckOnFailure(ret, ctx)) {
-            VolumeOpDiagScheduleAsyncFsckReport(ret, ctx);
+            VolumeOpDiagAppendFsckDiagnose(ctx);
         }
+        VolumeOpDiagFlushFailureReport(ret);
     }
     VolumeOpDiagEnd();
 }
