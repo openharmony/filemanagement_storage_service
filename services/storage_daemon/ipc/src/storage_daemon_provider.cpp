@@ -62,6 +62,7 @@
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
 #include "disk_manager/volume/volume_operator_factory.h"
+#include "utils/volume_op_diag.h"
 #endif
 
 namespace OHOS {
@@ -85,6 +86,87 @@ constexpr size_t MAX_TYPE_LEN = 64;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
 constexpr size_t MAX_MOUNT_DATA_LEN = 1024;
+#endif
+
+#ifdef DISK_MANAGER
+namespace {
+// Align with disk_manager DFX constants without including dm dfx headers.
+constexpr int32_t DFX_STAGE_MOUNT = 41;
+constexpr int32_t DFX_STAGE_UNMOUNT = 42;
+constexpr int32_t DFX_STAGE_FORMAT = 43;
+constexpr int32_t DFX_STAGE_SET_VOLUME_DESCRIPTION = 44;
+constexpr int32_t DFX_STAGE_GET_PARTITION_TABLE = 46;
+constexpr int32_t DFX_STAGE_CREATE_PARTITION = 47;
+constexpr int32_t DFX_STAGE_DELETE_PARTITION = 48;
+constexpr int32_t DFX_STAGE_FORMAT_PARTITION = 49;
+constexpr int32_t VOL_OP_MOUNT = 0;
+constexpr int32_t VOL_OP_UNMOUNT = 1;
+constexpr int32_t VOL_OP_FORMAT = 2;
+constexpr int32_t VOL_OP_SET_VOLUME_DESCRIPTION = 3;
+constexpr int32_t VOL_OP_OTHER = 4;
+constexpr int32_t VOL_OP_GET_PARTITION_TABLE = 5;
+constexpr int32_t VOL_OP_CREATE_PARTITION = 6;
+constexpr int32_t VOL_OP_DELETE_PARTITION = 7;
+constexpr int32_t VOL_OP_FORMAT_PARTITION = 8;
+
+
+VolumeOpDiagContext MakeOpDiagContext(const char *funcName, int32_t bizStage, int32_t opType,
+                                      const std::string &devPath, const std::string &fsType)
+{
+    VolumeOpDiagContext ctx;
+    ctx.funcName = funcName;
+    ctx.bizStage = bizStage;
+    ctx.opType = opType;
+    ctx.devPath = devPath;
+    ctx.fsType = fsType;
+    return ctx;
+}
+
+bool IsFsckEligibleFunc(const std::string &funcName)
+{
+    static const char *const kFsckEligibleFuncs[] = {
+        "StorageDaemonProvider::Mount",
+        "StorageDaemonProvider::FormatVolume",
+        "StorageDaemonProvider::SetLabel",
+        "StorageDaemonProvider::FormatPartition",
+    };
+    for (const char *name : kFsckEligibleFuncs) {
+        if (funcName == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ShouldRunFsckOnFailure(int32_t ret, const VolumeOpDiagContext &ctx)
+{
+    if (ret == E_OK || !ctx.active) {
+        return false;
+    }
+    if (ctx.devPath.empty() || ctx.fsType.empty()) {
+        return false;
+    }
+    return IsFsckEligibleFunc(ctx.funcName);
+}
+
+void FinishOpDiag(int32_t ret)
+{
+    if (ret != E_OK) {
+        const VolumeOpDiagContext ctx = VolumeOpDiagCaptureContext();
+        VolumeOpDiagFlushFailureReport(ret);
+        if (ShouldRunFsckOnFailure(ret, ctx)) {
+            VolumeOpDiagScheduleAsyncFsckReport(ret, ctx);
+        }
+    }
+    VolumeOpDiagEnd();
+}
+
+int32_t ReturnWithOpDiag(int32_t ret)
+{
+    FinishOpDiag(ret);
+    return ret;
+}
+} // namespace
 #endif
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
@@ -198,6 +280,44 @@ int32_t StorageDaemonProvider::ValidateMountPath(const std::string &mountPath,
     }
     return E_OK;
 }
+
+#ifdef DISK_MANAGER
+int32_t StorageDaemonProvider::CheckMountRequest(const std::string &devPath, const std::string &mountPath,
+                                                 const std::string &fsType, const std::string &mountData,
+                                                 std::string &verifiedDevPath, std::string &verifiedMountPath)
+{
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedDevPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+    ret = ValidateMountPath(mountPath, verifiedMountPath);
+    if (ret != E_OK) {
+        return ret;
+    }
+    if (fsType.empty() || (!mountData.empty() && mountData.size() > MAX_MOUNT_DATA_LEN)) {
+        LOGE("[L1:StorageDaemonProvider] Mount: invalid fsType or mountData");
+        return E_PARAMS_INVALID;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonProvider::CheckCreatePartitionRequest(const std::string &devPath, int32_t partitionNum,
+                                                           int64_t startSector, int64_t endSector,
+                                                           const std::string &typeCode, std::string &verifiedPath)
+{
+    int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath is invalid");
+        return ret;
+    }
+    if (partitionNum <= 0 || typeCode.empty() ||
+        startSector <= 0 || endSector <= 0 || startSector >= endSector) {
+        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< params invalid");
+        return E_PARAMS_INVALID;
+    }
+    return E_OK;
+}
+#endif
 
 void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInfoType type)
 {
@@ -2124,21 +2244,22 @@ int32_t StorageDaemonProvider::ReadPartitionTable(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] ReadPartitionTable: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::ReadPartitionTable",
+                                        DFX_STAGE_GET_PARTITION_TABLE, VOL_OP_GET_PARTITION_TABLE, devPath, ""));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ReadPartitionTable: invalid devPath");
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
 
     ret = DiskUtils::ReadPartitionTable(verifiedPath, output, maxVolume);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ReadPartitionTable: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        return ret;
+    } else {
+        LOGI("[L1:StorageDaemonProvider] ReadPartitionTable: <<< EXIT SUCCESS <<< maxVolume=%{public}d", maxVolume);
     }
-
-    LOGI("[L1:StorageDaemonProvider] ReadPartitionTable: <<< EXIT SUCCESS <<< maxVolume=%{public}d", maxVolume);
-    return E_OK;
+    return ReturnWithOpDiag(ret);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2159,42 +2280,27 @@ int32_t StorageDaemonProvider::Mount(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::Mount",
+                                        DFX_STAGE_MOUNT, VOL_OP_MOUNT, devPath, fsType));
     std::string verifiedDevPath;
-    int32_t ret = ValidateBlockDevicePath(devPath, verifiedDevPath);
-    if (ret != E_OK) {
-        return ret;
-    }
     std::string verifiedMountPath;
-    ret = ValidateMountPath(mountPath, verifiedMountPath);
+    int32_t ret = CheckMountRequest(devPath, mountPath, fsType, mountData, verifiedDevPath, verifiedMountPath);
     if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] Mount: invalid mountPath");
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
-    if (fsType.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Mount: fsType is empty");
-        return E_PARAMS_INVALID;
-    }
-    if (!mountData.empty()) {
-        if (mountData.size() > MAX_MOUNT_DATA_LEN) {
-            return E_PARAMS_INVALID;
-        }
-    }
-
+    VolumeOpDiagUpdateDevPath(verifiedDevPath);
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] Mount: no operator for fsType=%{public}s", fsType.c_str());
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
-
     ret = op->Mount(verifiedDevPath, verifiedMountPath, static_cast<unsigned long>(mountFlags), mountData);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Mount: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Mount", ret);
-        return ret;
+    } else {
+        LOGI("[L1:StorageDaemonProvider] Mount: <<< EXIT SUCCESS <<<");
     }
-
-    LOGI("[L1:StorageDaemonProvider] Mount: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(ret);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2212,31 +2318,31 @@ int32_t StorageDaemonProvider::Unmount(const std::string &mountPath,
         LOGE("[L1:StorageDaemonProvider] Unmount: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::Unmount",
+                                        DFX_STAGE_UNMOUNT, VOL_OP_UNMOUNT, mountPath, fsType));
     std::string verifiedMountPath;
     int32_t ret = ValidateMountPath(mountPath, verifiedMountPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] Unmount: fsType is empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
 
     auto op = VolumeOperatorFactory::GetGenericOperator();
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] Unmount: failed to get generic operator");
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
 
     ret = op->Unmount(verifiedMountPath, fsType, force);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Unmount: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Unmount", ret);
-        return ret;
+    } else {
+        LOGI("[L1:StorageDaemonProvider] Unmount: <<< EXIT SUCCESS <<<");
     }
-
-    LOGI("[L1:StorageDaemonProvider] Unmount: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(ret);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2314,37 +2420,39 @@ int32_t StorageDaemonProvider::FormatVolume(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::FormatVolume",
+                                        DFX_STAGE_FORMAT, VOL_OP_FORMAT, devPath, fsType));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
+    VolumeOpDiagUpdateDevPath(verifiedPath);
     std::string verifiedDiskPath;
     ret = ValidateBlockDevicePath(diskPath, verifiedDiskPath);
     if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] FormatVolume: invalid diskPath=%{public}s", GetAnonyString(diskPath).c_str());
+        LOGE("[L1:StorageDaemonProvider] FormatVolume: invalid diskPath=%{public}s",
+             GetAnonyString(diskPath).c_str());
         return ret;
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatVolume: fsType is empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
 
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] FormatVolume: no operator for fsType=%{public}s", fsType.c_str());
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
 
     ret = op->Format(verifiedPath, verifiedDiskPath, partitionType, partitionNum);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Format", ret);
-        return ret;
+    } else {
+        LOGI("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT SUCCESS <<<");
     }
-
-    LOGI("[L1:StorageDaemonProvider] FormatVolume: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(ret);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2362,20 +2470,22 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] Check: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::Check",
+                                        DFX_STAGE_MOUNT, VOL_OP_OTHER, devPath, fsType));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] Check: fsType is empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
 
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] Check: no operator for fsType=%{public}s", fsType.c_str());
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
 
     ret = op->Check(verifiedPath);
@@ -2384,20 +2494,18 @@ int32_t StorageDaemonProvider::Check(const std::string &devPath,
         ret = op->Repair(verifiedPath);
         if (ret != E_OK) {
             LOGE("[L1:StorageDaemonProvider] Check: auto repair failed, ret=%{public}d", ret);
-            StorageService::StorageRadar::ReportVolumeOperation("Operator::Repair", ret);
-            return ret;
+            return ReturnWithOpDiag(ret);
         }
         LOGI("[L1:StorageDaemonProvider] Check: auto repair success");
-        return E_OK;
+        return ReturnWithOpDiag(E_OK);
     }
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Check: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Check", ret);
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
 
     LOGI("[L1:StorageDaemonProvider] Check: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(E_OK);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2414,31 +2522,32 @@ int32_t StorageDaemonProvider::Repair(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] Repair: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::Repair",
+                                        DFX_STAGE_MOUNT, VOL_OP_OTHER, devPath, fsType));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] Repair: fsType is empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
 
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] Repair: no operator for fsType=%{public}s", fsType.c_str());
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
 
     ret = op->Repair(verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Repair: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Repair", ret);
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
 
     LOGI("[L1:StorageDaemonProvider] Repair: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(E_OK);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2456,31 +2565,33 @@ int32_t StorageDaemonProvider::SetLabel(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] SetLabel: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::SetLabel",
+                                        DFX_STAGE_SET_VOLUME_DESCRIPTION,
+                                        VOL_OP_SET_VOLUME_DESCRIPTION, devPath, fsType));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
+    VolumeOpDiagUpdateDevPath(verifiedPath);
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] SetLabel: fsType is empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
 
     auto op = VolumeOperatorFactory::CreateOperator(fsType);
     if (op == nullptr) {
         LOGE("[L1:StorageDaemonProvider] SetLabel: no operator for fsType=%{public}s", fsType.c_str());
-        return E_NOT_SUPPORT;
+        return ReturnWithOpDiag(E_NOT_SUPPORT);
     }
 
     ret = op->SetLabel(verifiedPath, label);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] SetLabel: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::SetLabel", ret);
-        return ret;
+    } else {
+        LOGI("[L1:StorageDaemonProvider] SetLabel: <<< EXIT SUCCESS <<<");
     }
-
-    LOGI("[L1:StorageDaemonProvider] SetLabel: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(ret);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2498,20 +2609,24 @@ int32_t StorageDaemonProvider::ReadMetadata(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] ReadMetadata: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::ReadMetadata", 0, VOL_OP_OTHER, devPath, ""));
     std::string verifiedPath;
     int32_t ret = ValidateBlockDevicePath(devPath, verifiedPath);
     if (ret != E_OK) {
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
 
     ret = VolumeUtils::ReadMetadata(verifiedPath, uuid, type, label);
-    if (ret != E_OK) {
+    if (ret != E_OK || uuid.empty() || type.empty()) {
+        if (ret == E_OK) {
+            ret = E_READMETADATA;
+        }
         LOGE("[L1:StorageDaemonProvider] ReadMetadata: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
 
     LOGI("[L1:StorageDaemonProvider] ReadMetadata: <<< EXIT SUCCESS <<<");
-    return E_OK;
+    return ReturnWithOpDiag(E_OK);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -2629,19 +2744,22 @@ int32_t StorageDaemonProvider::GetPartitionTableInfo(const std::string &devPath,
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::GetPartitionTableInfo",
+                                        DFX_STAGE_GET_PARTITION_TABLE, VOL_OP_GET_PARTITION_TABLE, devPath, ""));
     std::string verifiedPath;
     int32_t ret = ValidateMountPath(devPath, verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< devPath is invalid");
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
+
     ret = DiskUtils::GetPartitionTableInfo(verifiedPath, execRet);
     if (ret == E_OK) {
         LOGI("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT SUCCESS <<<");
     } else {
         LOGE("[L1:StorageDaemonProvider] GetPartitionTableInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
-    return ret;
+    return ReturnWithOpDiag(ret);
 #else
     LOGI("[L1:StorageDaemonProvider] GetPartitionTable: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
@@ -2657,23 +2775,12 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::CreatePartition",
+                                        DFX_STAGE_CREATE_PARTITION, VOL_OP_CREATE_PARTITION, devPath, ""));
     std::string verifiedPath;
-    int32_t ret = ValidateMountPath(devPath, verifiedPath);
+    int32_t ret = CheckCreatePartitionRequest(devPath, partitionNum, startSector, endSector, typeCode, verifiedPath);
     if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< devPath is invalid");
-        return ret;
-    }
-    if (partitionNum <= 0) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< partitionNum invalid");
-        return E_PARAMS_INVALID;
-    }
-    if (startSector <= 0 || endSector <= 0 || startSector >= endSector) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< sector range invalid");
-        return E_PARAMS_INVALID;
-    }
-    if (typeCode.empty()) {
-        LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< typeCode empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(ret);
     }
     LOGI("[L1:StorageDaemonProvider] CreatePartition: >>> ENTER <<< devPath=%{public}s, partitionNum=%{public}d",
          verifiedPath.c_str(), partitionNum);
@@ -2683,7 +2790,7 @@ int32_t StorageDaemonProvider::CreatePartition(const std::string &devPath, int32
     } else {
         LOGE("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
-    return ret;
+    return ReturnWithOpDiag(ret);
 #else
     LOGI("[L1:StorageDaemonProvider] CreatePartition: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
@@ -2699,20 +2806,23 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, c
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::DeletePartitionInfo",
+                                        DFX_STAGE_DELETE_PARTITION, VOL_OP_DELETE_PARTITION, devPath, ""));
     std::string verifiedPath;
     int32_t ret = ValidateMountPath(devPath, verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< devPath is invalid");
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
     if (diskId.empty()) {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< diskId empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
     if (partitionNum <= 0) {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< partitionNum invalid");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
+
     LOGI("[L1:StorageDaemonProvider] DeletePartitionInfo: >>> ENTER <<< devPath=%{public}s, diskId=%{public}s,"
          "partitionNum=%{public}d", verifiedPath.c_str(), diskId.c_str(), partitionNum);
     ret = DiskUtils::DeletePartitionInfo(verifiedPath, diskId, partitionNum);
@@ -2721,7 +2831,7 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, c
     } else {
         LOGE("[L1:StorageDaemonProvider] DeletePartitionInfo: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
-    return ret;
+    return ReturnWithOpDiag(ret);
 #else
     LOGI("[L1:StorageDaemonProvider] DeletePartitionAddon: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
@@ -2737,20 +2847,24 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
+    VolumeOpDiagBegin(MakeOpDiagContext("StorageDaemonProvider::FormatPartition",
+                                        DFX_STAGE_FORMAT_PARTITION, VOL_OP_FORMAT_PARTITION, devPath, fsType));
     std::string verifiedPath;
     int32_t ret = ValidateMountPath(devPath, verifiedPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< devPath is invalid");
-        return ret;
+        return ReturnWithOpDiag(ret);
     }
+    VolumeOpDiagUpdateDevPath(verifiedPath);
     if (fsType.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
     if (volumeName.empty()) {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< volumeName empty");
-        return E_PARAMS_INVALID;
+        return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
+
     LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
          ", volumeName=%{public}s", verifiedPath.c_str(), fsType.c_str(), volumeName.c_str());
     ret = DiskUtils::FormatPartition(verifiedPath, fsType, volumeName, quickFormat);
@@ -2759,7 +2873,7 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const
     } else {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
-    return ret;
+    return ReturnWithOpDiag(ret);
 #else
     LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;

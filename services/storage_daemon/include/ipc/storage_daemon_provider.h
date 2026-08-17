@@ -229,6 +229,12 @@ private:
     void SetUserStatistics(uint32_t userId, RadarStatisticInfoType type);
     static int32_t ValidateBlockDevicePath(const std::string &devPath, std::string &verifiedPath);
     static int32_t ValidateMountPath(const std::string &mountPath, std::string &verifiedPath);
+    static int32_t CheckMountRequest(const std::string &devPath, const std::string &mountPath,
+                                     const std::string &fsType, const std::string &mountData,
+                                     std::string &verifiedDevPath, std::string &verifiedMountPath);
+    static int32_t CheckCreatePartitionRequest(const std::string &devPath, int32_t partitionNum,
+                                               int64_t startSector, int64_t endSector,
+                                               const std::string &typeCode, std::string &verifiedPath);
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // namespace StorageDaemon

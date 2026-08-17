@@ -458,6 +458,8 @@ ohos_shared_library("storage_common_utils") {
     "utils/memory_reclaim_manager.cpp",
     "${storage_service_path}/services/common/src/storage_service_constant.cpp",
     "utils/hi_audit.cpp",
+    "utils/volume_op_diag.cpp",
+    "utils/fsck_diagnose.cpp",
     "utils/zip_utils.cpp",
   ]
 
@@ -488,6 +490,11 @@ ohos_shared_library("storage_common_utils") {
 
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
+  if (enable_disk_manager) {
+    defines += [ "DISK_MANAGER" ]
+    external_deps += [ "disk_manager:disk_manager_innerkits" ]
   }
 
   subsystem_name = "filemanagement"

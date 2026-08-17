@@ -26,6 +26,16 @@ namespace StorageDaemon {
 struct FileList {
     uint32_t userId;
     std::string path;
+    std::string policy;
+};
+
+struct AncoDirInfo {
+    std::string mkdir;
+    std::string path;
+    std::string mode;
+    std::string uid;
+    std::string gid;
+    std::string policy;
 };
 
 struct ProcessInfo {
@@ -55,10 +65,8 @@ std::string ReadFileContent(const std::string &path);
 std::string ReadFileInParentDirs(const std::string &startPath, const std::string &fileName);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
              int *exitStatus = nullptr);
-int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr);
-int ForkExecInteractive(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr,
-                        std::vector<std::string> *intput = nullptr);
-
+int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr,
+                     std::vector<std::string> *output = nullptr);
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 #endif
@@ -68,6 +76,7 @@ bool IsTempFolder(const std::string &path, const std::string &sub);
 void DeleteFile(const std::string &path);
 std::vector<std::string> Split(std::string str, const std::string &pattern);
 bool IsPathMounted(std::string &path);
+bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
@@ -88,9 +97,9 @@ bool IsBusinessPath(const std::string& path, const std::string &userId);
 uint64_t GetFileSize(const std::string &filename);
 bool IsFolder(const std::string &filename);
 bool IsFileExist(const std::string &path);
-bool IsFilePathInvalid(const std::string &filePath);
 bool GetRealPath(const std::string &path, std::string &realPath);
 std::string MaskSensitiveInfo(const std::string &input);
+bool IsFilePathInvalid(const std::string &filePath);
 bool CleanOrphanNode();
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount);
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount);
