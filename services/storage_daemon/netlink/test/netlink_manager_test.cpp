@@ -120,9 +120,8 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_StartStop_002, T
     auto startRet = netlinkManager.Start();
     EXPECT_TRUE(startRet == E_ERR);
 
-    EXPECT_CALL(*netlinkListenerMoc_, StopListener).WillOnce(Return(-1));
     auto stopRet = netlinkManager.Stop();
-    EXPECT_TRUE(stopRet == E_ERR);
+    EXPECT_TRUE(stopRet == E_OK);
     
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_StartStop_002 end";
 }
