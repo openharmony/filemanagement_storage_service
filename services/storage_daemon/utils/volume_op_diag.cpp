@@ -16,7 +16,6 @@
 #include "utils/volume_op_diag.h"
 
 #include <sstream>
-#include <thread>
 
 #ifdef DISK_MANAGER
 #include "disk_manager_client.h"
@@ -156,32 +155,14 @@ void VolumeOpDiagReportToolFailure(const std::vector<std::string> &cmd, int32_t 
     VolumeOpDiagAppendToolEntry(entry);
 }
 
-VolumeOpDiagToolEntry MakeFsckToolEntry(const FsckResult &fsck)
+static VolumeOpDiagToolEntry MakeFsckToolEntry(const FsckResult &fsck)
 {
     VolumeOpDiagToolEntry entry;
     entry.cmd = fsck.cmd;
-    entry.ret = fsck.exitCode >= 0 ? 0 : fsck.exitCode;
+    entry.ret = fsck.ret;
     entry.exitCode = fsck.exitCode;
     entry.output = fsck.output;
     return entry;
-}
-
-void SendFsckDiagReport(int32_t ret, const VolumeOpDiagContext &ctx, const FsckResult &fsck)
-{
-    VolumeOpDiagContext reportCtx = ctx;
-    reportCtx.active = true;
-    reportCtx.reported = false;
-    reportCtx.toolEntries = {MakeFsckToolEntry(fsck)};
-    SendDiagReport(BuildDiagJson(ret, reportCtx));
-}
-
-void AsyncFsckReportTask(int32_t ret, VolumeOpDiagContext ctx)
-{
-    const FsckResult fsck = FsckDiagnoseWithTimeout(ctx.devPath, ctx.fsType, FSCK_DIAGNOSE_TIMEOUT_S);
-    if (fsck.cmd.empty()) {
-        return;
-    }
-    SendFsckDiagReport(ret, ctx, fsck);
 }
 
 std::vector<VolumeOpDiagToolEntry> VolumeOpDiagTakeToolEntries()
@@ -215,14 +196,16 @@ void VolumeOpDiagFlushFailureReport(int32_t ret)
     g_tlsContext.reported = true;
 }
 
-void VolumeOpDiagScheduleAsyncFsckReport(int32_t ret, const VolumeOpDiagContext &ctx)
+void VolumeOpDiagAppendFsckDiagnose(const VolumeOpDiagContext &ctx)
 {
-    if (!ctx.active || ctx.devPath.empty() || ctx.fsType.empty()) {
+    if (!g_tlsContext.active || ctx.devPath.empty() || ctx.fsType.empty()) {
         return;
     }
-    std::thread([ret, ctx]() {
-        AsyncFsckReportTask(ret, ctx);
-    }).detach();
+    const FsckResult fsck = FsckDiagnoseWithTimeout(ctx.devPath, ctx.fsType, FSCK_DIAGNOSE_TIMEOUT_S);
+    if (fsck.cmd.empty()) {
+        return;
+    }
+    VolumeOpDiagAppendToolEntry(MakeFsckToolEntry(fsck));
 }
 } // namespace StorageDaemon
 } // namespace OHOS

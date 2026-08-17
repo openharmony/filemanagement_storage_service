@@ -33,8 +33,8 @@ struct VolumeOpDiagToolEntry {
 };
 
 // Provider sets TLS context at IPC entry (DISK_MANAGER IPC only). Tool failures
-// are accumulated via VolumeOpDiagReportToolFailure; Provider flushes on exit via
-// VolumeOpDiagFlushFailureReport, then schedules async fsck diagnose report.
+// are accumulated via VolumeOpDiagReportToolFailure; on failure Provider appends
+// sync fsck diagnose then flushes via VolumeOpDiagFlushFailureReport.
 // Actual IPC upload requires DISK_MANAGER.
 // For worker threads, capture context on the IPC thread, AttachContext before ForkExec*,
 // then MergeToolEntries after join.
@@ -63,7 +63,7 @@ std::vector<VolumeOpDiagToolEntry> VolumeOpDiagTakeToolEntries();
 void VolumeOpDiagMergeToolEntries(const std::vector<VolumeOpDiagToolEntry> &entries);
 void VolumeOpDiagUpdateDevPath(const std::string &devPath);
 void VolumeOpDiagFlushFailureReport(int32_t ret);
-void VolumeOpDiagScheduleAsyncFsckReport(int32_t ret, const VolumeOpDiagContext &ctx);
+void VolumeOpDiagAppendFsckDiagnose(const VolumeOpDiagContext &ctx);
 
 } // namespace StorageDaemon
 } // namespace OHOS

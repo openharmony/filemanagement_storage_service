@@ -25,6 +25,7 @@ namespace StorageDaemon {
 constexpr int32_t FSCK_DIAGNOSE_TIMEOUT_S = 30;
 
 struct FsckResult {
+    int32_t ret = 0;
     int32_t exitCode = -1;
     std::string cmd;
     std::string output;
