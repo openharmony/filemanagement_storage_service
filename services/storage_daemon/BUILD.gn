@@ -293,6 +293,8 @@ ohos_executable("storage_daemon") {
       "common_event_service:cesfwk_innerkits",
       "init:libbeget_proxy",
       "libmtp:libmtp",
+      "drivers_interface_usb:usb_idl_headers_1.1",
+      "drivers_interface_usb:usb_idl_headers_1.2",
       "usb_manager:usbsrv_client",
     ]
   }

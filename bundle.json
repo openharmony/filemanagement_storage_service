@@ -53,6 +53,7 @@
         "data_share",
         "dfs_service",
         "drivers_interface_huks",
+        "drivers_interface_usb",
         "e2fsprogs",
         "eventhandler",
         "exfatprogs",
