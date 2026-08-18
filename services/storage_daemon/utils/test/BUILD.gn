@@ -47,6 +47,7 @@ ohos_unittest("file_utils_test") {
   ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -173,6 +174,7 @@ ohos_unittest("string_utils_test") {
   ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
