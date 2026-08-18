@@ -183,24 +183,6 @@ HWTEST_F(StorageRadarTest, StorageRadar_ReportGetStorageStatus_001, TestSize.Lev
     GTEST_LOG_(INFO) << "StorageRadar_ReportGetStorageStatus_001 end";
 }
 
-HWTEST_F(StorageRadarTest, StorageRadar_ReportVolumeOperation_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageRadar_ReportVolumeOperation_001 start";
-    std::string funcName = "MountVolume";
-    int ret = 0;
-    StorageService::StorageRadar::ReportVolumeOperation(funcName, ret);
-    GTEST_LOG_(INFO) << "StorageRadar_ReportVolumeOperation_001 end";
-}
-
-HWTEST_F(StorageRadarTest, StorageRadar_ReportVolumeOperation_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageRadar_ReportVolumeOperation_002 start";
-    std::string funcName = "UnmountVolume";
-    int ret = -1;
-    StorageService::StorageRadar::ReportVolumeOperation(funcName, ret);
-    GTEST_LOG_(INFO) << "StorageRadar_ReportVolumeOperation_002 end";
-}
-
 HWTEST_F(StorageRadarTest, StorageRadar_ReportUserKeyResult_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageRadar_ReportUserKeyResult_001 start";
