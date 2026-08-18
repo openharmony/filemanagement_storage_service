@@ -2979,7 +2979,6 @@ int32_t StorageDaemonProvider::CreateIsoImage(const std::string &devPath,
     ret = op->CreateIsoImage(verifiedDevPath, filePath, verifiedMountPath);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] CreateIsoImage: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::CreateIsoImage", ret);
         return ret;
     }
 
@@ -3030,7 +3029,6 @@ int32_t StorageDaemonProvider::Burn(const std::string &devPath,
     ret = op->Burn(verifiedPath, parsedOptions);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Burn: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        StorageService::StorageRadar::ReportVolumeOperation("Operator::Burn", ret);
         return ret;
     }
     LOGI("[L1:StorageDaemonProvider] Burn: <<< EXIT SUCCESS <<<");

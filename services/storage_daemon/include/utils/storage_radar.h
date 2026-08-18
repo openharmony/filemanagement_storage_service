@@ -131,7 +131,6 @@ public:
 	                                const std::string &keyElxLevel);
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
         const std::string &orgPkg);
-    static void ReportVolumeOperation(const std::string &funcName, int ret);
     static void ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel, const std::string &extraData);
     static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, const std::string &extraData);

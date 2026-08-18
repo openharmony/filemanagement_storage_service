@@ -120,42 +120,6 @@ HWTEST_F(StorageRadarTest, StorageRadarTest_ReportGetStorageStatus_002, TestSize
 }
 
 /**
- * @tc.name: StorageRadarTest_ReportVolumeOperation_001
- * @tc.desc: Verify ReportVolumeOperation with success return.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageRadarTest, StorageRadarTest_ReportVolumeOperation_001, TestSize.Level1)
-{
-    std::string funcName = "Mount";
-    int32_t ret = E_OK;
-    EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportVolumeOperation(funcName, ret));
-}
-
-/**
- * @tc.name: StorageRadarTest_ReportVolumeOperation_002
- * @tc.desc: Verify ReportVolumeOperation with error return.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageRadarTest, StorageRadarTest_ReportVolumeOperation_002, TestSize.Level1)
-{
-    std::string funcName = "Unmount";
-    int32_t ret = E_ERR;
-    EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportVolumeOperation(funcName, ret));
-}
-
-/**
- * @tc.name: StorageRadarTest_ReportVolumeOperation_003
- * @tc.desc: Verify ReportVolumeOperation with empty funcName.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageRadarTest, StorageRadarTest_ReportVolumeOperation_003, TestSize.Level1)
-{
-    std::string funcName;
-    int32_t ret = E_OK;
-    EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportVolumeOperation(funcName, ret));
-}
-
-/**
  * @tc.name: StorageRadarTest_ReportUserKeyResult_001
  * @tc.desc: Verify ReportUserKeyResult with normal parameters.
  * @tc.type: FUNC
@@ -1145,20 +1109,6 @@ HWTEST_F(StorageRadarTest, StorageRadarTest_ReportStorageUsage_003, TestSize.Lev
     for (const auto &stage : stages) {
         std::string extraData = "threshold_test";
         EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportStorageUsage(stage, extraData));
-    }
-}
-
-/**
- * @tc.name: StorageRadarTest_ReportVolumeOperation_004
- * @tc.desc: Verify ReportVolumeOperation with all volume operations.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageRadarTest, StorageRadarTest_ReportVolumeOperation_004, TestSize.Level1)
-{
-    std::vector<std::string> ops = {"Mount", "Unmount", "Format", "Partition", "SetVolumeDescription"};
-    for (const auto &op : ops) {
-        EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportVolumeOperation(op, E_OK));
-        EXPECT_NO_FATAL_FAILURE(StorageRadar::ReportVolumeOperation(op, E_ERR));
     }
 }
 

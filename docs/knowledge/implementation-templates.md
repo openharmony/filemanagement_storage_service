@@ -21,7 +21,6 @@
 
 - Mount 前：置 CHECKING → 执行 Check → 成功置 MOUNTED，失败置 DAMAGED 或 UNMOUNTED
 - Unmount 前：置 EJECTING → 执行 UMount → 成功置 REMOVED，失败置 MOUNTED
-- 失败必须 `StorageRadar::ReportVolumeOperation`
 
 ### 密钥操作
 

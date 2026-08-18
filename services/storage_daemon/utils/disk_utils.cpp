@@ -178,7 +178,6 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
         LOGI("GetBlkidDataByCmd output: %{public}s", str.c_str());
     }
     if (err) {
-        StorageRadar::ReportVolumeOperation("ForkExec", err);
         LOGE("[L8:DiskUtils] GetBlkidDataByCmd: <<< EXIT FAILED <<< ForkExec failed, err=%{public}d", err);
         return "";
     }

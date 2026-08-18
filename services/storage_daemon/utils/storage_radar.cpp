@@ -102,20 +102,6 @@ void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t 
     StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_MANAGER_FAULT);
 }
 
-void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
-{
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = DEFAULT_USERID,
-        .funcName = funcName,
-        .bizScene = BizScene::EXTERNAL_VOLUME_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_MOUNT,
-        .keyElxLevel = "NA",
-        .errorCode = ret
-    };
-    StorageRadar::GetInstance().RecordFunctionResult(param, FILE_STORAGE_FAULT);
-}
-
 void StorageRadar::ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
     const std::string &keyLevel, const std::string &extraData)
 {
