@@ -46,6 +46,7 @@ private:
     std::string GetModel(const std::string &deviceName);
     std::string GetInterfaceType(const std::string &deviceName);
     uint32_t GetDiskRpm(const std::string &deviceName, const bool isNvmeDevice);
+    int32_t GetRotational(const std::string &deviceName);
     std::string GetSataSerialNumber(int fd);
     std::string GetNvmeSerialNumber(const std::string &deviceName);
     std::string GetSerialNumber(const std::string &deviceName, const bool isNvmeDevice);
