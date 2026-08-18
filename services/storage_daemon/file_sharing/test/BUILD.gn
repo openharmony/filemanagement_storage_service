@@ -40,6 +40,7 @@ ohos_unittest("AclTest") {
   ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -78,6 +79,7 @@ ohos_unittest("SetAclTest") {
   deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -117,6 +119,7 @@ ohos_unittest("FileSharingTest") {
   deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
