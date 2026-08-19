@@ -134,8 +134,6 @@ ohos_unittest("scan_device_test") {
   sources = [
     "$ROOT_DIR/disk_manager/src/disk/scan_device.cpp",
     "$ROOT_DIR/disk_manager/test/scan_device_test.cpp",
-    "$ROOT_DIR/disk_manager/test/dm_device_mock.cpp",
-    "$ROOT_DIR/disk_manager/src/disk/dm_device.cpp",
   ]
 
   ldflags = [

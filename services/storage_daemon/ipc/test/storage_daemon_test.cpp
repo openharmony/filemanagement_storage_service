@@ -1965,6 +1965,23 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_PrepareUserDirsAndUpdateUserAuth_W
 }
 #endif
 #endif
+
+#ifdef USER_CRYPTO_MANAGER
+/**
+ * @tc.name: StorageDaemonTest_EraseAllUserEncryptedKeys_002
+ * @tc.desc: Verify EraseAllUserEncryptedKeys filters out-of-range userIds.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonTest, StorageDaemonTest_EraseAllUserEncryptedKeys_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonTest_EraseAllUserEncryptedKeys_002 start";
+    std::vector<int32_t> localIdList = {StorageService::MAX_USER_ID + 1, StorageService::START_USER_ID - 1};
+    auto ret = storageDaemon_->EraseAllUserEncryptedKeys(localIdList);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonTest_EraseAllUserEncryptedKeys_002 end";
+}
+#endif
 } // Test
 } // STORAGE_DAEMON
 } // OHOS

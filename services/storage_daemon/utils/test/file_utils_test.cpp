@@ -1444,5 +1444,33 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005, Te
     EXPECT_EQ(loopCount, 151u);
     GTEST_LOG_(INFO) << "FileUtilsTest_CheckAndReportOverLoop_ThreeParams_005 end";
 }
+
+/**
+ * @tc.name: FileUtilsTest_ForkExec_EmptyCmd
+ * @tc.desc: Verify ForkExec returns E_PARAMS_INVALID with empty cmd.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_EmptyCmd, TestSize.Level1)
+{
+    std::vector<std::string> cmd;
+    std::vector<std::string> output;
+    EXPECT_EQ(ForkExec(cmd, &output), E_PARAMS_INVALID);
+}
+
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+/**
+ * @tc.name: FileUtilsTest_ExtStorageMountForkExec_EmptyCmd
+ * @tc.desc: Verify ExtStorageMountForkExec returns E_PARAMS_INVALID with empty cmd.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ExtStorageMountForkExec_EmptyCmd, TestSize.Level1)
+{
+    std::vector<std::string> cmd;
+    int32_t exitStatus = 0;
+    EXPECT_EQ(ExtStorageMountForkExec(cmd, &exitStatus), E_PARAMS_INVALID);
+}
+#endif
 } // namespace StorageDaemon
 } // namespace OHOS

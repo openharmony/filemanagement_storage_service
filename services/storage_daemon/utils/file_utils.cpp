@@ -718,21 +718,24 @@ static void ReadPipeOutputForExec(int pipeFdRead, std::vector<std::string> *outp
 
 static int CheckChildProcessExitStatus(pid_t pid, int &status, int *exitStatus)
 {
-    waitpid(pid, &status, 0);
-    if (errno == ECHILD) {
-        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: ECHILD");
-        return E_NO_CHILD;
+    status = 0;
+    pid_t waitRet = waitpid(pid, &status, 0);
+    if (waitRet == -1) {
+        if (errno == ECHILD) {
+            LOGE("[L8:FileUtils] CheckChildProcessExitStatus: ECHILD");
+            return E_NO_CHILD;
+        }
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: waitpid failed, errno=%{public}d", errno);
+        return E_SYS_KERNEL_ERR;
     }
     if (!WIFEXITED(status)) {
-        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exits abnormally, errno=%{public}d,"
-             "status=%{public}d", errno, status);
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exits abnormally, status=%{public}d", status);
         return E_WIFEXITED;
     }
     int tempExitStatus = WEXITSTATUS(status);
     GetExitStatus(exitStatus, tempExitStatus);
     if (tempExitStatus != 0) {
-        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exited with error, errno=%{public}d, "
-             "status=%{public}d", errno, status);
+        LOGE("[L8:FileUtils] CheckChildProcessExitStatus: Process exited with error, status=%{public}d", status);
         return E_WEXITSTATUS;
     }
     return E_OK;
@@ -779,9 +782,13 @@ static void RedirectChildStd(int pipeFd[PIPE_FD_LEN], bool captureAll)
 
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
+    if (cmd.empty()) {
+        LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< cmd is empty");
+        return E_PARAMS_INVALID;
+    }
     int pipeFd[PIPE_FD_LEN];
     pid_t pid;
-    int status;
+    int status = 0;
     auto args = FormatCmd(cmd);
     if (pipe(pipeFd) < 0) {
         LOGE("[L8:FileUtils] ForkExec: <<< EXIT FAILED <<< create pipe failed,"
@@ -849,10 +856,14 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus, std::vector
         }
         (void)close(pipe_fd[0]);
 
-        waitpid(pid, &status, 0);
-        if (errno == ECHILD) {
-            LOGE("[L8:FileUtils] ForkExecWithExit: Process exits %{public}d", errno);
-            return E_NO_CHILD;
+        pid_t waitRet = waitpid(pid, &status, 0);
+        if (waitRet == -1) {
+            if (errno == ECHILD) {
+                LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< ECHILD");
+                return E_NO_CHILD;
+            }
+            LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< waitpid failed, errno=%{public}d", errno);
+            return E_SYS_KERNEL_ERR;
         }
         if (!WIFEXITED(status)) {
             LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< Process exits abnormally, status=%{public}d",
@@ -901,7 +912,7 @@ static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
 static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
 {
     (void)close(pipe_fd[1]);
-    int recv_pid;
+    int recv_pid = 0;
     while (read(pipe_fd[0], &recv_pid, sizeof(int)) > 0) {
         LOGI("[L8:FileUtils] ReadPidFromPipe: read child pid=%{public}d", recv_pid);
     }
@@ -934,10 +945,14 @@ static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len, std::vector<st
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
 {
+    if (cmd.empty()) {
+        LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< cmd is empty");
+        return E_PARAMS_INVALID;
+    }
     int pipe_fd[PIPE_FD_LEN];
     int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
     pid_t pid;
-    int status;
+    int status = 0;
     auto args = FormatCmd(cmd);
 
     if (pipe(pipe_fd) < 0) {
@@ -974,21 +989,28 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus)
         std::vector<std::string> mountLog;
         ReadLogFromPipe(pipe_log_fd, PIPE_FD_LEN, &mountLog);
 
-        waitpid(pid, &status, 0);
-        if (errno == ECHILD) {
-            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< ECHILD");
-            ReportForkExecDiagIfNeeded(cmd, E_NO_CHILD, errno, &mountLog);
-            return E_NO_CHILD;
+        pid_t waitRet = waitpid(pid, &status, 0);
+        if (waitRet == -1) {
+            if (errno == ECHILD) {
+                LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< ECHILD");
+                ReportForkExecDiagIfNeeded(cmd, E_NO_CHILD, errno, &mountLog);
+                return E_NO_CHILD;
+            }
+            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< "
+                "waitpid failed, errno=%{public}d", errno);
+            return E_SYS_KERNEL_ERR;
         }
         if (!WIFEXITED(status)) {
-            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< Process exits abnormally");
+            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< "
+                "Process exits abnormally, status=%{public}d", status);
             ReportForkExecDiagIfNeeded(cmd, E_ERR, -1, &mountLog);
             return E_ERR;
         }
         int tempExitStatus = WEXITSTATUS(status);
         GetExitStatus(exitStatus, tempExitStatus);
         if (tempExitStatus != 0) {
-            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< Process exited with error");
+            LOGE("[L8:FileUtils] ExtStorageMountForkExec: <<< EXIT FAILED <<< "
+                "Process exited with error, status=%{public}d", status);
             ReportForkExecDiagIfNeeded(cmd, E_ERR, tempExitStatus, &mountLog);
             return E_ERR;
         }

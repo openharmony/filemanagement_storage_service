@@ -363,5 +363,39 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_NtfsFallback_EmptyAfterColon, TestSize
     EXPECT_EQ(label, "");
 }
 
+HWTEST_F(ExtVolumeUtilsTest, BindBlockLoopDev_ForkExecFailed, TestSize.Level1)
+{
+    std::string loopPath;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    int32_t ret = VolumeUtils::BindBlockLoopDev(testDevPath_, 2048, 1048576, loopPath);
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_TRUE(loopPath.empty());
+}
+
+HWTEST_F(ExtVolumeUtilsTest, BindBlockLoopDev_OutputEmpty, TestSize.Level1)
+{
+    std::string loopPath;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *, int *) {
+            return E_OK;
+        }));
+    int32_t ret = VolumeUtils::BindBlockLoopDev(testDevPath_, 2048, 1048576, loopPath);
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_TRUE(loopPath.empty());
+}
+
+HWTEST_F(ExtVolumeUtilsTest, BindBlockLoopDev_Success, TestSize.Level1)
+{
+    std::string loopPath;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("/dev/loop0");
+            return E_OK;
+        }));
+    int32_t ret = VolumeUtils::BindBlockLoopDev(testDevPath_, 2048, 1048576, loopPath);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(loopPath, "/dev/loop0");
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

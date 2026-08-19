@@ -234,6 +234,7 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 void UserManager::CheckDirsFromVec(int32_t userId)
 {
     LOGI("[L2:UserManager] CheckDirsFromVec: >>> ENTER <<< userId=%{public}d", userId);
+    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
     IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;
 
@@ -330,7 +331,9 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
     StorageManagerClient client;
     auto ret = client.NotifyCreateBundleDataDirWithEl(userId, elx);
     if (ret != E_OK) {
-        StorageRadar::ReportUserManager("CreateElxBundleDataDir", ret, userId, std::to_string(elx));
+        LOGE("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT FAILED <<< userId=%{public}u, elx=%{public}d,"
+            "ret=%{public}d", userId, elx, ret);
+        StorageRadar::ReportUserManager("CreateElxBundleDataDir", userId, ret, std::to_string(elx));
     }
     LOGI("[L2:UserManager] CreateElxBundleDataDir: <<< EXIT SUCCESS <<< userId=%{public}u, elx=%{public}d",
         userId, elx);
@@ -351,6 +354,7 @@ int32_t UserManager::CheckUserIdRange(int32_t userId)
 int32_t UserManager::RestoreconSystemServiceDirs(int32_t userId)
 {
     LOGI("[L2:UserManager] RestoreconSystemServiceDirs: >>> ENTER <<< userId=%{public}d", userId);
+    std::lock_guard<std::mutex> lock(mutex_);
 #ifdef USE_LIBRESTORECON
     uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2 | IStorageDaemonEnum::CRYPTO_FLAG_EL3 |
         IStorageDaemonEnum::CRYPTO_FLAG_EL4 | IStorageDaemonEnum::CRYPTO_FLAG_EL5;

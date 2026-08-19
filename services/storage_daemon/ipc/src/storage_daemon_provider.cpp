@@ -39,6 +39,7 @@
 #endif
 #ifdef PC_USER_MANAGER
 #include "disk/disk_manager.h"
+#include "disk_manager/volume/volume_utils.h"
 #endif
 #include "file_ex.h"
 #include "file_sharing/file_sharing.h"
@@ -57,6 +58,7 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
 #include <sys/sysmacros.h>
 #include "disk_manager/disk/dm_device.h"
@@ -193,6 +195,35 @@ int32_t StorageDaemonProvider::CheckUserIdRange(int32_t userId)
     return E_OK;
 }
 
+bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::string &verifiedPath)
+{
+    if (devPath.empty() || devPath.length() >= PATH_MAX) {
+        LOGE("IsDevPathValid: invalid devPath");
+        return false;
+    }
+    if (IsFilePathInvalid(devPath)) {
+        LOGE("IsDevPathValid: devPath contains invalid path segments");
+        return false;
+    }
+    if (devPath.find("/dev/block/") != 0) {
+        LOGE("IsDevPathValid: invalid devPath prefix");
+        return false;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(devPath.c_str(), realPath) == nullptr) {
+        int32_t tmpErrno = errno;
+        LOGE("IsDevPathValid: realpath failed, errno=%{public}d", tmpErrno);
+        return false;
+    }
+    std::string tmpPath(realPath);
+    if (tmpPath.find("/dev/block/") != 0) {
+        LOGE("IsDevPathValid: invalid real path prefix");
+        return false;
+    }
+    verifiedPath = tmpPath;
+    return true;
+}
+
 int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPath,
                                                        std::string &verifiedPath)
 {
@@ -325,7 +356,7 @@ void StorageDaemonProvider::SetUserStatistics(uint32_t userId, RadarStatisticInf
 {
     LOGD("[L1:StorageDaemonProvider] SetUserStatistics: >>> ENTER <<< userId=%{public}u, type=%{public}d",
         userId, static_cast<int32_t>(type));
-    std::lock_guard<std::mutex> lock(mutexStats_);
+    std::lock_guard<std::mutex> lockStatistic(mutexStats_);
     auto it = GetUserStatistics(userId);
     if (it == opStatistics_.end()) {
         LOGE("[L1:StorageDaemonProvider] SetUserStatistics: <<< EXIT FAILED <<< GetUserStatistics is nullptr");
@@ -434,6 +465,7 @@ void StorageDaemonProvider::StorageRadarThd(void)
         LOGI("[L1:StorageDaemonProvider] Storage statistic update, intervalMinutes:%{public}" PRId64,
             intervalMinutes);
         isNeedUpdateRadarFile_ = false;
+        std::lock_guard<std::mutex> lockStatistic(mutexStats_);
         StorageStatisticRadar::GetInstance().UpdateStatisticFile(opStatistics_);
     }
     LOGI("[L1:StorageDaemonProvider] StorageRadarThd: <<< EXIT SUCCESS <<< thread ended");
@@ -989,6 +1021,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    lockScreenStatus = false;
     std::string message = "userId: " + std::to_string(userId)
         + " lockScreenStatus: " + std::to_string(lockScreenStatus);
     HiAudit::GetInstance().WriteStart("GetLockScreenStatus", message);
@@ -1358,7 +1391,7 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &deviceId)
 {
     LOGI("[L1:StorageDaemonProvider] MountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s,"
-        "networkId=%{public}s", userId, relativePath.c_str(), networkId.c_str());
+        "networkId=%{public}s", userId, GetAnonyString(relativePath).c_str(), GetAnonyString(networkId).c_str());
     std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
         + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
     HiAudit::GetInstance().WriteStart("MountDfsDocs", message);
@@ -1401,7 +1434,7 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
                                              const std::string &deviceId)
 {
     LOGI("[L1:StorageDaemonProvider] UMountDfsDocs: >>> ENTER <<< userId=%{public}d, relativePath=%{public}s,"
-        "networkId=%{public}s", userId, relativePath.c_str(), networkId.c_str());
+        "networkId=%{public}s", userId, GetAnonyString(relativePath).c_str(), GetAnonyString(networkId).c_str());
     std::string message = "userId: " + std::to_string(userId) + " relativePath: " + GetAnonyString(relativePath)
         + " networkId: " + GetAnonyString(networkId) + " deviceId: " + GetAnonyString(deviceId);
     HiAudit::GetInstance().WriteStart("UMountDfsDocs", message);
@@ -1584,6 +1617,11 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
     }
+    if (!StorageManager::IsPathStartWithFileMgr(userId, path)) {
+        LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
+        HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
     LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
     err = MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
@@ -1612,6 +1650,7 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
     }
     if (IsFilePathInvalid(path)) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path is invalid");
+        HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
 
@@ -1619,7 +1658,13 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range",
             userId);
+        HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
         return err;
+    }
+    if (!StorageManager::IsPathStartWithFileMgr(userId, path)) {
+        LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
+        HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
     }
     LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
     err = MountManager::GetInstance().UMountFileMgrFuse(userId, path);
@@ -1740,6 +1785,11 @@ int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
             "range", userId);
         HiAudit::GetInstance().WriteEnd("ResetSecretWithRecoveryKey", err);
         return err;
+    }
+    if (key.empty()) {
+        LOGE("[L1:StorageDaemonProvider] ResetSecretWithRecoveryKey: <<< EXIT FAILED <<< key is empty");
+        HiAudit::GetInstance().WriteEnd("ResetSecretWithRecoveryKey", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
     }
     int32_t ret = StorageDaemon::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
     if (ret == E_OK) {
@@ -2925,7 +2975,6 @@ int32_t StorageDaemonProvider::Eject(const std::string &devName)
         LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< devName is invalid");
         return E_PARAMS_INVALID;
     }
-
     int32_t ret = DiskUtils::Eject(devName);
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< ret=%{public}d", ret);
@@ -2958,7 +3007,8 @@ int32_t StorageDaemonProvider::CreateIsoImage(const std::string &devPath,
     if (ret != E_OK) {
         return ret;
     }
-    if (IsFilePathInvalid(filePath)) {
+    if (filePath.empty() || IsFilePathInvalid(filePath)) {
+        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: invalid filePath");
         return E_PARAMS_INVALID;
     }
     if (fsType.empty()) {
@@ -3025,7 +3075,7 @@ int32_t StorageDaemonProvider::Burn(const std::string &devPath,
     }
     auto op = VolumeOperatorFactory::CreateOperator(parsedOptions.fsType);
     if (op == nullptr) {
-        LOGE("[L1:StorageDaemonProvider] CreateIsoImage: no operator for fsType=%{public}s", fsType.c_str());
+        LOGE("[L1:StorageDaemonProvider] Burn: no operator for fsType=%{public}s", parsedOptions.fsType.c_str());
         return E_NOT_SUPPORT;
     }
     ret = op->Burn(verifiedPath, parsedOptions);
@@ -3149,6 +3199,38 @@ int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t 
     return E_OK;
 #else
     LOGI("[L1:StorageDaemonProvider] GetDiskSize: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+    std::string &loopPath)
+{
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: >>> ENTER <<< sysPath=%{public}s, "
+         "offset=%{public}" PRIu64 " sizeLimit=%{public}" PRIu64, sysPath.c_str(), offset, sizeLimit);
+    if (offset == 0 || sizeLimit == 0 || sizeLimit <= offset) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: invalid offset or sizeLimit");
+        return E_PARAMS_INVALID;
+    }
+    std::string verifiedPath;
+    if (!IsDevPathValid(sysPath, verifiedPath)) {
+        return E_PARAMS_INVALID;
+    }
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = VolumeUtils::BindBlockLoopDev(verifiedPath, offset, sizeLimit, loopPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT SUCCESS <<< loopPath=%{public}s", loopPath.c_str());
+    return E_OK;
+#else
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }

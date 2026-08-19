@@ -201,6 +201,8 @@ public:
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
     virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
+    virtual int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+                                     std::string &loopPath) override;
     virtual int32_t CreateDmLinear(const std::string &sourceDevPath,
                                 uint64_t startSector, uint64_t sectorCount,
                                 uint64_t &dmDev) override;
@@ -239,6 +241,7 @@ private:
                                                int64_t startSector, int64_t endSector,
                                                const std::string &typeCode, std::string &verifiedPath);
     int32_t CheckUserIdRange(int32_t userId);
+    bool IsDevPathValid(const std::string &devPath, std::string &verifiedPath);
 };
 } // namespace StorageDaemon
 } // namespace OHOS
