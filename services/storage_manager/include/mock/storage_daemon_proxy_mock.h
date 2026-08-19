@@ -152,7 +152,8 @@ public:
     virtual int32_t DeletePartitionInfo(const std::string &devPath, const std::string &diskId,
                                         int32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
-                                    const std::string &volumeName, bool quickFormat = true) override;
+                                    const std::string &volumeName,
+                                    const std::vector<std::string> &cmd, bool quickFormat = true) override;
     virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
     virtual int32_t EjectCD(const std::string &devPath) override;
     virtual int32_t Erase(const std::string &devPath) override;

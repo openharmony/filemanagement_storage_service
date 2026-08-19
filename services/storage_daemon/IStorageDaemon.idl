@@ -148,6 +148,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 217] void FormatPartition([in] String devPath,
                                         [in] String fsType,
                                         [in] String volumeName,
+                                        [in] String[] cmd,
                                         [in] boolean quickFormat);
      [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
      [ipccode 251] void GetCapacity([in] String devPath, [out] long totalSize, [out] long freeSize);

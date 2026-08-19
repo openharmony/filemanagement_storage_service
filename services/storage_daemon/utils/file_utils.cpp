@@ -1418,6 +1418,12 @@ bool IsFilePathInvalid(const std::string &filePath)
     return false;
 }
 
+bool IsShellMetacharPresent(const std::string& str)
+{
+    static const std::string shellChars = "\"$`\\;|&!(){}<>*?[ ]^~\n";
+    return str.find_first_of(shellChars) != std::string::npos;
+}
+
 bool GetRealPath(const std::string &path, std::string &realPath)
 {
     char resolvedPath[PATH_MAX] = { 0 };
