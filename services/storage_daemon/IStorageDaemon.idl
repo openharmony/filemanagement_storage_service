@@ -163,4 +163,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 258] void GetVolumeOpProcess([in] String volumeId, [out] int process);
      [ipccode 259] void VerifyBurnData([in] String devPath, [in] int verType);
      [ipccode 261] void GetDiskSize([in] String devName, [out] unsigned long size);
+     [ipccode 262] void CreateDmLinear([in] String sourceDevPath,
+                                   [in] unsigned long startSector, [in] unsigned long sectorCount,
+                                   [out] unsigned long dmDev);
 }

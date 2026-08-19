@@ -495,5 +495,12 @@ int32_t StorageDaemonProxy::GetDiskSize(const std::string &devName, uint64_t &si
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::CreateDmLinear(const std::string &sourceDevPath,
+                                           uint64_t startSector, uint64_t sectorCount,
+                                           uint64_t &dmDev)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS

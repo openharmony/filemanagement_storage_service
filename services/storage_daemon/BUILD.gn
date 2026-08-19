@@ -192,6 +192,7 @@ ohos_executable("storage_daemon") {
       "disk_manager/src/disk/disk_utils.cpp",
       "disk_manager/src/volume/volume_utils.cpp",
       "disk_manager/src/disk/scan_device.cpp",
+      "disk_manager/src/disk/dm_device.cpp",
       "disk_manager/src/volume/udf_operator.cpp",
       "disk_manager/src/volume/iso9660_operator.cpp",
       "disk_manager/src/volume/exfat_operator.cpp",

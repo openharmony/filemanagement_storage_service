@@ -168,6 +168,9 @@ public:
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
     virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
+    virtual int32_t CreateDmLinear(const std::string &sourceDevPath,
+                                uint64_t startSector, uint64_t sectorCount,
+                                uint64_t &dmDev) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
