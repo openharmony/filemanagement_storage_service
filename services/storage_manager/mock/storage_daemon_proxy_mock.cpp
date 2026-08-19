@@ -495,5 +495,11 @@ int32_t StorageDaemonProxy::GetDiskSize(const std::string &devName, uint64_t &si
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+                                             std::string &loopPath)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS

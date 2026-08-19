@@ -39,6 +39,7 @@
 #endif
 #ifdef PC_USER_MANAGER
 #include "disk/disk_manager.h"
+#include "disk_manager/volume/volume_utils.h"
 #endif
 #include "file_ex.h"
 #include "file_sharing/file_sharing.h"
@@ -190,6 +191,35 @@ int32_t StorageDaemonProvider::CheckUserIdRange(int32_t userId)
     }
     LOGD("[L1:StorageDaemonProvider] CheckUserIdRange: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
+}
+
+bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::string &verifiedPath)
+{
+    if (devPath.empty() || devPath.length() >= PATH_MAX) {
+        LOGE("IsDevPathValid: invalid devPath");
+        return false;
+    }
+    if (IsFilePathInvalid(devPath)) {
+        LOGE("IsDevPathValid: devPath contains invalid path segments");
+        return false;
+    }
+    if (devPath.find("/dev/block/") != 0) {
+        LOGE("IsDevPathValid: invalid devPath prefix");
+        return false;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(devPath.c_str(), realPath) == nullptr) {
+        int32_t tmpErrno = errno;
+        LOGE("IsDevPathValid: realpath failed, errno=%{public}d", tmpErrno);
+        return false;
+    }
+    std::string tmpPath(realPath);
+    if (tmpPath.find("/dev/block/") != 0) {
+        LOGE("IsDevPathValid: invalid real path prefix");
+        return false;
+    }
+    verifiedPath = tmpPath;
+    return true;
 }
 
 int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPath,
@@ -3167,6 +3197,38 @@ int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t 
     return E_OK;
 #else
     LOGI("[L1:StorageDaemonProvider] GetDiskSize: <<< EXIT <<< not support");
+    return E_NOT_SUPPORT;
+#endif
+}
+
+int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+    std::string &loopPath)
+{
+#ifdef PC_USER_MANAGER
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: >>> ENTER <<< sysPath=%{public}s, "
+         "offset=%{public}" PRIu64 " sizeLimit=%{public}" PRIu64, sysPath.c_str(), offset, sizeLimit);
+    if (offset == 0 || sizeLimit == 0 || sizeLimit <= offset) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: invalid offset or sizeLimit");
+        return E_PARAMS_INVALID;
+    }
+    std::string verifiedPath;
+    if (!IsDevPathValid(sysPath, verifiedPath)) {
+        return E_PARAMS_INVALID;
+    }
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    int32_t ret = VolumeUtils::BindBlockLoopDev(verifiedPath, offset, sizeLimit, loopPath);
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        return ret;
+    }
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT SUCCESS <<< loopPath=%{public}s", loopPath.c_str());
+    return E_OK;
+#else
+    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }

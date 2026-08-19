@@ -115,6 +115,7 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderverifyburndata_fuzzer:fuzztest",
     "storagedaemonproviderburn_fuzzer:fuzztest",
     "storagedaemonproviderqueryusbisinuse_fuzzer:fuzztest",
+    "storagedaemonproviderbindblockloopdev_fuzzer:fuzztest",
   ]
 }
 
