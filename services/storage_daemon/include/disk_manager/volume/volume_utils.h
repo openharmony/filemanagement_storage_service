@@ -31,6 +31,8 @@ public:
                                 std::string& label);
     static int32_t MountFuseDevice(const std::string& mountPath,
                                    int& fuseFd);
+    static int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+                                    std::string &loopPath);
 };
 
 } // namespace StorageDaemon

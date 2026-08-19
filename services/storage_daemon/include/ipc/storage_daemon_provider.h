@@ -201,6 +201,8 @@ public:
     virtual int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType) override;
     virtual int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize) override;
     virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
+    virtual int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
+                                     std::string &loopPath) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
