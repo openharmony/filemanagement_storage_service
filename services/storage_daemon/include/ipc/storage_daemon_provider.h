@@ -238,6 +238,7 @@ private:
                                                int64_t startSector, int64_t endSector,
                                                const std::string &typeCode, std::string &verifiedPath);
     int32_t CheckUserIdRange(int32_t userId);
+    bool IsDevPathValid(const std::string &devPath, std::string &verifiedPath);
 };
 } // namespace StorageDaemon
 } // namespace OHOS
