@@ -452,9 +452,10 @@ int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
     for (const std::string &path: list) {
         LOGD("[L2:MountManager] UMountByListWithDetach: umount path %{public}s", path.c_str());
         int32_t res = UMount2(path, MNT_DETACH);
-        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-            LOGE("[L2:MountManager] UMountByListWithDetach: failed to unmount path, errno=%{public}d", errno);
-            result = errno;
+        int savedErrno = errno;
+        if (res != E_OK && savedErrno != ENOENT && savedErrno != EINVAL) {
+            LOGE("[L2:MountManager] UMountByListWithDetach: failed to unmount path, errno=%{public}d", savedErrno);
+            result = savedErrno;
         }
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT LIST WITH DETACH",
@@ -532,7 +533,6 @@ int32_t MountManager::MountByUser(int32_t userId)
     std::thread thread([userId]() { ClearRedundantResources(userId); });
     thread.detach();
     CreateVirtualDirs(userId);
-
     int32_t mountHmdfsRes = MountFileSystem(userId);
     if (mountHmdfsRes != E_OK) {
         LOGE("[L2:MountManager] MountByUser: <<< EXIT FAILED <<< MountFileSystem failed, ret=%{public}d",
@@ -827,8 +827,10 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         return ret;
     }
     for (const auto &dirInfo : dirInfoList.data) {
-        if (dirInfo.MakeDir() != E_OK) {
-            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(errno);
+        int32_t mkRet = dirInfo.MakeDir();
+        if (mkRet != E_OK) {
+            int savedErrno = errno;
+            std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
             ret = E_CREATE_DIR_VIRTUAL;
         }
@@ -858,8 +860,9 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< mount bind failed, errno=%{public}d", errno);
+    int32_t savedErrno = errno;
+    if (ret != 0 && savedErrno != EEXIST && savedErrno != EBUSY) {
+        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< mount bind failed, errno=%{public}d", savedErrno);
         return E_USER_MOUNT_ERR;
     }
     auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
@@ -885,7 +888,8 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT DFS DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("[L2:MountManager] UMountDfsDocs: SD_DURATION: delayTime=%{public}s", delay.c_str());
-    if (!filesystem::is_empty(dstPath)) {
+    std::error_code isEmptyEc;
+    if (!filesystem::is_empty(dstPath, isEmptyEc)) {
         LOGE("[L2:MountManager] UMountDfsDocs: <<< EXIT FAILED <<< Failed to umount");
         return E_NOT_EMPTY_TO_UMOUNT;
     }
@@ -954,7 +958,8 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
     if (!DirExist(path)) {
         return;
     }
-    for (const auto &entry : filesystem::directory_iterator(path)) {
+    std::error_code iterEc;
+    for (const auto &entry : filesystem::directory_iterator(path, iterEc)) {
         if (!entry.is_directory()) {
             continue;
         }
@@ -1021,7 +1026,10 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
     }
     for (const auto &nodeInfo : mountNodeList) {
         if (nodeInfo.MountDir() != E_OK) {
-            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
+            int savedErrno = errno;
+            LOGW("[L2:MountManager] MountAppdata: MountDir failed, dstPath=%{public}s",
+                nodeInfo.dstPath.c_str());
+            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
             StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
         }
     }
@@ -1057,7 +1065,10 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", errno);
+        int savedErrno = errno;
+        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", savedErrno);
+        StorageService::StorageRadar::ReportUserManager("UmountMntUserTmpfs::appdata", userId,
+            E_UMOUNT_MEDIA_FUSE, "dstPath=" + path + ",kernelCode=" + to_string(savedErrno));
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
@@ -1067,7 +1078,10 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", errno);
+        int savedErrno = errno;
+        LOGE("[L2:MountManager] UmountMntUserTmpfs: failed to umount with detach, errno=%{public}d", savedErrno);
+        StorageService::StorageRadar::ReportUserManager("UmountMntUserTmpfs::otherAppdata", userId,
+            E_UMOUNT_MEDIA_FUSE, "dstPath=" + path + ",kernelCode=" + to_string(savedErrno));
     }
     delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT OTHER TEMP CUR APPDATA",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);

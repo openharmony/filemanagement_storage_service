@@ -1778,7 +1778,8 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
         return -ENOENT;
     }
 
-    if (IsDir(keyDir) && std::filesystem::is_empty(keyDir)) {
+    std::error_code isEmptyEc;
+    if (IsDir(keyDir) && std::filesystem::is_empty(keyDir, isEmptyEc) && !isEmptyEc) {
         OHOS::ForceRemoveDirectory(keyDir);
         LOGE("[L3:KeyManager] CheckAndDeleteEmptyEl5Directory: removed empty el5 key directory for user %{public}u",
             user);

@@ -206,7 +206,7 @@ int Acl::DeSerialize(const char *p, size_t size)
         }
         size -= sizeof(AclXattrEntry);
     }
-    if (size < 0) {
+    if (size > BUF_MAX_SIZE) {
         entries.clear();
         header = { 0 };
         errno = EINVAL;

@@ -1663,5 +1663,35 @@ HWTEST_F(ExtDiskUtilsTest, GetCapacity_BlankDiscUsedSizeZero, TestSize.Level1)
     GTEST_LOG_(INFO) << "GetCapacity_BlankDiscUsedSizeZero end";
 }
 
+/**
+ * @tc.name: DeletePartitionInfo_InvalidDiskId
+ * @tc.desc: Verify DeletePartitionInfo returns E_PARAMS_INVALID with path traversal diskId.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(ExtDiskUtilsTest, DeletePartitionInfo_InvalidDiskId, TestSize.Level1)
+{
+    std::string devPath = "/dev/block/test_dev";
+    std::string diskId = "../sda";
+    int32_t partitionNum = 1;
+    int32_t ret = DiskUtils::DeletePartitionInfo(devPath, diskId, partitionNum);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+/**
+ * @tc.name: ValidateBurnOptions_InvalidBurnPath
+ * @tc.desc: Verify ValidateBurnOptions returns E_PARAMS_INVALID with path traversal burnPath.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(ExtDiskUtilsTest, ValidateBurnOptions_InvalidBurnPath, TestSize.Level1)
+{
+    BurnOptions options;
+    options.diskName = "testdisk";
+    options.burnPath = "../../etc/passwd";
+    int32_t ret = ValidateBurnOptions(options);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
