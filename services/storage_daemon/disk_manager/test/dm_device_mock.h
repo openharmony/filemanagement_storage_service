@@ -38,6 +38,11 @@ struct MockConfig {
     bool dmRemoveCalled = false;
     int closeCount = 0;
 
+    static constexpr int MOCK_FD_CONTROL = 100;
+    static constexpr int MOCK_FD_SOURCE = 200;
+    static constexpr int MOCK_DM_DEV_MAJOR = 253;
+    static constexpr int MOCK_DM_DEV_MINOR = 0;
+
     // 递增内部计数并判断当前调用是否应失败
     bool ShouldStrncpySFail()
     {

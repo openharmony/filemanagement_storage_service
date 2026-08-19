@@ -51,14 +51,14 @@ extern "C" int __wrap_open(const char *path, int flags, ...)
             errno = EACCES;
             return -1;
         }
-        return 100;
+        return MockConfig::MOCK_FD_CONTROL;
     }
     if (strncmp(path, "/dev/block/", strlen("/dev/block/")) == 0) {
         if (g_mock.openSourceFail) {
             errno = ENOENT;
             return -1;
         }
-        return 200;
+        return MockConfig::MOCK_FD_SOURCE;
     }
     // 非设备路径（如 sysfs 文件）透传给真实实现
     if (flags & O_CREAT) {
@@ -79,7 +79,7 @@ extern "C" int __wrap_close(int fd)
         return __real_close(fd);
     }
     // mock 模式：只对 mock fd 计数，其余透传
-    if (fd == 100 || fd == 200) {
+    if (fd == MockConfig::MOCK_FD_CONTROL || fd == MockConfig::MOCK_FD_SOURCE) {
         g_mock.closeCount++;
         return 0;
     }
@@ -87,6 +87,82 @@ extern "C" int __wrap_close(int fd)
 }
 
 extern "C" int __real_ioctl(int fd, unsigned long request, ...);
+
+static int HandleBlkGetSize64(uint64_t *bytes)
+{
+    if (g_mock.blkGetSize64Fail) {
+        errno = EIO;
+        return -1;
+    }
+    *bytes = g_mock.deviceBytes;
+    return 0;
+}
+ 
+static int HandleDmDevStatus(struct dm_ioctl *dm)
+{
+    if (g_mock.statusFail) {
+        errno = ENXIO;
+        return -1;
+    }
+    dm->dev = makedev(MockConfig::MOCK_DM_DEV_MAJOR, MockConfig::MOCK_DM_DEV_MINOR);
+    return 0;
+}
+ 
+static int HandleDmDevCreate(struct dm_ioctl *dm)
+{
+    if (g_mock.createFail) {
+        errno = EBUSY;
+        return -1;
+    }
+    dm->dev = makedev(MockConfig::MOCK_DM_DEV_MAJOR, MockConfig::MOCK_DM_DEV_MINOR);
+    return 0;
+}
+ 
+static int HandleDmTableLoad()
+{
+    if (g_mock.loadTableFail) {
+        errno = EINVAL;
+        return -1;
+    }
+    return 0;
+}
+ 
+static int HandleDmDevSuspend()
+{
+    if (g_mock.resumeFail) {
+        errno = EINVAL;
+        return -1;
+    }
+    return 0;
+}
+ 
+static int HandleDmDevRemove()
+{
+    g_mock.dmRemoveCalled = true;
+    if (g_mock.removeFail) {
+        errno = EBUSY;
+        return -1;
+    }
+    return 0;
+}
+ 
+static int HandleDmIoctl(unsigned long request, struct dm_ioctl *dm)
+{
+    if (request == DM_DEV_STATUS) {
+        return HandleDmDevStatus(dm);
+    }
+    if (request == DM_DEV_CREATE) {
+        return HandleDmDevCreate(dm);
+    }
+    if (request == DM_TABLE_LOAD) {
+        return HandleDmTableLoad();
+    }
+    if (request == DM_DEV_SUSPEND) {
+        return HandleDmDevSuspend();
+    }
+    // DM_DEV_REMOVE
+    return HandleDmDevRemove();
+}
 
 extern "C" int __wrap_ioctl(int fd, unsigned long request, ...)
 {
@@ -106,12 +182,7 @@ extern "C" int __wrap_ioctl(int fd, unsigned long request, ...)
         va_start(args, request);
         uint64_t *bytes = static_cast<uint64_t *>(va_arg(args, void *));
         va_end(args);
-        if (g_mock.blkGetSize64Fail) {
-            errno = EIO;
-            return -1;
-        }
-        *bytes = g_mock.deviceBytes;
-        return 0;
+        return HandleBlkGetSize64(bytes);
     }
 
     switch (request) {
@@ -124,43 +195,7 @@ extern "C" int __wrap_ioctl(int fd, unsigned long request, ...)
             va_start(args, request);
             struct dm_ioctl *dm = static_cast<struct dm_ioctl *>(va_arg(args, void *));
             va_end(args);
-            if (request == DM_DEV_STATUS) {
-                if (g_mock.statusFail) {
-                    errno = ENXIO;
-                    return -1;
-                }
-                dm->dev = makedev(253, 0);
-                return 0;
-            }
-            if (request == DM_DEV_CREATE) {
-                if (g_mock.createFail) {
-                    errno = EBUSY;
-                    return -1;
-                }
-                dm->dev = makedev(253, 0);
-                return 0;
-            }
-            if (request == DM_TABLE_LOAD) {
-                if (g_mock.loadTableFail) {
-                    errno = EINVAL;
-                    return -1;
-                }
-                return 0;
-            }
-            if (request == DM_DEV_SUSPEND) {
-                if (g_mock.resumeFail) {
-                    errno = EINVAL;
-                    return -1;
-                }
-                return 0;
-            }
-            // DM_DEV_REMOVE
-            g_mock.dmRemoveCalled = true;
-            if (g_mock.removeFail) {
-                errno = EBUSY;
-                return -1;
-            }
-            return 0;
+            return HandleDmIoctl(request, dm);
         }
         default:
             // mock 模式下未知 request 不提取参数、不调真实 ioctl（假 fd 会 UB）
