@@ -104,6 +104,7 @@ ohos_static_library("storagedaemonprovider_ejectcd_fuzztest") {
   if (enable_disk_manager) {
     defines += [ "DISK_MANAGER" ]
     sources += [
+      "${storage_daemon_path}/disk_manager/src/disk/dm_device.cpp",
       "${storage_daemon_path}/disk_manager/src/disk/disk_utils.cpp",
       "${storage_daemon_path}/disk_manager/src/disk/scan_device.cpp",
       "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
