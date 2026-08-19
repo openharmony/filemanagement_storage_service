@@ -3152,5 +3152,31 @@ int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t 
     return E_NOT_SUPPORT;
 #endif
 }
+
+int32_t StorageDaemonProvider::CreateDmLinear(const std::string &sourceDevPath,
+                                              uint64_t startSector, uint64_t sectorCount,
+                                              uint64_t &dmDev)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreateDmLinear: >>> ENTER <<< source=%{public}s, "
+         "start=%{public}llu, count=%{public}llu",
+         sourceDevPath.c_str(),
+         static_cast<unsigned long long>(startSector),
+         static_cast<unsigned long long>(sectorCount));
+ 
+    DmDevice dmDevice(sourceDevPath, startSector, sectorCount);
+    if (!dmDevice.Create()) {
+        LOGE("[L1:StorageDaemonProvider] CreateDmLinear: Create failed");
+        return E_ERR;
+    }
+    dmDev = static_cast<uint64_t>(dmDevice.GetDeviceDev());
+ 
+    LOGI("[L1:StorageDaemonProvider] CreateDmLinear: <<< EXIT SUCCESS <<< dmDev=(%{public}u,%{public}u)",
+         major(static_cast<dev_t>(dmDev)), minor(static_cast<dev_t>(dmDev)));
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS
