@@ -879,9 +879,11 @@ static int ReleaseThumb(const char *path, struct fuse_file_info *fi)
 {
     auto *td = FhToPtr<ThumbDesc>(fi->fh);
     if (td) {
-        std::lock_guard<std::mutex> lockGuard(td->lock);
+        {
+            std::lock_guard<std::mutex> lockGuard(td->lock);
+            fi->fh = 0;
+        }
         delete td;
-        fi->fh = 0;
     }
     return 0;
 }
