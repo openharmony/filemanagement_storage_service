@@ -204,8 +204,8 @@ public:
     virtual int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
                                      std::string &loopPath) override;
     virtual int32_t CreateDmLinear(const std::string &sourceDevPath,
-                                uint64_t startSector, uint64_t sectorCount,
-                                uint64_t &dmDev) override;
+                                   uint64_t startSector, uint64_t sectorCount,
+                                   uint64_t &dmDev) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
