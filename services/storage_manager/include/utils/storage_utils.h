@@ -26,6 +26,8 @@ static const int64_t UNIT = 1000;
 static const int64_t THRESHOLD = 512;
 // ONE_GB为1GB字节数。
 static const int64_t ONE_GB = 1000000000;
+// ONE_TB为1024GB字节数。
+static const int64_t ONE_TB = 1024LL * ONE_GB;
 int64_t GetRoundSize(int64_t size);
 std::string GetAnonyString(const std::string &value);
 bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);

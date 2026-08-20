@@ -16,6 +16,8 @@
 #include "storage/storage_total_status_service.h"
 
 #include "hitrace_meter.h"
+#include <cstdint>
+#include <cstdlib>
 #include <sys/statvfs.h>
 
 #include "ipc_skeleton.h"
@@ -23,12 +25,19 @@
 #include "storage/storage_status_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "file_ex.h"
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+namespace {
+    constexpr int64_t SECTOR_SIZE = 512;
+    constexpr int32_t ROUND_HALF = 2;
+    constexpr const char *BOOT_DEVICE_SIZE_PATH = "/proc/bootdevice/size";
+} // namespace
+
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService() {}
 
@@ -47,6 +56,12 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
         LOGE("storage total status service GetSizeOfPath failed, please check");
         StorageRadar::ReportGetStorageStatus("GetSystemSize::GetSizeOfPath", DEFAULT_USERID, ret, "setting");
         return ret;
+    }
+    if (totalSize > roundSize) {
+        LOGE("StorageTotalStatusService::GetSystemSize: totalSize=%{public}lld > roundSize=%{public}lld",
+            static_cast<long long>(totalSize), static_cast<long long>(roundSize));
+        systemSize = 0;
+        return E_OK;
     }
     systemSize = roundSize - totalSize;
     LOGE("StorageTotalStatusService::GetSystemSize success, roundSize=%{public}lld, (/data)totalSize=%{public}lld, "
@@ -73,10 +88,31 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         StorageRadar::ReportGetStorageStatus("GetSystemSize::GetSizeOfRootPath", DEFAULT_USERID, ret, "setting");
         return ret;
     }
-    totalSize = GetRoundSize(dataSize + rootSize);
-    LOGD("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}lld, (/data)totalDataSize=%{public}lld,"
-        " (/)totalRootSize=%{public}lld",
-        static_cast<long long>(totalSize), static_cast<long long>(dataSize), static_cast<long long>(rootSize));
+    int64_t rawSize = dataSize + rootSize;
+    if (rawSize > ONE_TB) {
+        std::string content;
+        if (OHOS::LoadStringFromFile(BOOT_DEVICE_SIZE_PATH, content) && !content.empty()) {
+            int64_t sectorCount = atoll(content.c_str());
+            if (sectorCount <= 0) {
+                LOGE("GetTotalSize: atoll failed for %{public}s", BOOT_DEVICE_SIZE_PATH);
+                totalSize = GetRoundSize(rawSize);
+            } else if (sectorCount <= INT64_MAX / SECTOR_SIZE) {
+                int64_t deviceSize = sectorCount * SECTOR_SIZE;
+                totalSize = (deviceSize + ONE_GB / ROUND_HALF) / ONE_GB * ONE_GB;
+            } else {
+                totalSize = GetRoundSize(rawSize);
+            }
+        } else {
+            LOGE("GetTotalSize: read boot device size failed for %{public}s", BOOT_DEVICE_SIZE_PATH);
+            totalSize = GetRoundSize(rawSize);
+        }
+    } else {
+        totalSize = GetRoundSize(rawSize);
+    }
+    LOGD("StorageTotalStatusService::GetTotalSize success, totalSize=%{public}lld, rawSize=%{public}lld, "
+        "(/data)totalDataSize=%{public}lld, (/)totalRootSize=%{public}lld",
+        static_cast<long long>(totalSize), static_cast<long long>(rawSize),
+        static_cast<long long>(dataSize), static_cast<long long>(rootSize));
     return E_OK;
 }
 
