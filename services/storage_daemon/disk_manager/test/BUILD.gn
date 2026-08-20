@@ -136,22 +136,12 @@ ohos_unittest("scan_device_test") {
     "$ROOT_DIR/disk_manager/test/scan_device_test.cpp",
   ]
 
-  ldflags = [
-    "-Wl,--wrap=ioctl",
-    "-Wl,--wrap=open",
-    "-Wl,--wrap=close",
-    "-Wl,--wrap=memset_s",
-    "-Wl,--wrap=strncpy_s",
-    "-Wl,--wrap=strcpy_s",
-  ]
-
   deps = [
     "$ROOT_DIR:storage_common_utils",
     "$ROOT_DIR:storage_daemon_header",
   ]
 
   external_deps = [
-    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
