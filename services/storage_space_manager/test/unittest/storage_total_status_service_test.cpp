@@ -885,5 +885,158 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Monotonicity, TestSize.Leve
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Monotonicity end";
 }
 
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_NullPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath(nullptr, static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENT);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_InvalidPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/nonexistent_path_xyz_abc",
+        static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_EQ(ret, E_STATVFS_FAILED);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_TotalType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    if (ret == E_OK) {
+        EXPECT_GT(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_FreeType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), size);
+    if (ret == E_OK) {
+        EXPECT_GE(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_UsedType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), size);
+    if (ret == E_OK) {
+        EXPECT_GE(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_RootTotal, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    if (ret == E_OK) {
+        EXPECT_GT(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_NullPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath(nullptr, static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENT);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_InvalidPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/nonexistent_path_xyz_abc",
+        static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    EXPECT_EQ(ret, E_STATVFS_FAILED);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_TotalType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GT(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_FreeType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_UsedType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_EmptyStringPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_NE(ret, E_OK);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootTotal, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_NE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootFree, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::FREE), inodeCnt);
+    EXPECT_EQ(ret, 0);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootUsed, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::USED), inodeCnt);
+    EXPECT_NE(ret, 0);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_AllTypes_Consistency, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int64_t usedSize = 0;
+    int32_t ret1 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), totalSize);
+    int32_t ret2 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), freeSize);
+    int32_t ret3 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), usedSize);
+    if (ret1 == E_OK && ret2 == E_OK && ret3 == E_OK) {
+        EXPECT_GE(totalSize, freeSize);
+        EXPECT_GE(totalSize, usedSize);
+    }
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

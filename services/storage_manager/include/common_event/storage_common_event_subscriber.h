@@ -49,6 +49,7 @@ private:
     void CheckAndTriggerStatistic();
     std::atomic<uint8_t> deviceState_{0x00}; // 默认: 0x00 = 亮屏+断电
     std::atomic<int> batteryCapacity_{0};
+    std::atomic<bool> isSleep_{false};
 };
 }  // namespace StorageManager
 }  // namespace OHOS

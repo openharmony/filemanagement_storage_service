@@ -37,7 +37,7 @@ public:
     virtual bool WriteRemoteObject(const Parcelable *object) = 0;
     virtual bool WriteRemoteObject(const sptr<IRemoteObject> &object) = 0;
     virtual sptr<IRemoteObject> ReadRemoteObject() = 0;
-    virtual bool ReadBool();
+    virtual bool ReadBool() = 0;
     virtual bool ReadBool(bool &value) = 0;
     virtual bool WriteBool(bool value) = 0;
     virtual bool WriteString(const std::string &value) = 0;
@@ -51,6 +51,7 @@ public:
     virtual bool WriteUint64(uint64_t value) = 0;
     virtual bool WriteUint16(uint16_t value) = 0;
     virtual bool ReadUint64(uint64_t &value) = 0;
+    virtual uint64_t ReadUint64() = 0;
     virtual bool WriteStringVector(const std::vector<std::string> &val) = 0;
     virtual bool WriteUint32(uint32_t value) = 0;
     virtual bool WriteRawData(const void *data, size_t size) = 0;
@@ -60,6 +61,7 @@ public:
     virtual const char *ReadCString() = 0;
     virtual bool ReadInt64Vector(std::vector<int64_t> *val) = 0;
     virtual bool WriteUint8(uint8_t value) = 0;
+    virtual bool WriteInt8(int8_t value) = 0;
     virtual bool ParseFrom(uintptr_t data, size_t size) = 0;
 
 public:
@@ -91,6 +93,7 @@ public:
     MOCK_METHOD1(WriteUint64, bool(uint64_t value));
     MOCK_METHOD1(WriteUint16, bool(uint16_t value));
     MOCK_METHOD1(ReadUint64, bool(uint64_t &value));
+    MOCK_METHOD0(ReadUint64, uint64_t());
     MOCK_METHOD1(WriteStringVector, bool(const std::vector<std::string> &val));
     MOCK_METHOD1(WriteUint32, bool(uint32_t value));
     MOCK_METHOD2(WriteRawData, bool(const void *data, size_t size));
@@ -100,6 +103,7 @@ public:
     MOCK_METHOD0(ReadCString, const char *());
     MOCK_METHOD1(ReadInt64Vector, bool(std::vector<int64_t> *val));
     MOCK_METHOD1(WriteUint8, bool(uint8_t value));
+    MOCK_METHOD1(WriteInt8, bool(int8_t value));
     MOCK_METHOD2(ParseFrom, bool(uintptr_t data, size_t size));
 };
 } // namespace OHOS::StorageSpaceManager

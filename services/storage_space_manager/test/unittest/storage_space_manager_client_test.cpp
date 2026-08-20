@@ -17,6 +17,7 @@
 #include <gmock/gmock.h>
 #include <singleton.h>
 
+#include "istorage_space_manager.h"
 #include "storage_space_manager_client.h"
 #include "storage_space_manager_errno.h"
 #include "system_ability_mock.h"
@@ -154,6 +155,125 @@ HWTEST_F(StorageSpaceManagerClientTest, GetDataShareService_BasicFunction, TestS
     
     EXPECT_EQ(ret, E_FAIL);
     EXPECT_EQ(remoteObject, nullptr);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, LoadSystemAbilityFail_Basic, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->LoadSystemAbilityFail();
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+    EXPECT_TRUE(client->loadFinished_);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, LoadSystemAbilitySuccess_NullRemote, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    sptr<IRemoteObject> nullRemote = nullptr;
+    client->LoadSystemAbilitySuccess(nullRemote);
+    EXPECT_TRUE(client->loadFinished_);
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, LoadSystemAbilityFail_ThenResetProxy, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->LoadSystemAbilityFail();
+    EXPECT_TRUE(client->loadFinished_);
+    EXPECT_EQ(client->ResetProxy(), E_OK);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, LoadSystemAbilitySuccess_MultipleCalls, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    sptr<IRemoteObject> nullRemote = nullptr;
+    client->LoadSystemAbilitySuccess(nullRemote);
+    EXPECT_TRUE(client->loadFinished_);
+    client->loadFinished_ = false;
+    client->LoadSystemAbilitySuccess(nullRemote);
+    EXPECT_TRUE(client->loadFinished_);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, LoadSystemAbilityFail_MultipleCalls, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->LoadSystemAbilityFail();
+    EXPECT_TRUE(client->loadFinished_);
+    client->loadFinished_ = false;
+    client->LoadSystemAbilityFail();
+    EXPECT_TRUE(client->loadFinished_);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, OnAddSystemAbility_ClearsState, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->loadFinished_ = true;
+    client->OnAddSystemAbility();
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+    EXPECT_EQ(client->deathRecipient_, nullptr);
+    EXPECT_FALSE(client->loadFinished_);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, SsmDeathRecipient_OnRemoteDied, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    StorageSpaceManagerClient::SsmDeathRecipient recipient;
+    wptr<IRemoteObject> remote(nullptr);
+    recipient.OnRemoteDied(remote);
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, SystemAbilityStatusListener_OnRemoveSystemAbility, TestSize.Level1)
+{
+    StorageSpaceManagerClient::SystemAbilityStatusListener listener;
+    listener.OnRemoveSystemAbility(8650, "");
+    SUCCEED();
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, SystemAbilityStatusListener_OnAddSystemAbility, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->loadFinished_ = true;
+    StorageSpaceManagerClient::SystemAbilityStatusListener listener;
+    listener.OnAddSystemAbility(8650, "");
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+    EXPECT_FALSE(client->loadFinished_);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, SubscribeSsmSA_SamgrNull, TestSize.Level1)
+{
+    g_mockSamgrReturnNull = true;
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->SubscribeSsmSA();
+    EXPECT_EQ(client->statusListener_, nullptr);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, GetProxy_SamgrNull, TestSize.Level1)
+{
+    g_mockSamgrReturnNull = true;
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->ResetProxy();
+    auto proxy = client->GetProxy();
+    EXPECT_EQ(proxy, nullptr);
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, ResetProxy_WithDeathRecipient, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->deathRecipient_ = new (std::nothrow) StorageSpaceManagerClient::SsmDeathRecipient();
+    EXPECT_EQ(client->ResetProxy(), E_OK);
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+    EXPECT_EQ(client->deathRecipient_, nullptr);
 }
 
 } // namespace StorageSpaceManager
