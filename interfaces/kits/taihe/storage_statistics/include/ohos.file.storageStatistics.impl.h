@@ -45,5 +45,7 @@ taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStats
 taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync();
 ::ohos::file::storageStatistics::BundleStats GetBundleStatsSync(::taihe::string_view packageName,
     ::taihe::optional_view<int32_t> index);
+::ohos::file::storageStatistics::BundleStats GetBundleStatsSync2(::taihe::string_view packageName,
+    int32_t index, int32_t statFlag);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H
