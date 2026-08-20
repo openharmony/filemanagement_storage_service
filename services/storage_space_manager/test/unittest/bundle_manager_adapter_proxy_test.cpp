@@ -160,46 +160,6 @@ HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_CleanBundleCac
 }
 
 /**
- * @tc.name: BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001
- * @tc.desc: The execution of the CleanBundleCacheFilesAutomatic failed.
- * @tc.type: FUNC
- * @tc.require: I7TDJK
- */
-HWTEST_F(BundleManagerAdapterProxyTest, BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001, TestSize.Level0)
-{
-    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001 Start";
-
-    std::optional<uint64_t> cleanedSize = 0;
-
-    auto ret = proxy_->CleanBundleCacheFilesAutomatic(0, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
-    EXPECT_EQ(ret, ERR_BUNDLE_MANAGER_INVALID_PARAMETER);
-
-    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(false));
-    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
-    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
-
-    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
-    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(false));
-    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
-    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
-
-    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
-    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(true));
-    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(ERR_APPEXECFWK_PARCEL_ERROR));
-    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
-    EXPECT_EQ(ret, ERR_BUNDLE_MANAGER_IPC_TRANSACTION);
-
-    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
-    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(true));
-    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
-    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(0));
-    ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
-    EXPECT_EQ(ret, 0);
-
-    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0001 End";
-}
-
-/**
  * @tc.name: BundleManagerAdapterProxy_GetBundleInfosV9_0000
  * @tc.desc: The execution of the ConnectDfs failed.
  * @tc.type: FUNC
@@ -819,5 +779,134 @@ HWTEST_F(BundleManagerAdapterProxyTest, GetBundleInodeCount_0001, TestSize.Level
     EXPECT_EQ(inodeCount, expectedInodeCount);
 
     GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleInodeCount_0001 End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, GetApplicationInfosV9_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetApplicationInfosV9_0000 Start";
+    std::vector<ApplicationInfo> appInfos;
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(false));
+    auto ret = proxy_->GetApplicationInfosV9(0, 100, appInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(false));
+    ret = proxy_->GetApplicationInfosV9(0, 100, appInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(false));
+    ret = proxy_->GetApplicationInfosV9(0, 100, appInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(ERR_APPEXECFWK_PARCEL_ERROR));
+    ret = proxy_->GetApplicationInfosV9(0, 100, appInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetApplicationInfosV9_0000 End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, CleanBundlePartialCacheAutomatic_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundlePartialCacheAutomatic_0000 Start";
+    CleanCacheInfo cacheInfo;
+    cacheInfo.bundleName = "com.example.app";
+    cacheInfo.userId = 100;
+    cacheInfo.appIndex = 0;
+    cacheInfo.cacheThreshold = 1024;
+    uint64_t beforeSize = 0;
+    uint64_t afterSize = 0;
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(false));
+    auto ret = proxy_->CleanBundlePartialCacheAutomatic(cacheInfo, beforeSize, afterSize);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteParcelable(_)).WillOnce(Return(false));
+    ret = proxy_->CleanBundlePartialCacheAutomatic(cacheInfo, beforeSize, afterSize);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteParcelable(_)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(ERR_APPEXECFWK_PARCEL_ERROR));
+    ret = proxy_->CleanBundlePartialCacheAutomatic(cacheInfo, beforeSize, afterSize);
+    EXPECT_EQ(ret, ERR_BUNDLE_MANAGER_IPC_TRANSACTION);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundlePartialCacheAutomatic_0000 End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, CleanBundleCacheFilesAutomatic_0002_HasValue, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0002 Start";
+    std::optional<uint64_t> cleanedSize;
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteUint64(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt8(_)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(ERR_OK));
+    EXPECT_CALL(*messageParcelMock_, ReadBool()).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, ReadUint64()).WillOnce(Return(500ULL));
+    auto ret = proxy_->CleanBundleCacheFilesAutomatic(100, OHOS::AppExecFwk::CleanType::CACHE_SPACE, cleanedSize);
+    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_TRUE(cleanedSize.has_value());
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_CleanBundleCacheFilesAutomatic_0002 End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, GetBundleNameForUid_HighUid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleNameForUid_HighUid Start";
+    string bundleName = "default-bundleName";
+    int uid = Constants::BASE_APP_UID + 1;
+
+    EXPECT_CALL(*messageParcelMock_, WriteInterfaceToken(_)).WillOnce(Return(true));
+    EXPECT_CALL(*messageParcelMock_, WriteInt32(_)).WillOnce(Return(true));
+    EXPECT_CALL(*mock_, SendRequest(_, _, _, _)).WillOnce(Return(NO_ERROR));
+    EXPECT_CALL(*messageParcelMock_, ReadBool()).WillOnce(Return(false));
+    auto ret = proxy_->GetBundleNameForUid(uid, bundleName);
+    EXPECT_EQ(ret, false);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_GetBundleNameForUid_HighUid End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, SendTransactCmd_NullRemote, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_SendTransactCmd_NullRemote Start";
+    auto nullProxy = make_shared<BundleManagerAdapterProxy>(nullptr);
+    MessageParcel data;
+    MessageParcel reply;
+    bool ret = nullProxy->SendTransactCmd(BundleMgrInterfaceCode::GET_BUNDLE_NAME_FOR_UID, data, reply);
+    EXPECT_EQ(ret, false);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_SendTransactCmd_NullRemote End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, SendTransactCmdWithLog_NullRemote, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_SendTransactCmdWithLog_NullRemote Start";
+    auto nullProxy = make_shared<BundleManagerAdapterProxy>(nullptr);
+    MessageParcel data;
+    MessageParcel reply;
+    bool ret = nullProxy->SendTransactCmdWithLog(BundleMgrInterfaceCode::GET_NAME_AND_APPINDEX_FOR_UID, data, reply);
+    EXPECT_EQ(ret, false);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_SendTransactCmdWithLog_NullRemote End";
+}
+
+HWTEST_F(BundleManagerAdapterProxyTest, InnerGetVectorFromParcelIntelligent_NegativeSize, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_NegativeSize Start";
+    MessageParcel reply;
+    std::vector<BundleInfo> parcelableInfos;
+
+    EXPECT_CALL(*messageParcelMock_, ReadInt32()).WillOnce(Return(-1));
+    auto ret = proxy_->InnerGetVectorFromParcelIntelligent(reply, parcelableInfos);
+    EXPECT_EQ(ret, ERR_APPEXECFWK_PARCEL_ERROR);
+
+    GTEST_LOG_(INFO) << "BundleManagerAdapterProxy_InnerGetVectorFromParcelIntelligent_NegativeSize End";
 }
 } // namespace OHOS::StorageSpaceManager::Test

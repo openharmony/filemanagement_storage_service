@@ -87,7 +87,7 @@ HWTEST_F(BundleManagerConnectorTest, Bundle_Manager_Connector_GetBundleMgrProxy_
     if (proxy == nullptr) {
         LOGI("Expected nullptr when SystemAbilityManager unavailable in test environment");
     }
-    ASSERT_TRUE(true);
+    SUCCEED();
     LOGI("Bundle_Manager_Connector_GetBundleMgrProxy_test_0000 end");
 }
 
@@ -108,7 +108,7 @@ HWTEST_F(BundleManagerConnectorTest, Bundle_Manager_Connector_GetBundleMgrProxy_
     if (proxy1 != nullptr && proxy2 != nullptr) {
         EXPECT_EQ(proxy1, proxy2);
     }
-    ASSERT_TRUE(true);
+    SUCCEED();
     LOGI("Bundle_Manager_Connector_GetBundleMgrProxy_test_0001 end");
 }
 
@@ -163,7 +163,7 @@ HWTEST_F(BundleManagerConnectorTest, Bundle_Manager_Connector_ResetBundleMgrProx
     if (proxy1 != nullptr && proxy2 != nullptr) {
         EXPECT_NE(proxy1, proxy2);
     }
-    ASSERT_TRUE(true);
+    SUCCEED();
     LOGI("Bundle_Manager_Connector_ResetBundleMgrProxy_test_0002 end");
 }
 
@@ -185,7 +185,7 @@ HWTEST_F(BundleManagerConnectorTest, Bundle_Mgr_DeathRecipient_OnRemoteDied_test
     if (proxy == nullptr) {
         LOGI("Expected nullptr after OnRemoteDied reset proxy");
     }
-    ASSERT_TRUE(true);
+    SUCCEED();
     LOGI("Bundle_Mgr_DeathRecipient_OnRemoteDied_test_0000 end");
 }
 

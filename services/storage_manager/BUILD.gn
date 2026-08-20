@@ -74,6 +74,10 @@ ohos_shared_library("storage_manager") {
     defines += [ "PHONE_DEVICE_ENABLE" ]
   }
 
+  if (tablet_device_enable || phone_device_enable) {
+    defines += [ "AUTO_CLEAN_BUNDLE_CACHE_ENABLE" ]
+  }
+
   ldflags = [
     "-Wl,--gc-sections",
     "-Wl,-O1",
