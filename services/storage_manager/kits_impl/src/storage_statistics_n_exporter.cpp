@@ -21,6 +21,7 @@
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "bundle_stats.h"
 
 using namespace OHOS::FileManagement::LibN;
 
@@ -30,6 +31,37 @@ const std::string EMPTY_STRING = "";
 const std::string FEATURE_STR = "StorageStatistics.";
 constexpr int32_t INVALID_INDEX = -1;
 constexpr int32_t INVALID_STATFLAG = -1;
+
+void InitGetBundleStatsFlag(napi_env env, napi_value exports)
+{
+    const char *propertyName = "GetBundleStatsFlag";
+    napi_property_descriptor desc[] = {
+        DECLARE_NAPI_STATIC_PROPERTY("GET_BUNDLE_WITH_ALL_SIZE",
+            NVal::CreateUint32(env, GET_BUNDLE_WITH_ALL_SIZE).val_),
+        DECLARE_NAPI_STATIC_PROPERTY("GET_BUNDLE_WITHOUT_INSTALL_SIZE",
+            NVal::CreateUint32(env, GET_BUNDLE_WITHOUT_INSTALL_SIZE).val_),
+        DECLARE_NAPI_STATIC_PROPERTY("GET_BUNDLE_WITHOUT_DATA_SIZE",
+            NVal::CreateUint32(env, GET_BUNDLE_WITHOUT_DATA_SIZE).val_),
+        DECLARE_NAPI_STATIC_PROPERTY("GET_BUNDLE_WITHOUT_CACHE_SIZE",
+            NVal::CreateUint32(env, GET_BUNDLE_WITHOUT_CACHE_SIZE).val_),
+    };
+    napi_value obj = nullptr;
+    napi_status status = napi_create_object(env, &obj);
+    if (status != napi_ok) {
+        LOGE("Failed to create GetBundleStatsFlag object");
+        return;
+    }
+    status = napi_define_properties(env, obj, sizeof(desc) / sizeof(desc[0]), desc);
+    if (status != napi_ok) {
+        LOGE("Failed to set GetBundleStatsFlag properties");
+        return;
+    }
+    status = napi_set_named_property(env, exports, propertyName, obj);
+    if (status != napi_ok) {
+        LOGE("Failed to set GetBundleStatsFlag to exports");
+        return;
+    }
+}
 
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
@@ -129,6 +161,21 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     }
 }
 
+static void ParseBundleStatsOptions(napi_env env, napi_value optVal,
+                                    int32_t &index, uint32_t &statFlag, bool &succ)
+{
+    succ = true;
+    NVal opt(env, optVal);
+    NVal indexVal = opt.GetProp("index");
+    if (indexVal.TypeIs(napi_number)) {
+        std::tie(succ, index) = indexVal.ToInt32();
+    }
+    NVal flagVal = opt.GetProp("statFlag");
+    if (flagVal.TypeIs(napi_number)) {
+        std::tie(succ, statFlag) = flagVal.ToUint32();
+    }
+}
+
 std::tuple<std::string, int32_t, uint32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
@@ -150,14 +197,20 @@ std::tuple<std::string, int32_t, uint32_t> ExtractNameAndIndex(napi_env env, nap
         std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
         std::tie(succ, statFlag) = NVal(env, funcArg[(int)NARG_POS::FOURTH]).ToUint32();
     } else if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
-        if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
-            std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+        NVal secondArg(env, funcArg[(int)NARG_POS::SECOND]);
+        if (secondArg.TypeIs(napi_number)) {
+            std::tie(succ, index) = secondArg.ToInt32();
             std::tie(succ, statFlag) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToUint32();
         } else {
             std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
         }
-    } else if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
-        std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+    } else if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        NVal secondArg(env, funcArg[(int)NARG_POS::SECOND]);
+        if (secondArg.TypeIs(napi_number)) {
+            std::tie(succ, index) = secondArg.ToInt32();
+        } else if (secondArg.TypeIs(napi_object)) {
+            ParseBundleStatsOptions(env, secondArg.val_, index, statFlag, succ);
+        }
     }
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
@@ -203,9 +256,11 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetBundleStats";
     NFuncArg funcArg(env, info);
-    funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE);
+    funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::FOUR);
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE || NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE ||
+        NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number) ||
+        NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_object)) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -266,7 +321,7 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
     }
     auto bundleStats = std::make_shared<BundleStats>();
     uint32_t statFlag = 0;
-        if (funcArg.GetArgc() >= 1) {
+    if (funcArg.GetArgc() >= 1) {
         NVal flag(env, NVal(env, funcArg[(int)NARG_POS::SECOND]).val_);
         if (flag.TypeIs(napi_number)) {
             bool succ = false;

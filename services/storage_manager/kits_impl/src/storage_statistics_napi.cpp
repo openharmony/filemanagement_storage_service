@@ -44,6 +44,7 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("listUserdataDirInfo", ListUserdataDirInfo),
     };
     FILEMGMT_CALL(napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
+    InitGetBundleStatsFlag(env, exports);
     return exports;
 }
 
