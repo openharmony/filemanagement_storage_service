@@ -2798,7 +2798,8 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartitionInf
     std::string fsType = "ext4";
     std::string volumeName = "test_volume";
 
-    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName);
+    std::vector<std::string> cmd{};
+    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName, cmd, true);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_001 end";
 }
@@ -2818,9 +2819,117 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartitionInf
     std::string fsType = "";
     std::string volumeName = "test_volume";
 
-    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName);
+    std::vector<std::string> cmd{};
+    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName, cmd, true);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_002 end";
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdPathTraversal_001, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk", "-t", "../etc/passwd"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk", "-t", "../etc/passwd"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdPathTraversal_002, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk", "-t", "/.."};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk", "-t", "/.."};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdShellInjection_001, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk; rm -rf /", "-t", "1:0x8300"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk; rm -rf /", "-t", "1:0x8300"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdShellInjection_002, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300$(cat /etc/passwd)"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300$(cat /etc/passwd)"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdValid_001, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300", "/dev/block/ut_test_dev"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300", "/dev/block/ut_test_dev"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_FsTypeEmpty_001, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "", "name", cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd = {"sgdisk", "-t", "1:0x8300"};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "", "name", cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdEmpty_001, TestSize.Level1)
+{
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    std::vector<std::string> cmd{};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name",
+                                                              cmd, true);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+#else
+    std::vector<std::string> cmd{};
+    int32_t ret = storageDaemonProviderTest_->FormatPartition("/dev/block/ut_test_dev", "ext4", "name",
+                                                              cmd, true);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+#endif
 }
 
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryCDStatus_001, TestSize.Level1)

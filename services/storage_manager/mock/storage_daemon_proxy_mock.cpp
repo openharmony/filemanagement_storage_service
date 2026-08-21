@@ -446,7 +446,8 @@ int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, cons
 }
 
 int32_t StorageDaemonProxy::FormatPartition(const std::string &devPath, const std::string &fsType,
-                                            const std::string &volumeName, bool quickFormat)
+                                            const std::string &volumeName,
+                                            const std::vector<std::string> &cmd, bool quickFormat)
 {
     return E_OK;
 }

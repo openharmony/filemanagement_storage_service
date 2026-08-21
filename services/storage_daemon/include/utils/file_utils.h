@@ -100,6 +100,7 @@ bool IsFileExist(const std::string &path);
 bool GetRealPath(const std::string &path, std::string &realPath);
 std::string MaskSensitiveInfo(const std::string &input);
 bool IsFilePathInvalid(const std::string &filePath);
+bool IsShellMetacharPresent(const std::string& str);
 bool CleanOrphanNode();
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount);
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount);
