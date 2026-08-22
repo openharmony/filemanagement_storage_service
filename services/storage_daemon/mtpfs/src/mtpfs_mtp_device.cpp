@@ -70,6 +70,9 @@ MtpFsDevice::~MtpFsDevice()
     if (eventThread_.joinable()) {
         eventThread_.join();
     }
+    if (pushThread_.joinable()) {
+        pushThread_.join();
+    }
     
     Disconnect();
 }
@@ -390,6 +393,10 @@ void MtpFsDevice::SetFetched(MtpFsTypeDir *dir)
 
 const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
 {
+    if (device == nullptr) {
+        LOGE("Device is not connected");
+        return nullptr;
+    }
     if (!rootDir_.IsFetched()) {
         for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
             rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
@@ -897,7 +904,12 @@ int MtpFsDevice::FileRead(const std::string &path, char *buf, size_t size, off_t
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int rval = LIBMTP_GetPartialObject(device_, fileToFetch->Id(), offset, size, &tmpBuf, &tmpSize);
     if (tmpSize > 0) {
-        if (memcpy_s(buf, tmpSize, tmpBuf, tmpSize) != EOK) {
+        if (temSize > size) {
+            LOGE("Buffer overflow: temSize (%{public}d) > size (%{public}d)", temSize, size);
+            free(tmpBuf);
+            return -EINVAL;
+        }
+        if (memcpy_s(buf, size, tmpBuf, tmpSize) != EOK) {
             LOGE("memcpy_s tmpBuf fail");
         }
         free(tmpBuf);
@@ -1022,7 +1034,7 @@ int MtpFsDevice::FilePushAsync(const std::string src, const std::string dst)
     LOGI("FilePushAsync enter");
     MtpFileSystem& mtpFs = MtpFileSystem::GetInstance();
     MtpFsTmpFilesPool* filesPool = mtpFs.GetTempFilesPool();
-    std::thread([this, src, dst, filesPool]() {
+    pushThread_ = std::thread([this, src, dst, filesPool]() {
         LOGI("Start async push to mtp device.");
         int ret = FilePush(src, dst);
         SetUploadRecord(dst, (ret == E_OK) ? "success" : "fail");
@@ -1031,7 +1043,7 @@ int MtpFsDevice::FilePushAsync(const std::string src, const std::string dst)
         if (unlinkRet != E_OK) {
             LOGE("MtpFileSystem: FilePushAsync unlink error, errno=%{public}d", unlinkRet);
         }
-        }).detach();
+    });
 
     return E_OK;
 }

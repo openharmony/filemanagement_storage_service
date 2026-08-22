@@ -344,6 +344,15 @@ bool IsFilePathValid(const std::string &filePath)
         LOGE("IsFilePathValid: file path is empty");
         return false;
     }
+    std::filesystem::path path(filePath);
+    if (!path.is_absolute()) {
+        LOGE("IsFilePathValid: Relative path is not allowed");
+        return false;
+    }
+    if (std::filesystem::is_symlink(path)) {
+        LOGE("IsFilePathValid: Symbolic links is not allowed");
+        return false;
+    }
 
     size_t pos = filePath.find(INVALID_PREFIX_PATH);
     while (pos != std::string::npos) {

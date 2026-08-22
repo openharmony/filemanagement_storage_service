@@ -1327,7 +1327,7 @@ int32_t StorageDaemonProvider::SetBundleQuota(int32_t uid,
         LOGE("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT FAILED <<< uid=%{public}d is invalid", callUid);
         return E_PERMISSION_DENIED;
     }
-    if (bundleDataDirPath.empty()) {
+    if (IsFilePathInvalid(bundleDataDirPath)) {
         LOGE("[L1:StorageDaemonProvider] SetBundleQuota: <<< EXIT FAILED <<< bundleDataDirPath is invalid");
         return E_PARAMS_INVALID;
     }
@@ -1605,24 +1605,26 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
-    if (IsFilePathInvalid(path)) {
+    std::string verifiedMountPath;
+    int32_t err = ValidateMountPath(path, verifiedMountPath);
+    if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path is invalid");
         return E_PARAMS_INVALID;
     }
 
-    int32_t err = CheckUserIdRange(userId);
+    err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, path)) {
+    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
     LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
-    err = MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
+    err = MountManager::GetInstance().MountFileMgrFuse(userId, verifiedMountPath, fuseFd);
     message = " fuseFd: " + std::to_string(fuseFd);
     HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", err);
     if (err == E_OK) {
@@ -1646,26 +1648,28 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
-    if (IsFilePathInvalid(path)) {
+    std::string verifiedMountPath;
+    int32_t err = ValidateMountPath(path, verifiedMountPath);
+    if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path is invalid");
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
 
-    int32_t err = CheckUserIdRange(userId);
+    err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range",
             userId);
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, path)) {
+    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
     LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
-    err = MountManager::GetInstance().UMountFileMgrFuse(userId, path);
+    err = MountManager::GetInstance().UMountFileMgrFuse(userId, verifiedMountPath);
     HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
     if (err == E_OK) {
         LOGI("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
@@ -2179,6 +2183,10 @@ int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_
     if (uid != STORAGE_MANAGER_UID) {
         LOGE("[L1:StorageDaemonProvider] GetDataSizeByPath: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
+    }
+    if (IsFilePathInvalid(path)) {
+        LOGE("[L1:StorageDaemonProvider] GetDataSizeByPath: path is invalid");
+        return E_PARAMS_INVALID;
     }
     int32_t ret = QuotaManager::GetInstance().GetFileData(path, size);
     HiAudit::GetInstance().WriteEnd("GetDataSizeByPath", ret);

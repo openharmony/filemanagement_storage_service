@@ -435,11 +435,16 @@ int32_t DiskUtils::CreatePartition(const std::string &devPath, int32_t partition
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskUtils] exec create partition: <<< EXIT FAILED <<< timed out");
-        partitionThread.detach();
+        promise.set_value(E_CREATE_PARTITION_TIMEOUT);
+        if (partitionThread.joinable()) {
+            partitionThread.join();
+        }
         return E_CREATE_PARTITION_TIMEOUT;
     }
     int32_t ret = future.get();
-    partitionThread.join();
+    if (partitionThread.joinable()) {
+        partitionThread.join();
+    }
     if (ret != E_OK) {
         LOGE("[L3:DiskUtils] CreatePartitionInfo: <<< EXIT FAILED <<< create partition failed, err=%{public}d", ret);
         return E_CREATE_PARTITION_ERROR;
@@ -477,11 +482,16 @@ int32_t DiskUtils::DeletePartitionInfo(const std::string &devPath, const std::st
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskUtils] exec delete partition: <<< EXIT FAILED <<< timed out");
-        partitionThread.detach();
+        promise.set_value(E_CREATE_PARTITION_TIMEOUT);
+        if (partitionThread.joinable()) {
+            partitionThread.join();
+        }
         return E_DELETE_PARTITION_TIMEOUT;
     }
     int32_t ret = future.get();
-    partitionThread.join();
+    if (partitionThread.joinable()) {
+        partitionThread.join();
+    }
     if (ret != E_OK) {
         LOGE("[L3:DiskUtils] DeletePartitionInfo: <<< EXIT FAILED <<< delete partition failed, err=%{public}d", ret);
         return E_DELETE_PARTITION_ERROR;
@@ -509,11 +519,16 @@ int32_t DiskUtils::ExecAsyncDamagePartition(const std::string &devPath, int32_t 
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskInfo] exec damage partition: <<< EXIT FAILED <<< timed out");
-        partitionThread.detach();
+        promise.set_value(E_CREATE_PARTITION_TIMEOUT);
+        if (partitionThread.joinable()) {
+            partitionThread.join();
+        }
         return E_DELETE_PARTITION_TIMEOUT;
     }
     int32_t ret = future.get();
-    partitionThread.join();
+    if (partitionThread.joinable()) {
+        partitionThread.join();
+    }
     if (ret != E_OK) {
         LOGE("[L3:DiskUtils] ExecAsyncDamagePartition: <<< EXIT FAILED <<< damage failed,err=%{public}d", ret);
         return E_DELETE_PARTITION_ERROR;
@@ -547,11 +562,16 @@ int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, st
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
-        partitionThread.detach();
+        promise.set_value(E_CREATE_PARTITION_TIMEOUT);
+        if (partitionThread.joinable()) {
+            partitionThread.join();
+        }
         return E_GET_PARTITION_TIMEOUT;
     }
     auto result = future.get();
-    partitionThread.join();
+    if (partitionThread.joinable()) {
+        partitionThread.join();
+    }
     if (result.first != E_OK) {
         LOGE("[L3:DiskUtils] ExecAsyncGetPartitionTableInfo: <<< EXIT FAILED <<< exec failed, err=%{public}d",
              result.first);
@@ -602,11 +622,18 @@ int32_t DiskUtils::FormatPartition(const std::string &devPath, const std::string
     });
     if (future.wait_for(std::chrono::seconds(FORMAT_PARTITION_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskUtils] exec format partition: <<< EXIT FAILED <<< timed out");
-        formatThread.detach();
+        FormatPartitionThreadResult timeoutResult;
+        timeoutResult.ret = E_CREATE_PARTITION_TIMEOUT;
+        promise.set_value(timeoutResult);
+        if (formatThread.joinable()) {
+            formatThread.join();
+        }
         return E_FORMAT_PARTITION_TIMEOUT;
     }
     FormatPartitionThreadResult formatResult = future.get();
-    formatThread.join();
+    if (formatThread.joinable()) {
+        formatThread.join();
+    }
     VolumeOpDiagMergeToolEntries(formatResult.toolEntries);
     int32_t ret = formatResult.ret;
     if (ret != E_OK) {

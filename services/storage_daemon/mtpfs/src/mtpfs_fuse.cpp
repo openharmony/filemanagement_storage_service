@@ -122,6 +122,11 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
         OHOS::StorageService::StorageRadar::ReportMtpResult("WrapReName::IsFilePathValid", E_PARAMS_INVALID, "NA");
         return EINVAL;
     }
+    if (!IsFilePathValid(newpath)) {
+        LOGE("Invalid path.");
+        OHOS::StorageService::StorageRadar::ReportMtpResult("WrapReName::IsFilePathValid", E_PARAMS_INVALID, "NA");
+        return EINVAL;
+    }
     bool readOnly = MtpFileSystem::GetInstance().IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapReName fail");
@@ -729,6 +734,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
     if (memset_s(buf, sizeof(struct stat), 0, sizeof(struct stat)) != EOK) {
         LOGE("memset stat fail");
         OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Memset", E_MEMORY_OPERATION_ERR, "NA");
+        return -ENOENT;
     }
     struct fuse_context *fc = fuse_get_context();
     if (buf == nullptr || fc == nullptr) {
@@ -784,9 +790,17 @@ int MtpFileSystem::SetupFileAttributes(const char *path, const MtpFsTypeFile *fi
         }
     }
 
+    if (size > static_cast<uint64_t>(std::numeric_limits<ssize_t>::max())) {
+        LOGE("File size exceeds ssize_t maximum value");
+        return -EOVERFLOW;
+    }
     buf->st_size = static_cast<ssize_t>(size);
     const uint64_t fileSize = static_cast<uint64_t>(FILE_SIZE);
     const uint64_t blocksU64 = (size / fileSize) + ((size % fileSize) ? 1 : 0);
+    if (blocksU64 > static_cast<uint64_t>(std::numeric_limits<ssize_t>::max())) {
+        LOGE("Block count exceeds ssize_t maximum value");
+        return -EOVERFLOW;
+    }
     buf->st_blocks = static_cast<blkcnt_t>(blocksU64);
     buf->st_nlink = 1;
     buf->st_mode = S_IFREG | PERMISSION_TWO;
@@ -1462,9 +1476,8 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
     }
     int32_t nameLen = strlen(deviceName);
     LOGI("GetDeviceFriendlyName from device success, name=%{public}s, nameLen=%{public}d", deviceName, nameLen);
-    int32_t ret = memcpy_s(out, size, deviceName, nameLen);
-    if (ret != 0) {
-        LOGE("memcpy_s devicename fail, ret=%{public}d", ret);
+    if (memcpy_s(out, size, deviceName, nameLen + 1) != 0) {
+        LOGE("memcpy_s devicename fail");
         OHOS::StorageService::StorageRadar::ReportMtpResult("GetFriendlyName::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
         free(deviceName);
         return 0;
