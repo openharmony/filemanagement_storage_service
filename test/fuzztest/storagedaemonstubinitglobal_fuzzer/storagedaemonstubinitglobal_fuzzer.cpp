@@ -14,19 +14,12 @@
  */
 #include "storagedaemonstubinitglobal_fuzzer.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
 #include "ipc/storage_daemon_provider.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
 using namespace std;
-template<typename T>
-T TypeCast(const uint8_t *data, int *pos)
-{
-    if (pos) {
-        *pos += sizeof(T);
-    }
-    return *(reinterpret_cast<const T*>(data));
-}
 
 bool StorageDaemonInitGlobalUserKeysFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon,
     const uint8_t *data, size_t size)
@@ -54,9 +47,9 @@ bool StorageDaemonGetOccupiedSpaceFuzzTest(sptr<StorageDaemon::StorageDaemonProv
     MessageParcel reply;
     MessageOption option;
 
-    int pos = 0;
-    int32_t idType = TypeCast<int32_t>(data, &pos);
-    int32_t id = TypeCast<int32_t>(data + pos, &pos);
+    FuzzedDataProvider provider(data, size);
+    int32_t idType = provider.ConsumeIntegral<int32_t>();
+    int32_t id = provider.ConsumeIntegral<int32_t>();
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteInt32(idType);
@@ -75,11 +68,12 @@ bool StorageDaemonUMountFileMgrFuseFuzzTest(sptr<StorageDaemon::StorageDaemonPro
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 4;
-    u16string path(reinterpret_cast<const char16_t *>(data), len);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string path(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
-    int32_t userId = static_cast<int32_t>(size);
+    int32_t userId = provider.ConsumeIntegral<int32_t>();
     datas.WriteInt32(userId);
     datas.WriteString16(path);
     datas.RewindRead(0);
@@ -96,11 +90,12 @@ bool StorageDaemonUMountDisShareFileFuzzTest(sptr<StorageDaemon::StorageDaemonPr
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 4;
-    u16string networkId(reinterpret_cast<const char16_t *>(data), len);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string networkId(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
-    int32_t userId = static_cast<int32_t>(size);
+    int32_t userId = provider.ConsumeIntegral<int32_t>();
     datas.WriteInt32(userId);
     datas.WriteString16(networkId);
     datas.RewindRead(0);

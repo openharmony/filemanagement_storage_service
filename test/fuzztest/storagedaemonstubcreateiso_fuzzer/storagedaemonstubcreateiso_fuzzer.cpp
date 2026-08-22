@@ -14,19 +14,12 @@
  */
 #include "storagedaemonstubcreateiso_fuzzer.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
 #include "ipc/storage_daemon_provider.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
 using namespace std;
-template<typename T>
-T TypeCast(const uint8_t *data, int *pos)
-{
-    if (pos) {
-        *pos += sizeof(T);
-    }
-    return *(reinterpret_cast<const T*>(data));
-}
 
 bool StorageDaemonCreateIsoImageFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon,
     const uint8_t *data, size_t size)
@@ -35,11 +28,15 @@ bool StorageDaemonCreateIsoImageFuzzTest(sptr<StorageDaemon::StorageDaemonProvid
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 8;
-    u16string devPath(reinterpret_cast<const char16_t *>(data), len);
-    u16string filePath(reinterpret_cast<const char16_t *>(data + len), len);
-    u16string fsType(reinterpret_cast<const char16_t *>(data + len * 2), len);
-    u16string mountPath(reinterpret_cast<const char16_t *>(data + len * 3), len);
+    FuzzedDataProvider provider(data, size);
+    string devPathStr = provider.ConsumeRandomLengthString();
+    string filePathStr = provider.ConsumeRandomLengthString();
+    string fsTypeStr = provider.ConsumeRandomLengthString();
+    string mountPathStr = provider.ConsumeRandomLengthString();
+    u16string devPath(reinterpret_cast<const char16_t*>(devPathStr.c_str()), devPathStr.size());
+    u16string filePath(reinterpret_cast<const char16_t*>(filePathStr.c_str()), filePathStr.size());
+    u16string fsType(reinterpret_cast<const char16_t*>(fsTypeStr.c_str()), fsTypeStr.size());
+    u16string mountPath(reinterpret_cast<const char16_t*>(mountPathStr.c_str()), mountPathStr.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(devPath);
@@ -60,10 +57,13 @@ bool StorageDaemonBurnFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemo
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 6;
-    u16string devPath(reinterpret_cast<const char16_t *>(data), len);
-    u16string burnOptions(reinterpret_cast<const char16_t *>(data + len), len);
-    u16string fsType(reinterpret_cast<const char16_t *>(data + len * 2), len);
+    FuzzedDataProvider provider(data, size);
+    string devPathStr = provider.ConsumeRandomLengthString();
+    string burnOptionsStr = provider.ConsumeRandomLengthString();
+    string fsTypeStr = provider.ConsumeRandomLengthString();
+    u16string devPath(reinterpret_cast<const char16_t*>(devPathStr.c_str()), devPathStr.size());
+    u16string burnOptions(reinterpret_cast<const char16_t*>(burnOptionsStr.c_str()), burnOptionsStr.size());
+    u16string fsType(reinterpret_cast<const char16_t*>(fsTypeStr.c_str()), fsTypeStr.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(devPath);
@@ -83,8 +83,9 @@ bool StorageDaemonGetVolumeOpProcessFuzzTest(sptr<StorageDaemon::StorageDaemonPr
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 4;
-    u16string volumeId(reinterpret_cast<const char16_t *>(data), len);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string volumeId(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(volumeId);
@@ -106,10 +107,10 @@ bool StorageDaemonVerifyBurnDataFuzzTest(sptr<StorageDaemon::StorageDaemonProvid
     MessageParcel reply;
     MessageOption option;
 
-    int pos = 0;
-    int len = size / 4;
-    u16string devPath(reinterpret_cast<const char16_t *>(data), len);
-    int32_t verType = TypeCast<int32_t>(data, &pos);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string devPath(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
+    int32_t verType = provider.ConsumeIntegral<int32_t>();
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(devPath);
