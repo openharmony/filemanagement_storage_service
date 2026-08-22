@@ -67,6 +67,8 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = n
              int *exitStatus = nullptr);
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr,
                      std::vector<std::string> *output = nullptr);
+int ForkExecToFile(std::vector<std::string> &cmd, const std::string &outputFilePath,
+                   std::vector<std::string> *output = nullptr);
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 #endif

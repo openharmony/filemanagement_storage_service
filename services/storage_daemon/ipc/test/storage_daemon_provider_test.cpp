@@ -3128,5 +3128,32 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_003 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_Eject_001
+ * @tc.desc: Verify the Eject function with invalid devName.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+#ifdef DISK_MANAGER
+    SetCallingUid(DISK_MANAGER_UID);
+    // empty devName
+    EXPECT_EQ(storageDaemonProviderTest_->Eject(""), E_PARAMS_INVALID);
+    // size < 3, e.g. "sr"
+    EXPECT_EQ(storageDaemonProviderTest_->Eject("sr"), E_PARAMS_INVALID);
+    // prefix not "sr", e.g. "sd0"
+    EXPECT_EQ(storageDaemonProviderTest_->Eject("sd0"), E_PARAMS_INVALID);
+    // sr followed by non-digit, e.g. "srX"
+    EXPECT_EQ(storageDaemonProviderTest_->Eject("srX"), E_PARAMS_INVALID);
+    // valid format passes validation (DiskUtils::Eject may fail, but not E_PARAMS_INVALID)
+    storageDaemonProviderTest_->Eject("sr0");
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->Eject(""), E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_001 end";
+}
 } // namespace StorageDaemon
-} // namespace OHOS
+} // namespace OHOS

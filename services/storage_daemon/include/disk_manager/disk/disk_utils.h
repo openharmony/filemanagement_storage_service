@@ -111,6 +111,7 @@ int32_t ValidateBurnOptions(const BurnOptions &options);
 std::string GetLastNumberSimple(const std::vector<std::string>& lines);
 int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr);
 std::string GetOpticalDriveNode(const std::string &devPath);
+int32_t RefreshCDRomMediaNode(const std::string &devPath);
 } // namespace StorageDaemon
 } // namespace OHOS
 

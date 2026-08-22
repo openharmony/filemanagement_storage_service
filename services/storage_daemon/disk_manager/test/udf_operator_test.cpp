@@ -544,7 +544,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_ProcessMergedLine_FileExtractSuccess, Test
     EXPECT_CALL(*diskUtilMoc_, IsFileEntry(_, _)).WillOnce(DoAll(SetArgReferee<1>(et), Return(true)));
     EXPECT_CALL(*diskUtilMoc_, ParseFileName(_)).WillOnce(Return("myfile"));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExecToFile(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(op.ProcessMergedLine("/iso", "/src", "  f myfile", currentPath), E_OK);
 }
 
@@ -568,7 +568,7 @@ HWTEST_F(UdfOperatorTest, UdfOperator_ProcessMergedLine_ExtractFailed, TestSize.
     EXPECT_CALL(*diskUtilMoc_, IsFileEntry(_, _)).WillOnce(DoAll(SetArgReferee<1>(et), Return(true)));
     EXPECT_CALL(*diskUtilMoc_, ParseFileName(_)).WillOnce(Return("myfile"));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_CALL(*fileUtilMoc_, ForkExecToFile(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.ProcessMergedLine("/iso", "/src", "  f myfile", currentPath), E_ERR);
 }
 
@@ -604,6 +604,46 @@ HWTEST_F(UdfOperatorTest, UdfOperator_ExtractIsoFiles_Success, TestSize.Level1)
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_OK);
 }
 
+/**
+ * @tc.name: UdfOperator_ExtractIsoFiles_LineInvalidSkipped
+ * @tc.desc: Verify ExtractIsoFiles skips invalid lines and processes valid ones.
+ *           "../evil" triggers IsFilePathInvalid == true -> continue (skip line).
+ *           "valid_line" triggers IsFilePathInvalid == false -> ProcessMergedLine.
+ *           This covers both branches of IsFilePathInvalid(line) AND the loop-continue path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_ExtractIsoFiles_LineInvalidSkipped, TestSize.Level1)
+{
+    UdfOperator op;
+    std::vector<std::string> mergedLines = {"../evil", "valid_line"};
+    std::vector<std::string> rawOutput = {"raw"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(mergedLines));
+    EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(mergedLines));
+    EXPECT_CALL(*diskUtilMoc_, ParseDirectoryPath(_)).WillRepeatedly(Return(""));
+    EXPECT_CALL(*diskUtilMoc_, IsFileEntry(_, _)).WillRepeatedly(Return(false));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_OK);
+}
+
+/**
+ * @tc.name: UdfOperator_ExtractIsoFiles_InvalidLineOnly
+ * @tc.desc: Verify ExtractIsoFiles skips an invalid line and exits loop (no valid lines follow).
+ *           This covers the loop-exit branch after IsFilePathInvalid returns true.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_ExtractIsoFiles_InvalidLineOnly, TestSize.Level1)
+{
+    UdfOperator op;
+    std::vector<std::string> mergedLines = {"../evil"};
+    std::vector<std::string> rawOutput = {"raw"};
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(mergedLines));
+    EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(mergedLines));
+    EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_OK);
+}
+
 HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_IsIsoImage, TestSize.Level1)
 {
     UdfOperator op;
@@ -612,7 +652,11 @@ HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_IsIsoImage, TestSiz
     opts.burnPath = "/data/image.iso";
     std::string sourceDir;
     std::vector<std::string> rawOutput = {"raw"};
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    // 1st IsDir: BURN_TMP_DIR -> true (skip creating BURN_TMP_DIR)
+    // 2nd IsDir: source_extract -> true (need to RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(true))
+        .WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
@@ -629,7 +673,11 @@ HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_MkDirFailed, TestSi
     opts.isIsoImage = true;
     opts.burnPath = "/data/image.iso";
     std::string sourceDir;
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    // 1st IsDir: BURN_TMP_DIR -> true (skip creating BURN_TMP_DIR)
+    // 2nd IsDir: source_extract -> true (need to RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(true))
+        .WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_ERR);
@@ -643,6 +691,138 @@ HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_NotIsoImage, TestSi
     std::string sourceDir;
     EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_OK);
     EXPECT_EQ(sourceDir, "/data/burn_dir");
+}
+
+/**
+ * @tc.name: UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirFailed
+ * @tc.desc: Verify PrepareSourceDirectory returns E_ERR when BURN_TMP_DIR does not exist and
+ *           MkDir(BURN_TMP_DIR) fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirFailed, TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    std::string sourceDir;
+    // IsDir(BURN_TMP_DIR) returns false -> need to MkDir(BURN_TMP_DIR)
+    // MkDir(BURN_TMP_DIR) fails -> E_ERR
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_ERR);
+}
+
+/**
+ * @tc.name: UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirSuccess_SourceDirNotExists
+ * @tc.desc: Verify PrepareSourceDirectory succeeds when BURN_TMP_DIR does not exist (created),
+ *           source_extract dir does not exist (no RmDirRecurse), and ExtractIsoFiles succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirSuccess_SourceDirNotExists,
+    TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    std::string sourceDir;
+    std::vector<std::string> rawOutput = {"raw"};
+    // 1st IsDir: BURN_TMP_DIR -> false (need to create)
+    // 2nd IsDir: source_extract -> false (skip RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(false))
+        .WillOnce(Return(false));
+    // 1st MkDir: BURN_TMP_DIR -> E_OK
+    // 2nd MkDir: source_extract -> E_OK
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(std::vector<std::string>()));
+    EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(std::vector<std::string>()));
+    EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_OK);
+}
+
+/**
+ * @tc.name: UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirSuccess_SourceDirExists
+ * @tc.desc: Verify PrepareSourceDirectory succeeds when BURN_TMP_DIR does not exist (created),
+ *           source_extract dir exists (RmDirRecurse called), and ExtractIsoFiles succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_BurnTmpNotDir_MkDirSuccess_SourceDirExists,
+    TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    std::string sourceDir;
+    std::vector<std::string> rawOutput = {"raw"};
+    // 1st IsDir: BURN_TMP_DIR -> false (need to create)
+    // 2nd IsDir: source_extract -> true (need to RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(false))
+        .WillOnce(Return(true));
+    // 1st MkDir: BURN_TMP_DIR -> E_OK
+    // 2nd MkDir: source_extract -> E_OK
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _))
+        .WillOnce(Return(E_OK))
+        .WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(rawOutput), Return(E_OK)));
+    EXPECT_CALL(*diskUtilMoc_, SplitString(_, _)).WillOnce(Return(std::vector<std::string>()));
+    EXPECT_CALL(*diskUtilMoc_, MergeOutputLines(_)).WillOnce(Return(std::vector<std::string>()));
+    EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_OK);
+}
+
+/**
+ * @tc.name: UdfOperator_PrepareSourceDirectory_SourceDirExists_ExtractFailed
+ * @tc.desc: Verify PrepareSourceDirectory returns error when source_extract dir exists (removed),
+ *           MkDir(source_extract) succeeds, but ExtractIsoFiles fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_SourceDirExists_ExtractFailed, TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    std::string sourceDir;
+    // 1st IsDir: BURN_TMP_DIR -> true (skip creating BURN_TMP_DIR)
+    // 2nd IsDir: source_extract -> true (need to RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(true))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_ERR);
+}
+
+/**
+ * @tc.name: UdfOperator_PrepareSourceDirectory_SourceDirNotExists_ExtractFailed
+ * @tc.desc: Verify PrepareSourceDirectory returns error when source_extract dir does not exist,
+ *           MkDir(source_extract) succeeds, but ExtractIsoFiles fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UdfOperatorTest, UdfOperator_PrepareSourceDirectory_SourceDirNotExists_ExtractFailed, TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    std::string sourceDir;
+    // 1st IsDir: BURN_TMP_DIR -> true (skip creating BURN_TMP_DIR)
+    // 2nd IsDir: source_extract -> false (skip RmDirRecurse)
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_))
+        .WillOnce(Return(true))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(op.PrepareSourceDirectory(opts, sourceDir), E_ERR);
 }
 
 HWTEST_F(UdfOperatorTest, UdfOperator_GenerateAndCompareChecksums_SourceGenFailed, TestSize.Level1)

@@ -109,6 +109,12 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
     return IFileUtilMoc::fileUtilMoc->ForkExec(cmd, output, exitStatus);
 }
 
+int ForkExecToFile(std::vector<std::string> &cmd, const std::string &outputFilePath,
+                   std::vector<std::string> *output)
+{
+    return IFileUtilMoc::fileUtilMoc->ForkExecToFile(cmd, outputFilePath, output);
+}
+
 void TraverseDirUevent(const std::string &path, bool flag)
 {
     return;

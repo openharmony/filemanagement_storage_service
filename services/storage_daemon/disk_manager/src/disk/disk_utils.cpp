@@ -1044,6 +1044,27 @@ int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr)
     return err;
 }
 
+int32_t RefreshCDRomMediaNode(const std::string &devPath)
+{
+    LOGI("RefreshCDRomMediaNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
+    std::string blockDev = GetOpticalDriveNode(devPath);
+    if (blockDev.empty()) {
+        LOGE("RefreshCDRomMediaNode: get block device name failed for devPath: %{public}s", devPath.c_str());
+        return E_ERR;
+    }
+
+    std::string sysPath = "/sys/block/" + blockDev + "/device/force_media_change";
+    std::string errMsg;
+    const uint8_t data[] = {'1'};
+    if (!WriteFileSync(sysPath.c_str(), data, sizeof(data), errMsg)) {
+        LOGE("RefreshCDRomMedia: write %{public}s failed, errMsg=%{public}s, errno=%{public}d",
+            sysPath.c_str(), errMsg.c_str(), errno);
+        return E_ERR;
+    }
+    LOGI("RefreshCDRomMediaNode: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
 std::string GetOpticalDriveNode(const std::string &devPath)
 {
     LOGI("GetOpticalDriveNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());

@@ -132,5 +132,95 @@ HWTEST_F(ExtDiskUtilsCdTest, MockRedirect_Nullptr_GetCapacity, TestSize.Level1)
     GTEST_LOG_(INFO) << "MockRedirect_Nullptr_GetCapacity end";
 }
 
+/**
+ * @tc.name: RefreshCDRomMediaNode_Failed
+ * @tc.desc: Verify RefreshCDRomMediaNode returns E_ERR when mock returns failure.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, RefreshCDRomMediaNode_Failed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RefreshCDRomMediaNode_Failed start";
+    EXPECT_CALL(*diskUtilMoc_, RefreshCDRomMediaNode(_)).WillOnce(Return(E_ERR));
+    int32_t ret = RefreshCDRomMediaNode("/dev/block/vol-11-0");
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "RefreshCDRomMediaNode_Failed end";
+}
+
+/**
+ * @tc.name: RefreshCDRomMediaNode_Success
+ * @tc.desc: Verify RefreshCDRomMediaNode returns E_OK when mock returns success.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, RefreshCDRomMediaNode_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RefreshCDRomMediaNode_Success start";
+    EXPECT_CALL(*diskUtilMoc_, RefreshCDRomMediaNode(_)).WillOnce(Return(E_OK));
+    int32_t ret = RefreshCDRomMediaNode("/dev/block/vol-11-0");
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "RefreshCDRomMediaNode_Success end";
+}
+
+/**
+ * @tc.name: GetOpticalDriveNode_NoMatch
+ * @tc.desc: Verify GetOpticalDriveNode returns empty when volName has no dash, dash at end,
+ *           or no /sys/block device matches major:minor.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, GetOpticalDriveNode_NoMatch, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetOpticalDriveNode_NoMatch start";
+    // B1: GetOpticalDriveNode returns empty for various invalid inputs
+    EXPECT_CALL(*diskUtilMoc_, GetOpticalDriveNode(_))
+        .WillOnce(Return(""))
+        .WillOnce(Return(""))
+        .WillOnce(Return(""));
+    EXPECT_TRUE(GetOpticalDriveNode("/dev/block/sr0").empty());
+    EXPECT_TRUE(GetOpticalDriveNode("/dev/block/abc-").empty());
+    EXPECT_TRUE(GetOpticalDriveNode("/dev/block/vol-999-999").empty());
+    GTEST_LOG_(INFO) << "GetOpticalDriveNode_NoMatch end";
+}
+
+/**
+ * @tc.name: GetOpticalDriveNode_ValidDeviceFound
+ * @tc.desc: Verify GetOpticalDriveNode finds the correct block device when major:minor matches.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, GetOpticalDriveNode_ValidDeviceFound, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetOpticalDriveNode_ValidDeviceFound start";
+    // B2: GetOpticalDriveNode returns a valid block device name
+    EXPECT_CALL(*diskUtilMoc_, GetOpticalDriveNode(_)).WillOnce(Return("sda"));
+    std::string result = GetOpticalDriveNode("/dev/block/vol-8-0");
+    EXPECT_EQ(result, "sda");
+    GTEST_LOG_(INFO) << "GetOpticalDriveNode_ValidDeviceFound end";
+}
+
+/**
+ * @tc.name: GetUsedSizeFromSysfs_DriveNodeEmpty
+ * @tc.desc: Verify GetUsedSizeFromSysfs returns -1 when mock returns failure.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, GetUsedSizeFromSysfs_DriveNodeEmpty, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetUsedSizeFromSysfs_DriveNodeEmpty start";
+    EXPECT_CALL(*diskUtilMoc_, GetUsedSizeFromSysfs(_)).WillOnce(Return(-1));
+    EXPECT_EQ(DiskUtils::GetUsedSizeFromSysfs("/dev/block/sr0"), -1);
+    GTEST_LOG_(INFO) << "GetUsedSizeFromSysfs_DriveNodeEmpty end";
+}
+
+/**
+ * @tc.name: GetUsedSizeFromSysfs_Success
+ * @tc.desc: Verify GetUsedSizeFromSysfs returns sector count when mock succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsCdTest, GetUsedSizeFromSysfs_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetUsedSizeFromSysfs_Success start";
+    EXPECT_CALL(*diskUtilMoc_, GetUsedSizeFromSysfs(_)).WillOnce(Return(2048 * 512));
+    int64_t result = DiskUtils::GetUsedSizeFromSysfs("/dev/block/vol-8-0");
+    EXPECT_EQ(result, 2048 * 512);
+    GTEST_LOG_(INFO) << "GetUsedSizeFromSysfs_Success end";
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
