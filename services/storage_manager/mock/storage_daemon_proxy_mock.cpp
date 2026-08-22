@@ -502,5 +502,10 @@ int32_t StorageDaemonProxy::BindBlockLoopDev(const std::string &sysPath, uint64_
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::ExecuteCommand(const std::vector<std::string> &cmd, std::vector<std::string> &output)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS

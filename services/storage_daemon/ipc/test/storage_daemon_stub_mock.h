@@ -127,6 +127,7 @@ public:
     MOCK_METHOD3(GetCapacity, int32_t(const std::string &, int64_t &, int64_t &));
     MOCK_METHOD2(GetDiskSize, int32_t(const std::string &, uint64_t &));
     MOCK_METHOD4(BindBlockLoopDev, int32_t(const std::string &, uint64_t, uint64_t, std::string &));
+    MOCK_METHOD2(ExecuteCommand, int32_t(const std::vector<std::string> &, std::vector<std::string> &));
     };
 }  // namespace StorageDaemon
 }  // namespace OHOS
