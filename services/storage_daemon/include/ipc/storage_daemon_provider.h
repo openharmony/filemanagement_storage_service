@@ -204,6 +204,8 @@ public:
     virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
     virtual int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
                                      std::string &loopPath) override;
+    virtual int32_t ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
+                                   std::vector<std::string> &output) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
