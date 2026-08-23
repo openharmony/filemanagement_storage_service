@@ -3247,7 +3247,8 @@ int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint
 #endif
 }
 
-int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cmd, std::vector<std::string> &output)
+int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
+                                              std::vector<std::string> &output)
 {
     LOGI("[L1:StorageDaemonProvider] ExecuteCommand: >>> ENTER <<< cmd size=%{public}zu", cmd.size());
     if (cmd.empty()) {
@@ -3268,14 +3269,13 @@ int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cm
     std::vector<std::string> execCmd = cmd;
     std::vector<std::string> tmpOutput;
     int32_t ret = ForkExec(execCmd, &tmpOutput);
-    for (const auto &item: tmpOutput) {
-        LOGE("exec command: %{public}s", item.c_str());
-    }
+    output = tmpOutput;
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        return ret;
+        execRet = ret;
+    } else {
+        execRet = E_OK;
     }
-    output = tmpOutput;
     LOGI("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT SUCCESS <<< output lines=%{public}zu", output.size());
     return E_OK;
 }
