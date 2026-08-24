@@ -58,16 +58,46 @@ NextDqBlk *NextDqBlk::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->dqbHardLimit = parcel.ReadUint64();
-    obj->dqbBSoftLimit = parcel.ReadUint64();
-    obj->dqbCurSpace = parcel.ReadUint64();
-    obj->dqbIHardLimit = parcel.ReadUint64();
-    obj->dqbISoftLimit = parcel.ReadUint64();
-    obj->dqbCurInodes = parcel.ReadUint64();
-    obj->dqbBTime = parcel.ReadUint64();
-    obj->dqbITime = parcel.ReadUint64();
-    obj->dqbValid = parcel.ReadUint32();
-    obj->dqbId = parcel.ReadUint32();
+    if (!parcel.ReadUint64(obj->dqbHardLimit)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbBSoftLimit)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbCurSpace)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbIHardLimit)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbISoftLimit)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbCurInodes)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbBTime)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->dqbITime)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint32(obj->dqbValid)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint32(obj->dqbId)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 } // StorageManager
@@ -95,9 +125,18 @@ DirSpaceInfo *DirSpaceInfo::Unmarshalling(Parcel &parcel)
     if (info == nullptr) {
         return nullptr;
     }
-    info->path = parcel.ReadString();
-    info->uid = parcel.ReadUint32();
-    info->size = parcel.ReadInt64();
+    if (!parcel.ReadString(info->path)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadUint32(info->uid)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(info->size)) {
+        delete info;
+        return nullptr;
+    }
     return info;
 }
 } // StorageManager
@@ -128,10 +167,22 @@ UidSaInfo *UidSaInfo::Unmarshalling(Parcel &parcel)
     if (info == nullptr) {
         return nullptr;
     }
-    info->uid = parcel.ReadInt32();
-    info->saName = parcel.ReadString();
-    info->size = parcel.ReadInt64();
-    info->iNodes = parcel.ReadUint64();
+    if (!parcel.ReadInt32(info->uid)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadString(info->saName)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(info->size)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(info->iNodes)) {
+        delete info;
+        return nullptr;
+    }
     return info;
 }
 } // StorageManager
@@ -156,8 +207,14 @@ LargeFileInfo *LargeFileInfo::Unmarshalling(Parcel &parcel)
     if (info == nullptr) {
         return nullptr;
     }
-    info->path = parcel.ReadString();
-    info->size = parcel.ReadInt64();
+    if (!parcel.ReadString(info->path)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(info->size)) {
+        delete info;
+        return nullptr;
+    }
     return info;
 }
 } // StorageManager
@@ -182,8 +239,14 @@ LargeDirInfo *LargeDirInfo::Unmarshalling(Parcel &parcel)
     if (info == nullptr) {
         return nullptr;
     }
-    info->path = parcel.ReadString();
-    info->totalSize = parcel.ReadInt64();
+    if (!parcel.ReadString(info->path)) {
+        delete info;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(info->totalSize)) {
+        delete info;
+        return nullptr;
+    }
     return info;
 }
 } // StorageManager

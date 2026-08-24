@@ -355,15 +355,15 @@ std::shared_ptr<CleanNotify> FileCacheAdapter::GetCleanNotify(const std::string 
 
 int32_t FileCacheAdapter::LoadBundleData()
 {
+    std::unique_lock<std::shared_mutex> lock(bundleMutex_);
+    
     std::error_code errorCode;
     if (!std::filesystem::exists(bundleJsonFilePath_, errorCode)) {
         LOGI("Bundle JSON file not exists, will create new one: %{public}s", bundleJsonFilePath_.c_str());
-        // 文件不存在是正常情况，创建空文件
         bundleExtStatsMap_.clear();
         return SaveBundleData();
     }
 
-    // 读取文件内容
     std::ifstream file(bundleJsonFilePath_);
     if (!file.is_open()) {
         LOGE("Failed to open bundle JSON file for reading: %{public}s", bundleJsonFilePath_.c_str());
@@ -379,23 +379,19 @@ int32_t FileCacheAdapter::LoadBundleData()
         return E_OK;
     }
 
-    // 验证JSON格式
     if (!nlohmann::json::accept(jsonStr)) {
         LOGE("Bundle JSON file contains invalid JSON format: %{public}s", bundleJsonFilePath_.c_str());
         return E_PARSE_RECORD_FILE_ERROR;
     }
 
-    // 解析JSON
     nlohmann::json jsonData = nlohmann::json::parse(jsonStr, nullptr, false);
     if (jsonData.is_discarded()) {
         LOGE("Bundle JSON parse failed, json is discarded: %{public}s", bundleJsonFilePath_.c_str());
         return E_PARSE_RECORD_FILE_ERROR;
     }
 
-    // 清空现有数据
     bundleExtStatsMap_.clear();
 
-    // 解析BundleExtStats数据
     if (jsonData.is_array()) {
         for (const auto &item : jsonData) {
             BundleExtStats stats;
@@ -413,15 +409,15 @@ int32_t FileCacheAdapter::LoadBundleData()
 
 int32_t FileCacheAdapter::LoadCleanData()
 {
+    std::unique_lock<std::shared_mutex> lock(cleanMutex_);
+    
     std::error_code errorCode;
     if (!std::filesystem::exists(cleanJsonFilePath_, errorCode)) {
         LOGI("Clean JSON file not exists, will create new one: %{public}s", cleanJsonFilePath_.c_str());
-        // 文件不存在是正常情况，创建空文件
         cleanNotifyMap_.clear();
         return SaveCleanData();
     }
 
-    // 读取文件内容
     std::ifstream file(cleanJsonFilePath_);
     if (!file.is_open()) {
         LOGE("Failed to open clean JSON file for reading: %{public}s", cleanJsonFilePath_.c_str());
@@ -437,23 +433,19 @@ int32_t FileCacheAdapter::LoadCleanData()
         return E_OK;
     }
 
-    // 验证JSON格式
     if (!nlohmann::json::accept(jsonStr)) {
         LOGE("Clean JSON file contains invalid JSON format: %{public}s", cleanJsonFilePath_.c_str());
         return E_PARSE_RECORD_FILE_ERROR;
     }
 
-    // 解析JSON
     nlohmann::json jsonData = nlohmann::json::parse(jsonStr, nullptr, false);
     if (jsonData.is_discarded()) {
         LOGE("Clean JSON parse failed, json is discarded: %{public}s", cleanJsonFilePath_.c_str());
         return E_PARSE_RECORD_FILE_ERROR;
     }
 
-    // 清空现有数据
     cleanNotifyMap_.clear();
 
-    // 解析CleanNotify数据
     if (jsonData.is_array()) {
         for (const auto &item : jsonData) {
             CleanNotify notify;

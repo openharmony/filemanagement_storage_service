@@ -139,15 +139,33 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
 VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
 {
     std::unique_ptr<VolumeCore> volumeCorePtr(VolumeCore::Unmarshalling(parcel));
+    if (!volumeCorePtr) {
+        return nullptr;
+    }
     VolumeExternal* obj = new (std::nothrow) VolumeExternal(*volumeCorePtr);
     if (!obj) {
         return nullptr;
     }
-    obj->flags_ = parcel.ReadInt32();
-    obj->fsType_ = parcel.ReadInt32();
-    obj->fsUuid_ = parcel.ReadString();
-    obj->path_ = parcel.ReadString();
-    obj->description_ = parcel.ReadString();
+    if (!parcel.ReadInt32(obj->flags_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(obj->fsType_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->fsUuid_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->path_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->description_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

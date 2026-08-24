@@ -183,5 +183,23 @@ HWTEST_F(DiskUtilsForIOTest, EjectCD_Success, TestSize.Level1)
     EXPECT_EQ(DiskUtils::EjectCD("/dev/sr0"), E_OK);
     GTEST_LOG_(INFO) << "EjectCD_Success end";
 }
+
+HWTEST_F(DiskUtilsForIOTest, Eject_InvalidDevName_Empty, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Eject_InvalidDevName_Empty start";
+    EXPECT_EQ(DiskUtils::Eject(""), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Eject_InvalidDevName_Empty end";
+}
+
+HWTEST_F(DiskUtilsForIOTest, Eject_InvalidDevName_PathTraversal, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Eject_InvalidDevName_PathTraversal start";
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_EQ(DiskUtils::Eject("../etc/passwd"), E_PARAMS_INVALID);
+    EXPECT_EQ(DiskUtils::Eject("sda/../../etc"), E_PARAMS_INVALID);
+    EXPECT_EQ(DiskUtils::Eject("/sys/block/../etc"), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Eject_InvalidDevName_PathTraversal end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

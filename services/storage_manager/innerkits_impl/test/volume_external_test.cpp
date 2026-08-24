@@ -183,4 +183,13 @@ HWTEST_F(VolumeExternalTest, Volume_external_GetFsTypeByStr_0001, testing::ext::
     EXPECT_EQ(ve.GetFsTypeByStr("Ext4"), -1);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_GetFsTypeByStr_0001";
 }
+
+HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = VolumeExternal::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0001";
+}
 }

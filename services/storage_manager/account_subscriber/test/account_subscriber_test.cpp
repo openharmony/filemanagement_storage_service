@@ -232,7 +232,7 @@ HWTEST_F(AccountSubscriberTest, Account_Subscriber_HandleUserSwitchedEvent_test_
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_GetSystemAbility_test_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_GetSystemAbility_test_0000-begin";
-    AccountSubscriber::GetInstance().GetSystemAbility();
+    AccountSubscriber::GetInstance().GetSystemAbility(100);
     ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_GetSystemAbility_test_0000 end";
 }
