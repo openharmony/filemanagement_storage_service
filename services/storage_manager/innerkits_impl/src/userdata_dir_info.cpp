@@ -37,9 +37,18 @@ UserdataDirInfo *UserdataDirInfo::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->path_ = parcel.ReadString();
-    obj->totalSize_ = parcel.ReadInt64();
-    obj->totalCnt_ = parcel.ReadInt32();
+    if (!parcel.ReadString(obj->path_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->totalSize_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(obj->totalCnt_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

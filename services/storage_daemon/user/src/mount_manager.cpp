@@ -207,50 +207,6 @@ bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> 
     return false;
 }
 
-
-bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
-{
-    LOGI("[L2:MountManager] CheckPathValid: >>> ENTER <<< bundleName=%{public}s, userId=%{public}u",
-        bundleNameStr.c_str(), userId);
-    string completePath =
-        SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
-    if (!IsDir(completePath)) {
-        LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< Invalid directory path, path=%{public}s",
-            completePath.c_str());
-        return false;
-    }
-
-    if (!std::filesystem::is_empty(completePath)) {
-        LOGE("[L2:MountManager] CheckPathValid: <<< EXIT FAILED <<< directory has been mounted, path=%{public}s",
-            completePath.c_str());
-        return false;
-    }
-    LOGI("[L2:MountManager] CheckPathValid: <<< EXIT SUCCESS <<< bundleName=%{public}s, userId=%{public}u",
-        bundleNameStr.c_str(), userId);
-    return true;
-}
-
-void MountManager::MountSandboxPath(uint32_t userId, const std::vector<MountNodeInfo> &sandboxMountNodeInfo,
-    const std::string &bundleName)
-{
-    LOGI("[L2:MountManager] MountSandboxPath: >>> ENTER <<< userId=%{public}u, bundleName=%{public}s",
-        userId, bundleName.c_str());
-    std::string sanboxRootPath = SANDBOX_ROOT_PATH + to_string(userId) + '/' + bundleName;
-    for (size_t i = 0; i < sandboxMountNodeInfo.size(); ++i) {
-        const auto& nodeInfo = sandboxMountNodeInfo[i];
-        auto dstPath = sanboxRootPath + nodeInfo.dstPath;
-        auto srcPath = nodeInfo.srcPath;
-        ReplaceAndCount(srcPath, PACKAGE_NAME_FLAG, bundleName);
-        auto ret = nodeInfo.MountDir(srcPath, dstPath);
-        if (ret != E_OK && ret != E_NON_EXIST) {
-            std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(errno);
-            StorageRadar::ReportUserManager("MountSandboxPath", userId, E_MOUNT_SANDBOX, extraData);
-        }
-    }
-    LOGI("[L2:MountManager] MountSandboxPath: <<< EXIT SUCCESS <<< userId=%{public}u, bundleName=%{public}s",
-        userId, bundleName.c_str());
-}
-
 void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
     std::list<std::string> &sharefsList, std::string &line, int32_t userId)
 {

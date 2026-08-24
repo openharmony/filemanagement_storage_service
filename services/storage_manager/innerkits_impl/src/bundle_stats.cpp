@@ -40,9 +40,18 @@ BundleStats *BundleStats::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->appSize_ = parcel.ReadInt64();
-    obj->cacheSize_ = parcel.ReadInt64();
-    obj->dataSize_ = parcel.ReadInt64();
+    if (!parcel.ReadInt64(obj->appSize_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->cacheSize_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->dataSize_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

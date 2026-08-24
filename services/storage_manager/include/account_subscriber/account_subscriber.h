@@ -50,7 +50,7 @@ private:
     uint32_t GetUserStatus(int32_t userId);
     uint32_t HandleUserUnlockEvent(uint32_t userStatus);
     uint32_t HandleUserSwitchedEvent(uint32_t userStatus);
-    void GetSystemAbility();
+    void GetSystemAbility(int32_t userId);
 };
 }  // namespace StorageManager
 }  // namespace OHOS

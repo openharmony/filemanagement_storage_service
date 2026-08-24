@@ -916,6 +916,10 @@ int32_t DiskUtils::Erase(const std::string &devPath)
 int32_t DiskUtils::Eject(const std::string &devName)
 {
     LOGI("Eject: >>> ENTER <<< devName=%{public}s", devName.c_str());
+    if (devName.empty() || IsFilePathInvalid(devName)) {
+        LOGE("Eject: Invalid devName, contains path traversal or empty");
+        return E_PARAMS_INVALID;
+    }
     std::string deviceLinkPath = "/sys/block/" + devName;
 
     char linkTarget[PATH_MAX] = {0};

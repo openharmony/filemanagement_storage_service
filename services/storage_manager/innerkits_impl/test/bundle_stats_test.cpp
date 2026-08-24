@@ -80,4 +80,22 @@ HWTEST_F(BundleStatsTest, Bundle_Stats_Unmarshalling_0000, testing::ext::TestSiz
     EXPECT_EQ(res.dataSize_, dataSize);
     GTEST_LOG_(INFO) << "BundleStatsTest-end Bundle_Stats_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_BUNDLE_STATS_Unmarshalling_0001
+ * @tc.name: Bundle_Stats_Unmarshalling_0001
+ * @tc.desc: Test function of Unmarshalling interface with empty parcel for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(BundleStatsTest, Bundle_Stats_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BundleStatsTest-begin Bundle_Stats_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = BundleStats::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "BundleStatsTest-end Bundle_Stats_Unmarshalling_0001";
+}
 }

@@ -84,4 +84,22 @@ HWTEST_F(ExtBundleStatsTest, Ext_Bundle_Stats_Unmarshalling_0000, testing::ext::
     }
     GTEST_LOG_(INFO) << "ExtBundleStatsTest-end Ext_Bundle_Stats_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_EXT_BUNDLE_STATS_Unmarshalling_0001
+ * @tc.name: Ext_Bundle_Stats_Unmarshalling_0001
+ * @tc.desc: Test function of Unmarshalling interface with empty parcel for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(ExtBundleStatsTest, Ext_Bundle_Stats_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ExtBundleStatsTest-begin Ext_Bundle_Stats_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = ExtBundleStats::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "ExtBundleStatsTest-end Ext_Bundle_Stats_Unmarshalling_0001";
+}
 }

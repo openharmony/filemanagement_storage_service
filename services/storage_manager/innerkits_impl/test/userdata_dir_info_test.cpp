@@ -80,4 +80,22 @@ HWTEST_F(UserdataDirInfoTest, Userdata_Dir_Info_Unmarshalling_0000, testing::ext
     EXPECT_EQ(res.totalCnt_, totalCnt);
     GTEST_LOG_(INFO) << "UserdataDirInfoTest-end Bundle_Stats_Unmarshalling_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Userdata_Dir_Info_Unmarshalling_0001
+ * @tc.name: Userdata_Dir_Info_Unmarshalling_0001
+ * @tc.desc: Test function of Unmarshalling interface with empty parcel for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20251022750568
+ */
+HWTEST_F(UserdataDirInfoTest, Userdata_Dir_Info_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "UserdataDirInfoTest-begin Userdata_Dir_Info_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = UserdataDirInfo::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "UserdataDirInfoTest-end Userdata_Dir_Info_Unmarshalling_0001";
+}
 }

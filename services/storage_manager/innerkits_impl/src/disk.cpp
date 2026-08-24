@@ -105,18 +105,41 @@ Disk *Disk::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->diskId_ = parcel.ReadString();
-    obj->sizeBytes_ = parcel.ReadInt64();
-    obj->diskType_ = parcel.ReadInt32();
-    obj->removable_ = parcel.ReadBool();
-    obj->extraInfo_ = parcel.ReadString();
-    uint32_t volSize = parcel.ReadUint32();
+    if (!parcel.ReadString(obj->diskId_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->sizeBytes_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(obj->diskType_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadBool(obj->removable_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->extraInfo_)) {
+        delete obj;
+        return nullptr;
+    }
+    uint32_t volSize;
+    if (!parcel.ReadUint32(volSize)) {
+        delete obj;
+        return nullptr;
+    }
     if (volSize >= MAX_VOLUME_COUNT) {
         delete obj;
         return nullptr;
     }
     for (uint32_t i = 0; i < volSize; i++) {
-        std::string volId = parcel.ReadString();
+        std::string volId;
+        if (!parcel.ReadString(volId)) {
+            delete obj;
+            return nullptr;
+        }
         obj->volumeIds_.push_back(volId);
     }
     return obj;

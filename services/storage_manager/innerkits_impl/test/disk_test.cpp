@@ -186,6 +186,24 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0001, testing::ext::TestSize.Level1)
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Disk_Unmarshalling_0002
+ * @tc.name: Disk_Unmarshalling_0002
+ * @tc.desc: Test function of Unmarshalling interface with empty parcel for failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(DiskTest, Disk_Unmarshalling_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskTest-begin Disk_Unmarshalling_0002";
+    Parcel parcel;
+    auto result = Disk::Unmarshalling(parcel);
+    ASSERT_TRUE(result == nullptr);
+    GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0002";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Disk_GetRemovable_0000
  * @tc.name: Disk_GetRemovable_0000
  * @tc.desc: Test function of GetRemovable interface for SUCCESS.

@@ -141,7 +141,7 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_NextDqBlk_Unmarshalling_002, TestS
 
     std::unique_ptr<NextDqBlk> dqBlk(NextDqBlk::Unmarshalling(parcel));
 
-    EXPECT_NE(dqBlk, nullptr);
+    EXPECT_EQ(dqBlk, nullptr);
 
     GTEST_LOG_(INFO) << "StatisticInfoTest_NextDqBlk_Unmarshalling_002 end";
 }
@@ -264,7 +264,7 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_DirSpaceInfo_Unmarshalling_002, Te
 
     std::unique_ptr<DirSpaceInfo> dirInfo(DirSpaceInfo::Unmarshalling(parcel));
 
-    EXPECT_NE(dirInfo, nullptr);
+    EXPECT_EQ(dirInfo, nullptr);
 
     GTEST_LOG_(INFO) << "StatisticInfoTest_DirSpaceInfo_Unmarshalling_002 end";
 }
@@ -394,7 +394,7 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_UidSaInfo_Unmarshalling_002, TestS
 
     std::unique_ptr<UidSaInfo> uidSaInfo(UidSaInfo::Unmarshalling(parcel));
 
-    EXPECT_NE(uidSaInfo, nullptr);
+    EXPECT_EQ(uidSaInfo, nullptr);
 
     GTEST_LOG_(INFO) << "StatisticInfoTest_UidSaInfo_Unmarshalling_002 end";
 }
@@ -480,6 +480,44 @@ HWTEST_F(StatisticInfoTest, StatisticInfoTest_AllAppVec_001, TestSize.Level1)
     EXPECT_EQ(allAppVec.otherAppVec[0].uid, 4004);
 
     GTEST_LOG_(INFO) << "StatisticInfoTest_AllAppVec_001 end";
+}
+
+/**
+ * @tc.name: StatisticInfoTest_LargeFileInfo_Unmarshalling_001
+ * @tc.desc: Test LargeFileInfo Unmarshalling with empty parcel for failed.
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StatisticInfoTest, StatisticInfoTest_LargeFileInfo_Unmarshalling_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StatisticInfoTest_LargeFileInfo_Unmarshalling_001 start";
+
+    Parcel parcel;
+
+    std::unique_ptr<LargeFileInfo> largeFileInfo(LargeFileInfo::Unmarshalling(parcel));
+
+    EXPECT_EQ(largeFileInfo, nullptr);
+
+    GTEST_LOG_(INFO) << "StatisticInfoTest_LargeFileInfo_Unmarshalling_001 end";
+}
+
+/**
+ * @tc.name: StatisticInfoTest_LargeDirInfo_Unmarshalling_001
+ * @tc.desc: Test LargeDirInfo Unmarshalling with empty parcel for failed.
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StatisticInfoTest, StatisticInfoTest_LargeDirInfo_Unmarshalling_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StatisticInfoTest_LargeDirInfo_Unmarshalling_001 start";
+
+    Parcel parcel;
+
+    std::unique_ptr<LargeDirInfo> largeDirInfo(LargeDirInfo::Unmarshalling(parcel));
+
+    EXPECT_EQ(largeDirInfo, nullptr);
+
+    GTEST_LOG_(INFO) << "StatisticInfoTest_LargeDirInfo_Unmarshalling_001 end";
 }
 } // namespace StorageManager
 } // namespace OHOS

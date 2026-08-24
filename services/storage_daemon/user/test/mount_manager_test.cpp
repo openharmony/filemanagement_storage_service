@@ -28,8 +28,6 @@
 
 using namespace std;
 namespace {
-    const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
-    const string EL2_BASE = "/data/storage/el2/base/";
     constexpr const char *STORAGE_ETC_PATH = "/etc/storage_daemon/";
     constexpr const char *STORAGE_USER_PATH = "storage_user_path.json";
     constexpr const char *STORAGE_MOUNT_INFO = "storage_mount_info.json";
@@ -324,38 +322,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_DirExist_001, TestSiz
 }
 
 /**
- * @tc.name: Storage_Daemon_MountManagerTest_CheckPathValid_001
- * @tc.desc: Verify the CheckPathValid function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_001 start";
-    std::string bundleNameStr = "test";
-    uint32_t userId = 888;
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
-    EXPECT_FALSE(ret);
-
-    string basePath =
-        SANDBOX_ROOT_PATH + to_string(userId);
-    string completePath = basePath  + "/" + bundleNameStr + EL2_BASE;
-    ForceCreateDirectory(completePath);
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
-    EXPECT_TRUE(ret);
-
-    string subDir = completePath + "test";
-    ForceCreateDirectory(subDir);
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
-    EXPECT_FALSE(ret);
-    ForceRemoveDirectory(basePath);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_001 end";
-}
-
-/**
  * @tc.name: Storage_Daemon_MountManagerTest_CheckMaps_001
  * @tc.desc: Verify the CheckMaps function.
  * @tc.type: FUNC
@@ -388,30 +354,6 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMaps_001, TestSi
     ret = MountManager::GetInstance().CheckMaps(path, mountFailList);
     EXPECT_TRUE(ret);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckMaps_001 end";
-}
-
-/**
- * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_001
- * @tc.desc: Verify the MountSandboxPath function.
- * @tc.type: FUNC
- * @tc.require: IB49AM
- */
-HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 start";
-    std::string bundleName = "test";
-    uint32_t userId = 100;
-    std::vector<MountNodeInfo> mountNodeInfoList {
-        MountNodeInfo{.srcPath = "", .dstPath = "test"},
-        MountNodeInfo{.srcPath = "", .dstPath = "test"}
-    };
-
-
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_ERR));
-    errno = 0;
-    MountManager::GetInstance().MountSandboxPath(userId, mountNodeInfoList, bundleName);
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 end";
 }
 
 /**
