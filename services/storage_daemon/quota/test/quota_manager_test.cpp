@@ -157,6 +157,42 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
 }
 
 /**
+ * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_006
+ * @tc.desc: Test SetBundleQuota rejects limitSizeMb exceeding max value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_006 start";
+
+    int32_t uid = UID;
+    std::string bundleDataDirPath = BUNDLE_PATH;
+    int32_t limitSizeMb = 5000000;
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_006 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_007
+ * @tc.desc: Test SetBundleQuota rejects bundleDataDirPath with path traversal.
+ * @tc.type: FUNC
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_007 start";
+
+    int32_t uid = UID;
+    std::string bundleDataDirPath = "/data/app/../etc";
+    int32_t limitSizeMb = LIMITSIZE;
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_007 end";
+}
+
+/**
  * @tc.name: Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
  * @tc.desc: Test whether GetOccupiedSpace is called normally.
  * @tc.type: FUNC
@@ -800,6 +836,25 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_001, TestSize.Level1)
     int32_t result = quotaManager_.GetFileData("/nonexistent/path/file.txt", size);
     EXPECT_EQ(result, E_FILE_PATH_INVALID);
     GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_001 end";
+}
+
+/**
+ * @tc.name: QuotaManagerTest_GetFileData_002
+ * @tc.desc: Test QuotaManager::GetFileData rejects path traversal and escape characters.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_002 start";
+    int64_t size = 0;
+    QuotaManager quotaManager_;
+    EXPECT_EQ(quotaManager_.GetFileData("/data/../etc/passwd", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("../etc/passwd", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("/data/..\\etc", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("%2e%2e%2fsecret", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData(std::string("/data/\n../etc", 11), size), E_FILE_PATH_INVALID);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_002 end";
 }
 
 /**
