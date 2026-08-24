@@ -1616,6 +1616,7 @@ bool GetRealPath(const std::string &path, std::string &realPath)
     return true;
 }
 
+
 bool CleanOrphanNode()
 {
     LOGI("Clean orphan node start");
