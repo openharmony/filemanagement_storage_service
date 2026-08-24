@@ -66,6 +66,7 @@
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
 #include "disk_manager/volume/volume_operator_factory.h"
+#include "utils/file_utils.h"
 #include "utils/volume_op_diag.h"
 #endif
 
@@ -2891,7 +2892,8 @@ int32_t StorageDaemonProvider::DeletePartitionInfo(const std::string &devPath, c
 }
 
 int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const std::string &fsType,
-                                               const std::string &volumeName, bool quickFormat)
+                                               const std::string &volumeName,
+                                               const std::vector<std::string> &cmd, bool quickFormat)
 {
 #ifdef DISK_MANAGER
     auto uid = IPCSkeleton::GetCallingUid();
@@ -2908,23 +2910,35 @@ int32_t StorageDaemonProvider::FormatPartition(const std::string &devPath, const
         return ReturnWithOpDiag(ret);
     }
     VolumeOpDiagUpdateDevPath(verifiedPath);
-    if (fsType.empty()) {
-        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty");
+    if (fsType.empty() || cmd.empty()) {
+        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< fsType empty or cmd empty");
         return ReturnWithOpDiag(E_PARAMS_INVALID);
     }
-    if (volumeName.empty()) {
-        LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< volumeName empty");
-        return ReturnWithOpDiag(E_PARAMS_INVALID);
+    for (const auto &arg : cmd) {
+        if (IsFilePathInvalid(arg) || IsShellMetacharPresent(arg)) {
+            LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< cmd arg path traversal or injection");
+            return ReturnWithOpDiag(E_PARAMS_INVALID);
+        }
     }
 
     LOGI("[L1:StorageDaemonProvider] FormatPartition: >>> ENTER <<< devPath=%{public}s, fsType=%{public}s"
          ", volumeName=%{public}s", verifiedPath.c_str(), fsType.c_str(), volumeName.c_str());
     ret = DiskUtils::FormatPartition(verifiedPath, fsType, volumeName, quickFormat);
     if (ret == E_OK) {
-        LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<<");
+        std::vector<std::string> output;
+        std::vector<std::string> cmdArgs = cmd;
+        ret = ForkExec(cmdArgs, &output);
+        for (const auto str : output) {
+            LOGI("FormatPartition FixTypeIdentifier output: %{public}s", str.c_str());
+        }
+        if (ret != E_OK) {
+            LOGE("FormatPartition FixTypeIdentifier failed, ret=%{public}d", ret);
+            return ReturnWithOpDiag(ret);
+        }
     } else {
         LOGE("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT FAILED <<< ret=%{public}d", ret);
     }
+    LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT SUCCESS <<<");
     return ReturnWithOpDiag(ret);
 #else
     LOGI("[L1:StorageDaemonProvider] FormatPartition: <<< EXIT <<< not support");
@@ -3233,6 +3247,39 @@ int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint
     LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
+}
+
+int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
+                                              std::vector<std::string> &output)
+{
+    LOGI("[L1:StorageDaemonProvider] ExecuteCommand: >>> ENTER <<< cmd size=%{public}zu", cmd.size());
+    if (cmd.empty()) {
+        LOGE("[L1:StorageDaemonProvider] ExecuteCommand: cmd is empty");
+        return E_PARAMS_INVALID;
+    }
+    for (const auto &arg : cmd) {
+        if (IsFilePathInvalid(arg) || IsShellMetacharPresent(arg)) {
+            LOGE("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT FAILED <<< cmd arg path traversal or injection");
+            return E_PARAMS_INVALID;
+        }
+    }
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != DISK_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::vector<std::string> execCmd = cmd;
+    std::vector<std::string> tmpOutput;
+    int32_t ret = ForkExec(execCmd, &tmpOutput);
+    output = tmpOutput;
+    if (ret != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT FAILED <<< ret=%{public}d", ret);
+        execRet = ret;
+    } else {
+        execRet = E_OK;
+    }
+    LOGI("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT SUCCESS <<< output lines=%{public}zu", output.size());
+    return E_OK;
 }
 
 int32_t StorageDaemonProvider::CreateDmLinear(const std::string &sourceDevPath,

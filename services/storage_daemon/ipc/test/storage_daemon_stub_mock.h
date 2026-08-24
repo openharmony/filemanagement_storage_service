@@ -112,7 +112,8 @@ public:
     MOCK_METHOD2(GetPartitionTableInfo, int32_t(const std::string &, std::string &));
     MOCK_METHOD5(CreatePartition, int32_t(const std::string &, int32_t, int64_t, int64_t, const std::string &));
     MOCK_METHOD3(DeletePartitionInfo, int32_t(const std::string &, const std::string &, int32_t));
-    MOCK_METHOD4(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &, bool));
+    MOCK_METHOD5(FormatPartition, int32_t(const std::string &, const std::string &, const std::string &,
+                                          const std::vector<std::string> &, bool));
 
     MOCK_METHOD3(GetBlockInfoByType, int32_t(const std::string &, const std::string &, std::string &));
     MOCK_METHOD1(EjectCD, int32_t(const std::string &));
@@ -126,6 +127,7 @@ public:
     MOCK_METHOD3(GetCapacity, int32_t(const std::string &, int64_t &, int64_t &));
     MOCK_METHOD2(GetDiskSize, int32_t(const std::string &, uint64_t &));
     MOCK_METHOD4(BindBlockLoopDev, int32_t(const std::string &, uint64_t, uint64_t, std::string &));
+    MOCK_METHOD3(ExecuteCommand, int32_t(const std::vector<std::string> &, int32_t &, std::vector<std::string> &));
     MOCK_METHOD4(CreateDmLinear, int32_t(const std::string &,
                                         uint64_t, uint64_t, uint64_t &));
 };

@@ -20,6 +20,13 @@
 
 namespace OHOS {
 namespace StorageManager {
+enum GetBundleStatsFlag : uint32_t {
+    GET_BUNDLE_WITH_ALL_SIZE          = 0x00000000,
+    GET_BUNDLE_WITHOUT_INSTALL_SIZE   = 0x00000001,
+    GET_BUNDLE_WITHOUT_DATA_SIZE      = 0x00000002,
+    GET_BUNDLE_WITHOUT_CACHE_SIZE     = 0x00000004,
+};
+
 class BundleStats final : public Parcelable {
 public:
     BundleStats() {}

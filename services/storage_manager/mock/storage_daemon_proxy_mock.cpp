@@ -446,7 +446,8 @@ int32_t StorageDaemonProxy::DeletePartitionInfo(const std::string &devPath, cons
 }
 
 int32_t StorageDaemonProxy::FormatPartition(const std::string &devPath, const std::string &fsType,
-                                            const std::string &volumeName, bool quickFormat)
+                                            const std::string &volumeName,
+                                            const std::vector<std::string> &cmd, bool quickFormat)
 {
     return E_OK;
 }
@@ -498,6 +499,12 @@ int32_t StorageDaemonProxy::GetDiskSize(const std::string &devName, uint64_t &si
 
 int32_t StorageDaemonProxy::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
                                              std::string &loopPath)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
+                                           std::vector<std::string> &output)
 {
     return E_OK;
 }

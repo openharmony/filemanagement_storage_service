@@ -342,12 +342,10 @@ ErrCode BundleManagerAdapterProxy::InnerGetVectorFromParcelIntelligent(MessagePa
         }
     }
 
-    auto bufferDeleter = [](void *p) { free(p); };
-    std::unique_ptr<void, decltype(bufferDeleter)> bufferGuard(buffer, bufferDeleter);
-
     MessageParcel tempParcel;
     if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
         LOGE("Fail to ParseFrom");
+        free(buffer);
         return ERR_APPEXECFWK_PARCEL_ERROR;
     }
 

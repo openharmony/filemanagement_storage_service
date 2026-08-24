@@ -73,6 +73,7 @@ int32_t HmfsOperator::DoMount(const std::string& devPath,
             umount2(mountPath.c_str(), MNT_DETACH);
             return E_HMFS_MOUNT;
         }
+        RestoreconDir(mountPath);
     }
 
     LOGI("HmfsOperator::DoMount success");

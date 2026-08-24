@@ -379,7 +379,6 @@ private:
     std::shared_ptr<IQuotaCalculator> quotaCalculator_;
     std::mutex loadQuotaMutex_;
     std::atomic<bool> stopCleanCacheFlag_{false};  // Stop clean cache flag
-    std::atomic<bool> isCleanRunning_{false};       // Scan running flag
     std::ostringstream extraData_;
 };
 

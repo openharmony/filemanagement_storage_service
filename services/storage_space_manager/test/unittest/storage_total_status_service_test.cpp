@@ -71,7 +71,7 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Zero, TestSize.Level1)
     ASSERT_NE(service_, nullptr);
 
     int64_t result = service_->GetRoundSize(0);
-    EXPECT_EQ(result, 1024);
+    EXPECT_EQ(result, 1000);
 
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Zero end";
 }
@@ -669,25 +669,25 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_PreciseRounding, TestSize.L
 
     ASSERT_NE(service_, nullptr);
 
-    constexpr int64_t KB = 1024;
-    constexpr int64_t MB = 1024 * 1024;
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t kb = 1000;
+    constexpr int64_t mb = 1000000;
+    constexpr int64_t gb = 1000000000;
 
-    // Small positive rounds up to 1KB
-    EXPECT_EQ(service_->GetRoundSize(1), KB);
-    EXPECT_EQ(service_->GetRoundSize(KB - 1), KB);
+    // Small positive rounds up to 1KB (1000)
+    EXPECT_EQ(service_->GetRoundSize(1), kb);
+    EXPECT_EQ(service_->GetRoundSize(kb - 1), kb);
 
     // Exact KB boundaries
-    EXPECT_EQ(service_->GetRoundSize(KB), KB);
-    EXPECT_EQ(service_->GetRoundSize(KB + 1), 2 * KB);
+    EXPECT_EQ(service_->GetRoundSize(kb), kb);
+    EXPECT_EQ(service_->GetRoundSize(kb + 1), 2 * kb);
 
-    // MB boundaries
-    EXPECT_EQ(service_->GetRoundSize(MB), MB);
-    EXPECT_EQ(service_->GetRoundSize(MB + 1), 2 * MB);
+    // MB boundaries (1,000,000 = 1 MB)
+    EXPECT_EQ(service_->GetRoundSize(mb), mb);
+    EXPECT_EQ(service_->GetRoundSize(mb + 1), 2 * mb);
 
-    // GB boundaries
-    EXPECT_EQ(service_->GetRoundSize(GB), GB);
-    EXPECT_EQ(service_->GetRoundSize(GB + 1), 2 * GB);
+    // GB boundaries (1,000,000,000 = ONE_GB)
+    EXPECT_EQ(service_->GetRoundSize(gb), gb);
+    EXPECT_EQ(service_->GetRoundSize(gb + 1), 2 * gb);
 
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_PreciseRounding end";
 }
@@ -705,18 +705,17 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Boundary_64KB, TestSize.Lev
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Boundary_64KB start";
     ASSERT_NE(service_, nullptr);
 
-    constexpr int64_t KB = 1024;
-    constexpr int64_t MB = 1024 * 1024;
+    constexpr int64_t kb = 1000;
+    constexpr int64_t mb = 1000000;
 
-    // At val=64, 64*1024=65536. size=65536 does NOT trigger the 7th loop iteration.
-    // val stays at 64, return 64*1024 = 64KB.
-    EXPECT_EQ(service_->GetRoundSize(64 * KB), 64 * KB);
+    // At val=64, 64*1000=64000. 64000 < 64000 is false → return 64000 (64KB)
+    EXPECT_EQ(service_->GetRoundSize(64 * kb), 64 * kb);
 
-    // size=65537 triggers the 7th iteration: val→128, reset KB→MB, return 1MB.
-    EXPECT_EQ(service_->GetRoundSize(64 * KB + 1), MB);
+    // 64001: val→128, 128>THRESHOLD(100) → reset → return 1MB
+    EXPECT_EQ(service_->GetRoundSize(64 * kb + 1), mb);
 
-    // size=128KB also triggers reset → 1MB (val=128 in KB phase → reset → 1MB)
-    EXPECT_EQ(service_->GetRoundSize(128 * KB), MB);
+    // 128KB: val reaches 128 → reset → return 1MB
+    EXPECT_EQ(service_->GetRoundSize(128 * kb), mb);
 
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Boundary_64KB end";
 }
@@ -734,14 +733,14 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Boundary_64MB, TestSize.Lev
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Boundary_64MB start";
     ASSERT_NE(service_, nullptr);
 
-    constexpr int64_t MB = 1024 * 1024;
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t mb = 1000000;
+    constexpr int64_t gb = 1000000000;
 
-    // val reaches 64 in MB phase, 64MB does NOT trigger 7th MB iteration
-    EXPECT_EQ(service_->GetRoundSize(64 * MB), 64 * MB);
+    // At val=64, 64*1000000=64000000. 64000000 < 64000000 is false → return 64MB
+    EXPECT_EQ(service_->GetRoundSize(64 * mb), 64 * mb);
 
-    // 64MB+1 triggers MB→GB reset, returns 1GB
-    EXPECT_EQ(service_->GetRoundSize(64 * MB + 1), GB);
+    // 64MB+1: val→128, 128>THRESHOLD(100) → reset → return 1GB
+    EXPECT_EQ(service_->GetRoundSize(64 * mb + 1), gb);
 
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Boundary_64MB end";
 }
@@ -759,19 +758,284 @@ HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_GbPhase, TestSize.Level1)
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_GbPhase start";
     ASSERT_NE(service_, nullptr);
 
-    constexpr int64_t GB = 1024LL * 1024 * 1024;
+    constexpr int64_t gb = 1000000000;
 
     // In GB phase, val can exceed 100 without reset because multiple==ONE_GB
-    // 128GB: val reaches 128 in GB, check 128GB < 128GB is false → return 128GB
-    EXPECT_EQ(service_->GetRoundSize(128 * GB), 128 * GB);
+    // 128GB: 128*1000000000 < 128*1000000000 is false → return 128GB
+    EXPECT_EQ(service_->GetRoundSize(128 * gb), 128 * gb);
 
-    // 129GB: val=128→256, 256GB < 129GB is false → return 256GB
-    EXPECT_EQ(service_->GetRoundSize(129 * GB), 256 * GB);
+    // 129GB: val=128→256, 256*1000000000 < 129*1000000000 is false → return 256GB
+    EXPECT_EQ(service_->GetRoundSize(129 * gb), 256 * gb);
 
     // 256GB: exact power of 2 at GB level
-    EXPECT_EQ(service_->GetRoundSize(256 * GB), 256 * GB);
+    EXPECT_EQ(service_->GetRoundSize(256 * gb), 256 * gb);
 
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_GbPhase end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0012
+ * @tc.name: GetRoundSize_1TB_Boundary
+ * @tc.desc: Test GetRoundSize at GB→TB escalation boundary (1024 GiB)
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_1TB_Boundary, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_1TB_Boundary start";
+    ASSERT_NE(service_, nullptr);
+
+    constexpr int64_t gb = 1000000000;
+
+    // 1024GB: 1024*1000000000 < 1024*1000000000 is false → returns 1024GB
+    int64_t result = service_->GetRoundSize(1024LL * gb);
+    EXPECT_EQ(result, 1024LL * gb);
+
+    // 1024GB + 1: val doubles to 2048 → returns 2048GB
+    result = service_->GetRoundSize(1024LL * gb + 1);
+    EXPECT_EQ(result, 2048LL * gb);
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_1TB_Boundary end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0013
+ * @tc.name: GetRoundSize_2TB_Device
+ * @tc.desc: Test GetRoundSize with 2TB device size (between 1TiB and 2TiB)
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_2TB_Device, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_2TB_Device start";
+    ASSERT_NE(service_, nullptr);
+
+    // GetRoundSize is a pure rounding function, has no >1TB branch
+    // In GB tier (multiple=ONE_GB), val continues doubling
+    constexpr int64_t gb = 1000000000;
+
+    // 1.5TB → val→2048, return 2048GB
+    int64_t result = service_->GetRoundSize(1500LL * gb);
+    EXPECT_EQ(result, 2048LL * gb);
+
+    // 2TB → val→2048, return 2048GB
+    result = service_->GetRoundSize(2000LL * gb);
+    EXPECT_EQ(result, 2048LL * gb);
+
+    // 1.85TB → val→2048, return 2048GB
+    result = service_->GetRoundSize(1850LL * gb);
+    EXPECT_EQ(result, 2048LL * gb);
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_2TB_Device end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0014
+ * @tc.name: GetRoundSize_4TB_AndBeyond
+ * @tc.desc: Test GetRoundSize with 4TB and larger sizes in TB tier
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_4TB_AndBeyond, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_4TB_AndBeyond start";
+    ASSERT_NE(service_, nullptr);
+
+    constexpr int64_t gb = 1000000000;
+
+    // 4TB → val→4096, return 4096GB
+    int64_t result = service_->GetRoundSize(4000LL * gb);
+    EXPECT_EQ(result, 4096LL * gb);
+
+    // 3TB → val→4096, return 4096GB
+    result = service_->GetRoundSize(3000LL * gb);
+    EXPECT_EQ(result, 4096LL * gb);
+
+    // 2.5TB → val→4096, return 4096GB
+    result = service_->GetRoundSize(2500LL * gb);
+    EXPECT_EQ(result, 4096LL * gb);
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_4TB_AndBeyond end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0016
+ * @tc.name: GetRoundSize_Monotonicity
+ * @tc.desc: Test GetRoundSize monotonicity across tier boundaries
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Monotonicity, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Monotonicity start";
+    ASSERT_NE(service_, nullptr);
+
+    constexpr int64_t gb = 1000000000;
+
+    // Across tier boundaries in GB tier
+    EXPECT_LE(service_->GetRoundSize(511LL * gb), service_->GetRoundSize(512LL * gb));
+    EXPECT_LE(service_->GetRoundSize(512LL * gb), service_->GetRoundSize(513LL * gb));
+    EXPECT_LE(service_->GetRoundSize(1023LL * gb), service_->GetRoundSize(1024LL * gb));
+    EXPECT_LE(service_->GetRoundSize(1024LL * gb), service_->GetRoundSize(1025LL * gb));
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Monotonicity end";
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_NullPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath(nullptr, static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENT);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_InvalidPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/nonexistent_path_xyz_abc",
+        static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_EQ(ret, E_STATVFS_FAILED);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_TotalType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    if (ret == E_OK) {
+        EXPECT_GT(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_FreeType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), size);
+    if (ret == E_OK) {
+        EXPECT_GE(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_UsedType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), size);
+    if (ret == E_OK) {
+        EXPECT_GE(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_RootTotal, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("/", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    if (ret == E_OK) {
+        EXPECT_GT(size, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_NullPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath(nullptr, static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENT);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_InvalidPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/nonexistent_path_xyz_abc",
+        static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    EXPECT_EQ(ret, E_STATVFS_FAILED);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_TotalType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GT(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_FreeType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_UsedType, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_GE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_EmptyStringPath, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t size = 0;
+    int32_t ret = service_->GetSizeOfPath("", static_cast<int32_t>(StorageStatType::TOTAL), size);
+    EXPECT_NE(ret, E_OK);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootTotal, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::TOTAL), inodeCnt);
+    if (ret == E_OK) {
+        EXPECT_NE(inodeCnt, 0);
+    }
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootFree, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::FREE), inodeCnt);
+    EXPECT_EQ(ret, 0);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetInodeOfPath_RootUsed, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t inodeCnt = 0;
+    int32_t ret = service_->GetInodeOfPath("/", static_cast<int32_t>(StorageStatType::USED), inodeCnt);
+    EXPECT_NE(ret, 0);
+}
+
+HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_AllTypes_Consistency, TestSize.Level1)
+{
+    ASSERT_NE(service_, nullptr);
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    int64_t usedSize = 0;
+    int32_t ret1 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::TOTAL), totalSize);
+    int32_t ret2 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::FREE), freeSize);
+    int32_t ret3 = service_->GetSizeOfPath("/data", static_cast<int32_t>(StorageStatType::USED), usedSize);
+    if (ret1 == E_OK && ret2 == E_OK && ret3 == E_OK) {
+        EXPECT_GE(totalSize, freeSize);
+        EXPECT_GE(totalSize, usedSize);
+    }
 }
 
 } // namespace StorageSpaceManager

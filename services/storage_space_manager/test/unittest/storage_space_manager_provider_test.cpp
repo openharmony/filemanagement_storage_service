@@ -615,5 +615,155 @@ HWTEST_F(StorageSpaceManagerProviderTest, OnExtension_UnknownExtension, TestSize
     GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnExtension_UnknownExtension end";
 }
 
+HWTEST_F(StorageSpaceManagerProviderTest, AddSubtractRunningIpcCount, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_AddSubtractRunningIpcCount start";
+    ASSERT_NE(provider_, nullptr);
+    EXPECT_EQ(provider_->runningIpcCount_.load(), 0);
+    provider_->AddRunningIpcCount();
+    EXPECT_EQ(provider_->runningIpcCount_.load(), 1);
+    provider_->AddRunningIpcCount();
+    EXPECT_EQ(provider_->runningIpcCount_.load(), 2);
+    provider_->SubtractRunningIpcCount();
+    EXPECT_EQ(provider_->runningIpcCount_.load(), 1);
+    provider_->SubtractRunningIpcCount();
+    EXPECT_EQ(provider_->runningIpcCount_.load(), 0);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_AddSubtractRunningIpcCount end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, IsReadyIntoIdle_NoIpcRunning, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_IsReadyIntoIdle_NoIpcRunning start";
+    ASSERT_NE(provider_, nullptr);
+    while (provider_->runningIpcCount_.load() > 0) {
+        provider_->SubtractRunningIpcCount();
+    }
+    EXPECT_TRUE(provider_->IsReadyIntoIdle());
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_IsReadyIntoIdle_NoIpcRunning end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, IsReadyIntoIdle_IpcRunning, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_IsReadyIntoIdle_IpcRunning start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->AddRunningIpcCount();
+    EXPECT_FALSE(provider_->IsReadyIntoIdle());
+    provider_->SubtractRunningIpcCount();
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_IsReadyIntoIdle_IpcRunning end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, CreateDestroyUnloadHandler, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_CreateDestroyUnloadHandler start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->DestroyUnloadHandler();
+    int32_t ret = provider_->CreateUnloadHandler();
+    EXPECT_EQ(ret, E_OK);
+    ret = provider_->CreateUnloadHandler();
+    EXPECT_EQ(ret, E_OK);
+    ret = provider_->DestroyUnloadHandler();
+    EXPECT_EQ(ret, E_OK);
+    ret = provider_->DestroyUnloadHandler();
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_CreateDestroyUnloadHandler end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, DelayUnloadTask_NullHandler, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_DelayUnloadTask_NullHandler start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->DestroyUnloadHandler();
+    provider_->DelayUnloadTask();
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_DelayUnloadTask_NullHandler end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, DelayUnloadTask_WithHandler, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_DelayUnloadTask_WithHandler start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->CreateUnloadHandler();
+    provider_->DelayUnloadTask();
+    provider_->DelayUnloadTask();
+    provider_->DestroyUnloadHandler();
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_DelayUnloadTask_WithHandler end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, OnIdle_ReadyForIdle, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnIdle_ReadyForIdle start";
+    ASSERT_NE(provider_, nullptr);
+    while (provider_->runningIpcCount_.load() > 0) {
+        provider_->SubtractRunningIpcCount();
+    }
+    SystemAbilityOnDemandReason idleReason;
+    int32_t ret = provider_->OnIdle(idleReason);
+    EXPECT_TRUE(ret == 0 || ret == -1);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnIdle_ReadyForIdle end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, OnIdle_NotReadyForIdle, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnIdle_NotReadyForIdle start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->AddRunningIpcCount();
+    SystemAbilityOnDemandReason idleReason;
+    int32_t ret = provider_->OnIdle(idleReason);
+    EXPECT_EQ(ret, -1);
+    provider_->SubtractRunningIpcCount();
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnIdle_NotReadyForIdle end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, OnActive_Basic, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnActive_Basic start";
+    ASSERT_NE(provider_, nullptr);
+    SystemAbilityOnDemandReason activeReason;
+    provider_->OnActive(activeReason);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnActive_Basic end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, OnAddSystemAbility_AlreadyReady, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnAddSystemAbility_AlreadyReady start";
+    ASSERT_NE(provider_, nullptr);
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+    EXPECT_TRUE(provider_->serviceReady_.load());
+    provider_->OnAddSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID, "");
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnAddSystemAbility_AlreadyReady end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, OnAddSystemAbility_NotReady, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnAddSystemAbility_NotReady start";
+    ASSERT_NE(provider_, nullptr);
+    provider_->serviceReady_.store(false);
+    provider_->depSaIds_.clear();
+    provider_->OnAddSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID, "");
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_OnAddSystemAbility_NotReady end";
+}
+
+HWTEST_F(StorageSpaceManagerProviderTest, ExitIdleState_Basic, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_ExitIdleState_Basic start";
+    ASSERT_NE(provider_, nullptr);
+    bool ret = provider_->ExitIdleState();
+    EXPECT_EQ(ret, true);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_ExitIdleState_Basic end";
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

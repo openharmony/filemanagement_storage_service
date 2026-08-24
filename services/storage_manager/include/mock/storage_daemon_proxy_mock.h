@@ -152,7 +152,8 @@ public:
     virtual int32_t DeletePartitionInfo(const std::string &devPath, const std::string &diskId,
                                         int32_t partitionNum) override;
     virtual int32_t FormatPartition(const std::string &devPath, const std::string &fsType,
-                                    const std::string &volumeName, bool quickFormat = true) override;
+                                    const std::string &volumeName,
+                                    const std::vector<std::string> &cmd, bool quickFormat = true) override;
     virtual int32_t QueryCDStatus(const std::string &devPath, int32_t &status) override;
     virtual int32_t EjectCD(const std::string &devPath) override;
     virtual int32_t Erase(const std::string &devPath) override;
@@ -170,6 +171,8 @@ public:
     virtual int32_t GetDiskSize(const std::string &devName, uint64_t &size) override;
     virtual int32_t BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
                                      std::string &loopPath) override;
+    virtual int32_t ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
+                                   std::vector<std::string> &output) override;
     virtual int32_t CreateDmLinear(const std::string &sourceDevPath,
                                    uint64_t startSector, uint64_t sectorCount,
                                    uint64_t &dmDev) override;

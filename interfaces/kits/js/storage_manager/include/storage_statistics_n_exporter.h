@@ -40,6 +40,7 @@ napi_value GetExtBundleStats(napi_env env, napi_callback_info info);
 napi_value GetAllExtBundleStats(napi_env env, napi_callback_info info);
 napi_value ListUserdataDirInfo(napi_env env, napi_callback_info info);
 
+void InitGetBundleStatsFlag(napi_env env, napi_value exports);
 std::tuple<std::string, int32_t, uint32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info);
 } // namespace StorageManager
 } // namespace OHOS
