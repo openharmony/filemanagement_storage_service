@@ -375,14 +375,14 @@ bool ContainsRelativePathReference(const std::string &filePath)
     size_t pos = filePath.find(INVALID_PREFIX_PATH);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("ContainsRelativePathReference: IsFilePathValid: Relative path is not allowed");
+            LOGE("ContainsRelativePathReference: Relative path is not allowed");
             return false;
         }
         pos = filePath.find(INVALID_PREFIX_PATH, pos + INVALID_PREFIX_PATH_LEN);
     }
     pos = filePath.rfind(INVALID_SUFFIX_PATH);
     if ((pos != std::string::npos) && (filePath.size() - pos == INVALID_SUFFIX_PATH_LEN)) {
-        LOGE("ContainsRelativePathReference: IsFilePathValid: Relative path is not allowed");
+        LOGE("ContainsRelativePathReference: Relative path is not allowed");
         return false;
     }
     return true;
