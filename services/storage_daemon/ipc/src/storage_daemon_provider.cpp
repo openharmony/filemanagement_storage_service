@@ -60,6 +60,8 @@
 #include "utils/file_utils.h"
 #include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
+#include <sys/sysmacros.h>
+#include "disk_manager/disk/dm_device.h"
 #include "disk_manager/disk/scan_device.h"
 #include "disk_manager/disk/disk_utils.h"
 #include "disk_manager/volume/volume_utils.h"
@@ -3283,6 +3285,32 @@ int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cm
     }
     LOGI("[L1:StorageDaemonProvider] ExecuteCommand: <<< EXIT SUCCESS <<< output lines=%{public}zu", output.size());
     return E_OK;
+}
+
+int32_t StorageDaemonProvider::CreateDmLinear(const std::string &sourceDevPath,
+                                              uint64_t startSector, uint64_t sectorCount,
+                                              uint64_t &dmDev)
+{
+#ifdef DISK_MANAGER
+    LOGI("[L1:StorageDaemonProvider] CreateDmLinear: >>> ENTER <<< source=%{public}s, "
+         "start=%{public}llu, count=%{public}llu",
+         sourceDevPath.c_str(),
+         static_cast<unsigned long long>(startSector),
+         static_cast<unsigned long long>(sectorCount));
+ 
+    DmDevice dmDevice(sourceDevPath, startSector, sectorCount);
+    if (!dmDevice.Create()) {
+        LOGE("[L1:StorageDaemonProvider] CreateDmLinear: Create failed");
+        return E_ERR;
+    }
+    dmDev = static_cast<uint64_t>(dmDevice.GetDeviceDev());
+ 
+    LOGI("[L1:StorageDaemonProvider] CreateDmLinear: <<< EXIT SUCCESS <<< dmDev=(%{public}u,%{public}u)",
+         major(static_cast<dev_t>(dmDev)), minor(static_cast<dev_t>(dmDev)));
+    return E_OK;
+#else
+    return E_NOT_SUPPORT;
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS
