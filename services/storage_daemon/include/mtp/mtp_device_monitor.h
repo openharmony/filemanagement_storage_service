@@ -67,6 +67,7 @@ private:
     int32_t MountDeviceByType(DeviceType deviceType, std::vector<MtpDeviceInfo> &devInfos,
                               const std::string &deviceTypeName, uint32_t busLocation, uint8_t devNum);
     void SetPtpMode(const std::vector<MtpDeviceInfo> &devInfos, bool isCamera);
+    bool NeedCameraFallback(const std::vector<MtpDeviceInfo> &detectedMtpDevices) const;
 
 private:
     std::mutex listMutex_;

@@ -245,42 +245,42 @@ void MtpDeviceMonitor::SetPtpMode(const std::vector<MtpDeviceInfo> &devInfos, bo
     }
 }
 
+bool MtpDeviceMonitor::NeedCameraFallback(const std::vector<MtpDeviceInfo> &detectedMtpDevices) const
+{
+    return detectedMtpDevices.empty();
+}
+
 void MtpDeviceMonitor::MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t busLocation, uint8_t devNum)
 {
     std::vector<MtpDeviceInfo> devInfos;
+    LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: >>> ENTER <<< deviceType=%{public}d, "
+        "bus=%{public}u, dev=%{public}u", static_cast<int>(deviceType), busLocation, devNum);
 
     if (deviceType == DeviceType::CAMERA) {
         int32_t ret = MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
         if (ret == E_OK) {
             return;
         }
-        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: camera failed, fallback to mobile, "
-            "bus=%{public}u, dev=%{public}u", busLocation, devNum);
+        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: camera failed, fallback to mobile");
         devInfos.clear();
         MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
         return;
-    } else if (deviceType == DeviceType::MOBILE) {
+    }
+    if (deviceType == DeviceType::MOBILE || deviceType == DeviceType::UNKNOWN) {
         int32_t ret = MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
         if (ret == E_OK) {
             return;
         }
-        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: mobile failed, fallback to camera, "
-            "bus=%{public}u, dev=%{public}u", busLocation, devNum);
-        devInfos.clear();
-        MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
-        return;
-    } else if (deviceType == DeviceType::UNKNOWN) {
-        int32_t ret = MountDeviceByType(DeviceType::MOBILE, devInfos, "mobile", busLocation, devNum);
-        if (ret == E_OK) {
+        if (!NeedCameraFallback(devInfos)) {
+            LOGW("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: MTP detected, skip camera fallback");
             return;
         }
-        devInfos.clear();
+        LOGI("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast: mobile not detected, fallback to camera");
         MountDeviceByType(DeviceType::CAMERA, devInfos, "camera", busLocation, devNum);
         return;
     }
 
     LOGE("[L2:MtpDeviceMonitor] MountMtpDeviceByBroadcast:Invalid device type");
-    return;
 }
 
 void MtpDeviceMonitor::MonitorDevice()

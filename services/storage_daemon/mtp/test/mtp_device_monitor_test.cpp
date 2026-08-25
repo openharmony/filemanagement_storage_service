@@ -502,5 +502,40 @@ HWTEST_F(MtpDeviceMonitorTest, OnEnterpriseParamChangeTest_001, TestSize.Level1)
     g_getParameter = 0;
     GTEST_LOG_(INFO) << "OnEnterpriseParamChangeTest_001 end";
 }
+
+/**
+ * @tc.name: NeedCameraFallbackTest_001
+ * @tc.desc: MTP device already detected must not fallback to camera.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, NeedCameraFallbackTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NeedCameraFallbackTest_001 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    std::vector<MtpDeviceInfo> devInfos;
+    MtpDeviceInfo device;
+    device.id = "mtp-vivo-xnote";
+    devInfos.push_back(device);
+    EXPECT_FALSE(monitor.NeedCameraFallback(devInfos));
+
+    GTEST_LOG_(INFO) << "NeedCameraFallbackTest_001 end";
+}
+
+/**
+ * @tc.name: NeedCameraFallbackTest_002
+ * @tc.desc: Camera fallback is allowed only when no MTP device was detected.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, NeedCameraFallbackTest_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NeedCameraFallbackTest_002 start";
+
+    MtpDeviceMonitor& monitor = MtpDeviceMonitor::GetInstance();
+    std::vector<MtpDeviceInfo> emptyInfos;
+    EXPECT_TRUE(monitor.NeedCameraFallback(emptyInfos));
+
+    GTEST_LOG_(INFO) << "NeedCameraFallbackTest_002 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
