@@ -98,6 +98,7 @@ int32_t HmfsOperator::Format(const std::string& devPath,
         "-O", "encrypt",
         "-O", "verity",
         "-O", "sb_checksum",
+        "-O", "extra_attr",
         devPath
     };
 
