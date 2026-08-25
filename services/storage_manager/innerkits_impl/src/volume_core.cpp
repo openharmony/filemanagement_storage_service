@@ -166,14 +166,38 @@ VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->id_ = parcel.ReadString();
-    obj->type_ = parcel.ReadInt32();
-    obj->diskId_ = parcel.ReadString();
-    obj->state_ = parcel.ReadInt32();
-    obj->errorFlag_ = parcel.ReadBool();
-    obj->fsType_ = parcel.ReadString();
-    obj->extraInfo_ = parcel.ReadString();
-    obj->partitionNum_ = parcel.ReadUint32();
+    if (!parcel.ReadString(obj->id_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(obj->type_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->diskId_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(obj->state_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadBool(obj->errorFlag_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->fsType_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->extraInfo_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint32(obj->partitionNum_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 
@@ -183,12 +207,30 @@ VolumeInfoStr *VolumeInfoStr::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->volumeId = parcel.ReadString();
-    obj->fsTypeStr = parcel.ReadString();
-    obj->fsUuid = parcel.ReadString();
-    obj->path = parcel.ReadString();
-    obj->description = parcel.ReadString();
-    obj->isDamaged = parcel.ReadBool();
+    if (!parcel.ReadString(obj->volumeId)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->fsTypeStr)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->fsUuid)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->path)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadString(obj->description)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadBool(obj->isDamaged)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

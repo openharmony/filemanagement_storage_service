@@ -148,6 +148,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 217] void FormatPartition([in] String devPath,
                                         [in] String fsType,
                                         [in] String volumeName,
+                                        [in] String[] cmd,
                                         [in] boolean quickFormat);
      [ipccode 221] void UMountDisShareFile([in] String[] distributeDirs);
      [ipccode 251] void GetCapacity([in] String devPath, [out] long totalSize, [out] long freeSize);
@@ -165,4 +166,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 261] void GetDiskSize([in] String devName, [out] unsigned long size);
      [ipccode 262] void BindBlockLoopDev([in] String sysPath, [in] unsigned long offset, [in] unsigned long sizeLimit,
                                          [out] String loopPath);
+     [ipccode 263] void ExecuteCommand([in] String[] cmd, [out] int execRet, [out] String[] output);
 }

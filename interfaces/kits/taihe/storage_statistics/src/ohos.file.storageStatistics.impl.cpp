@@ -184,6 +184,26 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
     return { (*bundleStats).dataSize_, (*bundleStats).cacheSize_, (*bundleStats).appSize_} ;
 }
 
+::ohos::file::storageStatistics::BundleStats GetBundleStatsSync2(::taihe::string_view packageName,
+    int32_t index, int32_t statFlag)
+{
+    std::string nameString = std::string(packageName);
+    if (nameString.empty()) {
+        LOGE("packageName is empty!");
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_PARAMS);
+        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
+    }
+    uint32_t flag = static_cast<uint32_t>(statFlag);
+    auto bundleStats = std::make_shared<OHOS::StorageManager::BundleStats>();
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetBundleStats(nameString, *bundleStats, index, flag);
+    if (errNum != OHOS::E_OK) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
+        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
+    }
+    return { (*bundleStats).dataSize_, (*bundleStats).cacheSize_, (*bundleStats).appSize_ };
+}
+
 int64_t GetFreeSizeSync()
 {
     auto resultSize = std::make_shared<int64_t>();
@@ -308,6 +328,7 @@ TH_EXPORT_CPP_API_GetFreeSizeOfVolumeSync(ANI::StorageStatistics::GetFreeSizeOfV
 TH_EXPORT_CPP_API_GetSystemSizeSync(ANI::StorageStatistics::GetSystemSizeSync);
 TH_EXPORT_CPP_API_GetTotalSizeOfVolumeSync(ANI::StorageStatistics::GetTotalSizeOfVolumeSync);
 TH_EXPORT_CPP_API_GetBundleStatsSync(ANI::StorageStatistics::GetBundleStatsSync);
+TH_EXPORT_CPP_API_GetBundleStatsSync2(ANI::StorageStatistics::GetBundleStatsSync2);
 TH_EXPORT_CPP_API_GetFreeSizeSync(ANI::StorageStatistics::GetFreeSizeSync);
 TH_EXPORT_CPP_API_GetTotalSizeSync(ANI::StorageStatistics::GetTotalSizeSync);
 // NOLINTEND

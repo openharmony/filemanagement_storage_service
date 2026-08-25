@@ -52,12 +52,30 @@ StorageStats *StorageStats::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->total_ = parcel.ReadInt64();
-    obj->audio_ = parcel.ReadInt64();
-    obj->video_ = parcel.ReadInt64();
-    obj->image_ = parcel.ReadInt64();
-    obj->file_ = parcel.ReadInt64();
-    obj->app_ = parcel.ReadInt64();
+    if (!parcel.ReadInt64(obj->total_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->audio_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->video_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->image_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->file_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadInt64(obj->app_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

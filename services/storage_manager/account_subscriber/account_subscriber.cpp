@@ -135,7 +135,7 @@ void AccountSubscriber::NotifyUserChangedEvent(uint32_t userId, StorageService::
         userRecord_.erase(userId);
     }
     lock.unlock();
-    std::thread mediaThread(&AccountSubscriber::GetSystemAbility, this);
+    std::thread mediaThread(&AccountSubscriber::GetSystemAbility, this, userId);
     mediaThread.detach();
 }
 
@@ -169,10 +169,10 @@ uint32_t AccountSubscriber::HandleUserSwitchedEvent(uint32_t userStatus)
     return userStatus;
 }
 
-void AccountSubscriber::GetSystemAbility()
+void AccountSubscriber::GetSystemAbility(int32_t userId)
 {
     std::lock_guard<std::mutex> lockMedia(mediaMutex_);
-    LOGI("connect %{public}d media library", userId_);
+    LOGI("connect %{public}d media library", userId);
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("GetSystemAbilityManager sam == nullptr");
@@ -188,7 +188,7 @@ void AccountSubscriber::GetSystemAbility()
             DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
         if (mediaShare != nullptr) {
             LOGI("connect media success.");
-            mediaShareMap_[userId_] = mediaShare;
+            mediaShareMap_[userId] = mediaShare;
             break;
         }
         LOGE("try to connect media again, retry count: %{public}d/%{public}d", i + 1, CONNECT_TIME);

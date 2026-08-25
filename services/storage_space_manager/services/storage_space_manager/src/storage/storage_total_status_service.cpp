@@ -15,11 +15,12 @@
 
 #include "storage/storage_total_status_service.h"
 
-#include <climits>
-#include <cmath>
+#include <cstdint>
+#include <cstdlib>
 #include "securec.h"
 #include <sys/statvfs.h>
 
+#include "file_ex.h"
 #include "storage_space_manager_errno.h"
 #include "storage_space_manager_hilog.h"
 
@@ -27,9 +28,13 @@ namespace OHOS {
 namespace StorageSpaceManager {
 
 namespace {
-    constexpr int64_t ONE_GB = 1024 * 1024 * 1024;   // 1GB in bytes
-    constexpr int64_t UNIT = 1024;               // Binary unit
+    constexpr int64_t ONE_GB = 1000000000;           // 1GB in bytes
+    constexpr int64_t ONE_TB = 1024LL * ONE_GB;      // 1024GB in bytes
+    constexpr int64_t UNIT = 1000;                // Decimal unit
     constexpr int64_t THRESHOLD = 100;           // Threshold for rounding
+    constexpr int64_t SECTOR_SIZE = 512;
+    constexpr int32_t ROUND_HALF = 2;
+    constexpr const char *BOOT_DEVICE_SIZE_PATH = "/proc/bootdevice/size";
 
     std::string AnonymizePath(const char *path)
     {
@@ -146,11 +151,31 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
 
-    totalSize = GetRoundSize(dataSize + rootSize);
-    LOGI("GetTotalSize: totalSize=%{public}lld (/data=%{public}lld, /=%{public}lld)",
-         static_cast<long long>(totalSize),
-         static_cast<long long>(dataSize),
-         static_cast<long long>(rootSize));
+    int64_t rawSize = dataSize + rootSize;
+    if (rawSize > ONE_TB) {
+        std::string content;
+        if (OHOS::LoadStringFromFile(BOOT_DEVICE_SIZE_PATH, content) && !content.empty()) {
+            int64_t sectorCount = atoll(content.c_str());
+            if (sectorCount <= 0) {
+                LOGE("GetTotalSize: atoll failed for %{public}s", BOOT_DEVICE_SIZE_PATH);
+                totalSize = GetRoundSize(rawSize);
+            } else if (sectorCount <= INT64_MAX / SECTOR_SIZE) {
+                int64_t deviceSize = sectorCount * SECTOR_SIZE;
+                totalSize = (deviceSize + ONE_GB / ROUND_HALF) / ONE_GB * ONE_GB;
+            } else {
+                totalSize = GetRoundSize(rawSize);
+            }
+        } else {
+            LOGE("GetTotalSize: read boot device size failed for %{public}s", BOOT_DEVICE_SIZE_PATH);
+            totalSize = GetRoundSize(rawSize);
+        }
+    } else {
+        totalSize = GetRoundSize(rawSize);
+    }
+    LOGI("GetTotalSize: totalSize=%{public}lld, rawSize=%{public}lld, "
+         "(/data=%{public}lld, /=%{public}lld)",
+         static_cast<long long>(totalSize), static_cast<long long>(rawSize),
+         static_cast<long long>(dataSize), static_cast<long long>(rootSize));
     return E_OK;
 }
 
@@ -182,6 +207,12 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
         return ret;
     }
 
+    if (dataSize > roundSize) {
+        LOGE("GetSystemSize: dataSize=%{public}lld > roundSize=%{public}lld",
+             static_cast<long long>(dataSize), static_cast<long long>(roundSize));
+        systemSize = 0;
+        return E_OK;
+    }
     systemSize = roundSize - dataSize;
     LOGI("GetSystemSize: roundSize=%{public}lld, dataSize=%{public}lld, systemSize=%{public}lld",
          static_cast<long long>(roundSize),

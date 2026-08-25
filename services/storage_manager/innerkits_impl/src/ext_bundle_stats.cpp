@@ -37,9 +37,18 @@ ExtBundleStats *ExtBundleStats::Unmarshalling(Parcel &parcel)
     if (!obj) {
         return nullptr;
     }
-    obj->businessName_ = parcel.ReadString();
-    obj->businessSize_ = parcel.ReadUint64();
-    obj->showFlag_ = parcel.ReadBool();
+    if (!parcel.ReadString(obj->businessName_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadUint64(obj->businessSize_)) {
+        delete obj;
+        return nullptr;
+    }
+    if (!parcel.ReadBool(obj->showFlag_)) {
+        delete obj;
+        return nullptr;
+    }
     return obj;
 }
 }

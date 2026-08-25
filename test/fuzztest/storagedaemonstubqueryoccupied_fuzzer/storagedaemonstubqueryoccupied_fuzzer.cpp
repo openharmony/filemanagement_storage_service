@@ -14,19 +14,12 @@
  */
 #include "storagedaemonstubqueryoccupied_fuzzer.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
 #include "ipc/storage_daemon_provider.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
 using namespace std;
-template<typename T>
-T TypeCast(const uint8_t *data, int *pos)
-{
-    if (pos) {
-        *pos += sizeof(T);
-    }
-    return *(reinterpret_cast<const T*>(data));
-}
 
 bool StorageDaemonQueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon,
     const uint8_t *data, size_t size)
@@ -34,17 +27,18 @@ bool StorageDaemonQueryOccupiedSpaceForSaFuzzTest(sptr<StorageDaemon::StorageDae
     MessageParcel datas;
     MessageParcel reply;
     MessageOption option;
-
+    
+    FuzzedDataProvider provider(data, size);
     int32_t bundleNameAndUidSize = 1;
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteInt32(bundleNameAndUidSize);
-    int32_t key = static_cast<int32_t>(size);
+    int32_t key = provider.ConsumeIntegral<int32_t>();
     datas.WriteInt32(key);
-    int len = size / 4;
-    u16string value(reinterpret_cast<const char16_t *>(data), len);
+    string str = provider.ConsumeRandomLengthString();
+    u16string value(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
     datas.WriteString16(value);
-    int32_t type = static_cast<int32_t>(size);
+    int32_t type = provider.ConsumeIntegral<int32_t>();
     datas.WriteInt32(type);
     datas.RewindRead(0);
 
@@ -60,8 +54,9 @@ bool StorageDaemonGetDataSizeByPathFuzzTest(sptr<StorageDaemon::StorageDaemonPro
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 4;
-    u16string path(reinterpret_cast<const char16_t *>(data), len);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string path(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(path);
@@ -79,8 +74,9 @@ bool StorageDaemonGetRmgResourceSizeFuzzTest(sptr<StorageDaemon::StorageDaemonPr
     MessageParcel reply;
     MessageOption option;
 
-    int len = size / 4;
-    u16string rgmName(reinterpret_cast<const char16_t *>(data), len);
+    FuzzedDataProvider provider(data, size);
+    string str = provider.ConsumeRandomLengthString();
+    u16string rgmName(reinterpret_cast<const char16_t*>(str.c_str()), str.size());
 
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
     datas.WriteString16(rgmName);

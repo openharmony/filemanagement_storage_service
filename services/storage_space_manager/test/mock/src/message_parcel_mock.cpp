@@ -225,6 +225,15 @@ bool Parcel::ReadUint64(uint64_t &value)
     return StorageMessageParcel::messageParcel->ReadUint64(value);
 }
 
+uint64_t Parcel::ReadUint64()
+{
+    if (StorageMessageParcel::messageParcel == nullptr) {
+        std::cout << "ReadUint64() mock failed, messageParcel is nullptr" << std::endl;
+        return 0;
+    }
+    return StorageMessageParcel::messageParcel->ReadUint64();
+}
+
 bool Parcel::WriteStringVector(const std::vector<std::string> &val)
 {
     if (StorageMessageParcel::messageParcel == nullptr) {
@@ -313,6 +322,15 @@ bool Parcel::WriteUint8(uint8_t value)
     }
     std::cout << "WriteUint8 mock failed, messageParcel is nullptr" << std::endl;
     return false; // : default value
+}
+
+bool Parcel::WriteInt8(int8_t value)
+{
+    if (StorageMessageParcel::messageParcel) {
+        return StorageMessageParcel::messageParcel->WriteInt8(value);
+    }
+    std::cout << "WriteInt8 mock failed, messageParcel is nullptr" << std::endl;
+    return false;
 }
 
 bool Parcel::ParseFrom(uintptr_t data, size_t size)

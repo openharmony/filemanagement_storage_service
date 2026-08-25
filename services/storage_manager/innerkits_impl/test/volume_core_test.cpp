@@ -171,4 +171,22 @@ HWTEST_F(VolumeCoreTest, VolumeInfoStr_Unmarshalling_0000, testing::ext::TestSiz
     EXPECT_EQ(result->isDamaged, isDamaged);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end VolumeInfoStr_Unmarshalling_0000";
 }
+
+HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = VolumeCore::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Unmarshalling_0001";
+}
+
+HWTEST_F(VolumeCoreTest, VolumeInfoStr_Unmarshalling_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeCoreTest-begin VolumeInfoStr_Unmarshalling_0001";
+    Parcel parcel;
+    auto result = VolumeInfoStr::Unmarshalling(parcel);
+    EXPECT_EQ(result, nullptr);
+    GTEST_LOG_(INFO) << "VolumeCoreTest-end VolumeInfoStr_Unmarshalling_0001";
+}
 }

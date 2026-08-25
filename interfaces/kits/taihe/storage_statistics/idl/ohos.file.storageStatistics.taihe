@@ -110,7 +110,21 @@ function GetSystemSizeSync(): i64;
 @gen_promise("getTotalSizeOfVolume")
 function GetTotalSizeOfVolumeSync(volumeUuid: String): i64;
 
+@!sts_inject("""
+export enum GetBundleStatsFlag {
+    GET_BUNDLE_WITH_ALL_SIZE = 0x00000000,
+    GET_BUNDLE_WITHOUT_INSTALL_SIZE = 0x00000001,
+    GET_BUNDLE_WITHOUT_DATA_SIZE = 0x00000002,
+    GET_BUNDLE_WITHOUT_CACHE_SIZE = 0x00000004,
+}
+export interface BundleStatsOptions {
+    index?: int;
+    statFlag?: int;
+}
+""")
+
 function GetBundleStatsSync(packageName: String, index: Optional<i32>): BundleStats;
+function GetBundleStatsSync2(packageName: String, index: i32, statFlag: i32): BundleStats;
 
 @!sts_inject("""
 export function getBundleStats(packageName: string, index?: int): Promise<BundleStats> {
@@ -137,6 +151,22 @@ export function getBundleStats(packageName: string, callback: AsyncCallback<Bund
     .catch((ret: Any): void => {
         let data: BundleStats = {dataSize: 0, cacheSize: 0, appSize: 0};
         callback(ret as BusinessError, data);
+    });
+}
+
+export function getBundleStats(packageName: string, option: BundleStatsOptions): Promise<BundleStats> {
+    let index: int = option.index ?? 0;
+    let statFlag: int = option.statFlag ?? 0;
+    return new Promise<BundleStats>((resolve, reject): void => {
+        taskpool.execute((): BundleStats => {
+            return getBundleStatsSync2(packageName, index, statFlag);
+        })
+        .then((ret: Any): void => {
+            resolve(ret as BundleStats);
+        })
+        .catch((ret: Any): void => {
+            reject(ret as Error);
+        });
     });
 }
 """)

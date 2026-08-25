@@ -56,6 +56,7 @@ constexpr size_t BOUNDARY = 3000;
 constexpr const char* CONFIG_DIR = "/data/service/el1/public/storage_space_manager";
 constexpr const char* CONFIG_FILE_NAME = "cache_clean_config.json";
 constexpr const char* LAST_CLEAN_CACHE_TIMESTAMP = "last_cache_clean_timestamp";
+constexpr int64_t MS_PER_HOUR = 60LL * 60 * 1000;
 constexpr const char* LIB_QUOTA_CALCULATOR_NAME = "libstorage_service_ext_adapter.z.so";
 constexpr int32_t MIN_RANK = 1;
 constexpr const char* STORAGE_RANGE_PREFIX = "size_lowerlimit_";
@@ -68,6 +69,7 @@ constexpr const char* TOP_APP_CACHE_CONFIG = "top_app_cache_config";
 constexpr int32_t DEFAULT_TOP_RANKING_HOURS = 336;
 constexpr int32_t DEFAULT_NO_USE_HOURS = 2160;
 constexpr int32_t DEFAULT_TOP_COUNT = 20;
+constexpr int32_t DEFAULT_CACHE_CLEAN_SPAN_HOURS = 168; // 7 days
 #endif
 constexpr uint64_t DISPLAY_MB_DIVISOR = 1000ULL * 1000;
 constexpr mode_t CONFIG_DIR_MODE = 0755;
@@ -80,19 +82,29 @@ constexpr uint64_t RECORD_DATA_AGING_TIME = 180LL * 24 * 60 * 60 * 1000;
 constexpr const char* DEFAULT_QUOTA_CONFIG = R"({
     "top_app_cache_config": {
         "size_lowerlimit_0_upperlimit_256": {
-            "top1-3": 750,
-            "top4-10": 300,
-            "top11-20": 150,
-            "default": 50
+            "top1-3": 2000,
+            "top4-10": 800,
+            "top11-20": 300,
+            "default": 100
         },
         "size_lowerlimit_257_upperlimit_max": {
-            "top1-3": 1500,
-            "top4-10": 500,
-            "top11-20": 250,
-            "default": 50
+            "top1-3": 2500,
+            "top4-10": 1000,
+            "top11-20": 500,
+            "default": 200
         }
     }
 })";
+
+void SafeAccumulate(uint64_t &target, uint64_t value)
+{
+    if (target > UINT64_MAX - value) {
+        target = UINT64_MAX;
+    } else {
+        target += value;
+    }
+}
+
 struct StorageRangeInfo {
     int64_t lowerLimit;
     int64_t upperLimit;
@@ -154,7 +166,11 @@ int32_t GetQuotaFromRangeConfig(const nlohmann::json &rangeConfig, int32_t rank,
     bool foundDefault = false;
     for (auto it = rangeConfig.begin(); it != rangeConfig.end(); ++it) {
         std::string tierName = it.key();
-        int32_t tierQuota = it.value().get<int32_t>();
+        auto v = it.value();
+        if (!v.is_number_integer()) {
+            continue;
+        }
+        int32_t tierQuota = v.get<int32_t>();
         if (tierName == DEFAULT_TIER_NAME) {
             defaultQuota = tierQuota;
             foundDefault = true;
@@ -237,12 +253,17 @@ int32_t CacheCleanController::CleanBundleCache(int32_t userId)
         LOGE("Failed to load quota calculator");
         return E_FAIL;
     }
-    if (isCleanRunning_.load()) {
-        LOGE("Clean cache is running");
-        return E_OK;
-    }
     if (quotaCalculator_->GetCacheAutoCleanSwitch() == CacheAutoCleanSwitch::CLOSE) {
         LOGE("CacheAutoCleanSwitch is CLOSE");
+        return E_OK;
+    }
+    int32_t cacheCleanSpanHours = quotaCalculator_->GetAutoCacheCleanSpan();
+    if (cacheCleanSpanHours < 0) {
+        cacheCleanSpanHours = DEFAULT_CACHE_CLEAN_SPAN_HOURS;
+        LOGI("GetAutoCacheCleanSpan invalid, use default %{public}d hours", cacheCleanSpanHours);
+    }
+    if (!IsCacheCleanIntervalExceeded(cacheCleanSpanHours)) {
+        LOGI("Cache clean interval not exceeded, skip");
         return E_OK;
     }
     return ExecuteCleanBundleCache(userId);
@@ -253,13 +274,11 @@ int32_t CacheCleanController::CleanBundleCache(int32_t userId)
 int32_t CacheCleanController::ExecuteCleanBundleCache(int32_t userId)
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    isCleanRunning_.store(true);
     stopCleanCacheFlag_.store(false);
     std::vector<ApplicationInfo> appInfos;
     int32_t ret = GetAllAppInfos(userId, appInfos);
     if (ret != E_OK) {
         LOGE("Failed to get apps for user %{public}d", userId);
-        isCleanRunning_.store(false);
         return ret;
     }
     std::vector<CleanCacheInfo> rankedCleanInfos;
@@ -267,20 +286,17 @@ int32_t CacheCleanController::ExecuteCleanBundleCache(int32_t userId)
     ret = BundleActiveRank(userId, appInfos, rankedCleanInfos, cleanAllCacheInfos);
     if (ret != E_OK) {
         LOGE("Failed to rank bundles, ret=%{public}d", ret);
-        isCleanRunning_.store(false);
         return ret;
     }
     CleanResources resources;
     resources.userId = userId;
     ret = PrepareCleanResources(resources);
     if (ret != E_OK) {
-        isCleanRunning_.store(false);
         return ret;
     }
     CleanStats stats;
     ret = ExecuteCacheCleaning(rankedCleanInfos, cleanAllCacheInfos, resources, stats);
     if (ret != E_OK) {
-        isCleanRunning_.store(false);
         return ret;
     }
     int64_t currentTime = GetCurrentTime();
@@ -290,7 +306,6 @@ int32_t CacheCleanController::ExecuteCleanBundleCache(int32_t userId)
     }
     LOGI("Cache clean completed: success=%{public}d, failed=%{public}d",
          stats.totalCleanedCount, stats.failedCount);
-    isCleanRunning_.store(false);
     stopCleanCacheFlag_.store(false);
     return (stats.failedCount == 0) ? E_OK : E_FAIL;
 #else
@@ -374,6 +389,10 @@ int32_t CacheCleanController::CleanRankBasedCache(const std::vector<CleanCacheIn
 {
     LOGI("Starting rank-based cleaning for %{public}zu apps", rankedCleanInfos.size());
 
+    if (quotaCalculator_ == nullptr) {
+        LOGE("quotaCalculator_ is null, cannot get system app cache size");
+        return E_FAIL;
+    }
     std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
 
     for (size_t i = 0; i < rankedCleanInfos.size(); ++i) {
@@ -423,12 +442,13 @@ int32_t CacheCleanController::CleanSingleAppWithQuota(const CleanCacheInfo &clea
     }
     if (systemAppCacheQuata.find(cleanInfo.bundleName) != systemAppCacheQuata.end()) {
         quotaMB = systemAppCacheQuata.at(cleanInfo.bundleName);
+        LOGI("Use systemApp config, %{public}s: %{public}d MB", cleanInfo.bundleName.c_str(), quotaMB);
     }
     uint64_t quotaBytes = static_cast<uint64_t>(quotaMB) * MB_TO_BYTES;
     CleanCacheInfo cacheInfo = cleanInfo;
     cacheInfo.cacheThreshold = quotaBytes;
 
-    LOGI("Cleaning %{public}s: rank=%{public}d, quota=%{public}d MB",
+    LOGD("Cleaning %{public}s: rank=%{public}d, quota=%{public}d MB",
          cleanInfo.bundleName.c_str(), rank, quotaMB);
 
     return PerformCacheCleaning(cacheInfo, resources, stats);
@@ -467,12 +487,12 @@ int32_t CacheCleanController::PerformCacheCleaning(const CleanCacheInfo &cleanIn
         return E_FAIL;
     }
 
-    LOGI("Cleaned %{public}s: +%{public}llu MB",
+    LOGD("Cleaned %{public}s: +%{public}llu MB",
          cleanInfo.bundleName.c_str(),
          static_cast<unsigned long long>((beforeCleanedSize - afterCleanedSize) / DISPLAY_MB_DIVISOR));
     stats.totalCleanedCount++;
-    stats.cleanBefore += beforeCleanedSize;
-    stats.cleanAfter += afterCleanedSize;
+    SafeAccumulate(stats.cleanBefore, beforeCleanedSize);
+    SafeAccumulate(stats.cleanAfter, afterCleanedSize);
     WriteCleanInfoToExtra(cleanInfo, beforeCleanedSize, afterCleanedSize, true);
 
     return E_OK;
@@ -482,6 +502,10 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
     const CleanResources &resources, CleanStats &stats)
 {
     LOGI("Starting full cache clean for %{public}zu apps", cleanAllCacheInfos.size());
+    if (quotaCalculator_ == nullptr) {
+        LOGE("quotaCalculator_ is null, cannot get system app cache size");
+        return E_FAIL;
+    }
     std::unordered_map<std::string, int32_t> systemAppCacheQuata = quotaCalculator_->GetSystemAppCacheSize();
 
     for (size_t i = 0; i < cleanAllCacheInfos.size(); ++i) {
@@ -496,7 +520,10 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
         CleanCacheInfo cacheInfo = cleanAllCacheInfos[i];
         cacheInfo.cacheThreshold = 0;
         if (systemAppCacheQuata.find(cacheInfo.bundleName) != systemAppCacheQuata.end()) {
-            cacheInfo.cacheThreshold = systemAppCacheQuata.at(cacheInfo.bundleName);
+            cacheInfo.cacheThreshold =
+                static_cast<uint64_t>(systemAppCacheQuata.at(cacheInfo.bundleName)) * MB_TO_BYTES;
+            LOGI("Use systemApp config, %{public}s: %{public}d MB", cacheInfo.bundleName.c_str(),
+                systemAppCacheQuata.at(cacheInfo.bundleName));
         }
         ErrCode cleanRet = resources.bundleMgr->CleanBundlePartialCacheAutomatic(
             ToAppExecFwkCleanCacheInfo(cacheInfo), beforeCleanedSize, afterCleanedSize);
@@ -508,12 +535,12 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
             continue;
         }
 
-        LOGI("Cleaned %{public}s: +%{public}llu MB",
+        LOGD("Cleaned %{public}s: +%{public}llu MB",
              cleanAllCacheInfos[i].bundleName.c_str(),
              static_cast<unsigned long long>((beforeCleanedSize - afterCleanedSize) / DISPLAY_MB_DIVISOR));
         stats.totalCleanedCount++;
-        stats.cleanBefore += beforeCleanedSize;
-        stats.cleanAfter += afterCleanedSize;
+        SafeAccumulate(stats.cleanBefore, beforeCleanedSize);
+        SafeAccumulate(stats.cleanAfter, afterCleanedSize);
         WriteCleanInfoToExtra(cacheInfo, beforeCleanedSize, afterCleanedSize, true);
     }
 
@@ -548,7 +575,7 @@ int32_t CacheCleanController::FilterAppInfosByBundleType(const std::vector<Appli
     }
 
     for (const auto &appInfo : appInfos) {
-        if (appInfo.bundleType == AppExecFwk::BundleType::APP) {
+        if (appInfo.bundleType == AppExecFwk::BundleType::APP && appInfo.hideDesktopIcon == false) {
             filteredAppInfos.push_back(appInfo);
         }
     }
@@ -875,6 +902,52 @@ void CacheCleanController::BuildCleanCacheInfos(const CleanCacheBuildParams &par
 }
 #endif
 
+bool CacheCleanController::IsCacheCleanIntervalExceeded(int32_t cacheCleanSpanHours)
+{
+    std::string configFilePath = std::string(CONFIG_DIR) + "/" + CONFIG_FILE_NAME;
+    std::ifstream configFile(configFilePath);
+    if (!configFile.is_open()) {
+        LOGI("No previous clean timestamp found, will proceed with clean");
+        return true;
+    }
+
+    std::stringstream buffer;
+    buffer << configFile.rdbuf();
+    configFile.close();
+    std::string jsonStr = buffer.str();
+    if (!nlohmann::json::accept(jsonStr)) {
+        LOGE("Invalid JSON format in config file");
+        return true;
+    }
+
+    nlohmann::json configJson = nlohmann::json::parse(jsonStr, nullptr, false);
+    if (configJson.is_discarded()) {
+        LOGE("Failed to parse config json");
+        return true;
+    }
+    if (!configJson.contains(LAST_CLEAN_CACHE_TIMESTAMP)) {
+        LOGE("Config file does not contain timestamp key, will proceed with clean");
+        return true;
+    }
+    if (!configJson[LAST_CLEAN_CACHE_TIMESTAMP].is_number_integer()) {
+        LOGE("Config timestamp is not an integer");
+        return true;
+    }
+
+    int64_t lastCleanTimestamp = configJson[LAST_CLEAN_CACHE_TIMESTAMP].get<int64_t>();
+    int64_t currentTime = GetCurrentTime();
+    int64_t timeDiff = currentTime - lastCleanTimestamp;
+    LOGI("Last clean timestamp: %{public}lld, current time: %{public}lld, diff: %{public}lld ms",
+         static_cast<long long>(lastCleanTimestamp), static_cast<long long>(currentTime),
+         static_cast<long long>(timeDiff));
+
+    if (timeDiff < static_cast<int64_t>(cacheCleanSpanHours) * MS_PER_HOUR) {
+        LOGI("Cache clean was performed within %{public}d hours, skip", cacheCleanSpanHours);
+        return false;
+    }
+    return true;
+}
+
 int32_t CacheCleanController::SaveCacheCleaningTimestamp(int64_t timestamp)
 {
     LOGI("SaveCacheCleaningTimestamp start, timestamp=%{public}lld", static_cast<long long>(timestamp));
@@ -894,8 +967,8 @@ int32_t CacheCleanController::SaveCacheCleaningTimestamp(int64_t timestamp)
     nlohmann::json configJson;
     configJson[LAST_CLEAN_CACHE_TIMESTAMP] = timestamp;
 
-    // Write JSON to file
-    std::ofstream configFile(configFilePath);
+    // Write JSON to file (truncate and overwrite the config file)
+    std::ofstream configFile(configFilePath, std::ios::out | std::ios::trunc);
     if (!configFile.is_open()) {
         LOGE("Failed to open config file for writing: %{public}s", configFilePath.c_str());
         return E_IO_ERROR;
@@ -919,8 +992,20 @@ int32_t CacheCleanController::GetDefaultQuotaByRank(int32_t appRank, int64_t tot
         LOGE("Invalid app rank: %{public}d", appRank);
         return E_INVALID_ARGUMENT;
     }
-    static nlohmann::json config = nlohmann::json::parse(DEFAULT_QUOTA_CONFIG);
+    static nlohmann::json config = nlohmann::json::parse(DEFAULT_QUOTA_CONFIG, nullptr, false);
+    if (config.is_discarded()) {
+        LOGE("Failed to parse default quota config");
+        return E_FAIL;
+    }
+    if (!config.contains(TOP_APP_CACHE_CONFIG)) {
+        LOGE("Default quota config missing topAppCacheConfig");
+        return E_FAIL;
+    }
     nlohmann::json topAppConfig = config[TOP_APP_CACHE_CONFIG];
+    if (!topAppConfig.is_object()) {
+        LOGE("Failed to parse default quota config");
+        return E_FAIL;
+    }
     int64_t totalGB = totalStorage / static_cast<int64_t>(GB_TO_BYTES);
     for (auto it = topAppConfig.begin(); it != topAppConfig.end(); ++it) {
         StorageRangeInfo rangeInfo;

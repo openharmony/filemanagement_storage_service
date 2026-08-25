@@ -51,8 +51,6 @@ public:
     bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
     bool PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList);
-    void MountSandboxPath(uint32_t userId, const std::vector<MountNodeInfo> &sandboxMountNodeInfo,
-        const std::string &bundleName);
     bool CheckMountFileByUser(int32_t userId);
     bool CloudAndFuseDirFlag(const std::string &path);
     bool MediaFuseDirFlag(const std::string &path);
@@ -82,7 +80,6 @@ private:
     int32_t CreateVirtualDirs(int32_t userId);
     int32_t LocalMount(int32_t userId, const std::vector<MountNodeInfo> &hmdfsMountNodeList);
     int32_t LocalUMount(int32_t userId);
-    bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
     int32_t MountAppdata(int32_t userId, bool beforeStartup);
     bool DirExist(const std::string &dir);
     int32_t PrepareAppdataDirByUserId(int32_t userId);

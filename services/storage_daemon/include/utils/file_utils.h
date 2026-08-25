@@ -67,6 +67,8 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = n
              int *exitStatus = nullptr);
 int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus = nullptr,
                      std::vector<std::string> *output = nullptr);
+int ForkExecToFile(std::vector<std::string> &cmd, const std::string &outputFilePath,
+                   std::vector<std::string> *output = nullptr);
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 int ExtStorageMountForkExec(std::vector<std::string> &cmd, int *exitStatus = nullptr);
 #endif
@@ -100,6 +102,7 @@ bool IsFileExist(const std::string &path);
 bool GetRealPath(const std::string &path, std::string &realPath);
 std::string MaskSensitiveInfo(const std::string &input);
 bool IsFilePathInvalid(const std::string &filePath);
+bool IsShellMetacharPresent(const std::string& str);
 bool CleanOrphanNode();
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount);
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount);
