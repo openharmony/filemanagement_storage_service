@@ -1030,8 +1030,8 @@ HWTEST_F(ExtOperatorTest, IsoOperator_ExtractIsoFiles_ProcessMergedLineFailed, T
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             if (output) { output->push_back("-rwxrwxrwx   1     goodfile.txt"); }
             return E_OK;
-        }))
-        .WillOnce(Return(E_ERR));
+        }));
+    EXPECT_CALL(*fileUtilMoc_, ForkExecToFile(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
 }
 
@@ -1069,8 +1069,8 @@ HWTEST_F(ExtOperatorTest, UdfOperator_ExtractIsoFiles_ProcessMergedLineFailed, T
         .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
             if (output) { output->push_back("-rwxrwxrwx   1     goodfile.txt"); }
             return E_OK;
-        }))
-        .WillOnce(Return(E_ERR));
+        }));
+    EXPECT_CALL(*fileUtilMoc_, ForkExecToFile(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.ExtractIsoFiles("/dev/block/sr0", "/data/local/tmp"), E_ERR);
 }
 

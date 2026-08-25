@@ -309,6 +309,12 @@ int32_t IsoOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
     }
     if (burnOptions.isVerifyBurn) {
         LOGI("Burn: starting verify process for devPath=%{public}s", devPath.c_str());
+        err = RefreshCDRomMediaNode(devPath);
+        if (err != E_OK) {
+            LOGE("Burn: RefreshCDRomMediaNode failed, non-critical, err=%{public}d", err);
+            DiskUtils::EjectCD(devPath);
+            return E_VERIFY_BURN_DATA_FAILED;
+        }
         err = DoVerifyBurnData(devPath, burnOptions, isDiskEmpty);
         if (err != E_OK) {
             LOGE("Burn: verify failed, err=%{public}d", err);
@@ -401,11 +407,9 @@ int32_t IsoOperator::ProcessMergedLine(const std::string& isoPath, const std::st
         }
     }
     LOGI("ExtractIsoFiles: extracting file: %{public}s to %{public}s", fullIsoPath.c_str(), fullOutputPath.c_str());
-    std::string extractCmd = "isoinfo -R -i \"" + isoPath + "\" -x \"" +
-        fullIsoPath + "\" > \"" + fullOutputPath + "\"";
-    std::vector<std::string> cmd = {"/bin/sh", "-c", extractCmd};
+    std::vector<std::string> cmd = {"isoinfo", "-R", "-i", isoPath, "-x", fullIsoPath};
     std::vector<std::string> extractOutput;
-    int32_t extractErr = ForkExec(cmd, &extractOutput);
+    int32_t extractErr = ForkExecToFile(cmd, fullOutputPath, &extractOutput);
     for (const auto& s : extractOutput) {
         LOGI("ExtractIsoFiles extract output: %{public}s", s.c_str());
     }
@@ -536,6 +540,13 @@ int32_t IsoOperator::CompareChecksums(
 int32_t IsoOperator::PrepareSourceDirectory(const BurnOptions& burnOptions, std::string& sourceDir)
 {
     if (burnOptions.isIsoImage) {
+        if (!IsDir(BURN_TMP_DIR)) {
+            int32_t err = MkDir(BURN_TMP_DIR, DEFAULT_DIR_PERMISSIONS);
+            if (err != E_OK) {
+                LOGE("DoVerifyBurnData: create burn_tmp dir failed, err=%{public}d, errno=%{public}d", err, errno);
+                return E_ERR;
+            }
+        }
         sourceDir = std::string(BURN_TMP_DIR) + "/source_extract";
         if (IsDir(sourceDir)) {
             RmDirRecurse(sourceDir);

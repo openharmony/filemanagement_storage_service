@@ -1458,6 +1458,122 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_EmptyCmd, TestSize.Level1)
     EXPECT_EQ(ForkExec(cmd, &output), E_PARAMS_INVALID);
 }
 
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_EmptyCmd
+ * @tc.desc: Verify ForkExecToFile with empty cmd. FormatCmd produces {nullptr},
+ *           execvp(nullptr) causes child to be killed by signal, resulting in E_WIFEXITED.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_EmptyCmd, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_EmptyCmd start";
+    std::vector<std::string> cmd;
+    std::string outputFilePath = "/data/service/fork_exec_to_file_empty_cmd_" + std::to_string(getpid()) + ".txt";
+    std::vector<std::string> output;
+    int ret = ForkExecToFile(cmd, outputFilePath, &output);
+    // FormatCmd produces {nullptr} -> execvp(nullptr) fails with SIGSEGV
+    // -> child killed by signal -> WIFEXITED returns false -> E_WIFEXITED
+    EXPECT_EQ(ret, E_WIFEXITED);
+    unlink(outputFilePath.c_str());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_EmptyCmd end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_Success_001
+ * @tc.desc: Verify ForkExecToFile returns E_OK with a valid cmd and writable outputFilePath.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_Success_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_Success_001 start";
+    std::string outputFilePath = "/data/service/fork_exec_to_file_test_" + std::to_string(getpid()) + ".txt";
+    std::vector<std::string> cmd = {"echo", "hello_fork_exec_to_file"};
+    std::vector<std::string> output;
+    int ret = ForkExecToFile(cmd, outputFilePath, &output);
+    EXPECT_EQ(ret, E_OK);
+    // Verify output file was created and contains expected content
+    std::ifstream ifs(outputFilePath);
+    EXPECT_TRUE(ifs.is_open());
+    std::string content;
+    std::getline(ifs, content);
+    EXPECT_TRUE(content.find("hello_fork_exec_to_file") != std::string::npos);
+    ifs.close();
+    unlink(outputFilePath.c_str());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_Success_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_Success_NullOutput
+ * @tc.desc: Verify ForkExecToFile returns E_OK when output param is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_Success_NullOutput, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_Success_NullOutput start";
+    std::string outputFilePath = "/data/service/fork_exec_to_file_null_out_" + std::to_string(getpid()) + ".txt";
+    std::vector<std::string> cmd = {"echo", "null_output_test"};
+    int ret = ForkExecToFile(cmd, outputFilePath, nullptr);
+    EXPECT_EQ(ret, E_OK);
+    unlink(outputFilePath.c_str());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_Success_NullOutput end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_ChildOpenFailed
+ * @tc.desc: Verify ForkExecToFile returns E_WEXITSTATUS when outputFilePath is invalid
+ *           (child process open fails, causing _exit(1)).
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_ChildOpenFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_ChildOpenFailed start";
+    // Use a path that cannot be opened for writing
+    std::string outputFilePath = "/proc/1/nonexistent_dir/impossible_file";
+    std::vector<std::string> cmd = {"echo", "should_not_write"};
+    std::vector<std::string> output;
+    int ret = ForkExecToFile(cmd, outputFilePath, &output);
+    // Child open() fails -> _exit(1) -> parent sees E_WEXITSTATUS
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_ChildOpenFailed end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_ExecvpFailed
+ * @tc.desc: Verify ForkExecToFile returns E_WEXITSTATUS when cmd does not exist
+ *           (child process execvp fails, causing _exit(1)).
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_ExecvpFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_ExecvpFailed start";
+    std::string outputFilePath = "/data/service/fork_exec_to_file_noexec_" + std::to_string(getpid()) + ".txt";
+    std::vector<std::string> cmd = {"nonexistent_command_xyz_12345"};
+    std::vector<std::string> output;
+    int ret = ForkExecToFile(cmd, outputFilePath, &output);
+    // Child execvp fails -> _exit(1) -> parent sees E_WEXITSTATUS
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+    unlink(outputFilePath.c_str());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_ExecvpFailed end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecToFile_CmdExitsWithError
+ * @tc.desc: Verify ForkExecToFile returns E_WEXITSTATUS when the command exits with non-zero status.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecToFile_CmdExitsWithError, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_CmdExitsWithError start";
+    std::string outputFilePath = "/data/service/fork_exec_to_file_errcmd_" + std::to_string(getpid()) + ".txt";
+    // ls on a nonexistent directory exits with non-zero status
+    std::vector<std::string> cmd = {"ls", "/no_such_dir_fork_exec_to_file_test"};
+    std::vector<std::string> output;
+    int ret = ForkExecToFile(cmd, outputFilePath, &output);
+    EXPECT_EQ(ret, E_WEXITSTATUS);
+    unlink(outputFilePath.c_str());
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecToFile_CmdExitsWithError end";
+}
+
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 /**
  * @tc.name: FileUtilsTest_ExtStorageMountForkExec_EmptyCmd

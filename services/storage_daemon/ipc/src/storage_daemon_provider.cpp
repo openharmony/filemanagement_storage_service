@@ -89,6 +89,8 @@ constexpr size_t MAX_TYPE_LEN = 64;
 constexpr int32_t DEVICE_MAJOR_MAX = 4095;
 constexpr int32_t DEVICE_MINOR_MAX = 1048575;
 constexpr size_t MAX_MOUNT_DATA_LEN = 1024;
+constexpr size_t SR_DEV_PREFIX_LEN = 2;
+constexpr size_t MIN_SR_DEV_NAME_LEN = SR_DEV_PREFIX_LEN + 1;
 #endif
 
 #ifdef DISK_MANAGER
@@ -2983,8 +2985,11 @@ int32_t StorageDaemonProvider::Eject(const std::string &devName)
         LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
         return E_PERMISSION_DENIED;
     }
-    if (devName.empty()) {
-        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< devName is invalid");
+    if (devName.empty() || devName.size() < MIN_SR_DEV_NAME_LEN ||
+        devName.substr(0, SR_DEV_PREFIX_LEN) != "sr" ||
+        devName.find_first_not_of("0123456789", SR_DEV_PREFIX_LEN) != std::string::npos) {
+        LOGE("[L1:StorageDaemonProvider] Eject: <<< EXIT FAILED <<< devName is invalid, devName=%{public}s",
+            devName.c_str());
         return E_PARAMS_INVALID;
     }
     int32_t ret = DiskUtils::Eject(devName);

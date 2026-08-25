@@ -70,6 +70,7 @@ constexpr uint32_t OVER_LOOP_SECOND_ALERT_THRESHOLD = 2000;
 constexpr uint32_t OVER_LOOP_COUNT_GROW_CAP = 3000;
 constexpr uint32_t OVER_LOOP_ALERT_HALF_MAX_MULTIPLE = 2;
 constexpr uint32_t OVER_LOOP_COUNT_GROW_CAP_MULTIPLE = 3;
+constexpr mode_t DEFAULT_OUTPUT_FILE_MODE = 0644;
 
 struct RgmPathConfig {
     bool isImg = false;
@@ -780,6 +781,41 @@ static void RedirectChildStd(int pipeFd[PIPE_FD_LEN], bool captureAll)
     (void)close(pipeFd[1]);
 }
 
+/*
+ * ForkExec - 通过 fork+exec 执行外部命令，并通过管道捕获子进程的输出
+ *
+ * 【主要功能】
+ * 在子进程中执行指定的命令行程序，父进程通过管道（pipe）读取子进程的
+ * stdout 和 stderr 输出，并将输出内容存入 output 参数指向的 vector 中。
+ *
+ * 【实现流程】
+ * 1. 参数校验：检查 cmd 是否为空，为空则直接返回 E_PARAMS_INVALID。
+ * 2. 创建管道：调用 pipe() 创建一对管道文件描述符 pipeFd[0]（读端）和
+ *    pipeFd[1]（写端），用于父子进程间通信。
+ * 3. 格式化命令：调用 FormatCmd() 将 std::vector<std::string> 转换为
+ *    execvp 所需的 char* 数组格式（末尾以 nullptr 哨兵结尾）。
+ * 4. fork 子进程：
+ *    - fork 失败：关闭管道，上报诊断，返回 E_FORK。
+ *    - 子进程（pid == 0）：
+ *      a. 调用 RedirectStdToPipe() 将 stdout 和 stderr 都重定向到管道写端
+ *         pipeFd[1]，这样子进程的所有标准输出和错误输出都会写入管道。
+ *      b. 调用 execvp() 执行目标命令。若 execvp 成功，当前进程映像被替换，
+ *         不会返回；若失败则记录日志后 _exit(1) 退出。
+ *    - 父进程（pid > 0）：
+ *      a. 关闭管道写端 pipeFd[1]（父进程只读）。
+ *      b. 调用 ReadPipeOutputForExec() 从管道读端 pipeFd[0] 循环读取子进程
+ *         输出，将内容追加到 output 指向的 vector 中（若 output 为 nullptr 则跳过）。
+ *      c. 关闭管道读端 pipeFd[0]。
+ *      d. 调用 CheckChildProcessExitStatus() 通过 waitpid() 等待子进程结束并
+ *         检查退出状态，可通过 exitStatus 参数获取子进程退出码。
+ * 5. 错误上报：若子进程异常退出，调用 ReportForkExecDiagIfNeeded() 上报诊断信息。
+ *
+ * 【与 ForkExecToFile 的区别】
+ * - ForkExec 将子进程 stdout/stderr 通过管道实时捕获到内存
+ *   （std::vector<std::string>），适用于需要读取和解析命令输出内容的场景。
+ * - ForkExecToFile 将子进程 stdout 重定向到指定文件（stderr 不重定向，
+ *   走 hilog），适用于只需将输出持久化到文件的场景，且不会上报诊断信息。
+ */
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus)
 {
     if (cmd.empty()) {
@@ -818,6 +854,95 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output, in
         int ret = CheckChildProcessExitStatus(pid, status, exitStatus);
         if (ret != E_OK) {
             ReportForkExecDiagIfNeeded(cmd, ret, ResolveForkExecExitCode(ret, status, exitStatus), output);
+            return ret;
+        }
+    }
+    return E_OK;
+}
+
+/*
+ * ForkExecToFile - 通过 fork+exec 执行外部命令，将子进程 stdout 输出重定向到指定文件
+ *
+ * 【主要功能】
+ * 在子进程中执行指定的命令行程序，将子进程的 stdout 输出重定向到
+ * outputFilePath 指定的文件中（覆盖写入）。stderr 不做重定向，保留
+ * 继承自父进程的文件描述符，错误信息走 hilog 输出。
+ *
+ * 【实现流程】
+ * 1. 格式化命令：调用 FormatCmd() 将命令向量转为 execvp 所需的 char* 数组。
+ * 2. fork 子进程：
+ *    - fork 失败：返回 E_FORK。
+ *    - 子进程（pid == 0）：
+ *      a. 以 O_WRONLY | O_CREAT | O_TRUNC 模式打开 outputFilePath（文件不存在
+ *         则创建，已存在则截断清空）。
+ *      b. dup2(fd, STDOUT_FILENO)：将标准输出重定向到文件，命令的正常输出
+ *         将写入文件。
+ *      c. 不重定向 stderr：当前调用方（iso9660_operator、udf_operator）均使用
+ *         isoinfo -x 提取 ISO 内文件，stdout 是提取的文件二进制内容，
+ *         stderr 是错误文本信息。若将 stderr 也重定向到同一文件，错误文本
+ *         会混入二进制流损坏输出文件。因此 stderr 保留继承自父进程的 fd，
+ *         错误信息通过 hilog 输出，便于问题定位且不污染输出文件。
+ *      d. close(fd)：fd 已被 dup2 复制到 STDOUT，原始 fd 不再需要。
+ *      e. execvp() 执行目标命令。成功时不返回；失败则 _exit(1)。
+ *    - 父进程（pid > 0）：
+ *      调用 CheckChildProcessExitStatus() 等待子进程结束。
+ * 3. 此函数不使用管道，不调用 ReportForkExecDiagIfNeeded 上报诊断信息。
+ *    output 参数保留用于接口兼容，但不会填充数据（子进程输出直接写文件）。
+ *
+ * 【与 ForkExec 的区别】
+ * - 输出目标不同：ForkExec 将子进程 stdout/stderr 通过管道捕获到内存
+ *   （output vector）；ForkExecToFile 将子进程 stdout 重定向到指定文件
+ *   （通过 dup2 到文件描述符），不使用管道传输数据。
+ * - stderr 处理不同：ForkExec 将 stderr 通过管道一并捕获到内存；
+ *   ForkExecToFile 不重定向 stderr，错误信息走 hilog，避免错误文本
+ *   混入输出文件损坏数据（尤其对 isoinfo -x 等二进制输出场景）。
+ * - 诊断上报：ForkExec 在子进程异常退出时上报诊断信息
+ *   （ReportForkExecDiagIfNeeded），ForkExecToFile 不上报。
+ * - 退出码获取：ForkExec 可通过 exitStatus 参数获取子进程退出码，
+ *   ForkExecToFile 不获取退出码。
+ * - 参数校验：ForkExec 会检查 cmd 是否为空，ForkExecToFile 未做此检查。
+ * - 适用场景：ForkExec 适用于需要读取命令输出内容进行解析的场景
+ *   （如读取 mount 命令的输出）；ForkExecToFile 适用于命令输出需
+ *   直接持久化到文件的场景（如 isoinfo 提取 ISO 内文件到本地）。
+ */
+int ForkExecToFile(std::vector<std::string> &cmd, const std::string &outputFilePath,
+                   std::vector<std::string> *output)
+{
+    pid_t pid;
+    int status;
+    auto args = FormatCmd(cmd);
+    std::string cmdName = cmd.empty() ? "" : cmd[0];
+    if (output != nullptr) {
+        output->clear();
+    }
+    pid = fork();
+    if (pid == -1) {
+        LOGE("[L8:FileUtils] ForkExecToFile: <<< EXIT FAILED <<< fork failed,"
+            "errno=%{public}d, cmd=%{public}s", errno, cmdName.c_str());
+        return E_FORK;
+    } else if (pid == 0) {
+        // 子进程：将 stdout 重定向到输出文件，然后执行命令
+        int fd = open(outputFilePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_OUTPUT_FILE_MODE);
+        if (fd < 0) {
+            LOGE("[L8:FileUtils] ForkExecToFile: open output file failed, errno=%{public}d", errno);
+            _exit(1);
+        }
+        if (dup2(fd, STDOUT_FILENO) == -1) {
+            LOGE("[L8:FileUtils] ForkExecToFile: dup2 stdout failed, errno=%{public}d", errno);
+            close(fd);
+            _exit(1);
+        }
+        close(fd);
+        execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("[L8:FileUtils] ForkExecToFile: <<< EXIT FAILED <<< execvp failed, errno=%{public}d,"
+            "cmd=%{public}s", errno, cmdName.c_str());
+        _exit(1);
+    } else {
+        int ret = CheckChildProcessExitStatus(pid, status, nullptr);
+        if (ret != E_OK) {
+            ReportForkExecDiagIfNeeded(cmd, ret, ResolveForkExecExitCode(ret, status, nullptr), output);
+            LOGE("[L8:FileUtils] ForkExecToFile: <<< EXIT FAILED <<< ret=%{public}d, status=%{public}d",
+                ret, status);
             return ret;
         }
     }

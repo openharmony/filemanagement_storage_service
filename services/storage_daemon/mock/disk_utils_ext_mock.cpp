@@ -187,5 +187,13 @@ int32_t DiskUtils::GetCapacity(const std::string &devPath, int64_t &totalSize, i
     return IDiskUtilMoc::diskUtilMoc->GetCapacity(devPath, totalSize, freeSize);
 }
 
+int32_t RefreshCDRomMediaNode(const std::string &devPath)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return E_ERR;
+    }
+    return IDiskUtilMoc::diskUtilMoc->RefreshCDRomMediaNode(devPath);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

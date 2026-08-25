@@ -73,6 +73,7 @@ public:
     virtual int64_t GetUsedSizeFromSysfs(const std::string &devPath) = 0;
     virtual int32_t GetCapacity(const std::string &devPath, int64_t &totalSize, int64_t &freeSize) = 0;
     virtual std::string GenerateRandomUuid(const std::string &diskPath, const std::string &ns) = 0;
+    virtual int32_t RefreshCDRomMediaNode(const std::string &devPath) = 0;
 public:
     static inline std::shared_ptr<IDiskUtilMoc> diskUtilMoc = nullptr;
 };
@@ -123,6 +124,7 @@ public:
     MOCK_METHOD1(GetUsedSizeFromSysfs, int64_t(const std::string &devPath));
     MOCK_METHOD3(GetCapacity, int32_t(const std::string &devPath, int64_t &totalSize, int64_t &freeSize));
     MOCK_METHOD2(GenerateRandomUuid, std::string(const std::string &diskPath, const std::string &ns));
+    MOCK_METHOD1(RefreshCDRomMediaNode, int32_t(const std::string &devPath));
 };
 }
 }
