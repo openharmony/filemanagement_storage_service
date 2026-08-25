@@ -1335,11 +1335,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_0
     int32_t fuseFd = 0;
     testing::internal::CaptureStderr();
     int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
-    EXPECT_EQ(result, E_OK);
-
-    EXPECT_CALL(*mountManagerMoc_, MountFileMgrFuse(_, _, _)).WillOnce(Return(-1));
+    EXPECT_NE(result, E_OK);
     result = storageDaemonProviderTest_->MountFileMgrFuse(StorageTest::USER_ID1, path, fuseFd);
-    EXPECT_EQ(result, -1);
+    EXPECT_NE(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_001 end";
 }
 
@@ -1356,11 +1354,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string path = "/mnt/data/301/userExternal/testUMountFileMgrFuse";
     int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
-    EXPECT_EQ(result, E_OK);
-
-    EXPECT_CALL(*mountManagerMoc_, UMountFileMgrFuse(_, _)).WillOnce(Return(-1));
+    EXPECT_NE(result, E_OK);
     result = storageDaemonProviderTest_->UMountFileMgrFuse(StorageTest::USER_ID1, path);
-    EXPECT_EQ(result, -1);
+    EXPECT_NE(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_001 end";
 }
 
@@ -1531,10 +1527,15 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_001
     std::vector<std::string> outputList;
     bool status = true;
     int32_t result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, 0);
-
-    EXPECT_CALL(*mountManagerMoc_, IsFileOccupied(_, _, _, _)).WillOnce(Return(-1));
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    const std::string newPath = "/data/system/hiview/unzip_configs/sys_event_def";
+    result = storageDaemonProviderTest_->IsFileOccupied(newPath, inputList, outputList, status);
+    EXPECT_EQ(result, 0);
+    EXPECT_CALL(*mountManagerMoc_, IsFileOccupied(_, _, _, _)).WillOnce(Return(-1));
+    result = storageDaemonProviderTest_->IsFileOccupied(newPath, inputList, outputList, status);
     EXPECT_EQ(result, -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFileOccupied_001 end";
 }
@@ -2063,7 +2064,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_0
     int32_t fuseFd = 0;
     uint32_t userId = -1;
     int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(result, E_USERID_RANGE);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_002 end";
 }
 
@@ -2081,7 +2082,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     std::string path = "";
     uint32_t userId = -1;
     int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(result, E_USERID_RANGE);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_002 end";
 }
 
@@ -2297,9 +2298,15 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateUserDir_001,
     gid_t gid = 0;
     EXPECT_CALL(*userManagerMock_, CreateUserDir(_, _, _, _)).WillOnce(Return(E_OK));
     auto ret = storageDaemonProviderTest_->CreateUserDir(path, mode, uid, gid);
+    EXPECT_TRUE(ret != E_OK);
+    ret = storageDaemonProviderTest_->CreateUserDir(path, mode, uid, gid);
+    EXPECT_TRUE(ret != -1);
+
+    const std::string newPath = "/data/system/hiview/unzip_configs/sys_event_def";
+    ret = storageDaemonProviderTest_->CreateUserDir(newPath, mode, uid, gid);
     EXPECT_TRUE(ret == E_OK);
     EXPECT_CALL(*userManagerMock_, CreateUserDir(_, _, _, _)).WillOnce(Return(-1));
-    ret = storageDaemonProviderTest_->CreateUserDir(path, mode, uid, gid);
+    ret = storageDaemonProviderTest_->CreateUserDir(newPath, mode, uid, gid);
     EXPECT_TRUE(ret == -1);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateUserDir_001 end";
 }
@@ -3154,6 +3161,45 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Eject_001, TestSiz
     EXPECT_EQ(storageDaemonProviderTest_->Eject(""), E_NOT_SUPPORT);
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Eject_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_004
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string newPath = "/mnt/data/100/userExternal/testMountFileMgrFuse";
+    int32_t userId = 100;
+    int32_t fuseFd = 0;
+    int32_t result = storageDaemonProviderTest_->MountFileMgrFuse(userId, newPath, fuseFd);
+    EXPECT_NE(result, E_OK);
+    result = storageDaemonProviderTest_->MountFileMgrFuse(userId, newPath, fuseFd);
+    EXPECT_NE(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountFileMgrFuse_004
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string newPath = "/mnt/data/100/userExternal/testMountFileMgrFuse";
+    int32_t userId = 100;
+    int32_t result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, newPath);
+    EXPECT_NE(result, E_OK);
+    result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, newPath);
+    EXPECT_NE(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_004 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

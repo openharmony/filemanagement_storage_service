@@ -1588,5 +1588,39 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ExtStorageMountForkExec_EmptyCmd, TestSize
     EXPECT_EQ(ExtStorageMountForkExec(cmd, &exitStatus), E_PARAMS_INVALID);
 }
 #endif
+
+/**
+ * @tc.name: FileUtilsTest_IsFilePathInvalid_001
+ * @tc.desc: Verify the IsFilePathInvalid function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsFilePathInvalid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFilePathInvalid_001 start";
+    EXPECT_TRUE(IsFilePathInvalid(""));
+    EXPECT_TRUE(IsFilePathInvalid("../somefile.txt"));
+    EXPECT_TRUE(IsFilePathInvalid("/some/path/../otherfile.txt"));
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_TRUE(IsFilePathInvalid(longPath));
+
+    EXPECT_FALSE(IsFilePathInvalid("/data/system/hiview/unzip_configs/sys_event_def";));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFilePathInvalid_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ContainsRelativePathReference_001
+ * @tc.desc: Verify the ContainsRelativePathReference function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ContainsRelativePathReference_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 start";
+    EXPECT_TRUE(ContainsRelativePathReference("../somefile.txt"));
+    EXPECT_TRUE(ContainsRelativePathReference("/some/path/../otherfile.txt"));
+    EXPECT_TRUE(ContainsRelativePathReference("/some/path/.."));
+
+    EXPECT_FALSE(ContainsRelativePathReference("/some/valid/path/to/file.txt"));
+    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS

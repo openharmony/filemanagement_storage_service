@@ -797,7 +797,7 @@ int MtpFileSystem::SetupFileAttributes(const char *path, const MtpFsTypeFile *fi
     buf->st_size = static_cast<ssize_t>(size);
     const uint64_t fileSize = static_cast<uint64_t>(FILE_SIZE);
     const uint64_t blocksU64 = (size / fileSize) + ((size % fileSize) ? 1 : 0);
-    if (blocksU64 > static_cast<uint64_t>(std::numeric_limits<ssize_t>::max())) {
+    if (blocksU64 > static_cast<uint64_t>(std::numeric_limits<blkcnt_t>::max())) {
         LOGE("Block count exceeds ssize_t maximum value");
         return -EOVERFLOW;
     }

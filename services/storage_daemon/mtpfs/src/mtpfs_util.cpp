@@ -283,7 +283,7 @@ LIBMTP_raw_device_t *SmtpfsRawDeviceNew(const std::string &path)
 
     libusb_device **devList;
     ssize_t numDevs = libusb_get_device_list(NULL, &devList);
-    if (numDevs < 0) {
+    if (numDevs <= 0) {
         libusb_exit(NULL);
         return nullptr;
     }

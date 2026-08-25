@@ -349,25 +349,41 @@ bool IsFilePathValid(const std::string &filePath)
         LOGE("IsFilePathValid: Relative path is not allowed");
         return false;
     }
-    if (std::filesystem::is_symlink(path)) {
+    char resolvedPath[PATH_MAX];
+    if (filePath.size() >= PATH_MAX) {
+        LOGE("IsFilePathValid: FilePath size is invalid");
+        return false;
+    }
+    errno = 0;
+    if (!realpath(filePath.c_str(), resolvedPath)) {
+        if (errno == ENOENT) {
+            LOGW("IsFilePathValid: Path does not exist");
+            return ContainsRelativePathReference(filePath);
+        }
+        LOGE("IsFilePathValid: Realpath isfailed");
+        return false;
+    }
+    if (std::string(resolvedPath) != filePath) {
         LOGE("IsFilePathValid: Symbolic links is not allowed");
         return false;
     }
+    return true;
+}
 
+bool ContainsRelativePathReference(const std::string &filePath)
+{
     size_t pos = filePath.find(INVALID_PREFIX_PATH);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
-            LOGE("IsFilePathValid: Relative path is not allowed");
+            LOGE("ContainsRelativePathReference: IsFilePathValid: Relative path is not allowed");
             return false;
         }
         pos = filePath.find(INVALID_PREFIX_PATH, pos + INVALID_PREFIX_PATH_LEN);
     }
-
     pos = filePath.rfind(INVALID_SUFFIX_PATH);
     if ((pos != std::string::npos) && (filePath.size() - pos == INVALID_SUFFIX_PATH_LEN)) {
-        LOGE("IsFilePathValid: Relative path is not allowed");
+        LOGE("ContainsRelativePathReference: IsFilePathValid: Relative path is not allowed");
         return false;
     }
-
     return true;
 }

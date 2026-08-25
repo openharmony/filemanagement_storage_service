@@ -107,10 +107,34 @@ bool IsFilePathInvalid(const std::string &filePath)
         LOGE("Relative path is not allowed");
         return true;
     }
-    if (std::filesystem::is_symlink(path)) {
+    char resolvedPath[PATH_MAX];
+    if (filePath.size() >= PATH_MAX) {
+        LOGE("FilePath size is invalid");
+        return true;
+    }
+    errno = 0;
+    if (!realpath(filePath.c_str(), resolvedPath)) {
+        if (errno == ENOENT) {
+            LOGW("Path does not exist");
+            return ContainsRelativePathReference(filePath);
+        }
+        LOGE("Realpath isfailed");
+        return true;
+    }
+    if (std::string(resolvedPath) != filePath) {
         LOGE("Symbolic links is not allowed");
         return true;
     }
+    return false;
+}
+
+bool ContainsRelativePathReference(const std::string &filePath)
+{
+    constexpr const char *PATH_INVALID_FLAG1 = "../";
+    constexpr const char *PATH_INVALID_FLAG2 = "/..";
+    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
+    constexpr char FILE_SEPARATOR_CHAR = '/';
+
     size_t pos = filePath.find(PATH_INVALID_FLAG1);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
