@@ -547,7 +547,7 @@ int32_t DiskUtils::ExecAsyncGetPartitionTableInfo(const std::string &devPath, st
     });
     if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("[L3:DiskInfo] exec get partition: <<< EXIT FAILED <<< time out");
-        partitionThread.join();
+        partitionThread.detach();
         return E_GET_PARTITION_TIMEOUT;
     }
     auto result = future.get();
