@@ -325,7 +325,7 @@ HWTEST_F(StorageUtilsTest, StorageUtilsTest_IsFilePathInvalid_001, TestSize.Leve
     std::string longPath(PATH_MAX, 'a');
     EXPECT_TRUE(IsFilePathInvalid(longPath));
 
-    EXPECT_FALSE(IsFilePathInvalid("/data/system/hiview/unzip_configs/sys_event_def";));
+    EXPECT_FALSE(IsFilePathInvalid("/data/system/hiview/unzip_configs/sys_event_def"));
     GTEST_LOG_(INFO) << "StorageUtilsTest_IsFilePathInvalid_001 end";
 }
 
