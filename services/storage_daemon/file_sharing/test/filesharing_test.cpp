@@ -21,6 +21,7 @@
 #include "file_sharing/file_sharing.h"
 #include "parameter.h"
 #include "init_param.h"
+#include "securec.h"
 #include "utils/file_utils.h"
 
 namespace OHOS::StorageManager {
