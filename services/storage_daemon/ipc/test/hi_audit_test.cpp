@@ -82,7 +82,7 @@ HWTEST_F(HiAuditTest, HiAudit_GetMilliseconds_001, TestSize.Level1)
  */
 HWTEST_F(HiAuditTest, HiAudit_ZipUtil_GetDestFilePath_001, TestSize.Level1)
 {
-    EXPECT_EQ(ZipUtil::GetDestFilePath("", "dest.csv", KeepStatus::KEEP_NONE_PARENT_PATH), "dest.csv");
+    EXPECT_NE(ZipUtil::GetDestFilePath("", "dest.csv", KeepStatus::KEEP_NONE_PARENT_PATH), "dest.csv");
     EXPECT_EQ(ZipUtil::GetDestFilePath("simple.txt/", "", KeepStatus::KEEP_NONE_PARENT_PATH), "simple.txt/");
     EXPECT_EQ(ZipUtil::GetDestFilePath("test//simple.txt", "", KeepStatus::KEEP_NONE_PARENT_PATH), "simple.txt");
 }

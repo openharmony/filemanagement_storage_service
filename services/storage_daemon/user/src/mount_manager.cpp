@@ -26,6 +26,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/mount_constant.h"
+#include "utils/file_utils.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 #include "user/user_path_resolver.h"
@@ -814,6 +815,10 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
 
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
+    if (IsFilePathInvalid(srcPath)) {
+        LOGE("[L2:MountManager] MountDfsDocs: <<< EXIT FAILED <<< invalid srcPath");
+        return E_PARAMS_INVALID;
+    }
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     int32_t savedErrno = errno;

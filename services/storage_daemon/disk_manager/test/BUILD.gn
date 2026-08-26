@@ -154,6 +154,51 @@ ohos_unittest("scan_device_test") {
   }
 }
 
+ohos_unittest("dm_device_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+ 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+ 
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_service_path}/utils/include",
+    "${storage_service_common_path}/include",
+  ]
+ 
+  sources = [
+    "$ROOT_DIR/disk_manager/src/disk/dm_device.cpp",
+    "$ROOT_DIR/disk_manager/test/dm_device_mock.cpp",
+    "$ROOT_DIR/disk_manager/test/dm_device_test.cpp",
+  ]
+ 
+  ldflags = [
+    "-Wl,--wrap=ioctl",
+    "-Wl,--wrap=open",
+    "-Wl,--wrap=close",
+    "-Wl,--wrap=memset_s",
+    "-Wl,--wrap=strncpy_s",
+    "-Wl,--wrap=strcpy_s",
+  ]
+ 
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+}
+
 ohos_unittest("ext_volume_utils_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -533,6 +578,7 @@ group("storage_daemon_ext_storage_test") {
     ":ext_disk_utils_test",
     ":ext_disk_utils_cd_test",
     ":scan_device_test",
+    ":dm_device_test",
     ":ext_volume_utils_test",
     ":ext_volume_operator_factory_test",
     ":ext_ivolume_operator_test",

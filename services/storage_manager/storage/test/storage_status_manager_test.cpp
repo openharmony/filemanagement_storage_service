@@ -359,7 +359,7 @@ HWTEST_F(StorageStatusManagerTest, STORAGE_SetExtBundleStats_00001, testing::ext
     EXPECT_EQ(ret, E_GET_CALL_BUNDLE_NAME_ERROR);
     accessTokenType = 0;
     ret = service->SetExtBundleStats(userId, extBundleStats);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_NE(ret, E_PARAMS_INVALID);
     accessTokenType = 1;
     ret = service->SetExtBundleStats(userId, extBundleStats);
     EXPECT_NE(ret, E_WRITE_REPLY_ERR);

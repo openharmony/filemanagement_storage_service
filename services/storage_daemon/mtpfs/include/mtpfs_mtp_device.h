@@ -155,6 +155,7 @@ private:
     static std::mutex setMutex_;
     static std::set<std::string> removingFileSet_;
     std::thread eventThread_;
+    std::thread pushThread_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H

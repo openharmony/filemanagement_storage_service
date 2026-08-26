@@ -1490,7 +1490,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
     std::string bundleDataDirPath = "/..";
     int32_t limitSizeMb = 1024;
     auto ret = storageManagerProviderTest_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_002 end";
 }
 

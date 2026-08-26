@@ -508,5 +508,12 @@ int32_t StorageDaemonProxy::ExecuteCommand(const std::vector<std::string> &cmd, 
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::CreateDmLinear(const std::string &sourceDevPath,
+                                           uint64_t startSector, uint64_t sectorCount,
+                                           uint64_t &dmDev)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // namespace OHOS

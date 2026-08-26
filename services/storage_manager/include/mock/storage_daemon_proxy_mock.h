@@ -173,6 +173,9 @@ public:
                                      std::string &loopPath) override;
     virtual int32_t ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
                                    std::vector<std::string> &output) override;
+    virtual int32_t CreateDmLinear(const std::string &sourceDevPath,
+                                   uint64_t startSector, uint64_t sectorCount,
+                                   uint64_t &dmDev) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

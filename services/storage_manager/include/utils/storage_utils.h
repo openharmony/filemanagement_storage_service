@@ -39,6 +39,7 @@ bool CheckAppIndexRange(int32_t appIndex);
 bool CheckLevelRange(uint32_t level);
 bool CheckInputListRange(const std::vector<std::string> &inputList);
 bool CheckIdRange(const std::string &id);
+bool ContainsRelativePathReference(const std::string &filePath);
 } // namespace StorageManager
 } // namespace OHOS
 
