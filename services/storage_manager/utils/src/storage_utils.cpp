@@ -130,11 +130,6 @@ bool IsFilePathInvalid(const std::string &filePath)
 
 bool ContainsRelativePathReference(const std::string &filePath)
 {
-    constexpr const char *PATH_INVALID_FLAG1 = "../";
-    constexpr const char *PATH_INVALID_FLAG2 = "/..";
-    constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
-    constexpr char FILE_SEPARATOR_CHAR = '/';
-
     size_t pos = filePath.find(PATH_INVALID_FLAG1);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {

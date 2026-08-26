@@ -904,12 +904,7 @@ int MtpFsDevice::FileRead(const std::string &path, char *buf, size_t size, off_t
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int rval = LIBMTP_GetPartialObject(device_, fileToFetch->Id(), offset, size, &tmpBuf, &tmpSize);
     if (tmpSize > 0) {
-        if (temSize > size) {
-            LOGE("Buffer overflow: temSize (%{public}d) > size (%{public}d)", temSize, size);
-            free(tmpBuf);
-            return -EINVAL;
-        }
-        if (memcpy_s(buf, size, tmpBuf, tmpSize) != EOK) {
+        if (memcpy_s(buf, tmpSize, tmpBuf, tmpSize) != EOK) {
             LOGE("memcpy_s tmpBuf fail");
         }
         free(tmpBuf);

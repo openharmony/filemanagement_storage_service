@@ -1476,8 +1476,9 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
     }
     int32_t nameLen = strlen(deviceName);
     LOGI("GetDeviceFriendlyName from device success, name=%{public}s, nameLen=%{public}d", deviceName, nameLen);
-    if (memcpy_s(out, size, deviceName, nameLen + 1) != 0) {
-        LOGE("memcpy_s devicename fail");
+    int32_t ret = memcpy_s(out, size, deviceName, nameLen);
+    if (ret != 0) {
+        LOGE("memcpy_s devicename fail, ret=%{public}d", ret);
         OHOS::StorageService::StorageRadar::ReportMtpResult("GetFriendlyName::Memcpy", E_MEMORY_OPERATION_ERR, "NA");
         free(deviceName);
         return 0;
