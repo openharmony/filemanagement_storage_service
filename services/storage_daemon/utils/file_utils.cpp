@@ -20,6 +20,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
+#include <filesystem>
 #include <regex>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -1545,10 +1546,43 @@ uint64_t GetFileSize(const string &filename)
 
 bool IsFilePathInvalid(const std::string &filePath)
 {
+    if (filePath.empty()) {
+        LOGE("File path is empty");
+        return true;
+    }
+    std::filesystem::path path(filePath);
+    if (!path.is_absolute()) {
+        LOGE("Relative path is not allowed");
+        return true;
+    }
+    char resolvedPath[PATH_MAX];
+    if (filePath.size() >= PATH_MAX) {
+        LOGE("FilePath size is invalid");
+        return true;
+    }
+    errno = 0;
+    if (!realpath(filePath.c_str(), resolvedPath)) {
+        if (errno == ENOENT) {
+            LOGW("Path does not exist");
+            return ContainsRelativePathReference(filePath);
+        }
+        LOGE("Realpath isfailed");
+        return true;
+    }
+    if (std::string(resolvedPath) != filePath) {
+        LOGE("Symbolic links is not allowed");
+        return true;
+    }
+    return false;
+}
+
+bool ContainsRelativePathReference(const std::string &filePath)
+{
     constexpr const char *PATH_INVALID_FLAG1 = "../";
     constexpr const char *PATH_INVALID_FLAG2 = "/..";
     constexpr int32_t PATH_INVALID_FLAG_LEN = 3;
     constexpr char FILE_SEPARATOR_CHAR = '/';
+
     size_t pos = filePath.find(PATH_INVALID_FLAG1);
     while (pos != std::string::npos) {
         if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {

@@ -66,7 +66,7 @@ constexpr int32_t ERROR_CODE_GET_DEVICE_LIST_FAILED = -3;
 constexpr int MIN_VALUE = 0;
 constexpr int MAX_VALUE = 255;
 #endif
-bool g_keepMonitoring = true;
+std::atomic<bool> g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor()
 {
@@ -76,6 +76,7 @@ MtpDeviceMonitor::MtpDeviceMonitor()
 MtpDeviceMonitor::~MtpDeviceMonitor()
 {
     LOGI("[L2:MtpDeviceMonitor] ~MtpDeviceMonitor: >>> ENTER <<<");
+    StopMonitor();
     UmountAllMtpDevice();
 }
 
@@ -86,8 +87,17 @@ void MtpDeviceMonitor::StartMonitor()
         LOGE("[L2:MtpDeviceMonitor] StartMonitor: <<< EXIT FAILED <<< vendor country is hwit/cn");
         return;
     }
-    std::thread([this]() { MonitorDevice(); }).detach();
+    stopMonitor_ = true;
+    monitorThread_ = std::thread([this]() { MonitorDevice(); });
     LOGI("[L2:MtpDeviceMonitor] StartMonitor: <<< EXIT SUCCESS <<<");
+}
+
+void MtpDeviceMonitor::StopMonitor()
+{
+    stopMonitor_ = false;
+    if (monitorThread_.joinable()) {
+        monitorThread_.join();
+    }
 }
 
 bool MtpDeviceMonitor::IsNeedDisableMtp()
@@ -303,7 +313,7 @@ void MtpDeviceMonitor::MonitorDevice()
         break;
     }
     RegisterMTPParamListener();
-    while (g_keepMonitoring) {
+    while (stopMonitor_ && g_keepMonitoring) {
         UsbEventSubscriber::SubscribeCommonEvent();
         sleep(SLEEP_TIME);
     }

@@ -38,5 +38,6 @@ bool GphotoRemoveDir(const std::string &dirName);
 bool GphotoCheckDir(const std::string &path);
 void DelTemp(const std::string &path);
 std::string GphotoGetTmpDir();
+bool ContainsRelativePathReference(const std::string &filePath);
 
 #endif // GPHOTOFS2_UTILS_H

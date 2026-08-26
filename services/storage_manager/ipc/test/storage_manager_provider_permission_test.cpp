@@ -1670,7 +1670,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateUserDir_00
     EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PERMISSION_DENIED);
 
     g_testCallingUid = 7558;
-    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_SERVICE_IS_NULLPTR);
+    EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("", 0, 0, 0), E_PARAMS_INVALID);
 
     EXPECT_EQ(storageManagerProviderTest_->CreateUserDir("/test/../", 0, 0, 0), E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateUserDir_001 end";

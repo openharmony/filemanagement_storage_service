@@ -1063,15 +1063,15 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
                           ", bundleDataDirPath: " + GetAnonyString(bundleDataDirPath) +
                           ", limitSizeMb: " + std::to_string(limitSizeMb);
     StorageRadar::ReportFucBehavior("SetBundleQuota", DEFAULT_USERID, message, E_OK);
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     if (bundleName.empty()) {
         LOGE("StorageManagerProvider::SetBundleQuota bundleName is empty");
         return E_PARAMS_INVALID;
     }
     if (IsFilePathInvalid(bundleDataDirPath)) {
         return E_PARAMS_INVALID;
-    }
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
     }
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     int32_t err = sdCommunication.SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
