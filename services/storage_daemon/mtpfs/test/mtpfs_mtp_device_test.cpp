@@ -70,6 +70,46 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Connect_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: Mtpfs_OpenAndEnumStorages_001
+ * @tc.desc: Verify OpenAndEnumStorages stops when rawDevice is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_OpenAndEnumStorages_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_OpenAndEnumStorages_001 start";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+    int32_t result = mtpfsdevice->OpenAndEnumStorages(nullptr);
+    EXPECT_NE(result, 0);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_OpenAndEnumStorages_001 end";
+}
+
+/**
+ * @tc.name: Mtpfs_TryConnectRawDevice_001
+ * @tc.desc: Open failure must stop connect retry immediately.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_TryConnectRawDevice_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_TryConnectRawDevice_001 start";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+    EXPECT_FALSE(mtpfsdevice->TryConnectRawDevice(nullptr));
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_TryConnectRawDevice_001 end";
+}
+
+/**
+ * @tc.name: Mtpfs_ShouldRetryEnumStorages_001
+ * @tc.desc: Enum storage retry stops after the last allowed attempt.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ShouldRetryEnumStorages_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ShouldRetryEnumStorages_001 start";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+    EXPECT_FALSE(mtpfsdevice->ShouldRetryEnumStorages(100));
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ShouldRetryEnumStorages_001 end";
+}
+
+/**
  * @tc.name: Mtpfs_ConvertErrorCode_001
  * @tc.desc: Verify the ConvertErrorCode function.
  * @tc.type: FUNC

@@ -15,6 +15,7 @@
 
 #include "mtpfs_mtp_device.h"
 
+#include <chrono>
 #include <sstream>
 #include <thread>
 #include <unistd.h>
@@ -37,6 +38,11 @@ constexpr uint64_t MAX_PLAUSIBLE_STORAGE_SIZE = 1ULL * 1024 * 1024 * 1024 * 1024
 constexpr int32_t EVENT_FAIL_WAIT_MS = 1000 * 20;
 constexpr int32_t ENUM_STORAGE_MAX_RETRIES = 3;
 constexpr int32_t ENUM_STORAGE_RETRY_INTERVAL_MS = 500;
+constexpr int32_t CONNECT_MAX_RETRIES = 3;
+constexpr int32_t CONNECT_RETRY_INTERVAL_MS = 500;
+constexpr int32_t MTP_OPEN_ENUM_OK = 0;
+constexpr int32_t MTP_OPEN_ENUM_RETRY = 1;
+constexpr int32_t MTP_OPEN_ENUM_STOP = -1;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
@@ -46,6 +52,17 @@ std::mutex MtpFsDevice::setMutex_;
 std::set<std::string> MtpFsDevice::removingFileSet_;
 static const std::string NO_ERROR_PATH = "/FileManagerExternalStorageReadOnlyFlag";
 using namespace OHOS::StorageService;
+
+namespace {
+void FreeRawDevices(LIBMTP_raw_device_t *&rawDevices)
+{
+    if (rawDevices == nullptr) {
+        return;
+    }
+    free(static_cast<void *>(rawDevices));
+    rawDevices = nullptr;
+}
+}
 
 MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), rootDir_(), moveEnabled_(false)
 {
@@ -84,20 +101,10 @@ bool MtpFsDevice::Connect(LIBMTP_raw_device_t *dev)
         return true;
     }
 
-    // Do not output LIBMTP debug stuff
-    MtpFsUtil::Off();
-    device_ = LIBMTP_Open_Raw_Device_Uncached(dev);
-    MtpFsUtil::On();
-
-    if (!device_) {
-        DumpLibMtpErrorStack();
+    if (OpenAndEnumStorages(dev) != MTP_OPEN_ENUM_OK) {
         return false;
     }
 
-    if (!EnumStorages())
-        return false;
-
-    // Retrieve capabilities.
     capabilities_ = MtpFsDevice::GetCapabilities(*this);
 
     LOGI("Connected");
@@ -193,38 +200,69 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
         LOGI("Already connected");
         return true;
     }
-    int rawDevicesCnt;
-    LIBMTP_raw_device_t *rawDevices;
+    int rawDevicesCnt = 0;
+    LIBMTP_raw_device_t *rawDevices = nullptr;
     MtpFsUtil::Off();
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevicesCnt);
     MtpFsUtil::On();
     if (!ConvertErrorCode(err)) {
+        FreeRawDevices(rawDevices);
         return false;
     }
-
     if (devNo < 0 || devNo >= rawDevicesCnt) {
         LOGE("Can not connect to device no %{public}d", devNo + 1);
-        free(static_cast<void *>(rawDevices));
+        FreeRawDevices(rawDevices);
         return false;
     }
-    LIBMTP_raw_device_t *rawDevice = &rawDevices[devNo];
-
-    MtpFsUtil::Off();
-    device_ = LIBMTP_Open_Raw_Device_Uncached(rawDevice);
-    MtpFsUtil::On();
-    free(static_cast<void *>(rawDevices));
-    if (!device_) {
-        LOGE("device_ is nullptr");
-        DumpLibMtpErrorStack();
-        return false;
-    }
-    if (!EnumStorages()) {
-        LOGE("EnumStorages failed.");
+    bool connected = TryConnectRawDevice(&rawDevices[devNo]);
+    FreeRawDevices(rawDevices);
+    if (!connected) {
+        LOGE("Connect by device number failed.");
         return false;
     }
     capabilities_ = MtpFsDevice::GetCapabilities(*this);
     LOGI("Connect by device number success.");
     return true;
+}
+
+bool MtpFsDevice::TryConnectRawDevice(LIBMTP_raw_device_t *rawDevice)
+{
+    for (int32_t attempt = 1; attempt <= CONNECT_MAX_RETRIES; ++attempt) {
+        int32_t ret = OpenAndEnumStorages(rawDevice);
+        if (ret == MTP_OPEN_ENUM_OK) {
+            return true;
+        }
+        if (ret == MTP_OPEN_ENUM_STOP || attempt >= CONNECT_MAX_RETRIES) {
+            break;
+        }
+        LOGW("Connect retry %{public}d/%{public}d", attempt, CONNECT_MAX_RETRIES);
+        std::this_thread::sleep_for(std::chrono::milliseconds(CONNECT_RETRY_INTERVAL_MS));
+    }
+    return false;
+}
+
+int32_t MtpFsDevice::OpenAndEnumStorages(LIBMTP_raw_device_t *rawDevice)
+{
+    if (rawDevice == nullptr) {
+        LOGE("rawDevice is nullptr");
+        return MTP_OPEN_ENUM_STOP;
+    }
+    if (device_ != nullptr) {
+        LOGE("Device already opened");
+        return MTP_OPEN_ENUM_STOP;
+    }
+    MtpFsUtil::Off();
+    device_ = LIBMTP_Open_Raw_Device_Uncached(rawDevice);
+    MtpFsUtil::On();
+    if (device_ == nullptr) {
+        LOGE("Open raw device failed");
+        return MTP_OPEN_ENUM_STOP;
+    }
+    if (EnumStorages()) {
+        return MTP_OPEN_ENUM_OK;
+    }
+    Disconnect();
+    return MTP_OPEN_ENUM_RETRY;
 }
 
 void MtpFsDevice::ReadEvent()
@@ -339,23 +377,42 @@ uint64_t MtpFsDevice::StorageFreeSize()
     return freeSize;
 }
 
+bool MtpFsDevice::ShouldRetryEnumStorages(int32_t attempt)
+{
+    if (attempt >= ENUM_STORAGE_MAX_RETRIES) {
+        return false;
+    }
+    int err = GetMainMtpErrorCode();
+    if (err == LIBMTP_ERROR_NO_DEVICE_ATTACHED || err == LIBMTP_ERROR_USB_LAYER) {
+        LOGW("Device gone during enum storage, stop retry, err=%{public}d", err);
+        return false;
+    }
+    return true;
+}
+
 bool MtpFsDevice::EnumStorages()
 {
-    LOGI("Start to enum mtp device storages.");
     std::unique_lock<std::mutex> lock(deviceMutex_);
+    if (device_ == nullptr) {
+        LOGE("Device is null");
+        return false;
+    }
+    int lastRet = -1;
     for (int32_t attempt = 1; attempt <= ENUM_STORAGE_MAX_RETRIES; ++attempt) {
         LIBMTP_Clear_Errorstack(device_);
-        if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) >= 0) {
+        lastRet = LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED);
+        if (lastRet >= 0 && device_->storage != nullptr) {
             LOGI("Enum mtp device storages success.");
             return true;
         }
-        LOGE("Could not retrieve device storage. Attempt %{public}d/%{public}d", attempt, ENUM_STORAGE_MAX_RETRIES);
-        DumpLibMtpErrorStack();
-        if (attempt < ENUM_STORAGE_MAX_RETRIES) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(ENUM_STORAGE_RETRY_INTERVAL_MS));
+        if (!ShouldRetryEnumStorages(attempt)) {
+            break;
         }
+        LOGW("Could not retrieve device storage, attempt %{public}d/%{public}d, ret=%{public}d",
+            attempt, ENUM_STORAGE_MAX_RETRIES, lastRet);
+        std::this_thread::sleep_for(std::chrono::milliseconds(ENUM_STORAGE_RETRY_INTERVAL_MS));
     }
-    LOGI("Enum mtp device storages failed.");
+    LOGE("Enum mtp device storages failed, ret=%{public}d", lastRet);
     return false;
 }
 

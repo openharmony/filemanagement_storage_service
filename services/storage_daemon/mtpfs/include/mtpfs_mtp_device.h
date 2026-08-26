@@ -115,6 +115,9 @@ public:
 
 private:
     bool EnumStorages();
+    bool ShouldRetryEnumStorages(int32_t attempt);
+    bool TryConnectRawDevice(LIBMTP_raw_device_t *rawDevice);
+    int32_t OpenAndEnumStorages(LIBMTP_raw_device_t *rawDevice);
     static Capabilities GetCapabilities(const MtpFsDevice &device);
     bool ConvertErrorCode(LIBMTP_error_number_t err);
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
