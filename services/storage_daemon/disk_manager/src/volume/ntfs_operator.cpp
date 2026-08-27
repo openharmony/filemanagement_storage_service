@@ -87,7 +87,7 @@ int32_t NtfsOperator::ReadMetadata(const std::string& devPath,
         LOGI("NtfsOperator::ReadMetadata using ntfslabel fallback");
         char realPath[PATH_MAX] = {0};
         if (realpath(devPath.c_str(), realPath) != nullptr &&
-            std::string(realPath).find("/dev/block/") == 0) {
+            (std::string(realPath).find("/dev/block/") == 0 || std::string(realPath).find("/dev/mapper/") == 0)) {
             label = GetNtfsLabelFallback(realPath);
         }
     }

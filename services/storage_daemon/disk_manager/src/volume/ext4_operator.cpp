@@ -99,7 +99,10 @@ int32_t Ext4Operator::Format(const std::string& devPath,
         LOGE("Ext4Operator::Format failed, err=%{public}d", err);
         return err;
     }
-
+    if (partitionNum == 0) {
+        LOGI("Ext4Operator::Format success, partitionNum is 0, no need to fix");
+        return E_OK;
+    }
     err = FixTypeIdentifier(diskPath, partitionType, partitionNum);
     if (err != E_OK) {
         LOGE("Ext4Operator::Format FixTypeIdentifier failed, err=%{public}d", err);

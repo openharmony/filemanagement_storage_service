@@ -158,6 +158,21 @@ HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_NotExist, TestSize.Level1)
     EXPECT_EQ(ret, E_OK);
 }
 
+HWTEST_F(ExtIVolumeOperatorTest, Mount_InvalidDevPrefix, TestSize.Level1)
+{
+    int32_t ret = op_->Mount("/dev/sda1", testDir_ + "/invalid_dev_prefix", 0);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_DevMapperPrefix_Success, TestSize.Level1)
+{
+    std::string path = testDir_ + "/mapper_mount_ok";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = op_->Mount("/dev/mapper/mock_dev", path, 0);
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
+}
+
 HWTEST_F(ExtIVolumeOperatorTest, Mount_EmptyMountPath, TestSize.Level1)
 {
     int32_t ret = op_->Mount("/dev/block/mock_dev", "", 0);
@@ -352,6 +367,19 @@ HWTEST_F(ExtIVolumeOperatorTest, ReadMetadata_RealpathFailed, TestSize.Level1)
     std::string uuid, type, label;
     int32_t ret = dummy.ReadMetadata("/dev/block/nonexistent_device", uuid, type, label);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, ReadMetadata_InvalidDevPrefix, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string uuid, type, label;
+    std::string fakeDev = testDir_ + "/fake_dev_node";
+    int fd = open(fakeDev.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    ASSERT_GE(fd, 0);
+    close(fd);
+    int32_t ret = dummy.ReadMetadata(fakeDev, uuid, type, label);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    unlink(fakeDev.c_str());
 }
 
 HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountSuccess, TestSize.Level1)

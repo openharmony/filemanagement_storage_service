@@ -90,7 +90,7 @@ int32_t IVolumeOperator::ReadMetadata(const std::string& devPath,
         LOGE("IVolumeOperator::ReadMetadata realpath failed, errno=%{public}d", errno);
         return E_PARAMS_INVALID;
     }
-    if (std::string(realPath).find("/dev/block/") != 0) {
+    if (std::string(realPath).find("/dev/block/") != 0 && std::string(realPath).find("/dev/mapper/") != 0) {
         LOGE("IVolumeOperator::ReadMetadata invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
@@ -127,7 +127,7 @@ int32_t IVolumeOperator::ValidateMountRequest(const std::string& devPath, const 
         LOGE("IVolumeOperator::Mount invalid devPath");
         return E_PARAMS_INVALID;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("IVolumeOperator::Mount invalid devPath prefix");
         return E_PARAMS_INVALID;
     }

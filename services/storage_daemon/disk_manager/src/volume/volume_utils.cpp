@@ -80,7 +80,7 @@ int32_t VolumeUtils::ReadMetadata(const std::string& devPath,
         LOGE("VolumeUtils::ReadMetadata realpath failed, errno=%{public}d", errno);
         return E_PARAMS_INVALID;
     }
-    if (std::string(realPath).find("/dev/block/") != 0) {
+    if (std::string(realPath).find("/dev/block/") != 0 && std::string(realPath).find("/dev/mapper/") != 0) {
         LOGE("VolumeUtils::ReadMetadata invalid devPath prefix");
         return E_PARAMS_INVALID;
     }

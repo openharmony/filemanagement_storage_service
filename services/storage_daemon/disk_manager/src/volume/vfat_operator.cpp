@@ -79,7 +79,10 @@ int32_t VfatOperator::Format(const std::string& devPath,
         LOGE("VfatOperator::Format failed, err=%{public}d", err);
         return err;
     }
-
+    if (partitionNum == 0) {
+        LOGI("VfatOperator::Format success, partitionNum is 0, no need to fix");
+        return E_OK;
+    }
     err = FixTypeIdentifier(diskPath, partitionType, partitionNum);
     if (err != E_OK) {
         LOGE("VfatOperator::Format FixTypeIdentifier failed, err=%{public}d", err);

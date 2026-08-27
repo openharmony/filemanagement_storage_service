@@ -125,6 +125,8 @@ void StorageDaemonProviderTest::SetUp(void)
     MountManagerMoc::mountManagerMoc = mountManagerMoc_;
     system("mkdir -p /dev/block /mnt/data 2>/dev/null");
     system("touch /dev/block/ut_test_dev /mnt/data/ut_test_mnt 2>/dev/null");
+    system("mkdir -p /dev/mapper 2>/dev/null");
+    system("touch /dev/mapper/ut_test_dev 2>/dev/null");
 }
 
 void StorageDaemonProviderTest::TearDown(void)
@@ -2560,6 +2562,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateBlockDevic
         E_OK);
     EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
         "/dev/block/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        "/dev/mapper/nonexist_dev", verifiedPath), E_OK);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        "/dev/mapper/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
 #endif
 }
 

@@ -48,6 +48,7 @@ using namespace testing;
 using namespace testing::ext;
 
 int g_realpathRet = 0;
+std::string g_realpathPath = "/dev/block/sr0";
 
 extern "C" char* realpath(const char *path, char *resolvedPath)
 {
@@ -58,7 +59,7 @@ extern "C" char* realpath(const char *path, char *resolvedPath)
     if (resolvedPath == nullptr) {
         return nullptr;
     }
-    if (strcpy_s(resolvedPath, PATH_MAX, "/dev/block/sr0") != 0) {
+    if (strcpy_s(resolvedPath, PATH_MAX, g_realpathPath.c_str()) != 0) {
         return nullptr;
     }
     return resolvedPath;
@@ -83,6 +84,7 @@ public:
         libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
         LibraryFunc::libraryFunc_ = libraryFuncMock_;
         g_realpathRet = 0;
+        g_realpathPath = "/dev/block/sr0";
     }
     void TearDown() override
     {
@@ -118,6 +120,13 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_OK);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, ExfatOperator_Format_PartitionNumZero, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
 }
 
 HWTEST_F(ExtOperatorTest, ExfatOperator_Check, TestSize.Level1)
@@ -189,6 +198,28 @@ HWTEST_F(ExtOperatorTest, NtfsOperator_SetLabel, TestSize.Level1)
     EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "MyLabel"), E_ERR);
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.SetLabel("/dev/block/mock_dev", "MyLabel"), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, NtfsOperator_ReadMetadata_DevMapperFallback, TestSize.Level1)
+{
+    NtfsOperator op;
+    g_realpathPath = "/dev/mapper/sr0";
+    ON_CALL(*diskUtilMoc_, IsAcceptableUuid(_)).WillByDefault(Return(true));
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("ntfs-uuid-1234"))
+        .WillOnce(Return("ntfs"))
+        .WillOnce(Return("?????"));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &, std::vector<std::string> *output, int *) {
+            output->push_back("ntfslabel v1.0");
+            output->push_back("Volume label :  MyMapperDrive");
+            return E_OK;
+        }));
+    std::string uuid, type, label;
+    EXPECT_EQ(op.ReadMetadata("/dev/mapper/sr0", uuid, type, label), E_OK);
+    EXPECT_EQ(type, "ntfs");
+    EXPECT_EQ(label, "MyMapperDrive");
+    g_realpathPath = "/dev/block/sr0";
 }
 
 HWTEST_F(ExtOperatorTest, VfatOperator_DoMount, TestSize.Level1)
@@ -527,6 +558,13 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Failed, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
+HWTEST_F(ExtOperatorTest, Ext4Operator_Format_PartitionNumZero, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
+}
+
 /**
  * @tc.name: Ext4Operator_DoMount_ReadOnly
  * @tc.desc: Verify Ext4Operator::DoMount succeeds with MS_RDONLY flag.
@@ -577,6 +615,13 @@ HWTEST_F(ExtOperatorTest, VfatOperator_Format_Failed, TestSize.Level1)
     VfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_Format_PartitionNumZero, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
 }
 
 /**
