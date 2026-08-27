@@ -41,6 +41,7 @@ public:
     static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
     static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
     static inline std::string testDevPath_;
+    static inline std::string mapperDevPath_;
 };
 
 void ExtVolumeUtilsTest::SetUpTestCase(void)
@@ -51,12 +52,20 @@ void ExtVolumeUtilsTest::SetUpTestCase(void)
     if (fd >= 0) {
         close(fd);
     }
+    mapperDevPath_ = "/dev/mapper/vol_utils_test_" + std::to_string(getpid());
+    mkdir("/dev/mapper", DIR_CREATE_MODE);
+    fd = creat(mapperDevPath_.c_str(), 0600);
+    if (fd >= 0) {
+        close(fd);
+    }
 }
 
 void ExtVolumeUtilsTest::TearDownTestCase(void)
 {
     unlink(testDevPath_.c_str());
     rmdir("/dev/block");
+    unlink(mapperDevPath_.c_str());
+    rmdir("/dev/mapper");
 }
 
 void ExtVolumeUtilsTest::SetUp(void)
@@ -96,6 +105,32 @@ HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_PathTraversal, TestSize.Level1)
     std::string uuid, type, label;
     int32_t ret = VolumeUtils::ReadMetadata("/dev/block/../sda1", uuid, type, label);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_DevMapperPrefix, TestSize.Level1)
+{
+    std::string uuid, type, label;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _))
+        .WillOnce(Return("vfat"))
+        .WillOnce(Return("vfat-uuid-1234"))
+        .WillOnce(Return("vfat"))
+        .WillOnce(Return("mapperlabel"));
+    int32_t ret = VolumeUtils::ReadMetadata(mapperDevPath_, uuid, type, label);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(type, "vfat");
+    EXPECT_EQ(label, "mapperlabel");
+}
+
+HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_InvalidDevPrefix, TestSize.Level1)
+{
+    std::string uuid, type, label;
+    std::string fakePath = "/tmp/vol_utils_invalid_" + std::to_string(getpid());
+    int fd = creat(fakePath.c_str(), 0600);
+    ASSERT_GE(fd, 0);
+    close(fd);
+    int32_t ret = VolumeUtils::ReadMetadata(fakePath, uuid, type, label);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    unlink(fakePath.c_str());
 }
 
 HWTEST_F(ExtVolumeUtilsTest, ReadMetadata_TypeEmpty, TestSize.Level1)

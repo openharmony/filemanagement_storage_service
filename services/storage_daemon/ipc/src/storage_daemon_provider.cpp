@@ -208,7 +208,7 @@ bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::stri
         LOGE("IsDevPathValid: devPath contains invalid path segments");
         return false;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("IsDevPathValid: invalid devPath prefix");
         return false;
     }
@@ -219,7 +219,7 @@ bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::stri
         return false;
     }
     std::string tmpPath(realPath);
-    if (tmpPath.find("/dev/block/") != 0) {
+    if (tmpPath.find("/dev/block/") != 0 && tmpPath.find("/dev/mapper/") != 0) {
         LOGE("IsDevPathValid: invalid real path prefix");
         return false;
     }
@@ -238,7 +238,7 @@ int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPat
         LOGE("ValidateBlockDevicePath: devPath contains invalid path segments");
         return E_PARAMS_INVALID;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("ValidateBlockDevicePath: invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
@@ -256,14 +256,15 @@ int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPat
             return E_PARAMS_INVALID;
         }
         std::string resolvedParent(realPath);
-        if (resolvedParent != "/dev/block" && resolvedParent.find("/dev/block/") != 0) {
-            LOGE("ValidateBlockDevicePath: resolved parent escapes /dev/block/");
+        if (resolvedParent != "/dev/block" && resolvedParent.find("/dev/block/") != 0 &&
+            resolvedParent != "/dev/mapper" && resolvedParent.find("/dev/mapper/") != 0) {
+            LOGE("ValidateBlockDevicePath: resolved parent escapes /dev/block/ or /dev/mapper/");
             return E_PARAMS_INVALID;
         }
         verifiedPath = devPath;
     } else {
         std::string resolvedPath(realPath);
-        if (resolvedPath.find("/dev/block/") != 0) {
+        if (resolvedPath.find("/dev/block/") != 0 && resolvedPath.find("/dev/mapper/") != 0) {
             LOGE("ValidateBlockDevicePath: invalid resolved path prefix");
             return E_PARAMS_INVALID;
         }
