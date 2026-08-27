@@ -53,6 +53,7 @@ int GetDvdConfiguration(int fd, int &dvdMedia);
 int GetBdTotalCapacity(int fd, int64_t &bdTotalCapacity);
 std::string GetScsiBusNum(const std::string &sysPath);
 std::string GetOddDriverType(const std::string &sysPath);
+bool CheckUuidInvalid(const std::string &uuid);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 
