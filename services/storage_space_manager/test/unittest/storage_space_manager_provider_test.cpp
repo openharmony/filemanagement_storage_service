@@ -19,11 +19,17 @@
 #include "storage_space_manager_errno.h"
 #include "storage/storage_total_status_service.h"
 #include "cache_clean_controller.h"
+#include "ipc_caller_auth_mock.h"
 
 namespace OHOS {
 namespace StorageSpaceManager {
 using namespace testing;
 using namespace testing::ext;
+
+namespace {
+    constexpr int32_t PERMISSION_GRANTED = 0;
+    constexpr int32_t PERMISSION_DENIED = -1;
+}
 
 class StorageSpaceManagerProviderTest : public testing::Test {
 public:
@@ -763,6 +769,197 @@ HWTEST_F(StorageSpaceManagerProviderTest, ExitIdleState_Basic, TestSize.Level1)
     EXPECT_EQ(ret, true);
 
     GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_ExitIdleState_Basic end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0005
+ * @tc.name: GetDataShareService_OnIdleState
+ * @tc.desc: Test GetDataShareService when service is in idle state
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_OnIdleState, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_OnIdleState start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    SystemAbilityOnDemandReason idleReason;
+    provider_->OnIdle(idleReason);
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_TRUE(ret == E_OK || ret == E_SERVICE_ON_IDLE);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_OnIdleState end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0006
+ * @tc.name: GetDataShareService_FirstCallCreateInstance
+ * @tc.desc: Test first call to GetDataShareService creates dataShareService_ instance
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_FirstCallCreateInstance, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_FirstCallCreateInstance start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    provider_->dataShareService_ = nullptr;
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_TRUE(ret == E_OK || ret == E_PERMISSION_DENIED);
+    EXPECT_NE(provider_->dataShareService_, nullptr);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_FirstCallCreateInstance end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0007
+ * @tc.name: GetDataShareService_ReuseInstance
+ * @tc.desc: Test GetDataShareService reuses existing dataShareService_ instance
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_ReuseInstance, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_ReuseInstance start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject1;
+    provider_->GetDataShareService(uri, remoteObject1);
+    
+    auto firstInstance = provider_->dataShareService_;
+    ASSERT_NE(firstInstance, nullptr);
+
+    sptr<IRemoteObject> remoteObject2;
+    provider_->GetDataShareService(uri, remoteObject2);
+    
+    auto secondInstance = provider_->dataShareService_;
+    EXPECT_EQ(firstInstance, secondInstance);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_ReuseInstance end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0008
+ * @tc.name: GetDataShareService_PermissionDenied
+ * @tc.desc: Test GetDataShareService with permission denied
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_PermissionDenied, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_PermissionDenied start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    g_mockVerifyAccessTokenResult = PERMISSION_DENIED;
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(remoteObject, nullptr);
+
+    g_mockVerifyAccessTokenResult = PERMISSION_GRANTED;
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_PermissionDenied end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0009
+ * @tc.name: GetDataShareService_PermissionGranted
+ * @tc.desc: Test GetDataShareService with permission granted
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_PermissionGranted, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_PermissionGranted start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    g_mockVerifyAccessTokenResult = PERMISSION_GRANTED;
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(remoteObject, nullptr);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_PermissionGranted end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0010
+ * @tc.name: GetDataShareService_AfterOnStop
+ * @tc.desc: Test GetDataShareService after OnStop is called
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_AfterOnStop, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_AfterOnStop start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    SystemAbilityOnDemandReason startReason;
+    provider_->OnStart(startReason);
+    provider_->Init();
+
+    provider_->OnStop();
+
+    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
+    sptr<IRemoteObject> remoteObject;
+    
+    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
+    
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+    EXPECT_EQ(remoteObject, nullptr);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_AfterOnStop end";
 }
 
 } // namespace StorageSpaceManager

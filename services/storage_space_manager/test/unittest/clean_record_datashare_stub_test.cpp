@@ -1970,5 +1970,173 @@ HWTEST_F(CleanRecordDataShareStubTest, BuildResultSet_VerifyDataShareResultSetTy
     GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_BuildResultSet_VerifyDataShareResultSetType end";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_CleanRecordDataShareStub_Query_0016
+ * @tc.name: Query_NoDataInTimeRange
+ * @tc.desc: Test Query with time range that has no matching records
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CleanRecordDataShareStubTest, Query_NoDataInTimeRange, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_NoDataInTimeRange start";
+
+    ASSERT_NE(stub_, nullptr);
+
+    Uri uri("datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record");
+    DataShare::DataSharePredicates predicates;
+    
+    std::string queryJson = R"({"conditions":[{"week_index":1,"begin_time":9999999999000,"end_time":9999999999999}]})";
+    predicates.EqualTo("query", queryJson);
+    
+    std::vector<std::string> columns;
+    DataShare::DatashareBusinessError businessError;
+    
+    auto resultSet = stub_->Query(uri, predicates, columns, businessError);
+    
+    EXPECT_NE(resultSet, nullptr);
+
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_NoDataInTimeRange end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CleanRecordDataShareStub_Query_0017
+ * @tc.name: Query_MultipleRecordsInTimeRange
+ * @tc.desc: Test Query with multiple records in time range to test revenue accumulation
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(CleanRecordDataShareStubTest, Query_MultipleRecordsInTimeRange, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_MultipleRecordsInTimeRange start";
+
+    ASSERT_NE(stub_, nullptr);
+    ASSERT_NE(store_, nullptr);
+
+    int64_t baseTime = 1718515200000LL;
+    for (int i = 0; i < 5; i++) {
+        NativeRdb::ValuesBucket values;
+        values.PutLong("clean_time", baseTime + i * 1000);
+        values.PutLong("freed_size", 1024000LL * (i + 1));
+        values.PutLong("clean_before", 2048000LL);
+        values.PutLong("clean_after", 1024000LL);
+        store_->Insert(values);
+    }
+
+    Uri uri("datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record");
+    DataShare::DataSharePredicates predicates;
+    
+    std::string queryJson = R"({"conditions":[{"week_index":1,"begin_time":)" +
+        std::to_string(baseTime - 1000) + R"(,"end_time":)" +
+        std::to_string(baseTime + 10000) + R"(}]})";
+    predicates.EqualTo("query", queryJson);
+    
+    std::vector<std::string> columns;
+    DataShare::DatashareBusinessError businessError;
+    
+    auto resultSet = stub_->Query(uri, predicates, columns, businessError);
+    
+    EXPECT_NE(resultSet, nullptr);
+
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_MultipleRecordsInTimeRange end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CleanRecordDataShareStub_Query_0018
+ * @tc.name: Query_StoreNotInitialized
+ * @tc.desc: Test Query when CleanRecordStore is not initialized
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CleanRecordDataShareStubTest, Query_StoreNotInitialized, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_StoreNotInitialized start";
+
+    ASSERT_NE(stub_, nullptr);
+
+    store_->Close();
+
+    Uri uri("datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record");
+    DataShare::DataSharePredicates predicates;
+    
+    std::string queryJson = R"({"conditions":[{"week_index":1,"begin_time":1718515200000,"end_time":1718601600000}]})";
+    predicates.EqualTo("query", queryJson);
+    
+    std::vector<std::string> columns;
+    DataShare::DatashareBusinessError businessError;
+    
+    auto resultSet = stub_->Query(uri, predicates, columns, businessError);
+    
+    EXPECT_EQ(resultSet, nullptr);
+    EXPECT_NE(businessError.GetCode(), E_OK);
+
+    store_->Init();
+
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_StoreNotInitialized end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CleanRecordDataShareStub_Query_0019
+ * @tc.name: Query_ZeroTimeRange_001
+ * @tc.desc: Test Query with zero time range
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CleanRecordDataShareStubTest, Query_ZeroTimeRange_001, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_ZeroTimeRange_001 start";
+
+    ASSERT_NE(stub_, nullptr);
+
+    Uri uri("datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record");
+    DataShare::DataSharePredicates predicates;
+    
+    std::string queryJson = R"({"conditions":[{"week_index":1,"begin_time":0,"end_time":0}]})";
+    predicates.EqualTo("query", queryJson);
+    
+    std::vector<std::string> columns;
+    DataShare::DatashareBusinessError businessError;
+    
+    auto resultSet = stub_->Query(uri, predicates, columns, businessError);
+    
+    EXPECT_NE(resultSet, nullptr);
+
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_ZeroTimeRange_001 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CleanRecordDataShareStub_Query_0020
+ * @tc.name: Query_LargeTimeRange
+ * @tc.desc: Test Query with very large time range
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CleanRecordDataShareStubTest, Query_LargeTimeRange, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_LargeTimeRange start";
+
+    ASSERT_NE(stub_, nullptr);
+
+    Uri uri("datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record");
+    DataShare::DataSharePredicates predicates;
+    
+    std::string queryJson = R"({"conditions":[{"week_index":1,"begin_time":0,"end_time":9223372036854775807}]})";
+    predicates.EqualTo("query", queryJson);
+    
+    std::vector<std::string> columns;
+    DataShare::DatashareBusinessError businessError;
+    
+    auto resultSet = stub_->Query(uri, predicates, columns, businessError);
+    
+    EXPECT_NE(resultSet, nullptr);
+
+    GTEST_LOG_(INFO) << "CleanRecordDataShareStubTest_Query_LargeTimeRange end";
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

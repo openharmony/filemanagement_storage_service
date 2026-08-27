@@ -283,7 +283,7 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_ValidJson, TestSize.Level1)
     ASSERT_NE(store_, nullptr);
     store_->Init();
 
-    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"cleaned_cache_size":1024000}]})";
+    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"revenue":1024000}]})";
     
     auto resultSet = store_->QueryByResultString(resultJson);
     ASSERT_NE(resultSet, nullptr);
@@ -408,9 +408,9 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_ComplexJson, TestSize.Level1)
 
     std::string resultJson = R"({
         "weekly_revenue": [
-            {"week_index": 1, "cleaned_cache_size": 1024000},
-            {"week_index": 2, "cleaned_cache_size": 2048000},
-            {"week_index": 3, "cleaned_cache_size": 3072000}
+            {"week_index": 1, "revenue": 1024000},
+            {"week_index": 2, "revenue": 2048000},
+            {"week_index": 3, "revenue": 3072000}
         ]
     })";
     
@@ -447,7 +447,7 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_LargeJson, TestSize.Level2)
             resultJson += ",";
         }
         resultJson += R"({"week_index":)" + std::to_string(i) +
-            R"(,"cleaned_cache_size":)" + std::to_string(i * 1024000) + R"(})";
+            R"(,"revenue":)" + std::to_string(i * 1024000) + R"(})";
     }
     resultJson += R"(]})";
     
@@ -480,7 +480,7 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_SpecialCharacters, TestSize.L
 
     std::string resultJson = R"({
         "weekly_revenue":[
-            { "week_index":1, "cleaned_cache_size":1024000, "note":"Test with \"quotes\" and \\backslash" }
+            { "week_index":1, "revenue":1024000, "note":"Test with \"quotes\" and \\backslash" }
         ]
     })";
     auto resultSet = store_->QueryByResultString(resultJson);
@@ -687,7 +687,7 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_NotInitialized, TestSize.Leve
     
     store_->Close();
     
-    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"cleaned_cache_size":1024000}]})";
+    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"revenue":1024000}]})";
     auto resultSet = store_->QueryByResultString(resultJson);
     EXPECT_EQ(resultSet, nullptr);
 
@@ -968,7 +968,7 @@ HWTEST_F(CleanRecordStoreTest, QueryByResultString_UnicodeCharacters, TestSize.L
     ASSERT_NE(store_, nullptr);
     store_->Init();
 
-    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"cleaned_cache_size":1024000,"note":"测试中文"}]})";
+    std::string resultJson = R"({"weekly_revenue":[{"week_index":1,"revenue":1024000,"note":"测试中文"}]})";
     
     auto resultSet = store_->QueryByResultString(resultJson);
     ASSERT_NE(resultSet, nullptr);
