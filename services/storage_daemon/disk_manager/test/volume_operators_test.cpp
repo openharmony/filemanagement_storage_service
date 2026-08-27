@@ -122,6 +122,13 @@ HWTEST_F(ExtOperatorTest, ExfatOperator_Format, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
+HWTEST_F(ExtOperatorTest, ExfatOperator_Format_PartitionNumZero, TestSize.Level1)
+{
+    ExfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
+}
+
 HWTEST_F(ExtOperatorTest, ExfatOperator_Check, TestSize.Level1)
 {
     ExfatOperator op;
@@ -551,6 +558,13 @@ HWTEST_F(ExtOperatorTest, Ext4Operator_Format_Failed, TestSize.Level1)
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
 }
 
+HWTEST_F(ExtOperatorTest, Ext4Operator_Format_PartitionNumZero, TestSize.Level1)
+{
+    Ext4Operator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
+}
+
 /**
  * @tc.name: Ext4Operator_DoMount_ReadOnly
  * @tc.desc: Verify Ext4Operator::DoMount succeeds with MS_RDONLY flag.
@@ -601,6 +615,13 @@ HWTEST_F(ExtOperatorTest, VfatOperator_Format_Failed, TestSize.Level1)
     VfatOperator op;
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 1), E_ERR);
+}
+
+HWTEST_F(ExtOperatorTest, VfatOperator_Format_PartitionNumZero, TestSize.Level1)
+{
+    VfatOperator op;
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(op.Format("/dev/block/mock_dev", "/dev/disk", "gpt", 0), E_OK);
 }
 
 /**
