@@ -1856,8 +1856,10 @@ int32_t StorageDaemon::SetDirEncryptionPolicy(uint32_t userId, const std::string
     if (ret != E_OK) {
         LOGE("[L1:StorageDaemon] SetDirEncryptionPolicy: <<< EXIT FAILED <<< SetDirEncryptionPolicy ret=%{public}d",
             ret);
-        StorageRadar::ReportCommonResult("StorageDaemon::SetDirEncryptionPolicy", userId, ret, extraData);
-        LOGE("[L1:StorageDaemon] VerifyAncoUserDirs file failed, errNo %{public}d", ret);
+        if (ret != E_KEY_NOT_ACTIVED) {
+            StorageRadar::ReportCommonResult("StorageDaemon::SetDirEncryptionPolicy", userId, ret, extraData);
+        }
+        LOGE("[L1:StorageDaemon] SetDirEncryptionPolicy file failed, errNo %{public}d", ret);
         return ret;
     }
 

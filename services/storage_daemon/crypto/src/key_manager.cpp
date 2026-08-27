@@ -2011,8 +2011,6 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
 {
     if (!IsUeceSupport()) {
         LOGI("[L3:KeyManager] GenerateAppkey: UECE not supported or encryption not enabled");
-        StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", userId, -ENOTSUP,
-            "IsUeceSupport check failed");
         return -ENOTSUP;
     }
     LOGD("[L3:KeyManager] GenerateAppkey: >>> ENTER <<< [userId=%{public}u, hashId=%{public}u, needReSet=%{public}d]",
@@ -2027,7 +2025,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
         if (el5Key == nullptr) {
             LOGE("[L3:KeyManager] GenerateAppkey: <<< EXIT FAILED <<< [el5Key is null]");
-            StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", userId, E_PARAMS_NULLPTR_ERR,
+            StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", E_PARAMS_NULLPTR_ERR, userId,
                 "GetBaseKey failed, userId=KEY_RECOVERY_USER_ID");
             return E_PARAMS_NULLPTR_ERR;
         }
@@ -2035,7 +2033,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         if (ret != E_OK) {
             LOGE("[L3:KeyManager] GenerateAppkey: <<< EXIT FAILED <<< [failed to generate app key, error=%{public}d]",
                 ret);
-            StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", userId, E_EL5_GENERATE_APP_KEY_ERR,
+            StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", E_EL5_GENERATE_APP_KEY_ERR, userId,
                 "GenerateAppkey failed, userId=KEY_RECOVERY_USER_ID, ret=" + std::to_string(ret));
             return E_EL5_GENERATE_APP_KEY_ERR;
         }
@@ -2045,15 +2043,19 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
     if (el5Key == nullptr) {
         LOGE("[L3:KeyManager] GenerateAppkey: <<< EXIT FAILED <<< [el5Key is null]");
-        StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", userId, E_PARAMS_NULLPTR_ERR,
-            "GetBaseKey failed, userId=" + std::to_string(userId));
+        if (HashElxActived(userId, EL5_KEY)) {
+            StorageRadar::ReportEl5KeyMgrResult("GenerateAppkey", E_PARAMS_NULLPTR_ERR, userId,
+                "GetBaseKey failed, userId=" + std::to_string(userId));
+        }
         return E_PARAMS_NULLPTR_ERR;
     }
     auto ret = el5Key->GenerateAppkey(userId, hashId, keyId);
     if (ret != E_OK) {
         LOGE("[L3:KeyManager] GenerateAppkey: <<< EXIT FAILED <<< [failed to generate app key, error=%{public}d]", ret);
-        StorageRadar::ReportEl5KeyMgrResult("GenerateAppKey", userId, E_EL5_GENERATE_APP_KEY_ERR,
-            "GenerateAppkey failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
+        if (HashElxActived(userId, EL5_KEY)) {
+            StorageRadar::ReportEl5KeyMgrResult("GenerateAppKey", E_EL5_GENERATE_APP_KEY_ERR, userId,
+                "GenerateAppkey failed, userId=" + std::to_string(userId) + ", ret=" + std::to_string(ret));
+        }
         return E_EL5_GENERATE_APP_KEY_ERR;
     }
     LOGD("[L3:KeyManager] GenerateAppkey: <<< EXIT SUCCESS <<< [retval=0]");
@@ -2091,21 +2093,23 @@ int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
     LOGD("[L3:KeyManager] DeleteAppkey: >>> ENTER <<< [userId=%{public}u]", user);
     if (!IsUeceSupport()) {
         LOGI("[L3:KeyManager] DeleteAppkey: UECE not supported or encryption not enabled");
-        StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, ENOTSUP,
-            "IsUeceSupport check failed");
         return -ENOTSUP;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(user, EL5_KEY));
     if (el5Key == nullptr) {
         LOGE("[L3:KeyManager] DeleteAppkey: <<< EXIT FAILED <<< [el5Key is null]");
-        StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, E_PARAMS_NULLPTR_ERR,
-            "GetBaseKey failed, userId=" + std::to_string(user));
+        if (HashElxActived(user, EL5_KEY)) {
+            StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", E_PARAMS_NULLPTR_ERR, user,
+                "GetBaseKey failed, userId=" + std::to_string(user));
+        }
         return E_PARAMS_NULLPTR_ERR;
     }
     if (el5Key->DeleteAppkey(keyId) != E_OK) {
         LOGE("[L3:KeyManager] DeleteAppkey: <<< EXIT FAILED <<< [failed to delete app key]");
-        StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", user, E_EL5_DELETE_APP_KEY_ERR, "DeleteAppkey failed");
+        if (HashElxActived(user, EL5_KEY)) {
+            StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", E_EL5_DELETE_APP_KEY_ERR, user, "DeleteAppkey failed");
+        }
         return E_EL5_DELETE_APP_KEY_ERR;
     }
     LOGD("[L3:KeyManager] DeleteAppkey: <<< EXIT SUCCESS <<< [retval=0]");
@@ -2996,8 +3000,8 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
             "userId=%{public}u, needGetAllAppKey=%{public}d", resultCode, userId, needGetAllAppKey);
         if (callback != nullptr) {
             callback->OnEl5Activation(resultCode, userId, needGetAllAppKey, retValue);
-            StorageRadar::ReportUpdateUserAuth("NotifyUeceActivation", userId, resultCode, "EL5",
-                "callback is not nullptr");
+            std::string extraData = "EL5 callback executed, resultCode=" + std::to_string(resultCode);
+            StorageRadar::ReportFucBehavior("NotifyUeceActivation", userId, extraData, resultCode);
         }
         p.set_value(retValue);
     });
@@ -3007,7 +3011,7 @@ int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool n
         callbackThread.detach();
         std::ostringstream extraData;
         extraData << "Notify EL5 timeout, needGetAllAppKey: " << needGetAllAppKey << " resultCode: " << resultCode;
-        StorageRadar::ReportUpdateUserAuth("NotifyUeceActivation", userId, E_TASK_TIME_OUT, "EL5", extraData.str());
+        StorageRadar::ReportFucBehavior("NotifyUeceActivation", userId, extraData.str(), E_TASK_TIME_OUT);
         return E_OK;
     }
 
