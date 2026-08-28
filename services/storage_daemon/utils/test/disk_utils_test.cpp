@@ -744,15 +744,9 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetMaxVolume_ReadFileFail, TestSize.Level1
     EXPECT_EQ(GetMaxVolume(mmcDev), E_ERR);
 }
 
-HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_IsFilePathInvalid, TestSize.Level1)
-{
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
-    EXPECT_FALSE(IsAcceptableUuid("valid-uuid-1234"));
-}
-
 HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_IsFilePathInvalidFalse, TestSize.Level1)
 {
-    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).Times(0);
     EXPECT_TRUE(IsAcceptableUuid("valid-uuid-1234"));
 }
 
