@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <linux/cdrom.h>
 #include <openssl/sha.h>
+#include <regex>
 #include <sstream>
 #include <cinttypes>
 #include <scsi/sg.h>
@@ -140,11 +141,17 @@ bool IsAcceptableUuid(const std::string &uuid)
     if (uuid.length() < MIN_UUID_LENGTH || uuid.length() > MAX_UUID_LENGTH) {
         return false;
     }
-    if (IsFilePathInvalid(uuid)) {
+    if (CheckUuidInvalid(uuid)) {
         LOGE("[L8:DiskUtils] IsAcceptableUuid: uuid contains invalid characters");
         return false;
     }
     return true;
+}
+
+bool CheckUuidInvalid(const std::string &uuid)
+{
+    static const std::regex validPattern(R"([A-Za-z0-9\-]+)");
+    return !std::regex_match(uuid, validPattern);
 }
 
 std::string GetBlkidData(const std::string &devPath, const std::string &type)
