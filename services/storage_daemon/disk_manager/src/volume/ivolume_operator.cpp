@@ -17,7 +17,6 @@
 
 #include <chrono>
 #include <climits>
-#include <csignal>
 #include <fcntl.h>
 #include <future>
 #include <sys/ioctl.h>
@@ -30,7 +29,6 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/volume_op_diag.h"
-#include "volume/process.h"
 
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 
@@ -233,8 +231,6 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
     }
 
     if (force) {
-        Process ps(resolvedPath);
-        ps.UpdatePidAndKill(SIGKILL);
         int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
         if (ret != 0) {
             LOGW("IVolumeOperator::Unmount umount2 failed in force mode, errno=%{public}d", errno);

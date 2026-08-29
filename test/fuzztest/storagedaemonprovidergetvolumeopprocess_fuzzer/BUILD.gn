@@ -121,9 +121,6 @@ ohos_static_library("storagedaemonprovider_getvolumeopprocess_fuzztest") {
     external_deps += [ "disk_manager:disk_manager_innerkits" ]
   }
 
-  if (storage_service_external_storage_manager || enable_disk_manager) {
-    sources += [ "${storage_daemon_path}/volume/src/process.cpp" ]
-  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
