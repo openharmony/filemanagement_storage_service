@@ -2585,6 +2585,36 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateMountPath_
 #endif
 }
 
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_BindBlockLoopDev_001, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string loopPath;
+#ifdef PC_USER_MANAGER
+    SetCallingUid(DISK_MANAGER_UID);
+    EXPECT_EQ(storageDaemonProviderTest_->BindBlockLoopDev("/dev/block/ut_test_dev", 0, 100, loopPath),
+        E_PARAMS_INVALID);
+    EXPECT_EQ(storageDaemonProviderTest_->BindBlockLoopDev("/dev/block/ut_test_dev", 100, 0, loopPath),
+        E_PARAMS_INVALID);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->BindBlockLoopDev("/dev/block/ut_test_dev", 100, 100, loopPath),
+        E_NOT_SUPPORT);
+#endif
+}
+
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_BindBlockLoopDev_002, TestSize.Level1)
+{
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string loopPath;
+#ifdef PC_USER_MANAGER
+    SetCallingUid(STORAGE_MANAGER_UID);
+    int32_t ret = storageDaemonProviderTest_->BindBlockLoopDev("/dev/block/ut_test_dev", 100, 50, loopPath);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->BindBlockLoopDev("/dev/block/ut_test_dev", 100, 50, loopPath),
+        E_NOT_SUPPORT);
+#endif
+}
+
 /**
  * @tc.name: StorageDaemonProviderTest_GetPartitionTableInfo_001
  * @tc.desc: Verify the GetPartitionTableInfo function with empty devPath.

@@ -153,6 +153,10 @@ ohos_unittest("storage_daemon_provider_test") {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
 
+  if (pc_device_enable) {
+    defines += [ "PC_USER_MANAGER" ]
+  }
+
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }

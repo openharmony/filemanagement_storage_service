@@ -3237,7 +3237,7 @@ int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint
 #ifdef PC_USER_MANAGER
     LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: >>> ENTER <<< sysPath=%{public}s, "
          "offset=%{public}" PRIu64 " sizeLimit=%{public}" PRIu64, sysPath.c_str(), offset, sizeLimit);
-    if (offset == 0 || sizeLimit == 0 || sizeLimit <= offset) {
+    if (offset == 0 || sizeLimit == 0) {
         LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: invalid offset or sizeLimit");
         return E_PARAMS_INVALID;
     }
