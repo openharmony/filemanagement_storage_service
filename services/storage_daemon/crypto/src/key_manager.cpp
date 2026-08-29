@@ -1856,7 +1856,9 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     // key and no-key situation all failed, include upgrade situation, return err
     if (keyResult != E_OK && !noKeyResult) {
         std::string extraData = "keyResult: " + std::to_string(keyResult);
-        StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_RESTORE_KEY_FAILED, "", extraData);
+        if (!token.empty() || !secret.empty()) {
+            StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_RESTORE_KEY_FAILED, "", extraData);
+        }
         LOGE("[L3:KeyManager] ActiveElXUserKey: <<< EXIT FAILED <<< [failed to restore el key, type=%{public}u]",
             keyType);
         return E_RESTORE_KEY_FAILED;
@@ -1887,8 +1889,10 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     elKey->GenerateHashKey();
     int32_t ret = elKey->ActiveKey(auth.token, RETRIEVE_KEY);
     if (ret != E_OK) {
-        StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_ELX_KEY_ACTIVE_ERROR, "",
-            "Active failed, ret=" + std::to_string(ret));
+        if (!token.empty() || !secret.empty()) {
+            StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_ELX_KEY_ACTIVE_ERROR, "",
+                "Active failed, ret=" + std::to_string(ret));
+        }
         LOGE("[L3:KeyManager] ActiveElXUserKey: <<< EXIT FAILED <<< [failed to activate key for user %{public}u]",
             user);
         return E_ELX_KEY_ACTIVE_ERROR;
@@ -2011,6 +2015,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
 {
     if (!IsUeceSupport()) {
         LOGI("[L3:KeyManager] GenerateAppkey: UECE not supported or encryption not enabled");
+        StorageRadar::ReportFucBehavior("GenerateAppkey", userId, "UECE not supported", -ENOTSUP);
         return -ENOTSUP;
     }
     LOGD("[L3:KeyManager] GenerateAppkey: >>> ENTER <<< [userId=%{public}u, hashId=%{public}u, needReSet=%{public}d]",
@@ -2093,13 +2098,15 @@ int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
     LOGD("[L3:KeyManager] DeleteAppkey: >>> ENTER <<< [userId=%{public}u]", user);
     if (!IsUeceSupport()) {
         LOGI("[L3:KeyManager] DeleteAppkey: UECE not supported or encryption not enabled");
+        StorageRadar::ReportFucBehavior("DeleteAppkey", user, "UECE not supported", -ENOTSUP);
         return -ENOTSUP;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(user, EL5_KEY));
     if (el5Key == nullptr) {
         LOGE("[L3:KeyManager] DeleteAppkey: <<< EXIT FAILED <<< [el5Key is null]");
-        if (HashElxActived(user, EL5_KEY)) {
+        std::string keyDir = GetKeyDirByUserAndType(user, EL5_KEY);
+        if (!IsDir(keyDir)) {
             StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", E_PARAMS_NULLPTR_ERR, user,
                 "GetBaseKey failed, userId=" + std::to_string(user));
         }

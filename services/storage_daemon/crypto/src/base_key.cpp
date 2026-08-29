@@ -593,13 +593,15 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool n
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
-        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, 0, "", "candidate is empty");
+        StorageService::StorageRadar::ReportFucBehavior("BaseKey::RestoreKey", 0, "candidate is empty", 0);
         auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth, needFixFiles);
         if (ret == 0) {
             LOGD("[L4:BaseKey] RestoreKey: <<< EXIT SUCCESS <<< restored from backup");
             return E_OK;
         }
-        StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
+        if (!auth.token.IsEmpty() || !auth.secret.IsEmpty()) {
+            StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
+        }
         LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
         return ret;
     }

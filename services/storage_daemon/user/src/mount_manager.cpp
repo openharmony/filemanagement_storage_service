@@ -644,7 +644,7 @@ int32_t MountManager::FindSaFd(int32_t userId)
     FindProcess(list, proInfos, excludeProcess);
     if (!proInfos.empty()) {
         std::string extraData = "process=" + ProcessToString(proInfos);
-        StorageRadar::ReportUserManager("FindSaFd", userId, E_UMOUNT_FIND_FD, extraData);
+        StorageRadar::ReportFucBehavior("FindSaFd", userId, extraData, E_OK);
     }
     LOGI("[L2:MountManager] FindSaFd: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
@@ -789,7 +789,9 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         if (mkRet != E_OK) {
             int savedErrno = errno;
             std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(savedErrno);
-            StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
+            if (savedErrno != ENOSYS) {
+                StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
+            }
             ret = E_CREATE_DIR_VIRTUAL;
         }
     }
