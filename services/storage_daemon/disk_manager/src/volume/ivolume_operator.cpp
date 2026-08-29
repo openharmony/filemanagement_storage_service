@@ -230,29 +230,18 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         return E_PARAMS_INVALID;
     }
 
-    if (force) {
-        int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
-        if (ret != 0) {
-            LOGW("IVolumeOperator::Unmount umount2 failed in force mode, errno=%{public}d", errno);
-            RemoveMountPath(resolvedPath);
-            return E_OK;
-        }
-        RemoveMountPath(resolvedPath);
-        LOGI("IVolumeOperator::Unmount force success");
-        return E_OK;
-    }
-
     int fd = open(resolvedPath.c_str(), O_RDONLY);
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
     int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
+    int umountErrno = errno;
     if (fd >= 0) {
         IsUsbInUse(fd);
         close(fd);
     }
     if (ret != 0) {
-        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", errno);
+        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", umountErrno);
         return E_VOL_UMOUNT_ERR;
     }
 
