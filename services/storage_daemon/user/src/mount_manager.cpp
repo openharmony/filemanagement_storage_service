@@ -14,6 +14,7 @@
  */
 
 #include "user/mount_manager.h"
+#include "user/parse_user_id.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <regex>
@@ -928,7 +929,12 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
         if (!StringIsNumber(subPath)) {
             continue;
         }
-        int32_t userId = atoi(subPath.c_str());
+        // Digit-only still overflows atoi; parse with from_chars and skip bad ids.
+        int32_t userId = 0;
+        if (!ParseUserId(subPath, userId)) {
+            LOGE("invalid user dir name %{public}s", subPath.c_str());
+            continue;
+        }
         if (userId < DEFAULT_USERID) {
             continue;
         }
