@@ -188,10 +188,6 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-        if (IsFilePathInvalid(deviceName)) {
-            LOGE("Ignore invalid deviceName:%{public}s", deviceName.c_str());
-            continue;
-        }
         bool isSDevice = (deviceName.length() > 0 && deviceName[0] == 's');
         bool isNvmeDevice = (deviceName.find(NVME_STRING) == 0);
         if (!isSDevice && !isNvmeDevice) {
@@ -747,7 +743,7 @@ std::string ScanDevice::GetNvmeSerialNumber(const std::string &deviceName)
     std::string serialPath = sysBlockPath + SPLIT_STRING + deviceName + SERIAL_NODE;
     std::string content;
     if (ReadSysfsNode(serialPath, content)) {
-        LOGI("GetNvmeSerialNumber success: %{public}s", GetAnonyString(content).c_str());
+        LOGI("GetNvmeSerialNumber success: %{public}s", content.c_str());
         return content;
     }
     LOGE("GetNvmeSerialNumber: read serial node failed for %{public}s", deviceName.c_str());
