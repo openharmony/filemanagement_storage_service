@@ -22,6 +22,7 @@
 #include <nlohmann/json.hpp>
 
 #include "disk_manager/disk/scan_device.h"
+#include "mock/file_utils_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -47,6 +48,7 @@ public:
     void LinkDeviceAsInternalNvmeWithAbsoluteSysPath(const std::string &deviceName);
 
     std::string mockSysPath;
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 void ScanDeviceTest::SetUpTestCase(void)
@@ -62,11 +64,16 @@ void ScanDeviceTest::TearDownTestCase(void)
 void ScanDeviceTest::SetUp()
 {
     mockSysPath = "/data/test_sys_block";
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    ON_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillByDefault(Return(false));
 }
 
 void ScanDeviceTest::TearDown()
 {
     system(("rm -rf " + mockSysPath).c_str());
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
 }
 
 void ScanDeviceTest::CreateDirectory(const std::string &path)
@@ -258,6 +265,27 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_008, TestSi
 
     DeleteDeviceDir("sdmock_b");
     GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_008 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_GetDataDisks_IsFilePathInvalid
+ * @tc.desc: Test GetDataDisks skips device when IsFilePathInvalid returns true (new branch)
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetDataDisks_IsFilePathInvalid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_IsFilePathInvalid start";
+
+    CreateDeviceDir("sdmock_a");
+    LinkDeviceAsInternalSata("sdmock_a");
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillRepeatedly(Return(true));
+
+    ScanDevice scanner(mockSysPath);
+    std::vector<BlockInfo> result = scanner.GetDataDisks();
+    EXPECT_EQ(result.size(), 0);
+
+    DeleteDeviceDir("sdmock_a");
+    GTEST_LOG_(INFO) << "Storage_Service_ScanDeviceTest_GetDataDisks_IsFilePathInvalid end";
 }
 
 /**

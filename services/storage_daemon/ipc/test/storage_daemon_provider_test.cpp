@@ -25,6 +25,7 @@
 #include "mock/key_manager_mock.h"
 #include "mock/mount_manager_mock.h"
 #include "mock/key_manager_ext_mock.h"
+#include "mock/file_utils_mock.h"
 #include "userdata_dir_info.h"
 #include <climits>
 #include <cstdlib>
@@ -74,6 +75,7 @@ public:
     static inline std::shared_ptr<KeyManagerMock> keyManagerMock_ = nullptr;
     static inline std::shared_ptr<KeyManagerExtMock> keyManagerExtMock_ = nullptr;
     static inline std::shared_ptr<MountManagerMoc> mountManagerMoc_ = nullptr;
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 std::vector<uint8_t> GenerateTestVector(uint8_t startValue, size_t length)
@@ -123,6 +125,9 @@ void StorageDaemonProviderTest::SetUp(void)
     KeyManagerExtMock::iKeyManagerExtMock_ = keyManagerExtMock_;
     mountManagerMoc_ = std::make_shared<MountManagerMoc>();
     MountManagerMoc::mountManagerMoc = mountManagerMoc_;
+    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    ON_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillByDefault(Return(false));
     system("mkdir -p /dev/block /mnt/data 2>/dev/null");
     system("touch /dev/block/ut_test_dev /mnt/data/ut_test_mnt 2>/dev/null");
 }
@@ -142,6 +147,8 @@ void StorageDaemonProviderTest::TearDown(void)
     keyManagerExtMock_ = nullptr;
     MountManagerMoc::mountManagerMoc = nullptr;
     mountManagerMoc_ = nullptr;
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
 }
 
 /**
@@ -3200,6 +3207,65 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, newPath);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidType
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when IsFilePathInvalid(type) is true
+ *           (first operand of OR is true -> short-circuit, diskId operand not evaluated).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidType, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "data";
+    std::string diskId = "disk1";
+    std::string blockInfos;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when type is valid but diskId is invalid
+ *           (first operand false, second operand true -> enters branch).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "data";
+    std::string diskId = "disk1";
+    std::string blockInfos;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(false)).WillOnce(Return(true));
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_Valid
+ * @tc.desc: Verify GetBlockInfoByType does not enter the guard branch when both type and diskId are valid
+ *           (both operands false -> falls through to ScanDevice, returns E_OK).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_Valid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "data";
+    std::string diskId = "disk1";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS
