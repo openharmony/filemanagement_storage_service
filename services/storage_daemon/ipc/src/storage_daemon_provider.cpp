@@ -3231,38 +3231,6 @@ int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t 
 #endif
 }
 
-int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
-    std::string &loopPath)
-{
-#ifdef PC_USER_MANAGER
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: >>> ENTER <<< sysPath=%{public}s, "
-         "offset=%{public}" PRIu64 " sizeLimit=%{public}" PRIu64, sysPath.c_str(), offset, sizeLimit);
-    if (offset == 0 || sizeLimit == 0) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: invalid offset or sizeLimit");
-        return E_PARAMS_INVALID;
-    }
-    std::string verifiedPath;
-    if (!IsDevPathValid(sysPath, verifiedPath)) {
-        return E_PARAMS_INVALID;
-    }
-    auto uid = IPCSkeleton::GetCallingUid();
-    if (uid != DISK_MANAGER_UID) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
-        return E_PERMISSION_DENIED;
-    }
-    int32_t ret = VolumeUtils::BindBlockLoopDev(verifiedPath, offset, sizeLimit, loopPath);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        return ret;
-    }
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT SUCCESS <<< loopPath=%{public}s", loopPath.c_str());
-    return E_OK;
-#else
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT <<< not support");
-    return E_NOT_SUPPORT;
-#endif
-}
-
 int32_t StorageDaemonProvider::ExecuteCommand(const std::vector<std::string> &cmd, int32_t &execRet,
                                               std::vector<std::string> &output)
 {
