@@ -91,11 +91,6 @@ ohos_fuzztest("DiskUtilsDiscCapFuzzTest") {
     ]
     external_deps += [ "disk_manager:disk_manager_innerkits" ]
   }
-  if (storage_service_external_storage_manager) {
-    sources += [
-      "${storage_daemon_path}/volume/src/process.cpp",
-    ]
-  }
 }
 
 group("fuzztest") {

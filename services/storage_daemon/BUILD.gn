@@ -167,12 +167,6 @@ ohos_executable("storage_daemon") {
     ]
   }
 
-  if (storage_service_external_storage_manager || enable_disk_manager) {
-    sources += [
-      "volume/src/process.cpp",
-    ]
-  }
-
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
     sources += [
@@ -586,7 +580,6 @@ group("storage_daemon_unit_test") {
       "disk/test:storage_daemon_disk_test",
       "disk_manager/test:storage_daemon_ext_storage_test",
       "netlink/test:storage_daemon_netlink_test",
-      "volume/test:storage_daemon_volume_test",
     ]
   }
   if (support_open_source_libmtp) {

@@ -66,8 +66,8 @@
 |------|------|
 | 密钥管理 | `services/storage_daemon/crypto/test/key_manager_test/` |
 | 用户管理 | `services/storage_daemon/user/test/` |
-| 卷管理 | `services/storage_daemon/volume/test/` |
 | 磁盘管理 | `services/storage_daemon/disk/test/` |
+| 外置卷 | `services/storage_daemon/disk_manager/test/` |
 | IPC 层 | `services/storage_manager/ipc/test/` |
 | Fuzz | `test/fuzztest/` |
 

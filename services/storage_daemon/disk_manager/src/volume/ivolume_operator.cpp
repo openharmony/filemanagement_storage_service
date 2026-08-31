@@ -17,7 +17,6 @@
 
 #include <chrono>
 #include <climits>
-#include <csignal>
 #include <fcntl.h>
 #include <future>
 #include <sys/ioctl.h>
@@ -30,7 +29,6 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/volume_op_diag.h"
-#include "volume/process.h"
 
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 
@@ -232,31 +230,18 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         return E_PARAMS_INVALID;
     }
 
-    if (force) {
-        Process ps(resolvedPath);
-        ps.UpdatePidAndKill(SIGKILL);
-        int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
-        if (ret != 0) {
-            LOGW("IVolumeOperator::Unmount umount2 failed in force mode, errno=%{public}d", errno);
-            RemoveMountPath(resolvedPath);
-            return E_OK;
-        }
-        RemoveMountPath(resolvedPath);
-        LOGI("IVolumeOperator::Unmount force success");
-        return E_OK;
-    }
-
     int fd = open(resolvedPath.c_str(), O_RDONLY);
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
     int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
+    int umountErrno = errno;
     if (fd >= 0) {
         IsUsbInUse(fd);
         close(fd);
     }
     if (ret != 0) {
-        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", errno);
+        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", umountErrno);
         return E_VOL_UMOUNT_ERR;
     }
 
