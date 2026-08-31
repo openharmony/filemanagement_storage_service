@@ -175,29 +175,5 @@ int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
     LOGI("VolumeUtils::MountFuseDevice success, fuseFd=%{public}d", fuseFd);
     return E_OK;
 }
-
-int32_t VolumeUtils::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
-                                      std::string &loopPath)
-{
-    LOGI("VolumeUtils::BindBlockLoopDev exec BindBlockLoopDev start");
-    std::vector<std::string> cmd = {"losetup", "--oh", "-f", "-o", std::to_string(offset), "--sizelimit",
-                                    std::to_string(sizeLimit), "--show", sysPath};
-    std::vector<std::string> output;
-    int32_t ret = ForkExec(cmd, &output);
-    for (auto str : output) {
-        LOGI("exec BindBlockLoopDev output: %{public}s", str.c_str());
-    }
-    if (ret != E_OK) {
-        LOGE("VolumeUtils::BindBlockLoopDev exec BindBlockLoopDev failed, ret=%{public}d", ret);
-        return ret;
-    }
-    if (output.empty()) {
-        LOGE("VolumeUtils::BindBlockLoopDev exec BindBlockLoopDev success, but output is empty, ret=%{public}d", ret);
-        return E_ERR;
-    }
-    loopPath = output[0];
-    LOGI("VolumeUtils::BindBlockLoopDev exec BindBlockLoopDev success: loopPath=%{public}s", loopPath.c_str());
-    return E_OK;
-}
 } // namespace StorageDaemon
 } // namespace OHOS
