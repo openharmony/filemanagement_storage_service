@@ -1622,5 +1622,40 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ContainsRelativePathReference_001, TestSiz
     EXPECT_FALSE(ContainsRelativePathReference("/some/valid/path/to/file.txt"));
     GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 end";
 }
+
+/**
+ * @tc.name: FileUtilsTest_StringToUint32_001
+ * @tc.desc: Verify StringToUint32 accepts full uint32_t range and rejects invalid input.
+ * @tc.type: FUNC
+ * @tc.require: DTS2026082537775
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_StringToUint32_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_StringToUint32_001 start";
+    uint32_t num = 0;
+
+    EXPECT_FALSE(StringToUint32("", num));
+    EXPECT_FALSE(StringToUint32("abc", num));
+    EXPECT_FALSE(StringToUint32("123abc", num));
+    EXPECT_FALSE(StringToUint32("-5", num));
+    EXPECT_FALSE(StringToUint32("4294967296", num));
+
+    EXPECT_TRUE(StringToUint32("0", num));
+    EXPECT_EQ(num, 0u);
+
+    EXPECT_TRUE(StringToUint32("1", num));
+    EXPECT_EQ(num, 1u);
+
+    EXPECT_TRUE(StringToUint32("2147483646", num));
+    EXPECT_EQ(num, 2147483646u);
+
+    EXPECT_TRUE(StringToUint32("2147483647", num));
+    EXPECT_EQ(num, 2147483647u);
+
+    EXPECT_TRUE(StringToUint32("4294967295", num));
+    EXPECT_EQ(num, 4294967295u);
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_StringToUint32_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
