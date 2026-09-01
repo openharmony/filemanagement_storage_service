@@ -661,9 +661,9 @@ HWTEST_F(StorageDaemonTest, StorageDaemonTest_InitGlobalUserKeys_001, TestSize.L
 #ifdef USER_CRYPTO_MIGRATE_KEY
     CreateNeedRestoreFile(StorageService::START_USER_ID, EL1_KEY);
 
-    g_saveStringToFile = false;
+    g_saveStringToFileSync = false;
     EXPECT_EQ(storageDaemon_->InitGlobalUserKeys(), E_SAVE_KEY_TYPE_ERROR);
-    g_saveStringToFile = true;
+    g_saveStringToFileSync = true;
 
 #endif
     EXPECT_CALL(*keyManagerMock_, InitGlobalUserKeys()).WillOnce(Return(E_OK));
