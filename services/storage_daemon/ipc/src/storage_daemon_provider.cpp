@@ -2777,7 +2777,7 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-    if (IsFilePathInvalid(type) || IsFilePathInvalid(diskId)) {
+    if (ContainsRelativePathReference(type) || ContainsRelativePathReference(diskId)) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type or diskId");
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;

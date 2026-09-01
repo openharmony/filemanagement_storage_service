@@ -188,7 +188,7 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-        if (IsFilePathInvalid(deviceName)) {
+        if (ContainsRelativePathReference(deviceName)) {
             LOGE("Ignore invalid deviceName:%{public}s", deviceName.c_str());
             continue;
         }

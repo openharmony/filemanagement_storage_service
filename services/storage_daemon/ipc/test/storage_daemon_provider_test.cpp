@@ -3204,7 +3204,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
 
 /**
  * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidType
- * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when IsFilePathInvalid(type) is true
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when ContainsRelativePathReference(type) is true
  *           (first operand of OR is true -> short-circuit, diskId operand not evaluated).
  * @tc.type: FUNC
  */
