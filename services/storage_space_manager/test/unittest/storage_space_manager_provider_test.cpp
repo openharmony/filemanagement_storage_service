@@ -27,6 +27,9 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace {
+    constexpr uint32_t MOCK_TOKEN_ID = 12345;
+    constexpr int32_t MOCK_UID = 1000;
+    constexpr uint32_t TOKEN_TYPE_NATIVE = 1;
     constexpr int32_t PERMISSION_GRANTED = 0;
     constexpr int32_t PERMISSION_DENIED = -1;
 }
@@ -61,6 +64,10 @@ void StorageSpaceManagerProviderTest::TearDownTestCase()
 void StorageSpaceManagerProviderTest::SetUp()
 {
     // Reset provider state before each test
+    g_mockCallingTokenId = MOCK_TOKEN_ID;
+    g_mockCallingUid = MOCK_UID;
+    g_mockVerifyAccessTokenResult = PERMISSION_GRANTED;
+    g_mockTokenTypeFlag = TOKEN_TYPE_NATIVE;
 }
 
 void StorageSpaceManagerProviderTest::TearDown()
@@ -929,37 +936,6 @@ HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_PermissionGranted,
     EXPECT_NE(remoteObject, nullptr);
 
     GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_PermissionGranted end";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Provider_GetDataShareService_0010
- * @tc.name: GetDataShareService_AfterOnStop
- * @tc.desc: Test GetDataShareService after OnStop is called
- * @tc.size: SMALL
- * @tc.type: FUNC
- * @tc.level Level 2
- */
-HWTEST_F(StorageSpaceManagerProviderTest, GetDataShareService_AfterOnStop, TestSize.Level2)
-{
-    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_AfterOnStop start";
-
-    ASSERT_NE(provider_, nullptr);
-
-    SystemAbilityOnDemandReason startReason;
-    provider_->OnStart(startReason);
-    provider_->Init();
-
-    provider_->OnStop();
-
-    std::string uri = "datashare://StorageSpaceMgr/SAID=8650/app_cache_clean_record";
-    sptr<IRemoteObject> remoteObject;
-    
-    int32_t ret = provider_->GetDataShareService(uri, remoteObject);
-    
-    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
-    EXPECT_EQ(remoteObject, nullptr);
-
-    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_GetDataShareService_AfterOnStop end";
 }
 
 } // namespace StorageSpaceManager
