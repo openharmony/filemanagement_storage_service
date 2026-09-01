@@ -1631,7 +1631,7 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
 
     std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
+    StorageRadar::ReportFucBehavior("CreateUserDir", 0, extraData, ret);
     return ret;
 }
 
