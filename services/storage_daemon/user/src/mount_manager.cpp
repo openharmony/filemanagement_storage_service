@@ -762,7 +762,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         return E_UMOUNT_NO_PROCESS_FIND;
     }
     std::string extraData = "process=" + ProcessToString(processInfos) + ",kernelCode=" + to_string(radar);
-    StorageRadar::ReportUserManager("FindAndKillProcess", userId, E_UMOUNT_FIND_PROCESS, extraData);
+    StorageRadar::ReportFucBehavior("FindAndKillProcess", userId, extraData, E_UMOUNT_FIND_PROCESS);
 
     std::vector<ProcessInfo> killFailList;
     KillProcess(processInfos, killFailList);
