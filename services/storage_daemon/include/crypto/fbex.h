@@ -71,7 +71,7 @@ public:
     static bool CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
                                    uint32_t length, bool &isFbeSupport);
     static void HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
-                                 uint32_t userIdDouble);
+                                 uint32_t userIdDouble, bool hasAuth = true);
 };
 } // namespace StorageDaemon
 } // namespace OHOS
