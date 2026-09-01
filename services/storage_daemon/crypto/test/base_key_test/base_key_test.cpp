@@ -212,6 +212,40 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: BaseKey_SaveAndCleanKeyBuff_002
+ * @tc.desc: Verify need_update content after SaveAndCleanKeyBuff.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_SaveAndCleanKeyBuff_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::string keyPath = "/data/test";
+    std::vector<uint8_t> nonceVct(5, 1);
+    std::vector<uint8_t> rndEncVct(3, 2);
+    std::vector<uint8_t> aadVct(4, 3);
+    KeyContext keyCtx;
+    keyCtx.nonce.Alloc(nonceVct.size());
+    std::copy(nonceVct.begin(), nonceVct.end(), keyCtx.nonce.data.get());
+    keyCtx.rndEnc.Alloc(rndEncVct.size());
+    std::copy(rndEncVct.begin(), rndEncVct.end(), keyCtx.rndEnc.data.get());
+    keyCtx.aad.Alloc(aadVct.size());
+    std::copy(aadVct.begin(), aadVct.end(), keyCtx.aad.data.get());
+    EXPECT_TRUE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
+
+    const std::string needUpdatePath = keyPath + "/need_update";
+    std::ifstream f(needUpdatePath);
+    ASSERT_TRUE(f.is_open());
+    std::string content;
+    f >> content;
+    f.close();
+    EXPECT_EQ(content, "KEY_CRYPT_HUKS");
+    unlink(needUpdatePath.c_str());
+    GTEST_LOG_(INFO) << "BaseKey_SaveAndCleanKeyBuff_002 end";
+}
+
+/**
  * @tc.name: BaseKey_UpdateKey_001
  * @tc.desc: Verify the UpdateKey function.
  * @tc.type: FUNC
