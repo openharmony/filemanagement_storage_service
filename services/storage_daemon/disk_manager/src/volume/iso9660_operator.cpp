@@ -37,6 +37,16 @@ constexpr const char* VERIFY_MOUNT_PATH = "/mnt/data/burn_verify_mount";
 constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
 constexpr mode_t DEFAULT_DIR_PERMISSIONS = 0755;
 
+static bool OutputContains(const std::vector<std::string> &output, const std::string &pattern)
+{
+    for (const auto &line : output) {
+        if (line.find(pattern) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int32_t IsoOperator::DoMount(const std::string& devPath,
                              const std::string& mountPath,
                              unsigned long mountFlags,
@@ -228,6 +238,11 @@ int32_t IsoOperator::DoCDBurn(const std::string &devPath,
         LOGI("IsoOperator DoCDBurn:s=%{public}s", s.c_str());
     }
     if (err != E_OK) {
+        if (OutputContains(output, "WARNING: Data may not fit on current disk")) {
+            LOGE("BurnDoCDBurn: no space left on disc, devPath=%{public}s", devPath.c_str());
+            RmDirRecurse(BURN_TMP_DIR);
+            return E_BURN_NOSPC;
+        }
         LOGE("BurnDoCDBurn:<<< EXIT FAILED <<< wodim failed for devPath: %{public}s", devPath.c_str());
         RmDirRecurse(BURN_TMP_DIR);
         return err;
@@ -272,6 +287,10 @@ int32_t IsoOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
         LOGI("IsoOperator DoDVDBurn:s=%{public}s", s.c_str());
     }
     if (err != E_OK) {
+        if (OutputContains(output, "No space left on device")) {
+            LOGE("BurnDoDVDBurn: no space left on disc, devPath=%{public}s", devPath.c_str());
+            return E_BURN_NOSPC;
+        }
         LOGE("BurnDoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
