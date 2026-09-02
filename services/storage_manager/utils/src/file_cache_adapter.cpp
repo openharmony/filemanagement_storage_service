@@ -25,6 +25,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -146,6 +147,19 @@ int32_t FileCacheAdapter::Init()
     bundleJsonFilePath_ = std::string(STORAGE_MANAGER_DATA_PATH) + BUNDLE_JSON_FILE_NAME;
     cleanJsonFilePath_ = std::string(STORAGE_MANAGER_DATA_PATH) + CLEAN_JSON_FILE_NAME;
 
+    auto fixFilePerm = [](const std::string &path) {
+        struct stat st;
+        if (stat(path.c_str(), &st) == 0 && (st.st_mode & S_IRWXO) != 0) {
+            if (StorageDaemon::ChMod(path.c_str(), S_IRUSR | S_IWUSR) != 0) {
+                LOGE("Failed to fix permission for %{public}s, errno=%{public}d", path.c_str(), errno);
+            } else {
+                LOGI("Fix permission for %{public}s", path.c_str());
+            }
+        }
+    };
+    fixFilePerm(bundleJsonFilePath_);
+    fixFilePerm(cleanJsonFilePath_);
+    
     // 分别加载两个JSON文件
     int32_t ret = LoadBundleData();
     if (ret != E_OK) {
@@ -485,6 +499,10 @@ int32_t FileCacheAdapter::SaveJsonToFile(const std::string &filePath, const nloh
         LOGE("Failed to write data to temp file: %{public}s", tempFilePath.c_str());
         std::remove(tempFilePath.c_str());
         return E_WRITE_RECORD_FILE_ERROR;
+    }
+
+    if (StorageDaemon::ChMod(tempFilePath.c_str(), S_IRUSR | S_IWUSR) != 0) {
+        LOGE("Failed to chmod temp file: %{public}s, errno=%{public}d", tempFilePath.c_str(), errno);
     }
 
     // 原子性重命名
