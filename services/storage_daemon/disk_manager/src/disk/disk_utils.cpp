@@ -776,7 +776,7 @@ bool IsCDBlank(const std::string &diskPath)
     bool isBlank = false;
     if (discStatus == 0) {
         isBlank = true;
-    } else if (diskType == "DVD+RW" || diskType == "DVD-RW" || diskType == "BD-RE") {
+    } else {
         std::string fsType = GetBlkidData(diskPath, "TYPE");
         isBlank = fsType.empty();
         LOGI("IsCDBlank: %{public}s has filesystem=%{public}s", diskType.c_str(), fsType.c_str());

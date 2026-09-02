@@ -334,6 +334,28 @@ HWTEST_F(UdfOperatorTest, UdfOperator_DoCDBurn_WodimFailed, TestSize.Level1)
     EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, true, ""), E_ERR);
 }
 
+HWTEST_F(UdfOperatorTest, UdfOperator_DoCDBurn_NoSpaceLeftOnDisk, TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.isIsoImage = true;
+    opts.burnPath = "/data/image.iso";
+    opts.burnSpeed = "1";
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory())
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDir(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus) {
+            if (output) {
+                *output = {"WARNING: Data may not fit on current disk"};
+            }
+            return E_ERR;
+        }));
+    EXPECT_CALL(*fileUtilMoc_, RmDirRecurse(_)).WillOnce(Return(true));
+    EXPECT_EQ(op.DoCDBurn("/dev/sr0", opts, true, ""), E_BURN_NOSPC);
+}
+
 HWTEST_F(UdfOperatorTest, UdfOperator_DoDVDBurn_NotIsoImageDiskEmpty, TestSize.Level1)
 {
     UdfOperator op;
@@ -383,6 +405,24 @@ HWTEST_F(UdfOperatorTest, UdfOperator_DoDVDBurn_ForkExecFailed, TestSize.Level1)
     EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
     EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, true), E_ERR);
+}
+
+HWTEST_F(UdfOperatorTest, UdfOperator_DoDVDBurn_NoSpaceLeftOnDevice, TestSize.Level1)
+{
+    UdfOperator op;
+    BurnOptions opts;
+    opts.burnPath = "/data/burn";
+    opts.diskName = "MYDISC";
+    opts.burnSpeed = "1";
+    EXPECT_CALL(*diskUtilMoc_, CleanTempDirectory()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(_, _, _))
+        .WillOnce(Invoke([](std::vector<std::string> &cmd, std::vector<std::string> *output, int *exitStatus) {
+            if (output) {
+                *output = {"No space left on device"};
+            }
+            return E_ERR;
+        }));
+    EXPECT_EQ(op.DoDVDBurn("/dev/sr0", opts, true), E_BURN_NOSPC);
 }
 
 HWTEST_F(UdfOperatorTest, UdfOperator_Burn_BlankCD_CDType_VerifyFalse, TestSize.Level1)
