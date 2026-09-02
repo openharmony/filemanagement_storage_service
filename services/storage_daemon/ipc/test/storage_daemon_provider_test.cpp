@@ -3207,5 +3207,62 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_004 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidType
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when ContainsRelativePathReference(type) is true
+ *           (first operand of OR is true -> short-circuit, diskId operand not evaluated).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidType, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "../etc";
+    std::string diskId = "/data";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when type is valid but diskId is invalid
+ *           (first operand false, second operand true -> enters branch).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "/data";
+    std::string diskId = "../etc";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_Valid
+ * @tc.desc: Verify GetBlockInfoByType does not enter the guard branch when both type and diskId are valid
+ *           (both operands false -> falls through to ScanDevice, returns E_OK).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_Valid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "/data";
+    std::string diskId = "/data";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
