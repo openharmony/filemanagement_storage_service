@@ -120,16 +120,16 @@ int32_t StorageManagerScan::Init()
 {
     LOGI("StorageManagerScan::Init start.");
 
-    std::string scanFilePath = std::string(SCAN_RESULT_DIR) + SCAN_RESULT_FILE;
+    std::string scanFilePath = std::string(SCAN_RESULT_DIR) + "/" + SCAN_RESULT_FILE;
     struct stat st;
     if (stat(scanFilePath.c_str(), &st) == 0 && (st.st_mode & S_IRWXO) != 0) {
         if (StorageDaemon::ChMod(scanFilePath.c_str(), S_IRUSR | S_IWUSR) != 0) {
             LOGE("Failed to fix permission for %{public}s, errno=%{public}d", scanFilePath.c_str(), errno);
         } else {
-            LOGI("Fix permission for %{public}s", scanFilePath.c_str());
+            LOGI("Fixed permission for %{public}s", scanFilePath.c_str());
         }
     }
-    
+
     int32_t ret = LoadScanResultFromFile();
     if (ret == E_OK) {
         LOGI("StorageManagerScan::Init LoadScanResultFromFile success, root=%{public}lld,"
