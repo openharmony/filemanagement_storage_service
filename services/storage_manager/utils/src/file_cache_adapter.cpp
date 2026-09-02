@@ -20,6 +20,7 @@
 #include <fstream>
 #include <mutex>
 #include <system_error>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "storage_service_constant.h"
