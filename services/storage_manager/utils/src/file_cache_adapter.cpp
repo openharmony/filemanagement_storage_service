@@ -160,7 +160,7 @@ int32_t FileCacheAdapter::Init()
     };
     fixFilePerm(bundleJsonFilePath_);
     fixFilePerm(cleanJsonFilePath_);
-    
+
     // 分别加载两个JSON文件
     int32_t ret = LoadBundleData();
     if (ret != E_OK) {
