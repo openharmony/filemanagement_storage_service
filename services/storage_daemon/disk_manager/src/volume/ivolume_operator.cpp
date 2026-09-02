@@ -237,8 +237,12 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
     int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
     int umountErrno = errno;
     if (fd >= 0) {
-        IsUsbInUse(fd);
+        int32_t checkResult = IsUsbInUse(fd);
         close(fd);
+        if ((checkResult != E_OK) && (resolvedPath.find("/mnt/data/voldata/") == 0)) {
+            LOGE("IVolumeOperator::Unmount final check in use failed, errno=%{public}d", checkResult);
+            return E_VOL_UMOUNT_ERR;
+        }
     }
     if (ret != 0) {
         LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", umountErrno);

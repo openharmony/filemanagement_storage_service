@@ -455,5 +455,61 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataEmptyValid, TestSize.Level1)
     rmdir(path.c_str());
 }
 
+/**
+ * @tc.name: Unmount_VoldataPath_InUseFailed
+ * @tc.desc: Verify Unmount returns E_VOL_UMOUNT_ERR when IsUsbInUse fails on /mnt/data/voldata/ path.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtIVolumeOperatorTest, Unmount_VoldataPath_InUseFailed, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string voldataBase = "/mnt/data/voldata";
+    std::string mntPath = voldataBase + "/ut_voldata_test_" + std::to_string(getpid());
+    mkdir(voldataBase.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    mkdir(mntPath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    int mret = mount("tmpfs", mntPath.c_str(), "tmpfs", 0, "size=1M");
+    if (mret != 0) {
+        rmdir(mntPath.c_str());
+        rmdir(voldataBase.c_str());
+        GTEST_SKIP() << "mount tmpfs on voldata path failed, skipping test";
+    }
+    // Open fd to hold the mount busy
+    int holdFd = open(mntPath.c_str(), O_RDONLY);
+    ASSERT_GE(holdFd, 0) << "Failed to open voldata mount path";
+    // IsUsbInUse will return E_USB_IN_USE because of occupation,
+    // and the path starts with /mnt/data/voldata/, so Unmount should return E_VOL_UMOUNT_ERR
+    int32_t ret = dummy.Unmount(mntPath, "", false);
+    EXPECT_EQ(ret, E_VOL_UMOUNT_ERR);
+    close(holdFd);
+    // Clean up: force unmount
+    umount2(mntPath.c_str(), MNT_DETACH);
+    rmdir(mntPath.c_str());
+    rmdir(voldataBase.c_str());
+}
+ 
+/**
+ * @tc.name: Unmount_NonVoldataPath_UInUseFailed_NoExtraError
+ * @tc.desc: Verify Unmount does NOT return E_VOL_UMOUNT_ERR for non-voldata path when IsUsbInUse fails.
+ *           The original behavior (success or E_VOL_UMOUNT_ERR from umount2) should be preserved.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtIVolumeOperatorTest, Unmount_NonVoldataPath_InUseFailed_NoExtraError, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string mntPath = testDir_ + "/non_voldata_unmount";
+    mkdir(mntPath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    int mret = mount("tmpfs", mntPath.c_str(), "tmpfs", 0, "size=1M");
+    if (mret != 0) {
+        rmdir(mntPath.c_str());
+        GTEST_SKIP() << "mount tmpfs failed, skipping test";
+    }
+    // Path is /mnt/data/external/..., not /mnt/data/voldata/,
+    // so even if IsUsbInUse fails, the voldata check should not trigger.
+    // Unmount should succeed based on umount2 result.
+    int32_t ret = dummy.Unmount(mntPath, "", false);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(access(mntPath.c_str(), F_OK), 0);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
