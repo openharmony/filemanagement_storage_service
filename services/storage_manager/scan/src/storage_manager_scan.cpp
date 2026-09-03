@@ -33,7 +33,6 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/file_utils.h"
 
 using namespace OHOS::StorageService;
 
@@ -119,16 +118,6 @@ int64_t StorageManagerScan::GetSystemSize()
 int32_t StorageManagerScan::Init()
 {
     LOGI("StorageManagerScan::Init start.");
-
-    std::string scanFilePath = std::string(SCAN_RESULT_DIR) + "/" + SCAN_RESULT_FILE;
-    struct stat st;
-    if (stat(scanFilePath.c_str(), &st) == 0 && (st.st_mode & S_IRWXO) != 0) {
-        if (StorageDaemon::ChMod(scanFilePath.c_str(), S_IRUSR | S_IWUSR) != 0) {
-            LOGE("Failed to fix permission for %{public}s, errno=%{public}d", scanFilePath.c_str(), errno);
-        } else {
-            LOGI("Fixed permission for %{public}s", scanFilePath.c_str());
-        }
-    }
 
     int32_t ret = LoadScanResultFromFile();
     if (ret == E_OK) {
@@ -593,7 +582,6 @@ int32_t StorageManagerScan::SaveScanResultToFile()
         LOGE("Failed to write to file, path=%{public}s", filePath.c_str());
     }
     outFile.close();
-    StorageDaemon::ChMod(filePath.c_str(), S_IRUSR | S_IWUSR);
     LOGI("SaveScanResultToFile success, path=%{public}s, root=%{public}lld, system=%{public}lld",
         filePath.c_str(), static_cast<long long>(rootSize_), static_cast<long long>(systemSize_));
 
