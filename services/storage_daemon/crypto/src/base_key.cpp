@@ -600,7 +600,8 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool n
             return E_OK;
         }
         if (!auth.token.IsEmpty() || !auth.secret.IsEmpty()) {
-            StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "", "TryRestoreKey failed");
+            StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "",
+                "TryRestoreKey failed");
         }
         LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
         return ret;
