@@ -26,6 +26,7 @@
 #include "unique_fd.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -723,12 +724,16 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
 
     if (srcData.compare(dstData) == 0) {
         LOGD("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<< files are same");
+        (void)memset_s(srcData.data(), srcData.size(), 0, srcData.size());
+        (void)memset_s(dstData.data(), dstData.size(), 0, dstData.size());
         return 0;
     }
 
     if (!SaveStringToFile(dstFile, srcData)) {
         LOGE("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT FAILED <<< failed to write dstFile=%{public}s",
              dstFile.c_str());
+        (void)memset_s(srcData.data(), srcData.size(), 0, srcData.size());
+        (void)memset_s(dstData.data(), dstData.size(), 0, dstData.size());
         return -1;
     }
 
@@ -739,6 +744,8 @@ int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::st
     FsyncFile(dstFile);
     LOGD("[L4:KeyBackup] CheckAndCopyOneFile: copy srcFile=%{public}s dstFile=%{public}s succ",
          srcFile.c_str(), dstFile.c_str());
+    (void)memset_s(srcData.data(), srcData.size(), 0, srcData.size());
+    (void)memset_s(dstData.data(), dstData.size(), 0, dstData.size());
     LOGD("[L4:KeyBackup] CheckAndCopyOneFile: <<< EXIT SUCCESS <<<");
     return 0;
 }
