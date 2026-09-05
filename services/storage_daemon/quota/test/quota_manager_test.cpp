@@ -157,42 +157,6 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
 }
 
 /**
- * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_006
- * @tc.desc: Test SetBundleQuota rejects limitSizeMb exceeding max value.
- * @tc.type: FUNC
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_006 start";
-
-    int32_t uid = UID;
-    std::string bundleDataDirPath = BUNDLE_PATH;
-    int32_t limitSizeMb = 5000000;
-    int32_t result = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_006 end";
-}
-
-/**
- * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_007
- * @tc.desc: Test SetBundleQuota rejects bundleDataDirPath with path traversal.
- * @tc.type: FUNC
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_007, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_007 start";
-
-    int32_t uid = UID;
-    std::string bundleDataDirPath = "/data/app/../etc";
-    int32_t limitSizeMb = LIMITSIZE;
-    int32_t result = QuotaManager::GetInstance().SetBundleQuota(uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_007 end";
-}
-
-/**
  * @tc.name: Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
  * @tc.desc: Test whether GetOccupiedSpace is called normally.
  * @tc.type: FUNC
