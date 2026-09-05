@@ -1856,7 +1856,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     // key and no-key situation all failed, include upgrade situation, return err
     if (keyResult != E_OK && !noKeyResult) {
         std::string extraData = "keyResult: " + std::to_string(keyResult);
-        if (!token.empty() || !secret.empty()) {
+        if (!token.empty() || !secret.empty() || !IamClient::GetInstance().HasPinProtect(user)) {
             StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_RESTORE_KEY_FAILED, "", extraData);
         }
         LOGE("[L3:KeyManager] ActiveElXUserKey: <<< EXIT FAILED <<< [failed to restore el key, type=%{public}u]",
@@ -1889,7 +1889,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     elKey->GenerateHashKey();
     int32_t ret = elKey->ActiveKey(auth.token, RETRIEVE_KEY);
     if (ret != E_OK) {
-        if (!token.empty() || !secret.empty()) {
+        if (!token.empty() || !secret.empty() || !IamClient::GetInstance().HasPinProtect(user)) {
             StorageRadar::ReportUserKeyResult("ActiveElxUserKey", user, E_ELX_KEY_ACTIVE_ERROR, "",
                 "Active failed, ret=" + std::to_string(ret));
         }

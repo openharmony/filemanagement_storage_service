@@ -19,6 +19,7 @@
 
 #include "fbex.h"
 #include "file_ex.h"
+#include "iam_client.h"
 #include "openssl_crypto.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
@@ -351,7 +352,7 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
         std::string extraData = "ioctl cmd=FBEX_IOC_ADD_DOUBLE_DE_IV, userIdSingle=" + std::to_string(ops.userIdSingle)
             + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(tmpErrno)
             + ",flag=" + std::to_string(flag);
-        if (!authToken.IsEmpty()) {
+        if (!authToken.IsEmpty() || !IamClient::GetInstance().HasPinProtect(ops.userIdSingle)) {
             StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL1", extraData);
         }
         close(fd);
@@ -723,7 +724,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         HandleIoctlError(ret, errno, "FBEX_READ_CLASS_E", ops.userIdSingle, ops.userIdDouble,
-                         !authToken.IsEmpty());
+                         !authToken.IsEmpty() || !IamClient::GetInstance().HasPinProtect(ops.userIdSingle));
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
         LOGI("[L7:FBEX] ReadESecretToKernel: <<< EXIT FAILED <<<");
