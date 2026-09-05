@@ -28,7 +28,6 @@
 #include "user/mount_constant.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
-#include "utils/file_utils.h"
 #include "ipc/storage_manager_client.h"
 
 #include "user/user_path_resolver.h"
@@ -277,11 +276,6 @@ int32_t UserManager::CreateUserDir(const std::string &path, mode_t mode, uid_t u
     std::string prefix = "/data/virt_service/rgm_hmos/anco_hmos_data/";
     if (path.compare(0, prefix.size(), prefix) != 0) {
         LOGE("[L2:UserManager] CreateUserDir: <<< EXIT FAILED <<< The path is invalid, path=%{public}s", path.c_str());
-        return E_PARAMS_INVALID;
-    }
-    if (ContainsRelativePathReference(path)) {
-        LOGE("[L2:UserManager] CreateUserDir: <<< EXIT FAILED <<< path contains relative reference, "
-            "path=%{public}s", path.c_str());
         return E_PARAMS_INVALID;
     }
 
