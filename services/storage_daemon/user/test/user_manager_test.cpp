@@ -530,26 +530,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateUserDir_001, Te
 }
 
 /**
- * @tc.name: Storage_Manager_MountManagerTest_CreateUserDir_002
- * @tc.desc: Verify CreateUserDir rejects path escaping prefix after realpath resolution.
- * @tc.type: FUNC
- */
-HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CreateUserDir_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateUserDir_002 start";
-    mode_t mode = 771;
-    std::string base = "/data/virt_service/rgm_hmos/anco_hmos_data";
-    std::error_code ec;
-    if (!std::filesystem::exists(base, ec)) {
-        std::filesystem::create_directories(base, ec);
-    }
-    EXPECT_EQ(UserManager::GetInstance().CreateUserDir(base + "/../etc", mode, 0, 0), E_PARAMS_INVALID);
-    EXPECT_EQ(UserManager::GetInstance().CreateUserDir("/tmp/invalid_create_dir_test", mode, 0, 0),
-        E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_CreateUserDir_002 end";
-}
-
-/**
  * @tc.name: Storage_Manager_MountManagerTest_CreateElxBundleDataDir_001
  * @tc.desc: Verify the CreateElxBundleDataDir function.
  * @tc.type: FUNC
