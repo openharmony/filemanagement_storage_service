@@ -602,16 +602,9 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate, bool n
         if (!auth.token.IsEmpty() || !auth.secret.IsEmpty()) {
             StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "",
                 "TryRestoreKey failed");
-        } else {
-            uint32_t userId = USERID_GLOBAL_EL1;
-            auto slashIndex = dir_.rfind('/');
-            if (slashIndex != std::string::npos) {
-                (void)OHOS::StrToInt(dir_.substr(slashIndex + 1), userId);
-            }
-            if (!IamClient::GetInstance().HasPinProtect(userId)) {
-                StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "",
-                    "TryRestoreKey failed, no pin protect");
-            }
+        } else if (!IamClient::GetInstance().HasPinProtect(GetIdFromDir())) {
+            StorageService::StorageRadar::ReportUserKeyResult("BaseKey::RestoreKey", 0, ret, "",
+                "TryRestoreKey failed, no pin protect");
         }
         LOGE("[L4:BaseKey] RestoreKey: <<< EXIT FAILED <<< TryRestoreKey failed, ret=%{public}d", ret);
         return ret;
