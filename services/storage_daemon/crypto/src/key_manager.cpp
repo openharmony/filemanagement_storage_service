@@ -2105,8 +2105,7 @@ int32_t KeyManager::DeleteAppkey(uint32_t user, const std::string &keyId)
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(user, EL5_KEY));
     if (el5Key == nullptr) {
         LOGE("[L3:KeyManager] DeleteAppkey: <<< EXIT FAILED <<< [el5Key is null]");
-        std::string keyDir = GetKeyDirByUserAndType(user, EL5_KEY);
-        if (!IsDir(keyDir)) {
+        if (HashElxActived(user, EL5_KEY)) {
             StorageRadar::ReportEl5KeyMgrResult("DeleteAppkey", E_PARAMS_NULLPTR_ERR, user,
                 "GetBaseKey failed, userId=" + std::to_string(user));
         }
