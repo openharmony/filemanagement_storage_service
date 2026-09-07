@@ -771,7 +771,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
     if (file != nullptr) {
         return SetupFileAttributes(path, file, buf);
     }
-    
+
     LOGE("MtpFileSystem: GetAttr error, content dir is null");
     OHOS::StorageService::StorageRadar::ReportMtpResult("GetAttr::Content", E_MTP_LIBMTP_INTERFACE_ERROR, "NA");
     return -ENOENT;
