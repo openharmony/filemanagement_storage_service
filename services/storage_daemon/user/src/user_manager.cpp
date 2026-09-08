@@ -285,9 +285,6 @@ int32_t UserManager::CreateUserDir(const std::string &path, mode_t mode, uid_t u
     } else {
         LOGI("[L2:UserManager] CreateUserDir: <<< EXIT SUCCESS <<< ret=%{public}d", ret);
     }
-    std::string extraData = "path=" + path + ", mode=" + std::to_string(mode) +
-        ", uid=" + std::to_string(uid) + ", gid=" + std::to_string(gid);
-    StorageRadar::ReportFucBehavior("CreateUserDir", 0, extraData, ret);
     return ret;
 }
 
