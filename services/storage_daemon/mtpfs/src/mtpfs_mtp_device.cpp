@@ -1139,7 +1139,10 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
         fileToUpload.SetName(std::string(f->filename));
         fileToUpload.SetModificationDate(fileStat.st_mtime);
         if (fileToRemove) {
-            const_cast<MtpFsTypeDir *>(dirParent)->ReplaceFile(*fileToRemove, fileToUpload);
+            bool replaced = const_cast<MtpFsTypeDir *>(dirParent)->ReplaceFile(*fileToRemove, fileToUpload);
+            if (!replaced) {
+                const_cast<MtpFsTypeDir *>(dirParent)->AddFile(fileToUpload);
+            }
         } else {
             const_cast<MtpFsTypeDir *>(dirParent)->AddFile(fileToUpload);
         }
@@ -1488,18 +1491,11 @@ void MtpFsDevice::HandleDiffFdMap(std::map<uint32_t, std::string> &diffFdMap, Mt
             continue;
         }
 
-        for (auto iter = dir->dirList_.begin(); iter != dir->dirList_.end(); iter++) {
-            if (iter->Id() == diffFd.first) {
-                dir->dirList_.erase(iter);
-                break;
-            }
+        if (isTransferring_.load()) {
+            continue;
         }
-        for (auto iter = dir->fileList_.begin(); iter != dir->fileList_.end(); iter++) {
-            if (iter->Id() == diffFd.first) {
-                dir->fileList_.erase(iter);
-                break;
-            }
-        }
+        dir->RemoveDirById(diffFd.first);
+        dir->RemoveFileById(diffFd.first);
     }
 }
 
@@ -1558,6 +1554,11 @@ void MtpFsDevice::SetTransferValue(bool value)
     std::lock_guard<std::mutex> lock(eventMutex_);
     isTransferring_.store(value);
     eventCon_.notify_one();
+}
+
+bool MtpFsDevice::IsTransferring()
+{
+    return isTransferring_.load();
 }
 
 int MtpFsDevice::AddRemovingFile(const std::string &path)
