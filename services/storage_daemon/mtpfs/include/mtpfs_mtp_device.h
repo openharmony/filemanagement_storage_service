@@ -104,6 +104,7 @@ public:
     char *GetDeviceFriendlyName();
     void FreeObjectHandles(MtpFsTypeDir *dir);
     void FreeAllObjectHandles();
+    static bool IsTransferring();
     int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
     void HandleRemoveEvent(uint32_t handleId);
     void HandleObjectInfoChangedEvent(uint32_t handleId);
