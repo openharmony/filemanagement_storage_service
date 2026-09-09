@@ -52,7 +52,7 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5000;
 constexpr int64_t DEFAULT_ROOT_SIZE = 200000000;     // fallback root partition size
 constexpr int64_t DEFAULT_SYSTEM_SIZE = 10000000;     // fallback system size
 constexpr int64_t SCAN_SIZE_CHANGE_THRESHOLD = 1024 * 1024 * 1024;     // fallback memory manager size
-constexpr int32_t TOP_LARGE_COUNT = 15;
+constexpr int32_t TOP_LARGE_COUNT = 50;
 
 void StorageManagerScan::InitEventHandler()
 {
