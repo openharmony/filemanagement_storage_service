@@ -246,6 +246,44 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: BaseKey_EncryptDe_001
+ * @tc.desc: Verify need_update content after EncryptDe.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    std::string path = "/data/test";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillRepeatedly(Invoke([](const UserAuth &, KeyBlob &keyOut) {
+        keyOut.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillRepeatedly(Return(KeyBlob(16)));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Invoke([](KeyContext &ctx,
+        const UserAuth &, const KeyInfo &, bool) {
+        ctx.rndEnc.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_EQ(elKey->EncryptDe(auth, path), E_OK);
+
+    const std::string needUpdatePath = path + "/need_update";
+    std::ifstream f(needUpdatePath);
+    ASSERT_TRUE(f.is_open());
+    std::string content;
+    f >> content;
+    f.close();
+    EXPECT_EQ(content, "KEY_CRYPT_HUKS");
+    unlink(needUpdatePath.c_str());
+    unlink((path + PATH_ENCRYPTED).c_str());
+    unlink((path + PATH_SHIELD).c_str());
+    unlink((path + PATH_SECDISC).c_str());
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_001 end";
+}
+
+/**
  * @tc.name: BaseKey_UpdateKey_001
  * @tc.desc: Verify the UpdateKey function.
  * @tc.type: FUNC
