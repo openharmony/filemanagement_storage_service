@@ -246,6 +246,37 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: BaseKey_SaveAndCleanKeyBuff_003
+ * @tc.desc: Verify SaveAndCleanKeyBuff when SaveStringToFileSync failed.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_SaveAndCleanKeyBuff_003 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::string keyPath = "/data/test";
+    std::error_code errCode;
+    std::filesystem::create_directory(keyPath + "/need_update", errCode);
+
+    std::vector<uint8_t> nonceVct(5, 1);
+    std::vector<uint8_t> rndEncVct(3, 2);
+    std::vector<uint8_t> aadVct(4, 3);
+    KeyContext keyCtx;
+    keyCtx.nonce.Alloc(nonceVct.size());
+    std::copy(nonceVct.begin(), nonceVct.end(), keyCtx.nonce.data.get());
+    keyCtx.rndEnc.Alloc(rndEncVct.size());
+    std::copy(rndEncVct.begin(), rndEncVct.end(), keyCtx.rndEnc.data.get());
+    keyCtx.aad.Alloc(aadVct.size());
+    std::copy(aadVct.begin(), aadVct.end(), keyCtx.aad.data.get());
+    EXPECT_FALSE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
+
+    std::filesystem::remove(keyPath + "/need_update", errCode);
+    std::filesystem::remove(keyPath + PATH_ENCRYPTED, errCode);
+    GTEST_LOG_(INFO) << "BaseKey_SaveAndCleanKeyBuff_003 end";
+}
+
+/**
  * @tc.name: BaseKey_EncryptDe_001
  * @tc.desc: Verify need_update content after EncryptDe.
  * @tc.type: FUNC
@@ -281,6 +312,108 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_001, TestSize.Level1)
     unlink((path + PATH_SHIELD).c_str());
     unlink((path + PATH_SECDISC).c_str());
     GTEST_LOG_(INFO) << "BaseKey_EncryptDe_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_EncryptDe_002
+ * @tc.desc: Verify EncryptDe when InitKeyContext failed.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    std::string path = "/data/test";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillRepeatedly(Return(E_ERR));
+    EXPECT_NE(elKey->EncryptDe(auth, path), E_OK);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_002 end";
+}
+
+/**
+ * @tc.name: BaseKey_EncryptDe_003
+ * @tc.desc: Verify EncryptDe when EncryptKey failed.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_003 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    std::string path = "/data/test";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillRepeatedly(Invoke([](const UserAuth &, KeyBlob &keyOut) {
+        keyOut.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillRepeatedly(Return(KeyBlob(16)));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_NE(elKey->EncryptDe(auth, path), E_OK);
+
+    std::error_code errCode;
+    std::filesystem::remove(path + PATH_SHIELD, errCode);
+    std::filesystem::remove(path + PATH_SECDISC, errCode);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_003 end";
+}
+
+/**
+ * @tc.name: BaseKey_EncryptDe_004
+ * @tc.desc: Verify EncryptDe when SaveKeyBlob failed.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_004 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    std::string path = "/data/test";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillRepeatedly(Invoke([](const UserAuth &, KeyBlob &keyOut) {
+        keyOut.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillRepeatedly(Return(KeyBlob(16)));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(elKey->EncryptDe(auth, path), E_SAVE_KEY_BLOB_ERROR);
+
+    std::error_code errCode;
+    std::filesystem::remove(path + PATH_SHIELD, errCode);
+    std::filesystem::remove(path + PATH_SECDISC, errCode);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_004 end";
+}
+
+/**
+ * @tc.name: BaseKey_EncryptDe_005
+ * @tc.desc: Verify EncryptDe when SaveStringToFileSync failed.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptDe_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_005 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    std::string path = "/data/test";
+    std::error_code errCode;
+    std::filesystem::create_directory(path + "/need_update", errCode);
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillRepeatedly(Invoke([](const UserAuth &, KeyBlob &keyOut) {
+        keyOut.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillRepeatedly(Return(KeyBlob(16)));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Invoke([](KeyContext &ctx,
+        const UserAuth &, const KeyInfo &, bool) {
+        ctx.rndEnc.Alloc(16);
+        return E_OK;
+    }));
+    EXPECT_EQ(elKey->EncryptDe(auth, path), E_SAVE_KEY_TYPE_ERROR);
+
+    std::filesystem::remove(path + "/need_update", errCode);
+    std::filesystem::remove(path + PATH_ENCRYPTED, errCode);
+    std::filesystem::remove(path + PATH_SHIELD, errCode);
+    std::filesystem::remove(path + PATH_SECDISC, errCode);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptDe_005 end";
 }
 
 /**
