@@ -128,10 +128,14 @@ ohos_unittest("cache_clean_controller_unittest") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
     "json:nlohmann_json_static",
+    "relational_store:native_rdb",
   ]
 
   if (defined(global_parts_info) && defined(global_parts_info.resourceschedule_device_usage_statistics)) {
