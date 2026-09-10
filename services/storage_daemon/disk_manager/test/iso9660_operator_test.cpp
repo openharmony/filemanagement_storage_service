@@ -165,9 +165,8 @@ HWTEST_F(IsoOperatorTest, IsoOperator_ReadMetadata_UuidEmpty, TestSize.Level1)
     IsoOperator op;
     std::string uuid, type, label;
     EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("")).WillOnce(Return("Lbl"));
-    EXPECT_CALL(*diskUtilMoc_, GenerateRandomUuid(_, _)).WillOnce(Return("rand-uuid"));
     EXPECT_EQ(op.ReadMetadata("/dev/block/sr0", uuid, type, label), E_OK);
-    EXPECT_EQ(uuid, "rand-uuid");
+    EXPECT_FALSE(uuid.empty());
 }
 
 HWTEST_F(IsoOperatorTest, IsoOperator_ReadMetadata_LabelEmpty, TestSize.Level1)

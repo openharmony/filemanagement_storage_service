@@ -19,6 +19,9 @@
 #include <climits>
 #include <fcntl.h>
 #include <future>
+#include <iomanip>
+#include <openssl/sha.h>
+#include <sstream>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -37,6 +40,22 @@ namespace StorageDaemon {
 
 constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
 constexpr int32_t WAIT_MOUNT_TIMEOUT_S = 60;
+constexpr size_t SHA256_DIGEST_BIT_MASK = 0x0f;
+constexpr size_t SHA256_DIGEST_VERSION = 0x50;
+constexpr size_t SHA256_VARIANT_MASK = 0x3f;
+constexpr size_t SHA256_IETF_VARIANT = 0x80;
+constexpr uint8_t UUID_NAMESPACE_RAW_SIZE = 32;
+constexpr uint8_t UUID_DIGEST_BYTE_OFFSET = 6;
+constexpr uint8_t UUID_VARIANT_BYTE_OFFSET = 8;
+constexpr uint8_t UUID_TIME_LO_FIELD_WIDTH = 8;
+constexpr uint8_t UUID_TIME_MID_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_TIME_HI_VERSION_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_CLOCK_SEQ_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_NODE_ID_FIELD_WIDTH = 12;
+constexpr uint8_t UUID_DIGEST_TIME_MID_OFFSET = 4;
+constexpr uint8_t UUID_DIGEST_TIME_HI_VERSION_OFFSET = 6;
+constexpr uint8_t UUID_DIGEST_CLOCK_SEQ_OFFSET = 8;
+constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
 
 int32_t IVolumeOperator::EnsureMountPath(const std::string& mountPath)
 {
@@ -297,6 +316,46 @@ bool IVolumeOperator::IsShellMetacharPresent(const std::string& str)
 {
     static const std::string shellChars = "\"$`\\;|&!(){}<>\n";
     return str.find_first_of(shellChars) != std::string::npos;
+}
+
+std::string IVolumeOperator::GenerateRandomUuid(const std::string &diskPath, const std::string &uuidFormat)
+{
+    LOGD("[L8:DiskUtils] GenerateRandomUuid: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctxSeed;
+    SHA256_Init(&ctxSeed);
+    SHA256_Update(&ctxSeed, uuidFormat.c_str(), uuidFormat.length());
+    SHA256_Final(hash, &ctxSeed);
+
+    unsigned char namespaceRaw[UUID_NAMESPACE_RAW_SIZE];
+    std::copy(hash, hash + UUID_NAMESPACE_RAW_SIZE, namespaceRaw);
+
+    unsigned char digest[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, namespaceRaw, sizeof(namespaceRaw));
+    SHA256_Update(&ctx, diskPath.c_str(), diskPath.length());
+    SHA256_Final(digest, &ctx);
+
+    digest[UUID_DIGEST_BYTE_OFFSET] &= SHA256_DIGEST_BIT_MASK;
+    digest[UUID_DIGEST_BYTE_OFFSET] |= SHA256_DIGEST_VERSION;
+    digest[UUID_VARIANT_BYTE_OFFSET] &= SHA256_VARIANT_MASK;
+    digest[UUID_VARIANT_BYTE_OFFSET] |= SHA256_IETF_VARIANT;
+
+    std::ostringstream uuidStream;
+    uuidStream << std::hex << std::setfill('0') << std::uppercase
+        << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
+        << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_MID_OFFSET) << '-'
+        << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
+        << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
+        << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
+        UUID_DIGEST_NODE_ID_OFFSET);
+
+    LOGD("[L8:DiskUtils] GenerateRandomUuid: <<< EXIT SUCCESS <<<");
+    return uuidStream.str();
 }
 } // namespace StorageDaemon
 } // namespace OHOS
