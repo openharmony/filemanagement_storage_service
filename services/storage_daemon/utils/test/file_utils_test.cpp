@@ -1608,19 +1608,19 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFilePathInvalid_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: FileUtilsTest_ContainsRelativePathReference_001
- * @tc.desc: Verify the ContainsRelativePathReference function.
+ * @tc.name: FileUtilsTest_IsPathTraversalUnSafe_001
+ * @tc.desc: Verify the IsPathTraversalUnSafe function.
  * @tc.type: FUNC
  */
-HWTEST_F(FileUtilsTest, FileUtilsTest_ContainsRelativePathReference_001, TestSize.Level1)
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsPathTraversalUnSafe_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 start";
-    EXPECT_TRUE(ContainsRelativePathReference("../somefile.txt"));
-    EXPECT_TRUE(ContainsRelativePathReference("/some/path/../otherfile.txt"));
-    EXPECT_TRUE(ContainsRelativePathReference("/some/path/.."));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 start";
+    EXPECT_TRUE(IsPathTraversalUnSafe("../somefile.txt"));
+    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/../otherfile.txt"));
+    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/.."));
 
-    EXPECT_FALSE(ContainsRelativePathReference("/some/valid/path/to/file.txt"));
-    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 end";
+    EXPECT_FALSE(IsPathTraversalUnSafe("/some/valid/path/to/file.txt"));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 end";
 }
 
 /**
