@@ -2777,8 +2777,8 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-    if (IsPathTraversalUnSafe(type)) {
-        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
+    if (IsPathTraversalUnSafe(type) || IsPathTraversalUnSafe(diskId)) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type or diskId");
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
@@ -2788,11 +2788,6 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
     if (type == "data") {
         disks = scanDevice.GetDataDisks();
     } else {
-        if (IsPathTraversalUnSafe(diskId)) {
-            LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid diskId");
-            HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
-            return E_PARAMS_INVALID;
-        }
         disks = scanDevice.GetExternalDisks(type, diskId);
     }
 
