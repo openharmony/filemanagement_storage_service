@@ -76,9 +76,6 @@ constexpr int32_t MODE_SENSE_OPCODE = 0x5A;
 constexpr uint8_t CAPABILITIES_PAGE_CODE = 0x2A;
 constexpr uint32_t CD_SPEED_KBPS = 176;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
-constexpr size_t INT32_SHORT_ID_LENGTH = 20;
-constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
-constexpr size_t INT32_MIN_ID_LENGTH = 3;
 constexpr size_t SHA256_DIGEST_BIT_MASK = 0x0f;
 constexpr size_t SHA256_DIGEST_VERSION = 0x50;
 constexpr size_t SHA256_VARIANT_MASK = 0x3f;
@@ -238,28 +235,6 @@ std::string GenerateRandomUuid(const std::string &diskPath, const std::string &u
 
     LOGD("[L8:DiskUtils] GenerateRandomUuid: <<< EXIT SUCCESS <<<");
     return uuidStream.str();
-}
-
-std::string GetAnonyString(const std::string &value)
-{
-    std::string res;
-    std::string tmpStr("******");
-    size_t strLen = value.length();
-    if (strLen < INT32_MIN_ID_LENGTH) {
-        return tmpStr;
-    }
-
-    if (strLen <= INT32_SHORT_ID_LENGTH) {
-        res += value[0];
-        res += tmpStr;
-        res += value[strLen - 1];
-    } else {
-        res.append(value, 0, INT32_PLAINTEXT_LENGTH);
-        res += tmpStr;
-        res.append(value, strLen - INT32_PLAINTEXT_LENGTH, INT32_PLAINTEXT_LENGTH);
-    }
-
-    return res;
 }
 
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
