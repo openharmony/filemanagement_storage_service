@@ -36,7 +36,6 @@ std::string DiskType2Str(uint8_t diskType);
 std::string GetCDType(const std::string &diskPath);
 std::string GetOpticalDriveType(const std::string &diskPath);
 int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteSpeed);
-std::string GenerateRandomUuid(const std::string &diskPath, const std::string &namespaceUuid);
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
 int SendScsiCmdByPath(const std::string &diskPath, uint8_t *cdb, int cdbLen, uint8_t *buf, int len);
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len);

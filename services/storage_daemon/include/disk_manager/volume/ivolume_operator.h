@@ -65,6 +65,7 @@ private:
 protected:
     static bool IsMountDataInvalid(const std::string& mountData);
     static bool IsShellMetacharPresent(const std::string& str);
+    static std::string GenerateRandomUuid(const std::string &diskPath, const std::string &namespaceUuid);
 };
 
 } // namespace StorageDaemon
