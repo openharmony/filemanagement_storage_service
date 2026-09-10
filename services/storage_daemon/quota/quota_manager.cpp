@@ -228,7 +228,6 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
     }
 
     uint32_t loopCount = 0;
-    HiAudit::GetInstance().WriteStart("QuotaManager::GetFileData while");
     std::string line;
     while (std::getline(infile, line)) {
         CheckAndReportOverLoop("QuotaManager::GetFileData", loopCount);
@@ -252,7 +251,6 @@ int32_t QuotaManager::GetFileData(const std::string &path, int64_t &size)
             size += listNum;
         }
     }
-    HiAudit::GetInstance().WriteEnd("QuotaManager::GetFileData", 0);
     LOGD("[L2:QuotaManager] GetFileData: <<< EXIT SUCCESS <<< size=%{public}lld",
         static_cast<long long>(size));
     return E_OK;
