@@ -106,7 +106,9 @@ bool IsShellMetacharPresent(const std::string& str);
 bool CleanOrphanNode();
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount);
 void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, uint32_t maxCount);
-bool ContainsRelativePathReference(const std::string &filePath);
+bool IsPathTraversalUnSafe(const std::string &filePath);
+std::string GetAnonyString(const std::string &value);
+bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
 } // namespace StorageDaemon
 } // namespace OHOS
 

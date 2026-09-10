@@ -1547,27 +1547,13 @@ uint64_t GetFileSize(const string &filename)
 bool IsFilePathInvalid(const std::string &filePath)
 {
     if (filePath.empty()) {
-        LOGE("File path is empty");
-        return true;
-    }
-    std::filesystem::path path(filePath);
-    if (!path.is_absolute()) {
-        LOGE("Relative path is not allowed");
+        LOGE("FilePath is empty");
         return true;
     }
     char resolvedPath[PATH_MAX];
-    if (filePath.size() >= PATH_MAX) {
-        LOGE("FilePath size is invalid");
-        return true;
-    }
-    errno = 0;
     if (!realpath(filePath.c_str(), resolvedPath)) {
-        if (errno == ENOENT) {
-            LOGW("Path does not exist");
-            return ContainsRelativePathReference(filePath);
-        }
-        LOGE("Realpath isfailed");
-        return true;
+        LOGW("FilePath is abnormal");
+        return IsPathTraversalUnSafe(filePath);
     }
     if (std::string(resolvedPath) != filePath) {
         LOGE("Symbolic links is not allowed");
@@ -1576,7 +1562,7 @@ bool IsFilePathInvalid(const std::string &filePath)
     return false;
 }
 
-bool ContainsRelativePathReference(const std::string &filePath)
+bool IsPathTraversalUnSafe(const std::string &filePath)
 {
     constexpr const char *PATH_INVALID_FLAG1 = "../";
     constexpr const char *PATH_INVALID_FLAG2 = "/..";
@@ -1647,6 +1633,45 @@ void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, ui
         StorageRadar::ReportUserKeyResult("ReportOverLoopCount for function: " + funcName,
             DEFAULT_USERID, E_OK, "ELx", "");
     }
+}
+
+std::string GetAnonyString(const std::string &value)
+{
+    constexpr size_t INT32_SHORT_ID_LENGTH = 20;
+    constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
+    constexpr size_t INT32_MIN_ID_LENGTH = 3;
+    std::string res;
+    std::string tmpStr("******");
+    size_t strLen = value.length();
+    if (strLen < INT32_MIN_ID_LENGTH) {
+        return tmpStr;
+    }
+ 
+    if (strLen <= INT32_SHORT_ID_LENGTH) {
+        res += value[0];
+        res += tmpStr;
+        res += value[strLen - 1];
+    } else {
+        res.append(value, 0, INT32_PLAINTEXT_LENGTH);
+        res += tmpStr;
+        res.append(value, strLen - INT32_PLAINTEXT_LENGTH, INT32_PLAINTEXT_LENGTH);
+    }
+ 
+    return res;
+}
+ 
+bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
+{
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/userExternal/";
+    if (path.size() <= prefix.size()) {
+        LOGE("path is too short, path: %{public}s", GetAnonyString(path).c_str());
+        return false;
+    }
+    if (path.compare(0, prefix.length(), prefix) != 0) {
+        LOGE("path is not start with %{public}s, path: %{public}s", prefix.c_str(), GetAnonyString(path).c_str());
+        return false;
+    }
+    return true;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

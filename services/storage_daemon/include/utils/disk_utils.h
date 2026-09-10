@@ -32,7 +32,6 @@ bool IsAcceptableUuid(const std::string &uuid);
 int GetMaxVolume(dev_t device);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
-std::string GetAnonyString(const std::string &value);
 std::string DiskType2Str(uint8_t diskType);
 std::string GetCDType(const std::string &diskPath);
 std::string GetOpticalDriveType(const std::string &diskPath);
