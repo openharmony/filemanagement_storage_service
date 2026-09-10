@@ -22,7 +22,6 @@
 #include <getopt.h>
 #include <iomanip>
 #include <linux/cdrom.h>
-#include <openssl/sha.h>
 #include <regex>
 #include <sstream>
 #include <cinttypes>
@@ -76,22 +75,6 @@ constexpr int32_t MODE_SENSE_OPCODE = 0x5A;
 constexpr uint8_t CAPABILITIES_PAGE_CODE = 0x2A;
 constexpr uint32_t CD_SPEED_KBPS = 176;
 constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
-constexpr size_t SHA256_DIGEST_BIT_MASK = 0x0f;
-constexpr size_t SHA256_DIGEST_VERSION = 0x50;
-constexpr size_t SHA256_VARIANT_MASK = 0x3f;
-constexpr size_t SHA256_IETF_VARIANT = 0x80;
-constexpr uint8_t UUID_NAMESPACE_RAW_SIZE = 32;
-constexpr uint8_t UUID_DIGEST_BYTE_OFFSET = 6;
-constexpr uint8_t UUID_VARIANT_BYTE_OFFSET = 8;
-constexpr uint8_t UUID_TIME_LO_FIELD_WIDTH = 8;
-constexpr uint8_t UUID_TIME_MID_FIELD_WIDTH = 4;
-constexpr uint8_t UUID_TIME_HI_VERSION_FIELD_WIDTH = 4;
-constexpr uint8_t UUID_CLOCK_SEQ_FIELD_WIDTH = 4;
-constexpr uint8_t UUID_NODE_ID_FIELD_WIDTH = 12;
-constexpr uint8_t UUID_DIGEST_TIME_MID_OFFSET = 4;
-constexpr uint8_t UUID_DIGEST_TIME_HI_VERSION_OFFSET = 6;
-constexpr uint8_t UUID_DIGEST_CLOCK_SEQ_OFFSET = 8;
-constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
 constexpr uint8_t GET_CAPACITY_CMD_BUF_LEN = 16;
 constexpr uint8_t GET_CAPACITY_DATA_BUF_LEN = 48;
 constexpr uint8_t GET_CD_USED_CAPACITY_CMD_LEN = 10;
@@ -195,46 +178,6 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     }
     LOGD("[L8:DiskUtils] GetBlkidDataByCmd: <<< EXIT SUCCESS <<< empty result");
     return "";
-}
-
-std::string GenerateRandomUuid(const std::string &diskPath, const std::string &uuidFormat)
-{
-    LOGD("[L8:DiskUtils] GenerateRandomUuid: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX ctxSeed;
-    SHA256_Init(&ctxSeed);
-    SHA256_Update(&ctxSeed, uuidFormat.c_str(), uuidFormat.length());
-    SHA256_Final(hash, &ctxSeed);
- 
-    unsigned char namespaceRaw[UUID_NAMESPACE_RAW_SIZE];
-    std::copy(hash, hash + UUID_NAMESPACE_RAW_SIZE, namespaceRaw);
- 
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256_CTX ctx;
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, namespaceRaw, sizeof(namespaceRaw));
-    SHA256_Update(&ctx, diskPath.c_str(), diskPath.length());
-    SHA256_Final(digest, &ctx);
- 
-    digest[UUID_DIGEST_BYTE_OFFSET] &= SHA256_DIGEST_BIT_MASK;
-    digest[UUID_DIGEST_BYTE_OFFSET] |= SHA256_DIGEST_VERSION;
-    digest[UUID_VARIANT_BYTE_OFFSET] &= SHA256_VARIANT_MASK;
-    digest[UUID_VARIANT_BYTE_OFFSET] |= SHA256_IETF_VARIANT;
- 
-    std::ostringstream uuidStream;
-    uuidStream << std::hex << std::setfill('0') << std::uppercase
-        << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
-        << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-        UUID_DIGEST_TIME_MID_OFFSET) << '-'
-        << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-        UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
-        << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
-        UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
-        << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
-        UUID_DIGEST_NODE_ID_OFFSET);
-
-    LOGD("[L8:DiskUtils] GenerateRandomUuid: <<< EXIT SUCCESS <<<");
-    return uuidStream.str();
 }
 
 int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen)
