@@ -58,7 +58,6 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
-#include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
 #include <sys/sysmacros.h>
 #include "disk_manager/disk/dm_device.h"
@@ -1623,7 +1622,7 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
+    if (!IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
@@ -1669,7 +1668,7 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
+    if (!IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
@@ -2778,8 +2777,8 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-    if (ContainsRelativePathReference(type) || ContainsRelativePathReference(diskId)) {
-        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type or diskId");
+    if (IsPathTraversalUnSafe(type)) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type");
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
@@ -2789,6 +2788,11 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
     if (type == "data") {
         disks = scanDevice.GetDataDisks();
     } else {
+        if (IsPathTraversalUnSafe(diskId)) {
+            LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid diskId");
+            HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
+            return E_PARAMS_INVALID;
+        }
         disks = scanDevice.GetExternalDisks(type, diskId);
     }
 
