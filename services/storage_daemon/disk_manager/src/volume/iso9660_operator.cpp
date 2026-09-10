@@ -116,7 +116,7 @@ int32_t IsoOperator::ReadMetadata(const std::string& devPath,
     uuid = GetBlkidData(realPath, "UUID");
     std::string offset = devPath + "/" + type;
     if (uuid.empty()) {
-        uuid = GenerateRandomUuid(realPath, offset);
+        uuid = IVolumeOperator::GenerateRandomUuid(realPath, offset);
     }
 
     label = GetBlkidData(realPath, "LABEL");
