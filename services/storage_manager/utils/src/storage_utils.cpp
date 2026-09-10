@@ -18,7 +18,6 @@
 #include <climits>
 #include <cstdlib>
 #include <regex>
-#include <filesystem>
 
 #include "ipc_skeleton.h"
 #include "storage_service_log.h"
@@ -54,6 +53,7 @@ std::string GetAnonyString(const std::string &value)
     constexpr size_t INT32_SHORT_ID_LENGTH = 20;
     constexpr size_t INT32_PLAINTEXT_LENGTH = 4;
     constexpr size_t INT32_MIN_ID_LENGTH = 3;
+
     std::string res;
     std::string tmpStr("******");
     size_t strLen = value.length();
@@ -97,38 +97,6 @@ int GetCurrentUserId()
 }
 
 bool IsFilePathInvalid(const std::string &filePath)
-{
-    if (filePath.empty()) {
-        LOGE("File path is empty");
-        return true;
-    }
-    std::filesystem::path path(filePath);
-    if (!path.is_absolute()) {
-        LOGE("Relative path is not allowed");
-        return true;
-    }
-    char resolvedPath[PATH_MAX];
-    if (filePath.size() >= PATH_MAX) {
-        LOGE("FilePath size is invalid");
-        return true;
-    }
-    errno = 0;
-    if (!realpath(filePath.c_str(), resolvedPath)) {
-        if (errno == ENOENT) {
-            LOGW("Path does not exist");
-            return ContainsRelativePathReference(filePath);
-        }
-        LOGE("Realpath isfailed");
-        return true;
-    }
-    if (std::string(resolvedPath) != filePath) {
-        LOGE("Symbolic links is not allowed");
-        return true;
-    }
-    return false;
-}
-
-bool ContainsRelativePathReference(const std::string &filePath)
 {
     size_t pos = filePath.find(PATH_INVALID_FLAG1);
     while (pos != std::string::npos) {

@@ -1529,9 +1529,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_001
     std::vector<std::string> outputList;
     bool status = true;
     int32_t result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, 0);
     result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, 0);
 
     const std::string newPath = "/data/system/hiview/unzip_configs/sys_event_def";
     result = storageDaemonProviderTest_->IsFileOccupied(newPath, inputList, outputList, status);

@@ -1600,27 +1600,117 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFilePathInvalid_001, TestSize.Level1)
     EXPECT_TRUE(IsFilePathInvalid(""));
     EXPECT_TRUE(IsFilePathInvalid("../somefile.txt"));
     EXPECT_TRUE(IsFilePathInvalid("/some/path/../otherfile.txt"));
-    std::string longPath(PATH_MAX, 'a');
-    EXPECT_TRUE(IsFilePathInvalid(longPath));
 
+    std::string longPath(PATH_MAX, 'a');
+    EXPECT_FALSE(IsFilePathInvalid(longPath));
     EXPECT_FALSE(IsFilePathInvalid("/data/system/hiview/unzip_configs/sys_event_def"));
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFilePathInvalid_001 end";
 }
 
 /**
- * @tc.name: FileUtilsTest_ContainsRelativePathReference_001
- * @tc.desc: Verify the ContainsRelativePathReference function.
+ * @tc.name: FileUtilsTest_IsPathTraversalUnSafe_001
+ * @tc.desc: Verify the IsPathTraversalUnSafe function.
  * @tc.type: FUNC
  */
-HWTEST_F(FileUtilsTest, FileUtilsTest_ContainsRelativePathReference_001, TestSize.Level1)
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsPathTraversalUnSafe_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 start";
-    EXPECT_TRUE(ContainsRelativePathReference("../somefile.txt"));
-    EXPECT_TRUE(ContainsRelativePathReference("/some/path/../otherfile.txt"));
-    EXPECT_TRUE(ContainsRelativePathReference("/some/path/.."));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 start";
+    EXPECT_TRUE(IsPathTraversalUnSafe("../somefile.txt"));
+    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/../otherfile.txt"));
+    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/.."));
 
-    EXPECT_FALSE(ContainsRelativePathReference("/some/valid/path/to/file.txt"));
-    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsRelativePathReference_001 end";
+    EXPECT_FALSE(IsPathTraversalUnSafe("/some/valid/path/to/file.txt"));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_ValidPrefix
+ * @tc.name: IsPathStartWithFileMgr_ValidPrefix
+ * @tc.desc: Test path with valid FileMgr prefix returns true.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_ValidPrefix, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_ValidPrefix start";
+ 
+    EXPECT_TRUE(IsPathStartWithFileMgr(100, "/mnt/data/100/userExternal/sub"));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_ValidPrefix end";
+}
+ 
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_TooShort
+ * @tc.name: IsPathStartWithFileMgr_TooShort
+ * @tc.desc: Test too short path returns false.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_TooShort, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_TooShort start";
+ 
+    EXPECT_FALSE(IsPathStartWithFileMgr(100, "/mnt/data/"));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_TooShort end";
+}
+ 
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_Mismatch
+ * @tc.name: IsPathStartWithFileMgr_Mismatch
+ * @tc.desc: Test path with mismatched prefix returns false.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_Mismatch, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_Mismatch start";
+ 
+    EXPECT_FALSE(IsPathStartWithFileMgr(100, "/data/local/evil"));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_Mismatch end";
+}
+ 
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_PrefixMismatchLong
+ * @tc.name: IsPathStartWithFileMgr_PrefixMismatchLong
+ * @tc.desc: Test path long enough but with mismatched prefix returns false (covers if2 true).
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_PrefixMismatchLong, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_PrefixMismatchLong start";
+ 
+    EXPECT_FALSE(IsPathStartWithFileMgr(100, "/mnt/data/100/userInternal/sub"));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_PrefixMismatchLong end";
+}
+ 
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_Empty
+ * @tc.name: IsPathStartWithFileMgr_Empty
+ * @tc.desc: Test empty path returns false.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_Empty, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_Empty start";
+ 
+    EXPECT_FALSE(IsPathStartWithFileMgr(100, ""));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_Empty end";
+}
+ 
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithFileMgr_EqualPrefixLen
+ * @tc.name: IsPathStartWithFileMgr_EqualPrefixLen
+ * @tc.desc: Test path whose length equals prefix length returns false.
+ * @tc.type: FUNC
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_EqualPrefixLen, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_EqualPrefixLen start";
+ 
+    EXPECT_FALSE(IsPathStartWithFileMgr(100, "/mnt/data/100/userExternal/"));
+ 
+    GTEST_LOG_(INFO) << "IsPathStartWithFileMgr_EqualPrefixLen end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS
