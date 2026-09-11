@@ -1553,7 +1553,7 @@ bool IsFilePathInvalid(const std::string &filePath)
     char resolvedPath[PATH_MAX];
     if (!realpath(filePath.c_str(), resolvedPath)) {
         LOGW("FilePath is abnormal");
-        return IsPathTraversalUnSafe(filePath);
+        return ContainsInvalidChars(filePath);
     }
     if (std::string(resolvedPath) != filePath) {
         LOGE("Symbolic links is not allowed");
@@ -1562,7 +1562,7 @@ bool IsFilePathInvalid(const std::string &filePath)
     return false;
 }
 
-bool IsPathTraversalUnSafe(const std::string &filePath)
+bool ContainsInvalidChars(const std::string &filePath)
 {
     constexpr const char *PATH_INVALID_FLAG1 = "../";
     constexpr const char *PATH_INVALID_FLAG2 = "/..";

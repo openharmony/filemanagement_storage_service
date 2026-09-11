@@ -1858,7 +1858,7 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
         return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
-        if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
+        if (ContainsInvalidChars(item.first) || ContainsInvalidChars(item.second)) {
             LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< shareFiles is invalid");
             StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
                 userId, "shareFiles invalid");
@@ -2777,7 +2777,7 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-    if (IsPathTraversalUnSafe(type) || IsPathTraversalUnSafe(diskId)) {
+    if (ContainsInvalidChars(type) || ContainsInvalidChars(diskId)) {
         LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type or diskId");
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
