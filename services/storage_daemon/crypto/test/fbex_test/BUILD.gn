@@ -41,6 +41,7 @@ ohos_unittest("FbexTest") {
 
   sources = [
     "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/crypto/src/iam_client.cpp",
     "${storage_daemon_path}/mock/common_utils_mock.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
@@ -62,6 +63,11 @@ ohos_unittest("FbexTest") {
     "init:libbegetutil",
     "zlib:shared_libz",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("fbex_test") {
