@@ -83,7 +83,9 @@ public:
     }
 
     bool GetSecureUid(uint32_t userId, uint64_t &secureUid);
+#ifdef USER_AUTH_FRAMEWORK
     bool GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info);
+#endif
     bool HasPinProtect(uint32_t userId);
     int HasFaceFinger(uint32_t userId, bool &isExist);
 
