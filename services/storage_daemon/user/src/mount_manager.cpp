@@ -994,9 +994,7 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
             LOGW("[L2:MountManager] MountAppdata: MountDir failed, dstPath=%{public}s",
                 nodeInfo.dstPath.c_str());
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
-            if (savedErrno != ENOTSUP && savedErrno != ENODEV && savedErrno != ENOSYS) {
-                StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
-            }
+            StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
         }
     }
     LOGI("[L2:MountManager] MountAppdata: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
