@@ -14,7 +14,6 @@
  */
 
 #include "user/mount_manager.h"
-#include <csignal>
 #include <dirent.h>
 #include <fcntl.h>
 #include <regex>
