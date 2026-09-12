@@ -117,10 +117,10 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     return true;
 }
 
+#ifdef USER_AUTH_FRAMEWORK
 bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info)
 {
     LOGI("[L4:IamClient] GetSecUserInfo: >>> ENTER <<< userId=%{public}u", userId);
-#ifdef USER_AUTH_FRAMEWORK
     LOGI("[L4:IamClient] GetSecUserInfo: Get SecUserInfo real !");
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     secUserInfoState_ = SEC_USER_INFO_FAILED;
@@ -157,18 +157,16 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
     LOGI("[L4:IamClient] GetSecUserInfo: SD_DURATION: IAM: GET SECURE USER INFO, delay time = %{public}s",
          delay.c_str());
-#else
-    LOGI("[L4:IamClient] GetSecUserInfo: iam not support, use default !");
-    info = {};
-#endif
     LOGI("[L4:IamClient] GetSecUserInfo: <<< EXIT SUCCESS <<< userId=%{public}u", userId);
     return true;
 }
+#endif
 
 int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
 {
     LOGI("[L4:IamClient] HasFaceFinger: >>> ENTER <<< userId=%{public}u", userId);
     isExist = false;
+#ifdef USER_AUTH_FRAMEWORK
     UserIam::UserAuth::SecUserInfo info;
     if (!GetSecUserInfo(userId, info)) {
         LOGE("[L4:IamClient] HasFaceFinger: <<< EXIT FAILED <<< Get SecUserInfo failed, userId=%{public}u", userId);
@@ -184,6 +182,9 @@ int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
             return 0;
         }
     }
+#else
+    LOGI("[L4:IamClient] HasFaceFinger: iam not support, use default !");
+#endif
     LOGI("[L4:IamClient] HasFaceFinger: <<< EXIT SUCCESS <<< userId=%{public}u, isExist=false", userId);
     return 0;
 }
@@ -191,6 +192,7 @@ int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
 bool IamClient::HasPinProtect(uint32_t userId)
 {
     LOGI("[L4:IamClient] HasPinProtect: >>> ENTER <<< userId=%{public}u", userId);
+#ifdef USER_AUTH_FRAMEWORK
     UserIam::UserAuth::SecUserInfo info;
     if (!GetSecUserInfo(userId, info)) {
         LOGE("[L4:IamClient] HasPinProtect: <<< EXIT FAILED <<< Get SecUserInfo failed, userId=%{public}u", userId);
@@ -203,6 +205,10 @@ bool IamClient::HasPinProtect(uint32_t userId)
             return true;
         }
     }
+#else
+    LOGI("[L4:IamClient] HasPinProtect: iam not support, use default !");
+    return true;
+#endif
     LOGI("[L4:IamClient] HasPinProtect: <<< EXIT SUCCESS <<< userId=%{public}u, hasPin=false", userId);
     return false;
 }

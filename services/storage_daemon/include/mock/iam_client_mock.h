@@ -28,7 +28,9 @@ public:
 public:
     virtual int HasFaceFinger(uint32_t userId, bool &isExist) = 0;
     virtual bool GetSecureUid(uint32_t userId, uint64_t &secureUid) = 0;
+#ifdef USER_AUTH_FRAMEWORK
     virtual bool GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info) = 0;
+#endif
     virtual bool HasPinProtect(uint32_t userId) = 0;
     virtual int32_t NotifyGetSecureUid() = 0;
     virtual int32_t NotifyGetSecUserInfo() = 0;
@@ -40,7 +42,9 @@ class IamClientMoc : public IIamClientMoc {
 public:
     MOCK_METHOD2(HasFaceFinger, int(uint32_t userId, bool &isExist));
     MOCK_METHOD2(GetSecureUid, bool(uint32_t userId, uint64_t &secureUid));
+#ifdef USER_AUTH_FRAMEWORK
     MOCK_METHOD2(GetSecUserInfo, bool(uint32_t userId, UserIam::UserAuth::SecUserInfo &info));
+#endif
     MOCK_METHOD1(HasPinProtect, bool(uint32_t userId));
     MOCK_METHOD0(NotifyGetSecureUid, int32_t());
     MOCK_METHOD0(NotifyGetSecUserInfo, int32_t());

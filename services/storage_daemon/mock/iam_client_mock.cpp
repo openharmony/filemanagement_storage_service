@@ -35,6 +35,7 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     return IIamClientMoc::iamClientMoc->GetSecureUid(userId, secureUid);
 }
 
+#ifdef USER_AUTH_FRAMEWORK
 bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info)
 {
     if (IIamClientMoc::iamClientMoc == nullptr) {
@@ -42,6 +43,7 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
     }
     return IIamClientMoc::iamClientMoc->GetSecUserInfo(userId, info);
 }
+#endif
 
 int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
 {
