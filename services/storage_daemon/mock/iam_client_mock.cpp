@@ -48,6 +48,7 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
 int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
 {
     if (IIamClientMoc::iamClientMoc == nullptr) {
+        isExist = false;
         return 0;
     }
     return IIamClientMoc::iamClientMoc->HasFaceFinger(userId, isExist);

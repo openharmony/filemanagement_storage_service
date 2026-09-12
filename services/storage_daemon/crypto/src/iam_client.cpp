@@ -207,6 +207,7 @@ bool IamClient::HasPinProtect(uint32_t userId)
     }
 #else
     LOGI("[L4:IamClient] HasPinProtect: iam not support, use default !");
+    LOGI("[L4:IamClient] HasPinProtect: <<< EXIT SUCCESS <<< userId=%{public}u, hasPin=true", userId);
     return true;
 #endif
     LOGI("[L4:IamClient] HasPinProtect: <<< EXIT SUCCESS <<< userId=%{public}u, hasPin=false", userId);
