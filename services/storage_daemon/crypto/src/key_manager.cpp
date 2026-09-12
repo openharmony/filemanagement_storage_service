@@ -32,7 +32,6 @@
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
-#include "utils/hi_audit.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -281,8 +280,7 @@ int KeyManager::InitGlobalDeviceKey(void)
     }
     std::error_code errCode;
     if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR)) {
-        HiAudit::GetInstance().WriteStart("EL0_KEY", "DEVICE_EL1_DIR is exist and not empty, try to create !");
-        HiAudit::GetInstance().WriteEnd("EL0_KEY", E_OK);
+        LOGI("[L3:KeyManager] InitGlobalDeviceKey: DEVICE_EL1_DIR exists and is not empty, try to create!");
     }
     /*
         2. If the /sd or /sd/latest directory does not exist, or the directory exists but is empty,
