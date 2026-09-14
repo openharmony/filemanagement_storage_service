@@ -71,7 +71,6 @@ constexpr int32_t DEFAULT_NO_USE_HOURS = 2160;
 constexpr int32_t DEFAULT_TOP_COUNT = 20;
 constexpr int32_t DEFAULT_CACHE_CLEAN_SPAN_HOURS = 168; // 7 days
 #endif
-constexpr uint64_t DISPLAY_MB_DIVISOR = 1000ULL * 1000;
 constexpr mode_t CONFIG_DIR_MODE = 0755;
 constexpr int32_t JSON_INDENT = 4;
 constexpr uint64_t RECORD_DATA_AGING_TIME = 180LL * 24 * 60 * 60 * 1000;
@@ -361,8 +360,16 @@ int32_t CacheCleanController::ExecuteCacheCleaning(const std::vector<CleanCacheI
     StorageService::StorageRadar::ReportStorageStatusRadar("cacheCleanResult", extraData_.str());
     DelayedSingleton<CleanRecordStore>::GetInstance()->Delete(timeStamp - RECORD_DATA_AGING_TIME);
     NativeRdb::ValuesBucket values;
+    int64_t freed_size;
+    if (stats.cleanBefore < stats.cleanAfter) {
+        freed_size = 0;
+    } else if (stats.cleanBefore - stats.cleanAfter > INT64_MAX) {
+        freed_size = 0;
+    } else {
+        freed_size = stats.cleanBefore - stats.cleanAfter;
+    }
     values.PutLong("clean_time", timeStamp);
-    values.PutLong("freed_size", stats.cleanBefore - stats.cleanAfter);
+    values.PutLong("freed_size", freed_size);
     values.PutLong("clean_before", stats.cleanBefore);
     values.PutLong("clean_after", stats.cleanAfter);
     DelayedSingleton<CleanRecordStore>::GetInstance()->Insert(values);
@@ -487,9 +494,6 @@ int32_t CacheCleanController::PerformCacheCleaning(const CleanCacheInfo &cleanIn
         return E_FAIL;
     }
 
-    LOGD("Cleaned %{public}s: +%{public}llu MB",
-         cleanInfo.bundleName.c_str(),
-         static_cast<unsigned long long>((beforeCleanedSize - afterCleanedSize) / DISPLAY_MB_DIVISOR));
     stats.totalCleanedCount++;
     SafeAccumulate(stats.cleanBefore, beforeCleanedSize);
     SafeAccumulate(stats.cleanAfter, afterCleanedSize);
@@ -535,9 +539,6 @@ int32_t CacheCleanController::CleanAllCacheForApps(const std::vector<CleanCacheI
             continue;
         }
 
-        LOGD("Cleaned %{public}s: +%{public}llu MB",
-             cleanAllCacheInfos[i].bundleName.c_str(),
-             static_cast<unsigned long long>((beforeCleanedSize - afterCleanedSize) / DISPLAY_MB_DIVISOR));
         stats.totalCleanedCount++;
         SafeAccumulate(stats.cleanBefore, beforeCleanedSize);
         SafeAccumulate(stats.cleanAfter, afterCleanedSize);
