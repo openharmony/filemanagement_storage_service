@@ -1,0 +1,9 @@
+# libstorage_manager_acl.map
+{
+  global:
+    extern "C++" {
+      OHOS::StorageDaemon::Acl*;
+    };
+  local:
+    *;
+}

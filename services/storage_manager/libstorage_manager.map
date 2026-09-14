@@ -1,0 +1,18 @@
+# libstorage_manager.map
+{
+  global:
+    extern "C++" {
+      OHOS::StorageManager::StorageMonitorService*;
+      OHOS::StorageManager::FileCacheAdapter*;
+      OHOS::StorageManager::StorageTotalStatusService*;
+      OHOS::StorageManager::BundleMgrConnector*;
+      OHOS::StorageManager::StorageStatusManager*;
+      OHOS::StorageManager::BundleManagerAdapterProxy*;
+      OHOS::StorageManager::StorageDaemonCommunication*;
+      OHOS::StorageManager::StorageManagerScan*;
+      "VTT for OHOS::StorageManager::StorageManagerStub";
+      "vtable for OHOS::StorageManager::UeceActivationCallbackProxy";
+    };
+  local:
+    *;
+}
