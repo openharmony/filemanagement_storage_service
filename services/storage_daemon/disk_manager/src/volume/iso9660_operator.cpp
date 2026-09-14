@@ -35,6 +35,7 @@ constexpr const char* MID_PATH = "/data/local/burn_tmp/midFile.iso";
 constexpr const char* BURN_TMP_DIR = "/data/local/burn_tmp";
 constexpr const char* VERIFY_MOUNT_PATH = "/mnt/data/burn_verify_mount";
 constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
+constexpr int32_t BURN_VERIFY_START_PROGRESS = 101;
 constexpr mode_t DEFAULT_DIR_PERMISSIONS = 0755;
 
 static bool OutputContains(const std::vector<std::string> &output, const std::string &pattern)
@@ -327,6 +328,7 @@ int32_t IsoOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
         return err;
     }
     if (burnOptions.isVerifyBurn) {
+        DiskUtils::WriteBurnProgress(BURN_VERIFY_START_PROGRESS);
         LOGI("Burn: starting verify process for devPath=%{public}s", devPath.c_str());
         err = RefreshCDRomMediaNode(devPath);
         if (err != E_OK) {
@@ -619,16 +621,6 @@ int32_t IsoOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     }
     std::map<std::string, std::string> sourceMap = DiskUtils::ParseChecksumFile(sourceChecksumContent, sourceDir);
     std::map<std::string, std::string> discMap = DiskUtils::ParseChecksumFile(discChecksumContent, VERIFY_MOUNT_PATH);
-    LOGI("LogChecksumMap: sourceMap contents:");
-    for (const auto& pair : sourceMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
-             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
-    }
-    LOGI("LogChecksumMap: discMap contents:");
-    for (const auto& pair : discMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
-             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
-    }
     return DiskUtils::CompareChecksums(sourceMap, discMap);
 }
 

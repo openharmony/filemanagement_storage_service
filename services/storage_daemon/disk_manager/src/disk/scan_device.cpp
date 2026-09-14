@@ -428,34 +428,31 @@ std::string ScanDevice::GetMaxSpeedFromSpeedInfo(const nlohmann::json &speedInfo
 nlohmann::json ScanDevice::ParseWodimPrcapOutput(const std::vector<std::string> &output)
 {
     LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: >>> ENTER <<<");
-    
     std::unordered_set<std::string> seen;
     nlohmann::json speedArr = nlohmann::json::array();
-    
-    for (const auto &line : output) {
-        if (line.find("Write speed #") == std::string::npos) {
-            continue;
-        }
-        
-        size_t cdPos = line.find("(CD");
-        if (cdPos == std::string::npos) {
-            continue;
-        }
-        
-        size_t xPos = line.find('x', cdPos);
-        if (xPos == std::string::npos) {
-            continue;
-        }
-        
-        std::string speedStr = line.substr(cdPos + 3, xPos - (cdPos + 3));
-        speedStr.erase(std::remove_if(speedStr.begin(), speedStr.end(), ::isspace), speedStr.end());
-        
-        if (!speedStr.empty() && seen.insert(speedStr).second) {
-            speedArr.push_back(speedStr);
-            LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: found CD speed=%{public}s", speedStr.c_str());
+    for (const auto &chunk : output) {
+        std::stringstream ss(chunk);
+        std::string line;
+        while (std::getline(ss, line)) {
+            if (line.find("Write speed #") == std::string::npos) {
+                continue;
+            }
+            size_t cdPos = line.find("(CD");
+            if (cdPos == std::string::npos) {
+                continue;
+            }
+            size_t xPos = line.find('x', cdPos);
+            if (xPos == std::string::npos) {
+                continue;
+            }
+            std::string speedStr = line.substr(cdPos + 3, xPos - (cdPos + 3));
+            speedStr.erase(std::remove_if(speedStr.begin(), speedStr.end(), ::isspace), speedStr.end());
+            if (!speedStr.empty() && seen.insert(speedStr).second) {
+                speedArr.push_back(speedStr);
+                LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: found CD speed=%{public}s", speedStr.c_str());
+            }
         }
     }
-    
     LOGI("[L2:ScanDevice] ParseWodimPrcapOutput: <<< EXIT SUCCESS <<< speedArr=%{public}s", speedArr.dump().c_str());
     return speedArr;
 }

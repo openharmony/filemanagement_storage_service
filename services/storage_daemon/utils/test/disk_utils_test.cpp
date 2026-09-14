@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <climits>
 #include <sys/sysmacros.h>
+#include <scsi/sg.h>
 
 #include "mock/file_utils_mock.h"
 #include "mock/disk_func_mock.h"
@@ -213,7 +214,8 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCDType_02, TestSize.Level1)
     EXPECT_CALL(*diskFuncMock_, realpath(_, _)).WillOnce(Return(&realPath));
     EXPECT_CALL(*diskFuncMock_, fopen(_, _)).WillOnce(Return(tmpFile));
     EXPECT_CALL(*diskFuncMock_, fileno(_)).WillOnce(Return(0));
-    EXPECT_CALL(*diskFuncMock_, ioctl(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*diskFuncMock_, fclose(_)).WillOnce(Return(0));
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _)).WillOnce(Return(0));
 
     std::string str = GetCDType(diskPath);
     EXPECT_EQ(str, "");
@@ -761,6 +763,420 @@ HWTEST_F(DiskUtilsTest, DiskUtilsTest_IsAcceptableUuid_TooLong, TestSize.Level1)
     EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).Times(0);
     std::string longUuid(41, 'a');
     EXPECT_FALSE(IsAcceptableUuid(longUuid));
+}
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmd_SenseBuf_SGInfoNotOk
+ * @tc.desc: Verify SendScsiCmd with senseBuf when SG_INFO is not OK.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmd_SenseBuf_SGInfoNotOk, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_SGInfoNotOk start";
+    uint8_t cdb[10] = {0};
+    uint8_t dataBuf[64] = {0};
+    uint8_t senseBuf[SENSE_BUFF_LEN] = {0};
+    ScsiCmdInfo cmdInfo = { cdb, static_cast<int>(sizeof(cdb)), dataBuf, static_cast<int>(sizeof(dataBuf)) };
+
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = 4;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[0] = 0x70;
+                ioHdr->sbp[1] = 0x00;
+                ioHdr->sbp[2] = 0x05;
+                ioHdr->sbp[3] = 0x00;
+            }
+            return 0;
+        });
+
+    int ret = SendScsiCmd(0, cmdInfo, senseBuf, sizeof(senseBuf));
+    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(senseBuf[0], 0x70);
+    EXPECT_EQ(senseBuf[2], 0x05);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_SGInfoNotOk end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmd_SenseBuf_NullSenseBuf
+ * @tc.desc: Verify SendScsiCmd with nullptr senseBuf when SG_INFO is not OK.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmd_SenseBuf_NullSenseBuf, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_NullSenseBuf start";
+    uint8_t cdb[10] = {0};
+    uint8_t dataBuf[64] = {0};
+    ScsiCmdInfo cmdInfo = { cdb, static_cast<int>(sizeof(cdb)), dataBuf, static_cast<int>(sizeof(dataBuf)) };
+
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = 4;
+            return 0;
+        });
+
+    int ret = SendScsiCmd(0, cmdInfo, nullptr, 0);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_NullSenseBuf end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmd_SenseBuf_IoctlFail
+ * @tc.desc: Verify SendScsiCmd with senseBuf when ioctl fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmd_SenseBuf_IoctlFail, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_IoctlFail start";
+    uint8_t cdb[10] = {0};
+    uint8_t dataBuf[64] = {0};
+    uint8_t senseBuf[SENSE_BUFF_LEN] = {0};
+    ScsiCmdInfo cmdInfo = { cdb, static_cast<int>(sizeof(cdb)), dataBuf, static_cast<int>(sizeof(dataBuf)) };
+
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce(Return(-1));
+
+    int ret = SendScsiCmd(0, cmdInfo, senseBuf, sizeof(senseBuf));
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_IoctlFail end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_SendScsiCmd_SenseBuf_Success
+ * @tc.desc: Verify SendScsiCmd with senseBuf when SG_INFO is OK.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_SendScsiCmd_SenseBuf_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_Success start";
+    uint8_t cdb[10] = {0};
+    uint8_t dataBuf[64] = {0};
+    uint8_t senseBuf[SENSE_BUFF_LEN] = {0};
+    ScsiCmdInfo cmdInfo = { cdb, static_cast<int>(sizeof(cdb)), dataBuf, static_cast<int>(sizeof(dataBuf)) };
+
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            return 0;
+        });
+
+    int ret = SendScsiCmd(0, cmdInfo, senseBuf, sizeof(senseBuf));
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_SendScsiCmd_SenseBuf_Success end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscInfoFail
+ * @tc.desc: Verify GetCdUsedCapacity when senseKey is ILLEGAL_REQUEST and HandleFinalizedDisc's
+ *           SendScsiCmd for disc info also fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscInfoFail, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscInfoFail start";
+    int64_t cdUsedCapacity = 0;
+
+    // First ioctl: READ TRACK INFORMATION fails with ILLEGAL_REQUEST sense key
+    // Second ioctl: READ DISC INFORMATION also fails
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = SENSE_BUFF_LEN;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[SCSI_SENSE_KEY_OFFSET] = SCSI_SENSE_KEY_ILLEGAL_REQUEST;
+            }
+            return 0;
+        })
+        .WillOnce(Return(-1));
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscInfoFail end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscNotComplete
+ * @tc.desc: Verify GetCdUsedCapacity when senseKey is ILLEGAL_REQUEST, disc info succeeds
+ *           but discStatus != DISC_STATUS_COMPLETE.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscNotComplete, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscNotComplete start";
+    int64_t cdUsedCapacity = 0;
+
+    // First ioctl: READ TRACK INFORMATION fails with ILLEGAL_REQUEST
+    // Second ioctl: READ DISC INFORMATION succeeds, discStatus != COMPLETE
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = SENSE_BUFF_LEN;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[SCSI_SENSE_KEY_OFFSET] = SCSI_SENSE_KEY_ILLEGAL_REQUEST;
+            }
+            return 0;
+        })
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            // Write disc info data: discStatus = 0 (not COMPLETE=2)
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[DISC_STATUS_BYTE_INDEX] = 0x00;
+            }
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_DiscNotComplete end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_GetTotalCapFail
+ * @tc.desc: Verify GetCdUsedCapacity when disc is finalized but GetCdTotalCapacity fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_GetTotalCapFail, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_GetTotalCapFail start";
+    int64_t cdUsedCapacity = 0;
+
+    // 1st ioctl: READ TRACK INFORMATION fails with ILLEGAL_REQUEST
+    // 2nd ioctl: READ DISC INFORMATION succeeds, discStatus = COMPLETE
+    // 3rd & 4th ioctl: GetCdTotalCapacity -> SendScsiCmd fails both calls
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = SENSE_BUFF_LEN;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[SCSI_SENSE_KEY_OFFSET] = SCSI_SENSE_KEY_ILLEGAL_REQUEST;
+            }
+            return 0;
+        })
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[DISC_STATUS_BYTE_INDEX] = DISC_STATUS_COMPLETE;
+            }
+            return 0;
+        })
+        .WillOnce(Return(-1));
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_GetTotalCapFail end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_Success
+ * @tc.desc: Verify GetCdUsedCapacity when disc is finalized and GetCdTotalCapacity succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_Success start";
+    int64_t cdUsedCapacity = 0;
+
+    // 1st ioctl: READ TRACK INFORMATION fails with ILLEGAL_REQUEST
+    // 2nd ioctl: READ DISC INFORMATION succeeds, discStatus = COMPLETE
+    // 3rd ioctl: GetCdTotalCapacity first SendScsiCmd (read ATIP length) succeeds
+    // 4th ioctl: GetCdTotalCapacity second SendScsiCmd (read ATIP data) succeeds
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = SENSE_BUFF_LEN;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[SCSI_SENSE_KEY_OFFSET] = SCSI_SENSE_KEY_ILLEGAL_REQUEST;
+            }
+            return 0;
+        })
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[DISC_STATUS_BYTE_INDEX] = DISC_STATUS_COMPLETE;
+            }
+            return 0;
+        })
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            // Return ATIP length: data_buf[0..1] = length (32), actual_len = 32 + 2 = 34 <= 48
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[0] = 0;
+                buf[1] = 32;
+            }
+            return 0;
+        })
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            // Return ATIP data: data_buf[12]=minutes, data_buf[13]=seconds, data_buf[14]=frames
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[12] = 1;  // 1 minute
+                buf[13] = 0;  // 0 seconds
+                buf[14] = 0;  // 0 frames
+            }
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_OK);
+    // total_seconds = 1 * 60 + 0 + 0/75 = 60
+    // cdTotalCapacity = 60 * 75 * 2048 = 9216000
+    EXPECT_GT(cdUsedCapacity, 0);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IllegalRequest_Finalized_Success end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_NonIllegalRequest
+ * @tc.desc: Verify GetCdUsedCapacity when senseKey is not ILLEGAL_REQUEST.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_NonIllegalRequest, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NonIllegalRequest start";
+    int64_t cdUsedCapacity = 0;
+
+    // ioctl: READ TRACK INFORMATION fails with non-ILLEGAL_REQUEST sense key
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_CHECK;
+            ioHdr->sb_len_wr = SENSE_BUFF_LEN;
+            if (ioHdr->sbp != nullptr) {
+                ioHdr->sbp[SCSI_SENSE_KEY_OFFSET] = 0x02;  // NOT READY, not ILLEGAL_REQUEST
+            }
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NonIllegalRequest end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_NwaInvalid
+ * @tc.desc: Verify GetCdUsedCapacity when SendScsiCmd succeeds but NWA valid bit is 0.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_NwaInvalid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NwaInvalid start";
+    int64_t cdUsedCapacity = 0;
+
+    // ioctl: READ TRACK INFORMATION succeeds but data_buf is all zeros -> NWA valid = 0
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NwaInvalid end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_NwaNegative
+ * @tc.desc: Verify GetCdUsedCapacity when NWA valid bit is 1 but nextAddr is negative.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_NwaNegative, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NwaNegative start";
+    int64_t cdUsedCapacity = -1;
+
+    // ioctl: READ TRACK INFORMATION succeeds, NWA valid = 1, but NWA value is negative (0x80000000)
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[TRACK_INFO_NWA_VALID_OFFSET] = TRACK_INFO_NWA_VALID_MASK;  // NWA valid = 1
+                // NWA = 0x80000000 -> negative as int32_t
+                buf[TRACK_INFO_NWA_OFFSET] = 0x80;
+                buf[TRACK_INFO_NWA_OFFSET + 1] = 0x00;
+                buf[TRACK_INFO_NWA_OFFSET + 2] = 0x00;
+                buf[TRACK_INFO_NWA_OFFSET + 3] = 0x00;
+            }
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_OK);
+    // nextAddr was negative, clamped to 0, so cdUsedCapacity = 0
+    EXPECT_EQ(cdUsedCapacity, 0);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_NwaNegative end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_Success
+ * @tc.desc: Verify GetCdUsedCapacity when SendScsiCmd succeeds and NWA is valid and positive.
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_Success start";
+    int64_t cdUsedCapacity = 0;
+
+    // ioctl: READ TRACK INFORMATION succeeds, NWA valid = 1, NWA = 100
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce([](int, int, void* arg) {
+            auto* ioHdr = static_cast<sg_io_hdr_t*>(arg);
+            ioHdr->info = SG_INFO_OK;
+            if (ioHdr->dxferp != nullptr) {
+                auto* buf = static_cast<uint8_t*>(ioHdr->dxferp);
+                buf[TRACK_INFO_NWA_VALID_OFFSET] = TRACK_INFO_NWA_VALID_MASK;  // NWA valid = 1
+                // NWA = 100 (0x00000064)
+                buf[TRACK_INFO_NWA_OFFSET] = 0x00;
+                buf[TRACK_INFO_NWA_OFFSET + 1] = 0x00;
+                buf[TRACK_INFO_NWA_OFFSET + 2] = 0x00;
+                buf[TRACK_INFO_NWA_OFFSET + 3] = 0x64;
+            }
+            return 0;
+        });
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_OK);
+    // cdUsedCapacity = 100 * 2048 = 204800
+    EXPECT_EQ(cdUsedCapacity, 100 * ODD_LOGICAL_SECTOR_SIZE);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_Success end";
+}
+
+/**
+ * @tc.name: DiskUtilsTest_GetCdUsedCapacity_IoctlFail
+ * @tc.desc: Verify GetCdUsedCapacity when ioctl itself fails (returns < 0).
+ * @tc.type: FUNC
+ */
+HWTEST_F(DiskUtilsTest, DiskUtilsTest_GetCdUsedCapacity_IoctlFail, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IoctlFail start";
+    int64_t cdUsedCapacity = 0;
+
+    EXPECT_CALL(*diskFuncMock_, ioctl(_, SG_IO, _))
+        .WillOnce(Return(-1));
+
+    int ret = GetCdUsedCapacity(0, cdUsedCapacity);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "DiskUtilsTest_GetCdUsedCapacity_IoctlFail end";
 }
 } // STORAGE_DAEMON
 } // OHOS

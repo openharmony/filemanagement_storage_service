@@ -187,5 +187,13 @@ int32_t RefreshCDRomMediaNode(const std::string &devPath)
     return IDiskUtilMoc::diskUtilMoc->RefreshCDRomMediaNode(devPath);
 }
 
+int32_t DiskUtils::WriteBurnProgress(int32_t progress)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return E_ERR;
+    }
+    return IDiskUtilMoc::diskUtilMoc->WriteBurnProgress(progress);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

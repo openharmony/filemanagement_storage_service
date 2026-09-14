@@ -1867,5 +1867,231 @@ HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_GetScsiGenericDevPath_00
     GTEST_LOG_(INFO) << "GetScsiGenericDevPath_003 end";
 }
 
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_Empty
+ * @tc.desc: Test ParseWodimPrcapOutput with empty output vector; expect empty JSON array.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_Empty, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_Empty start";
+    ScanDevice scanner(mockSysPath);
+    std::vector<std::string> output;
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.empty());
+    EXPECT_TRUE(result.is_array());
+    EXPECT_EQ(result.size(), 0);
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_Empty end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_NonMatchingLines
+ * @tc.desc: Test ParseWodimPrcapOutput with lines that do not contain "Write speed #"; Branch 1 skip.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_NonMatchingLines, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_NonMatchingLines start";
+    ScanDevice scanner(mockSysPath);
+    // Lines containing "(CD Nx)" but NOT "Write speed #" must be skipped entirely.
+    // This verifies the bug fix: read-speed lines like "Maximum read speed: 4234kB/s(CD 24x, DVD 3x)"
+    // must NOT have their speed (24) extracted.
+    std::vector<std::string> output;
+    output.push_back(std::string("Device type    : Removable CD-ROM\n") +
+                     "Vendor_info    : 'Optiarc'\n" +
+                     "Maximum read speed: 4234kB/s(CD 24x, DVD 3x)\n" +
+                     "Current read speed: 4234 kB/s (CD 24x, DVD 3x)\n" +
+                     "Maximum write speed: 1764kB/s(CD 10x, DVD 1x)\n" +
+                     "Current write speed:1764 kB/s (CD 10x, DVD 1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    EXPECT_EQ(result.size(), 0);
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_NonMatchingLines end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_WriteSpeedWithoutCd
+ * @tc.desc: Test ParseWodimPrcapOutput with "Write speed #" line but no "(CD"; Branch 2 skip.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_WriteSpeedWithoutCd, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_WriteSpeedWithoutCd start";
+    ScanDevice scanner(mockSysPath);
+    // Line has "Write speed #" but no "(CD" substring -> must be skipped.
+    std::vector<std::string> output;
+    output.push_back("Write speed #0: 1764 kB/s CLV/PCAV (DVD 1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    EXPECT_EQ(result.size(), 0);
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_WriteSpeedWithoutCd end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_WriteSpeedCdWithoutX
+ * @tc.desc: Test ParseWodimPrcapOutput with "Write speed #" and "(CD" but no 'x' after "(CD"; Branch 3 skip.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_WriteSpeedCdWithoutX, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_WriteSpeedCdWithoutX start";
+    ScanDevice scanner(mockSysPath);
+    // Line truncated right after "(CD" -> no 'x' follows -> must be skipped.
+    std::vector<std::string> output;
+    output.push_back("Write speed #0: 1764 kB/s CLV/PCAV (CD");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    EXPECT_EQ(result.size(), 0);
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_WriteSpeedCdWithoutX end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_EmptySpeedBetweenCdAndX
+ * @tc.desc: Test ParseWodimPrcapOutput with "(CDx)" where nothing is between "(CD" and 'x';
+ *           the extracted speedStr is empty and must be skipped. Branch 5a (!speedStr.empty() false).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_EmptySpeedBetweenCdAndX, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_EmptySpeedBetweenCdAndX start";
+    ScanDevice scanner(mockSysPath);
+    // "(CDx)" -> cdPos+3 == xPos -> substr returns empty -> speedStr.empty() true -> skip (Branch 5a).
+    std::vector<std::string> output;
+    output.push_back("Write speed #0: 0 kB/s CLV/PCAV (CDx,DVD1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    EXPECT_EQ(result.size(), 0);
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_EmptySpeedBetweenCdAndX end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_ValidNoSpace
+ * @tc.desc: Test ParseWodimPrcapOutput with valid "Write speed #0" line, no space between "(CD" and speed.
+ *           "Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)" -> extracts "10". Branch 4 success.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_ValidNoSpace, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_ValidNoSpace start";
+    ScanDevice scanner(mockSysPath);
+    std::vector<std::string> output;
+    output.push_back("Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0].get<std::string>(), "10");
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_ValidNoSpace end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_ValidWithSpace
+ * @tc.desc: Test ParseWodimPrcapOutput with valid "Write speed # 1" line, space between "(CD" and speed.
+ *           "Write speed # 1: 1411 kB/s CLV/PCAV (CD 8x, DVD 1x)" -> extracts "8". Branch 4 success.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_ValidWithSpace, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_ValidWithSpace start";
+    ScanDevice scanner(mockSysPath);
+    std::vector<std::string> output;
+    output.push_back("Write speed # 1: 1411 kB/s CLV/PCAV (CD 8x, DVD 1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0].get<std::string>(), "8");
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_ValidWithSpace end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_DuplicateSpeeds
+ * @tc.desc: Test ParseWodimPrcapOutput deduplicates identical speed values; Branch 5 skip-on-duplicate.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_DuplicateSpeeds, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_DuplicateSpeeds start";
+    ScanDevice scanner(mockSysPath);
+    // Same speed "10" appears twice in different write-speed lines -> only first occurrence kept.
+    std::vector<std::string> output;
+    output.push_back(std::string("Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)\n") +
+                     "Write speed #1:1764 kB/s CLV/PCAV (CD10x,DVD1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0].get<std::string>(), "10");
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_DuplicateSpeeds end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_MultipleChunks
+ * @tc.desc: Test ParseWodimPrcapOutput handles multiple vector elements (chunks); lines split across chunks.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_MultipleChunks, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_MultipleChunks start";
+    ScanDevice scanner(mockSysPath);
+    // Simulate ForkExec reading output in multiple chunks. Each chunk may contain multiple
+    // newline-separated lines; the parser must iterate all lines in all chunks.
+    std::vector<std::string> output;
+    output.push_back(std::string("Maximum read speed: 4234kB/s(CD 24x, DVD 3x)\n") +
+                     "Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)");
+    output.push_back(std::string("Write speed # 1: 1411 kB/s CLV/PCAV (CD 8x, DVD 1x)\n") +
+                     "Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)");
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0].get<std::string>(), "10");
+    EXPECT_EQ(result[1].get<std::string>(), "8");
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_MultipleChunks end";
+}
+
+/**
+ * @tc.name: Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_RealWorldSingleChunk
+ * @tc.desc: Test ParseWodimPrcapOutput with full real-world wodim -prcap output as a single chunk.
+ *           Verifies the bug fix: only write speeds (10, 8) are extracted, NOT the read speed (24).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ScanDeviceTest, Storage_Service_ScanDeviceTest_ParseWodimPrcapOutput_RealWorldSingleChunk, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_RealWorldSingleChunk start";
+    ScanDevice scanner(mockSysPath);
+    // Entire wodim -prcap output in a single string element (simulating the ForkExec behavior
+    // that reads the whole output into one chunk). The "Maximum read speed" and
+    // "Current read speed" lines contain "(CD 24x" BEFORE the "Write speed #" lines; the parser
+    // must skip them (no "Write speed #" marker) and only extract the write speeds 10 and 8.
+    std::string wodimOutput =
+        "Device type    : Removable CD-ROM\n"
+        "Version        : 0\n"
+        "Response Format: 2\n"
+        "Capabilities   :\n"
+        "Vendor_info    : 'Optiarc'\n"
+        "Identification : 'BD RW BD-5740H '\n"
+        "Revision       : '1.50\n"
+        "Device seems to be: Generic mmc2 DVD-R/DVD-RW.\n"
+        "Drive capabilities, per MMC-3 page 2A:\n"
+        "Does read CD-R media\n"
+        "Does write CD-R media\n"
+        "Maximum read speed: 4234kB/s(CD 24x, DVD 3x)\n"
+        "Current read speed: 4234 kB/s (CD 24x, DVD 3x)\n"
+        "Maximum write speed: 1764kB/s(CD 10x, DVD 1x)\n"
+        "Current write speed:1764 kB/s (CD 10x, DVD 1x)\n"
+        "Number of supported write speeds:2\n"
+        "Write speed #0:1764 kB/s CLV/PCAV (CD10x,DVD1x)\n"
+        "Write speed # 1: 1411 kB/s CLV/PCAV (CD 8x, DVD 1x)";
+    std::vector<std::string> output;
+    output.push_back(wodimOutput);
+    json result = scanner.ParseWodimPrcapOutput(output);
+    EXPECT_TRUE(result.is_array());
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0].get<std::string>(), "10");
+    EXPECT_EQ(result[1].get<std::string>(), "8");
+    // Explicitly verify the read speed (24) was NOT extracted.
+    for (size_t i = 0; i < result.size(); ++i) {
+        EXPECT_NE(result[i].get<std::string>(), "24");
+    }
+    GTEST_LOG_(INFO) << "ParseWodimPrcapOutput_RealWorldSingleChunk end";
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
