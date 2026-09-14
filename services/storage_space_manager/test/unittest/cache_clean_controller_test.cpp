@@ -17,15 +17,52 @@
 #include <gmock/gmock.h>
 #include <fstream>
 #include <cstdio>
+#include <climits>
+#include <cstdint>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "cache_clean_controller/cache_clean_controller.h"
+#include "cache_clean_controller/clean_record_store.h"
+#include "i_quota_calculator.h"
 #include "storage_space_manager_errno.h"
 #include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageSpaceManager {
+constexpr int32_t TOP_COUNT = 20;
+constexpr int32_t QUOTA_SIZE = 100;
 using namespace testing;
 using namespace testing::ext;
+
+class MockQuotaCalculator : public IQuotaCalculator {
+public:
+    void Init() override {}
+    int32_t ParseConfig(const std::string &configPath) override { return E_OK; }
+    CacheAutoCleanSwitch GetCacheAutoCleanSwitch() const override { return CacheAutoCleanSwitch::OPEN; }
+    int32_t GetAutoCacheCleanSpan() const override { return 168; }
+    std::unordered_map<std::string, int32_t> GetSystemAppCacheSize() const override { return {}; }
+    int32_t GetTopRankingHoursSpan() const override { return 336; }
+    int32_t GetNoUseHoursForCleanAll() const override { return 2160; }
+    int32_t GetTopAppCount(int64_t totalSize, int32_t &topCount) const override
+    {
+        topCount = TOP_COUNT;
+        return E_OK;
+    }
+    int32_t GetQuotaByRank(int32_t appRank, int64_t totalStorage, int32_t &quota) override
+    {
+        quota = QUOTA_SIZE;
+        return E_OK;
+    }
+    int32_t GetQuotasByRanks(const std::vector<int32_t> &appRanks, int64_t totalStorage,
+                             std::unordered_map<int32_t, int32_t> &quotas) override { return E_OK; }
+    int32_t GetQuota(const std::string &tierName, int64_t totalStorage, int32_t &quota) override
+    {
+        quota = QUOTA_SIZE;
+        return E_OK;
+    }
+    int32_t GetAllQuotas(int64_t totalStorage, std::map<std::string, int32_t> &quotas) override { return E_OK; }
+    bool IsConfigLoaded() const override { return true; }
+};
 
 class CacheCleanControllerTest : public testing::Test {
 public:
@@ -37,12 +74,18 @@ public:
     static CacheCleanController* controller_;
     static std::string testConfigDir_;
     static std::string testConfigFile_;
+    static std::shared_ptr<MockQuotaCalculator> mockQuota_;
+    static std::shared_ptr<IQuotaCalculator> originalQuota_;
+    static CleanRecordStore* recordStore_;
 };
 
 CacheCleanController* CacheCleanControllerTest::controller_ = nullptr;
 std::string CacheCleanControllerTest::testConfigDir_ = "/data/service/el1/public/storage_space_manager";
 std::string CacheCleanControllerTest::testConfigFile_ =
     "/data/service/el1/public/storage_space_manager/cache_clean_config.json";
+std::shared_ptr<MockQuotaCalculator> CacheCleanControllerTest::mockQuota_ = nullptr;
+std::shared_ptr<IQuotaCalculator> CacheCleanControllerTest::originalQuota_ = nullptr;
+CleanRecordStore* CacheCleanControllerTest::recordStore_ = nullptr;
 
 void CacheCleanControllerTest::SetUpTestCase()
 {
@@ -51,6 +94,15 @@ void CacheCleanControllerTest::SetUpTestCase()
     // Create test directory
     constexpr int dirPermission = 0755;
     mkdir(testConfigDir_.c_str(), dirPermission);
+
+    // Create database directory and initialize CleanRecordStore for ExecuteCacheCleaning tests
+    mkdir("/data/service/el1/public/database", dirPermission);
+    mkdir("/data/service/el1/public/database/storage_space_manager", dirPermission);
+    recordStore_ = DelayedSingleton<CleanRecordStore>::GetInstance().get();
+    if (recordStore_ != nullptr) {
+        recordStore_->Init();
+    }
+    mockQuota_ = std::make_shared<MockQuotaCalculator>();
 }
 
 void CacheCleanControllerTest::TearDownTestCase()
@@ -58,17 +110,25 @@ void CacheCleanControllerTest::TearDownTestCase()
     // Clean up test files
     std::remove(testConfigFile_.c_str());
     rmdir(testConfigDir_.c_str());
+    if (recordStore_ != nullptr) {
+        recordStore_->Close();
+    }
 }
 
 void CacheCleanControllerTest::SetUp()
 {
     // Remove test config file if exists
     std::remove(testConfigFile_.c_str());
+    // Save original quotaCalculator_ and replace with mock for ExecuteCacheCleaning tests
+    originalQuota_ = controller_->quotaCalculator_;
+    controller_->quotaCalculator_ = mockQuota_;
+    controller_->stopCleanCacheFlag_.store(false);
 }
 
 void CacheCleanControllerTest::TearDown()
 {
-    // Clean up after each test
+    // Restore original quotaCalculator_
+    controller_->quotaCalculator_ = originalQuota_;
 }
 
 /**
@@ -1374,6 +1434,145 @@ HWTEST_F(CacheCleanControllerTest, ConvertAppInfosToCleanCacheInfo_AppendToExist
     EXPECT_EQ(result[1].userId, 200);
 
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_ConvertAppInfosToCleanCacheInfo_AppendToExisting end";
+}
+
+/**
+ * @brief Helper to query the last inserted freed_size from CleanRecordStore.
+ */
+static int64_t QueryLastFreedSize(CleanRecordStore *store)
+{
+    if (store == nullptr) {
+        return -1;
+    }
+    auto resultSet = store->Get(0, INT64_MAX);
+    if (resultSet == nullptr) {
+        return -1;
+    }
+    int32_t rowCount = 0;
+    resultSet->GetRowCount(rowCount);
+    if (rowCount <= 0) {
+        resultSet->Close();
+        return -1;
+    }
+    resultSet->GoToLastRow();
+    int32_t columnIndex = -1;
+    resultSet->GetColumnIndex("freed_size", columnIndex);
+    int64_t freedSize = -1;
+    resultSet->GetLong(columnIndex, freedSize);
+    resultSet->Close();
+    return freedSize;
+}
+
+/**
+ * @brief Helper to clear all records in CleanRecordStore before each test.
+ */
+static void ClearAllRecords(CleanRecordStore *store)
+{
+    if (store != nullptr) {
+        store->Delete(INT64_MAX);
+    }
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_ExecuteCacheCleaning_0001
+ * @tc.name: ExecuteCacheCleaning_NormalFreedSize
+ * @tc.desc: Test ExecuteCacheCleaning freed_size calculation with normal values (cleanBefore > cleanAfter)
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(CacheCleanControllerTest, ExecuteCacheCleaning_NormalFreedSize, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_NormalFreedSize start";
+    ASSERT_NE(controller_, nullptr);
+    ASSERT_NE(recordStore_, nullptr);
+
+    ClearAllRecords(recordStore_);
+
+    std::vector<CleanCacheInfo> emptyRanked;
+    std::vector<CleanCacheInfo> emptyAll;
+    CleanResources resources;
+    resources.userId = 100;
+    resources.totalStorage = 128LL * 1024 * 1024 * 1024;
+    CleanStats stats;
+    stats.cleanBefore = 10000;
+    stats.cleanAfter = 5000;
+
+    int32_t ret = controller_->ExecuteCacheCleaning(emptyRanked, emptyAll, resources, stats);
+    EXPECT_EQ(ret, E_OK);
+
+    int64_t freedSize = QueryLastFreedSize(recordStore_);
+    EXPECT_EQ(freedSize, 5000);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_NormalFreedSize end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_ExecuteCacheCleaning_0002
+ * @tc.name: ExecuteCacheCleaning_UnderflowProtection
+ * @tc.desc: Test ExecuteCacheCleaning freed_size is 0 when cleanBefore < cleanAfter (underflow protection)
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(CacheCleanControllerTest, ExecuteCacheCleaning_UnderflowProtection, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_UnderflowProtection start";
+    ASSERT_NE(controller_, nullptr);
+    ASSERT_NE(recordStore_, nullptr);
+
+    ClearAllRecords(recordStore_);
+
+    std::vector<CleanCacheInfo> emptyRanked;
+    std::vector<CleanCacheInfo> emptyAll;
+    CleanResources resources;
+    resources.userId = 100;
+    resources.totalStorage = 128LL * 1024 * 1024 * 1024;
+    CleanStats stats;
+    stats.cleanBefore = 5000;
+    stats.cleanAfter = 10000;
+
+    int32_t ret = controller_->ExecuteCacheCleaning(emptyRanked, emptyAll, resources, stats);
+    EXPECT_EQ(ret, E_OK);
+
+    int64_t freedSize = QueryLastFreedSize(recordStore_);
+    EXPECT_EQ(freedSize, 0);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_UnderflowProtection end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_ExecuteCacheCleaning_0003
+ * @tc.name: ExecuteCacheCleaning_OverflowProtection
+ * @tc.desc: Test ExecuteCacheCleaning freed_size is 0 when difference exceeds INT64_MAX (overflow protection)
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(CacheCleanControllerTest, ExecuteCacheCleaning_OverflowProtection, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_OverflowProtection start";
+    ASSERT_NE(controller_, nullptr);
+    ASSERT_NE(recordStore_, nullptr);
+
+    ClearAllRecords(recordStore_);
+
+    std::vector<CleanCacheInfo> emptyRanked;
+    std::vector<CleanCacheInfo> emptyAll;
+    CleanResources resources;
+    resources.userId = 100;
+    resources.totalStorage = 128LL * 1024 * 1024 * 1024;
+    CleanStats stats;
+    stats.cleanBefore = UINT64_MAX;
+    stats.cleanAfter = 0;
+
+    int32_t ret = controller_->ExecuteCacheCleaning(emptyRanked, emptyAll, resources, stats);
+    EXPECT_EQ(ret, E_OK);
+
+    int64_t freedSize = QueryLastFreedSize(recordStore_);
+    EXPECT_EQ(freedSize, 0);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_ExecuteCacheCleaning_OverflowProtection end";
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
