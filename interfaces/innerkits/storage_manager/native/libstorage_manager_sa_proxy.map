@@ -1,0 +1,41 @@
+# libstorage_manager_sa_proxy.map
+{
+  global:
+    extern "C++" {
+      OHOS::StorageDaemon*;
+      "VTT for OHOS::StorageManager::StorageManagerStub";
+      "VTT for OHOS::StorageManager::StorageManagerProxy";
+      "VTT for OHOS::StorageManager::VolumeExternal";
+      "VTT for OHOS::StorageManager::LargeDirInfo";
+      "VTT for OHOS::StorageManager::StorageStats";
+      "VTT for OHOS::StorageManager::VolumeCore";
+      "VTT for OHOS::StorageManager::NextDqBlk";
+      "VTT for OHOS::StorageManager::UserdataDirInfo";
+      "VTT for OHOS::StorageManager::LargeFileInfo";
+      "VTT for OHOS::StorageManager::BundleStats";
+      "VTT for OHOS::StorageManager::VolumeInfoStr";
+      "VTT for OHOS::StorageManager::ExtBundleStats";
+      "VTT for OHOS::StorageManager::UidSaInfo";
+      "VTT for OHOS::StorageManager::DirSpaceInfo";
+      "VTT for OHOS::StorageManager::Disk";
+      "VTT for OHOS::StorageManager::UeceActivationCallbackProxy";
+      "vtable for OHOS::StorageManager::StorageManagerStub";
+      "vtable for OHOS::StorageManager::StorageManagerProxy";
+      "vtable for OHOS::StorageManager::VolumeExternal";
+      "vtable for OHOS::StorageManager::LargeDirInfo";
+      "vtable for OHOS::StorageManager::StorageStats";
+      "vtable for OHOS::StorageManager::VolumeCore";
+      "vtable for OHOS::StorageManager::NextDqBlk";
+      "vtable for OHOS::StorageManager::UserdataDirInfo";
+      "vtable for OHOS::StorageManager::LargeFileInfo";
+      "vtable for OHOS::StorageManager::BundleStats";
+      "vtable for OHOS::StorageManager::VolumeInfoStr";
+      "vtable for OHOS::StorageManager::ExtBundleStats";
+      "vtable for OHOS::StorageManager::UidSaInfo";
+      "vtable for OHOS::StorageManager::DirSpaceInfo";
+      "vtable for OHOS::StorageManager::Disk";
+      "vtable for OHOS::StorageManager::UeceActivationCallbackProxy";
+    };
+  local:
+    *;
+}

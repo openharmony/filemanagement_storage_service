@@ -45,6 +45,8 @@ ohos_shared_library("storage_manager") {
     debug = false
   }
 
+  version_script = "libstorage_manager.map"
+
   sources = [
     "common_event/storage_common_event_subscriber.cpp",
     "ipc/src/storage_manager_provider.cpp",
@@ -83,6 +85,13 @@ ohos_shared_library("storage_manager") {
     "-Wl,-O1",
     "-Wl,-z,max-page-size=4096",
     "-Wl,-z,separate-code",
+  ]
+
+  ldflags += [
+    "-Wl,--exclude-libs=libGL.a",
+    "-Wl,--exclude-libs=libEGL.a",
+    "-Wl,--exclude-libs=libunwind.a",
+    "-Wl,--exclude-libs=libc++_static.a"
   ]
 
   configs = [ ":storage_manager_config" ]

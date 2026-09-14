@@ -1,0 +1,44 @@
+# libstorage_common_utils.map
+{
+  global:
+    extern "C++" {
+      OHOS::HiAudit*;
+      OHOS::StorageDaemon*;
+      OHOS::StorageService::StorageRadar*;
+      OHOS::StorageService::SetFlagUtils*;
+      OHOS::StorageService::START_USER_ID;
+      OHOS::StorageService::MAX_USER_ID;
+      OHOS::StorageService::TOP_USER_ID;
+      OHOS::StorageService::START_APP_CLONE_USER_ID;
+      OHOS::StorageService::MAX_APP_CLONE_USER_ID;
+      OHOS::StorageService::ZERO_USER;
+      OHOS::StorageService::UID_FILE_MANAGER;
+      OHOS::StorageService::USER_ID_BASE;
+      OHOS::StorageService::APP_UID;
+      OHOS::StorageService::ZERO_USER_MIN_UID;
+      OHOS::StorageService::ZERO_USER_MAX_UID;
+      OHOS::StorageService::DEFAULT_USER_ID;
+      OHOS::StorageService::MAX_APP_INDEX;
+      OHOS::StorageService::PRIORITY_LEVEL;
+      OHOS::StorageService::ANCO_SA_UID;
+      OHOS::StorageService::TWO_G_BYTE;
+      OHOS::StorageService::ONE_G_BYTE;
+      OHOS::StorageService::USER_ID;
+      OHOS::StorageService::BUNDLE_NAME;
+      OHOS::StorageService::CLEAN_LEVEL;
+      OHOS::StorageService::CLEAN_LEVEL_LOW;
+      OHOS::StorageService::CLEAN_LEVEL_MEDIUM;
+      OHOS::StorageService::CLEAN_LEVEL_HIGH;
+      OHOS::StorageService::CLEAN_LEVEL_RICH;
+      OHOS::StorageService::CLONE_STATE;
+      OHOS::StorageService::CLEAN_LOW_TIME;
+      OHOS::StorageService::CLEAN_MEDIUM_TIME;
+      OHOS::StorageService::CLEAN_HIGH_TIME;
+      OHOS::StorageService::CLEAN_RICH_TIME;
+      OHOS::StorageService::ROOT_UID;
+      OHOS::StorageService::SYSTEM_UID;
+      OHOS::StorageService::FOUNDATION_UID;
+    };
+  local:
+    *;
+}
