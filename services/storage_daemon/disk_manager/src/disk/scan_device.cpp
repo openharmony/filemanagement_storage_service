@@ -188,7 +188,7 @@ std::vector<BlockInfo> ScanDevice::GetDataDisks()
             LOGI("Ignore %{public}s", deviceName.c_str());
             continue;
         }
-        if (IsPathTraversalUnSafe(deviceName)) {
+        if (IsFilePathInvalid(deviceName)) {
             LOGE("Ignore invalid deviceName:%{public}s", deviceName.c_str());
             continue;
         }

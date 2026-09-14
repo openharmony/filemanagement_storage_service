@@ -1608,19 +1608,19 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFilePathInvalid_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: FileUtilsTest_IsPathTraversalUnSafe_001
- * @tc.desc: Verify the IsPathTraversalUnSafe function.
+ * @tc.name: FileUtilsTest_ContainsInvalidChars_001
+ * @tc.desc: Verify the ContainsInvalidChars function.
  * @tc.type: FUNC
  */
-HWTEST_F(FileUtilsTest, FileUtilsTest_IsPathTraversalUnSafe_001, TestSize.Level1)
+HWTEST_F(FileUtilsTest, FileUtilsTest_ContainsInvalidChars_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 start";
-    EXPECT_TRUE(IsPathTraversalUnSafe("../somefile.txt"));
-    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/../otherfile.txt"));
-    EXPECT_TRUE(IsPathTraversalUnSafe("/some/path/.."));
+    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsInvalidChars_001 start";
+    EXPECT_TRUE(ContainsInvalidChars("../somefile.txt"));
+    EXPECT_TRUE(ContainsInvalidChars("/some/path/../otherfile.txt"));
+    EXPECT_TRUE(ContainsInvalidChars("/some/path/.."));
 
-    EXPECT_FALSE(IsPathTraversalUnSafe("/some/valid/path/to/file.txt"));
-    GTEST_LOG_(INFO) << "FileUtilsTest_IsPathTraversalUnSafe_001 end";
+    EXPECT_FALSE(ContainsInvalidChars("/some/valid/path/to/file.txt"));
+    GTEST_LOG_(INFO) << "FileUtilsTest_ContainsInvalidChars_001 end";
 }
 
 /**
