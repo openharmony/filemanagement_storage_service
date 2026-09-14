@@ -16,11 +16,15 @@
 #include "netlink/netlink_handler.h"
 #ifdef DISK_MANAGER
 #include "disk_manager_client.h"
+// E_SA_IS_UNLOADING (27) defined in disk_manager_errno.h; kept as a local
+// constant to avoid cross-component header dependency.
+constexpr int32_t DISK_MANAGER_SA_IS_UNLOADING = 27;
 #endif
 
 #include "disk/disk_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include <unistd.h>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -73,7 +77,12 @@ void NetlinkHandler::OnEvent(char *msg)
             return;
         }
 #ifdef DISK_MANAGER
-        OHOS::DiskManager::DiskManagerClient::GetInstance().OnBlockDiskUevent(convertedMsg);
+        int32_t ret = OHOS::DiskManager::DiskManagerClient::GetInstance().OnBlockDiskUevent(convertedMsg);
+        if (ret == DISK_MANAGER_SA_IS_UNLOADING) {
+            LOGW("DiskManager SA is unloading, retry after 1s");
+            sleep(1);
+            OHOS::DiskManager::DiskManagerClient::GetInstance().OnBlockDiskUevent(convertedMsg);
+        }
 #endif
     }
 }
