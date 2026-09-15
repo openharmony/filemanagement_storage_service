@@ -10,8 +10,8 @@
       OHOS::StorageManager::BundleManagerAdapterProxy*;
       OHOS::StorageManager::StorageDaemonCommunication*;
       OHOS::StorageManager::StorageManagerScan*;
-      "VTT for OHOS::StorageManager::StorageManagerStub";
-      "vtable for OHOS::StorageManager::UeceActivationCallbackProxy";
+      "VTT for OHOS::StorageManager::StorageManagerProvider";
+      "vtable for OHOS::StorageManager::StorageManagerProvider";
     };
   local:
     *;
