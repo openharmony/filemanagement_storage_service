@@ -1483,11 +1483,11 @@ HWTEST_F(StorageManagerScanTest, STORAGE_GetRootSize_00002, testing::ext::TestSi
     GTEST_LOG_(INFO) << "STORAGE_GetRootSize_00002 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     storageManagerScan.rootSize_ = 1024 * 1024 * 500;
-    std::vector<int64_t> results;
+    std::vector<int64_t> results(5, 0);
     std::vector<std::thread> threads;
     for (int i = 0; i < 5; ++i) {
-        threads.emplace_back([&storageManagerScan, &results]() {
-            results.push_back(storageManagerScan.GetRootSize());
+        threads.emplace_back([&storageManagerScan, &results, i]() {
+            results[i] = storageManagerScan.GetRootSize();
         });
     }
     for (auto &t : threads) {
@@ -1513,11 +1513,11 @@ HWTEST_F(StorageManagerScanTest, STORAGE_GetSystemSize_00002, testing::ext::Test
     GTEST_LOG_(INFO) << "STORAGE_GetSystemSize_00002 start";
     auto &storageManagerScan = StorageManagerScan::GetInstance();
     storageManagerScan.systemSize_ = 1024 * 1024 * 300;
-    std::vector<int64_t> results;
+    std::vector<int64_t> results(5, 0);
     std::vector<std::thread> threads;
     for (int i = 0; i < 5; ++i) {
-        threads.emplace_back([&storageManagerScan, &results]() {
-            results.push_back(storageManagerScan.GetSystemSize());
+        threads.emplace_back([&storageManagerScan, &results, i]() {
+            results[i] = storageManagerScan.GetSystemSize();
         });
     }
     for (auto &t : threads) {

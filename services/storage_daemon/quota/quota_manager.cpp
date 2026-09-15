@@ -18,7 +18,6 @@
 #include <charconv>
 #include <chrono>
 #include <ctime>
-#include <dirent.h>
 #include <linux/fs.h>
 #include <linux/quota.h>
 #include <stack>
@@ -1223,8 +1222,6 @@ static bool IsExcludeDir(const char* path)
 UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vector<UserdataDirInfo> &scanDirs)
 {
     struct stat statbuf;
-    struct dirent *entry;
-    DIR *dir;
     UserdataDirInfo dirInfo = {path, 0, 0};
 
     if (IsExcludeDir(path.c_str())) {
@@ -1240,30 +1237,21 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
         return dirInfo;
     }
 
-    dirInfo.totalSize_ = statbuf.st_blocks * BLOCK_BYTE;
+    dirInfo.totalSize_ = static_cast<int64_t>(statbuf.st_blocks) * BLOCK_BYTE;
     dirInfo.totalCnt_ = 1;
     if (!S_ISDIR(statbuf.st_mode)) {
         return dirInfo;
     }
-    dir = opendir(path.c_str());
+    DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
         LOGE("[L2:QuotaManager] ScanDirRecurse: opendir failed, path=%{public}s, errno=%{public}d",
             path.c_str(), errno);
         return dirInfo;
     }
 
-    while ((entry = readdir(dir)) != nullptr) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
-
-        std::string fullPath = path + "/" + entry->d_name;
-        UserdataDirInfo subDirInfo = ScanDirRecurse(fullPath, scanDirs);
-        dirInfo.totalSize_ += subDirInfo.totalSize_;
-        dirInfo.totalCnt_ += subDirInfo.totalCnt_;
-    }
-
+    ScanSubDirsAndMerge(path, dir, dirInfo, scanDirs);
     closedir(dir);
+
     if (dirInfo.totalSize_ >= BYTES_PRE_KB * BYTES_PRE_KB * BYTES_PRE_KB) {
         scanDirs.push_back(dirInfo);
         std::string sizeStr = HumanReadableSize(dirInfo.totalSize_);
@@ -1271,6 +1259,29 @@ UserdataDirInfo QuotaManager::ScanDirRecurse(const std::string &path, std::vecto
             sizeStr.c_str(), dirInfo.totalCnt_, path.c_str());
     }
     return dirInfo;
+}
+
+void QuotaManager::ScanSubDirsAndMerge(const std::string &path, DIR *dir,
+    UserdataDirInfo &dirInfo, std::vector<UserdataDirInfo> &scanDirs)
+{
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        std::string fullPath = path + "/" + entry->d_name;
+        UserdataDirInfo subDirInfo = ScanDirRecurse(fullPath, scanDirs);
+        if (dirInfo.totalSize_ > INT64_MAX - subDirInfo.totalSize_) {
+            dirInfo.totalSize_ = INT64_MAX;
+        } else {
+            dirInfo.totalSize_ += subDirInfo.totalSize_;
+        }
+        if (dirInfo.totalCnt_ > INT32_MAX - subDirInfo.totalCnt_) {
+            dirInfo.totalCnt_ = INT32_MAX;
+        } else {
+            dirInfo.totalCnt_ += subDirInfo.totalCnt_;
+        }
+    }
 }
 
 int32_t QuotaManager::ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs)

@@ -136,12 +136,14 @@ int32_t GetMediaStorageStats(StorageStats &storageStats, int32_t userId)
     LOGE("GetMediaStorageStats start Query");
     auto queryResultSet = dataShareHelper->Query(uri, predicates, columns);
     if (queryResultSet == nullptr) {
+        dataShareHelper->Release();
         LOGE("queryResultSet is null!");
         return E_QUERY;
     }
     auto count = 0;
     auto ret = queryResultSet->GetRowCount(count);
     if ((ret != E_OK) || (count < 0)) {
+        dataShareHelper->Release();
         LOGE("get row count from rdb failed");
         return E_GETROWCOUNT;
     }
@@ -419,7 +421,8 @@ int32_t StorageStatusManager::GetAppSize(int32_t userId, int64_t &appSize)
             "bundleStats[LOCAL]: %{public}lld, zeroUserBundleStats[LOCAL]: %{public}lld",
             curUserId, userId, static_cast<long long>(bundleStats[LOCAL]),
             static_cast<long long>(zeroUserBundleStats[LOCAL]));
-        appSize = bundleStats[LOCAL] - zeroUserBundleStats[LOCAL];
+        appSize = bundleStats[LOCAL] > zeroUserBundleStats[LOCAL] ?
+            bundleStats[LOCAL] - zeroUserBundleStats[LOCAL] : 0;
     }
     LOGD("StorageStatusManager::GetAppSize end");
     return E_OK;

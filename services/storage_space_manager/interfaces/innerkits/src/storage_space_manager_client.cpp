@@ -86,6 +86,10 @@ int32_t StorageSpaceManagerClient::LoadStorageSpaceManagerService()
         LOGE("LoadService samgr is nullptr");
         return E_SA_IS_NULLPTR;
     }
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        loadFinished_ = false;
+    }
     int32_t ret = samgr->LoadSystemAbility(STORAGE_SPACE_MANAGER_SA_ID, loadCallback);
     if (ret != ERR_OK) {
         LOGE("LoadSystemAbility failed, ret=%{public}d", ret);
@@ -94,6 +98,7 @@ int32_t StorageSpaceManagerClient::LoadStorageSpaceManagerService()
     std::unique_lock<std::mutex> lock(mutex_);
     if (storageSpaceManager_ != nullptr) {
         LOGI("LoadService success");
+        loadFinished_ = false;
         return E_OK;
     }
     bool ready = proxyConVar_.wait_for(lock, std::chrono::milliseconds(LOAD_SA_TIMEOUT_MS),
@@ -115,7 +120,9 @@ void StorageSpaceManagerClient::LoadSystemAbilitySuccess(const sptr<IRemoteObjec
         if (deathRecipient_ == nullptr) {
             deathRecipient_ = new (std::nothrow) SsmDeathRecipient();
         }
-        remoteObject->AddDeathRecipient(deathRecipient_);
+        if (deathRecipient_ != nullptr) {
+            remoteObject->AddDeathRecipient(deathRecipient_);
+        }
         storageSpaceManager_ = iface_cast<IStorageSpaceManager>(remoteObject);
     }
     loadFinished_ = true;
@@ -155,23 +162,28 @@ int32_t StorageSpaceManagerClient::ResetProxy()
 
 void StorageSpaceManagerClient::SubscribeSsmSA()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (statusListener_ != nullptr) {
-        return;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (statusListener_ != nullptr) {
+            return;
+        }
+        statusListener_ = new (std::nothrow) SystemAbilityStatusListener();
+        if (statusListener_ == nullptr) {
+            LOGE("SubscribeSsmSA new listener failed");
+            return;
+        }
     }
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
         LOGE("SubscribeSsmSA samgr is nullptr");
-        return;
-    }
-    statusListener_ = new (std::nothrow) SystemAbilityStatusListener();
-    if (statusListener_ == nullptr) {
-        LOGE("SubscribeSsmSA new listener failed");
+        std::lock_guard<std::mutex> lock(mutex_);
+        statusListener_ = nullptr;
         return;
     }
     int32_t ret = samgr->SubscribeSystemAbility(STORAGE_SPACE_MANAGER_SA_ID, statusListener_);
     if (ret != ERR_OK) {
         LOGE("SubscribeSystemAbility failed, ret=%{public}d", ret);
+        std::lock_guard<std::mutex> lock(mutex_);
         statusListener_ = nullptr;
         return;
     }
@@ -182,6 +194,12 @@ void StorageSpaceManagerClient::OnAddSystemAbility()
 {
     LOGI("SA restarted, clear proxy cache for reconnect");
     std::lock_guard<std::mutex> lock(mutex_);
+    if (storageSpaceManager_ != nullptr && deathRecipient_ != nullptr) {
+        sptr<IRemoteObject> remote = storageSpaceManager_->AsObject();
+        if (remote != nullptr) {
+            remote->RemoveDeathRecipient(deathRecipient_);
+        }
+    }
     storageSpaceManager_ = nullptr;
     deathRecipient_ = nullptr;
     loadFinished_ = false;

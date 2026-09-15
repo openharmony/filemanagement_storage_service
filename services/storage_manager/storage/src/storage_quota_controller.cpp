@@ -43,12 +43,14 @@ StorageQuotaController &StorageQuotaController::GetInstance()
 void StorageQuotaController::UpdateBaseLineByUid()
 {
     LOGI("UpdateBaseLineByUid start");
-    std::lock_guard<std::mutex> lock(quotaControllerMtx_);
     std::vector<BaselineCfg> params;
-    int32_t ret = ReadCcmConfigFile(params);
-    if (ret != E_OK) {
-        LOGE("ReadCcmConfigFile failed");
-        return;
+    {
+        std::lock_guard<std::mutex> lock(quotaControllerMtx_);
+        int32_t ret = ReadCcmConfigFile(params);
+        if (ret != E_OK) {
+            LOGE("ReadCcmConfigFile failed");
+            return;
+        }
     }
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
 
