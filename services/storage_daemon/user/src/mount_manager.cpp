@@ -28,6 +28,7 @@
 #include "user/mount_constant.h"
 #include "utils/file_utils.h"
 #include "utils/mount_argument_utils.h"
+#include "utils/parse_user_id.h"
 #include "utils/string_utils.h"
 #include "user/user_path_resolver.h"
 #include "user/system_mount_manager.h"
@@ -928,7 +929,11 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
         if (!StringIsNumber(subPath)) {
             continue;
         }
-        int32_t userId = atoi(subPath.c_str());
+        int32_t userId = 0;
+        if (!ParseUserIdInt32(subPath, userId)) {
+            LOGE("invalid user id %{public}s", subPath.c_str());
+            continue;
+        }
         if (userId < DEFAULT_USERID) {
             continue;
         }
