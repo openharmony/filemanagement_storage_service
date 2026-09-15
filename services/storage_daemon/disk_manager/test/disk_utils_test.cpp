@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <fcntl.h>
+#include <fstream>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <sys/stat.h>
@@ -1664,7 +1665,231 @@ HWTEST_F(ExtDiskUtilsTest, GetCapacity_BlankDiscUsedSizeZero, TestSize.Level1)
 }
 
 /**
- * @tc.name: DeletePartitionInfo_InvalidDiskId
+ * @tc.name: GetCapacity_CdType_GetCdUsedCapacityFailed
+ * @tc.desc: Verify GetCapacity with CD type when GetCdUsedCapacity fails (ioctl error).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetCapacity_CdType_GetCdUsedCapacityFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetCapacity_CdType_GetCdUsedCapacityFailed start";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    // GetCDType called twice: GetCapacity + IsCDBlank (in AdjustBlankDiscCapacity)
+    EXPECT_CALL(*diskUtilMoc_, GetCDType(_))
+        .WillOnce(Return("CD-ROM"))
+        .WillOnce(Return("CD-ROM"));
+    // GetDiscCapacity -> GetCdTotalCapacity (mocked) returns capacity
+    EXPECT_CALL(*diskUtilMoc_, GetCdTotalCapacity(_, _))
+        .WillOnce(Invoke([](int, int64_t &cap) { cap = 737280000; return E_OK; }));
+    // GetCdUsedCapacity uses real impl -> SendScsiCmd -> ioctl fails
+    g_ioctlRet = -1;
+    // After GetCdUsedCapacity fails, usedSize=-1 -> GetUsedSizeFromSysfs (real impl, will fail)
+    // -> usedSize=totalSize -> freeSize=0
+    // AdjustBlankDiscCapacity -> IsCDBlank -> ReadCDDiscInfo via ioctl (still fails)
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("udf"));
+    int32_t ret = DiskUtils::GetCapacity(testDevPath_, totalSize, freeSize);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(totalSize, 737280000);
+    // usedSize = -1 -> GetUsedSizeFromSysfs fails -> usedSize = totalSize -> freeSize = 0
+    EXPECT_EQ(freeSize, 0);
+    g_ioctlRet = 0;
+    GTEST_LOG_(INFO) << "GetCapacity_CdType_GetCdUsedCapacityFailed end";
+}
+
+/**
+ * @tc.name: GetCapacity_CdType_GetCdUsedCapacityNwaInvalid
+ * @tc.desc: Verify GetCapacity with CD type when GetCdUsedCapacity returns E_ERR (NWA invalid).
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetCapacity_CdType_GetCdUsedCapacityNwaInvalid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetCapacity_CdType_GetCdUsedCapacityNwaInvalid start";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    EXPECT_CALL(*diskUtilMoc_, GetCDType(_))
+        .WillOnce(Return("CD-R"))
+        .WillOnce(Return("CD-R"));
+    EXPECT_CALL(*diskUtilMoc_, GetCdTotalCapacity(_, _))
+        .WillOnce(Invoke([](int, int64_t &cap) { cap = 737280000; return E_OK; }));
+    // GetCdUsedCapacity: ioctl succeeds but data_buf is all zeros -> NWA valid bit = 0 -> E_ERR
+    g_ioctlRet = 0;
+    g_ioctlInfo = SG_INFO_OK;
+    // After GetCdUsedCapacity fails, usedSize=-1 -> GetUsedSizeFromSysfs (real impl, fails)
+    // -> usedSize=totalSize
+    // AdjustBlankDiscCapacity -> IsCDBlank -> ReadCDDiscInfo via ioctl (succeeds, discStatus=0)
+    // -> isBlank=true -> usedSize=0, discType is CD-R (not DVD/BD) -> return
+    // freeSize = totalSize - 0 = totalSize
+    int32_t ret = DiskUtils::GetCapacity(testDevPath_, totalSize, freeSize);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(totalSize, 737280000);
+    EXPECT_EQ(freeSize, totalSize);
+    g_ioctlRet = 0;
+    g_ioctlInfo = 0;
+    GTEST_LOG_(INFO) << "GetCapacity_CdType_GetCdUsedCapacityNwaInvalid end";
+}
+
+/**
+ * @tc.name: GetCapacity_NonCdType
+ * @tc.desc: Verify GetCapacity with non-CD type skips GetCdUsedCapacity branch.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetCapacity_NonCdType, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetCapacity_NonCdType start";
+    int64_t totalSize = 0;
+    int64_t freeSize = 0;
+    // Use BD-ROM to cover the false branch of discType.find("CD") == 0
+    EXPECT_CALL(*diskUtilMoc_, GetCDType(_))
+        .WillOnce(Return("BD-ROM"))
+        .WillOnce(Return("BD-ROM"));
+    EXPECT_CALL(*diskUtilMoc_, GetBdTotalCapacity(_, _))
+        .WillOnce(Invoke([](int, int64_t &cap) { cap = 25025314816L; return E_OK; }));
+    // usedSize = -1 (CD branch skipped) -> GetUsedSizeFromSysfs (real impl, fails) -> usedSize = totalSize
+    // AdjustBlankDiscCapacity -> IsCDBlank -> ReadCDDiscInfo via ioctl
+    g_ioctlRet = -1;
+    EXPECT_CALL(*diskUtilMoc_, GetBlkidData(_, _)).WillOnce(Return("udf"));
+    int32_t ret = DiskUtils::GetCapacity(testDevPath_, totalSize, freeSize);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(totalSize, 25025314816L);
+    EXPECT_EQ(freeSize, 0); // usedSize = totalSize -> freeSize = 0
+    g_ioctlRet = 0;
+    GTEST_LOG_(INFO) << "GetCapacity_NonCdType end";
+}
+
+/**
+ * @tc.name: GetVolumeOpProcess_GetRealPathFailed
+ * @tc.desc: Verify GetVolumeOpProcess returns E_PARAMS_INVALID when GetRealPath fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetVolumeOpProcess_GetRealPathFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_GetRealPathFailed start";
+    int32_t progressPct = 0;
+    // /data/local/vol_tmp/percent does not exist -> GetRealPath fails
+    int32_t ret = DiskUtils::GetVolumeOpProcess("vol123", progressPct);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_GetRealPathFailed end";
+}
+
+/**
+ * @tc.name: GetVolumeOpProcess_FilePathInvalid
+ * @tc.desc: Verify GetVolumeOpProcess returns E_PARAMS_INVALID when IsFilePathInvalid returns true.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetVolumeOpProcess_FilePathInvalid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_FilePathInvalid start";
+    // Create the directory and file so GetRealPath succeeds
+    mkdir("/data/local/vol_tmp", 0755);
+    int fd = creat("/data/local/vol_tmp/percent", 0600);
+    if (fd >= 0) {
+        close(fd);
+    }
+    int32_t progressPct = 0;
+    // IsFilePathInvalid returns true -> E_PARAMS_INVALID
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(true));
+    int32_t ret = DiskUtils::GetVolumeOpProcess("vol123", progressPct);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    // Cleanup
+    unlink("/data/local/vol_tmp/percent");
+    rmdir("/data/local/vol_tmp");
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_FilePathInvalid end";
+}
+
+/**
+ * @tc.name: GetVolumeOpProcess_ReadProgressFailed
+ * @tc.desc: Verify GetVolumeOpProcess returns error when file content is empty.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetVolumeOpProcess_ReadProgressFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_ReadProgressFailed start";
+    // Create directory and empty file so GetRealPath succeeds but GetLatestProgressFromFile fails
+    mkdir("/data/local/vol_tmp", 0755);
+    int fd = creat("/data/local/vol_tmp/percent", 0600);
+    if (fd >= 0) {
+        close(fd);
+    }
+    int32_t progressPct = 0;
+    // IsFilePathInvalid returns false -> proceed to read file
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(false));
+    // File is empty -> GetLatestProgressFromFile returns E_NOT_SUPPORT
+    int32_t ret = DiskUtils::GetVolumeOpProcess("vol123", progressPct);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    // Cleanup
+    unlink("/data/local/vol_tmp/percent");
+    rmdir("/data/local/vol_tmp");
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_ReadProgressFailed end";
+}
+
+/**
+ * @tc.name: GetVolumeOpProcess_Success
+ * @tc.desc: Verify GetVolumeOpProcess returns E_OK and reads progress from file.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, GetVolumeOpProcess_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_Success start";
+    // Create directory and file with valid content
+    mkdir("/data/local/vol_tmp", 0755);
+    int fd = open("/data/local/vol_tmp/percent", O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    ASSERT_GE(fd, 0);
+    const char *content = "50";
+    write(fd, content, strlen(content));
+    close(fd);
+
+    int32_t progressPct = 0;
+    EXPECT_CALL(*fileUtilMoc_, IsFilePathInvalid(_)).WillOnce(Return(false));
+    int32_t ret = DiskUtils::GetVolumeOpProcess("vol123", progressPct);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(progressPct, 50);
+    // Cleanup
+    unlink("/data/local/vol_tmp/percent");
+    rmdir("/data/local/vol_tmp");
+    GTEST_LOG_(INFO) << "GetVolumeOpProcess_Success end";
+}
+
+/**
+ * @tc.name: WriteBurnProgress_WriteFailed
+ * @tc.desc: Verify WriteBurnProgress returns E_ERR when directory does not exist.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, WriteBurnProgress_WriteFailed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "WriteBurnProgress_WriteFailed start";
+    // Ensure /data/local/vol_tmp does not exist -> SaveStringToFileSync fails
+    rmdir("/data/local/vol_tmp");
+    int32_t ret = DiskUtils::WriteBurnProgress(101);
+    EXPECT_EQ(ret, E_ERR);
+    GTEST_LOG_(INFO) << "WriteBurnProgress_WriteFailed end";
+}
+
+/**
+ * @tc.name: WriteBurnProgress_Success
+ * @tc.desc: Verify WriteBurnProgress returns E_OK when directory exists.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtDiskUtilsTest, WriteBurnProgress_Success, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "WriteBurnProgress_Success start";
+    // Create directory so SaveStringToFileSync can write
+    mkdir("/data/local/vol_tmp", 0755);
+    int32_t ret = DiskUtils::WriteBurnProgress(101);
+    EXPECT_EQ(ret, E_OK);
+    // Verify the content was written
+    std::ifstream ifs("/data/local/vol_tmp/percent");
+    ASSERT_TRUE(ifs.is_open());
+    int32_t value = 0;
+    ifs >> value;
+    ifs.close();
+    EXPECT_EQ(value, 101);
+    // Cleanup
+    unlink("/data/local/vol_tmp/percent");
+    rmdir("/data/local/vol_tmp");
+    GTEST_LOG_(INFO) << "WriteBurnProgress_Success end";
+}
+
+/**
  * @tc.desc: Verify DeletePartitionInfo returns E_PARAMS_INVALID with path traversal diskId.
  * @tc.type: FUNC
  * @tc.require: AR000GK4HB

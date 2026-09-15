@@ -88,6 +88,7 @@ constexpr uint8_t BLOCK_SIZE_BYTE_2 = 6;
 constexpr uint8_t BLOCK_SIZE_BYTE_3 = 7;
 constexpr int32_t FORMAT_PARTITION_TIMEOUT_S = 5 * 60;
 constexpr int32_t PARTITION_HMFS_VALID = 2;
+constexpr const char *VOL_TMP_PERCENT_PATH = "/data/local/vol_tmp/percent";
 
 const std::map<std::string, std::string> formatTypeMap_ = {
     {"exfat", "mkfs.exfat"},
@@ -1149,7 +1150,7 @@ int32_t DiskUtils::GetVolumeOpProcess(const std::string &volId, int32_t &progres
     int32_t err = 0;
 
     std::string filePath;
-    if (!GetRealPath("/data/local/vol_tmp/percent", filePath)) {
+    if (!GetRealPath(VOL_TMP_PERCENT_PATH, filePath)) {
         LOGE("GetVolumeOpProcess:<<< EXIT FAILED <<< volId: %{public}s",
             volId.c_str());
         return E_PARAMS_INVALID;
@@ -1170,6 +1171,20 @@ int32_t DiskUtils::GetVolumeOpProcess(const std::string &volId, int32_t &progres
     LOGI("GetVolumeOpProcess:<<< EXIT SUCCESS <<< volId=%{public}s, progressPct=%{public}d",
         volId.c_str(), progressPct);
     return err;
+}
+
+int32_t DiskUtils::WriteBurnProgress(int32_t progress)
+{
+    LOGI("WriteBurnProgress: >>> ENTER <<< progress=%{public}d", progress);
+    std::string errMsg;
+    std::string data = std::to_string(progress);
+    if (!SaveStringToFileSync(VOL_TMP_PERCENT_PATH, data, errMsg)) {
+        LOGE("WriteBurnProgress: <<< EXIT FAILED <<< write %{public}s failed, errMsg=%{public}s",
+            VOL_TMP_PERCENT_PATH, errMsg.c_str());
+        return E_ERR;
+    }
+    LOGI("WriteBurnProgress: <<< EXIT SUCCESS <<< progress=%{public}d", progress);
+    return E_OK;
 }
 
 int32_t DiskUtils::VerifyBurnData(const std::string &devPath, int32_t verifyType)
@@ -1203,7 +1218,8 @@ static int32_t GetDvdPlusRwTotalCapacity(int fd, int64_t &dvdTotalCapacity)
     cmdBuf[0] = GPCMD_READ_CDVD_CAPACITY;
     cmdBuf[CDB_ALLOCATION_LENGTH_HIGH] = (dataLen >> BYTE_SHIFT_8) & BYTE_MASK;
     cmdBuf[CDB_ALLOCATION_LENGTH_LOW] = dataLen & BYTE_MASK;
-    ret = SendScsiCmd(fd, cmdBuf, cmdLen, dataBuf, dataLen);
+    ScsiCmdInfo cmdInfo = { cmdBuf, cmdLen, dataBuf, dataLen };
+    ret = SendScsiCmd(fd, cmdInfo);
     if (ret != 0) {
         LOGE("GetDvdPlusRwTotalCapacity SendScsiCmd failed, ret val is %{public}d", ret);
         return E_ERR;
@@ -1314,8 +1330,18 @@ int32_t DiskUtils::GetCapacity(const std::string& devPath, int64_t &totalSize, i
     std::string discType = GetCDType(devPath);
     LOGI("label is %{public}s", discType.c_str());
     totalSize = GetDiscCapacity(cmdFd, discType);
+    int64_t usedSize = -1;
+    if (discType.find("CD") == 0) {
+        int ret = GetCdUsedCapacity(cmdFd, usedSize);
+        if (ret != E_OK) {
+            LOGE("GetCapacity: GetCdUsedCapacity failed, ret=%{public}d", ret);
+            usedSize = -1;
+        }
+    }
     close(cmdFd);
-    int64_t usedSize = GetUsedSizeFromSysfs(devPath);
+    if (usedSize < 0) {
+        usedSize = GetUsedSizeFromSysfs(devPath);
+    }
     if (usedSize < 0) {
         usedSize = totalSize;
     }
@@ -1397,14 +1423,15 @@ int32_t DiskUtils::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
 int32_t DiskUtils::CleanTempDirectory()
 {
     LOGI("CleanTempDirectory: >>> ENTER <<<");
-    std::vector<std::string> cmd = {"rm", "-rf", "/data/local/vol_tmp/percent"};
+    std::vector<std::string> cmd = {"rm", "-rf", VOL_TMP_PERCENT_PATH};
     std::vector<std::string> output;
     int32_t err = ForkExec(cmd, &output);
     if (err != E_OK) {
         for (const auto& s : output) {
             LOGI("CleanTempDirectory: output=%{public}s", s.c_str());
         }
-        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf /data/local/vol_tmp/percent failed, err=%{public}d", err);
+        LOGE("CleanTempDirectory: <<< EXIT FAILED <<< rm -rf %{public}s failed, err=%{public}d",
+            VOL_TMP_PERCENT_PATH, err);
         return err;
     }
     LOGI("CleanTempDirectory: <<< EXIT SUCCESS <<<");
