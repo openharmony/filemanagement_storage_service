@@ -76,9 +76,11 @@ void StorageSpaceManagerProvider::OnStop()
     serviceReady_.store(false, std::memory_order_release);
     DelayedSingleton<CleanRecordStore>::GetInstance()->Close();
     
-    if (dataShareService_ != nullptr) {
-        delete dataShareService_;
-        dataShareService_ = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(dataShareMtx_);
+        if (dataShareService_ != nullptr) {
+            dataShareService_ = nullptr;
+        }
     }
     DestroyUnloadHandler();
 
@@ -356,6 +358,10 @@ int32_t StorageSpaceManagerProvider::CleanBundleCache(int32_t userId)
         LOGE("Permission denied, need %{public}s", PERMISSION_STORAGE_MANAGER.c_str());
         return E_PERMISSION_DENIED;
     }
+    if (!IpcCallerAuth::IsCallingNativeToken()) {
+        LOGE("Permission denied, caller is not SA");
+        return E_PERMISSION_DENIED;
+    }
     if (!ExitIdleState()) {
         return E_SERVICE_ON_IDLE;
     }
@@ -378,17 +384,18 @@ int32_t StorageSpaceManagerProvider::GetDataShareService(const std::string &uri,
 
     AddRunningIpcCount();
     LOGI("Get datashare");
-    if (dataShareService_ == nullptr) {
-        dataShareService_ = new CleanRecordDataShareStub();
-    }
     auto tokenId = IPCSkeleton::GetCallingTokenID();
-    if (dataShareService_->VerifyPermissionAndUri(uri, tokenId)) {
-        remoteObject = dataShareService_->AsObject();
-        SubtractRunningIpcCount();
-        return E_OK;
+    {
+        std::lock_guard<std::mutex> lock(dataShareMtx_);
+        if (dataShareService_ == nullptr) {
+            dataShareService_ = new CleanRecordDataShareStub();
+        }
+        if (dataShareService_->VerifyPermissionAndUri(uri, tokenId)) {
+            remoteObject = dataShareService_->AsObject();
+        }
     }
     SubtractRunningIpcCount();
-    return E_PERMISSION_DENIED;
+    return (remoteObject != nullptr) ? E_OK : E_PERMISSION_DENIED;
 }
 
 } // namespace StorageSpaceManager

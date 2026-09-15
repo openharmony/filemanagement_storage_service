@@ -125,7 +125,7 @@ private:
     bool SendData(void *&buffer, size_t size, const void *data);
     bool GetData(void *&buffer, size_t size, const void *data);
 
-    ErrCode GetParcelInfoFromAshMem(MessageParcel &reply, void *&data);
+    ErrCode GetParcelInfoFromAshMem(MessageParcel &reply, void *&data, int32_t &ashMemSize);
 
     static inline BrokerDelegator<BundleManagerAdapterProxy> delegator_;
 };

@@ -55,7 +55,14 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
             bundleMgr_ = nullptr;
             return nullptr;
         }
-        bundleMgr_->AsObject()->AddDeathRecipient(deathRecipient_);
+        sptr<IRemoteObject> remoteObj = bundleMgr_->AsObject();
+        if (remoteObj == nullptr) {
+            LOGE("BundleMgrConnector::GetBundleMgrProxy AsObject is nullptr");
+            deathRecipient_ = nullptr;
+            bundleMgr_ = nullptr;
+            return nullptr;
+        }
+        remoteObj->AddDeathRecipient(deathRecipient_);
     }
     return bundleMgr_;
 }
