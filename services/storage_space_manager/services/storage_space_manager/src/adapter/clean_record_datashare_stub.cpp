@@ -27,6 +27,7 @@ namespace StorageSpaceManager {
 using namespace OHOS::DataShare;
 using namespace OHOS::Security::AccessToken;
 constexpr int32_t SINGLE_PARAMS_SIZE = 3;
+constexpr size_t MAX_CONDITIONS_SIZE = 10;
 DataShareNonSilentConfig CleanRecordDataShareStub::GetConfig()
 {
     NonSilentConfigRecord record = {
@@ -209,8 +210,8 @@ std::shared_ptr<DataShareResultSet> CleanRecordDataShareStub::Query(const Uri &u
         return nullptr;
     }
     auto conditions = predicatesObj["conditions"];
-    if (!conditions.is_array()) {
-        LOGE("conditions is not an array");
+    if (!conditions.is_array() || conditions.size() > MAX_CONDITIONS_SIZE) {
+        LOGE("conditions is not an array or exceeds max size");
         businessError.SetCode(E_INVALID_ARGUMENT);
         provider->SubtractRunningIpcCount();
         return nullptr;
