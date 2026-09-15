@@ -72,6 +72,7 @@ public:
     static int32_t Erase(const std::string &devPath);
     static int32_t Eject(const std::string &devName);
     static int32_t GetVolumeOpProcess(const std::string &volId, int32_t &progressPct);
+    static int32_t WriteBurnProgress(int32_t progress);
     static int32_t VerifyBurnData(const std::string &devPath, int32_t verifyType);
     static int32_t GetCapacity(const std::string& devPath, int64_t &totalSize, int64_t &freeSize);
     static int64_t GetDiscCapacity(int cmdFd, const std::string& discType);

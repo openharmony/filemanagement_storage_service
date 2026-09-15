@@ -28,6 +28,13 @@ constexpr int DISC_STATUS_BYTE_INDEX = 2;
 constexpr int MAX_BUF = 4096;
 constexpr uint8_t DISC_STATUS_MASK = 0x03;
 
+struct ScsiCmdInfo {
+    uint8_t *cdb;
+    int cdbLen;
+    uint8_t *dxferp;
+    int dxferLen;
+};
+
 bool IsAcceptableUuid(const std::string &uuid);
 int GetMaxVolume(dev_t device);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
@@ -36,7 +43,8 @@ std::string DiskType2Str(uint8_t diskType);
 std::string GetCDType(const std::string &diskPath);
 std::string GetOpticalDriveType(const std::string &diskPath);
 int GetOpticalDriveMaxWriteSpeed(const std::string &diskPath, int32_t &maxWriteSpeed);
-int SendScsiCmd(int fd, uint8_t *cdb, int cdbLen, uint8_t *dxferp, int dxferLen);
+int SendScsiCmd(int fd, const ScsiCmdInfo &cmdInfo);
+int SendScsiCmd(int fd, const ScsiCmdInfo &cmdInfo, uint8_t *senseBuf, int senseBufLen);
 int SendScsiCmdByPath(const std::string &diskPath, uint8_t *cdb, int cdbLen, uint8_t *buf, int len);
 int ReadDiscInfo(const std::string &diskPath, int32_t cmdIndex, uint8_t *buf, int len);
 int ReadConfiguration(const std::string &diskPath, uint8_t *buf, int len);

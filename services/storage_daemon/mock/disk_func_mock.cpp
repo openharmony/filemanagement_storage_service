@@ -14,6 +14,7 @@
  */
 
 #include "disk_func_mock.h"
+#include <scsi/sg.h>
 using namespace OHOS::StorageDaemon;
 
 FILE *Fopen(const char *pathname, const char *mode)
@@ -52,6 +53,9 @@ int Ioctl(int fd, int request, void* arg)
 {
     if (DiskFunc::diskFunc_ == nullptr) {
         return -1;
+    }
+    if (request == SG_IO && arg != nullptr) {
+        return DiskFunc::diskFunc_->ioctl(fd, request, arg);
     }
     return DiskFunc::diskFunc_->ioctl(fd, request);
 }
