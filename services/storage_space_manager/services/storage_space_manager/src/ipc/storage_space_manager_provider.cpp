@@ -374,15 +374,18 @@ int32_t StorageSpaceManagerProvider::CleanBundleCache(int32_t userId)
 int32_t StorageSpaceManagerProvider::GetDataShareService(const std::string &uri, sptr<IRemoteObject> &remoteObject)
 {
     remoteObject = nullptr;
+    if (!IpcCallerAuth::IsCallingNativeToken()) {
+        LOGE("Permission denied, caller is not SA");
+        return E_PERMISSION_DENIED;
+    }
     if (!serviceReady_.load(std::memory_order_acquire)) {
         LOGE("Service is not ready");
         return E_SERVICE_NOT_READY;
     }
+    AddRunningIpcCount();
     if (!ExitIdleState()) {
         return E_SERVICE_ON_IDLE;
     }
-
-    AddRunningIpcCount();
     LOGI("Get datashare");
     auto tokenId = IPCSkeleton::GetCallingTokenID();
     {
