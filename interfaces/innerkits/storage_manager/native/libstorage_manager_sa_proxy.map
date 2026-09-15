@@ -2,7 +2,7 @@
 {
   global:
     extern "C++" {
-      OHOS::StorageDaemon*;
+      OHOS::StorageManager*;
       "VTT for OHOS::StorageManager::StorageManagerStub";
       "VTT for OHOS::StorageManager::StorageManagerProxy";
       "VTT for OHOS::StorageManager::VolumeExternal";
