@@ -38,14 +38,14 @@ public:
     void OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data) override;
     static void SubscribeCommonEvent(void);
     static bool IsPtpMode();
+    static bool ShouldHandleMtpDevice(const std::string &usbInfo, DeviceType &deviceType);
+    static bool ParseMtpDeviceIds(const cJSON* usbJson, uint8_t &deviceClass, uint16_t &idVendor, uint16_t &idProduct);
+    static std::string ToLowerString(const char* str);
+    static bool CheckMtpInterface(const cJSON* iface);
+    static bool CheckAllInterfaces(const cJSON* configs);
 
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLocation);
-    bool ShouldHandleMtpDevice(const std::string &usbInfo, DeviceType &deviceType);
-    bool ParseMtpDeviceIds(const cJSON* usbJson, uint8_t &deviceClass, uint16_t &idVendor, uint16_t &idProduct);
-    std::string ToLowerString(const char* str);
-    bool CheckMtpInterface(const cJSON* iface);
-    bool CheckAllInterfaces(const cJSON* configs);
 
     static std::atomic<bool> isPtp_;
 };

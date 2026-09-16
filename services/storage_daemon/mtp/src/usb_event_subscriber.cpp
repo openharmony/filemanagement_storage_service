@@ -94,8 +94,9 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_EXIT_HIBERNATE) {
         LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: COMMON_EVENT_EXIT_HIBERNATE, remount MTP devices");
         bool hasMtp = false;
-        if (MtpDeviceMonitor::GetInstance().HasMTPDevice(hasMtp) == E_OK && hasMtp) {
-            MtpDeviceMonitor::GetInstance().MountMtpDeviceByBroadcast(DeviceType::UNKNOWN, 0, 0);
+        DeviceType deviceType = DeviceType::UNKNOWN;
+        if (MtpDeviceMonitor::GetInstance().HasMTPDevice(hasMtp, deviceType) == E_OK && hasMtp) {
+            MtpDeviceMonitor::GetInstance().MountMtpDeviceByBroadcast(deviceType, 0, 0);
         } else {
             LOGI("[L2:UsbEventSubscriber] OnReceiveEvent: no MTP device found after hibernate exit");
         }
