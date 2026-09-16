@@ -113,6 +113,10 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync()
 
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userId)
 {
+    if (userId < INT32_MIN || userId > INT32_MAX) {
+        OHOS::StorageTaiheError::SetStorageTaiheError(OHOS::E_USERID_RANGE);
+        return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
+    }
     int32_t userId_i = static_cast<int32_t>(userId);
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
     auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();

@@ -35,7 +35,18 @@ constexpr const char* MID_PATH = "/data/local/burn_tmp/midFile.iso";
 constexpr const char* BURN_TMP_DIR = "/data/local/burn_tmp";
 constexpr const char* VERIFY_MOUNT_PATH = "/mnt/data/burn_verify_mount";
 constexpr int32_t E_VERIFY_BURN_DATA_FAILED = 13600030;
+constexpr int32_t BURN_VERIFY_START_PROGRESS = 101;
 constexpr mode_t DEFAULT_DIR_PERMISSIONS = 0755;
+
+static bool OutputContains(const std::vector<std::string> &output, const std::string &pattern)
+{
+    for (const auto &line : output) {
+        if (line.find(pattern) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
 
 int32_t UdfOperator::DoMount(const std::string& devPath,
                              const std::string& mountPath,
@@ -107,7 +118,7 @@ int32_t UdfOperator::ReadMetadata(const std::string& devPath,
     uuid = GetBlkidData(realPath, "UUID");
     std::string offset = devPath + "/" + type;
     if (uuid.empty()) {
-        uuid = GenerateRandomUuid(realPath, offset);
+        uuid = IVolumeOperator::GenerateRandomUuid(realPath, offset);
     }
 
     label = GetBlkidData(realPath, "LABEL");
@@ -132,7 +143,8 @@ int32_t UdfOperator::CreateIsoImage(const std::string& devPath,
 
     std::vector<std::string> output;
     std::vector<std::string> cmd = {"genisoimage", "-V", "ISOIMAGE", "-udf", "-J", "-r", "-D", "-joliet-long",
-                                    "-input-charset", "utf-8", "-output-charset",  "utf-8", "-o", filePath, mountPath};
+                                    "-allow-limited-size", "-input-charset", "utf-8", "-output-charset", "utf-8",
+                                    "-o", filePath, mountPath};
     int32_t err = ForkExec(cmd, &output);
     for (const auto& s : output) {
         LOGI("UdfOperator CreateIsoImage:s=%{public}s", s.c_str());
@@ -229,6 +241,11 @@ int32_t UdfOperator::DoCDBurn(const std::string &devPath,
         LOGI("UdfOperator DoCDBurn:s=%{public}s", s.c_str());
     }
     if (err != E_OK) {
+        if (OutputContains(output, "WARNING: Data may not fit on current disk")) {
+            LOGE("DoCDBurn: no space left on disc, devPath=%{public}s", devPath.c_str());
+            RmDirRecurse(BURN_TMP_DIR);
+            return E_BURN_NOSPC;
+        }
         LOGE("DoCDBurn:<<< EXIT FAILED <<< wodim failed for devPath: %{public}s", devPath.c_str());
         RmDirRecurse(BURN_TMP_DIR);
         return err;
@@ -270,6 +287,10 @@ int32_t UdfOperator::DoDVDBurn(const std::string &devPath, const BurnOptions &bu
         LOGI("UdfOperator DoDVDBurn:s=%{public}s", s.c_str());
     }
     if (err != E_OK) {
+        if (OutputContains(output, "No space left on device")) {
+            LOGE("DoDVDBurn: no space left on disc, devPath=%{public}s", devPath.c_str());
+            return E_BURN_NOSPC;
+        }
         LOGE("DoDVDBurn:<<< EXIT FAILED <<< failed for devPath: %{public}s", devPath.c_str());
         return err;
     }
@@ -306,6 +327,7 @@ int32_t UdfOperator::Burn(const std::string &devPath, const BurnOptions &burnOpt
         return err;
     }
     if (burnOptions.isVerifyBurn) {
+        DiskUtils::WriteBurnProgress(BURN_VERIFY_START_PROGRESS);
         LOGI("Burn: starting verify process for devPath=%{public}s", devPath.c_str());
         err = RefreshCDRomMediaNode(devPath);
         if (err != E_OK) {
@@ -509,16 +531,6 @@ int32_t UdfOperator::GenerateAndCompareChecksums(const std::string& sourceDir,
     }
     std::map<std::string, std::string> sourceMap = DiskUtils::ParseChecksumFile(sourceChecksumContent, sourceDir);
     std::map<std::string, std::string> discMap = DiskUtils::ParseChecksumFile(discChecksumContent, VERIFY_MOUNT_PATH);
-    LOGI("LogChecksumMap: sourceMap contents:");
-    for (const auto& pair : sourceMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
-             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
-    }
-    LOGI("LogChecksumMap: discMap contents:");
-    for (const auto& pair : discMap) {
-        LOGI("LogChecksumMap:   [%{public}s] = [%{public}s]",
-             GetAnonyString(pair.first).c_str(), GetAnonyString(pair.second).c_str());
-    }
     return DiskUtils::CompareChecksums(sourceMap, discMap);
 }
 

@@ -91,10 +91,34 @@ bool MtpFsTypeDir::RemoveDir(const MtpFsTypeDir &dir)
     return true;
 }
 
+bool MtpFsTypeDir::RemoveDirById(uint32_t id)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find_if(dirList_.begin(), dirList_.end(),
+        [id](const MtpFsTypeDir &d) { return d.Id() == id; });
+    if (it == dirList_.end()) {
+        return false;
+    }
+    dirList_.erase(it);
+    return true;
+}
+
 bool MtpFsTypeDir::RemoveFile(const MtpFsTypeFile &file)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     auto it = std::find(fileList_.begin(), fileList_.end(), file);
+    if (it == fileList_.end()) {
+        return false;
+    }
+    fileList_.erase(it);
+    return true;
+}
+
+bool MtpFsTypeDir::RemoveFileById(uint32_t id)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find_if(fileList_.begin(), fileList_.end(),
+        [id](const MtpFsTypeFile &f) { return f.Id() == id; });
     if (it == fileList_.end()) {
         return false;
     }

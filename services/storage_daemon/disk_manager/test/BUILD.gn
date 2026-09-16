@@ -236,7 +236,6 @@ ohos_unittest("ext_volume_utils_test") {
     "$ROOT_DIR/disk_manager/src/volume/vfat_operator.cpp",
     "$ROOT_DIR/disk_manager/src/volume/volume_operator_factory.cpp",
     "$ROOT_DIR/disk_manager/src/volume/volume_utils.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/volume_utils_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
@@ -254,6 +253,7 @@ ohos_unittest("ext_volume_utils_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 
@@ -292,7 +292,6 @@ ohos_unittest("ext_volume_operator_factory_test") {
     "$ROOT_DIR/disk_manager/src/volume/iso9660_operator.cpp",
     "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
     "$ROOT_DIR/disk_manager/src/disk/disk_utils.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/volume_operator_factory_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
@@ -310,6 +309,7 @@ ohos_unittest("ext_volume_operator_factory_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 
@@ -344,7 +344,6 @@ ohos_unittest("ext_ivolume_operator_test") {
     "$ROOT_DIR/disk_manager/test/ivolume_operator_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
   ]
 
   deps = [
@@ -358,6 +357,7 @@ ohos_unittest("ext_ivolume_operator_test") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "openssl:libcrypto_shared",
   ]
 }
 
@@ -397,7 +397,6 @@ ohos_unittest("ext_volume_operators_test") {
     "$ROOT_DIR/disk_manager/test/volume_operators_test.cpp",
     "$ROOT_DIR/disk_manager/src/volume/udf_operator.cpp",
     "$ROOT_DIR/disk_manager/src/volume/iso9660_operator.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/file_utils_mock.cpp",
     "$ROOT_DIR/mock/library_func_mock.cpp",
@@ -415,6 +414,7 @@ ohos_unittest("ext_volume_operators_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 
@@ -447,7 +447,6 @@ ohos_unittest("ext_iso9660_operator_test") {
   sources = [
     "$ROOT_DIR/disk_manager/src/volume/iso9660_operator.cpp",
     "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/iso9660_operator_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/disk_utils_ext_mock.cpp",
@@ -468,6 +467,7 @@ ohos_unittest("ext_iso9660_operator_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 
@@ -500,7 +500,6 @@ ohos_unittest("ext_udf_operator_test") {
   sources = [
     "$ROOT_DIR/disk_manager/src/volume/udf_operator.cpp",
     "$ROOT_DIR/disk_manager/src/volume/ivolume_operator.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/disk_manager/test/udf_operator_test.cpp",
     "$ROOT_DIR/mock/disk_utils_mock.cpp",
     "$ROOT_DIR/mock/disk_utils_ext_mock.cpp",
@@ -521,6 +520,7 @@ ohos_unittest("ext_udf_operator_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
+    "openssl:libcrypto_shared",
   ]
 }
 

@@ -17,9 +17,11 @@
 
 #include <chrono>
 #include <climits>
-#include <csignal>
 #include <fcntl.h>
 #include <future>
+#include <iomanip>
+#include <openssl/sha.h>
+#include <sstream>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -30,7 +32,6 @@
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/volume_op_diag.h"
-#include "volume/process.h"
 
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 
@@ -39,6 +40,22 @@ namespace StorageDaemon {
 
 constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
 constexpr int32_t WAIT_MOUNT_TIMEOUT_S = 60;
+constexpr size_t SHA256_DIGEST_BIT_MASK = 0x0f;
+constexpr size_t SHA256_DIGEST_VERSION = 0x50;
+constexpr size_t SHA256_VARIANT_MASK = 0x3f;
+constexpr size_t SHA256_IETF_VARIANT = 0x80;
+constexpr uint8_t UUID_NAMESPACE_RAW_SIZE = 32;
+constexpr uint8_t UUID_DIGEST_BYTE_OFFSET = 6;
+constexpr uint8_t UUID_VARIANT_BYTE_OFFSET = 8;
+constexpr uint8_t UUID_TIME_LO_FIELD_WIDTH = 8;
+constexpr uint8_t UUID_TIME_MID_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_TIME_HI_VERSION_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_CLOCK_SEQ_FIELD_WIDTH = 4;
+constexpr uint8_t UUID_NODE_ID_FIELD_WIDTH = 12;
+constexpr uint8_t UUID_DIGEST_TIME_MID_OFFSET = 4;
+constexpr uint8_t UUID_DIGEST_TIME_HI_VERSION_OFFSET = 6;
+constexpr uint8_t UUID_DIGEST_CLOCK_SEQ_OFFSET = 8;
+constexpr uint8_t UUID_DIGEST_NODE_ID_OFFSET = 10;
 
 int32_t IVolumeOperator::EnsureMountPath(const std::string& mountPath)
 {
@@ -90,7 +107,7 @@ int32_t IVolumeOperator::ReadMetadata(const std::string& devPath,
         LOGE("IVolumeOperator::ReadMetadata realpath failed, errno=%{public}d", errno);
         return E_PARAMS_INVALID;
     }
-    if (std::string(realPath).find("/dev/block/") != 0) {
+    if (std::string(realPath).find("/dev/block/") != 0 && std::string(realPath).find("/dev/mapper/") != 0) {
         LOGE("IVolumeOperator::ReadMetadata invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
@@ -127,7 +144,7 @@ int32_t IVolumeOperator::ValidateMountRequest(const std::string& devPath, const 
         LOGE("IVolumeOperator::Mount invalid devPath");
         return E_PARAMS_INVALID;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("IVolumeOperator::Mount invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
@@ -231,10 +248,7 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         LOGE("IVolumeOperator::Unmount invalid mountPath prefix");
         return E_PARAMS_INVALID;
     }
-
     if (force) {
-        Process ps(resolvedPath);
-        ps.UpdatePidAndKill(SIGKILL);
         int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
         if (ret != 0) {
             LOGW("IVolumeOperator::Unmount umount2 failed in force mode, errno=%{public}d", errno);
@@ -245,18 +259,22 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         LOGI("IVolumeOperator::Unmount force success");
         return E_OK;
     }
-
     int fd = open(resolvedPath.c_str(), O_RDONLY);
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
     int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
+    int umountErrno = errno;
     if (fd >= 0) {
-        IsUsbInUse(fd);
+        int32_t checkResult = IsUsbInUse(fd);
         close(fd);
+        if ((checkResult != E_OK) && (resolvedPath.find("/mnt/data/voldata/") == 0)) {
+            LOGE("IVolumeOperator::Unmount final check in use failed, errno=%{public}d", checkResult);
+            return E_VOL_UMOUNT_ERR;
+        }
     }
     if (ret != 0) {
-        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", errno);
+        LOGE("IVolumeOperator::Unmount failed, errno=%{public}d", umountErrno);
         return E_VOL_UMOUNT_ERR;
     }
 
@@ -298,6 +316,46 @@ bool IVolumeOperator::IsShellMetacharPresent(const std::string& str)
 {
     static const std::string shellChars = "\"$`\\;|&!(){}<>\n";
     return str.find_first_of(shellChars) != std::string::npos;
+}
+
+std::string IVolumeOperator::GenerateRandomUuid(const std::string &diskPath, const std::string &uuidFormat)
+{
+    LOGD("[L8:DiskUtils] GenerateRandomUuid: >>> ENTER <<< diskPath=%{public}s", diskPath.c_str());
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctxSeed;
+    SHA256_Init(&ctxSeed);
+    SHA256_Update(&ctxSeed, uuidFormat.c_str(), uuidFormat.length());
+    SHA256_Final(hash, &ctxSeed);
+
+    unsigned char namespaceRaw[UUID_NAMESPACE_RAW_SIZE];
+    std::copy(hash, hash + UUID_NAMESPACE_RAW_SIZE, namespaceRaw);
+
+    unsigned char digest[SHA256_DIGEST_LENGTH];
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, namespaceRaw, sizeof(namespaceRaw));
+    SHA256_Update(&ctx, diskPath.c_str(), diskPath.length());
+    SHA256_Final(digest, &ctx);
+
+    digest[UUID_DIGEST_BYTE_OFFSET] &= SHA256_DIGEST_BIT_MASK;
+    digest[UUID_DIGEST_BYTE_OFFSET] |= SHA256_DIGEST_VERSION;
+    digest[UUID_VARIANT_BYTE_OFFSET] &= SHA256_VARIANT_MASK;
+    digest[UUID_VARIANT_BYTE_OFFSET] |= SHA256_IETF_VARIANT;
+
+    std::ostringstream uuidStream;
+    uuidStream << std::hex << std::setfill('0') << std::uppercase
+        << std::setw(UUID_TIME_LO_FIELD_WIDTH) << std::hex << *reinterpret_cast<uint32_t*>(digest) << '-'
+        << std::setw(UUID_TIME_MID_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_MID_OFFSET) << '-'
+        << std::setw(UUID_TIME_HI_VERSION_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_TIME_HI_VERSION_OFFSET) << '-'
+        << std::setw(UUID_CLOCK_SEQ_FIELD_WIDTH) << *reinterpret_cast<uint16_t*>(digest +
+        UUID_DIGEST_CLOCK_SEQ_OFFSET) << '-'
+        << std::setw(UUID_NODE_ID_FIELD_WIDTH) << *reinterpret_cast<uint64_t*>(digest +
+        UUID_DIGEST_NODE_ID_OFFSET);
+
+    LOGD("[L8:DiskUtils] GenerateRandomUuid: <<< EXIT SUCCESS <<<");
+    return uuidStream.str();
 }
 } // namespace StorageDaemon
 } // namespace OHOS

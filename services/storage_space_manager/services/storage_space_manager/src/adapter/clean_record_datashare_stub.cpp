@@ -65,8 +65,8 @@ bool CleanRecordDataShareStub::CheckCallingPermission(const Uri &uri, bool isRea
 
 NonSilentConfigRecord CleanRecordDataShareStub::MatchConfig(const Uri &uri)
 {
-    auto congfig = GetConfig();
-    for (auto record : congfig.records) {
+    auto config = GetConfig();
+    for (auto &record : config.records) {
         if (uri.ToString() == record.uri) {
             return record;
         }
@@ -145,7 +145,7 @@ int32_t CleanRecordDataShareStub::HandlingIndividualConditions(const nlohmann::j
         return E_FAIL;
     }
     int32_t rowCount = -1;
-    int64_t cleaned_cache_size = 0;
+    int64_t revenue = 0;
     int32_t columnIndex = 0;
     auto ret = resultSet->GetRowCount(rowCount);
     if (ret != E_OK || rowCount == 0) {
@@ -155,12 +155,12 @@ int32_t CleanRecordDataShareStub::HandlingIndividualConditions(const nlohmann::j
             int64_t freedSize = 0;
             resultSet->GetColumnIndex("freed_size", columnIndex);
             resultSet->GetLong(columnIndex, freedSize);
-            cleaned_cache_size += freedSize;
+            revenue += freedSize;
         }
     }
     resultSet->Close();
     resultItem["week_index"] = week_index;
-    resultItem["cleaned_cache_size"] = cleaned_cache_size;
+    resultItem["revenue"] = revenue;
     return E_OK;
 }
 

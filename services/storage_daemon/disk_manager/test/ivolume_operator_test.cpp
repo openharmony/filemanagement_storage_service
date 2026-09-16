@@ -158,6 +158,21 @@ HWTEST_F(ExtIVolumeOperatorTest, RemoveMountPath_NotExist, TestSize.Level1)
     EXPECT_EQ(ret, E_OK);
 }
 
+HWTEST_F(ExtIVolumeOperatorTest, Mount_InvalidDevPrefix, TestSize.Level1)
+{
+    int32_t ret = op_->Mount("/dev/sda1", testDir_ + "/invalid_dev_prefix", 0);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+}
+
+HWTEST_F(ExtIVolumeOperatorTest, Mount_DevMapperPrefix_Success, TestSize.Level1)
+{
+    std::string path = testDir_ + "/mapper_mount_ok";
+    EXPECT_CALL(*op_, DoMount(_, _, _, _)).WillOnce(Return(E_OK));
+    int32_t ret = op_->Mount("/dev/mapper/mock_dev", path, 0);
+    EXPECT_EQ(ret, E_OK);
+    rmdir(path.c_str());
+}
+
 HWTEST_F(ExtIVolumeOperatorTest, Mount_EmptyMountPath, TestSize.Level1)
 {
     int32_t ret = op_->Mount("/dev/block/mock_dev", "", 0);
@@ -354,6 +369,19 @@ HWTEST_F(ExtIVolumeOperatorTest, ReadMetadata_RealpathFailed, TestSize.Level1)
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 }
 
+HWTEST_F(ExtIVolumeOperatorTest, ReadMetadata_InvalidDevPrefix, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string uuid, type, label;
+    std::string fakeDev = testDir_ + "/fake_dev_node";
+    int fd = open(fakeDev.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0600);
+    ASSERT_GE(fd, 0);
+    close(fd);
+    int32_t ret = dummy.ReadMetadata(fakeDev, uuid, type, label);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    unlink(fakeDev.c_str());
+}
+
 HWTEST_F(ExtIVolumeOperatorTest, Mount_AsyncDoMountSuccess, TestSize.Level1)
 {
     std::string path = testDir_ + "/async_mount_ok";
@@ -425,6 +453,30 @@ HWTEST_F(ExtIVolumeOperatorTest, Mount_MountDataEmptyValid, TestSize.Level1)
     int32_t ret = op_->Mount("/dev/block/mock_dev", path, 0, "");
     EXPECT_EQ(ret, E_OK);
     rmdir(path.c_str());
+}
+
+/**
+ * @tc.name: Unmount_NonVoldataPath_UInUseFailed_NoExtraError
+ * @tc.desc: Verify Unmount does NOT return E_VOL_UMOUNT_ERR for non-voldata path when IsUsbInUse fails.
+ *           The original behavior (success or E_VOL_UMOUNT_ERR from umount2) should be preserved.
+ * @tc.type: FUNC
+ */
+HWTEST_F(ExtIVolumeOperatorTest, Unmount_NonVoldataPath_InUseFailed_NoExtraError, TestSize.Level1)
+{
+    TestOperator dummy;
+    std::string mntPath = testDir_ + "/non_voldata_unmount";
+    mkdir(mntPath.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    int mret = mount("tmpfs", mntPath.c_str(), "tmpfs", 0, "size=1M");
+    if (mret != 0) {
+        rmdir(mntPath.c_str());
+        GTEST_SKIP() << "mount tmpfs failed, skipping test";
+    }
+    // Path is /mnt/data/external/..., not /mnt/data/voldata/,
+    // so even if IsUsbInUse fails, the voldata check should not trigger.
+    // Unmount should succeed based on umount2 result.
+    int32_t ret = dummy.Unmount(mntPath, "", false);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_NE(access(mntPath.c_str(), F_OK), 0);
 }
 
 } // namespace StorageDaemon

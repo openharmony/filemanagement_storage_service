@@ -110,7 +110,10 @@ int32_t ExfatOperator::Format(const std::string& devPath,
         LOGE("ExfatOperator::Format failed, err=%{public}d", err);
         return err;
     }
-
+    if (partitionNum == 0) {
+        LOGI("ExfatOperator::Format success, partitionNum is 0, no need to fix");
+        return E_OK;
+    }
     err = FixTypeIdentifier(diskPath, partitionType, partitionNum);
     if (err != E_OK) {
         LOGE("ExfatOperator::Format FixTypeIdentifier failed, err=%{public}d", err);

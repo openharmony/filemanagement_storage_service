@@ -30,6 +30,11 @@ constexpr size_t MAX_IPC_REWDATA_SIZE = 120 * 1024 * 1024;           // max ipc 
             LOGE("Failed to read container due to val is nullptr");                                       \
             return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
         }                                                                                                 \
+        if ((readContainerSize) < 0) {                                                                    \
+            LOGE("Failed to read container, readContainerSize is negative: %{public}d",                   \
+                static_cast<int32_t>(readContainerSize));                                                 \
+            return ERR_APPEXECFWK_PARCEL_ERROR;                                                           \
+        }                                                                                                 \
         size_t readAbleDataSize = (parcel).GetReadableBytes();                                            \
         size_t readSize = static_cast<size_t>(readContainerSize);                                         \
         if ((readSize > readAbleDataSize) || ((val)->max_size() < readSize)) {                            \

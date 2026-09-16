@@ -58,7 +58,6 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
-#include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
 #include <sys/sysmacros.h>
 #include "disk_manager/disk/dm_device.h"
@@ -208,7 +207,7 @@ bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::stri
         LOGE("IsDevPathValid: devPath contains invalid path segments");
         return false;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("IsDevPathValid: invalid devPath prefix");
         return false;
     }
@@ -219,7 +218,7 @@ bool StorageDaemonProvider::IsDevPathValid(const std::string &devPath, std::stri
         return false;
     }
     std::string tmpPath(realPath);
-    if (tmpPath.find("/dev/block/") != 0) {
+    if (tmpPath.find("/dev/block/") != 0 && tmpPath.find("/dev/mapper/") != 0) {
         LOGE("IsDevPathValid: invalid real path prefix");
         return false;
     }
@@ -238,7 +237,7 @@ int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPat
         LOGE("ValidateBlockDevicePath: devPath contains invalid path segments");
         return E_PARAMS_INVALID;
     }
-    if (devPath.find("/dev/block/") != 0) {
+    if (devPath.find("/dev/block/") != 0 && devPath.find("/dev/mapper/") != 0) {
         LOGE("ValidateBlockDevicePath: invalid devPath prefix");
         return E_PARAMS_INVALID;
     }
@@ -256,14 +255,15 @@ int32_t StorageDaemonProvider::ValidateBlockDevicePath(const std::string &devPat
             return E_PARAMS_INVALID;
         }
         std::string resolvedParent(realPath);
-        if (resolvedParent != "/dev/block" && resolvedParent.find("/dev/block/") != 0) {
-            LOGE("ValidateBlockDevicePath: resolved parent escapes /dev/block/");
+        if (resolvedParent != "/dev/block" && resolvedParent.find("/dev/block/") != 0 &&
+            resolvedParent != "/dev/mapper" && resolvedParent.find("/dev/mapper/") != 0) {
+            LOGE("ValidateBlockDevicePath: resolved parent escapes /dev/block/ or /dev/mapper/");
             return E_PARAMS_INVALID;
         }
         verifiedPath = devPath;
     } else {
         std::string resolvedPath(realPath);
-        if (resolvedPath.find("/dev/block/") != 0) {
+        if (resolvedPath.find("/dev/block/") != 0 && resolvedPath.find("/dev/mapper/") != 0) {
             LOGE("ValidateBlockDevicePath: invalid resolved path prefix");
             return E_PARAMS_INVALID;
         }
@@ -1622,7 +1622,7 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< userId=%{public}d out of range", userId);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
+    if (!IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] MountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("MountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
@@ -1668,7 +1668,7 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", err);
         return err;
     }
-    if (!StorageManager::IsPathStartWithFileMgr(userId, verifiedMountPath)) {
+    if (!IsPathStartWithFileMgr(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] UMountFileMgrFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("UMountFileMgrFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
@@ -1858,7 +1858,7 @@ int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<
         return E_PARAMS_INVALID;
     }
     for (const auto &item : shareFiles) {
-        if (IsFilePathInvalid(item.first) || IsFilePathInvalid(item.second)) {
+        if (ContainsInvalidChars(item.first) || ContainsInvalidChars(item.second)) {
             LOGE("[L1:StorageDaemonProvider] MountDisShareFile: <<< EXIT FAILED <<< shareFiles is invalid");
             StorageService::StorageRadar::ReportCommonResult("MountDisShareFile", E_PARAMS_INVALID,
                 userId, "shareFiles invalid");
@@ -2777,7 +2777,11 @@ int32_t StorageDaemonProvider::GetBlockInfoByType(const std::string &type, const
         HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
-
+    if (ContainsInvalidChars(type) || ContainsInvalidChars(diskId)) {
+        LOGE("[L1:StorageDaemonProvider] GetBlockInfoByType: invalid type or diskId");
+        HiAudit::GetInstance().WriteEnd("GetBlockInfoByType", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
     std::vector<BlockInfo> disks;
     ScanDevice scanDevice;
 
@@ -3226,38 +3230,6 @@ int32_t StorageDaemonProvider::GetDiskSize(const std::string &devName, uint64_t 
     return E_OK;
 #else
     LOGI("[L1:StorageDaemonProvider] GetDiskSize: <<< EXIT <<< not support");
-    return E_NOT_SUPPORT;
-#endif
-}
-
-int32_t StorageDaemonProvider::BindBlockLoopDev(const std::string &sysPath, uint64_t offset, uint64_t sizeLimit,
-    std::string &loopPath)
-{
-#ifdef PC_USER_MANAGER
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: >>> ENTER <<< sysPath=%{public}s, "
-         "offset=%{public}" PRIu64 " sizeLimit=%{public}" PRIu64, sysPath.c_str(), offset, sizeLimit);
-    if (offset == 0 || sizeLimit == 0 || sizeLimit <= offset) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: invalid offset or sizeLimit");
-        return E_PARAMS_INVALID;
-    }
-    std::string verifiedPath;
-    if (!IsDevPathValid(sysPath, verifiedPath)) {
-        return E_PARAMS_INVALID;
-    }
-    auto uid = IPCSkeleton::GetCallingUid();
-    if (uid != DISK_MANAGER_UID) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
-        return E_PERMISSION_DENIED;
-    }
-    int32_t ret = VolumeUtils::BindBlockLoopDev(verifiedPath, offset, sizeLimit, loopPath);
-    if (ret != E_OK) {
-        LOGE("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT FAILED <<< ret=%{public}d", ret);
-        return ret;
-    }
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT SUCCESS <<< loopPath=%{public}s", loopPath.c_str());
-    return E_OK;
-#else
-    LOGI("[L1:StorageDaemonProvider] BindBlockLoopDev: <<< EXIT <<< not support");
     return E_NOT_SUPPORT;
 #endif
 }

@@ -548,9 +548,11 @@ int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
     if (!SaveStringToFileSync(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_), errMsg)) {
         LOGE("[L4:BaseKey] EncryptDe: <<< EXIT FAILED <<< Save key type file failed, "
             "errMsg=%{public}s", errMsg.c_str());
+        ClearKeyContext(ctxDe);
         return E_SAVE_KEY_TYPE_ERROR;
     }
     LOGI("[L4:BaseKey] EncryptDe: <<< EXIT SUCCESS <<<");
+    ClearKeyContext(ctxDe);
     return E_OK;
 }
 
@@ -733,7 +735,7 @@ int32_t BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 
     if (!LoadKeyBlob(ctxNone.secDiscard, path + PATH_SECDISC) ||
         !LoadKeyBlob(ctxNone.shield, path + PATH_SHIELD)) {
-        ctxNone.rndEnc.Clear();
+        ClearKeyContext(ctxNone);
         LOGE("[L4:BaseKey] DoRestoreKeyDe: <<< EXIT FAILED <<< Load shield failed");
         return E_LOAD_KEY_BLOB_ERROR;
     }
@@ -781,6 +783,7 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
         auto delay = StorageService::StorageRadar::ReportDuration("READ KEY FILE: FILE OPS", startTime);
         LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s", delay.c_str());
         auto ret = DecryptReal(auth, keyType, ctxNone);
+        ClearKeyContext(ctxNone);
         LOGD("[L4:BaseKey] DoRestoreKeyCeEceSece: <<< EXIT %s <<<", ret == E_OK ? "SUCCESS" : "FAILED");
         return ret;
     }
@@ -1399,6 +1402,9 @@ bool BaseKey::SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc,
     std::copy(keyInVct.begin() + nonce.size, keyInVct.begin() + nonce.size + rndEnc.size, rndEnc.data.get());
     std::copy(keyInVct.begin() + nonce.size + rndEnc.size, keyInVct.end(), aad.data.get());
     LOGI("[L4:BaseKey] SplitKeyCtx: rndEncEnc: %{public}u", rndEnc.size);
+    if (!keyInVct.empty()) {
+        (void)memset_s(keyInVct.data(), keyInVct.size(), 0, keyInVct.size());
+    }
     keyInVct.clear();
     return true;
 }
