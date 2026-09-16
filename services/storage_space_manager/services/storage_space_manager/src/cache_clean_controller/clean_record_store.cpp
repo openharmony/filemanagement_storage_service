@@ -75,6 +75,7 @@ void CleanRecordStore::Close()
 
 int64_t CleanRecordStore::Insert(const NativeRdb::ValuesBucket& values)
 {
+    std::lock_guard<std::mutex> lock(rdbMutex_);
     if (rdbStore_ == nullptr) {
         LOGE("RDB store is not initialized");
         return E_IO_ERROR;
@@ -93,6 +94,7 @@ int64_t CleanRecordStore::Insert(const NativeRdb::ValuesBucket& values)
 
 std::shared_ptr<NativeRdb::ResultSet> CleanRecordStore::Get(int64_t startTime, int64_t endTime)
 {
+    std::lock_guard<std::mutex> lock(rdbMutex_);
     if (rdbStore_ == nullptr) {
         LOGE("RDB store is not initialized");
         return nullptr;
@@ -155,6 +157,7 @@ std::shared_ptr<NativeRdb::ResultSet> CleanRecordStore::QueryByResultString(cons
 
 int32_t CleanRecordStore::Delete(int64_t time)
 {
+    std::lock_guard<std::mutex> lock(rdbMutex_);
     if (rdbStore_ == nullptr) {
         LOGE("RDB store is not initialized");
         return E_IO_ERROR;

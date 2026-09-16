@@ -76,6 +76,10 @@ void StorageSpaceManagerProvider::OnStop()
     serviceReady_.store(false, std::memory_order_release);
     DelayedSingleton<CleanRecordStore>::GetInstance()->Close();
     
+    if (dataShareService_ != nullptr) {
+        delete dataShareService_;
+        dataShareService_ = nullptr;
+    }
     DestroyUnloadHandler();
 
     Memory::MemMgrClient::GetInstance().SetCritical(getpid(), false, STORAGE_SPACE_MANAGER_SA_ID);

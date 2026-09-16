@@ -42,7 +42,9 @@ public:
     void AddDir(const MtpFsTypeDir &dir);
     void AddFile(const MtpFsTypeFile &file);
     bool RemoveDir(const MtpFsTypeDir &dir);
+    bool RemoveDirById(uint32_t id);
     bool RemoveFile(const MtpFsTypeFile &file);
+    bool RemoveFileById(uint32_t id);
     bool ReplaceFile(const MtpFsTypeFile &oldFile, const MtpFsTypeFile &newFile);
 
     std::set<MtpFsTypeDir>::size_type DirCount() const

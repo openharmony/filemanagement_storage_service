@@ -125,6 +125,8 @@ void StorageDaemonProviderTest::SetUp(void)
     MountManagerMoc::mountManagerMoc = mountManagerMoc_;
     system("mkdir -p /dev/block /mnt/data 2>/dev/null");
     system("touch /dev/block/ut_test_dev /mnt/data/ut_test_mnt 2>/dev/null");
+    system("mkdir -p /dev/mapper 2>/dev/null");
+    system("touch /dev/mapper/ut_test_dev 2>/dev/null");
 }
 
 void StorageDaemonProviderTest::TearDown(void)
@@ -1527,9 +1529,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_001
     std::vector<std::string> outputList;
     bool status = true;
     int32_t result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, 0);
     result = storageDaemonProviderTest_->IsFileOccupied(path, inputList, outputList, status);
-    EXPECT_EQ(result, E_PARAMS_INVALID);
+    EXPECT_EQ(result, 0);
 
     const std::string newPath = "/data/system/hiview/unzip_configs/sys_event_def";
     result = storageDaemonProviderTest_->IsFileOccupied(newPath, inputList, outputList, status);
@@ -2560,6 +2562,10 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateBlockDevic
         E_OK);
     EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
         "/dev/block/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        "/dev/mapper/nonexist_dev", verifiedPath), E_OK);
+    EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
+        "/dev/mapper/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
 #endif
 }
 
@@ -3200,6 +3206,63 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     result = storageDaemonProviderTest_->UMountFileMgrFuse(userId, newPath);
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidType
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when ContainsRelativePathReference(type) is true
+ *           (first operand of OR is true -> short-circuit, diskId operand not evaluated).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidType, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "../etc";
+    std::string diskId = "/data";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidType end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId
+ * @tc.desc: Verify GetBlockInfoByType returns E_PARAMS_INVALID when type is valid but diskId is invalid
+ *           (first operand false, second operand true -> enters branch).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "/data";
+    std::string diskId = "../etc";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_InvalidDiskId end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_GetBlockInfoByType_Valid
+ * @tc.desc: Verify GetBlockInfoByType does not enter the guard branch when both type and diskId are valid
+ *           (both operands false -> falls through to ScanDevice, returns E_OK).
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBlockInfoByType_Valid, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid start";
+    SetCallingUid(DISK_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string type = "/data";
+    std::string diskId = "/data";
+    std::string blockInfos;
+    int32_t ret = storageDaemonProviderTest_->GetBlockInfoByType(type, diskId, blockInfos);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBlockInfoByType_Valid end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

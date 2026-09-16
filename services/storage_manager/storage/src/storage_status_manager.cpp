@@ -157,7 +157,12 @@ int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     LOGE("GetFileStorageStats start");
     int32_t err = E_OK;
-    int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
+    int64_t prjId64 = static_cast<int64_t>(userId) * USER_ID_BASE + UID_FILE_MANAGER;
+    if (prjId64 > INT32_MAX || prjId64 < INT32_MIN) {
+        LOGE("prjId overflow: %{public}lld", static_cast<long long>(prjId64));
+        return E_CALCULATE_OVERFLOW_UP;
+    }
+    int32_t prjId = static_cast<int32_t>(prjId64);
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
     err = sdCommunication.GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
     LOGE("GetFileStorageStats end");

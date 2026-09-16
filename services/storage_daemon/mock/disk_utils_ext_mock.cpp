@@ -138,14 +138,6 @@ int32_t GetIncBurnAddr(const std::string &devPath, std::string &incBurnAddr)
     return IDiskUtilMoc::diskUtilMoc->GetIncBurnAddr(devPath, incBurnAddr);
 }
 
-std::string GenerateRandomUuid(const std::string &diskPath, const std::string &namespaceUuid)
-{
-    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
-        return "";
-    }
-    return IDiskUtilMoc::diskUtilMoc->GenerateRandomUuid(diskPath, namespaceUuid);
-}
-
 std::string GetOpticalDriveNode(const std::string &devPath)
 {
     if (IDiskUtilMoc::diskUtilMoc == nullptr) {
@@ -193,6 +185,14 @@ int32_t RefreshCDRomMediaNode(const std::string &devPath)
         return E_ERR;
     }
     return IDiskUtilMoc::diskUtilMoc->RefreshCDRomMediaNode(devPath);
+}
+
+int32_t DiskUtils::WriteBurnProgress(int32_t progress)
+{
+    if (IDiskUtilMoc::diskUtilMoc == nullptr) {
+        return E_ERR;
+    }
+    return IDiskUtilMoc::diskUtilMoc->WriteBurnProgress(progress);
 }
 
 } // namespace StorageDaemon

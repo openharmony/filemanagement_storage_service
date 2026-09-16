@@ -511,6 +511,7 @@ int32_t RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &key
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("[L4:RecoverManager] InstallDeCe: <<< EXIT FAILED <<< failed to add session keyring");
+            (void)memset_s(fskey.raw, FS_MAX_KEY_SIZE, 0, FS_MAX_KEY_SIZE);
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
@@ -524,6 +525,7 @@ int32_t RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &key
                  prefix.c_str(), errno);
         }
     }
+    (void)memset_s(fskey.raw, FS_MAX_KEY_SIZE, 0, FS_MAX_KEY_SIZE);
     LOGI("[L4:RecoverManager] InstallDeCe: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -551,6 +553,7 @@ int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Bl
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("[L4:RecoverManager] InstallEceSece: <<< EXIT FAILED <<< failed to add session keyring");
+            (void)memset_s(fskey.raw, sizeof(fskey.raw), 0, sizeof(fskey.raw));
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
@@ -563,6 +566,7 @@ int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Bl
                  prefix.c_str(), errno);
         }
     }
+    (void)memset_s(fskey.raw, sizeof(fskey.raw), 0, sizeof(fskey.raw));
     LOGI("[L4:RecoverManager] InstallEceSece: <<< EXIT SUCCESS <<< sdpClass=%{public}u", sdpClass);
     return E_OK;
 }
