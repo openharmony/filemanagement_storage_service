@@ -140,6 +140,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",appKey=" + GetAnonyString(appKey.ToString());
             StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
+            (void)memset_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, 0, FSCRYPT_MAX_KEY_SIZE);
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
@@ -151,6 +152,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             LOGE("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: Failed to AddKey, errno %{public}d", errno);
         }
     }
+    (void)memset_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, 0, FSCRYPT_MAX_KEY_SIZE);
     LOGD("[L5:FscryptKeyV1] InstallKeyForAppKeyToKeyring: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
@@ -380,6 +382,8 @@ int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool 
     ret = fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size);
     if (ret != E_OK) {
         LOGE("[L5:FscryptKeyV1] DecryptClassE: <<< EXIT FAILED <<< WriteClassE failed");
+        keyInfo_.key.Clear();
+        decryptedKey.Clear();
         return ret;
     }
     ret = GenerateKeyDesc();
@@ -457,6 +461,7 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
                  "errno=%{public}d", errno);
             std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
             StorageRadar::ReportKeyRingResult("InstallKeyToKeyring::KeyCtrlAddKey", krid, extraData);
+            (void)memset_s(fskey.raw, FS_MAX_KEY_SIZE, 0, FS_MAX_KEY_SIZE);
             return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
@@ -471,9 +476,11 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         LOGE("[L5:FscryptKeyV1] InstallKeyToKeyring: <<< EXIT FAILED <<< SaveKeyBlob failed");
+        (void)memset_s(fskey.raw, FS_MAX_KEY_SIZE, 0, FS_MAX_KEY_SIZE);
         return E_SAVE_KEY_BLOB_ERROR;
     }
     keyInfo_.key.Clear();
+    (void)memset_s(fskey.raw, FS_MAX_KEY_SIZE, 0, FS_MAX_KEY_SIZE);
     LOGW("[L5:FscryptKeyV1] InstallKeyToKeyring: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
