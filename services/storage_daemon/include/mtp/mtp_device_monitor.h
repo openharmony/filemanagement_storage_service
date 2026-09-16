@@ -43,7 +43,7 @@ public:
     int32_t Umount(const std::string &id);
     void MountMtpDeviceByBroadcast(DeviceType deviceType, uint32_t busLocation, uint8_t devNum);
     void UmountAllMtpDevice();
-    int32_t HasMTPDevice(bool &hasMtp);
+    int32_t HasMTPDevice(bool &hasMtp, DeviceType &deviceType);
 
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
