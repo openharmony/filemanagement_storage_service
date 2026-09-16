@@ -256,5 +256,29 @@ int32_t StorageManagerClient::UnregisterUeceActivationCallback()
     }
     return client->UnregisterUeceActivationCallback();
 }
+
+int32_t StorageManagerClient::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->MountCloudDiskFuse(userId, path, fuseFd);
+}
+
+int32_t StorageManagerClient::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->UMountCloudDiskFuse(userId, path);
+}
 }
 }

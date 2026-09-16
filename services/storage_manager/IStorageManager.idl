@@ -102,4 +102,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 113] void UMountDisShareFile([in] String[] distributeDirs);
     [ipccode 114] void MountDlpFuse([in] String dstPath, [out] FileDescriptor fuseFd);
     [ipccode 115] void UMountDlpFuse([in] String dstPath);
+    [ipccode 116] void MountCloudDiskFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
+    [ipccode 117] void UMountCloudDiskFuse([in] int userId, [in] String path);
 }

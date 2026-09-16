@@ -68,6 +68,7 @@ constexpr pid_t ROOT_UID = 0;
 constexpr pid_t SPACE_ABILITY_SERVICE_UID = 7014;
 constexpr pid_t UPDATE_SERVICE_UID = 6666;
 constexpr pid_t DLP_UID = 3553;
+constexpr pid_t CLOUD_DISK_UID = 6161;
 constexpr bool ENCRYPTED = true;
 constexpr uint32_t MOUNT_MAX_WAIT_TIME = 2;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
@@ -1370,6 +1371,72 @@ int32_t StorageManagerProvider::UMountDlpFuse(const std::string &dstPath)
     return err;
 #endif
     return E_NOT_SUPPORT;
+}
+
+int32_t StorageManagerProvider::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    std::string message =
+        "MountCloudDiskFuse Begin, path:" + GetAnonyString(path) + ", fuseFd: " + std::to_string(fuseFd);
+    StorageRadar::ReportFucBehavior("MountCloudDiskFuse", userId, message, E_OK);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::MountCloudDiskFuse userId %{public}d out of range", userId);
+        return err;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || IPCSkeleton::GetCallingUid() != CLOUD_DISK_UID) {
+        LOGE("MountCloudDiskFuse permissionCheck error, calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
+             IPCSkeleton::GetCallingUid(), CLOUD_DISK_UID);
+        return E_PERMISSION_DENIED;
+    }
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("MountCloudDiskFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
+        return E_PARAMS_INVALID;
+    }
+    std::string resolvedPath(realPath);
+    if (!IsPathStartWithCloudDisk(userId, resolvedPath)) {
+        return E_PARAMS_INVALID;
+    }
+    fuseFd = -1;
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.MountCloudDiskFuse(userId, resolvedPath, fuseFd);
+    StorageRadar::ReportFucBehavior("MountCloudDiskFuse", userId, "MountCloudDiskFuse End", err);
+    return err;
+}
+
+int32_t StorageManagerProvider::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    std::string message = "UMountCloudDiskFuse Begin, path:" + GetAnonyString(path);
+    StorageRadar::ReportFucBehavior("UMountCloudDiskFuse", userId, message, E_OK);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("StorageManagerProvider::UMountCloudDiskFuse userId %{public}d out of range", userId);
+        return err;
+    }
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || IPCSkeleton::GetCallingUid() != CLOUD_DISK_UID) {
+        LOGE("UMountCloudDiskFuse permissionCheck error, calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
+             IPCSkeleton::GetCallingUid(), CLOUD_DISK_UID);
+        return E_PERMISSION_DENIED;
+    }
+    if (IsFilePathInvalid(path)) {
+        return E_PARAMS_INVALID;
+    }
+    char realPath[PATH_MAX] = {0};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("UMountCloudDiskFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
+        return E_PARAMS_INVALID;
+    }
+    std::string resolvedPath(realPath);
+    if (!IsPathStartWithCloudDisk(userId, resolvedPath)) {
+        return E_PARAMS_INVALID;
+    }
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    err = sdCommunication.UMountCloudDiskFuse(userId, resolvedPath);
+    StorageRadar::ReportFucBehavior("UMountCloudDiskFuse", userId, "UMountCloudDiskFuse End", err);
+    return err;
 }
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,

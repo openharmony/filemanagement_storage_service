@@ -58,6 +58,7 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
 #include <sys/sysmacros.h>
 #include "disk_manager/disk/dm_device.h"
@@ -1736,6 +1737,92 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
 #endif
     LOGI("[L1:StorageDaemonProvider] UMountDlpFuse: <<< EXIT FAILED <<< not supported");
     return E_NOT_SUPPORT;
+}
+
+int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    LOGI("[L1:StorageDaemonProvider] MountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
+        userId, GetAnonyString(path).c_str());
+    std::string message = "userId: " + std::to_string(userId) + " path: "
+        + GetAnonyString(path) + " fuseFd: " + std::to_string(fuseFd);
+    HiAudit::GetInstance().WriteStart("MountCloudDiskFuse", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedMountPath;
+    int32_t err = ValidateMountPath(path, verifiedMountPath);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< path is invalid");
+        return E_PARAMS_INVALID;
+    }
+    err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< userId=%{public}d out of range",
+            userId);
+        return err;
+    }
+    if (!StorageManager::IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
+        LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< path prefix is invalid");
+        HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::MountCloudDiskFuse, userId:%{public}d.", userId);
+    fuseFd = -1;
+    err = MountManager::GetInstance().MountCloudDiskFuse(userId, verifiedMountPath, fuseFd);
+    message = " fuseFd: " + std::to_string(fuseFd);
+    HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", err);
+    if (err == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT SUCCESS <<< userId=%{public}d, fuseFd=%{public}d",
+            userId, fuseFd);
+    } else {
+        LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d",
+            userId, err);
+    }
+    return err;
+}
+
+int32_t StorageDaemonProvider::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    LOGI("[L1:StorageDaemonProvider] UMountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
+        userId, GetAnonyString(path).c_str());
+    std::string message = "userId: " + std::to_string(userId) + " path: " + GetAnonyString(path);
+    HiAudit::GetInstance().WriteStart("UMountCloudDiskFuse", message);
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (uid != STORAGE_MANAGER_UID) {
+        LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
+        return E_PERMISSION_DENIED;
+    }
+    std::string verifiedMountPath;
+    int32_t err = ValidateMountPath(path, verifiedMountPath);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< path is invalid");
+        HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
+    err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< userId=%{public}d out of range",
+            userId);
+        HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", err);
+        return err;
+    }
+    if (!StorageManager::IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
+        LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< path prefix is invalid");
+        HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", E_PARAMS_INVALID);
+        return E_PARAMS_INVALID;
+    }
+    LOGI("[L1:StorageDaemonProvider] StorageDaemonProvider::UMountCloudDiskFuse, userId:%{public}d.", userId);
+    err = MountManager::GetInstance().UMountCloudDiskFuse(userId, verifiedMountPath);
+    HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", err);
+    if (err == E_OK) {
+        LOGI("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
+    } else {
+        LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< userId=%{public}d, ret=%{public}d",
+            userId, err);
+    }
+    return err;
 }
 
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
