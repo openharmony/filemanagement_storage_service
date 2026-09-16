@@ -49,7 +49,6 @@ constexpr int32_t MTP_TRUE_LEN = 5;
 constexpr int32_t DETECT_CNT = 10;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
-constexpr int USB_CLASS_IMAGE = 6;
 
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
@@ -299,7 +298,8 @@ void MtpDeviceMonitor::MonitorDevice()
     int32_t cnt = DETECT_CNT;
     while (cnt > 0) {
         bool hasMtp = false;
-        int32_t ret = HasMTPDevice(hasMtp);
+        DeviceType deviceType = DeviceType::UNKNOWN;
+        int32_t ret = HasMTPDevice(hasMtp, deviceType);
         if (ret != E_OK) {
             cnt--;
             if (cnt > 0) {
@@ -308,7 +308,7 @@ void MtpDeviceMonitor::MonitorDevice()
             continue;
         }
         if (hasMtp) {
-            MountMtpDeviceByBroadcast(DeviceType::UNKNOWN, 0, 0);
+            MountMtpDeviceByBroadcast(deviceType, 0, 0);
         }
         break;
     }
@@ -575,7 +575,7 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
     LOGI("[L2:MtpDeviceMonitor] OnEnterpriseParamChange: <<< EXIT SUCCESS <<<");
 }
 
-int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
+int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp, DeviceType &deviceType)
 {
     LOGD("[L2:MtpDeviceMonitor] HasMTPDevice: >>> ENTER <<<");
     auto &usbSrvClient = OHOS::USB::UsbSrvClient::GetInstance();
@@ -585,14 +585,10 @@ int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
         LOGE("[L2:MtpDeviceMonitor] HasMTPDevice: <<< EXIT FAILED <<< GetDevices failed, err=%{public}d", ret);
         return ret;
     }
+    deviceType = DeviceType::UNKNOWN;
     for (UsbDevice &dev : deviceList) {
-        uint8_t deviceClass = static_cast<uint8_t>(dev.GetClass());
-        uint16_t idVendor = static_cast<uint16_t>(dev.GetVendorId());
-        uint16_t idProduct = static_cast<uint16_t>(dev.GetProductId());
-        LOGI("[L2:MtpDeviceMonitor] HasMTPDevice: deviceClass=%{public}u, vendorId=%{public}u, productId=%{public}u",
-             deviceClass, idVendor, idProduct);
-        DeviceType deviceType = GetDeviceType(deviceClass, idVendor, idProduct);
-        if (deviceType == DeviceType::CAMERA || deviceType == DeviceType::MOBILE || deviceClass == USB_CLASS_IMAGE) {
+        std::string usbInfo = dev.getJsonString();
+        if (UsbEventSubscriber::ShouldHandleMtpDevice(usbInfo, deviceType)) {
             hasMtp = true;
             LOGD("[L2:MtpDeviceMonitor] HasMTPDevice: <<< EXIT SUCCESS <<< hasMtp=true");
             return E_OK;
