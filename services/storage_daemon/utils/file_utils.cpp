@@ -16,7 +16,9 @@
 #include "utils/file_utils.h"
 #include "utils/volume_op_diag.h"
 
+#include <cerrno>
 #include <cstdint>
+#include <cstdlib>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
@@ -32,6 +34,7 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 #include "utils/hi_audit.h"
 #ifdef USE_LIBRESTORECON
 #include "policycoreutils.h"
@@ -434,16 +437,14 @@ bool StringToUint32(const std::string &str, uint32_t &num)
         return false;
     }
 
-    int value;
-    if (!StrToInt(str, value)) {
-        LOGE("[L8:FileUtils] StringToUint32: <<< EXIT FAILED <<< String to int convert failed");
-        return false;
-    }
-    if (value < 0 || value >= INT32_MAX) {
+    errno = 0;
+    char *end = nullptr;
+    unsigned long val = strtoul(str.c_str(), &end, BASE_DECIMAL);
+    if (end == str.c_str() || *end != '\0' || errno == ERANGE || val > UINT32_MAX) {
         LOGE("[L8:FileUtils] StringToUint32: <<< EXIT FAILED <<< value out of range");
         return false;
     }
-    num = static_cast<uint32_t>(value);
+    num = static_cast<uint32_t>(val);
     return true;
 }
 
