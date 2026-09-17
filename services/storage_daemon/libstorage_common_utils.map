@@ -6,6 +6,7 @@
       OHOS::StorageDaemon*;
       OHOS::StorageService::StorageRadar*;
       OHOS::StorageService::SetFlagUtils*;
+      OHOS::Storage::StorageDaemon::ZipUtil*;
       OHOS::StorageService::START_USER_ID;
       OHOS::StorageService::MAX_USER_ID;
       OHOS::StorageService::TOP_USER_ID;
