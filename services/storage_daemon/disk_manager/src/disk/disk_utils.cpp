@@ -1073,7 +1073,12 @@ int32_t RefreshCDRomMediaNode(const std::string &devPath)
 std::string GetOpticalDriveNode(const std::string &devPath)
 {
     LOGI("GetOpticalDriveNode: >>> ENTER <<< devPath=%{public}s", devPath.c_str());
-    std::string volName = devPath.substr(devPath.find_last_of('/') + 1);
+    size_t slashPos = devPath.find_last_of('/');
+    if (slashPos == std::string::npos || slashPos + 1 >= devPath.size()) {
+        LOGE("GetOpticalDriveNode: invalid devPath=%{public}s (no slash or empty name)", devPath.c_str());
+        return "";
+    }
+    std::string volName = devPath.substr(slashPos + 1);
     size_t dashPos = volName.find('-');
     if (dashPos == std::string::npos || dashPos + 1 >= volName.size()) {
         LOGI("GetOpticalDriveNode: no dash in volName=%{public}s, return empty", volName.c_str());
