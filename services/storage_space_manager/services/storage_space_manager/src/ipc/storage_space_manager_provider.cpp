@@ -384,6 +384,7 @@ int32_t StorageSpaceManagerProvider::GetDataShareService(const std::string &uri,
     }
     AddRunningIpcCount();
     if (!ExitIdleState()) {
+        SubtractRunningIpcCount();
         return E_SERVICE_ON_IDLE;
     }
     LOGI("Get datashare");
