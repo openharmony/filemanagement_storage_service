@@ -2182,7 +2182,6 @@ int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
 {
-    HiAudit::GetInstance().WriteStart("GetDataSizeByPath", "path: " + path);
     LOGI("[L1:StorageDaemonProvider] GetDataSizeByPath: >>> ENTER <<< path=%{public}s", path.c_str());
     auto uid = IPCSkeleton::GetCallingUid();
     if (uid != STORAGE_MANAGER_UID) {
@@ -2194,7 +2193,6 @@ int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_
         return E_PARAMS_INVALID;
     }
     int32_t ret = QuotaManager::GetInstance().GetFileData(path, size);
-    HiAudit::GetInstance().WriteEnd("GetDataSizeByPath", ret);
     return ret;
 }
 

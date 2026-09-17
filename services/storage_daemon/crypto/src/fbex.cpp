@@ -19,6 +19,7 @@
 
 #include "fbex.h"
 #include "file_ex.h"
+#include "iam_client.h"
 #include "openssl_crypto.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
@@ -351,7 +352,9 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
         std::string extraData = "ioctl cmd=FBEX_IOC_ADD_DOUBLE_DE_IV, userIdSingle=" + std::to_string(ops.userIdSingle)
             + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(tmpErrno)
             + ",flag=" + std::to_string(flag);
-        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL1", extraData);
+        if (!authToken.IsEmpty() || !IamClient::GetInstance().HasPinProtect(ops.userIdSingle)) {
+            StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL1", extraData);
+        }
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
         return ret;
@@ -671,9 +674,12 @@ bool FBEX::CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
 }
 
 void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
-                            uint32_t userIdDouble)
+                            uint32_t userIdDouble, bool hasAuth)
 {
     LOGE("[L7:FBEX] HandleIoctlError: ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errnoVal);
+    if (!hasAuth) {
+        return;
+    }
     std::string extraData = "ioctl cmd=" + cmd + ", userIdSingle=" + std::to_string(userIdSingle)
                             + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errnoVal);
     StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", userIdSingle, ret, "EL5", extraData);
@@ -717,7 +723,8 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
     }
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
-        HandleIoctlError(ret, errno, "FBEX_READ_CLASS_E", ops.userIdSingle, ops.userIdDouble);
+        HandleIoctlError(ret, errno, "FBEX_READ_CLASS_E", ops.userIdSingle, ops.userIdDouble,
+                         !authToken.IsEmpty() || !IamClient::GetInstance().HasPinProtect(ops.userIdSingle));
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
         LOGI("[L7:FBEX] ReadESecretToKernel: <<< EXIT FAILED <<<");
