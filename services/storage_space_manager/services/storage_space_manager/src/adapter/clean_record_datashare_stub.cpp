@@ -27,7 +27,7 @@ namespace StorageSpaceManager {
 using namespace OHOS::DataShare;
 using namespace OHOS::Security::AccessToken;
 constexpr int32_t SINGLE_PARAMS_SIZE = 3;
-constexpr size_t MAX_CONDITIONS_SIZE = 10;
+constexpr size_t MAX_CONDITIONS_SIZE = 12;
 DataShareNonSilentConfig CleanRecordDataShareStub::GetConfig()
 {
     NonSilentConfigRecord record = {

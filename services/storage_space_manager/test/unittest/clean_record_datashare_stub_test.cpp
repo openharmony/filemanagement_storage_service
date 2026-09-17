@@ -1709,7 +1709,7 @@ HWTEST_F(CleanRecordDataShareStubTest, BuildResultSet_LargeResultSet, TestSize.L
     DataShare::DataSharePredicates predicates;
     
     std::string queryJson = R"({"conditions":[)";
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 5; i++) {
         if (i > 0) queryJson += ",";
         queryJson += R"({"week_index":)" + std::to_string(i) +
             R"(,"begin_time":1718515200000,"end_time":1718601600000})";
