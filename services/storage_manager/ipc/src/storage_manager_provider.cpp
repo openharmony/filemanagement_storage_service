@@ -1630,8 +1630,12 @@ int32_t StorageManagerProvider::CreateUserDir(const std::string &path, mode_t mo
     auto ret = sdCommunication.CreateUserDir(path, mode, uid, gid);
     LOGW("CreateUserDir end, uid: %{public}d, ret: %{public}d", callingUid, ret);
 
-    std::string extraData = "path=" + path + "callingUid=" + std::to_string(callingUid);
-    StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
+    std::string extraData = "path=" + path + ", mode=" + std::to_string(mode) +
+        ", uid=" + std::to_string(uid) + ", gid=" + std::to_string(gid) +
+        ", callingUid=" + std::to_string(callingUid);
+    if (ret != E_OK) {
+        StorageRadar::ReportUserManager("CreateUserDir", 0, ret, extraData);
+    }
     return ret;
 }
 

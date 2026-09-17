@@ -330,7 +330,7 @@ int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &ba
     }
     closedir(dir);
 
-    HiAudit::GetInstance().WriteEnd("KeyBackup::GetFileList while First", 0);
+    HiAudit::GetInstance().WriteEnd("KeyBackup::GetFileList First while", E_OK);
     dir = opendir(backDir.c_str());
     if (dir == nullptr) {
         LOGE("[L4:KeyBackup] GetFileList: <<< EXIT FAILED <<< fail to open backDir=%{public}s", backDir.c_str());
@@ -343,7 +343,7 @@ int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &ba
         AddBackupFileToList(std::string(de->d_name), backDir, fileList);
     }
     closedir(dir);
-    HiAudit::GetInstance().WriteStart("KeyBackup::GetFileList while Second");
+    HiAudit::GetInstance().WriteEnd("KeyBackup::GetFileList Second while", E_OK);
     dir = nullptr;
 
     diffNum = GetDiffFilesNum(fileList);

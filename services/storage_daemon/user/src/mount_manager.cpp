@@ -643,7 +643,7 @@ int32_t MountManager::FindSaFd(int32_t userId)
     FindProcess(list, proInfos, excludeProcess);
     if (!proInfos.empty()) {
         std::string extraData = "process=" + ProcessToString(proInfos);
-        StorageRadar::ReportUserManager("FindSaFd", userId, E_UMOUNT_FIND_FD, extraData);
+        StorageRadar::ReportFucBehavior("FindSaFd", userId, extraData, E_OK);
     }
     LOGI("[L2:MountManager] FindSaFd: <<< EXIT SUCCESS <<< userId=%{public}d", userId);
     return E_OK;
@@ -761,7 +761,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         return E_UMOUNT_NO_PROCESS_FIND;
     }
     std::string extraData = "process=" + ProcessToString(processInfos) + ",kernelCode=" + to_string(radar);
-    StorageRadar::ReportUserManager("FindAndKillProcess", userId, E_UMOUNT_FIND_PROCESS, extraData);
+    StorageRadar::ReportFucBehavior("FindAndKillProcess", userId, extraData, E_UMOUNT_FIND_PROCESS);
 
     std::vector<ProcessInfo> killFailList;
     KillProcess(processInfos, killFailList);
@@ -788,7 +788,9 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         if (mkRet != E_OK) {
             int savedErrno = errno;
             std::string extraData = "dirPath=" + dirInfo.path + ",kernelCode=" + to_string(savedErrno);
-            StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
+            if (savedErrno != ENOSYS) {
+                StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
+            }
             ret = E_CREATE_DIR_VIRTUAL;
         }
     }
@@ -991,7 +993,9 @@ int32_t MountManager::MountAppdata(int32_t userId, bool beforeStartup)
             LOGW("[L2:MountManager] MountAppdata: MountDir failed, dstPath=%{public}s",
                 nodeInfo.dstPath.c_str());
             std::string extraData = "dstPath=" + nodeInfo.dstPath + ",kernelCode=" + to_string(savedErrno);
-            StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
+            if (savedErrno != ENOTSUP && savedErrno != ENODEV && savedErrno != ENOSYS) {
+                StorageRadar::ReportUserManager("MountAppdata", userId, E_MOUNT_BIND_AND_REC, extraData);
+            }
         }
     }
     LOGI("[L2:MountManager] MountAppdata: <<< EXIT SUCCESS <<< userId=%{public}d", userId);

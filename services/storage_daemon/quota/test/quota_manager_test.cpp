@@ -803,6 +803,25 @@ HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: QuotaManagerTest_GetFileData_002
+ * @tc.desc: Test QuotaManager::GetFileData rejects path traversal and escape characters.
+ * @tc.type: FUNC
+ * @tc.require: AR000XXXX
+ */
+HWTEST_F(QuotaManagerTest, QuotaManagerTest_GetFileData_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_002 start";
+    int64_t size = 0;
+    QuotaManager quotaManager_;
+    EXPECT_EQ(quotaManager_.GetFileData("/data/../etc/passwd", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("../etc/passwd", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("/data/..\\etc", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData("%2e%2e%2fsecret", size), E_FILE_PATH_INVALID);
+    EXPECT_EQ(quotaManager_.GetFileData(std::string("/data/\n../etc", 11), size), E_FILE_PATH_INVALID);
+    GTEST_LOG_(INFO) << "QuotaManagerTest_GetFileData_002 end";
+}
+
+/**
  * @tc.name: QuotaManagerTest_StringToInt64_001
  * @tc.desc: Test QuotaManager::StringToInt64 with various input scenarios.
  * @tc.type: FUNC
