@@ -978,16 +978,19 @@ int32_t QuotaManager::AddBlksMultiUids(const std::string &path, std::vector<int6
     }
 
     uint64_t fileSize = static_cast<uint64_t>(st.st_blocks) * BLOCK_BYTE;
+    bool uidMatched = false;
 
-    if (!S_ISDIR(st.st_mode)) {
-        CollectLargeFile(path, fileSize, largeFiles);
-        UpdateParentDirSizes(path, fileSize, dirSizeMap);
-    }
     for (size_t i = 0; i < uids.size(); ++i) {
         if (static_cast<uid_t>(uids[i]) == st.st_uid) {
             blks[i] += static_cast<int64_t>(st.st_blocks);
+            uidMatched = true;
             break; // Each file belongs to only one UID
         }
+    }
+
+    if (!S_ISDIR(st.st_mode) && uidMatched) {
+        CollectLargeFile(path, fileSize, largeFiles);
+        UpdateParentDirSizes(path, fileSize, dirSizeMap);
     }
     return E_OK;
 }
