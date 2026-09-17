@@ -404,9 +404,11 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
 
     storeKey.Clear();
     ClearKeyContext(keyCtx);
+    std::string errMsg = "";
     const std::string NEED_UPDATE_PATH = keyPath + SUFFIX_NEED_UPDATE;
-    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
-        LOGE("[L4:BaseKey] SaveAndCleanKeyBuff: Save key type file failed");
+    if (!SaveStringToFileSync(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_), errMsg)) {
+        LOGE("[L4:BaseKey] SaveAndCleanKeyBuff: <<< EXIT FAILED <<< Save key type file failed, "
+            "errMsg=%{public}s", errMsg.c_str());
         return false;
     }
 
@@ -541,9 +543,11 @@ int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
         ClearKeyContext(ctxDe);
         return E_SAVE_KEY_BLOB_ERROR;
     }
+    std::string errMsg = "";
     const std::string NEED_UPDATE_PATH = path + SUFFIX_NEED_UPDATE;
-    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
-        LOGE("[L4:BaseKey] EncryptDe: <<< EXIT FAILED <<< Save key type file failed");
+    if (!SaveStringToFileSync(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_), errMsg)) {
+        LOGE("[L4:BaseKey] EncryptDe: <<< EXIT FAILED <<< Save key type file failed, "
+            "errMsg=%{public}s", errMsg.c_str());
         ClearKeyContext(ctxDe);
         return E_SAVE_KEY_TYPE_ERROR;
     }

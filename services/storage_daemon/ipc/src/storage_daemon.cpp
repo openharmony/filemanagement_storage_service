@@ -454,9 +454,11 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGW("[L1:StorageDaemon] Process NEW_DOUBLE(version:%{public}s}) ——> "
             "SINGLE Frame(version:%{public}d), ret: %{public}d",
             doubleVersion.c_str(), newSingleVersion, isRead);
-        if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
-            LOGE("[L1:StorageDaemon] InitGlobalUserKeys: <<< EXIT FAILED <<< Save NEW_DOUBLE_2_SINGLE file failed");
-            StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::SaveStringToFile", START_USER_ID,
+        std::string errMsg = "";
+        if (!SaveStringToFileSync(el0NeedRestorePath, std::to_string(newSingleVersion), errMsg)) {
+            LOGE("[L1:StorageDaemon] InitGlobalUserKeys: <<< EXIT FAILED <<< Save NEW_DOUBLE_2_SINGLE file failed, "
+                "errMsg=%{public}s", errMsg.c_str());
+            StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::SaveStringToFileSync", START_USER_ID,
                 E_SAVE_STRING_TO_FILE_ERR, "EL1", "path=" + el0NeedRestorePath);
             return E_SAVE_KEY_TYPE_ERROR;
         }
@@ -1197,8 +1199,10 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         return E_ACTIVE_EL2_FAILED;
     }
     std::string el0NeedRestorePath = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
-    if (!SaveStringToFile(el0NeedRestorePath, NEW_DOUBLE_2_SINGLE)) {
-        LOGE("[L1:StorageDaemon] ActiveUserKey4Update: <<< EXIT FAILED <<< Save key type file failed");
+    std::string errMsg = "";
+    if (!SaveStringToFileSync(el0NeedRestorePath, NEW_DOUBLE_2_SINGLE, errMsg)) {
+        LOGE("[L1:StorageDaemon] ActiveUserKey4Update: <<< EXIT FAILED <<< Save key type file failed, "
+            "errMsg=%{public}s", errMsg.c_str());
         return E_SYS_KERNEL_ERR;
     }
     LOGI("[L1:StorageDaemon] ActiveUserKey4Update: el2 success, userId=%{public}d", userId);
