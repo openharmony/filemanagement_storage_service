@@ -1235,6 +1235,10 @@ HWTEST_F(ExtDiskUtilsTest, ExecAsyncGetPartitionTableInfo_ForkExecFailed, TestSi
 HWTEST_F(ExtDiskUtilsTest, GetOpticalDriveNode_NoMatch, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "GetOpticalDriveNode_NoMatch start";
+    // B0a: slashPos == npos (no slash in devPath) -> return "" (UBSan overflow guard)
+    EXPECT_TRUE(GetOpticalDriveNode("sr0").empty());
+    // B0b: slashPos + 1 >= devPath.size() (devPath ends with '/') -> return ""
+    EXPECT_TRUE(GetOpticalDriveNode("/dev/block/").empty());
     // B1a: dashPos == npos (no dash in volName) -> enter if, return ""
     EXPECT_TRUE(GetOpticalDriveNode("/dev/block/sr0").empty());
     // B1b: dashPos != npos but dashPos+1 >= volName.size() (dash at end) -> enter if, return ""
