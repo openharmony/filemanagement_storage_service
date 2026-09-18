@@ -85,6 +85,13 @@ ohos_shared_library("storage_manager") {
     "-Wl,-z,separate-code",
   ]
 
+  ldflags += [
+    "-Wl,--exclude-libs=libGL.a",
+    "-Wl,--exclude-libs=libEGL.a",
+    "-Wl,--exclude-libs=libunwind.a",
+    "-Wl,--exclude-libs=libc++_static.a"
+  ]
+
   configs = [ ":storage_manager_config" ]
 
   deps = [

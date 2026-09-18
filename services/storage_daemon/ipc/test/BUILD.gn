@@ -203,6 +203,8 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/disk_manager/src/volume/volume_utils.cpp",
     "${storage_manager_path}/innerkits_impl/src/statistic_info.cpp",
     "${storage_manager_path}/innerkits_impl/src/userdata_dir_info.cpp",
+    "${storage_daemon_path}/utils/hi_audit.cpp",
+    "${storage_daemon_path}/utils/zip_utils.cpp",
   ]
 
   deps = [
@@ -243,7 +245,6 @@ ohos_unittest("storage_daemon_provider_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "zlib:shared_libz",
-    "json:nlohmann_json_static",
   ]
 
   if (enable_disk_manager) {

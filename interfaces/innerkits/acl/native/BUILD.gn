@@ -39,6 +39,8 @@ ohos_shared_library("storage_manager_acl") {
     debug = false
   }
 
+  version_script = "libstorage_manager_acl.map"
+
   sources = [
     "${storage_daemon_path}/file_sharing/src/acl.cpp",
     "${storage_daemon_path}/file_sharing/src/setacl.cpp",

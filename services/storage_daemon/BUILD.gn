@@ -443,6 +443,15 @@ ohos_shared_library("storage_common_utils") {
     "-Wl,-O1",
   ]
 
+  ldflags += [
+    "-Wl,--exclude-libs=libGL.a",
+    "-Wl,--exclude-libs=libEGL.a",
+    "-Wl,--exclude-libs=libunwind.a",
+    "-Wl,--exclude-libs=libc++_static.a"
+  ]
+
+  version_script = "libstorage_common_utils.map"
+
   sources = [
     "utils/disk_utils.cpp",
     "utils/file_utils.cpp",
