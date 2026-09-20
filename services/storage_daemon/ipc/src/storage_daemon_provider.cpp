@@ -1772,7 +1772,7 @@ int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::str
     fuseFd = -1;
     err = MountManager::GetInstance().MountCloudDiskFuse(userId, verifiedMountPath, fuseFd);
     message = " fuseFd: " + std::to_string(fuseFd);
-    HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", err);
+    HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", err, message);
     if (err == E_OK) {
         LOGI("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT SUCCESS <<< userId=%{public}d, fuseFd=%{public}d",
             userId, fuseFd);
