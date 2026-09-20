@@ -127,6 +127,12 @@ HWTEST_F(IpcCallerAuthTest, IsCallingSystemApp_UnknownToken, TestSize.Level1)
     EXPECT_TRUE(IpcCallerAuth::IsCallingSystemApp());
 }
 
+HWTEST_F(IpcCallerAuthTest, IsCallingSystemApp_InvalidTokenType, TestSize.Level1)
+{
+    g_mockTokenTypeFlag = 0x80000000;
+    EXPECT_FALSE(IpcCallerAuth::IsCallingSystemApp());
+}
+
 /* ---------- VerifyNativeCallerMatches ---------- */
 
 HWTEST_F(IpcCallerAuthTest, VerifyNativeCallerMatches_Success, TestSize.Level1)

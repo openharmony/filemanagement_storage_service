@@ -60,6 +60,10 @@ bool IpcCallerAuth::IsCallingSystemApp()
         uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
         return AccessTokenKit::IsSystemAppByFullTokenID(fullTokenId);
     }
+    if (static_cast<int32_t>(tokenType) < 0) {
+        LOGE("IsCallingSystemApp invalid token type %{public}d", static_cast<int32_t>(tokenType));
+        return false;
+    }
     return true;
 }
 

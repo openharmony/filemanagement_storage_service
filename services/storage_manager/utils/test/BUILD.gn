@@ -26,12 +26,15 @@ ohos_unittest("file_cache_adapter_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
+    "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_manager_path}/utils/src/file_cache_adapter.cpp",
     "file_cache_adapter_test.cpp",
   ]
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/utils", 
+    "${storage_daemon_path}/utils",
     "${storage_manager_path}/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
     "${storage_manager_path}/common/include/",

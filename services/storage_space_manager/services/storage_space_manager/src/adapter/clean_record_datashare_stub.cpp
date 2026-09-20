@@ -14,6 +14,7 @@
  */
 
 #include "clean_record_datashare_stub.h"
+#include <cstdint>
 #include "storage_space_manager_errno.h"
 #include "storage_space_manager_hilog.h"
 #include "storage_space_manager_provider.h"
@@ -26,6 +27,7 @@ namespace StorageSpaceManager {
 using namespace OHOS::DataShare;
 using namespace OHOS::Security::AccessToken;
 constexpr int32_t SINGLE_PARAMS_SIZE = 3;
+constexpr size_t MAX_CONDITIONS_SIZE = 12;
 DataShareNonSilentConfig CleanRecordDataShareStub::GetConfig()
 {
     NonSilentConfigRecord record = {
@@ -155,6 +157,13 @@ int32_t CleanRecordDataShareStub::HandlingIndividualConditions(const nlohmann::j
             int64_t freedSize = 0;
             resultSet->GetColumnIndex("freed_size", columnIndex);
             resultSet->GetLong(columnIndex, freedSize);
+            if (freedSize < 0) {
+                continue;
+            }
+            if (freedSize > INT64_MAX - revenue) {
+                revenue = INT64_MAX;
+                break;
+            }
             revenue += freedSize;
         }
     }
@@ -201,8 +210,8 @@ std::shared_ptr<DataShareResultSet> CleanRecordDataShareStub::Query(const Uri &u
         return nullptr;
     }
     auto conditions = predicatesObj["conditions"];
-    if (!conditions.is_array()) {
-        LOGE("conditions is not an array");
+    if (!conditions.is_array() || conditions.size() > MAX_CONDITIONS_SIZE) {
+        LOGE("conditions is not an array or exceeds max size");
         businessError.SetCode(E_INVALID_ARGUMENT);
         provider->SubtractRunningIpcCount();
         return nullptr;

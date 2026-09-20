@@ -30,6 +30,7 @@ config("storage_space_manager_idl_public_config") {
 }
 
 ohos_source_set("storage_space_manager_ipc_native") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     debug = false
     cfi = true
@@ -51,6 +52,7 @@ ohos_source_set("storage_space_manager_ipc_native") {
 }
 
 ohos_source_set("storage_space_manager_header") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     debug = false
     cfi = true
