@@ -35,6 +35,8 @@ namespace OHOS {
 namespace StorageDaemon {
 
 constexpr const char *MOUNT_PATH_PREFIX = "/mnt/data/";
+#define FDSAN_TAG 1
+const uint64_t NEW_TAG = static_cast<uint64_t>(0xD004301) << 32 | FDSAN_TAG;
 
 static bool IsValidMountPath(const std::string& mountPath)
 {
@@ -154,6 +156,7 @@ int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
         LOGE("VolumeUtils::MountFuseDevice open /dev/fuse failed, errno=%{public}d", errno);
         return E_OPEN_FAILED;
     }
+    fdsan_exchange_owner_tag(fuseFd, 0, NEW_TAG);
     std::string fuseOptions = StringPrintf(
         "fd=%d,"
         "rootmode=40000,"
@@ -167,7 +170,7 @@ int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
                      fuseOptions.c_str());
     if (mret != 0) {
         LOGE("VolumeUtils::MountFuseDevice mount failed, errno=%{public}d", errno);
-        close(fuseFd);
+        fdsan_close_with_tag(fuseFd, NEW_TAG);
         fuseFd = -1;
         return E_EXT_MOUNT;
     }
