@@ -1384,7 +1384,8 @@ int32_t StorageManagerProvider::MountCloudDiskFuse(int32_t userId, const std::st
         return err;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || IPCSkeleton::GetCallingUid() != CLOUD_DISK_UID) {
-        LOGE("MountCloudDiskFuse permissionCheck error, calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
+        LOGE("MountCloudDiskFuse permissionCheck error, "
+             "calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
              IPCSkeleton::GetCallingUid(), CLOUD_DISK_UID);
         return E_PERMISSION_DENIED;
     }
@@ -1417,7 +1418,8 @@ int32_t StorageManagerProvider::UMountCloudDiskFuse(int32_t userId, const std::s
         return err;
     }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER) || IPCSkeleton::GetCallingUid() != CLOUD_DISK_UID) {
-        LOGE("UMountCloudDiskFuse permissionCheck error, calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
+        LOGE("UMountCloudDiskFuse permissionCheck error, "
+             "calling uid now is %{public}d, should be CLOUD_DISK_UID: %{public}d",
              IPCSkeleton::GetCallingUid(), CLOUD_DISK_UID);
         return E_PERMISSION_DENIED;
     }
