@@ -378,7 +378,7 @@ int32_t MountManager::UMountDlpFuse(const std::string &dstPath)
 int32_t MountManager::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
     LOGI("[L2:MountManager] MountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
-        userId, GetAnonyString(path).c_str());
+        userId, path.c_str());
     UMountCloudDiskFuse(userId, path);
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     fuseFd = open("/dev/fuse", O_RDWR);
@@ -402,9 +402,9 @@ int32_t MountManager::MountCloudDiskFuse(int32_t userId, const std::string &path
     int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV, opt.c_str());
     if (ret) {
         LOGE("[L2:MountManager] MountCloudDiskFuse: <<< EXIT FAILED <<< mount fuse failed, ret=%{public}d,"
-            "errno=%{public}d, path=%{public}s", ret, errno, GetAnonyString(path).c_str());
+            "errno=%{public}d, path=%{public}s", ret, errno, path.c_str());
         close(fuseFd);
-        std::string extraData = "dstPath=" + GetAnonyString(path) + ",kernelCode=" + to_string(errno);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("MountCloudDiskFuse", userId, E_MOUNT_CLOUDDISK_FUSE, extraData);
         return E_MOUNT_CLOUDDISK_FUSE;
     }
@@ -417,13 +417,13 @@ int32_t MountManager::MountCloudDiskFuse(int32_t userId, const std::string &path
 int32_t MountManager::UMountCloudDiskFuse(int32_t userId, const std::string &path)
 {
     LOGI("[L2:MountManager] UMountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
-        userId, GetAnonyString(path).c_str());
+        userId, path.c_str());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = UMount2(path, MNT_DETACH);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("[L2:MountManager] UMountCloudDiskFuse: <<< EXIT FAILED <<< umount failed, ret=%{public}d,"
-            "errno=%{public}d, %{public}s", ret, errno, GetAnonyString(path).c_str());
-        std::string extraData = "dstPath=" + GetAnonyString(path) + ",kernelCode=" + to_string(errno);
+            "errno=%{public}d, %{public}s", ret, errno, path.c_str());
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("UMountCloudDiskFuse", userId, E_UMOUNT_CLOUDDISK_FUSE, extraData);
         return E_UMOUNT_CLOUDDISK_FUSE;
     }
