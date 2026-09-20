@@ -3345,5 +3345,167 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCloudDiskFus
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_002 end";
 }
 
+/**
+ * @tc.name: StorageDaemonProviderTest_MountCloudDiskFuse_003
+ * @tc.desc: Verify the MountCloudDiskFuse function with invalid path containing "../".
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCloudDiskFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_003 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "../evil";
+    int32_t fuseFd = 0;
+    int32_t ret = storageDaemonProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountCloudDiskFuse_004
+ * @tc.desc: Verify the MountCloudDiskFuse function with invalid userId range.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCloudDiskFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    OHOS::ForceCreateDirectory(path);
+    int32_t fuseFd = 0;
+    int32_t ret = storageDaemonProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountCloudDiskFuse_005
+ * @tc.desc: Verify the MountCloudDiskFuse function with path not start with cloud_disk_fuse.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCloudDiskFuse_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_005 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/other/test";
+    OHOS::ForceCreateDirectory(path);
+    int32_t fuseFd = 0;
+    int32_t ret = storageDaemonProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_005 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountCloudDiskFuse_006
+ * @tc.desc: Verify the MountCloudDiskFuse function when MountManager call fails.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCloudDiskFuse_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_006 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    OHOS::ForceCreateDirectory(path);
+    int32_t fuseFd = 0;
+    EXPECT_CALL(*mountManagerMoc_, MountCloudDiskFuse(_, _, _)).WillOnce(Return(E_MOUNT_CLOUDDISK_FUSE));
+    int32_t ret = storageDaemonProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_MOUNT_CLOUDDISK_FUSE);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCloudDiskFuse_006 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountCloudDiskFuse_003
+ * @tc.desc: Verify the UMountCloudDiskFuse function with invalid path containing "../".
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCloudDiskFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_003 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "../evil";
+    int32_t ret = storageDaemonProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountCloudDiskFuse_004
+ * @tc.desc: Verify the UMountCloudDiskFuse function with invalid userId range.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCloudDiskFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_004 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    OHOS::ForceCreateDirectory(path);
+    int32_t ret = storageDaemonProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountCloudDiskFuse_005
+ * @tc.desc: Verify the UMountCloudDiskFuse function with path not start with cloud_disk_fuse.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCloudDiskFuse_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_005 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/other/test";
+    OHOS::ForceCreateDirectory(path);
+    int32_t ret = storageDaemonProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_005 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountCloudDiskFuse_006
+ * @tc.desc: Verify the UMountCloudDiskFuse function when MountManager call fails.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountCloudDiskFuse_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_006 start";
+    SetCallingUid(STORAGE_MANAGER_UID);
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    OHOS::ForceCreateDirectory(path);
+    EXPECT_CALL(*mountManagerMoc_, UMountCloudDiskFuse(_, _)).WillOnce(Return(E_UMOUNT_CLOUDDISK_FUSE));
+    int32_t ret = storageDaemonProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_UMOUNT_CLOUDDISK_FUSE);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountCloudDiskFuse_006 end";
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
