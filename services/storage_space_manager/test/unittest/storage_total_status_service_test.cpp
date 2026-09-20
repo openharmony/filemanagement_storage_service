@@ -1038,5 +1038,50 @@ HWTEST_F(StorageTotalStatusServiceTest, GetSizeOfPath_AllTypes_Consistency, Test
     }
 }
 
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0017
+ * @tc.name: GetRoundSize_Int64Max
+ * @tc.desc: Test GetRoundSize with INT64_MAX does not overflow
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_Int64Max, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Int64Max start";
+    ASSERT_NE(service_, nullptr);
+
+    int64_t result = service_->GetRoundSize(INT64_MAX);
+    EXPECT_LE(result, INT64_MAX);
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_Int64Max end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_StorageTotalStatusService_GetRoundSize_0018
+ * @tc.name: GetRoundSize_NearOverflowBoundary
+ * @tc.desc: Test GetRoundSize with values near overflow boundary
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, GetRoundSize_NearOverflowBoundary, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_NearOverflowBoundary start";
+    ASSERT_NE(service_, nullptr);
+
+    constexpr int64_t gb = 1000000000;
+    int64_t result1 = service_->GetRoundSize(500LL * gb);
+    EXPECT_GT(result1, 0);
+
+    int64_t result2 = service_->GetRoundSize(1000LL * gb);
+    EXPECT_GT(result2, 0);
+
+    int64_t result3 = service_->GetRoundSize(INT64_MAX / 2);
+    EXPECT_GT(result3, 0);
+
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest_GetRoundSize_NearOverflowBoundary end";
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS

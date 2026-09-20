@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 #define OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 
+#include <dirent.h>
 #include <fstream>
 #include <map>
 #include <nocopyable.h>
@@ -118,6 +119,9 @@ private:
         const std::vector<int32_t> &uids, std::vector<LargeFileInfo> &largeFiles,
         std::map<std::string, int64_t> &dirSizeMap);
     OHOS::StorageManager::UserdataDirInfo ScanDirRecurse(const std::string &path,
+        std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
+    void ScanSubDirsAndMerge(const std::string &path, DIR *dir,
+        OHOS::StorageManager::UserdataDirInfo &dirInfo,
         std::vector<OHOS::StorageManager::UserdataDirInfo> &scanDirs);
     std::atomic<bool> stopScanFlag_{false};
 };

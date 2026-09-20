@@ -264,7 +264,8 @@ ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t user
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { "", DEFAULTSIZE, false };
     }
-    int64_t businessSize_o = static_cast<int64_t>(extBundleStats.businessSize_);
+    int64_t businessSize_o = (extBundleStats.businessSize_ > static_cast<uint64_t>(INT64_MAX)) ?
+        INT64_MAX : static_cast<int64_t>(extBundleStats.businessSize_);
     return { businessName, businessSize_o, extBundleStats.showFlag_};
 }
 

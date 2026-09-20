@@ -454,7 +454,7 @@ int32_t StorageDfxReporter::CheckSystemUidSize(const std::vector<NextDqBlk> &dqB
         }
         LOGI("uid=%{public}d, curSpace=%{public}lld bytes", SYS_UIDS[i], static_cast<long long>(uidSize));
     }
-    int64_t sizeIncrease = abs(totalSize - lastTotalSize_);
+    int64_t sizeIncrease = std::abs(totalSize - lastTotalSize_);
     if (sizeIncrease < StorageService::ONE_G_BYTE) {
         LOGE("Total size increase %{public}lld bytes (from %{public}lld to %{public}lld) is less than 1GB, "
              "skip dir statistics.",

@@ -78,14 +78,21 @@ int64_t StorageTotalStatusService::GetRoundSize(int64_t size)
 
     int64_t val = 1;
     int64_t multiple = UNIT;
-    while (val * multiple < size) {
+    while (val < INT64_MAX / multiple && val * multiple < size) {
         uint64_t tmpVal = static_cast<uint64_t>(val);
         tmpVal <<= 1;
         val = static_cast<int64_t>(tmpVal);
         if (val > THRESHOLD && multiple < ONE_GB) {
             val = 1;
+            if (multiple > INT64_MAX / UNIT) {
+                break;
+            }
             multiple *= UNIT;
         }
+    }
+    if (val > INT64_MAX / multiple) {
+        LOGE("GetRoundSize: overflow detected");
+        return 0;
     }
     return val * multiple;
 }
@@ -151,6 +158,11 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
 
+    if (dataSize > INT64_MAX - rootSize) {
+        LOGE("GetTotalSize: dataSize add rootSize overflow detected");
+        return E_IO_ERROR;
+    }
+    
     int64_t rawSize = dataSize + rootSize;
     if (rawSize > ONE_TB) {
         std::string content;

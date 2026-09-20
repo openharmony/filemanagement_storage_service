@@ -85,6 +85,7 @@ private:
 
     std::mutex unloadMutex_;
     std::shared_ptr<AppExecFwk::EventHandler> unloadHandler_;
+    std::mutex dataShareMtx_;
     sptr<CleanRecordDataShareStub> dataShareService_ = nullptr;
 };
 

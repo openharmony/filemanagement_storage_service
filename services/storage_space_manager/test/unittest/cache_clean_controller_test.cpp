@@ -710,7 +710,9 @@ HWTEST_F(CacheCleanControllerTest, CalculateTimeRange_ZeroHours, TestSize.Level2
 
     controller_->CalculateTimeRange(currentTime, hoursSpan, startTime, endTime);
 
-    EXPECT_EQ(startTime, currentTime);
+    constexpr int32_t defaultHours = 168;
+    constexpr int64_t millisPerHour = 60LL * 60 * 1000;
+    EXPECT_EQ(startTime, currentTime - static_cast<int64_t>(defaultHours) * millisPerHour);
     EXPECT_EQ(endTime, currentTime);
 
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_ZeroHours end";
@@ -743,6 +745,121 @@ HWTEST_F(CacheCleanControllerTest, CalculateTimeRange_LargeHours, TestSize.Level
 
     GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_LargeHours end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_CalculateTimeRange_0004
+ * @tc.name: CalculateTimeRange_NegativeHours
+ * @tc.desc: Test CalculateTimeRange with negative hours uses default span
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CacheCleanControllerTest, CalculateTimeRange_NegativeHours, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_NegativeHours start";
+
+    ASSERT_NE(controller_, nullptr);
+
+    int64_t currentTime = 1718515200000LL;
+    int32_t hoursSpan = -5;
+    int64_t startTime = -1;
+    int64_t endTime = -1;
+
+    controller_->CalculateTimeRange(currentTime, hoursSpan, startTime, endTime);
+
+    constexpr int32_t defaultHours = 168;
+    constexpr int64_t millisPerHour = 60LL * 60 * 1000;
+    EXPECT_EQ(startTime, currentTime - static_cast<int64_t>(defaultHours) * millisPerHour);
+    EXPECT_EQ(endTime, currentTime);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_NegativeHours end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_CalculateTimeRange_0005
+ * @tc.name: CalculateTimeRange_ExceedsMaxHours
+ * @tc.desc: Test CalculateTimeRange with hours exceeding MAX_HOURS_SPAN uses default span
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CacheCleanControllerTest, CalculateTimeRange_ExceedsMaxHours, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_ExceedsMaxHours start";
+
+    ASSERT_NE(controller_, nullptr);
+
+    int64_t currentTime = 1718515200000LL;
+    int32_t hoursSpan = 87601;
+    int64_t startTime = -1;
+    int64_t endTime = -1;
+
+    controller_->CalculateTimeRange(currentTime, hoursSpan, startTime, endTime);
+
+    constexpr int32_t defaultHours = 168;
+    constexpr int64_t millisPerHour = 60LL * 60 * 1000;
+    EXPECT_EQ(startTime, currentTime - static_cast<int64_t>(defaultHours) * millisPerHour);
+    EXPECT_EQ(endTime, currentTime);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_ExceedsMaxHours end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_CalculateTimeRange_0006
+ * @tc.name: CalculateTimeRange_SmallCurrentTime
+ * @tc.desc: Test CalculateTimeRange with very small currentTime clamps startTime to 0
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 2
+ */
+HWTEST_F(CacheCleanControllerTest, CalculateTimeRange_SmallCurrentTime, TestSize.Level2)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_SmallCurrentTime start";
+
+    ASSERT_NE(controller_, nullptr);
+
+    int64_t currentTime = 1000LL;
+    int32_t hoursSpan = 24;
+    int64_t startTime = -1;
+    int64_t endTime = -1;
+
+    controller_->CalculateTimeRange(currentTime, hoursSpan, startTime, endTime);
+
+    EXPECT_EQ(startTime, 0);
+    EXPECT_EQ(endTime, currentTime);
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_CalculateTimeRange_SmallCurrentTime end";
+}
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+/**
+ * @tc.number: SUB_STORAGE_CacheCleanController_BuildCleanCacheInfos_0001
+ * @tc.name: BuildCleanCacheInfos_NullAppInfos
+ * @tc.desc: Test BuildCleanCacheInfos with null appInfos returns without crash
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(CacheCleanControllerTest, BuildCleanCacheInfos_NullAppInfos, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_BuildCleanCacheInfos_NullAppInfos start";
+
+    ASSERT_NE(controller_, nullptr);
+
+    CleanCacheBuildParams params;
+    params.appInfos = nullptr;
+    params.userId = 100;
+    std::vector<CleanCacheInfo> rankedCleanInfos;
+    std::vector<CleanCacheInfo> cleanAllCacheInfos;
+
+    controller_->BuildCleanCacheInfos(params, rankedCleanInfos, cleanAllCacheInfos);
+
+    EXPECT_TRUE(rankedCleanInfos.empty());
+    EXPECT_TRUE(cleanAllCacheInfos.empty());
+
+    GTEST_LOG_(INFO) << "CacheCleanControllerTest_BuildCleanCacheInfos_NullAppInfos end";
+}
+#endif
 
 /**
  * @tc.number: SUB_STORAGE_CacheCleanController_SetStopCleanCacheFlag_0002

@@ -396,6 +396,30 @@ HWTEST_F(StorageSpaceManagerProviderTest, CleanBundleCache_MultipleUsers, TestSi
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Provider_CleanBundleCache_0004
+ * @tc.name: CleanBundleCache_NotNativeToken
+ * @tc.desc: Test CleanBundleCache rejects non-native token caller
+ * @tc.size: SMALL
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageSpaceManagerProviderTest, CleanBundleCache_NotNativeToken, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_CleanBundleCache_NotNativeToken start";
+
+    ASSERT_NE(provider_, nullptr);
+
+    provider_->serviceReady_.store(true);
+
+    g_mockTokenTypeFlag = 0;
+    int32_t userId = 100;
+    int32_t ret = provider_->CleanBundleCache(userId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "StorageSpaceManagerProviderTest_CleanBundleCache_NotNativeToken end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Provider_Lifecycle_0001
  * @tc.name: Lifecycle_StartStop
  * @tc.desc: Test provider lifecycle: start and stop

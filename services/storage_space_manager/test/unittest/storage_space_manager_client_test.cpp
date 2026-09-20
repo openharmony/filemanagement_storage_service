@@ -276,5 +276,29 @@ HWTEST_F(StorageSpaceManagerClientTest, ResetProxy_WithDeathRecipient, TestSize.
     EXPECT_EQ(client->deathRecipient_, nullptr);
 }
 
+HWTEST_F(StorageSpaceManagerClientTest, SubscribeSsmSA_AlreadySubscribed, TestSize.Level1)
+{
+    g_mockSamgrReturnNull = true;
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->statusListener_ = new (std::nothrow) StorageSpaceManagerClient::SystemAbilityStatusListener();
+    ASSERT_NE(client->statusListener_, nullptr);
+    client->SubscribeSsmSA();
+    EXPECT_NE(client->statusListener_, nullptr);
+    client->statusListener_ = nullptr;
+}
+
+HWTEST_F(StorageSpaceManagerClientTest, OnAddSystemAbility_WithExistingState, TestSize.Level1)
+{
+    auto *client = DelayedSingleton<StorageSpaceManagerClient>::GetInstance().get();
+    ASSERT_NE(client, nullptr);
+    client->deathRecipient_ = new (std::nothrow) StorageSpaceManagerClient::SsmDeathRecipient();
+    client->loadFinished_ = true;
+    client->OnAddSystemAbility();
+    EXPECT_EQ(client->storageSpaceManager_, nullptr);
+    EXPECT_EQ(client->deathRecipient_, nullptr);
+    EXPECT_FALSE(client->loadFinished_);
+}
+
 } // namespace StorageSpaceManager
 } // namespace OHOS
