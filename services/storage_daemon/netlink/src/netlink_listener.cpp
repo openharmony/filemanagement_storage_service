@@ -28,6 +28,8 @@ constexpr int UEVENT_MSG_LEN = 1024;
 
 namespace OHOS {
 namespace StorageDaemon {
+#define FDSAN_TAG 1
+const uint64_t NEW_TAG = static_cast<uint64_t>(0xD004301) << 32 | FDSAN_TAG;
 ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
 {
     struct iovec iov = { buffer, length };
@@ -195,10 +197,12 @@ int32_t NetlinkListener::StartListener()
         LOGE("[L3:NetlinkListener] StartListener: <<< EXIT FAILED <<< pipe failed, errno=%{public}d", errno);
         return E_ERR;
     }
+    fdsan_exchange_owner_tag(socketPipe_[0], 0, NEW_TAG);
+    fdsan_exchange_owner_tag(socketPipe_[1], 0, NEW_TAG);
     socketThread_ = std::make_unique<std::thread>([this]() { this->EventProcess(static_cast<void *>(this)); });
     if (socketThread_ == nullptr) {
-        (void)close(socketPipe_[0]);
-        (void)close(socketPipe_[1]);
+        fdsan_close_with_tag(socketPipe_[0], NEW_TAG);
+        fdsan_close_with_tag(socketPipe_[1], NEW_TAG);
         socketPipe_[0] = -1;
         socketPipe_[1] = -1;
         LOGE("[L3:NetlinkListener] StartListener: <<< EXIT FAILED <<< create thread failed");
@@ -220,8 +224,8 @@ int32_t NetlinkListener::StopListener()
         socketThread_->join();
     }
 
-    (void)close(socketPipe_[0]);
-    (void)close(socketPipe_[1]);
+    fdsan_close_with_tag(socketPipe_[0], NEW_TAG);
+    fdsan_close_with_tag(socketPipe_[1], NEW_TAG);
     socketPipe_[0] = -1;
     socketPipe_[1] = -1;
 
