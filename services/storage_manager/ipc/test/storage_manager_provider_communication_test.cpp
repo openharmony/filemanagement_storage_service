@@ -1032,47 +1032,5 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskF
     g_testBundleMgrProxy = oldBundleMgrProxy;
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_005 end";
 }
-
-/**
- * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_006
- * @tc.desc: Verify MountCloudDiskFuse returns E_PARAMS_INVALID when realpath fails.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_006 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(CLOUD_DISK_UID);
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
-    int32_t userId = 100;
-    std::string path = "/mnt/data/100/cloud_disk_fuse/nonexistent_subpath";
-    int32_t fuseFd = -1;
-    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    EXPECT_EQ(fuseFd, -1);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_006 end";
-}
-
-/**
- * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_006
- * @tc.desc: Verify UMountCloudDiskFuse returns E_PARAMS_INVALID when realpath fails.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_006 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    ScopedTestUid uidGuard(CLOUD_DISK_UID);
-    auto oldBundleMgrProxy = g_testBundleMgrProxy;
-    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
-    int32_t userId = 100;
-    std::string path = "/mnt/data/100/cloud_disk_fuse/nonexistent_subpath";
-    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    g_testBundleMgrProxy = oldBundleMgrProxy;
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_006 end";
-}
 }
 }

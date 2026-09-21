@@ -1392,18 +1392,12 @@ int32_t StorageManagerProvider::MountCloudDiskFuse(int32_t userId, const std::st
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
-    char realPath[PATH_MAX] = {0};
-    if (realpath(path.c_str(), realPath) == nullptr) {
-        LOGE("MountCloudDiskFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
-        return E_PARAMS_INVALID;
-    }
-    std::string resolvedPath(realPath);
-    if (!IsPathStartWithCloudDisk(userId, resolvedPath)) {
+    if (!IsPathStartWithCloudDisk(userId, path)) {
         return E_PARAMS_INVALID;
     }
     fuseFd = -1;
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    err = sdCommunication.MountCloudDiskFuse(userId, resolvedPath, fuseFd);
+    err = sdCommunication.MountCloudDiskFuse(userId, path, fuseFd);
     StorageRadar::ReportFucBehavior("MountCloudDiskFuse", userId, "MountCloudDiskFuse End", err);
     return err;
 }
@@ -1426,17 +1420,11 @@ int32_t StorageManagerProvider::UMountCloudDiskFuse(int32_t userId, const std::s
     if (IsFilePathInvalid(path)) {
         return E_PARAMS_INVALID;
     }
-    char realPath[PATH_MAX] = {0};
-    if (realpath(path.c_str(), realPath) == nullptr) {
-        LOGE("UMountCloudDiskFuse realpath failed, path: %{public}s", GetAnonyString(path).c_str());
-        return E_PARAMS_INVALID;
-    }
-    std::string resolvedPath(realPath);
-    if (!IsPathStartWithCloudDisk(userId, resolvedPath)) {
+    if (!IsPathStartWithCloudDisk(userId, path)) {
         return E_PARAMS_INVALID;
     }
     auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-    err = sdCommunication.UMountCloudDiskFuse(userId, resolvedPath);
+    err = sdCommunication.UMountCloudDiskFuse(userId, path);
     StorageRadar::ReportFucBehavior("UMountCloudDiskFuse", userId, "UMountCloudDiskFuse End", err);
     return err;
 }
