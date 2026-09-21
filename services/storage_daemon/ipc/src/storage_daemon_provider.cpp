@@ -2182,7 +2182,7 @@ int32_t StorageDaemonProvider::GetAncoSizeData(std::string &outExtraData)
 
 int32_t StorageDaemonProvider::GetDataSizeByPath(const std::string &path, int64_t &size)
 {
-    LOGI("[L1:StorageDaemonProvider] GetDataSizeByPath: >>> ENTER <<< path=%{public}s", path.c_str());
+    LOGD("[L1:StorageDaemonProvider] GetDataSizeByPath: >>> ENTER <<< path=%{public}s", path.c_str());
     auto uid = IPCSkeleton::GetCallingUid();
     if (uid != STORAGE_MANAGER_UID) {
         LOGE("[L1:StorageDaemonProvider] GetDataSizeByPath: <<< EXIT FAILED <<< uid=%{public}d is invalid", uid);
