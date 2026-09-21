@@ -167,6 +167,7 @@ int32_t VolumeUtils::MountFuseDevice(const std::string& mountPath,
                      fuseOptions.c_str());
     if (mret != 0) {
         LOGE("VolumeUtils::MountFuseDevice mount failed, errno=%{public}d", errno);
+        close(fuseFd);
         fuseFd = -1;
         return E_EXT_MOUNT;
     }
