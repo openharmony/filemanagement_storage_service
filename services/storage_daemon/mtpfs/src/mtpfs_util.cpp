@@ -57,7 +57,6 @@ static constexpr int32_t HEX_RADIX_SHIFT_BITS = 4;
 static const char FILE_SEPARATOR_CHAR = '/';
 constexpr int32_t MAX_INT = 255;
 constexpr int32_t SCANF_NUM = 2;
-static const uint32_t PATH_INVALID_FLAG_LEN = 3;
 
 bool MtpFsUtil::enabled_ = false;
 int MtpFsUtil::stdOut_ = -1;
