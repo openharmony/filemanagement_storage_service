@@ -14,8 +14,8 @@
     "subsystem": "filemanagement",
     "syscap": [
       "SystemCapability.FileManagement.StorageService.SpatialStatistics",
-      "SystemCapability.FileManagement.StorageService.Encryption",
-      "SystemCapability.FileManagement.StorageService.Volume"
+      "SystemCapability.FileManagement.StorageService.Volume",
+      "SystemCapability.FileManagement.StorageService.Encryption"
     ],
     "features": [
       "storage_service_fstools",
@@ -30,10 +30,7 @@
       "storage_service_cloud_fuse",
       "storage_service_enable_fscrypt_data_reliability_option"
     ],
-    "adapted_system_type": [
-      "small",
-      "standard"
-    ],
+    "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",
     "ram": "10240KB",
     "deps": {
@@ -51,6 +48,7 @@
         "common_event_service",
         "crypto_framework",
         "data_share",
+        "device_usage_statistics",
         "dfs_service",
         "drivers_interface_huks",
         "drivers_interface_usb",
@@ -74,6 +72,7 @@
         "libusb",
         "libuv",
         "media_library",
+        "memmgr",
         "napi",
         "node",
         "ntfs-3g",
@@ -169,9 +168,7 @@
       "test": [
         "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_unit_test",
         "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager_unit_test",
-        "//foundation/filemanagement/storage_service/test/fuzztest:storage_service_fuzztest",
-        "//foundation/filemanagement/storage_service/test/fuzztest/cjstoragestatusservice_fuzzer:fuzztest",
-        "//foundation/filemanagement/storage_service/test/fuzztest/storge_fuzzer:fuzztest"
+        "//foundation/filemanagement/storage_service/test/fuzztest:storage_service_fuzztest"
       ]
     }
   }
