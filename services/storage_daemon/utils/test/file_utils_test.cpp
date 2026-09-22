@@ -1786,14 +1786,14 @@ HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_Empty, testing::ext::TestSize.L
 /**
  * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_EqualPrefixLen
  * @tc.name: IsPathStartWithCloudDisk_EqualPrefixLen
- * @tc.desc: Verify IsPathStartWithCloudDisk returns false when path length equals prefix length.
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns true for exact cloud_disk_fuse directory.
  * @tc.type: FUNC
  * @tc.require: RR-30093650
  */
 HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_EqualPrefixLen, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen start";
-    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse/"));
+    EXPECT_TRUE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse"));
     GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen end";
 }
 

@@ -1677,17 +1677,20 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
 
 bool IsPathStartWithCloudDisk(int32_t userId, const std::string &path)
 {
-    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse/";
-    if (path.size() <= prefix.size()) {
-        LOGE("path is too short, path: %{public}s", GetAnonyString(path).c_str());
-        return false;
-    }
+    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
     if (path.compare(0, prefix.length(), prefix) != 0) {
         LOGE("path is not start with %{public}s, path: %{public}s", prefix.c_str(),
             GetAnonyString(path).c_str());
         return false;
     }
-    return true;
+    if (path.size() == prefix.size()) {
+        return true;
+    }
+    if (path[prefix.size()] == '/') {
+        return true;
+    }
+    LOGE("path is not a valid subpath, path: %{public}s", GetAnonyString(path).c_str());
+    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
