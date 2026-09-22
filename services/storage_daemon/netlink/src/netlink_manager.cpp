@@ -27,6 +27,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+#define FDSAN_TAG 1
+const uint64_t NEW_TAG = static_cast<uint64_t>(0xD004301) << 32 | FDSAN_TAG;
 
 NetlinkManager &NetlinkManager::Instance()
 {
@@ -52,30 +54,30 @@ int32_t NetlinkManager::Start()
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< create socket failed, errno=%{public}d", errno);
         return E_ERR;
     }
-
+    fdsan_exchange_owner_tag(socketFd_, 0, NEW_TAG);
     if (setsockopt(socketFd_, SOL_SOCKET, SO_RCVBUFFORCE, &bufferSize, sizeof(bufferSize)) != 0) {
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< setsockopt SO_RCVBUFFORCE failed, errno=%{public}d",
              errno);
-        (void)close(socketFd_);
+        fdsan_close_with_tag(socketFd_, NEW_TAG);
         return E_ERR;
     }
 
     if (setsockopt(socketFd_, SOL_SOCKET, SO_PASSCRED, &passCred, sizeof(passCred)) != 0) {
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< setsockopt SO_PASSCRED failed, errno=%{public}d", errno);
-        (void)close(socketFd_);
+        fdsan_close_with_tag(socketFd_, NEW_TAG);
         return E_ERR;
     }
 
     if (bind(socketFd_, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< bind failed, errno=%{public}d", errno);
-        (void)close(socketFd_);
+        fdsan_close_with_tag(socketFd_, NEW_TAG);
         return E_ERR;
     }
 
     nlHandler_ = new NetlinkHandler(socketFd_);
     if (nlHandler_->Start() != E_OK) {
         LOGE("[L2:NetlinkManager] Start: <<< EXIT FAILED <<< NetlinkHandler::Start failed");
-        (void)close(socketFd_);
+        fdsan_close_with_tag(socketFd_, NEW_TAG);
         socketFd_ = -1;
         delete nlHandler_;
         nlHandler_ = nullptr;
@@ -99,7 +101,7 @@ int32_t NetlinkManager::Stop()
         delete nlHandler_;
     }
     nlHandler_ = nullptr;
-    (void)close(socketFd_);
+    fdsan_close_with_tag(socketFd_, NEW_TAG);
     socketFd_ = -1;
 
     if (ret == E_OK) {

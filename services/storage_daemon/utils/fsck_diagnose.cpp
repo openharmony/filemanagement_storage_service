@@ -35,6 +35,8 @@ constexpr int32_t PIPE_FD_LEN = 2;
 constexpr int32_t SIGNAL_EXIT_BASE = 128;
 constexpr int32_t SIGKILL_EXIT = SIGNAL_EXIT_BASE + SIGKILL;
 constexpr int32_t PIPE_BUF_LEN = 1024;
+#define FDSAN_TAG 1
+const uint64_t NEW_TAG = static_cast<uint64_t>(0xD004301) << 32 | FDSAN_TAG;
 
 std::string JoinCmd(const std::vector<std::string> &cmd)
 {
@@ -176,10 +178,12 @@ FsckResult RunFsck(const std::string &devPath, const std::string &fsType, int32_
         result.ret = E_CREATE_PIPE;
         return result;
     }
+    fdsan_exchange_owner_tag(pipeFd[0], 0, NEW_TAG);
+    fdsan_exchange_owner_tag(pipeFd[1], 0, NEW_TAG);
     pid_t pid = fork();
     if (pid < 0) {
-        (void)close(pipeFd[0]);
-        (void)close(pipeFd[1]);
+        fdsan_close_with_tag(pipeFd[0], NEW_TAG);
+        fdsan_close_with_tag(pipeFd[1], NEW_TAG);
         result.ret = E_FORK;
         return result;
     }
@@ -187,7 +191,7 @@ FsckResult RunFsck(const std::string &devPath, const std::string &fsType, int32_
         ExecFsckChild(cmd, pipeFd);
     }
     (void)setpgid(pid, pid);
-    (void)close(pipeFd[1]);
+    fdsan_close_with_tag(pipeFd[1], NEW_TAG);
     int status = 0;
     std::vector<std::string> output;
     int32_t waitSec = timeoutSec < 0 ? 0 : timeoutSec;
@@ -198,7 +202,7 @@ FsckResult RunFsck(const std::string &devPath, const std::string &fsType, int32_
         ReadPipe(pipeFd[0], output);
         LOGE("FsckDiagnose: timeout fsType=%{public}s timeout=%{public}d", fsType.c_str(), waitSec);
     }
-    (void)close(pipeFd[0]);
+    fdsan_close_with_tag(pipeFd[0], NEW_TAG);
     result.exitCode = GetExitCode(status);
     result.output = JoinOutput(output);
     if (timedOut) {
