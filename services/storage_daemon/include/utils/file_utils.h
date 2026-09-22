@@ -109,6 +109,7 @@ void CheckAndReportOverLoop(const std::string &funcName, uint32_t &loopCount, ui
 bool ContainsInvalidChars(const std::string &filePath);
 std::string GetAnonyString(const std::string &value);
 bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
+bool IsPathStartWithCloudDisk(int32_t userId, const std::string &path);
 } // namespace StorageDaemon
 } // namespace OHOS
 

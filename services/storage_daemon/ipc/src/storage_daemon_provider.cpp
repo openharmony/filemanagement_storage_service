@@ -1763,7 +1763,7 @@ int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::str
             userId);
         return err;
     }
-    if (!StorageManager::IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
+    if (!IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
@@ -1808,7 +1808,7 @@ int32_t StorageDaemonProvider::UMountCloudDiskFuse(int32_t userId, const std::st
         HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", err);
         return err;
     }
-    if (!StorageManager::IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
+    if (!IsPathStartWithCloudDisk(userId, verifiedMountPath)) {
         LOGE("[L1:StorageDaemonProvider] UMountCloudDiskFuse: <<< EXIT FAILED <<< path prefix is invalid");
         HiAudit::GetInstance().WriteEnd("UMountCloudDiskFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
