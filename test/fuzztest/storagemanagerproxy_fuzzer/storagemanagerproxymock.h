@@ -17,6 +17,9 @@
 #define OHOS_STORAGEMANAGERPROXYMOCK_H
 
 #include "storage_service_errno.h"
+#include "ext_bundle_stats.h"
+#include "userdata_dir_info.h"
+#include "iuece_activation_callback.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -106,21 +109,6 @@ public:
         return E_OK;
     }
 
-    int32_t NotifyVolumeCreated(VolumeCore vc) override
-    {
-        return E_OK;
-    }
-
-    int32_t NotifyVolumeMounted(const VolumeInfoStr &volumeInfoStr) override
-    {
-        return E_OK;
-    }
-
-    int32_t NotifyVolumeStateChanged(std::string volumeId, VolumeState state) override
-    {
-        return E_OK;
-    }
-
     int32_t Mount(std::string volumeId) override
     {
         return E_OK;
@@ -131,22 +119,12 @@ public:
         return E_OK;
     }
 
+    int32_t TryToFix(std::string volumeId) override
+    {
+        return E_OK;
+    }
+
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override
-    {
-        return E_OK;
-    }
-
-    int32_t NotifyDiskCreated(Disk disk) override
-    {
-        return E_OK;
-    }
-
-    int32_t NotifyDiskDestroyed(std::string diskId) override
-    {
-        return E_OK;
-    }
-
-    int32_t Partition(std::string diskId, int32_t type) override
     {
         return E_OK;
     }
@@ -166,16 +144,6 @@ public:
         return E_OK;
     }
 
-    int32_t SetVolumeDescription(std::string fsUuid, std::string description) override
-    {
-        return E_OK;
-    }
-
-    int32_t Format(std::string volumeId, std::string fsType) override
-    {
-        return E_OK;
-    }
-
     int32_t GetDiskById(std::string diskId, Disk &disk) override
     {
         return E_OK;
@@ -186,13 +154,18 @@ public:
         return E_OK;
     }
 
-    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
-        StorageService::EncryptionLevel level) override
+    int32_t PrepareAncoUserDirs(void) override
     {
         return E_OK;
     }
 
-    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override
+    int32_t VerifyAncoUserDirs(void) override
+    {
+        return E_OK;
+    }
+
+    int32_t SetDirEncryptionPolicy(uint32_t userId, const std::string &dirPath,
+        uint32_t type) override
     {
         return E_OK;
     }
@@ -308,17 +281,6 @@ public:
         return E_OK;
     }
 
-    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid, const std::string &fsType) override
-    {
-        return E_OK;
-    }
-
-    int32_t NotifyMtpUnmounted(const std::string &id, const bool isBadRemove) override
-    {
-        return E_OK;
-    }
-
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override
     {
         return E_OK;
@@ -356,6 +318,102 @@ public:
     }
 
     int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) override
+    {
+        return E_OK;
+    }
+
+    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
+        const std::string &bundleDataDirPath, int32_t limitSizeMb) override
+    {
+        return E_OK;
+    }
+
+    int32_t InactiveUserPublicDirKey(uint32_t userId) override
+    {
+        return E_OK;
+    }
+
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback) override
+    {
+        return E_OK;
+    }
+
+    int32_t UnregisterUeceActivationCallback() override
+    {
+        return E_OK;
+    }
+
+    int32_t CreateUserDir(const std::string &path, uint32_t mode, uint32_t uid, uint32_t gid) override
+    {
+        return E_OK;
+    }
+
+    int32_t UpdateUserPublicDirPolicy(uint32_t userId) override
+    {
+        return E_OK;
+    }
+
+    int32_t NotifyUserChangedEvent(uint32_t userId, uint32_t eventType) override
+    {
+        return E_OK;
+    }
+
+    int32_t EraseAllUserEncryptedKeys() override
+    {
+        return E_OK;
+    }
+
+    int32_t SetExtBundleStats(uint32_t userId, const ExtBundleStats &stats) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetExtBundleStats(uint32_t userId, ExtBundleStats &stats) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetAllExtBundleStats(uint32_t userId, std::vector<ExtBundleStats> &statsVec) override
+    {
+        return E_OK;
+    }
+
+    int32_t ListUserdataDirInfo(std::vector<UserdataDirInfo> &scanDirs) override
+    {
+        return E_OK;
+    }
+
+    int32_t NotifyCreateBundleDataDirWithEl(uint32_t userId, uint8_t elx) override
+    {
+        return E_OK;
+    }
+
+    int32_t QueryActiveOsAccountIds(std::vector<int32_t> &ids) override
+    {
+        return E_OK;
+    }
+
+    int32_t isOsAccountExists(unsigned int userId, bool &isOsAccountExists) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetSystemDataSize(int64_t &systemDataSize) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetTotalInodes(int64_t &totalInodes) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetFreeInodes(int64_t &freeInodes) override
+    {
+        return E_OK;
+    }
+
+    int32_t GetCurrentBundleInodes(int64_t &curInodes) override
     {
         return E_OK;
     }
