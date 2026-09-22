@@ -1132,10 +1132,6 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
         fileToUpload.SetId(f->item_id);
         fileToUpload.SetParent(f->parent_id);
         fileToUpload.SetStorage(f->storage_id);
-        if (f->filename == nullptr) {
-            LOGE("filename is null");
-            return -EINVAL;
-        }
         fileToUpload.SetName(std::string(f->filename));
         fileToUpload.SetModificationDate(fileStat.st_mtime);
         if (fileToRemove) {
