@@ -34,16 +34,11 @@ enum VolumeState {
     DAMAGED,
     FUSE_REMOVED,
     DAMAGED_MOUNTED,
-    ENCRYPTING,
-    ENCRYPTED_AND_LOCKED,
-    ENCRYPTED_AND_UNLOCKED,
-    DECRYPTING,
 };
 
 class VolumeInfoStr : public Parcelable {
 public:
     VolumeInfoStr() {};
-    
     VolumeInfoStr(const std::string &volumeId_, const std::string &fsTypeStr_, const std::string &fsUuid_,
                   const std::string &path_, const std::string &description_, bool isDamaged_)
         : volumeId(volumeId_),
@@ -52,7 +47,6 @@ public:
           path(path_),
           description(description_),
           isDamaged(isDamaged_) {};
-    
     std::string volumeId;
     std::string fsTypeStr;
     std::string fsUuid;

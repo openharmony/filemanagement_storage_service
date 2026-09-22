@@ -56,8 +56,6 @@ public:
     static int ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status,
                                    KeyBlob &eBuffer, const KeyBlob &authToken, bool &isFbeSupport);
     static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
-    static bool IsMspReady();
-    static int GetStatus();
     static int UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length,
                                 std::unique_ptr<uint8_t[]> &eBuffer, uint8_t *opseBuffer);
     static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
@@ -68,8 +66,6 @@ public:
     static int GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::unique_ptr<uint8_t[]> &keyId,
                               uint32_t size);
     static int LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
-    static bool CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
-                                   uint32_t length, bool &isFbeSupport);
     static void HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
                                  uint32_t userIdDouble, bool hasAuth = true);
 };

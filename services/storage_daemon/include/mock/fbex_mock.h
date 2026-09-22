@@ -37,8 +37,6 @@ public:
         uint8_t *iv, uint32_t size, const KeyBlob &authToken) = 0;
     virtual int ReadESecretToKernel(UserIdToFbeStr &, uint32_t, KeyBlob &, const KeyBlob &, bool &) = 0;
     virtual int WriteESecretToKernel(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length) = 0;
-    virtual bool IsMspReady() = 0;
-    virtual int GetStatus() = 0;
     virtual int InstallEL5KeyToKernel(uint32_t, uint32_t, uint8_t, bool &, bool &) = 0;
     virtual int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble) = 0;
     virtual int ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport) = 0;
@@ -62,8 +60,6 @@ public:
         uint8_t *iv, uint32_t size, const KeyBlob &authToken));
     MOCK_METHOD5(ReadESecretToKernel, int(UserIdToFbeStr &, uint32_t, KeyBlob &, const KeyBlob &, bool &));
     MOCK_METHOD4(WriteESecretToKernel, int(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length));
-    MOCK_METHOD0(IsMspReady, bool());
-    MOCK_METHOD0(GetStatus, int());
     MOCK_METHOD5(InstallEL5KeyToKernel, int(uint32_t, uint32_t, uint8_t, bool &, bool &));
     MOCK_METHOD2(DeleteClassEPinCode, int(uint32_t userIdSingle, uint32_t userIdDouble));
     MOCK_METHOD3(ChangePinCodeClassE, int(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport));
