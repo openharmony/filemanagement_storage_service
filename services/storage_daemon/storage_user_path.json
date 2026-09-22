@@ -886,6 +886,12 @@
             "gid": 1009
         },
         {
+            "path": "/mnt/data/<userId>/cloud_disk_fuse",
+            "mode": "0771",
+            "uid": 6161,
+            "gid": 6161
+        },
+        {
             "path": "/mnt/data/<userId>/hmdfs",
             "mode": "0711",
             "uid": 1006,
