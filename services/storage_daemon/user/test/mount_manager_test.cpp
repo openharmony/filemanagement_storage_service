@@ -21,7 +21,6 @@
 
 #include "file_utils_mock.h"
 #include "os_account_manager.h"
-#include "parameter_mock.h"
 #include "storage_service_errno.h"
 #include "string_utils.h"
 #include "utils/mount_argument_utils.h"
@@ -59,7 +58,6 @@ public:
     void DeleteFile(const std::string &path);
 
     static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
-    static inline shared_ptr<ParamMoc> paramMoc_ = nullptr;
 };
 
 void MountManagerTest::SetUpTestCase(void)
@@ -641,7 +639,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, Te
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
 }
-
 
 /**
  * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_002

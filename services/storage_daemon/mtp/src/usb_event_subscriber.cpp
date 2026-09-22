@@ -41,7 +41,6 @@ UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo 
 std::shared_ptr<UsbEventSubscriber> usbEventSubscriber_ = nullptr;
 void UsbEventSubscriber::SubscribeCommonEvent(void)
 {
-    LOGI("[L2:UsbEventSubscriber] SubscribeCommonEvent: >>> ENTER <<<");
     if (usbEventSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED);
@@ -55,7 +54,6 @@ void UsbEventSubscriber::SubscribeCommonEvent(void)
             LOGE("[L2:UsbEventSubscriber] SubscribeCommonEvent: <<< EXIT FAILED <<< subscribe failed");
         }
     }
-    LOGI("[L2:UsbEventSubscriber] SubscribeCommonEvent: <<< EXIT SUCCESS <<<");
 }
 
 void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data)
