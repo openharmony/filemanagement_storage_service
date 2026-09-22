@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "fuzzer/FuzzedDataProvider.h"
 #include "message_parcel.h"
 #include "storage_daemon_provider.h"
 #include "storage_daemon_stub.h"
@@ -38,10 +39,12 @@ bool CreatePartitionFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
+    FuzzedDataProvider fdp(data, size);
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_PARTITION);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
+    std::vector<uint8_t> buffer = fdp.ConsumeBytes<uint8_t>(size);
+    datas.WriteBuffer(buffer.data(), buffer.size());
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
@@ -52,53 +55,30 @@ bool CreatePartitionFuzzTest(const uint8_t *data, size_t size)
 
 bool CreatePartitionFuzzTestWithOpts(const uint8_t *data, size_t size)
 {
-    // Minimum required size: partitionNum(4) + startSector(8) + endSector(8) + at least 1 char for typeCode
-    constexpr size_t minTypeCodeChars = 1;
-    constexpr size_t minDataSize = sizeof(int32_t) + sizeof(uint64_t) * 2 + minTypeCodeChars;
     // Maximum length for partition type code string
     constexpr size_t maxTypeCodeLength = 32;
-    if ((data == nullptr) || (size < minDataSize)) {
+    if ((data == nullptr) || (size == 0)) {
         return false;
     }
 
+    FuzzedDataProvider fdp(data, size);
+
     // Parse fuzzed data to create PartitionParams
     PartitionParams partitionParams;
-    size_t offset = 0;
-
-    // Extract partition num
-    if (offset + sizeof(int32_t) <= size) {
-        int32_t partitionNum = *reinterpret_cast<const int32_t*>(data + offset);
-        partitionParams.SetPartitionNum(partitionNum);
-        offset += sizeof(int32_t);
-    }
-
-    // Extract start sector
-    if (offset + sizeof(uint64_t) <= size) {
-        uint64_t startSector = *reinterpret_cast<const uint64_t*>(data + offset);
-        partitionParams.SetStartSector(startSector);
-        offset += sizeof(uint64_t);
-    }
-
-    // Extract end sector
-    if (offset + sizeof(uint64_t) <= size) {
-        uint64_t endSector = *reinterpret_cast<const uint64_t*>(data + offset);
-        partitionParams.SetEndSector(endSector);
-        offset += sizeof(uint64_t);
-    }
-
-    // Extract type code (max maxTypeCodeLength chars)
-    if (offset < size) {
-        size_t typeCodeLen = std::min(size - offset, maxTypeCodeLength);
-        std::string typeCode(reinterpret_cast<const char*>(data + offset), typeCodeLen);
-        partitionParams.SetTypeCode(typeCode);
-    }
+    int32_t partitionNum = fdp.ConsumeIntegral<int32_t>();
+    partitionParams.SetPartitionNum(partitionNum);
+    uint64_t startSector = fdp.ConsumeIntegral<uint64_t>();
+    partitionParams.SetStartSector(startSector);
+    uint64_t endSector = fdp.ConsumeIntegral<uint64_t>();
+    partitionParams.SetEndSector(endSector);
+    std::vector<uint8_t> typeCodeVec = fdp.ConsumeBytes<uint8_t>(maxTypeCodeLength);
+    std::string typeCode(typeCodeVec.begin(), typeCodeVec.end());
+    partitionParams.SetTypeCode(typeCode);
 
     // Create diskId from fuzzed data
     std::string diskId = DISK_ID_PREFIX;
-    if (size >= sizeof(uint8_t)) {
-        uint8_t minor = data[0];
-        diskId += std::to_string(minor);
-    }
+    uint8_t minor = fdp.ConsumeIntegral<uint8_t>();
+    diskId += std::to_string(minor);
 
     uint32_t code = static_cast<uint32_t>(IStorageDaemonIpcCode::COMMAND_CREATE_PARTITION);
     MessageParcel datas;

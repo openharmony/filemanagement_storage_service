@@ -50,6 +50,23 @@ static int32_t InitMainUser(const std::vector<std::string> &args)
 }
 
 #ifdef SDC_TEST_ENABLE
+static int32_t GenerateUserKeys(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_5) {
+        LOGE("Parameter nums is less than 5, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    uint32_t flags;
+    // 3 means take the fourth argument of args, 4 means take the fifth argument of args
+    if ((OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) ||
+        (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], flags) == false)) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
+}
+
 static int32_t PrepareUserSpace(const std::vector<std::string> &args)
 {
     if (args.size() < ARG_CNT_5) {
@@ -296,34 +313,6 @@ static int32_t SetRecoverKey(const std::vector<std::string> &args)
     return OHOS::StorageDaemon::StorageDaemonClient::SetRecoverKey(key);
 }
 
-static int32_t StopUser(const std::vector<std::string> &args)
-{
-    if (args.size() < ARG_CNT_4) {
-        LOGE("Parameter nums is less than 4, please retry");
-        return -EINVAL;
-    }
-    uint32_t userId;
-    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
-        LOGE("Parameter input error, please retry");
-        return -EINVAL;
-    }
-    return OHOS::StorageDaemon::StorageDaemonClient::StopUser(userId);
-}
-
-static int32_t StartUser(const std::vector<std::string> &args)
-{
-    if (args.size() < ARG_CNT_4) {
-        LOGE("Parameter nums is less than 4, please retry");
-        return -EINVAL;
-    }
-    uint32_t userId;
-    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
-        LOGE("Parameter input error, please retry");
-        return -EINVAL;
-    }
-    return OHOS::StorageDaemon::StorageDaemonClient::StartUser(userId);
-}
-
 static int32_t EraseAllUserEncryptedKeys(const std::vector<std::string> &args)
 {
     if (args.size() < ARG_CNT_4) {
@@ -340,6 +329,7 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"init_global_key", InitGlobalKey},
     {"init_main_user", InitMainUser},
 #ifdef SDC_TEST_ENABLE
+    {"generate_user_keys", GenerateUserKeys},
     {"prepare_user_space", PrepareUserSpace},
     {"destroy_user_space", DestroyUserSpace},
     {"update_user_auth", UpdateUserAuth},
@@ -354,8 +344,6 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"Get_unlock_status", GetFileEncryptStatus},
     {"create_recover_key", CreateRecoverKey},
     {"set_recover_key", SetRecoverKey},
-    {"stop_user", StopUser},
-    {"start_user", StartUser},
     {"erase_all_user_encrypted_keys", EraseAllUserEncryptedKeys},
 #endif
 };

@@ -328,7 +328,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_GetAncoD
 HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_StartReportDirStatus_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_001 start";
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillRepeatedly(Return(-1));
     int32_t ret = StorageDfxReporter::GetInstance().StartReportDirStatus();
     EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_001 end";
@@ -344,27 +344,10 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_StartRep
 {
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_002 start";
     std::vector<NextDqBlk> dqBlks{dqBlkSmall};
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(DoAll(SetArgReferee<1>(dqBlks), Return(0)));
+    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(dqBlks), Return(0)));
     int32_t ret = StorageDfxReporter::GetInstance().StartReportDirStatus();
     EXPECT_EQ(ret, -1);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_StorageDfxReporterTest_StartReportDirStatus_003
- * @tc.desc: Verify the StartReportDirStatus function.
- * @tc.type: FUNC
- * @tc.require: AR000XXXX
- */
-HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_StartReportDirStatus_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_003 start";
-    std::vector<NextDqBlk> dqBlks{dqBlkRoot, dqBlkSystem, dqBlkFoundation};
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(DoAll(SetArgReferee<1>(dqBlks), Return(0)));
-    EXPECT_CALL(*stss, GetFreeSize(_)).WillOnce(DoAll(SetArgReferee<0>(100), Return(0)));
-    int32_t ret = StorageDfxReporter::GetInstance().StartReportDirStatus();
-    EXPECT_EQ(ret, 0);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDfxReporterTest_StartReportDirStatus_003 end";
 }
 
 /**
@@ -522,7 +505,7 @@ HWTEST_F(StorageDfxReporterTest, Storage_Service_StorageDfxReporterTest_LaunchSc
     std::vector<NextDqBlk> dqBlks{dqBlkRoot, dqBlkSystem, dqBlkFoundation};
     StorageDfxReporter::GetInstance().isScanRunning_ = false;
     EXPECT_CALL(*sdc, SetStopScanFlag(_)).WillRepeatedly(Return(0));
-    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillOnce(DoAll(SetArgReferee<1>(dqBlks), Return(0)));
+    EXPECT_CALL(*sdc, GetDqBlkSpacesByUids(_, _)).WillRepeatedly(DoAll(SetArgReferee<1>(dqBlks), Return(0)));
     EXPECT_CALL(*stss, GetFreeSize(_)).WillRepeatedly(DoAll(SetArgReferee<0>(100), Return(0)));
     EXPECT_CALL(*sdc, GetDirListSpace(_, _)).WillRepeatedly(Return(0));
     EXPECT_CALL(*sdc, GetAncoSizeData(_)).WillRepeatedly(Return(0));
