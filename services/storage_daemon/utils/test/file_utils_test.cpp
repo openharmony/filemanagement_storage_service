@@ -1714,6 +1714,104 @@ HWTEST_F(FileUtilsTest, IsPathStartWithFileMgr_EqualPrefixLen, testing::ext::Tes
 }
 
 /**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_ValidPrefix
+ * @tc.name: IsPathStartWithCloudDisk_ValidPrefix
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns true for valid prefix.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_ValidPrefix, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_ValidPrefix start";
+    EXPECT_TRUE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse/sub"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_ValidPrefix end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_TooShort
+ * @tc.name: IsPathStartWithCloudDisk_TooShort
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false for too short path.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_TooShort, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_TooShort start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_TooShort end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_Mismatch
+ * @tc.name: IsPathStartWithCloudDisk_Mismatch
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false for mismatched prefix.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_Mismatch, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Mismatch start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/data/local/evil"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Mismatch end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_PrefixMismatchLong
+ * @tc.name: IsPathStartWithCloudDisk_PrefixMismatchLong
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false for long path with wrong prefix.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_PrefixMismatchLong, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_PrefixMismatchLong start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/100/userExternal/sub"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_PrefixMismatchLong end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_Empty
+ * @tc.name: IsPathStartWithCloudDisk_Empty
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false for empty path.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_Empty, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Empty start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, ""));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Empty end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_EqualPrefixLen
+ * @tc.name: IsPathStartWithCloudDisk_EqualPrefixLen
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false when path length equals prefix length.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_EqualPrefixLen, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse/"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen end";
+}
+
+/**
+ * @tc.number: FileUtilsTest_IsPathStartWithCloudDisk_UserIdMismatch
+ * @tc.name: IsPathStartWithCloudDisk_UserIdMismatch
+ * @tc.desc: Verify IsPathStartWithCloudDisk returns false when userId in path does not match.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(FileUtilsTest, IsPathStartWithCloudDisk_UserIdMismatch, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_UserIdMismatch start";
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/101/cloud_disk_fuse/sub"));
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_UserIdMismatch end";
+}
+
+/**
  * @tc.name: FileUtilsTest_StringToUint32_001
  * @tc.desc: Verify StringToUint32 accepts full uint32_t range and rejects invalid input.
  * @tc.type: FUNC
