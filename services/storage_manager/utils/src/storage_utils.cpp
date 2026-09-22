@@ -131,7 +131,7 @@ bool IsPathStartWithDlp(const std::string &dstPath)
 bool IsPathStartWithCloudDisk(int32_t userId, const std::string &dstPath)
 {
     const std::string dir = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
-    if (dstPath == dir || dstPath.compare(0, dir.size() + 1, dir + "/") == 0) {
+    if (dstPath.compare(0, dir.size(), dir) == 0) {
         return true;
     }
     LOGE("path is not start with %{public}s, path: %{public}s", dir.c_str(),
