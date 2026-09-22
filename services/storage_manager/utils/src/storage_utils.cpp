@@ -130,19 +130,12 @@ bool IsPathStartWithDlp(const std::string &dstPath)
 
 bool IsPathStartWithCloudDisk(int32_t userId, const std::string &dstPath)
 {
-    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
-    if (dstPath.compare(0, prefix.length(), prefix) != 0) {
-        LOGE("path is not start with %{public}s, path: %{public}s", prefix.c_str(),
-             GetAnonyString(dstPath).c_str());
-        return false;
-    }
-    if (dstPath.size() == prefix.size()) {
+    const std::string dir = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
+    if (dstPath == dir || dstPath.compare(0, dir.size() + 1, dir + "/") == 0) {
         return true;
     }
-    if (dstPath[prefix.size()] == '/') {
-        return true;
-    }
-    LOGE("path is not a valid subpath, path: %{public}s", GetAnonyString(dstPath).c_str());
+    LOGE("path is not start with %{public}s, path: %{public}s", dir.c_str(),
+         GetAnonyString(dstPath).c_str());
     return false;
 }
 

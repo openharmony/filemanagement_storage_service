@@ -1677,19 +1677,12 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
 
 bool IsPathStartWithCloudDisk(int32_t userId, const std::string &path)
 {
-    const std::string prefix = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
-    if (path.compare(0, prefix.length(), prefix) != 0) {
-        LOGE("path is not start with %{public}s, path: %{public}s", prefix.c_str(),
-            GetAnonyString(path).c_str());
-        return false;
-    }
-    if (path.size() == prefix.size()) {
+    const std::string dir = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
+    if (path == dir || path.compare(0, dir.size() + 1, dir + "/") == 0) {
         return true;
     }
-    if (path[prefix.size()] == '/') {
-        return true;
-    }
-    LOGE("path is not a valid subpath, path: %{public}s", GetAnonyString(path).c_str());
+    LOGE("path is not start with %{public}s, path: %{public}s", dir.c_str(),
+        GetAnonyString(path).c_str());
     return false;
 }
 } // namespace StorageDaemon
