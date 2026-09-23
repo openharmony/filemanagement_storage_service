@@ -1740,6 +1740,7 @@ int32_t StorageDaemonProvider::UMountDlpFuse(const std::string &dstPath)
 
 int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
+    std::lock_guard<std::mutex> lock(cloudDiskFuseMutex_);
     LOGI("[L1:StorageDaemonProvider] MountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
         userId, GetAnonyString(path).c_str());
     std::string message = "userId: " + std::to_string(userId) + " path: "
@@ -1784,6 +1785,7 @@ int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::str
 
 int32_t StorageDaemonProvider::UMountCloudDiskFuse(int32_t userId, const std::string &path)
 {
+    std::lock_guard<std::mutex> lock(cloudDiskFuseMutex_);
     LOGI("[L1:StorageDaemonProvider] UMountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
         userId, GetAnonyString(path).c_str());
     std::string message = "userId: " + std::to_string(userId) + " path: " + GetAnonyString(path);

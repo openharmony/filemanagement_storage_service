@@ -224,6 +224,7 @@ public:
 private:
     std::mutex mutex_;
     std::mutex mutexStats_;
+    std::mutex cloudDiskFuseMutex_;
 
     std::atomic<bool> stopRadarReport_{false};
     std::condition_variable execRadarReportCon_;
