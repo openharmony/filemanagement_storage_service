@@ -1755,6 +1755,7 @@ int32_t StorageDaemonProvider::MountCloudDiskFuse(int32_t userId, const std::str
     int32_t err = ValidateMountPath(path, verifiedMountPath);
     if (err != E_OK) {
         LOGE("[L1:StorageDaemonProvider] MountCloudDiskFuse: <<< EXIT FAILED <<< path is invalid");
+        HiAudit::GetInstance().WriteEnd("MountCloudDiskFuse", E_PARAMS_INVALID);
         return E_PARAMS_INVALID;
     }
     err = CheckUserIdRange(userId);
