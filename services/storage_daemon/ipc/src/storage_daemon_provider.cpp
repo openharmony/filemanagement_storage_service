@@ -58,7 +58,6 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
-#include "utils/storage_utils.h"
 #ifdef DISK_MANAGER
 #include <sys/sysmacros.h>
 #include "disk_manager/disk/dm_device.h"
