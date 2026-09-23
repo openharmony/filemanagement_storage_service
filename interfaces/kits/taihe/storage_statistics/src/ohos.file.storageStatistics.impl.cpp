@@ -199,8 +199,8 @@ int64_t GetTotalSizeOfVolumeSync(::taihe::string_view volumeUuid)
     }
     uint32_t flag = static_cast<uint32_t>(statFlag);
     auto bundleStats = std::make_shared<OHOS::StorageManager::BundleStats>();
-    auto errNum = OHOS::StorageManager::StorageManagerConnect::GetInstance().
-        GetBundleStats(nameString, *bundleStats, index, flag);
+    auto& instance = OHOS::StorageManager::StorageManagerConnect::GetInstance();
+    auto errNum = instance.GetBundleStats(nameString, *bundleStats, index, flag);
     if (errNum != OHOS::E_OK) {
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE };
@@ -264,7 +264,8 @@ ohos::file::storageStatistics::ExtBundleStats GetExtBundleStatsSync(int32_t user
         OHOS::StorageTaiheError::SetStorageTaiheError(errNum);
         return { "", DEFAULTSIZE, false };
     }
-    int64_t businessSize_o = static_cast<int64_t>(extBundleStats.businessSize_);
+    int64_t businessSize_o = (extBundleStats.businessSize_ > static_cast<uint64_t>(INT64_MAX)) ?
+        INT64_MAX : static_cast<int64_t>(extBundleStats.businessSize_);
     return { businessName, businessSize_o, extBundleStats.showFlag_};
 }
 
