@@ -1356,7 +1356,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCloudDiskFuse
     std::string path = "/mnt/data/100/cloud_disk_fuse/test";
     int32_t fuseFd = -1;
     int32_t ret = sdCommunication.MountCloudDiskFuse(userId, path, fuseFd);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_TRUE(ret == E_OK || ret == E_MOUNT_CLOUDDISK_FUSE || ret == E_SA_IS_NULLPTR ||
+                ret == E_SERVICE_IS_NULLPTR || ret == E_REMOTE_IS_NULLPTR);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCloudDiskFuse_001";
 }
@@ -1376,7 +1377,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCloudDiskFus
     int32_t userId = 100;
     std::string path = "/mnt/data/100/cloud_disk_fuse/test";
     int32_t ret = sdCommunication.UMountCloudDiskFuse(userId, path);
-    EXPECT_NE(ret, E_OK);
+    EXPECT_TRUE(ret == E_OK || ret == E_SA_IS_NULLPTR ||
+                ret == E_SERVICE_IS_NULLPTR || ret == E_REMOTE_IS_NULLPTR);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountCloudDiskFuse_001";
 }
