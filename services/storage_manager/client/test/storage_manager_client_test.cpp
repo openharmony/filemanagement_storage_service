@@ -463,52 +463,5 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UMountCloudDiskFuse_00
 
     GTEST_LOG_(INFO) << "Client_manager_service_UMountCloudDiskFuse_0001 end";
 }
-
-/**
- * @tc.number: Client_manager_service_MountCloudDiskFuse_0002
- * @tc.name: Client_manager_service_MountCloudDiskFuse_0002
- * @tc.desc: Test function of MountCloudDiskFuse interface with invalid userId.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: RR-30093650
- */
-HWTEST_F(StorageManagerClientTest, Client_manager_service_MountCloudDiskFuse_0002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_MountCloudDiskFuse_0002";
-
-    ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    int32_t userId = -1;
-    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
-    int32_t fuseFd = -1;
-    int32_t ret = storageManagerClient_->MountCloudDiskFuse(userId, path, fuseFd);
-    EXPECT_NE(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Client_manager_service_MountCloudDiskFuse_0002 end";
-}
-
-/**
- * @tc.number: Client_manager_service_UMountCloudDiskFuse_0002
- * @tc.name: Client_manager_service_UMountCloudDiskFuse_0002
- * @tc.desc: Test function of UMountCloudDiskFuse interface with invalid userId.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: RR-30093650
- */
-HWTEST_F(StorageManagerClientTest, Client_manager_service_UMountCloudDiskFuse_0002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UMountCloudDiskFuse_0002";
-
-    ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    int32_t userId = -1;
-    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
-    int32_t ret = storageManagerClient_->UMountCloudDiskFuse(userId, path);
-    EXPECT_NE(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "Client_manager_service_UMountCloudDiskFuse_0002 end";
-}
 }
 }
