@@ -380,34 +380,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMoun
 }
 
 /**
- * @tc.name: StorageManagerProviderTest_NotifyVolumeStateChanged_001
- * @tc.desc: Verify the NotifyVolumeStateChanged function.
- * @tc.type: FUNC
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeStateChanged_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::string volumeId = "testVolumeId";
-    uint32_t state = MOUNTED;
-    auto ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    state = ENCRYPTING;
-    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    state = ENCRYPTED_AND_LOCKED;
-    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    state = ENCRYPTED_AND_UNLOCKED;
-    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    state = DECRYPTING;
-    ret = storageManagerProviderTest_->NotifyVolumeStateChanged(volumeId, state);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeStateChanged_001 end";
-}
-
-/**
  * @tc.name: StorageManagerProviderTest_Mount_001
  * @tc.desc: Verify the Mount function.
  * @tc.type: FUNC

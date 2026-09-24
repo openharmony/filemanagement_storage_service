@@ -67,10 +67,7 @@ constexpr int MAX_VALUE = 255;
 #endif
 std::atomic<bool> g_keepMonitoring = true;
 
-MtpDeviceMonitor::MtpDeviceMonitor()
-{
-    LOGI("[L2:MtpDeviceMonitor] MtpDeviceMonitor: >>> ENTER <<<");
-}
+MtpDeviceMonitor::MtpDeviceMonitor() {}
 
 MtpDeviceMonitor::~MtpDeviceMonitor()
 {
@@ -404,7 +401,7 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
         int32_t ret = MtpDeviceManager::GetInstance().UmountDevice(*iter, true, false);
         if (ret != E_OK) {
             LOGE("[L2:MtpDeviceMonitor] UmountAllMtpDevice: umount failed, path=%{public}s, err=%{public}d",
-                iter->path.c_str(), ret);
+                (iter->path).c_str(), ret);
         }
     }
     lastestMtpDevList_.clear();
@@ -485,7 +482,8 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
         } else {
-            LOGE("[L2:MtpDeviceMonitor] Umount: <<< EXIT FAILED <<< id=%{public}s, err=%{public}d", id.c_str(), ret);
+            LOGE("[L2:MtpDeviceMonitor] Umount: <<< EXIT FAILED <<< id=%{public}s, err=%{public}d, path=%{public}s",
+                id.c_str(), ret, iter->path.c_str());
         }
         return ret;
     }
@@ -514,7 +512,6 @@ void MtpDeviceMonitor::RegisterMTPParamListener()
     LOGI("[L2:MtpDeviceMonitor] RegisterMTPParamListener: >>> ENTER <<<");
     WatchParameter(SYS_PARAM_SERVICE_PERSIST_ENABLE, OnMtpDisableParamChange, this);
     WatchParameter(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, OnEnterpriseParamChange, this);
-    LOGI("[L2:MtpDeviceMonitor] RegisterMTPParamListener: <<< EXIT SUCCESS <<<");
 }
 
 void MtpDeviceMonitor::RemoveMTPParamListener()
@@ -522,7 +519,6 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
     LOGI("[L2:MtpDeviceMonitor] RemoveMTPParamListener: >>> ENTER <<<");
     RemoveParameterWatcher(SYS_PARAM_SERVICE_PERSIST_ENABLE, OnMtpDisableParamChange, this);
     RemoveParameterWatcher(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, OnEnterpriseParamChange, this);
-    LOGI("[L2:MtpDeviceMonitor] RemoveMTPParamListener: <<< EXIT SUCCESS <<<");
 }
 
 void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *value, void *context)
@@ -533,8 +529,6 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         LOGE("[L2:MtpDeviceMonitor] OnMtpDisableParamChange: <<< EXIT FAILED <<< invalid parameters");
         return;
     }
-    LOGI("[L2:MtpDeviceMonitor] OnMtpDisableParamChange: OnMtpDisableParamChange key"
-        "= %{public}s, value = %{public}s,",  key, value);
     if (strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0) {
         LOGE("[L2:MtpDeviceMonitor] OnMtpDisableParamChange: key mismatch");
         return;

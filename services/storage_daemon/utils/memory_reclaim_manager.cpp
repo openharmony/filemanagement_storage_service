@@ -35,41 +35,30 @@ constexpr uint64_t NEW_TAG_LOG = static_cast<uint64_t>(LOG_DOMAIN) << 32 | FDSAN
 void MemoryReclaimManager::ScheduleReclaimCurrentProcess(uint32_t delaySeconds)
 {
     int32_t pid = getpid();
-    LOGI("[L2:MemoryReclaimManager] ScheduleReclaimCurrentProcess: >>> ENTER <<< pid=%{public}d, delay=%{public}u",
-        pid, delaySeconds);
+    LOGI("Schedule reclaim process (PID:%{public}d) after %{public}u seconds", pid, delaySeconds);
 
     std::thread([pid, delaySeconds]() {
         std::this_thread::sleep_for(std::chrono::seconds(delaySeconds));
         ExecuteReclaim(pid);
     }).detach();
-
-    LOGI("[L2:MemoryReclaimManager] ScheduleReclaimCurrentProcess: <<< EXIT SUCCESS <<< scheduled");
 }
 
 bool MemoryReclaimManager::IsHarmonyKernel()
 {
-    LOGD("[L2:MemoryReclaimManager] IsHarmonyKernel: >>> ENTER <<<");
-    bool isHM = (system::GetParameter(KERNEL_PARAM_KEY, "") == KERNEL_TYPE_HM);
-    LOGD("[L2:MemoryReclaimManager] IsHarmonyKernel: <<< EXIT SUCCESS <<< isHarmonyKernel=%{public}d", isHM);
-    return isHM;
+    return system::GetParameter(KERNEL_PARAM_KEY, "") == KERNEL_TYPE_HM;
 }
 
 std::string MemoryReclaimManager::GetReclaimContent()
 {
-    LOGD("[L2:MemoryReclaimManager] GetReclaimContent: >>> ENTER <<<");
-    std::string content = IsHarmonyKernel() ? RECLAIM_FILEPAGE_STRING_FOR_HM : RECLAIM_FILEPAGE_STRING_FOR_LINUX;
-    LOGD("[L2:MemoryReclaimManager] GetReclaimContent: <<< EXIT SUCCESS <<< content=%{public}s", content.c_str());
-    return content;
+    return IsHarmonyKernel() ? RECLAIM_FILEPAGE_STRING_FOR_HM : RECLAIM_FILEPAGE_STRING_FOR_LINUX;
 }
 
 bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::string &content)
 {
-    LOGD("[L2:MemoryReclaimManager] WriteToProcFile: >>> ENTER <<< path=%{public}s, content=%{public}s",
-         path.c_str(), content.c_str());
     int fd = open(path.c_str(), O_WRONLY);
     if (fd == -1) {
         LOGE("[L2:MemoryReclaimManager] WriteToProcFile: <<< EXIT FAILED <<< open failed"
-            "path %{public}s, errno=%{public}d", path.c_str(), errno);
+            "path %{public}s, errno=%{public}d, content=%{public}s", path.c_str(), errno, content.c_str());
         return false;
     }
     fdsan_exchange_owner_tag(fd, 0, NEW_TAG_LOG);
@@ -78,29 +67,21 @@ bool MemoryReclaimManager::WriteToProcFile(const std::string &path, const std::s
 
     if (written < 0 || static_cast<size_t>(written) != content.size()) {
         LOGE("[L2:MemoryReclaimManager] WriteToProcFile: <<< EXIT FAILED <<<"
-            "write failed path %{public}s", path.c_str());
+            "write failed path %{public}s, content=%{public}s", path.c_str(), content.c_str());
         return false;
     }
 
-    LOGD("[L2:MemoryReclaimManager] WriteToProcFile: <<< EXIT SUCCESS <<<");
     return true;
 }
 
 bool MemoryReclaimManager::ExecuteReclaim(int32_t pid)
 {
-    LOGI("[L2:MemoryReclaimManager] ExecuteReclaim: >>> ENTER <<< pid=%{public}d", pid);
     std::string path = "/proc/" + std::to_string(pid) + "/reclaim";
     std::string content = GetReclaimContent();
 
     LOGI("[L2:MemoryReclaimManager] ExecuteReclaim: echo %{public}s to pid=%{public}d", content.c_str(), pid);
 
-    bool ret = WriteToProcFile(path, content);
-    if (ret) {
-        LOGI("[L2:MemoryReclaimManager] ExecuteReclaim: <<< EXIT SUCCESS <<<");
-    } else {
-        LOGE("[L2:MemoryReclaimManager] ExecuteReclaim: <<< EXIT FAILED <<<");
-    }
-    return ret;
+    return WriteToProcFile(path, content);
 }
 
 } // namespace StorageDaemon

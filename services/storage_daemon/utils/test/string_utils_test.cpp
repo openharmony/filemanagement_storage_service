@@ -209,12 +209,11 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_SaveStringToFileSync_001, TestSize.Lev
 HWTEST_F(StringUtilsTest, StringUtilsTest_CheckLevelRange_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StringUtilsTest_CheckLevelRange_001 start";
-
     EXPECT_TRUE(CheckLevelRange(StorageService::EL1_SYS_KEY));
     EXPECT_TRUE(CheckLevelRange(StorageService::EL4_USER_KEY));
-    EXPECT_TRUE(CheckLevelRange((StorageService::EL1_SYS_KEY + StorageService::EL5_USER_KEY) / 2));
+    EXPECT_TRUE(CheckLevelRange((StorageService::EL1_SYS_KEY + StorageService::EL4_USER_KEY) / 2));
 
-    EXPECT_FALSE(CheckLevelRange(StorageService::EL1_SYS_KEY -1));
+    EXPECT_FALSE(CheckLevelRange(StorageService::EL1_SYS_KEY - 1));
     EXPECT_FALSE(CheckLevelRange(StorageService::EL5_USER_KEY + 1));
     GTEST_LOG_(INFO) << "StringUtilsTest_CheckLevelRange_001 end";
 }
@@ -233,7 +232,7 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_CheckInputListRange_001, TestSize.Leve
 
     std::vector<std::string> emptyList;
     EXPECT_FALSE(CheckInputListRange(emptyList));
-
+    
     std::vector<std::string> largeList(50001, "item");
     EXPECT_FALSE(CheckInputListRange(largeList));
     GTEST_LOG_(INFO) << "StringUtilsTest_CheckInputListRange_001 end";
@@ -253,7 +252,7 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_CheckLocalIdListRange_001, TestSize.Le
 
     std::vector<int32_t> emptyList;
     EXPECT_FALSE(CheckLocalIdListRange(emptyList));
-
+    
     std::vector<int32_t> largeList(101, 1);
     EXPECT_FALSE(CheckLocalIdListRange(largeList));
     GTEST_LOG_(INFO) << "StringUtilsTest_CheckLocalIdListRange_001 end";
@@ -278,7 +277,7 @@ HWTEST_F(StringUtilsTest, StringUtilsTest_CheckIdRange_001, TestSize.Level1)
     EXPECT_FALSE(CheckIdRange("abc@123"));
     EXPECT_FALSE(CheckIdRange("abc 123"));
     EXPECT_FALSE(CheckIdRange("abc123!"));
-    
+
     std::string longId(66, 'a');
     EXPECT_FALSE(CheckIdRange(longId));
     GTEST_LOG_(INFO) << "StringUtilsTest_CheckIdRange_001 end";

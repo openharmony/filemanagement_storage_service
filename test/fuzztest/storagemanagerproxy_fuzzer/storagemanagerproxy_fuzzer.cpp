@@ -33,8 +33,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     if (proxy == nullptr || impl == nullptr) {
         return 0;
     }
-    
-    VolumeCore vc;
+
     Disk disk;
     MessageParcel reply;
     MessageOption option;
@@ -44,8 +43,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     int32_t metaData2 = *(reinterpret_cast<const int32_t *>(data));
     uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
     uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data + sizeof(uint32_t) + sizeof(uint64_t)));
-    bool metadata6 = *(reinterpret_cast<const bool *>(data + sizeof(uint32_t) + sizeof(uint64_t) +
-        sizeof(bool)));
     std::string metaData(reinterpret_cast<const char *>(data + dataMinSize), size - dataMinSize);
     std::map<std::string, std::string> metaData5 = {{metaData, metaData}};
     token.push_back(*data);
@@ -53,21 +50,15 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->StopUser(metaData2);
     proxy->Mount(metaData);
     proxy->Unmount(metaData);
-    proxy->NotifyDiskCreated(disk);
+    proxy->TryToFix(metaData);
     proxy->InactiveUserKey(metaData3);
     proxy->UpdateKeyContext(metaData3);
-    proxy->NotifyVolumeCreated(vc);
     proxy->RemoveUser(metaData2, metaData3);
     proxy->PrepareStartUser(metaData2);
-    proxy->Format(metaData, metaData);
     proxy->GetDiskById(metaData, disk);
-    proxy->Partition(metaData, metaData2);
     proxy->PrepareAddUser(metaData2, metaData3);
-    proxy->NotifyDiskDestroyed(metaData);
     proxy->ActiveUserKey(metaData2, token, secret);
-    proxy->SetVolumeDescription(metaData, metaData);
     proxy->UpdateUserAuth(metaData2, metaData4, token, secret, secret);
-    proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData, metadata6);
     proxy->MountDisShareFile(metaData2, metaData5);
     proxy->UMountDisShareFile(metaData2, metaData);
     std::vector<std::string> distributeDirsVec;

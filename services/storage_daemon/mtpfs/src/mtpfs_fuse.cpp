@@ -1380,7 +1380,7 @@ static int IsDirFetched(std::string path, MtpFsDevice &device, char *out, size_t
     return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
 }
 
-static int IsOpenHarmonyMtpDevice(MtpFsDevice &device, char *out, const size_t size)
+static int IsOpenHarmonyMtpDevice(MtpFsDevice &device, char *out, size_t size)
 {
     bool isOpenHarmony = device.IsOpenHarmonyMtpDevice();
     int ret;
@@ -1527,7 +1527,6 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 bool MtpFileSystem::IsCurrentUserReadOnly()
 {
     LOGI("IsCurrentUserReadOnly start");
-    std::lock_guard<std::mutex>lock(mtpClientMutex_);
     auto item = mtpClientWriteMap_.find(currentUid);
     if (item != mtpClientWriteMap_.end()) {
         if (item->second) {

@@ -93,13 +93,3 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
 {
     return IFbexMoc::fbexMoc->WriteESecretToKernel(userIdToFbe, status, eBuffer, length);
 }
-
-bool FBEX::IsMspReady()
-{
-    return IFbexMoc::fbexMoc->IsMspReady();
-}
-
-int FBEX::GetStatus()
-{
-    return IFbexMoc::fbexMoc->GetStatus();
-}
