@@ -172,25 +172,21 @@ int32_t DirInfo::MakeDir() const
 
 int32_t DirInfo::MakeDir(const std::string &createPath) const
 {
-    LOGI("[L2:UserPathResolver] DirInfo::MakeDir: >>> ENTER <<< path=%{public}s", createPath.c_str());
     if (!PrepareDir(createPath, mode, uid, gid)) {
         LOGE("[L2:UserPathResolver] DirInfo::MakeDir: <<< EXIT FAILED <<< prepareDir failed, path=%{public}s,"
             "errno=%{public}d", createPath.c_str(), errno);
         return E_PREPARE_DIR;
     }
-    LOGI("[L2:UserPathResolver] DirInfo::MakeDir: <<< EXIT SUCCESS <<< path=%{public}s", createPath.c_str());
     return E_OK;
 }
 
 int32_t DirInfo::RemoveDir() const
 {
-    LOGI("[L2:UserPathResolver] DirInfo::RemoveDir: >>> ENTER <<< path=%{public}s", path.c_str());
     if (!RmDirRecurse(path)) {
         LOGE("[L2:UserPathResolver] DirInfo::RemoveDir: <<< EXIT FAILED <<< RmDirRecurse failed, path=%{public}s,"
              "errno=%{public}d", path.c_str(), errno);
         return E_DESTROY_DIR;
     }
-    LOGI("[L2:UserPathResolver] DirInfo::RemoveDir: <<< EXIT SUCCESS <<< path=%{public}s", path.c_str());
     return E_OK;
 }
 
@@ -229,8 +225,8 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
 
     if (options.find(OPTIONS_CHECK_MOUNTED) != options.end()) {
         if (IsPathMounted(currentDst)) {
-            LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< path has mounted, %{public}s",
-                currentDst.c_str());
+            LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< path has mounted, %{public}s,"
+                "src=%{public}s, dst=%{public}s", currentDst.c_str(), src.c_str(), dst.c_str());
             return E_OK;
         }
     }
@@ -243,11 +239,9 @@ int32_t MountNodeInfo::MountDir(const std::string &src, const std::string &dst) 
     LOGI("SD_DURATION: MountDir, delayTime = %{public}s", delay.c_str());
     if (ret != E_OK && errno != EEXIST && errno != EBUSY) {
         LOGE("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT FAILED <<< mount failed, path=%{public}s,"
-            "errno=%{public}d", currentDst.c_str(), errno);
+            "errno=%{public}d, src=%{public}s, dst=%{public}s", currentDst.c_str(), errno, src.c_str(), dst.c_str());
         return ret;
     }
-    LOGI("[L2:UserPathResolver] MountNodeInfo::MountDir: <<< EXIT SUCCESS <<< src=%{public}s, dst=%{public}s",
-        src.c_str(), dst.c_str());
     return E_OK;
 }
 
@@ -258,10 +252,10 @@ bool MountNodeInfo::HasNoReturnOption() const
 
 int32_t UserPathResolver::GetUserBasePath(int32_t userId, uint32_t flags, std::vector<DirInfo> &dirInfoList)
 {
-    LOGI("[L2:UserPathResolver] GetUserBasePath: >>> ENTER <<< userId=%{public}d, flags=%{public}u", userId, flags);
     auto ret = GetUserPath(flags, JSON_KEY_USER_BASE, dirInfoList);
     if (ret != E_OK) {
-        LOGE("[L2:UserPathResolver] GetUserBasePath: <<< EXIT FAILED <<< GetUserPath failed, ret=%{public}d", ret);
+        LOGE("[L2:UserPathResolver] GetUserBasePath: <<< EXIT FAILED <<< GetUserPath failed, ret=%{public}d,"
+            "userId=%{public}d, flags=%{public}u", ret, userId, flags);
         return ret;
     }
     return ReplaceUserId(userId, dirInfoList);

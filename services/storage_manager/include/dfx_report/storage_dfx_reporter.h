@@ -98,5 +98,4 @@ private:
 };
 } // namespace StorageManager
 } // namespace OHOS
-
 #endif // OHOS_STORAGE_MANAGER_STORAGE_DFX_REPORTER_H

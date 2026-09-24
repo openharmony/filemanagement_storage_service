@@ -60,7 +60,6 @@ static std::vector<int32_t> SYS_UIDS = {0, 1000, 5523};
 void StorageDfxReporter::StartReportHapAndSaStorageStatus()
 {
     LOGI("StorageDfxReporter StartReportHapAndSaStorageStatus start.");
-
     isHapAndSaRunning_.store(true);
     int32_t userId = StorageService::DEFAULT_USERID;
     std::thread([this, userId]() {
@@ -650,7 +649,7 @@ bool StorageDfxReporter::CheckScanPreconditions()
         int64_t duration = std::chrono::duration_cast<std::chrono::hours>(currentTime - lastScanTime_).count();
         if (duration < TIME_INTERVAL_HOURS && lastScanTime_.time_since_epoch().count() != 0) {
             LOGI("Last scan was %{public}lld hours ago, less than 24 hours, skip scan.",
-                 static_cast<long long>(duration));
+                static_cast<long long>(duration));
             return false;
         }
         LOGI("Starting scan task - free size diff: %{public}lld, hours since last scan: %{public}lld",
@@ -672,14 +671,12 @@ void StorageDfxReporter::LaunchScanWorker()
     std::thread([this]() {
         pthread_setname_np(pthread_self(), "storage_scan_task");
         LOGI("Scan thread started.");
-
         int32_t ret = StartReportDirStatus();
         if (ret == E_OK) {
             LOGI("Scan completed successfully.");
         } else {
             LOGE("Scan failed with ret=%{public}d", ret);
         }
-
         isScanRunning_.store(false);
         LOGI("Scan thread completed.");
     }).detach();

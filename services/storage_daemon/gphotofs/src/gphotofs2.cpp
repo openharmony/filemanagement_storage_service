@@ -190,6 +190,7 @@ static int FetchOnePage(const char *path, Dir *dir, Context *ctx, int &start, un
         return ret;
     }
     PartialListRequest req = { path, start, DEFAULT_COUNT, listFile, listDir, flags };
+
     ret = WithCameraLocked([ctx, &req] {
         return gp_camera_folder_list_partial(ctx->camera(), ctx->context(), &req);
     });

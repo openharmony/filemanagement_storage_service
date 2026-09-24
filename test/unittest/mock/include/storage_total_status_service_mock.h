@@ -50,4 +50,3 @@ public:
 };
 } // OHOS::StorageManager
 #endif // OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_MOCK_H
-

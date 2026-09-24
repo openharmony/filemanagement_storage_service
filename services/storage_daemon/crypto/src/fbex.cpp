@@ -46,7 +46,6 @@ constexpr uint8_t FBEX_DEL_IV = 0x2;
 constexpr uint8_t FBEX_LOCK_SCREEN = 0x3;
 constexpr uint8_t FBEX_UNLOCK_SCREEN = 0x4;
 constexpr uint8_t FBEX_USER_LOGOUT = 0x8;
-constexpr uint8_t FBEX_STATUS_REPORT = 0xC;
 constexpr uint8_t FBEX_ADD_DOUBLE_DE_IV = 20;
 constexpr uint8_t FBEX_ADD_EL5 = 21;
 constexpr uint8_t FBEX_READ_EL5 = 22;
@@ -107,7 +106,6 @@ using FbeOptsEV1 = FbeOptStrEV1;
 #define FBEX_IOC_LOCK_SCREEN _IOW(FBEX_IOC_MAGIC, FBEX_LOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_UNLOCK_SCREEN _IOWR(FBEX_IOC_MAGIC, FBEX_UNLOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_USER_LOGOUT _IOW(FBEX_IOC_MAGIC, FBEX_USER_LOGOUT, FbeOpts)
-#define FBEX_IOC_STATUS_REPORT _IOW(FBEX_IOC_MAGIC, FBEX_STATUS_REPORT, FbeOpts)
 #define FBEX_READ_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_READ_EL5, FbeOptsE)
 #define FBEX_WRITE_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_WRITE_EL5, FbeOptsE)
 #define FBEX_ADD_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_EL5, FbeOptsE)
@@ -123,7 +121,6 @@ namespace OHOS {
 namespace StorageDaemon {
 bool FBEX::IsFBEXSupported()
 {
-    LOGD("[L7:FBEX] IsFBEXSupported: >>> ENTER <<<");
     std::string baseAddr;
     if (!OHOS::LoadStringFromFile(FBEX_UFS_INLINE_BASE_ADDR, baseAddr)) {
         LOGE("[L7:FBEX] IsFBEXSupported: <<< EXIT FAILED <<< Read baseAddr failed, errno: %{public}d", errno);
@@ -307,7 +304,8 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
     (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
     delay = StorageService::StorageRadar::ReportDuration("FBEX: INSTALL KEY TO KERNEL",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
-    LOGI("[L7:FBEX] InstallKeyToKernel: <<< EXIT SUCCESS <<<");
+    LOGI("[L7:FBEX] InstallKeyToKernel: <<< EXIT SUCCESS <<< keyType=%{public}d, delay = %{public}s",
+        type, delay.c_str());
     return ret;
 }
 
@@ -394,7 +392,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     FbeOpts ops{.user = userId, .type = type, .len = size};
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
-        LOGE("[L7:FBEX] UninstallOrLockUserKeyToKernel: memcpy failed %{public}d", err);
+        LOGE("[L7:FBEX] UninstallOrLockUserKeyToKernel: <<< EXIT FAILED <<< memcpy failed %{public}d", err);
         close(fd);
         return err;
     }
@@ -450,9 +448,9 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
-            LOGE("[L7:FBEX] ChangePinCodeClassE: fbex_uece does not exist, fbe not support this command!");
+            LOGE("[L7:FBEX] ChangePinCodeClassE: <<< EXIT SUCCESS <<< fbex_uece does not exist,"
+                "fbe not support this command!");
             isFbeSupport = false;
-            LOGI("[L7:FBEX] ChangePinCodeClassE: <<< EXIT SUCCESS <<<");
             return 0;
         }
         LOGE("[L7:FBEX] ChangePinCodeClassE: <<< EXIT FAILED <<< open fbex_cmd failed, errno: %{public}d", errno);
@@ -569,7 +567,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
 
     auto err = memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
     if (err != EOK) {
-        LOGE("[L7:FBEX] GenerateAppkey: memcpy failed %{public}d", err);
+        LOGE("[L7:FBEX] GenerateAppkey: <<< EXIT FAILED <<< memcpy failed %{public}d", err);
         close(fd);
         (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
         return err;
@@ -588,9 +586,8 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
-            LOGE("[L7:FBEX] LockUece: fbex_uece does not exist, fbe not support this command!");
+            LOGE("[L7:FBEX] LockUece: <<< EXIT SUCCESS <<< fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
-            LOGI("[L7:FBEX] LockUece: <<< EXIT SUCCESS <<<");
             return 0;
         }
         std::string extraData = "userIdDouble=" + std::to_string(userIdDouble);
@@ -662,17 +659,6 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     return ret;
 }
 
-bool FBEX::CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
-                              uint32_t length, bool &isFbeSupport)
-{
-    LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-    if (!CheckReadBuffValid(eBuffer.get(), length, status)) {
-        LOGE("read e secret invalid");
-        return false;
-    }
-    return true;
-}
-
 void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
                             uint32_t userIdDouble, bool hasAuth)
 {
@@ -690,7 +676,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
 {
     LOGD("[L7:FBEX] ReadESecretToKernel: >>> ENTER <<< userId: %{public}d, status: %{public}u",
         userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-    if (eBuffer.IsEmpty() || !CheckPreconditions(userIdToFbe, status, eBuffer.data, eBuffer.size, isFbeSupport)) {
+    if (eBuffer.IsEmpty() || !CheckReadBuffValid(eBuffer.data.get(), eBuffer.size, status)) {
         std::string extraData = "status = " + std::to_string(status) + ", size = " + std::to_string(eBuffer.size);
         StorageRadar::ReportFbexResult("ReadESecretToKernel", userIdToFbe.userIds[SINGLE_ID_INDEX], -EINVAL,
             std::to_string(status), extraData);
@@ -815,29 +801,6 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     (void)memset_s(&ops, sizeof(ops), 0, sizeof(ops));
     LOGD("[L7:FBEX] WriteESecretToKernel: <<< EXIT SUCCESS <<<");
     return 0;
-}
-
-bool FBEX::IsMspReady()
-{
-    std::string status;
-    (void)OHOS::LoadStringFromFile(FBEX_CMD_PATH, status);
-    return status == "true";
-}
-
-int FBEX::GetStatus()
-{
-    LOGD("[L7:FBEX] GetStatus: >>> ENTER <<<");
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
-    if (fd < 0) {
-        StorageRadar::ReportFbexResult("GetStatus::open", 0, errno, "", "");
-        LOGE("[L7:FBEX] GetStatus: <<< EXIT FAILED <<< open fbex_cmd failed, errno: %{public}d", errno);
-        return -errno;
-    }
-    FbeOpts ops;
-    int ret = ioctl(fd, FBEX_IOC_STATUS_REPORT, &ops);
-    close(fd);
-    LOGI("[L7:FBEX] GetStatus: <<< EXIT %s <<<", ret >= 0 ? "SUCCESS" : "FAILED");
-    return ret;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
