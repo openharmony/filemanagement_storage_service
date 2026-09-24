@@ -143,7 +143,7 @@ void StorageManagerProviderTest::SetUp(void)
 #ifdef DISK_MANAGER
     dmClientMock_ = std::make_shared<DiskManager::DiskManagerClientMock>();
     DiskManager::IDiskManagerClientMock::diskManagerClientMock = dmClientMock_;
-    ON_CALL(*dmClientMock_, Mount(_,_)).WillByDefault(Return(E_OK));
+    ON_CALL(*dmClientMock_, Mount(_, _)).WillByDefault(Return(E_OK));
     ON_CALL(*dmClientMock_, Unmount(_)).WillByDefault(Return(E_OK));
     ON_CALL(*dmClientMock_, Format(_, _)).WillByDefault(Return(E_OK));
     ON_CALL(*dmClientMock_, SetVolumeDescription(_, _)).WillByDefault(Return(E_OK));

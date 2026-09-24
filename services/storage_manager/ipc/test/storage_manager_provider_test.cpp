@@ -123,7 +123,7 @@ void StorageManagerProviderTest::SetUp(void)
 
 void StorageManagerProviderTest::TearDown(void)
 {
-    if (storageManagerProviderTest_ != nullptr) 
+    if (storageManagerProviderTest_ != nullptr) {
         delete storageManagerProviderTest_;
         storageManagerProviderTest_ = nullptr;
     }

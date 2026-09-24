@@ -464,7 +464,7 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
         LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
-              stats.businessName_.c_str(), userId);
+            stats.businessName_.c_str(), userId);
         return InsertOrUpdateExtBundleStats(userId, stats, callingBundleName);
     }
     if (callingBundleName != bundleStats->bundleName) {
@@ -482,7 +482,7 @@ int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats 
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
         LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
-              stats.businessName_.c_str(), userId);
+            stats.businessName_.c_str(), userId);
         stats.businessSize_ = 0;
         return E_OK;
     }
