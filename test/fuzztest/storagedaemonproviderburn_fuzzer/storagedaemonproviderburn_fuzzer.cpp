@@ -30,6 +30,7 @@ using namespace OHOS::StorageDaemon;
 namespace OHOS {
 
 static const int32_t MAX_PATH_LENGTH = 64;
+static const int32_t MAX_FS_TYPE_LENGTH = 16;
 
 std::shared_ptr<StorageDaemonProvider> storageDaemonProvider =
     std::make_shared<StorageDaemonProvider>();
@@ -45,7 +46,7 @@ bool BurnFuzzTest(const uint8_t *data, size_t size)
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
     datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
     datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
-    datas.WriteString(fdp.ConsumeRandomLengthString(MAX_PATH_LENGTH));
+    datas.WriteString(fdp.ConsumeRandomLengthString(MAX_FS_TYPE_LENGTH));
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;

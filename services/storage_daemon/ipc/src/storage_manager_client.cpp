@@ -20,6 +20,7 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "hitrace_meter.h"
 
 namespace OHOS {
 namespace StorageDaemon {

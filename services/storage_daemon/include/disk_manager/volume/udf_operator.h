@@ -26,6 +26,7 @@ class UdfOperator : public IVolumeOperator {
 public:
     UdfOperator() = default;
     ~UdfOperator() override = default;
+
     int32_t ReadMetadata(const std::string& devPath,
                          std::string& uuid,
                          std::string& type,

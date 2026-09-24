@@ -18,6 +18,7 @@
 #include "iservice_registry.h"
 #include "int_wrapper.h"
 #include "appspawn.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "system_ability_definition.h"
@@ -30,7 +31,6 @@ namespace StorageManager {
 static constexpr int CONNECT_TIME = 20;
 static std::mutex mediaMutex_;
 static std::mutex userRecordMutex_;
-static const int32_t SLEEP_TIME_INTERVAL_1MS = 1000;
 static constexpr bool DECRYPTED = false;
 static constexpr int32_t MOUNT_MAX_WAIT_TIME = 10;
 static constexpr int32_t APPSPAWN_TIMEOUT = 0xD000011;
@@ -131,7 +131,9 @@ void AccountSubscriber::NotifyUserChangedEvent(uint32_t userId, StorageService::
     }
 
     if ((status & USER_UNLOCK_BIT) == USER_UNLOCK_BIT) {
-        MountCryptoPathAgain(userId);
+        int32_t mountRet = MountCryptoPathAgain(userId);
+        auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+        sdCommunication.SetControlParam4RGM(userId, std::to_string(mountRet));
         userRecord_.erase(userId);
     }
     lock.unlock();
@@ -192,7 +194,6 @@ void AccountSubscriber::GetSystemAbility(int32_t userId)
             break;
         }
         LOGE("try to connect media again, retry count: %{public}d/%{public}d", i + 1, CONNECT_TIME);
-        usleep(SLEEP_TIME_INTERVAL_1MS);
     }
 }
 }  // namespace StorageManager

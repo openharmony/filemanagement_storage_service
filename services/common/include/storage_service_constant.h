@@ -16,7 +16,6 @@
 #define STORAGE_SERVICE_CONSTANTS_H
 
 #include <map>
-#include <string>
 #include <sys/types.h>
 
 namespace OHOS {
@@ -57,10 +56,12 @@ extern const int32_t FOUNDATION_UID;
 
 namespace StorageDaemon {
 extern const uint32_t GLOBAL_USER_ID;
+extern const uint32_t ANCO_USER_ID;
 extern const uint32_t USER_ID_SIZE_VALUE;
 extern const char FILE_SEPARATOR_CHAR;
 extern const char *ANCO_DIR;
 extern const char *ANCO_MEDIA_PATH;
+extern const char *MNT_DATA_VOL_DIR;
 extern const char *SERVICE_DIR_PATH;
 extern const std::string EL1;
 extern const std::string EL2;
