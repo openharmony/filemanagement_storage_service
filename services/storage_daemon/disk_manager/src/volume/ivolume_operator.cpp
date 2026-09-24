@@ -249,6 +249,7 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         LOGE("IVolumeOperator::Unmount invalid mountPath prefix");
         return E_PARAMS_INVALID;
     }
+
     if (force) {
         int ret = umount2(resolvedPath.c_str(), MNT_DETACH);
         if (ret != 0) {
@@ -260,6 +261,7 @@ int32_t IVolumeOperator::Unmount(const std::string& mountPath, const std::string
         LOGI("IVolumeOperator::Unmount force success");
         return E_OK;
     }
+
     int fd = open(resolvedPath.c_str(), O_RDONLY);
     if (fd >= 0) {
         fdsan_exchange_owner_tag(fd, 0, NEW_TAG);

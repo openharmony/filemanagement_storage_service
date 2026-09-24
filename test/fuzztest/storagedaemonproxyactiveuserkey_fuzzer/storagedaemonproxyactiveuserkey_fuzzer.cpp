@@ -69,7 +69,7 @@ bool ActiveUserKeyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uin
 
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
-    int len = (size - pos) / 2;
+    int len = (size - pos) / 3;
     vector<uint8_t> token;
     vector<uint8_t> secret;
     for (int i = 0; i < len; i++) {

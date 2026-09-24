@@ -56,9 +56,11 @@ const int32_t FOUNDATION_UID = 5523;
 namespace StorageDaemon {
 const uint32_t GLOBAL_USER_ID = 0;
 const uint32_t USER_ID_SIZE_VALUE = 16;
+const uint32_t ANCO_USER_ID = 100;
 const char FILE_SEPARATOR_CHAR = '/';
 const char *ANCO_DIR = "/data/virt_service/rgm_hmos/anco_hmos_data/";
 const char *ANCO_MEDIA_PATH = "/data/virt_service/rgm_hmos/anco_hmos_data/media/0";
+const char *MNT_DATA_VOL_DIR = "/mnt/data/vol";
 const char *SERVICE_DIR_PATH = "/data/service/";
 const std::string EL1 = "el1";
 const std::string EL2 = "el2";

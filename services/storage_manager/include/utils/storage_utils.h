@@ -28,18 +28,21 @@ static const int64_t THRESHOLD = 512;
 static const int64_t ONE_GB = 1000000000;
 // ONE_TB为1024GB字节数。
 static const int64_t ONE_TB = 1024LL * ONE_GB;
+static const int32_t INVALID_USER_ID = -1;
 int64_t GetRoundSize(int64_t size);
 std::string GetAnonyString(const std::string &value);
 bool IsPathStartWithFileMgr(int32_t userId, const std::string &path);
 int GetCurrentUserId();
 bool IsFilePathInvalid(const std::string &filePath);
+bool IsUserUnlocked(int32_t userId);
+int32_t GetForegroundUserIDFromOs();
 bool IsPathStartWithDlp(const std::string &dstPath);
 bool CheckPkgNameRange(const std::string &pkgName);
 bool CheckAppIndexRange(int32_t appIndex);
 bool CheckLevelRange(uint32_t level);
 bool CheckInputListRange(const std::vector<std::string> &inputList);
 bool CheckIdRange(const std::string &id);
-} // namespace StorageManager
+} // namespace STORAGE_MANAGER
 } // namespace OHOS
 
 #endif // STORAGE_MANAGER_STORAGE_UTILS_H

@@ -525,8 +525,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
 {
     char out[1024];
-    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
-    int result = mtpFileSystem.GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -538,8 +538,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
 {
     char out[1024];
-    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
-    int result = mtpFileSystem.GetXAttr("/path/to/file", nullptr, out, sizeof(out));
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", nullptr, out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -550,8 +550,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
  */
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
 {
-    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
-    int result = mtpFileSystem.GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
     EXPECT_EQ(result, UPLOAD_RECORD_SUCCESS_LEN);
 }
 
@@ -563,8 +563,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
 HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_004, TestSize.Level1)
 {
     char out[1024];
-    MtpFileSystem& mtpFileSystem = MtpFileSystem::GetInstance();
-    int result = mtpFileSystem.GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
     EXPECT_EQ(result, 0);
 }
 
@@ -581,6 +581,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintCh
     const std::set<std::string> constraintSet = { "constraint.mtp.client.write" };
     AccountConstraintSubscriber accountConstraintSubscriber(constraintSet);
 
+    mtpFileSystem.mtpClientWriteMap_[100] = 0;
     OHOS::AccountSA::OsAccountConstraintStateData osAccountConstraintStateData;
     osAccountConstraintStateData.isEnabled = true;
     osAccountConstraintStateData.localId = 100;
